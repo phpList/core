@@ -310,7 +310,7 @@ class MySQLi implements IDatabase
             # need to improve this. http://bugs.mysql.com/bug.php?id=19588
             $req = $this->Sql_Query(sprintf('SELECT table_name FROM information_schema.tables WHERE table_schema = "%s"', Config::DATABASE_NAME));
             while ($row = $this->Sql_Fetch_Row($req)) {
-                array_push($_SESSION['dbtables'], $row[0]);
+                $_SESSION['dbtables'][] = $row[0];
             }
         }
         return in_array($table, $_SESSION['dbtables']);

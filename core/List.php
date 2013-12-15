@@ -84,7 +84,7 @@ class MailingList
         $list = array();
         if (!empty($db_result)) {
             while($row = phpList::DB()->Sql_Fetch_Assoc($db_result)){
-                array_push($list, MailingList::listFromArray($row));
+                $list[] = MailingList::listFromArray($row);
             }
         }
         return $list;

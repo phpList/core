@@ -103,7 +103,7 @@ class Message {
         $condition .= ') ';
 
         if($subject != ''){
-            $condition .= ' AND subject LIKE "%'.phpList::DB()->Sql_Escape($subject).'%" ';
+            $condition .= ' AND subject LIKE "%'.String::sqlEscape($subject).'%" ';
         }
         if($owner != 0){
             $condition .= sprintf(' AND owner = %d', $owner);
@@ -169,8 +169,10 @@ class Message {
             Config::getTableName('message_attachment'), Config::getTableName('attachment'), $this->id));
 
         $attachments = array();
-        while($row = phpList::DB()->Sql_Fetch_Row($result)){
-            array_push($attachments,(object)$row[0]);
+        while($row = phpList::DB()->Sql_Fetch_Assoc($result)){
+            $attachment = new Attachment($row['filename'], $row['remotefile'], $row['mimetype'], $row['description'], $row['size']);
+            $attachment->id = $row['id'];
+            $attachments[] = $attachment;
         }
 
         return $attachments;
@@ -189,7 +191,7 @@ class Message {
 
         $lists_done = array();
         while ($lst = phpList::DB()->Sql_Fetch_Row($result)) {
-            array_push($lists_done,$lst);
+            $lists_done[] = $lst;
         }
 
         return $lists_done;
@@ -202,7 +204,7 @@ class Message {
                 Config::getTableName('list'), Config::getTableName('list'), implode(',',$this->getDataItem('excludelist'))));
 
             while ($lst = phpList::DB()->Sql_Fetch_Row($result)) {
-                array_push($lists_done,$lst);
+                $lists_done[] = $lst;
             }
         }
 
@@ -223,18 +225,11 @@ class Message {
 
         $ownerselect_and = sprintf(' AND owner = %d',$owner);
         $result = phpList::DB()->Sql_Query(sprintf(
-            'SELECT * FROM %s
+            'DELETE FROM %s
             WHERE status = "draft"
             AND (subject = "" OR subject = "(no subject)")
             %s',
             Config::getTableName('message'),$ownerselect_and));
-        while($row = phpList::DB()->Sql_Fetch_Row($result)){
-            array_push($todelete,$row[0]);
-        }
-
-        foreach ($todelete as $delete) {
-            (object) $delete->Delete();
-        }
     }
 
     public function create($owner){

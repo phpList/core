@@ -48,7 +48,7 @@ class Template {
         foreach($result as $img){
             $imo = new TemplateImage($img['template'], $img['mime'], $img['filename'], $img['data'], $img['width'], $img['height']);
             $imo->id = $img['id'];
-            array_push($images, $imo);
+            $images[] = $imo;
         }
         return $images;
     }

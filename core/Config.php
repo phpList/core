@@ -186,13 +186,6 @@ class Config {
     # be fine, but you can increase it if you experience problems
     const BLACKLIST_GRACETIME = 5;
 
-    # to increase security the session of a user is checked for the IP address
-    # this needs to be the same for every request. This may not work with
-    # network situations where you connect via multiple proxies, so you can
-    # switch off the checking by setting this to 0
-    const CHECK_SESSIONIP = 1;
-
-
 
     # Check for host of email entered for subscription
     # Do not use it if your server is not 24hr online
@@ -697,10 +690,19 @@ class Config {
     # very welcome!
     const DATABASE_MODULE = 'mysqli';
 
-    # you can store sessions in the database instead of the default place by assigning
-    # a tablename to this value. The table will be created and will not use any prefixes
-    # this only works when using mysql and only for administrator sessions
-    # const SESSIONTABLENAME = 'phplistsessions';
+    # you can store sessions in the database instead of the default place by setting
+    # SESSION_STORE to mysql and assigning a session table name. The table will be
+    # created and will not use any prefixes this only works when using mysql and only
+    # for administrator sessions
+    const SESSION_STORE = 'default';
+    const SESSION_TABLENAME = 'phplistfs';
+
+
+    # to increase security the session of a user is checked for the IP address
+    # this needs to be the same for every request. This may not work with
+    # network situations where you connect via multiple proxies, so you can
+    # switch off the checking by setting this to 0
+    const CHECK_SESSIONIP = 1;
 
 
         /*

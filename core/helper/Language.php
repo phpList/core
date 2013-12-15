@@ -457,7 +457,8 @@ $lan = array(
     }
 }
 
-/* add a shortcut that seems common in other apps
+/**
+ * Add a shortcut that seems common in other apps
  * function s($text)
  * @param $text string the text to find
  * @params 2-n variable - parameters to pass on to the sprintf of the text
@@ -469,7 +470,6 @@ $lan = array(
  * will look for the translation of the string and substitute the parameters
  *
  **/
-
 function s($text) {
     ## allow overloading with sprintf paramaters
     $translation = Language::Instance()->get($text);
