@@ -61,6 +61,19 @@ class User {
     }
 
     /**
+     * Get user by email
+     * @param string $email
+     * @return User
+     */
+    public static function getUserByEmail($email){
+        $result = phpList::DB()->Sql_Fetch_Assoc_Query(sprintf(
+            'SELECT * FROM %s
+            WHERE email = "%s"',
+            Config::getTableName('user', true), $email));
+        return User::userFromArray($result);
+    }
+
+    /**
      * Get user object from foreign key value
      * @param $fk string
      * @return User
@@ -297,6 +310,19 @@ class User {
             (ip,userid,date,summary,detail,systeminfo)
             VALUES("%s",%d,now(),"%s","%s","%s")',
             Config::getTableName('user_history', true), $ip, $user_id, addslashes($msg), addslashes(htmlspecialchars($detail)), $sysinfo));
+    }
+
+    /**
+     * Get the unique id from a user
+     * @param int $user_id
+     * @return int unique_id
+     */
+    public static function getUniqueId($user_id){
+        $result = phpList::DB()->Sql_Fetch_Row_Query(sprintf(
+            'SELECT uniqid FROM %s
+            WHERE id = %d',
+                Config::getTableName('user', true), $user_id));
+        return $result[0];
     }
 
     /**

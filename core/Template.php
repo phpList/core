@@ -8,7 +8,7 @@ namespace phpList;
 
 
 class Template {
-    public $id;
+    public $id = 0;
     public $title;
     public $template;
     public $listorder;
@@ -19,19 +19,35 @@ class Template {
         $this->listorder = $listorder;
     }
 
+    public static function getTemplate($id){
+        $result = phpList::DB()->Sql_Fetch_Assoc_Query(sprintf(
+            'SELECT * FROM %s
+            WHERE id = %d',
+            Config::getTableName('template'), $id));
+        return Template::templateFromArray($result);
+    }
+
     public static function templateFromArray($array){
         $template = new Template($array['title'], $array['template'], $array['listorder']);
         $template->id = $array['id'];
         return $template;
     }
 
-    public function create(){
-        phpList::DB()->Sql_Query(sprintf(
-            'INSERT INTO %s
-            (title, template, listorder)
-            VALUES("%s", "%s",%d)',
-            Config::getTableName('template'), $this->title, $this->template, $this->listorder));
-        $this->id = phpList::DB()->Sql_Insert_Id();
+    public function save(){
+        if($this->id != 0){
+            $this->update();
+        }else{
+            phpList::DB()->Sql_Query(sprintf(
+                'INSERT INTO %s
+                (title, template, listorder)
+                VALUES("%s", "%s",%d)',
+                Config::getTableName('template'), $this->title, $this->template, $this->listorder));
+            $this->id = phpList::DB()->Sql_Insert_Id();
+        }
+    }
+
+    public function update(){
+        throw new \Exception('Not implemented yet');
     }
 
     public function addImage($mime, $filename, $data, $width, $height){
@@ -52,15 +68,6 @@ class Template {
         }
         return $images;
     }
-
-    public static function getTemplate($id){
-        $result = phpList::DB()->Sql_Fetch_Assoc_Query(sprintf(
-            'SELECT * FROM %s
-            WHERE id = %d',
-            Config::getTableName('template'), $id));
-        return Template::templateFromArray($result);
-    }
-
 }
 
 class TemplateImage{

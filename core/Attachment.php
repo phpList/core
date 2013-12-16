@@ -8,7 +8,7 @@ namespace phpList;
 
 
 class Attachment {
-    public $id;
+    public $id = 0;
     public $filename;
     public $remotefile;
     public $mimetype;
@@ -23,8 +23,10 @@ class Attachment {
         $this->size = $size;
     }
 
-    public function create(){
-        if($this->id == null){
+    public function save(){
+        if($this->id != 0){
+            $this->update();
+        }else{
             phpList::DB()->Sql_query(sprintf(
                     'INSERT INTO %s (filename,remotefile,mimetype,description,size)
                     VALUES("%s","%s","%s","%s",%d)',
@@ -33,6 +35,10 @@ class Attachment {
             );
             $this->id = phpList::DB()->Sql_Insert_Id();
         }
+    }
+
+    public function update(){
+        throw new \Exception('Not implemented yet');
     }
 
     public static function getAttachment($id){

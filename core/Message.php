@@ -8,7 +8,7 @@ namespace phpList;
 
 
 class Message {
-    public $id;
+    public $id = 0;
     public $subject;
     public $fromfield;
     public $tofield;
@@ -232,16 +232,20 @@ class Message {
             Config::getTableName('message'),$ownerselect_and));
     }
 
-    public function create($owner){
-        $query = ' INSERT INTO %s (subject, status, entered, sendformat, embargo, repeatuntil, owner, template, tofield, replyto,footer)
-                    VALUES("(no subject)", "draft", CURRENT_TIMESTAMP, "HTML", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, %s, %s, "", "", %s )';
+    public function save($owner){
+        if($this->id != 0){
+            $this->update();
+        }else{
+            $query = ' INSERT INTO %s (subject, status, entered, sendformat, embargo, repeatuntil, owner, template, tofield, replyto,footer)
+                        VALUES("(no subject)", "draft", CURRENT_TIMESTAMP, "HTML", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, %s, %s, "", "", %s )';
 
-        $query = sprintf($query, Config::getTableName('message'), $owner, Config::fromDB('defaultmessagetemplate'), Config::fromDB('messagefooter'));
-        phpList::DB()->Sql_Query($query);
-        $this->id = phpList::DB()->Sql_Insert_Id();
+            $query = sprintf($query, Config::getTableName('message'), $owner, Config::get('defaultmessagetemplate'), Config::get('messagefooter'));
+            phpList::DB()->Sql_Query($query);
+            $this->id = phpList::DB()->Sql_Insert_Id();
+        }
     }
 
-    public function save(){
+    public function update(){
         $embargo = $this->getDataItem('embargo');
         $repeatuntil = $this->getDataItem('repeatuntil');
         $requeueuntil = $this->getDataItem('requeueuntil');
@@ -399,9 +403,9 @@ class Message {
         }
 
         $default = array(
-            'from' => Config::fromDB('message_from_address', Config::fromDB('admin_address')),
+            'from' => Config::get('message_from_address', Config::get('admin_address')),
             ## can add some more from below
-            'google_track' => Config::fromDB('always_add_googletracking'),
+            'google_track' => Config::get('always_add_googletracking'),
         );
 
         ## when loading an old message that hasn't got data stored in message data, load it from the message table
@@ -413,7 +417,7 @@ class Message {
         $finishSending = time() + Config::DEFAULT_MESSAGEAGE;
 
         $messagedata = array(
-            'template' => Config::fromDB('defaultmessagetemplate'),
+            'template' => Config::get('defaultmessagetemplate'),
             'sendformat' => 'HTML',
             'message' => '',
             'forwardmessage' => '',
@@ -428,8 +432,8 @@ class Message {
             'fromfield' => '',
             'subject' => '',
             'forwardsubject' => '',
-            'footer' => Config::fromDB('messagefooter'),
-            'forwardfooter' => Config::fromDB('forwardfooter'),
+            'footer' => Config::get('messagefooter'),
+            'forwardfooter' => Config::get('forwardfooter'),
             'status' => '',
             'tofield' => '',
             'replyto' => '',
@@ -438,8 +442,8 @@ class Message {
             'sendurl' => '',
             'sendmethod' => 'inputhere', ## make a config
             'testtarget' => '',
-            'notify_start' =>  Config::fromDB('notifystart_default'),
-            'notify_end' =>  Config::fromDB('notifyend_default'),
+            'notify_start' =>  Config::get('notifystart_default'),
+            'notify_end' =>  Config::get('notifyend_default'),
             'google_track' => $default['google_track'] == 'true' || $default['google_track'] === true || $default['google_track'] == '1',
             'excludelist' => array(),
         );
@@ -449,7 +453,10 @@ class Message {
             }
         }
 
-        $msgdata_req = phpList::DB()->Sql_Query(sprintf('SELECT * FROM %s WHERE id = %d', Config::getTableName('messagedata'),$this->id));
+        $msgdata_req = phpList::DB()->Sql_Query(sprintf(
+            'SELECT * FROM %s
+            WHERE id = %d',
+            Config::getTableName('messagedata'),$this->id));
         while ($row = phpList::DB()->Sql_Fetch_Assoc($msgdata_req)) {
             if (strpos($row['data'],'SER:') === 0) {
                 $data = substr($row['data'],4);

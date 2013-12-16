@@ -24,7 +24,6 @@ class MailingList
     public $owner;
     public $category;
 
-    //TODO: need to add list categories
     public function __construct()
     {}
 
@@ -171,5 +170,29 @@ class MailingList
                 AND listid = %d',
                 Config::getTableName('listuser'), implode(',', $users), $list_id));
         }
+    }
+
+    public static function getAllCategories(){
+        $listCategories = Config::get('list_categories');
+        $categories = explode(',',$listCategories);
+        if(!$categories){
+            $categories = array();
+            ## try to fetch them from existing lists
+            $req = phpList::DB()->Sql_Query(sprintf(
+                'SELECT DISTINCT category FROM %s
+                WHERE category != "%s" ',Config::getTableName('list')));
+            while ($row = phpList::DB()->Sql_Fetch_Row($req)) {
+                $categories[] = $row[0];
+            }
+            if (!empty($categories)) {
+                saveConfig('list_categories',join(',',$categories));
+            }
+        }else{
+            foreach ($categories as $key => $val) {
+                $categories[$key] = trim($val);
+            }
+        }
+
+        return $categories;
     }
 }

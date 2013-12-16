@@ -9,7 +9,7 @@ namespace phpList;
 
 class Admin
 {
-    public $id;
+    public $id = 0;
     private $loginname;
     /**
      * Set the login name and return false if it alreay is in use
@@ -116,18 +116,37 @@ class Admin
     }
 
     /**
-     * Create the admin in the database
+     * Save the admin in the database
      */
-    public function create(){
-        if(!$this->isLoginUnique()){
-            throw new \Exception('Login name already in use');
-        }elseif(empty($this->namelc)){
-            //TODO: why is this used?
-            $this->namelc = $this->loginname;
+    public function save(){
+        if($this->id != 0){
+            //TODO: maybe not send empty modifiedby param?
+            $this->update('');
+        }else{
+            if(!$this->isLoginUnique()){
+                throw new \Exception('Login name already in use');
+            }elseif(empty($this->namelc)){
+                //TODO: why is this used?
+                $this->namelc = $this->loginname;
+            }
+            phpList::DB()->Sql_Query(sprintf(
+                'INSERT INTO %s (loginname, namelc, created)
+                VALUES("%s", "%s", CURRENT_TIMESTAMP)', Config::getTableName('admin'), $this->loginname, $this->namelc));
         }
+    }
+
+    /**
+     * Update back to db
+     * $modifiedby can be any string to see who has changed the record
+     * @param string $modifiedby
+     */
+    public function update($modifiedby){
+        $privileges = String::sqlEscape(serialize($this->privileges));
         phpList::DB()->Sql_Query(sprintf(
-            'INSERT INTO %s (loginname, namelc, created)
-            VALUES("%s", "%s", CURRENT_TIMESTAMP)', Config::getTableName('admin'), $this->loginname, $this->namelc));
+            'UPDATE %s SET
+            loginname = "%s", namelc = "%s", email = "%s", modified = CURRENT_TIMESTAMP, modifiedby = "%s", superuser = %d, disabled = %d, privileges = "%s"',
+            Config::getTableName('admin'), $this->loginname, $this->namelc, $this->email, $modifiedby, $this->superuser, $this->disabled, $privileges
+        ));
     }
 
     /**
@@ -157,20 +176,6 @@ class Admin
             WHERE loginname = "%s" %s',
             Config::getTableName('admin'), $this->loginname, $condition));
         return ($result[0] == 0) ? true : false;
-    }
-
-    /**
-     * Save back to db
-     * $modifiedby can be any string to see who has changed the record
-     * @param string $modifiedby
-     */
-    public function save($modifiedby){
-        $privileges = String::sqlEscape(serialize($this->privileges));
-        phpList::DB()->Sql_Query(sprintf(
-            'UPDATE %s SET
-            loginname = "%s", namelc = "%s", email = "%s", modified = CURRENT_TIMESTAMP, modifiedby = "%s", superuser = %d, disabled = %d, privileges = "%s"',
-            Config::getTableName('admin'), $this->loginname, $this->namelc, $this->email, $modifiedby, $this->superuser, $this->disabled, $privileges
-        ));
     }
 
     /**
