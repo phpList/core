@@ -45,7 +45,7 @@ class MailingList
 
     public static function getAllLists()
     {
-        $db_result = phpList::DB()->Sql_Query(sprintf('SELECT * FROM %s', Config::getTableName('list')));
+        $db_result = phpList::DB()->Sql_Query(sprintf('SELECT * FROM %s %s', Config::getTableName('list'), Config::get('subselect', '')));
         return MailingList::makeLists($db_result);
     }
 

@@ -7,8 +7,8 @@ class MySQLi implements IDatabase
 
     /* @var $_db /mysqli */
     private $_db;
-    public $last_query;
-    public $query_count = 0;
+    private $last_query;
+    private $query_count = 0;
 
     private function __construct()
     {
@@ -205,11 +205,11 @@ class MySQLi implements IDatabase
 
     function Sql_Verbose_Query($query, $ignore = 0)
     {
-        if (isset($GLOBALS['developer_email'])) {
+        if (Config::get('developer_email') !== false) {
             print "<b>$query</b><br>\n";
         }
         flush();
-        if (!empty($GLOBALS['commandline'])) {
+        if (Config::get('commandline')) {
             ob_end_clean();
             print "Sql: $query\n";
             ob_start();
@@ -399,4 +399,13 @@ class MySQLi implements IDatabase
         return;
     }
 
+    function getQueryCount()
+    {
+        return $this->query_count;
+    }
+
+    function getLastQuery()
+    {
+        return $this->last_query;
+    }
 }

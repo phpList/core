@@ -91,4 +91,8 @@ interface IDatabase
     function Sql_Close();
 
     function Sql_Escape($text);
+
+    function getQueryCount();
+
+    function getLastQuery();
 }

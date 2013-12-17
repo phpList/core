@@ -16,15 +16,27 @@ class Message {
     public $message;
     public $textmessage;
     public $footer;
+    /**
+     * @var \DateTime
+     */
     public $entered;
     public $modified;
+    /**
+     * @var \DateTime
+     */
     public $embargo;
     public $repeatinterval;
+    /**
+     * @var \DateTime
+     */
     public $repeatuntil;
     public $requeueinterval;
     public $requeueuntil;
     public $status;
     public $userselection;
+    /**
+     * @var \DateTime
+     */
     public $sent;
     public $htmlformatted;
     public $sendformat;
@@ -37,15 +49,24 @@ class Message {
     public $astextandpdf;
     public $viewed;
     public $bouncecount;
+    /**
+     * @var \DateTime
+     */
     public $sendstart;
     public $rsstemplate;
     public $owner;
     public $messagedata;
+    public $embargo_in_past;
 
     public $lists = array();
 
     public function __construct(){}
 
+    /**
+     * Create a message object from an array from the database
+     * @param $array
+     * @return Message
+     */
     private static function messageFromArray($array){
         $message = new Message();
         $message->id = $array['id'];
@@ -56,16 +77,16 @@ class Message {
         $message->message = $array['message'];
         $message->textmessage = $array['textmessage'];
         $message->footer = $array['footer'];
-        $message->entered = $array['entered'];
+        $message->entered = new \DateTime($array['entered']);
         $message->modified = $array['modified'];
-        $message->embargo = $array['embargo'];
+        $message->embargo = new \DateTime($array['embargo']);
         $message->repeatinterval = $array['repeatinterval'];
-        $message->repeatuntil = $array['repeatuntil'];
+        $message->repeatuntil = new \DateTime($array['repeatuntil']);
         $message->requeueinterval = $array['requeueinterval'];
         $message->requeueuntil = $array['requeueuntil'];
         $message->status = $array['status'];
         $message->userselection = $array['userselection'];
-        $message->sent = $array['sent'];
+        $message->sent = new \DateTime($array['sent']);
         $message->htmlformatted = $array['htmlformatted'];
         $message->sendformat = $array['sendformat'];
         $message->template = $array['template'];
@@ -77,12 +98,20 @@ class Message {
         $message->astextandpdf = $array['astextandpdf'];
         $message->viewed = $array['viewed'];
         $message->bouncecount = $array['bouncecount'];
-        $message->sendstart = $array['sendstart'];
+        $message->sendstart = new \DateTime($array['sendstart']);
         $message->rsstemplate = $array['rsstemplate'];
         $message->owner = $array['owner'];
+        $message->embargo_in_past = isset($array['inthepast']) ? $array['inthepast'] : false;
+
         return $message;
     }
 
+    /**
+     * Get a message by id (for an owner if provided)
+     * @param int $id
+     * @param int $owner
+     * @return Message
+     */
     public static function getMessage($id, $owner = 0){
         $condition = '';
         if($owner != 0){
@@ -95,6 +124,17 @@ class Message {
         return Message::messageFromArray($result);
     }
 
+    /**
+     * Get an array of Messages by searching its status and subject
+     * When $owner is provided, only returns the messages for the given owner
+     * @param string|array $status
+     * @param string $subject
+     * @param int $owner
+     * @param string $order
+     * @param int $offset
+     * @param int $limit
+     * @return array Message
+     */
     public static function getMessagesBy($status, $subject = '', $owner = 0, $order = '', $offset = 0, $limit = 0){
         $return = array();
 
@@ -143,6 +183,33 @@ class Message {
         return $return;
     }
 
+    /**
+     * Get the messages that need to be processed
+     * @return array Message
+     */
+    public static function getMessagesToQueue(){
+        $messagelimit = '';
+        ## limit the number of campaigns to work on
+        if (is_numeric(Config::MAX_PROCESS_MESSAGE)) {
+            $messagelimit = sprintf(' limit %d ',Config::MAX_PROCESS_MESSAGE);
+        }
+        $messages = array();
+        $query = phpList::DB()->Sql_Query(sprintf(
+            'SELECT id FROM %s
+            WHERE status NOT IN ("draft", "sent", "prepared", "suspended")
+            AND embargo < CURRENT_TIMESTAMP
+            ORDER BY entered',
+            Config::getTableName('message'), $messagelimit));
+        while($row = phpList::DB()->Sql_Fetch_Assoc_Query($query)){
+            $messages[] = Message::messageFromArray($row);
+        }
+        return $messages;
+    }
+
+    /**
+     * Get the number of views for this message
+     * @return int
+     */
     public function uniqueViews(){
         return phpList::DB()->Sql_Fetch_Row_Query(sprintf(
             'SELECT COUNT(userid)
@@ -153,6 +220,10 @@ class Message {
             Config::getTableName('usermessage'), $this->id));
     }
 
+    /**
+     * Get the number of clicks for this message
+     * @return int
+     */
     public function clicks(){
         return phpList::DB()->Sql_Fetch_Row_Query(sprintf(
             'SELECT SUM(clicked)
@@ -161,6 +232,10 @@ class Message {
             Config::getTableName('linktrack_ml'), $this->id));
     }
 
+    /**
+     * Get attachments from this message
+     * @return array Attachment
+     */
     public function attachments(){
         $result = phpList::DB()->Sql_Query(sprintf(
             'SELECT * FROM %s AS m_a, %s as a
@@ -178,10 +253,17 @@ class Message {
         return $attachments;
     }
 
+    /**
+     * Does the message contain HTML formatting
+     * @return bool
+     */
     public function isHTMLFormatted(){
         return strip_tags($this->message) != $this->message;
     }
 
+    /**
+     * @return array
+     */
     public function listsDone(){
         $result = phpList::DB()->Sql_Query(sprintf(
             'SELECT l.* FROM %s AS lm, %s AS l
@@ -197,11 +279,14 @@ class Message {
         return $lists_done;
     }
 
+    /**
+     * @return array
+     */
     public function listsExcluded(){
         $lists_excluded = array();
         if($this->getDataItem('excludelist')){
             $result = phpList::DB()->Sql_Query(sprintf('SELECT * FROM %s WHERE id IN (%s)',
-                Config::getTableName('list'), Config::getTableName('list'), implode(',',$this->getDataItem('excludelist'))));
+                Config::getTableName('list'), implode(',',$this->getDataItem('excludelist'))));
 
             while ($lst = phpList::DB()->Sql_Fetch_Row($result)) {
                 $lists_done[] = $lst;
@@ -211,6 +296,10 @@ class Message {
         return $lists_excluded;
     }
 
+    /**
+     * Does the message contain Clicktrack links
+     * @return bool
+     */
     public function hasClickTrackLinks(){
         return preg_match('/lt\.php\?id=[\w%]{22}/', $this->message, $regs) ||
                 preg_match('/lt\.php\?id=[\w%]{16}/', $this->message, $regs) ||
@@ -219,7 +308,10 @@ class Message {
                             preg_match('#' . CLICKTRACK_LINKMAP . '/[\w%]{16}#', $this->message)));
     }
 
-
+    /**
+     * Purge the drafts (from given owner if provided)
+     * @param int $owner
+     */
     public static function purgeDrafts($owner){
         $todelete = array();
 
@@ -232,6 +324,10 @@ class Message {
             Config::getTableName('message'),$ownerselect_and));
     }
 
+    /**
+     * Save this message to the database, calls update() when it already exists
+     * @param int $owner
+     */
     public function save($owner){
         if($this->id != 0){
             $this->update();
@@ -245,11 +341,10 @@ class Message {
         }
     }
 
+    /**
+     * Update this message's info in the database
+     */
     public function update(){
-        $embargo = $this->getDataItem('embargo');
-        $repeatuntil = $this->getDataItem('repeatuntil');
-        $requeueuntil = $this->getDataItem('requeueuntil');
-
         $query = sprintf('UPDATE %s SET subject = "%s", fromfield = "%s", tofield = "%s", replyto = "%s", embargo = "%s",
          repeatinterval = "%s", repeatuntil = "%s", message = "%s", textmessage = "%s", footer = "%s", status = "%s",
          htmlformatted = "%s", sendformat  =  "%s", template  =  "%s", requeueinterval = "%s", requeueuntil = "%s"
@@ -259,11 +354,9 @@ class Message {
             $this->fromfield,
             $this->tofield,
             $this->replyto,
-            sprintf('%04d-%02d-%02d %02d:%02d',
-                $embargo['year'], $embargo['month'], $embargo['day'], $embargo['hour'], $embargo['minute']),
+            $this->embargo->format('Y-m-d H:i'),
             $this->repeatinterval,
-            sprintf('%04d-%02d-%02d %02d:%02d',
-                $repeatuntil['year'], $repeatuntil['month'], $repeatuntil['day'], $repeatuntil['hour'], $repeatuntil['minute']),
+            $this->repeatuntil->format('Y-m-d H:i'),
             $this->message,
             $this->textmessage,
             $this->footer,
@@ -272,29 +365,45 @@ class Message {
             $this->sendformat,
             $this->template,
             $this->requeueinterval,
-            sprintf('%04d-%02d-%02d %02d:%02d',
-                $requeueuntil['year'], $requeueuntil['month'], $requeueuntil['day'], $requeueuntil['hour'], $requeueuntil['minute']),
+            $this->requeueuntil->format('Y-m-d H:i'),
             $this->id);
 
         phpList::DB()->Sql_Query($query);
     }
 
+    /**
+     * Delete this message from the database
+     * @return int
+     */
     public function delete() {
-        phpList::DB()->Sql_query(sprintf('DELETE FROM %s WHERE id = %d', Config::getTableName('message'), $this->id));
-        $suc6 = phpList::DB()->Sql_Affected_Rows();
+        phpList::DB()->Sql_query(sprintf(
+            'DELETE FROM %s, %s, %s
+            WHERE id = %d',
+            Config::getTableName('message'),
+            Config::getTableName('usermessage'),
+            Config::getTableName('listmessage'),
+            $this->id));
 
-        phpList::DB()->Sql_query(sprintf('DELETE FROM %s WHERE id = %d', Config::getTableName('usermessage'), $this->id));
-        phpList::DB()->Sql_query(sprintf('DELETE FROM %s WHERE id = %d', Config::getTableName('listmessage'), $this->id));
+        //phpList::DB()->Sql_query(sprintf('DELETE FROM %s WHERE id = %d', Config::getTableName('usermessage'), $this->id));
+        //phpList::DB()->Sql_query(sprintf('DELETE FROM %s WHERE id = %d', Config::getTableName('listmessage'), $this->id));
 
-        return $suc6;
+        return phpList::DB()->Sql_Affected_Rows();
     }
 
+    /**
+     * Add an attachment to this message
+     * @param $attachment
+     */
     public function addAttachment($attachment){
         $attachmentid = phpList::DB()->Sql_Insert_Id();
         phpList::DB()->Sql_query(sprintf('INSERT INTO %s (messageid,attachmentid) VALUES(%d,%d)',
             Config::getTableName('message_attachment'), $this->id, $attachment->id));
     }
 
+    /**
+     * Remove an attachment from this message
+     * @param $attachment
+     */
     public function removeAttachment($attachment){
         Sql_Query(sprintf(
             'DELETE FROM %s
@@ -305,11 +414,15 @@ class Message {
         $attachment->RemoveIfOrphaned();
     }
 
+    /**
+     * Put the message back on the queue
+     * @throws \Exception
+     */
     public function requeue(){
         phpList::DB()->Sql_Query(sprintf(
-                'UPDATE %s SET status = \'submitted\', sendstart = null
+                'UPDATE %s SET status = \'submitted\', sendstart = null, embargo = "%s"
                 WHERE id = %d'),
-            Config::getTableName('message'), $this->id);
+            Config::getTableName('message'), $this->embargo->format('Y-m-d H:i'), $this->id);
         $suc6 = phpList::DB()->Sql_Affected_Rows();
 
         # only send it again to users if we are testing, otherwise only to new users
@@ -325,13 +438,7 @@ class Message {
                 AND (name = "start_notified" OR name = "end_notified")',
                 Config::getTableName('messagedata'),$this->id));
 
-            $finishSending = mktime($this->messagedata['finishsending']['hour'],
-                                    $this->messagedata['finishsending']['minute'],0,
-                                    $this->messagedata['finishsending']['month'],
-                                    $this->messagedata['finishsending']['day'],
-                                    $this->messagedata['finishsending']['year']);
-
-            if ($finishSending < time()) {
+            if ($this->getDataItem('finishsending')->getTimestamp() < time()) {
                 throw new \Exception('This campaign is scheduled to stop sending in the past. No mails will be sent.');
            }
         }else{
@@ -339,6 +446,32 @@ class Message {
         }
     }
 
+    /**
+     * Check for messages with a requeueinterval and requeue if needed
+     */
+    public static function checkMessagesToRequeue(){
+        $req = phpList::DB()->Sql_Query(sprintf(
+            'SELECT *, embargo < now() AS inthepast FROM %s
+            WHERE requeueinterval > 0
+            AND requeueuntil > now()
+            AND status = "sent"',
+            Config::getTableName('message')));
+        while ($row = phpList::DB()->Sql_Fetch_Assoc_Query($req)) {
+            $message = Message::messageFromArray($row);
+            if($message->embargo_in_past){
+                $message->embargo = (new \DateTime('now'))->add(date_interval_create_from_date_string($message->repeatinterval . 'minutes'));
+            }else{
+                $message->embargo->add(date_interval_create_from_date_string($message->repeatinterval . 'minutes'));
+            }
+            $message->requeue();
+        }
+    }
+
+
+    /**
+     * Add message to a mailing list
+     * @param int $list_id
+     */
     public function addToList($list_id){
         phpList::DB()->Sql_query(sprintf(
             'INSERT INTO %s (messageid,listid,entered)
@@ -346,6 +479,10 @@ class Message {
             Config::getTableName('listmessage'), $this->id, $list_id));
     }
 
+    /**
+     * Update the status of a message
+     * @param string $status
+     */
     public function setStatus($status){
         phpList::DB()->Sql_query(sprintf(
             'UPDATE %s SET status = "%s"
@@ -353,6 +490,11 @@ class Message {
             Config::getTableName('message'), $status, $this->id));
     }
 
+    /**
+     * Suspend a message from sending
+     * @param int $owner
+     * @return int
+     */
     public function suspend($owner){
         $result = phpList::DB()->Sql_query(sprintf(
             'UPDATE %s SET status = "suspended"
@@ -364,6 +506,11 @@ class Message {
         return phpList::DB()->Sql_Affected_Rows();
     }
 
+    /**
+     * Suspend all messages from sending
+     * @param int $owner
+     * @return int
+     */
     public static function suspendAll($owner){
         $result = phpList::DB()->Sql_query(sprintf(
             'UPDATE %s SET status = "suspended"
@@ -375,6 +522,11 @@ class Message {
         return phpList::DB()->Sql_Affected_Rows();
     }
 
+    /**
+     * Mark message from provided owner as sent
+     * @param int $owner
+     * @return int
+     */
     public function markSent($owner){
         $result = phpList::DB()->Sql_query(sprintf(
             'UPDATE %s SET status = "sent"
@@ -386,6 +538,11 @@ class Message {
         return phpList::DB()->Sql_Affected_Rows();
     }
 
+    /**
+     * Mark all messages from provided owner as sent
+     * @param int $owner
+     * @return int
+     */
     public static function markAllSent($owner){
         $result = phpList::DB()->Sql_query(sprintf(
             'UPDATE %s SET status = "sent"
@@ -397,6 +554,12 @@ class Message {
     }
 
     //TODO: something
+    /**
+     * Get a messagedata item
+     * @param string $item
+     * @return mixed
+     * @throws \Exception
+     */
     public function getDataItem($item){
         if(isset($this->messagedata[$item])){
             return $this->messagedata[$item];
@@ -414,8 +577,6 @@ class Message {
             WHERE id = %d',
             Config::getTableName('message'), $this->id));
 
-        $finishSending = time() + Config::DEFAULT_MESSAGEAGE;
-
         $messagedata = array(
             'template' => Config::get('defaultmessagetemplate'),
             'sendformat' => 'HTML',
@@ -423,12 +584,12 @@ class Message {
             'forwardmessage' => '',
             'textmessage' => '',
             'rsstemplate' => '',
-            'embargo' => array('year' => date('Y'),'month' => date('m'),'day' => date('d'),'hour' => date('H'),'minute' => date('i')),
+            'embargo' => new \DateTime(),
             'repeatinterval' => 0,
-            'repeatuntil' =>  array('year' => date('Y'),'month' => date('m'),'day' => date('d'),'hour' => date('H'),'minute' => date('i')),
+            'repeatuntil' =>  new \DateTime(),
             'requeueinterval' => 0,
-            'requeueuntil' =>  array('year' => date('Y'),'month' => date('m'),'day' => date('d'),'hour' => date('H'),'minute' => date('i')),
-            'finishsending' => array('year' => date('Y',$finishSending),'month' => date('m',$finishSending),'day' => date('d',$finishSending),'hour' => date('H',$finishSending),'minute' => date('i',$finishSending)),
+            'requeueuntil' =>  new \DateTime(),
+            'finishsending' => date_create(time() + Config::DEFAULT_MESSAGEAGE),
             'fromfield' => '',
             'subject' => '',
             'forwardsubject' => '',
@@ -457,6 +618,7 @@ class Message {
             'SELECT * FROM %s
             WHERE id = %d',
             Config::getTableName('messagedata'),$this->id));
+
         while ($row = phpList::DB()->Sql_Fetch_Assoc($msgdata_req)) {
             if (strpos($row['data'],'SER:') === 0) {
                 $data = substr($row['data'],4);
@@ -469,13 +631,15 @@ class Message {
             }
         }
 
-        foreach (array('embargo','repeatuntil','requeueuntil') as $datefield) {
+        /*Is a DateTime object now
+         * foreach (array('embargo','repeatuntil','requeueuntil') as $datefield) {
             if (!is_array($messagedata[$datefield])) {
                 $messagedata[$datefield] = array('year' => date('Y'),'month' => date('m'),'day' => date('d'),'hour' => date('H'),'minute' => date('i'));
             }
-        }
+        }*/
 
         // Load lists that were targetted with message...
+
         $result = phpList::DB()->Sql_Query(sprintf('SELECT list.name,list.id
                                         FROM %s AS listmessage, %s AS list
                                         WHERE listmessage.messageid = %d
@@ -546,6 +710,79 @@ class Message {
             throw new \Exception('Data item not found');
         }
         return $this->messagedata[$item];
+    }
+
+    /**
+     * Set a data item for this message
+     * @param string $name
+     * @param string $value
+     */
+    function setDataItem($name,$value) {
+        if ($name == 'PHPSESSID') return;
+        if ($name == session_name()) return;
+
+        //TODO: setMessagData should probably not be used to add the message to a list
+        if ($name == 'targetlist' && is_array($value))  {
+            phpList::DB()->Sql_query(sprintf(
+                'DELETE FROM %s
+                WHERE messageid = %d',
+                Config::getTableName('listmessage'),$this->id));
+
+            if ( !empty($value['all']) || !empty($value['allactive'])) {
+                //TODO: configure subselect to be used?
+                $lists = MailingList::getAllLists();
+                //$res = phpList::DB()->Sql_query('select * from '. $GLOBALS['tables']['list']. ' '.$GLOBALS['subselect']);
+                /**
+                 * @var $list MailingList
+                 */
+                foreach ($lists as $list)  {
+                    if ($list->active || !empty($value['all']))  {
+                        $this->addToList($list->id);
+                    }
+                }
+            } else {
+                foreach($value as $listid => $val) {
+                    $this->addToList($listid);
+                }
+            }
+        }
+        if (is_array($value) || is_object($value)) {
+            $value = 'SER:'.serialize($value);
+        }
+
+        phpList::DB()->Sql_Replace(Config::getTableName('messagedata'), array('id' => $this->id, 'name' => $name, 'data' => $value), array('name', 'id'));
+    }
+
+    /**
+     * Reset this message's statistics
+     */
+    public function resetMessageStatistics() {
+        ## remove the "forward" entries, but only if they are for one (this) message
+        $delete = array();
+        $req = phpList::DB()->Sql_Query(sprintf(
+            'SELECT forwardid FROM %s
+            WHERE messageid = %d',
+            Config::getTableName('linktrack_uml_click'), $this->id));
+        while ($fwdid = phpList::DB()->Sql_Fetch_Row($req)) {
+            $count = phpList::DB()->Sql_Fetch_Row_Query(sprintf(
+                'SELECT COUNT(*) FROM %s
+                WHERE id = %d',
+                Config::getTableName('linktrack_forward'), $fwdid[0]));
+            if ($count[0] < 2) {
+                $delete[] = $fwdid[0];
+            }
+        }
+        if (sizeof($delete)) {
+            phpList::DB()->Sql_Query(sprintf(
+                'DELETE FROM %s
+                WHERE id IN (%s)',
+                Config::getTableName('linktrack_forward'), join(',',$delete)));
+        }
+
+        phpList::DB()->Sql_Query(sprintf(
+            'DELETE FROM %s, %s
+            WHERE messageid = %d',
+            Config::getTableName('linktrack_uml_click'), Config::getTableName('usermessage'), $this->id));
     }
 
     /*

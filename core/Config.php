@@ -182,17 +182,18 @@ class Config extends UserConfig{
     }
 
     /**
-     * Get an item from the config
+     * Get an item from the config, provide a default value if needed
      * @param string $item
+     * @param mixed $default
      * @return mixed|null|string
      */
-    public static function get($item){
+    public static function get($item, $default = null){
         $value = '';
         if(isset(Config::instance()->running_config[$item])){
             $value = Config::instance()->running_config[$item];
         }else{
             //try to find it in db
-            $value = Config::instance()->fromDB($item);
+            $value = Config::instance()->fromDB($item, $default);
         }
 
         $find =     array('[WEBSITE]', '[DOMAIN]', '<?=VERSION?>');

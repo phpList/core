@@ -98,18 +98,35 @@ class User {
      * Write user info to database
      * @return int
      */
-    public function create(){
+    public function save(){
+        if($this->id != 0){
+            $this->update();
+        }else{
+            phpList::DB()->Sql_Query(sprintf(
+                'INSERT INTO %s
+                (email, entered, modified, password, passwordchanged, disabled, htmlemail)
+                VALUES("%s", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "%s", CURRENT_TIMESTAMP, 0, "%s, 1")',
+                Config::getTableName('user', true), $this->email, $this->password));
+
+            $this->id = phpList::DB()->Sql_Insert_Id();
+            self::giveUniqueId($this->id);
+        }
+
+        return $this->id;
+    }
+
+    /**
+     * Assign a unique id to a user
+     * @param int $user_id
+     */
+    private static function giveUniqueId($user_id){
         //TODO: make uniqueid a unique field in database
         do{
             $unique_id = md5(uniqid(mt_rand()));
         }while(!phpList::DB()->Sql_Query(sprintf(
-            'INSERT INTO %s
-            (email, entered, modified, password, passwordchanged, disabled, uniqid, htmlemail)
-            VALUES("%s", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "%s", CURRENT_TIMESTAMP, 0, "%s, 1")',
-            Config::getTableName('user', true), $this->email, $this->password, $unique_id)));
-
-        $this->id = phpList::DB()->Sql_Insert_Id();
-        return $this->id;
+            'UPDATE % SET uniqid = "%s"
+            WHERE id = %d',
+            Config::getTableName('user', true), $unique_id, $user_id)));
     }
 
     /**
@@ -121,7 +138,7 @@ class User {
         $user = new User();
         $user->email = $email;
         $user->setPassword($password);
-        $user->create();
+        $user->save();
     }
 
     /**
@@ -140,7 +157,7 @@ class User {
     /**
      * Save user info to database
      */
-    public function save(){
+    public function update(){
         $query = sprintf(
             'UPDATE %s SET
                 email = "%s",
@@ -326,6 +343,25 @@ class User {
     }
 
     /**
+     * Get the number users who's unique id has not been set
+     * @return int
+     */
+    public static function checkUniqueIds(){
+        $result = phpList::DB()->Sql_Query(sprintf(
+            'SELECT id FROM %s
+            WHERE uniqid IS NULL
+            OR uniqid = ""',
+            Config::getTableName('user', true)));
+        $num = phpList::DB()->Sql_Affected_Rows();
+        if($num > 0){
+            while ($row = phpList::DB()->Sql_Fetch_Row($result)) {
+                self::giveUniqueId($row[0]);
+            }
+        }
+        return $num;
+    }
+
+    /**
      * Check if an email addres is blacklisted
      * $immediate specifies if a gracetime is allowed for a last message
      * @param string $email
@@ -438,7 +474,7 @@ class User {
             Config::getTableName('user_blacklist'), Config::getTableName('user_blacklist_data'),$user->email));
 
         $user->blacklisted = 0;
-        $user->save();
+        $user->update();
 
         if ($admin_name != '') {
             $msg = s("Removed from blacklist by %s", $admin_name);
