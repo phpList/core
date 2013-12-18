@@ -11,6 +11,7 @@ class Admin
 {
     public $id = 0;
     private $loginname;
+
     /**
      * Set the login name and return false if it alreay is in use
      * @param string $loginname
@@ -23,6 +24,7 @@ class Admin
     }
 
     private $namelc;
+
     /**
      * @param string $namelc
      */
@@ -36,6 +38,7 @@ class Admin
     public $modified;
     public $modifiedby;
     private $password;
+
     /**
      * @param string $password
      * Will encrypt and set the password
@@ -45,12 +48,17 @@ class Admin
     public function setPassword($password)
     {
         $this->password = phpList::encryptPass($password);
-        if($this->id != 0){
-            phpList::DB()->Sql_Query(sprintf(
-                'UPDATE %s
-                SET password = "%s", passwordchanged = CURRENT_TIMESTAMP
-                WHERE id = %s',
-                Config::getTableName('admin'), $this->password, $this->id));
+        if ($this->id != 0) {
+            phpList::DB()->query(
+                sprintf(
+                    'UPDATE %s
+                    SET password = "%s", passwordchanged = CURRENT_TIMESTAMP
+                    WHERE id = %s',
+                    Config::getTableName('admin'),
+                    $this->password,
+                    $this->id
+                )
+            );
         }
     }
 
@@ -80,12 +88,16 @@ class Admin
      */
     public static function getAdmin($id)
     {
-        $result = phpList::DB()->Sql_Query(sprintf(
-            'SELECT * FROM %s
-            WHERE id = %d',
-            Config::getTableName('admin'), $id));
+        $result = phpList::DB()->query(
+            sprintf(
+                'SELECT * FROM %s
+                WHERE id = %d',
+                Config::getTableName('admin'),
+                $id
+            )
+        );
 
-        $row = phpList::DB()->Sql_Fetch_Assoc($result);
+        $row = phpList::DB()->fetchAssoc($result);
         return Admin::adminFromArray($row);
     }
 
@@ -99,17 +111,21 @@ class Admin
     {
         $admins = array();
         $condition = '';
-        if($search != ''){
+        if ($search != '') {
             $search = String::sqlEscape($search);
             $condition = sprintf(' WHERE loginname LIKE "%%s%" OR email LIKE "%%s%"', $search, $search);
         }
 
-        $result = phpList::DB()->Sql_Query(sprintf(
-            'SELECT * FROM %s
-            ORDER BY loginname %s',
-            Config::getTableName('admin'), $condition));
+        $result = phpList::DB()->query(
+            sprintf(
+                'SELECT * FROM %s
+                ORDER BY loginname %s',
+                Config::getTableName('admin'),
+                $condition
+            )
+        );
 
-        while ($row = phpList::DB()->Sql_Fetch_Assoc($result)) {
+        while ($row = phpList::DB()->fetchAssoc($result)) {
             $admins[] = Admin::adminFromArray($row);
         }
         return $admins;
@@ -118,20 +134,27 @@ class Admin
     /**
      * Save the admin in the database
      */
-    public function save(){
-        if($this->id != 0){
+    public function save()
+    {
+        if ($this->id != 0) {
             //TODO: maybe not send empty modifiedby param?
             $this->update('');
-        }else{
-            if(!$this->isLoginUnique()){
+        } else {
+            if (!$this->isLoginUnique()) {
                 throw new \Exception('Login name already in use');
-            }elseif(empty($this->namelc)){
+            } elseif (empty($this->namelc)) {
                 //TODO: why is this used?
                 $this->namelc = $this->loginname;
             }
-            phpList::DB()->Sql_Query(sprintf(
-                'INSERT INTO %s (loginname, namelc, created)
-                VALUES("%s", "%s", CURRENT_TIMESTAMP)', Config::getTableName('admin'), $this->loginname, $this->namelc));
+            phpList::DB()->query(
+                sprintf(
+                    'INSERT INTO %s (loginname, namelc, created)
+                    VALUES("%s", "%s", CURRENT_TIMESTAMP)',
+                    Config::getTableName('admin'),
+                    $this->loginname,
+                    $this->namelc
+                )
+            );
         }
     }
 
@@ -140,13 +163,23 @@ class Admin
      * $modifiedby can be any string to see who has changed the record
      * @param string $modifiedby
      */
-    public function update($modifiedby){
+    public function update($modifiedby)
+    {
         $privileges = String::sqlEscape(serialize($this->privileges));
-        phpList::DB()->Sql_Query(sprintf(
-            'UPDATE %s SET
-            loginname = "%s", namelc = "%s", email = "%s", modified = CURRENT_TIMESTAMP, modifiedby = "%s", superuser = %d, disabled = %d, privileges = "%s"',
-            Config::getTableName('admin'), $this->loginname, $this->namelc, $this->email, $modifiedby, $this->superuser, $this->disabled, $privileges
-        ));
+        phpList::DB()->query(
+            sprintf(
+                'UPDATE %s SET
+                loginname = "%s", namelc = "%s", email = "%s", modified = CURRENT_TIMESTAMP, modifiedby = "%s", superuser = %d, disabled = %d, privileges = "%s"',
+                Config::getTableName('admin'),
+                $this->loginname,
+                $this->namelc,
+                $this->email,
+                $modifiedby,
+                $this->superuser,
+                $this->disabled,
+                $privileges
+            )
+        );
     }
 
     /**
@@ -154,27 +187,43 @@ class Admin
      * @param int $id
      */
     //TODO: not sure if this should be static
-    public static function delete($id){
-        phpList::DB()->Sql_Query(sprintf(
-            'DELETE FROM %s WHERE id = %d',
-            Config::getTableName('admin'),$id));
-        phpList::DB()->Sql_Query(sprintf(
-            'DELETE FROM %s, %s WHERE adminid = %d',
-            Config::getTableName('admin_attribute'), Config::getTableName('admin_task'), $id));
+    public static function delete($id)
+    {
+        phpList::DB()->query(
+            sprintf(
+                'DELETE FROM %s WHERE id = %d',
+                Config::getTableName('admin'),
+                $id
+            )
+        );
+        phpList::DB()->query(
+            sprintf(
+                'DELETE FROM %s, %s WHERE adminid = %d',
+                Config::getTableName('admin_attribute'),
+                Config::getTableName('admin_task'),
+                $id
+            )
+        );
     }
 
     /**
      * Check if the login name is unique
      */
-    private function isLoginUnique(){
+    private function isLoginUnique()
+    {
         $condition = '';
-        if($this->id != 0){
+        if ($this->id != 0) {
             $condition = ' AND NOT id = ' . $this->id;
         }
-        $result = phpList::DB()->Sql_Fetch_Row_Query(sprintf(
-            'SELECT COUNT(id) FROM %s
-            WHERE loginname = "%s" %s',
-            Config::getTableName('admin'), $this->loginname, $condition));
+        $result = phpList::DB()->fetchRowQuery(
+            sprintf(
+                'SELECT COUNT(id) FROM %s
+                WHERE loginname = "%s" %s',
+                Config::getTableName('admin'),
+                $this->loginname,
+                $condition
+            )
+        );
         return ($result[0] == 0) ? true : false;
     }
 
@@ -182,27 +231,40 @@ class Admin
      * Add admin attributes to the database
      * @param array $attributes
      */
-    public function addAttributes($attributes){
-        while (list($key,$val) = each($attributes)) {
-            phpList::DB()->Sql_Query(sprintf(
-                'REPLACE INTO %s
-                (adminid,adminattributeid,value)
-                VALUES(%d,%d,"%s")',
-                Config::getTableName('admin_attribute'),$this->id, $key, addslashes($val)));
+    public function addAttributes($attributes)
+    {
+        while (list($key, $val) = each($attributes)) {
+            phpList::DB()->query(
+                sprintf(
+                    'REPLACE INTO %s
+                    (adminid,adminattributeid,value)
+                    VALUES(%d,%d,"%s")',
+                    Config::getTableName('admin_attribute'),
+                    $this->id,
+                    $key,
+                    addslashes($val)
+                )
+            );
         }
     }
 
     //TODO: Should we still use admin attributes?
-    public function getAttributes(){
+    public function getAttributes()
+    {
         $attributes = array();
-        $res = phpList::DB()->Sql_Query(sprintf(
-            'SELECT * FROM %s AS adm_att
-            INNER JOIN %s AS adm
-            ON adm_att.adminid = adm.id
-            WHERE adm.id = %d',
-            Config::getTableName('admin_attribute'), Config::getTableName('admin'), $this->id));
+        $res = phpList::DB()->query(
+            sprintf(
+                'SELECT * FROM %s AS adm_att
+                INNER JOIN %s AS adm
+                ON adm_att.adminid = adm.id
+                WHERE adm.id = %d',
+                Config::getTableName('admin_attribute'),
+                Config::getTableName('admin'),
+                $this->id
+            )
+        );
 
-        while($row = phpList::DB()->Sql_Fetch_Assoc_Query($res)){
+        while ($row = phpList::DB()->fetchAssocQuery($res)) {
             $attributes[] = $row;
         }
         return $attributes;
@@ -219,12 +281,15 @@ class Admin
         $result = array(
             'result' => false,
             'error' => s('Login failed'),
-            'admin' => null);
+            'admin' => null
+        );
 
         $query = sprintf(
             'SELECT * FROM %s
             WHERE loginname = "%s"',
-            Config::getTableName('admin'), String::sqlEscape($login));
+            Config::getTableName('admin'),
+            String::sqlEscape($login)
+        );
 
         $result = Sql_Fetch_Assoc_Query($query);
         if (empty($result)) {
@@ -246,7 +311,7 @@ class Admin
         }*/
         if ($admin->disabled) {
             $result['error'] = s('Your account has been disabled');
-        #Password validation.
+            #Password validation.
         } elseif ($encryptedPass == $admin->password) {
             $result['result'] = true;
             $result['error'] = '';
@@ -284,40 +349,56 @@ class Admin
      * Send email with a random encrypted token.
      * @return bool
      */
-    public function sendPasswordToken (){
+    public function sendPasswordToken()
+    {
         #Check if the token is not present in the database yet.
         //TODO: make key_value a unique field in the database
-        do{
+        do {
             $unique_key = md5(uniqid(mt_rand()));
-        }while(!phpList::DB()->Sql_Query(sprintf(
-            'INSERT INTO %s (date, admin, key_value)
-            VALUES (CURRENT_TIMESTAMP, %d, "%s")',
-            Config::getTableName('admin_password_request'), $this->id, $unique_key)));
+        } while (!phpList::DB()->query(
+            sprintf(
+                'INSERT INTO %s (date, admin, key_value)
+                VALUES (CURRENT_TIMESTAMP, %d, "%s")',
+                Config::getTableName('admin_password_request'),
+                $this->id,
+                $unique_key
+            )
+        ));
 
         $urlroot = Config::get('website') . Config::get('adminpages');
         #Build the email body to be sent, and finally send it.
-        $emailBody = s('Hello').' '.$this->loginname."\n\n";
-        $emailBody.= s('You have requested a new password for phpList.')."\n\n";
-        $emailBody.= s('To enter a new one, please visit the following link:')."\n\n";
-        $emailBody.= sprintf('http://%s/?page=login&token=%s',$urlroot, $unique_key)."\n\n";
-        $emailBody.= s('You have 24 hours left to change your password. After that, your token won\'t be valid.');
+        $emailBody = s('Hello') . ' ' . $this->loginname . "\n\n";
+        $emailBody .= s('You have requested a new password for phpList.') . "\n\n";
+        $emailBody .= s('To enter a new one, please visit the following link:') . "\n\n";
+        $emailBody .= sprintf('http://%s/?page=login&token=%s', $urlroot, $unique_key) . "\n\n";
+        $emailBody .= s('You have 24 hours left to change your password. After that, your token won\'t be valid.');
         //TODO: convert to new mail class
-        return sendMail ($this->email, s('New password'), "\n\n".$emailBody,'','',true);
+        return sendMail($this->email, s('New password'), "\n\n" . $emailBody, '', '', true);
     }
 
     /**
      * Delete expired tokens from the database
      */
-    public static function deleteOldTokens(){
-        phpList::DB()->Sql_Query(sprintf(
-            'DELETE FROM %s
-            WHERE date_add( date, INTERVAL %s) < CURRENT_TIMESTAMP',
-            Config::getTableName('admin_password_request'), Config::get('password_change_timeframe')),1);
+    public static function deleteOldTokens()
+    {
+        phpList::DB()->query(
+            sprintf(
+                'DELETE FROM %s
+                WHERE date_add( date, INTERVAL %s) < CURRENT_TIMESTAMP',
+                Config::getTableName('admin_password_request'),
+                Config::get('password_change_timeframe')
+            ),
+            1
+        );
 
-        phpList::DB()->Sql_Query(sprintf(
-            'DELETE FROM %s
-            WHERE expires < CURRENT_TIMESTAMP',
-            Config::getTableName('admintoken')),1);
+        phpList::DB()->query(
+            sprintf(
+                'DELETE FROM %s
+                WHERE expires < CURRENT_TIMESTAMP',
+                Config::getTableName('admintoken')
+            ),
+            1
+        );
     }
 
     /**
@@ -325,23 +406,31 @@ class Admin
      * @param string $token
      * @return bool
      */
-    public function verifyToken($token) {
+    public function verifyToken($token)
+    {
         if (empty($token)) {
             return false;
         }
 
         ## @@@TODO for now ignore the error. This will cause a block on editing admins if the table doesn't exist.
-        $req = phpList::DB()->Sql_Fetch_Row_Query(sprintf(
-            'SELECT id FROM %s
-            WHERE adminid = %d
-            AND value = "%s"
-            AND expires > CURRENT_TIMESTAMP',
-            Config::getTableName('admintoken'), $this->id, String::sqlEscape($token)),1);
+        $req = phpList::DB()->fetchRowQuery(
+            sprintf(
+                'SELECT id FROM %s
+                WHERE adminid = %d
+                AND value = "%s"
+                AND expires > CURRENT_TIMESTAMP',
+                Config::getTableName('admintoken'),
+                $this->id,
+                String::sqlEscape($token)
+            ),
+            1
+        );
         return empty($req[0]);
     }
 }
 
-class adminAttribute{
+class adminAttribute
+{
     public $id;
     public $name;
     public $type;
@@ -350,7 +439,8 @@ class adminAttribute{
     public $required;
     public $tablename;
 
-    function __construct($name, $type, $listorder, $default_value, $required, $tablename){
+    function __construct($name, $type, $listorder, $default_value, $required, $tablename)
+    {
         $this->name = $name;
         $this->type = $type;
         $this->listorder = $listorder;

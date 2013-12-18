@@ -23,7 +23,10 @@ class Language
             $landir = dirname(__FILE__) . '/locale/';
             $d = opendir($landir);
             while ($lancode = readdir($d)) {
-                if (!in_array($landir, array_keys($this->_languages)) && is_dir($landir . '/' . $lancode) && is_file($landir . '/' . $lancode . '/language_info')) {
+                if (!in_array($landir, array_keys($this->_languages)) && is_dir($landir . '/' . $lancode) && is_file(
+                        $landir . '/' . $lancode . '/language_info'
+                    )
+                ) {
                     $lan_info = file_get_contents($landir . '/' . $lancode . '/language_info');
                     $lines = explode("\n", $lan_info);
                     $lan = array();
@@ -35,19 +38,30 @@ class Language
                             $lan[$regs[1]] = $regs[2];
                         }
                     }
-                    if (!isset($lan['gettext'])) $lan['gettext'] = $lancode;
+                    if (!isset($lan['gettext'])) {
+                        $lan['gettext'] = $lancode;
+                    }
                     if (!empty($lan['name']) && !empty($lan['charset'])) {
-                        $this->_languages[$lancode] = array($lan['name'], $lan['charset'], $lan['charset'], $lan['gettext']);
+                        $this->_languages[$lancode] = array(
+                            $lan['name'],
+                            $lan['charset'],
+                            $lan['charset'],
+                            $lan['gettext']
+                        );
                     }
                 }
             }
 
             ## pick up other languages from DB
             if (Sql_table_exists('i18n')) {
-                $req = Sql_Query(sprintf('SELECT lan,translation FROM %s WHERE
-                                              original = "language-name" AND lan NOT IN ("%s")',
-                    Config::getTableName('i18n'),
-                    join('","', array_keys($this->_languages))));
+                $req = Sql_Query(
+                    sprintf(
+                        'SELECT lan,translation FROM %s WHERE
+                                                                      original = "language-name" AND lan NOT IN ("%s")',
+                        Config::getTableName('i18n'),
+                        join('","', array_keys($this->_languages))
+                    )
+                );
                 while ($row = Sql_Fetch_Assoc($req)) {
                     $this->_languages[$row['lan']] = array($row['translation'], 'UTF-8', 'UTF-8', $row['lan']);
                 }
@@ -114,7 +128,8 @@ class Language
         */
     }
 
-    public static function Instance(){
+    public static function Instance()
+    {
         if (!Language::$_instance instanceof self) {
             Language::$_instance = new self();
         }
@@ -173,16 +188,36 @@ class Language
 
     function databaseTranslation($text)
     {
-        if (!$this->hasDB) return '';
-        $tr = Sql_Fetch_Row_Query(sprintf('select translation from ' . $GLOBALS['tables']['i18n'] . ' where original = "%s" and lan = "%s"',
-            sql_escape(trim($text)), $this->language), 1);
+        if (!$this->hasDB) {
+            return '';
+        }
+        $tr = Sql_Fetch_Row_Query(
+            sprintf(
+                'select translation from ' . $GLOBALS['tables']['i18n'] . ' where original = "%s" and lan = "%s"',
+                sql_escape(trim($text)),
+                $this->language
+            ),
+            1
+        );
         if (empty($tr[0])) {
-            $tr = Sql_Fetch_Row_Query(sprintf('select translation from ' . $GLOBALS['tables']['i18n'] . ' where original = "%s" and lan = "%s"',
-                sql_escape($text), $this->language), 1);
+            $tr = Sql_Fetch_Row_Query(
+                sprintf(
+                    'select translation from ' . $GLOBALS['tables']['i18n'] . ' where original = "%s" and lan = "%s"',
+                    sql_escape($text),
+                    $this->language
+                ),
+                1
+            );
         }
         if (empty($tr[0])) {
-            $tr = Sql_Fetch_Row_Query(sprintf('select translation from ' . $GLOBALS['tables']['i18n'] . ' where original = "%s" and lan = "%s"',
-                sql_escape(str_replace('"', '\"', $text)), $this->language), 1);
+            $tr = Sql_Fetch_Row_Query(
+                sprintf(
+                    'select translation from ' . $GLOBALS['tables']['i18n'] . ' where original = "%s" and lan = "%s"',
+                    sql_escape(str_replace('"', '\"', $text)),
+                    $this->language
+                ),
+                1
+            );
         }
         return stripslashes($tr[0]);
     }
@@ -360,7 +395,11 @@ $lan = array(
         }
         if (sizeof($translations)) {
             foreach ($translations as $orig => $trans) {
-                Sql_Replace($GLOBALS['tables']['i18n'], array('lan' => $language, 'original' => $orig, 'translation' => $trans), '');
+                Sql_Replace(
+                    $GLOBALS['tables']['i18n'],
+                    array('lan' => $language, 'original' => $orig, 'translation' => $trans),
+                    ''
+                );
             }
         }
         saveConfig('lastlanguageupdate-' . $language, $time, 0);
@@ -398,8 +437,12 @@ $lan = array(
 
         $lan = $this->lan;
 
-        if (trim($text) == "") return "";
-        if (strip_tags($text) == "") return $text;
+        if (trim($text) == "") {
+            return "";
+        }
+        if (strip_tags($text) == "") {
+            return $text;
+        }
         if (isset($lan[$text])) {
             return $this->formatText($lan[$text]);
         }
@@ -416,8 +459,12 @@ $lan = array(
 
     function get($text)
     {
-        if (trim($text) == "") return "";
-        if (strip_tags($text) == "") return $text;
+        if (trim($text) == "") {
+            return "";
+        }
+        if (strip_tags($text) == "") {
+            return $text;
+        }
         $translation = '';
 
         $this->basedir = dirname(__FILE__) . '/lan/';
@@ -470,7 +517,8 @@ $lan = array(
  * will look for the translation of the string and substitute the parameters
  *
  **/
-function s($text) {
+function s($text)
+{
     ## allow overloading with sprintf paramaters
     $translation = Language::Instance()->get($text);
 
@@ -488,8 +536,9 @@ function s($text) {
  * will return the translated text with spaces turned to &nbsp; so that they won't wrap
  * mostly useful for buttons
  */
-function snbr($text) {
+function snbr($text)
+{
     $trans = s($text);
-    $trans = str_replace(' ','&nbsp;',$trans);
+    $trans = str_replace(' ', '&nbsp;', $trans);
     return $trans;
 }

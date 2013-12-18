@@ -7,21 +7,25 @@
 namespace phpList;
 
 
-class Validation {
+class Validation
+{
 
-    static function validateEmail($email) {
+    static function validateEmail($email)
+    {
         /* TODO: this used to be if(!empty($GLOBALS["config"]["dont_require_validemail"]
         * probably better to only have one constant to set email validation?
          *
          */
-        if (Config::EMAIL_ADDRESS_VALIDATION_LEVEL == 0 ) return 1;
+        if (Config::EMAIL_ADDRESS_VALIDATION_LEVEL == 0) {
+            return 1;
+        }
 
         //Config::setRunningConfig('check_for_host', false);
         //TODO: Michiel: original phplist would never execute this because check_for_host is set to false, why?
         $validhost = false;
         if (!empty($email) && Config::get('check_for_host')) {
-            if (strpos($email,'@')) {
-                list($username,$domaincheck) = explode('@',$email);
+            if (strpos($email, '@')) {
+                list($username, $domaincheck) = explode('@', $email);
                 # checking for an MX is not sufficient
                 #    $mxhosts = array();
                 #    $validhost = getmxrr ($domaincheck,$mxhosts);
@@ -33,22 +37,27 @@ class Validation {
         return $validhost && phpList::isEmail($email);
     }
 
-    static function isEmail($email) {
-        if (Config::EMAIL_ADDRESS_VALIDATION_LEVEL == 0) return 1;
+    static function isEmail($email)
+    {
+        if (Config::EMAIL_ADDRESS_VALIDATION_LEVEL == 0) {
+            return 1;
+        }
 
         $email = trim($email);
 
         ## do some basic validation first
         # quite often emails have two @ signs
-        $ats = substr_count($email,'@');
-        if ($ats != 1) return false;
+        $ats = substr_count($email, '@');
+        if ($ats != 1) {
+            return false;
+        }
 
         ## fail on emails starting or ending "-" or "." in the pre-at, seems to happen quite often, probably cut-n-paste errors
-        if (preg_match('/^-/',$email) ||
-            preg_match('/-@/',$email) ||
-            preg_match('/\.@/',$email) ||
-            preg_match('/^\./',$email) ||
-            preg_match('/^\-/',$email)
+        if (preg_match('/^-/', $email) ||
+            preg_match('/-@/', $email) ||
+            preg_match('/\.@/', $email) ||
+            preg_match('/^\./', $email) ||
+            preg_match('/^\-/', $email)
         ) {
             return false;
         }
@@ -73,9 +82,9 @@ class Validation {
                 #   Not accepted is comments (eg. (this is a comment)@example.com)
                 # Extra:
                 #   topLevelDomain can only be one of the defined ones
-                $escapedChar = "\\\\[\\x01-\\x09\\x0B-\\x0C\\x0E-\\x7F]";   # CR and LF excluded for safety reasons
+                $escapedChar = "\\\\[\\x01-\\x09\\x0B-\\x0C\\x0E-\\x7F]"; # CR and LF excluded for safety reasons
                 $unescapedChar = "[a-zA-Z0-9!#$%&'*\+\-\/=?^_`{|}~]";
-                if(Config::EMAIL_ADDRESS_VALIDATION_LEVEL == 2) {
+                if (Config::EMAIL_ADDRESS_VALIDATION_LEVEL == 2) {
                     $char = "$unescapedChar";
                 } else {
                     $char = "($unescapedChar|$escapedChar)";
@@ -85,12 +94,12 @@ class Validation {
                 $qtext = "[\\x01-\\x09\\x0B-\\x0C\\x0E-\\x21\\x23-\\x5B\\x5D-\\x7F]"; # All but <LF> x0A, <CR> x0D, quote (") x22 and backslash (\) x5c
                 $qchar = "$qtext|$escapedChar";
                 $quotedString = "\"($qchar){1,62}\"";
-                if(Config::EMAIL_ADDRESS_VALIDATION_LEVEL == 2) {
-                    $localPart = "$dotString";  # without escaping and quoting of local part
+                if (Config::EMAIL_ADDRESS_VALIDATION_LEVEL == 2) {
+                    $localPart = "$dotString"; # without escaping and quoting of local part
                 } else {
                     $localPart = "($dotString|$quotedString)";
                 };
-                $topLevelDomain = "(".$tlds.")";
+                $topLevelDomain = "(" . $tlds . ")";
                 $domainLiteral = "((([0-9][0-9]?|[0-1][0-9][0-9]|[2][0-4][0-9]|[2][5][0-5])\.){3}([0-9][0-9]?|[0-1][0-9][0-9]|[2][0-4][0-9]|[2][5][0-5]))";
 
                 $domainPart = "([a-zA-Z0-9](-?[a-zA-Z0-9])*(\.[a-zA-Z](-?[a-zA-Z0-9])*)*\.$topLevelDomain|$domainLiteral)";

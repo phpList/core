@@ -7,11 +7,14 @@
 namespace phpList;
 
 
-class Logger {
+class Logger
+{
     private static $_instance;
     private $report;
 
-    private function __construct(){}
+    private function __construct()
+    {
+    }
 
     public static function Instance()
     {
@@ -21,7 +24,8 @@ class Logger {
         return Logger::$_instance;
     }
 
-    public static function logEvent($message, $page = 'unknown page'){
+    public static function logEvent($message, $page = 'unknown page')
+    {
         /*
          * TODO: enable plugins
         $logged = false;
@@ -35,17 +39,23 @@ class Logger {
             return;
         }*/
 
-        @phpList::DB()->Sql_Query(sprintf(
-            'INSERT INTO %s (entered,page,entry)
-            VALUES(CURRENT_TIMESTAMP, "%s", "%s")',
-            Config::getTableName('eventlog', $page, $message)), 1);
+        @phpList::DB()->query(
+            sprintf(
+                'INSERT INTO %s (entered,page,entry)
+                VALUES(CURRENT_TIMESTAMP, "%s", "%s")',
+                Config::getTableName('eventlog', $page, $message)
+            ),
+            1
+        );
     }
 
-    public static function addToReport($text){
+    public static function addToReport($text)
+    {
         Logger::$_instance->report .= "\n$text";
     }
 
-    public static function getReport(){
+    public static function getReport()
+    {
         return Logger::$_instance->report;
     }
 

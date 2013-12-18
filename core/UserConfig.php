@@ -1,17 +1,19 @@
 <?php
 
 namespace phpList;
-/*
 
-=========================================================================
+    /*
 
-General settings for language and database
+    =========================================================================
 
-=========================================================================
+    General settings for language and database
 
-*/
+    =========================================================================
+
+    */
 //TODO: move file up one level
-class UserConfig {
+class UserConfig
+{
 
     # select the language module to use
     # Look for <country>.inc files in the texts directory
@@ -387,8 +389,6 @@ class UserConfig {
     const MAX_PROCESSQUEUE_TIME = 0;
 
 
-
-
     /*
 
     =========================================================================
@@ -670,7 +670,6 @@ class UserConfig {
     const EXPORT_EXCEL = false;
 
 
-
     # tmpdir. A location where phplist can write some temporary files if necessary
     # Make sure it is writable by your webserver user, and also check that you have
     # open_basedir set to allow access to this directory. Linux users can leave it as it is.
@@ -846,5 +845,5 @@ class UserConfig {
     #const ADODB_INC_FILE = '/path/to/adodb_inc.php';
     #const ADODB_DRIVER = 'mysql';
     #const ADODB_INC_FILE = '/usr/share/php/adodb/adodb.inc.php';
-    const ADODB_DRIVER = 'mysql';  // not really a site variable
+    const ADODB_DRIVER = 'mysql'; // not really a site variable
 }

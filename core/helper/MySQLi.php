@@ -5,8 +5,8 @@ class MySQLi implements IDatabase
 {
     private static $_instance;
 
-    /* @var $_db /mysqli */
-    private $_db;
+    /* @var $db /mysqli */
+    private $db;
     private $last_query;
     private $query_count = 0;
 
@@ -15,7 +15,7 @@ class MySQLi implements IDatabase
         $this->connect();
     }
 
-    public static function Instance()
+    public static function instance()
     {
         if (!MySQLi::$_instance instanceof self) {
             MySQLi::$_instance = new self();
@@ -29,69 +29,77 @@ class MySQLi implements IDatabase
             throw new \Exception('Fatal Error: MySQLi is not supported in your PHP, recompile and try again.');
         }
 
-        $this->_db = new \mysqli(Config::DATABASE_HOST,
-                                    Config::DATABASE_USER,
-                                    Config::DATABASE_PASSWORD,
-                                    Config::DATABASE_NAME);
+        $this->db = new \mysqli(
+            Config::DATABASE_HOST,
+            Config::DATABASE_USER,
+            Config::DATABASE_PASSWORD,
+            Config::DATABASE_NAME
+        );
 
-        if ($this->_db->connect_error) {
+        if ($this->db->connect_error) {
             throw new \Exception('Cannot connect to Database, please check your configuration');
         }
 
-        $this->_db->query('SET NAMES \'utf8\'');
+        $this->db->query('SET NAMES \'utf8\'');
         $this->last_query = null;
     }
 
-    function Sql_has_error()
+    function hasError()
     {
-        return $this->_db->errno;
+        return $this->db->errno;
     }
 
     //TODO: convert if needed
-    function Sql_Error()
+    function error()
     {
         if (empty($GLOBALS['commandline'])) {
             /*
                 output('DB error'.$errno);
                 print debug_print_backtrace();
             */
-            return '<div id="dberror">Database error ' . $this->_db->errno . ' while doing query ' . $this->last_query . ' ' . $this->_db->error . '</div>';
+            return '<div id="dberror">Database error ' . $this->db->errno . ' while doing query ' . $this->last_query . ' ' . $this->db->error . '</div>';
         } else {
-            cl_output('Database error ' . $this->_db->errno . ' while doing query ' . $this->last_query . ' ' . $this->_db->error);
+            cl_output(
+                'Database error ' . $this->db->errno . ' while doing query ' . $this->last_query . ' ' . $this->db->error
+            );
         }
         if (function_exists('logevent')) {
-            logevent('Database error: ' .$this->_db->error);
+            logevent('Database error: ' . $this->db->error);
         }
 
         #  return "<table class="x" border=1><tr><td class=\"error\">Database Error</td></tr><tr><td><!--$errno: -->$msg</td></tr></table>";
     }
 
-    function Sql_Check_error()
+    function checkError()
     {
-        if ($this->_db->connect_errno) {
+        if ($this->db->connect_errno) {
             /*if (isset($GLOBALS['plugins']) && is_array($GLOBALS['plugins'])) {
                 foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
                     $plugin->processDBerror($this->_db->connect_errno);
                 }
             }*/
-            switch ($this->_db->connect_errno) {
+            switch ($this->db->connect_errno) {
                 case 1049: # unknown database
-                    Fatal_Error( 'Unknown database, cannot continue');
+                    Fatal_Error('Unknown database, cannot continue');
                     exit;
                 case 1045: # access denied
-                    Fatal_Error( 'Cannot connect to database, access denied. Please check your configuration or contact the administrator.');
+                    Fatal_Error(
+                        'Cannot connect to database, access denied. Please check your configuration or contact the administrator.'
+                    );
                     exit;
                 case 2002:
-                    Fatal_Error( 'Cannot connect to database, Sql server is not running. Please check your configuration or contact the administrator.');
+                    Fatal_Error(
+                        'Cannot connect to database, Sql server is not running. Please check your configuration or contact the administrator.'
+                    );
                     exit;
                 case 1040: # too many connections
-                    Fatal_Error( 'Sorry, the server is currently too busy, please try again later.');
+                    Fatal_Error('Sorry, the server is currently too busy, please try again later.');
                     exit;
                 case 2005: # "unknown host"
-                    Fatal_Error( 'Unknown database host to connected to, please check your configuration');
+                    Fatal_Error('Unknown database host to connected to, please check your configuration');
                     exit;
                 case 2006: # "gone away"
-                    Fatal_Error( 'Sorry, the server is currently too busy, please try again later.');
+                    Fatal_Error('Sorry, the server is currently too busy, please try again later.');
                     exit;
                 case 0:
                     break;
@@ -103,13 +111,13 @@ class MySQLi implements IDatabase
         return false;
     }
 
-    function Sql_Query($query, $ignore = 0)
+    function query($query, $ignore = 0)
     {
         $this->last_query = null;
 
         if (isset($GLOBALS['developer_email'])) {
 
-            sqllog($query, '/tmp/queries.log');
+            $this->log($query, '/tmp/queries.log');
 
             # time queries to see how slow they are, so they can
             # be optimized
@@ -132,11 +140,11 @@ class MySQLi implements IDatabase
         }
 
         # dbg($query);
-        $this->query_count ++;
+        $this->query_count++;
 
-        $result = $this->_db->query($query);
+        $result = $this->db->query($query);
         if (!$ignore) {
-            if ($this->Sql_Check_Error()) {
+            if ($this->checkError()) {
                 dbg("Sql error in $query");
                 cl_output('Sql error ' . $query);
             }
@@ -158,21 +166,23 @@ class MySQLi implements IDatabase
         return $result;
     }
 
-    function Sql_Close()
+    function close()
     {
-        $this->_db->close();
+        $this->db->close();
     }
 
-    function Sql_Query_Params($query, $params, $ignore = 0)
+    function queryParams($query, $params, $ignore = 0)
     {
         #  dbg($query);
         #  dbg($params);
 
-        if (!is_array($params)) $params = Array($params);
+        if (!is_array($params)) {
+            $params = Array($params);
+        }
 
         foreach ($params as $index => $par) {
             $qmark = strpos($query, '?');
-            if ($qmark === FALSE) {
+            if ($qmark === false) {
                 dbg('Error, more parameters than placeholders');
             } else {
                 ## first replace the ? with some other placeholder, in case the parameters contain ? themselves
@@ -191,19 +201,21 @@ class MySQLi implements IDatabase
 
         #  dbg($query);
         #  print $query."<br/>";
-        return $this->Sql_Query($query, $ignore);
+        return $this->query($query, $ignore);
     }
 
-    function sqllog($msg, $logfile = "")
+    function log($msg, $logfile = "")
     {
-        if (!$logfile) return;
+        if (!$logfile) {
+            return;
+        }
         $fp = @fopen($logfile, 'a');
         $line = '[' . date('d M Y, H:i:s') . '] ' . getenv('REQUEST_URI') . '(' . $this->query_count . ") $msg \n";
         @fwrite($fp, $line);
         @fclose($fp);
     }
 
-    function Sql_Verbose_Query($query, $ignore = 0)
+    function verboseQuery($query, $ignore = 0)
     {
         if (Config::get('developer_email') !== false) {
             print "<b>$query</b><br>\n";
@@ -214,14 +226,14 @@ class MySQLi implements IDatabase
             print "Sql: $query\n";
             ob_start();
         }
-        return $this->Sql_Query($query, $ignore);
+        return $this->query($query, $ignore);
     }
 
     /**
      * @param $result mysqli_result
      * @return array
      */
-    function Sql_Fetch_Array($result)
+    function fetchArray($result)
     {
         return $result->fetch_array();
     }
@@ -230,7 +242,7 @@ class MySQLi implements IDatabase
      * @param $result mysqli_result
      * @return mixed
      */
-    function Sql_Fetch_Assoc($result)
+    function fetchAssoc($result)
     {
         return $result->fetch_assoc();
     }
@@ -239,45 +251,45 @@ class MySQLi implements IDatabase
      * @param $result mysqli_result
      * @return mixed
      */
-    function Sql_Fetch_Row($result)
+    function fetchRow($result)
     {
         return $result->fetch_row();
     }
 
-    function Sql_Fetch_Row_Query($query, $ignore = 0)
+    function fetchRowQuery($query, $ignore = 0)
     {
-        $req = $this->Sql_Query($query, $ignore);
-        return $this->Sql_Fetch_Row($req);
+        $req = $this->query($query, $ignore);
+        return $this->fetchRow($req);
     }
 
-    function Sql_Fetch_Array_Query($query, $ignore = 0)
+    function fetchArrayQuery($query, $ignore = 0)
     {
-        $req = $this->Sql_Query($query, $ignore);
-        return $this->Sql_Fetch_Array($req);
+        $req = $this->query($query, $ignore);
+        return $this->fetchArray($req);
     }
 
-    function Sql_Fetch_Assoc_Query($query, $ignore = 0)
+    function fetchAssocQuery($query, $ignore = 0)
     {
-        $req = $this->Sql_Query($query, $ignore);
-        return $this->Sql_Fetch_Assoc($req);
+        $req = $this->query($query, $ignore);
+        return $this->fetchAssoc($req);
     }
 
-    function Sql_Affected_Rows()
+    function affectedRows()
     {
-        return $this->_db->affected_rows;
+        return $this->db->affected_rows;
     }
 
     /**
      * @param $result mysqli_result
      */
-    function Sql_Num_Rows($result)
+    function numRows($result)
     {
         return $result->num_rows;
     }
 
-    function Sql_Insert_Id()
+    function insertedId()
     {
-        return $this->_db->insert_id;
+        return $this->db->insert_id;
     }
 
     /**
@@ -286,7 +298,7 @@ class MySQLi implements IDatabase
      * @param $column int
      * @return mixed
      */
-    function Sql_Result($result, $index, $column)
+    function result($result, $index, $column)
     {
         $result->data_seek($index);
         $array = $result->fetch_array();
@@ -296,44 +308,53 @@ class MySQLi implements IDatabase
     /**
      * @param $result mysqli_result
      */
-    function Sql_Free_Result($result)
+    function freeResult($result)
     {
         $result->free();
     }
 
-    function Sql_Table_exists($table, $refresh = 0)
+    function tableExists($table, $refresh = 0)
     {
         ## table is the full table name including the prefix
-        if (!empty($_GET['pi']) || $refresh || !isset($_SESSION) || !isset($_SESSION['dbtables']) || !is_array($_SESSION['dbtables'])) {
+        if (!empty($_GET['pi']) || $refresh || !isset($_SESSION) || !isset($_SESSION['dbtables']) || !is_array(
+                $_SESSION['dbtables']
+            )
+        ) {
             $_SESSION['dbtables'] = array();
 
             # need to improve this. http://bugs.mysql.com/bug.php?id=19588
-            $req = $this->Sql_Query(sprintf('SELECT table_name FROM information_schema.tables WHERE table_schema = "%s"', Config::DATABASE_NAME));
-            while ($row = $this->Sql_Fetch_Row($req)) {
+            $req = $this->query(
+                sprintf(
+                    'SELECT table_name FROM information_schema.tables WHERE table_schema = "%s"',
+                    Config::DATABASE_NAME
+                )
+            );
+            while ($row = $this->fetchRow($req)) {
                 $_SESSION['dbtables'][] = $row[0];
             }
         }
         return in_array($table, $_SESSION['dbtables']);
     }
 
-    function Sql_Table_Column_Exists($table, $column)
+    function tableColumnExists($table, $column)
     {
         ## table is the full table name including the prefix
-        if ($this->Sql_Table_exists($table)) {
+        if ($this->tableExists($table)) {
             # need to improve this. http://bugs.mysql.com/bug.php?id=19588
-            $req = $this->Sql_Query('SHOW columns FROM ' . $table);
-            while ($row = $this->Sql_Fetch_Row($req)) {
-                if ($row[0] == $column)
+            $req = $this->query('SHOW columns FROM ' . $table);
+            while ($row = $this->fetchRow($req)) {
+                if ($row[0] == $column) {
                     return true;
+                }
             }
         }
         return false;
     }
 
-    function Sql_Check_For_Table($table)
+    function checkForTable($table)
     {
         ## table is the full table name including the prefix, or the abbreviated one without prefix
-        return $this->Sql_Table_exists($table) || $this->Sql_Table_exists(Config::getTableName($table));
+        return $this->tableExists($table) || $this->tableExists(Config::getTableName($table));
     }
 
     function createTable($table)
@@ -341,13 +362,13 @@ class MySQLi implements IDatabase
         ## table is the abbreviated table name one without prefix
         include dirname(__FILE__) . '/structure.php';
         if (!empty($DBstruct[$table]) && is_array($DBstruct[$table])) {
-            $this->Sql_Create_table(Config::getTableName($table), $DBstruct[$table]);
+            $this->createTableInDB(Config::getTableName($table), $DBstruct[$table]);
             return true;
         }
         return false;
     }
 
-    function Sql_create_Table($table, $structure)
+    function createTableInDB($table, $structure)
     {
         $query = "CREATE TABLE $table (\n";
         while (list($column, $val) = each($structure)) {
@@ -363,38 +384,38 @@ class MySQLi implements IDatabase
         $query = substr($query, 0, -1);
         $query .= "\n) default character set utf8";
         # submit it to the database
-        $res = $this->Sql_Query($query, 1);
+        $res = $this->query($query, 1);
         unset($_SESSION['dbtables']);
     }
 
-    function Sql_Drop_Table($table)
+    function dropTable($table)
     {
         #  print '<br/>DROP '.$table;
-        return $this->_db->query('DROP TABLE IF EXISTS ' . $table);
+        return $this->db->query('DROP TABLE IF EXISTS ' . $table);
     }
 
-    function Sql_Escape($text)
+    function sqlEscape($text)
     {
-        return $this->_db->real_escape_string($text);
+        return $this->db->real_escape_string($text);
     }
 
-    function Sql_Replace($table, $values, $pk)
+    function replaceQuery($table, $values, $pk)
     {
 
         $query = ' REPLACE INTO ' . $table . ' SET ';
         foreach ($values as $key => $val) {
             if (is_numeric($val) || $val == 'CURRENT_TIMESTAMP') {
-                $query .= ' ' . $key . '= ' . $this->Sql_Escape($val) . ',';
+                $query .= ' ' . $key . '= ' . $this->sqlEscape($val) . ',';
             } else {
-                $query .= ' ' . $key . '="' . $this->Sql_Escape($val) . '",';
+                $query .= ' ' . $key . '="' . $this->sqlEscape($val) . '",';
             }
         }
         $query = substr($query, 0, -1);
         # output($query);
-        return $this->Sql_Query($query);
+        return $this->query($query);
     }
 
-    function Sql_Set_Search_Path($searchpath)
+    function setSearchPath($searchpath)
     {
         return;
     }
