@@ -363,4 +363,21 @@ class Util
         # $text = preg_replace('#PHPSESSID=[^\s]+
         return $text;
     }
+
+    public static function timeDiff($time1,$time2) {
+        if (!$time1 || !$time2) {
+            return $GLOBALS['I18N']->get('Unknown');
+        }
+        $t1 = strtotime($time1);
+        $t2 = strtotime($time2);
+
+        if ($t1 < $t2) {
+            $diff = $t2 - $t1;
+        } else {
+            $diff = $t1 - $t2;
+        }
+        if ($diff == 0)
+            return s('very little time');
+        return secs2time($diff);
+    }
 } 

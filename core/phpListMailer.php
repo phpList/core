@@ -164,7 +164,7 @@ class phpListMailer extends PHPMailer
         $this->addTimeStamp($sTimeStamp);
     }
 
-    function AddTimeStamp($sTimeStamp)
+    function addTimeStamp($sTimeStamp)
     {
         $this->timeStamp = $sTimeStamp;
     }

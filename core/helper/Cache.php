@@ -15,6 +15,7 @@ class Cache {
     public $page_cache = array();
     public $url_cache = array();
     private $message_cache = array();
+    private $linktrack_sent_cache = array();
 
     private function __construct()
     {
@@ -32,6 +33,11 @@ class Cache {
     public static function urlCache()
     {
         return Cache::instance()->url_cache;
+    }
+
+    public static function linktrackSentCache()
+    {
+        return Cache::instance()->linktrack_sent_cache;
     }
 
     /**
@@ -54,6 +60,8 @@ class Cache {
     {
         Cache::$_instance->message_cache[$message->id] = $message;
     }
+
+
 
     public static function getPageCache($url, $lastmodified = 0)
     {
@@ -104,5 +112,25 @@ class Cache {
             'DELETE FROM %s',
             Config::getTableName('urlcache')
             ));
+    }
+
+    public static function flushClickTrackCache() {
+        if (count(Cache::$_instance->linktrack_sent_cache) == 0) return;
+        foreach (Cache::$_instance->linktrack_sent_cache as $mid => $numsent) {
+            foreach ($numsent as $fwdid => $fwdtotal) {
+                //TODO: change output function
+                //if (Config::VERBOSE)
+                    //output("Flushing clicktrack stats for $mid: $fwdid => $fwdtotal");
+                phpList::DB()->query(sprintf(
+                        'UPDATE %s SET total = %d
+                        WHERE messageid = %d
+                        AND forwardid = %d',
+                        Config::getTableName('linktrack_ml'),
+                        $fwdtotal,
+                        $mid,
+                        $fwdid
+                    ));
+            }
+        }
     }
 } 

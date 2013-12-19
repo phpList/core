@@ -23,7 +23,7 @@ class Validation
         //Config::setRunningConfig('check_for_host', false);
         //TODO: Michiel: original phplist would never execute this because check_for_host is set to false, why?
         $validhost = false;
-        if (!empty($email) && Config::get('check_for_host')) {
+        if (!empty($email) && Config::get('check_for_host', false) !== false) {
             if (strpos($email, '@')) {
                 list($username, $domaincheck) = explode('@', $email);
                 # checking for an MX is not sufficient
@@ -34,7 +34,7 @@ class Validation
         } else {
             $validhost = true;
         }
-        return $validhost && phpList::isEmail($email);
+        return $validhost && Validation::isEmail($email);
     }
 
     static function isEmail($email)

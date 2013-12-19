@@ -75,41 +75,43 @@ class Message
      */
     private static function messageFromArray($array)
     {
-        $message = new Message();
-        $message->id = $array['id'];
-        $message->subject = $array['subject'];
-        $message->fromfield = $array['fromfield'];
-        $message->tofield = $array['tofield'];
-        $message->replyto = $array['replyto'];
-        $message->message = $array['message'];
-        $message->textmessage = $array['textmessage'];
-        $message->footer = $array['footer'];
-        $message->entered = new \DateTime($array['entered']);
-        $message->modified = $array['modified'];
-        $message->embargo = new \DateTime($array['embargo']);
-        $message->repeatinterval = $array['repeatinterval'];
-        $message->repeatuntil = new \DateTime($array['repeatuntil']);
-        $message->requeueinterval = $array['requeueinterval'];
-        $message->requeueuntil = $array['requeueuntil'];
-        $message->status = $array['status'];
-        $message->userselection = $array['userselection'];
-        $message->sent = new \DateTime($array['sent']);
-        $message->htmlformatted = $array['htmlformatted'];
-        $message->sendformat = $array['sendformat'];
-        $message->template = $array['template'];
-        $message->processed = $array['processed'];
-        $message->astext = $array['astext'];
-        $message->ashtml = $array['ashtml'];
-        $message->astextandhtml = $array['astextandhtml'];
-        $message->aspdf = $array['aspdf'];
-        $message->astextandpdf = $array['astextandpdf'];
-        $message->viewed = $array['viewed'];
-        $message->bouncecount = $array['bouncecount'];
-        $message->sendstart = new \DateTime($array['sendstart']);
-        $message->rsstemplate = $array['rsstemplate'];
-        $message->owner = $array['owner'];
-        $message->embargo_in_past = isset($array['inthepast']) ? $array['inthepast'] : false;
-
+        $message = null;
+        if(is_array($array)){
+            $message = new Message();
+            $message->id = $array['id'];
+            $message->subject = $array['subject'];
+            $message->fromfield = $array['fromfield'];
+            $message->tofield = $array['tofield'];
+            $message->replyto = $array['replyto'];
+            $message->message = $array['message'];
+            $message->textmessage = $array['textmessage'];
+            $message->footer = $array['footer'];
+            $message->entered = new \DateTime($array['entered']);
+            $message->modified = $array['modified'];
+            $message->embargo = new \DateTime($array['embargo']);
+            $message->repeatinterval = $array['repeatinterval'];
+            $message->repeatuntil = new \DateTime($array['repeatuntil']);
+            $message->requeueinterval = $array['requeueinterval'];
+            $message->requeueuntil = $array['requeueuntil'];
+            $message->status = $array['status'];
+            $message->userselection = $array['userselection'];
+            $message->sent = new \DateTime($array['sent']);
+            $message->htmlformatted = $array['htmlformatted'];
+            $message->sendformat = $array['sendformat'];
+            $message->template = $array['template'];
+            $message->processed = $array['processed'];
+            $message->astext = $array['astext'];
+            $message->ashtml = $array['ashtml'];
+            $message->astextandhtml = $array['astextandhtml'];
+            $message->aspdf = $array['aspdf'];
+            $message->astextandpdf = $array['astextandpdf'];
+            $message->viewed = $array['viewed'];
+            $message->bouncecount = $array['bouncecount'];
+            $message->sendstart = new \DateTime($array['sendstart']);
+            $message->rsstemplate = $array['rsstemplate'];
+            $message->owner = $array['owner'];
+            $message->embargo_in_past = isset($array['inthepast']) ? $array['inthepast'] : false;
+        }
         return $message;
     }
 
@@ -922,10 +924,11 @@ class Message
 
         $this->messagedata = $messagedata;
 
-        if (!isset($this->messagedata[$item])) {
-            throw new \Exception('Data item not found');
+        if (isset($this->messagedata[$item])) {
+            return $this->messagedata[$item];
+        }else{
+            return null;
         }
-        return $this->messagedata[$item];
     }
 
     /**
@@ -937,7 +940,7 @@ class Message
     {
         if (!isset($this->messagedata[$item])) {
             //try one last time to load from db
-            return ($this->__get($item) != '' && $this->__get($item) != null);
+            return ($this->__get($item) != null && $this->__get($item) != '');
         }else{
             return true;
         }
@@ -1054,6 +1057,10 @@ class Message
         );
     }
 
+    /**
+     * Exclude users from given list(s) to receive this mailing
+     * @param string|array $list
+     */
     public function excludeUsersOnList($list)
     {
         //could do MailingList::getListUsers, but might be slower on big lists
@@ -1081,6 +1088,150 @@ class Message
                     $this->id
                 ));
         }
+    }
+
+    /**
+     * Update the status of a message going out to a user
+     * @param int $user_id
+     * @param string $status
+     */
+    public function updateUserMessageStatus($user_id, $status){
+        phpList::DB()->query(sprintf(
+                'REPLACE INTO %s (entered, useris, messageid, status)
+                VALUES(CURRENT_TIMESTAMP, %d, %d, "%s")',
+                Config::getTableName('usermessage'),
+                $user_id,
+                $this->id,
+                $status
+            ));
+    }
+
+    /**
+     * Increment the processed counter
+     */
+    public function incrementProcessedAmount()
+    {
+        phpList::DB()->query(sprintf(
+                'UPDATE %s SET processed = processed + 1
+                WHERE id = %d',
+                Config::getTableName('message'),
+                $this->id
+            ));
+    }
+
+    /**
+     * Duplicate a message and reschedule
+     */
+    public function repeatMessage()
+    {
+        #  if (!USE_REPETITION && !USE_rss) return;
+
+        ## do not repeat when it has already been done
+        if ($this->repeatuntil->getTimestamp() < time() && (!empty($this->repeatedid) || $this->repeatinterval == 0)) return;
+
+        # get the future embargo, either "repeat" minutes after the old embargo
+        # or "repeat" after this very moment to make sure that we're not sending the
+        # message every time running the queue when there's no embargo set.
+        $new_embargo = $this->embargo->add(\DateInterval::createFromDateString($this->repeatinterval . ' minutes'));
+        $new_embargo2 = (new \DateTime())->add(\DateInterval::createFromDateString($this->repeatinterval . ' minutes'));
+        $is_fututre = ($new_embargo->getTimestamp() > time());
+
+        # copy the new message
+        $new_message = $this;
+        $new_message->id = 0;
+        $new_message->update();
+        //also need to copy the message data for this one
+        phpList::DB()->query(sprintf(
+                'INSERT INTO %s(name, id, data)
+                    SELECT name, %d, data
+                    FROM %s
+                    WHERE id = %d',
+                Config::getTableName('messagedata'),
+                $new_message->id, /*New message id to copy to*/
+                Config::getTableName('messagedata'),
+                $this->id
+            ));
+
+        # check whether the new embargo is not on an exclusion
+        if (Config::get('repeat_exclude', false) !== false) {
+            $loopcnt = 0;
+            $repeatinterval = 0;
+            while ($this->excludedDateForRepetition($new_embargo)) {
+                $repeatinterval += $new_message->repeatinterval;
+                $loopcnt++;
+                $new_embargo = $new_message->embargo->add(\DateInterval::createFromDateString($repeatinterval . ' minutes'));
+                $new_embargo2 = (new \DateTime())->add(\DateInterval::createFromDateString($repeatinterval . ' minutes'));
+                $is_fututre = ($new_embargo->getTimestamp() > time());
+
+                if ($loopcnt > 15) {
+                    Logger::logEvent('Unable to find new embargo date too many exclusions? for message ' . $new_message->id);
+                    return;
+                }
+            }
+        }
+        # correct some values
+        if (!$is_fututre) {
+            $new_embargo = $new_embargo2;
+        }
+
+        $new_message->embargo = $new_embargo;
+        $new_message->status = 'submitted';
+        $new_message->sent = '';
+        foreach (array("processed","astext","ashtml","astextandhtml","aspdf","astextandpdf","viewed", "bouncecount") as $item) {
+            $new_message->$item = 0;
+        }
+        $new_message->update();
+
+
+
+        # lists
+        phpList::DB()->query(sprintf(
+                'INSERT INTO %s(messageid,listid,entered)
+                    SELECT %d, listid, CURRENT_TIMESTAMP
+                    FROM %s
+                    WHERE messageid = %d',
+                Config::getTableName('listmessage'),
+                $new_message->id, /*New message id to copy to*/
+                Config::getTableName('listmessage'),
+                $this->id
+            ));
+
+
+        # attachments
+        $attachments = $this->getAttachments();
+        foreach($attachments as $attachment){
+            $attachment->id = 0;
+            if(is_file($attachment->remotefile)){
+                $attachment->file = '';
+            }
+            $new_message->addAttachment($attachment);
+        }
+        Logger::logEvent("Message {$this->id} was successfully rescheduled as message {$new_message->id}");
+        ## remember we duplicated, in order to avoid doing it again (eg when requeuing)
+        $this->setDataItem('repeatedid', $new_message->id);
+    }
+
+    /**
+     * @param $date
+     * @return bool
+     */
+    private function excludedDateForRepetition($date) {
+        if (Config::get('repeat_exclude', false) !== false){
+            return false;
+        }
+        foreach (Config::get('repeat_exclude') as $exclusion) {
+            $formatted_value = phpList::DB()->fetchRowQuery(sprintf(
+                    'SELECT date_format("%s","%s")',
+                    $date,
+                    $exclusion['format']
+                ));
+            foreach ($exclusion['values'] as $disallowed) {
+                if ($formatted_value[0] == $disallowed) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /*

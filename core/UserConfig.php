@@ -357,7 +357,7 @@ class UserConfig
     # and MAILQUEUE_BATCH_PERIOD being a positive value
     # it still needs tweaking, so send your feedback to mantis.phplist.com if you find
     # any issues with it
-    const MAILQUEUE_AUTOTHROTTLE = 0;
+    const MAILQUEUE_AUTOTHROTTLE = false;
 
     # Domain Throttling
     # You can activate domain throttling, by setting USE_DOMAIN_THROTTLE to true
