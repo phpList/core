@@ -28,7 +28,7 @@ class phpList
      * @return IDatabase
      * @throws \Exception
      */
-    static function DB()
+    public static function DB()
     {
         switch (Config::DATABASE_MODULE) {
             case 'mysqli':
@@ -39,7 +39,7 @@ class phpList
         }
     }
 
-    static function encryptPass($pass)
+    public static function encryptPass($pass)
     {
         if (empty($pass)) {
             return '';

@@ -10,10 +10,6 @@ namespace phpList;
 class MessageQueue
 {
     private $status = 'OK';
-    /**
-     * @var Timer
-     */
-    private $processqueue_timer;
     private $domainthrottle = array();
     public $messageid;
 
@@ -41,20 +37,21 @@ class MessageQueue
     //TODO: should we need an option to not output text and send it somewhere else (e.g. a file)
     public function process($message_id, $force = false, $reload = false, $cmd_max = 0)
     {
-        $this->processqueue_timer = new timer();
+        //initialize the process queue timer
+        Timer::start('PQC');
         $this->messageid = $message_id;
 
         $commandline = Config::get('commandline', false);
         if ($commandline && $force) {
             # force set, so kill other processes
-            Util::cl_output('Force set, killing other send processes');
+            Output::cl_output('Force set, killing other send processes');
         }
         $this->send_process_id = Process::getPageLock('processqueue', $force);
 
         if (empty($this->send_process_id)) {
             return false;
         }
-        #Util::cl_output('page locked on '.$this->send_process_id);
+        #Output::cl_output('page locked on '.$this->send_process_id);
         $this->reload = $reload;
 
         //TODO: enable plugins
@@ -67,7 +64,7 @@ class MessageQueue
         if ($commandline) {
             $num = User::checkUniqueIds();
             if ($num) {
-                Util::cl_output('Given a Unique ID to ' . $num . ' subscribers, this might have taken a while');
+                Output::cl_output('Given a Unique ID to ' . $num . ' subscribers, this might have taken a while');
             }
         }
 
@@ -141,7 +138,7 @@ class MessageQueue
           if (!empty($cl_num_per_batch)) {
             $this->num_per_batch = $cl_num_per_batch;
           }
-          Util::cl_output("Batch set with commandline to $this->num_per_batch");
+          Output::cl_output("Batch set with commandline to $this->num_per_batch");
         }
         */
         $maxProcessQueueTime = 0;
@@ -157,11 +154,11 @@ class MessageQueue
         }
 
         if (Config::VERBOSE && $maxProcessQueueTime) {
-            $this->output(s('Maximum time for queue processing') . ': ' . $maxProcessQueueTime, 'progress');
+            Output::output(s('Maximum time for queue processing') . ': ' . $maxProcessQueueTime, 'progress');
         }
 
         if ($cmd_max > 0) {
-            Util::cl_output('Max to send is ' . $cmd_max . ' num per batch is ' . $this->num_per_batch);
+            Output::cl_output('Max to send is ' . $cmd_max . ' num per batch is ' . $this->num_per_batch);
             $clinemax = (int)$cmd_max;
             ## slow down just before max
             if ($clinemax < 20) {
@@ -171,7 +168,7 @@ class MessageQueue
             } else {
                 $this->num_per_batch = min($clinemax, $this->num_per_batch);
             }
-            Util::cl_output('Max to send is ' . $cmd_max . ' setting num per batch to ' . $this->num_per_batch);
+            Output::cl_output('Max to send is ' . $cmd_max . ' setting num per batch to ' . $this->num_per_batch);
         }
 
         $safemode = false;
@@ -188,7 +185,7 @@ class MessageQueue
             # check how many were sent in the last batch period and subtract that
             # amount from this batch
             /*
-              $this->output(sprintf('select count(*) from %s where entered > date_sub(current_timestamp,interval %d second) and status = "sent"',
+              Output::output(sprintf('select count(*) from %s where entered > date_sub(current_timestamp,interval %d second) and status = "sent"',
                 $tables["usermessage"],$batch_period));
             */
             $recently_sent = phpList::DB()->fetchRowQuery(
@@ -201,7 +198,7 @@ class MessageQueue
                 )
             );
 
-            Util::cl_output('Recently sent : ' . $recently_sent[0]);
+            Output::cl_output('Recently sent : ' . $recently_sent[0]);
             $this->num_per_batch -= $recently_sent[0];
 
             # if this ends up being 0 or less, don't send anything at all
@@ -235,9 +232,9 @@ class MessageQueue
         flush();
 
         if (!$this->reload) { ## only show on first load
-            $this->output(s('Started'), 0);
+            Output::output(s('Started'), 0);
             if (Config::get('SYSTEM_TIMEZONE') != '') {
-                $this->output(s('Time now ') . date('Y-m-d H:i'));
+                Output::output(s('Time now ') . date('Y-m-d H:i'));
             }
         }
 
@@ -249,13 +246,13 @@ class MessageQueue
         }
 
         if (!$this->send_process_id) {
-            $this->output(s('Unable get lock for processing'));
+            Output::output(s('Unable get lock for processing'));
             $this->status = s('Error processing');
             return false;
         }
         if (empty($this->reload)) { ## only show on first load
             if (!empty($ISPrestrictions)) {
-                $this->output($ISPrestrictions);
+                Output::output($ISPrestrictions);
             }
             if (is_file($ISPlockfile)) {
                 $this->processError(s('Processing has been suspended by your ISP, please try again later'), 1);
@@ -264,15 +261,15 @@ class MessageQueue
 
         if ($this->num_per_batch > 0) {
             if ($safemode) {
-                $this->output(s('In safe mode, batches are set to a maximum of 100'));
+                Output::output(s('In safe mode, batches are set to a maximum of 100'));
             }
             if ($this->original_num_per_batch != $this->num_per_batch) {
                 if (empty($reload)) {
-                    $this->output(s('Sending in batches of %d messages', $this->original_num_per_batch), 0);
+                    Output::output(s('Sending in batches of %d messages', $this->original_num_per_batch), 0);
                 }
                 $diff = $this->original_num_per_batch - $this->num_per_batch;
                 if ($diff < 0) $diff = 0;
-                $this->output(
+                Output::output(
                     s(
                         'This batch will be %d emails, because in the last %d seconds %d emails were sent',
                         $this->num_per_batch,
@@ -283,10 +280,10 @@ class MessageQueue
                     'progress'
                 );
             } else {
-                $this->output(s('Sending in batches of %d emails', $this->num_per_batch), 0, 'progress');
+                Output::output(s('Sending in batches of %d emails', $this->num_per_batch), 0, 'progress');
             }
         } elseif ($this->num_per_batch < 0) {
-            $this->output(
+            Output::output(
                 s(
                     'In the last %d seconds more emails were sent (%d) than is currently allowed per batch (%d)',
                     $this->batch_period,
@@ -304,8 +301,8 @@ class MessageQueue
         $$this->counters['batch_total'] = $this->num_per_batch;
 
         if (0 && $reload) {
-            $this->output(s('Sent in last run') . ": $lastsent", 0, 'progress');
-            $this->output(s('Skipped in last run') . ": $lastskipped", 0, 'progress');
+            Output::output(s('Sent in last run') . ": $lastsent", 0, 'progress');
+            Output::output(s('Skipped in last run') . ": $lastskipped", 0, 'progress');
         }
 
         $this->script_stage = 1; # we are active
@@ -315,7 +312,7 @@ class MessageQueue
         Message::checkMessagesToRequeue();
 
         if (Config::VERBOSE) {
-            $this->output(phpList::DB()->getLastQuery());
+            Output::output(phpList::DB()->getLastQuery());
         }
 
         $messages = Message::getMessagesToQueue();
@@ -323,18 +320,18 @@ class MessageQueue
 
         if ($num_messages) {
             if (empty($this->reload)) {
-                $this->output(s('Processing has started,') . ' ' . $num_messages . ' ' . s('message(s) to process.'));
+                Output::output(s('Processing has started,') . ' ' . $num_messages . ' ' . s('message(s) to process.'));
             }
             clearPageCache();
             if (!Config::get('commandline', false) && empty($this->reload)) {
                 if (!$safemode) {
-                    $this->output(
+                    Output::output(
                         s(
                             'Please leave this window open. You have batch processing enabled, so it will reload several times to send the messages. Reports will be sent by email to'
                         ) . ' ' . getConfig("report_address")
                     );
                 } else {
-                    $this->output(
+                    Output::output(
                         s(
                             'Your webserver is running in safe_mode. Please keep this window open. It may reload several times to make sure all messages are sent.'
                         ) . ' ' . s('Reports will be sent by email to') . ' ' . getConfig("report_address")
@@ -359,7 +356,9 @@ class MessageQueue
             $this->counters['total_users_for_message ' . $message->id] = 0;
             $this->counters['processed_users_for_message ' . $message->id] = 0;
 
-            if (Config::get('get_speed_stats', false) !== false) $this->output('start send ' . $message->id);
+            if (Config::get('get_speed_stats', false) !== false){
+                Output::output('start send ' . $message->id);
+            }
 
             /*
              * TODO: enable plugins
@@ -382,11 +381,12 @@ class MessageQueue
             if (empty($this->reload)) {
                 ### Hmm, this is probably incredibly confusing. It won't finish then
                 if (Config::VERBOSE) {
-                    $this->output(
+                    Output::output(
                         sprintf(
                             s('sending of this campaign will stop, if it is still going in %s'),
                             Util::secs2time($secondsTogo)
                         )
+
                     );
                 }
             }
@@ -406,7 +406,7 @@ class MessageQueue
                         $message->id
                     )
                 );
-                $this->output(s('Error loading message, please check the eventlog for details'));
+                Output::output(s('Error loading message, please check the eventlog for details'));
                 if (Config::MANUALLY_PROCESS_QUEUE) {
                     # wait a little, otherwise the message won't show
                     sleep(10);
@@ -414,9 +414,11 @@ class MessageQueue
                 continue;
             }
 
-            if (Config::get('get_speed_stats', false) !== false) $this->output('message data loaded ');
+            if (Config::get('get_speed_stats', false) !== false){
+                Output::output('message data loaded ');
+            }
             //if (Config::VERBOSE) {
-                //   $this->output($msgdata);
+                //   Output::output($msgdata);
             //}
             if (!empty($message->notify_start) && !isset($message->start_notified)) {
                 $notifications = explode(',', $message->notify_start);
@@ -445,7 +447,7 @@ class MessageQueue
             }
 
             if (empty($this->reload)) {
-                $this->output(s('Processing message') . ' ' . $message->id);
+                Output::output(s('Processing message') . ' ' . $message->id);
             }
 
             flush();
@@ -453,7 +455,7 @@ class MessageQueue
             $message->setStatus('inprocess');
 
             if (empty($this->reload)) {
-                $this->output(s('Looking for users'));
+                Output::output(s('Looking for users'));
             }
             if (phpList::DB()->hasError()) {
                 $this->processError(phpList::DB()->error());
@@ -464,7 +466,7 @@ class MessageQueue
             # Check this and take anyone in that case.
 
             ## keep an eye on how long it takes to find users, and warn if it's a long time
-            $findUserStart = $this->processqueue_timer->elapsed(true);
+            $findUserStart = Timer::get('PQC')->elapsed(true);
 
             $numattr = phpList::DB()->fetchRowQuery(sprintf(
                     'SELECT COUNT(*) FROM %s',
@@ -476,7 +478,7 @@ class MessageQueue
                 $res = phpList::DB()->query($userselection);
                 $this->counters['total_users_for_message'] = phpList::DB()->numRows($res);
                 if (empty($this->reload)) {
-                    $this->output(
+                    Output::output(
                         $this->counters['total_users_for_message'] . ' ' . s(
                             'users apply for attributes, now checking lists'
                         ),
@@ -493,13 +495,13 @@ class MessageQueue
                     $user_attribute_query = " AND listuser.userid IN ($user_list)";
                 else {
                     if (empty($this->reload)) {
-                        $this->output(s('No users apply for attributes'));
+                        Output::output(s('No users apply for attributes'));
                     }
                     $message->setStatus('sent');
                     //finish("info", "Message $messageid: \nNo users apply for attributes, ie nothing to do");
                     $subject = s("Maillist Processing info");
                     if (!$this->nothingtodo) {
-                        $this->output(s('Finished this run'), 1, 'progress');
+                        Output::output(s('Finished this run'), 1, 'progress');
                         printf(
                             '<script type="text/javascript">
                                 var parentJQuery = window.parent.jQuery;
@@ -548,7 +550,7 @@ class MessageQueue
                   array_push($doneusers,$row[0]);
                 }
               } else {
-                $this->output(s('Warning, disabling exclusion of done users, too many found'));
+                Output::output(s('Warning, disabling exclusion of done users, too many found'));
                 logEvent(s('Warning, disabling exclusion of done users, too many found'));
               }
 
@@ -564,12 +566,12 @@ class MessageQueue
 
             if (Config::USE_LIST_EXCLUDE) {
                 if (Config::VERBOSE) {
-                    $this->output(s('looking for users who can be excluded from this mailing'));
+                    Output::output(s('looking for users who can be excluded from this mailing'));
                 }
                 if (!empty($message->excludelist)) {
                     $message->excludeUsersOnList($message->excludelist);
                     /*if (Config::VERBOSE) {
-                        $this->output('Exclude query ' . phpList::DB()->getLastQuery());
+                        Output::output('Exclude query ' . phpList::DB()->getLastQuery());
                     }*/
 
                 }
@@ -647,7 +649,7 @@ class MessageQueue
             }
 
             if (Config::VERBOSE) {
-                $this->output('User select query ' . $userids_query);
+                Output::output('User select query ' . $userids_query);
             }
 
             if (phpList::DB()->hasError()) {
@@ -660,10 +662,10 @@ class MessageQueue
                 $this->counters['total_users_for_message ' . $message->id] -= $skipped;
             }*/
 
-            $findUserEnd = $this->processqueue_timer->elapsed(true);
+            $findUserEnd = Timer::get('PQC')->elapsed(true);
 
             if ($findUserEnd - $findUserStart > 300 && Config::get('commandline', false)) {
-                $this->output(
+                Output::output(
                     s(
                         'Warning, finding the subscribers to send out to takes a long time, consider changing to commandline sending'
                     )
@@ -671,7 +673,7 @@ class MessageQueue
             }
 
             if (empty($this->reload)) {
-                $this->output(
+                Output::output(
                     s('Found them') . ': ' . $this->counters['total_users_for_message ' . $message->id] . ' ' . s(
                         'to process'
                     )
@@ -709,32 +711,32 @@ class MessageQueue
                 if ($this->num_per_batch > 0) {
                     $userids_query .= sprintf(' LIMIT 0,%d', $this->num_per_batch);
                     if (Config::VERBOSE) {
-                        $this->output($this->num_per_batch . '  query -> ' . $userids_query);
+                        Output::output($this->num_per_batch . '  query -> ' . $userids_query);
                     }
                     $userids_result = phpList::DB()->query($userids_query);
                     if (phpList::DB()->hasError()) {
                         $this->processError(phpList::DB()->error());
                     }
                 } else {
-                    $this->output(s('No users to process for this batch'), 0, 'progress');
+                    Output::output(s('No users to process for this batch'), 0, 'progress');
                     //TODO: Can we remove this pointless query (will have to change the while loop below)
                     $userids_result = phpList::DB()->query(sprintf('select * from %s where id = 0', Config::getTableName('user')));
                 }
                 $affrows = phpList::DB()->numRows($userids_result);
-                $this->output(s('Processing batch of ') . ': ' . $affrows, 0, 'progress');
+                Output::output(s('Processing batch of ') . ': ' . $affrows, 0, 'progress');
             }
 
             while ($userdata = phpList::DB()->fetchRow($userids_result)) {
                 $this->counters['processed_users_for_message ' . $message->id]++;
                 $failure_reason = '';
                 if ($this->num_per_batch && $this->sent >= $this->num_per_batch) {
-                    $this->output(s('batch limit reached') . ": $this->sent ($this->num_per_batch)", 1, 'progress');
+                    Output::output(s('batch limit reached') . ": $this->sent ($this->num_per_batch)", 1, 'progress');
                     Config::setRunningConfig('wait', $batch_period);
                     return;
                 }
 
                 $user = User::getUser($userdata[0]); # id of the user
-                if (Config::get('get_speed_stats', false) !== false) $this->output(
+                if (Config::get('get_speed_stats', false) !== false) Output::output(
                     '-----------------------------------' . "\n" . 'start process user ' . $user->id
                 );
                 $some = 1;
@@ -744,7 +746,7 @@ class MessageQueue
                 $stopSending = $secondsTogo < 0;
 
                 # check if we have been "killed"
-                #   $this->output('Process ID '.$this->send_process_id);
+                #   Output::output('Process ID '.$this->send_process_id);
                 $alive = Process::checkLock($this->send_process_id);
 
                 ## check for max-process-queue-time
@@ -755,7 +757,7 @@ class MessageQueue
                 } elseif ($alive && !$stopSending) {
                     Process::keepLock($this->send_process_id);
                 } elseif ($stopSending) {
-                    $this->output(s('Campaign sending timed out, is past date to process until'));
+                    Output::output(s('Campaign sending timed out, is past date to process until'));
                     break;
                 } else {
                     $this->processError(s('Process Killed by other process'));
@@ -774,7 +776,9 @@ class MessageQueue
                 #Sql_Query_Params(sprintf('delete from %s where userid = ? and messageid = ? and status = "active"',$tables['usermessage']), array($userid,$message->id));
 
                 # check whether the user has already received the message
-                if (Config::get('get_speed_stats', false) !== false) $this->output('verify message can go out to ' . $user->id);
+                if (Config::get('get_speed_stats', false) !== false){
+                    Output::output('verify message can go out to ' . $user->id);
+                }
 
                 $um = phpList::DB()->query(sprintf(
                         'SELECT entered FROM %s
@@ -807,7 +811,9 @@ class MessageQueue
                         /*
                         ## Ask plugins if they are ok with sending this message to this user
                         */
-                        if (Config::get('get_speed_stats', false) !== false) $this->output('start check plugins ');
+                        if (Config::get('get_speed_stats', false) !== false){
+                            Output::output('start check plugins ');
+                        }
 
                         /*TODO: enable plugins
                         reset($GLOBALS['plugins']);
@@ -826,7 +832,9 @@ class MessageQueue
 
                             next($GLOBALS['plugins']);
                         }*/
-                        if (Config::get('get_speed_stats', false) !== false) $this->output('end check plugins ');
+                        if (Config::get('get_speed_stats', false) !== false){
+                            Output::output('end check plugins ');
+                        }
 
                         ####################################
                         # Throttling
@@ -836,23 +844,23 @@ class MessageQueue
                             list($mailbox, $domainname) = explode('@', $user->email);
                             $now = time();
                             $interval = $now - ($now % Config::DOMAIN_BATCH_PERIOD);
-                            if (!isset($domainthrottle[$domainname]) || !is_array($domainthrottle[$domainname])) {
-                                $domainthrottle[$domainname] = array(
+                            if (!isset($this->domainthrottle[$domainname]) || !is_array($this->domainthrottle[$domainname])) {
+                                $this->domainthrottle[$domainname] = array(
                                     'interval' => '',
                                     'sent' => 0,
                                     'attempted' => 0,
                                 );
-                            } elseif (isset($domainthrottle[$domainname]['interval']) && $domainthrottle[$domainname]['interval'] == $interval) {
-                                $throttled = $domainthrottle[$domainname]['sent'] >= Config::DOMAIN_BATCH_SIZE;
+                            } elseif (isset($this->domainthrottle[$domainname]['interval']) && $this->domainthrottle[$domainname]['interval'] == $interval) {
+                                $throttled = $this->domainthrottle[$domainname]['sent'] >= Config::DOMAIN_BATCH_SIZE;
                                 if ($throttled) {
                                     $this->counters['send blocked by domain throttle']++;
-                                    $domainthrottle[$domainname]['attempted']++;
+                                    $this->domainthrottle[$domainname]['attempted']++;
                                     if (Config::DOMAIN_AUTO_THROTTLE
-                                        && $domainthrottle[$domainname]['attempted'] > 25 # skip a few before auto throttling
+                                        && $this->domainthrottle[$domainname]['attempted'] > 25 # skip a few before auto throttling
                                         && $num_messages <= 1 # only do this when there's only one message to process otherwise the other ones don't get a chance
                                         && $this->counters['total_users_for_message ' . $message->id] < 1000 # and also when there's not too many left, because then it's likely they're all being throttled
                                     ) {
-                                        $domainthrottle[$domainname]['attempted'] = 0;
+                                        $this->domainthrottle[$domainname]['attempted'] = 0;
                                         Logger::logEvent(
                                             sprintf(
                                                 s(
@@ -863,20 +871,21 @@ class MessageQueue
                                         );
                                         Logger::logEvent(s('Introducing extra delay to decrease throttle failures'));
                                         if (Config::VERBOSE) {
-                                            $this->output(s('Introducing extra delay to decrease throttle failures'));
+                                            Output::output(
+                                                s('Introducing extra delay to decrease throttle failures')
+                                            );
                                         }
                                         if (!isset($running_throttle_delay)) {
                                             $running_throttle_delay = (int)(Config::MAILQUEUE_THROTTLE + (Config::DOMAIN_BATCH_PERIOD / (Config::DOMAIN_BATCH_SIZE * 4)));
                                         } else {
                                             $running_throttle_delay += (int)(Config::DOMAIN_BATCH_PERIOD / (Config::DOMAIN_BATCH_SIZE * 4));
                                         }
-                                        #$this->output("Running throttle delay: ".$running_throttle_delay);
+                                        #Output::output("Running throttle delay: ".$running_throttle_delay);
                                     } elseif (Config::VERBOSE) {
-                                        $this->output(
+                                        Output::output(
                                             sprintf(
-                                                s(
-                                                    '%s is currently over throttle limit of %d per %d seconds'
-                                                ) . ' (' . $domainthrottle[$domainname]['sent'] . ')',
+                                                s('%s is currently over throttle limit of %d per %d seconds') .
+                                                ' (' . $this->domainthrottle[$domainname]['sent'] . ')',
                                                 $domainname,
                                                 Config::DOMAIN_BATCH_SIZE,
                                                 Config::DOMAIN_BATCH_PERIOD
@@ -906,7 +915,7 @@ class MessageQueue
                                 */
                                 if (!$throttled) {
                                     if (Config::VERBOSE)
-                                        $this->output(
+                                        Output::output(
                                             s('Sending') . ' ' . $message->id . ' ' . s('to') . ' ' . $user->email
                                         );
                                     $emailSentTimer = new Timer();
@@ -921,10 +930,9 @@ class MessageQueue
                                         $this->counters['sendemail returned false']++;
                                     }
                                     if (Config::VERBOSE) {
-                                        $this->output(
-                                            s('It took') . ' ' . $emailSentTimer->elapsed(true) . ' ' . s(
-                                                'seconds to send'
-                                            )
+                                        Output::output(
+                                            s('It took') . ' ' . $emailSentTimer->elapsed(true) . ' ' .
+                                            s('seconds to send')
                                         );
                                     }
                                 } else {
@@ -939,11 +947,11 @@ class MessageQueue
                             if ($success) {
                                 if (Config::USE_DOMAIN_THROTTLE) {
                                     list($mailbox, $domainname) = explode('@', $user->email);
-                                    if ($domainthrottle[$domainname]['interval'] != $interval) {
-                                        $domainthrottle[$domainname]['interval'] = $interval;
-                                        $domainthrottle[$domainname]['sent'] = 0;
+                                    if ($this->domainthrottle[$domainname]['interval'] != $interval) {
+                                        $this->domainthrottle[$domainname]['interval'] = $interval;
+                                        $this->domainthrottle[$domainname]['sent'] = 0;
                                     } else {
-                                        $domainthrottle[$domainname]['sent']++;
+                                        $this->domainthrottle[$domainname]['sent']++;
                                     }
                                 }
                                 $this->sent++;
@@ -974,7 +982,7 @@ class MessageQueue
                                         ));
                                 }
                                 if (Config::VERBOSE) {
-                                    $this->output(s('Failed sending to') . ' ' . $user->email);
+                                    Output::output(s('Failed sending to') . ' ' . $user->email);
                                     Logger::logEvent("Failed sending message $message->id to $user->email");
                                 }
                                 # make sure it's not because it's an underdeliverable email
@@ -1009,7 +1017,7 @@ class MessageQueue
                             } elseif (Config::MAILQUEUE_THROTTLE) {
                                 usleep(Config::MAILQUEUE_THROTTLE * 1000000);
                             } elseif (Config::MAILQUEUE_BATCH_SIZE && Config::MAILQUEUE_AUTOTHROTTLE) {
-                                $totaltime = $this->processqueue_timer->elapsed(true);
+                                $totaltime = Timer::get('PQC')->elapsed(true);
                                 //$msgperhour = (3600 / $totaltime) * $this->sent;
                                 //$msgpersec = $msgperhour / 3600;
 
@@ -1017,14 +1025,14 @@ class MessageQueue
                                 #  $secpermsg = $totaltime / $this->sent;
                                 $target = (Config::MAILQUEUE_BATCH_PERIOD / Config::MAILQUEUE_BATCH_SIZE) * $this->sent;
                                 $delay = $target - $totaltime;
-                                #$this->output("Sent: $this->sent mph $msgperhour mps $msgpersec secpm $secpermsg target $target actual $actual d $delay");
+                                #Output::output("Sent: $this->sent mph $msgperhour mps $msgpersec secpm $secpermsg target $target actual $actual d $delay");
 
                                 if ($delay > 0) {
                                     if (Config::VERBOSE) {
-                                        /* $this->output(s('waiting for').' '.$delay.' '.s('seconds').' '.
+                                        /* Output::output(s('waiting for').' '.$delay.' '.s('seconds').' '.
                                                            s('to make sure we don\'t exceed our limit of ').MAILQUEUE_BATCH_SIZE.' '.
                                                            s('messages in ').' '.MAILQUEUE_BATCH_PERIOD.s('seconds')); */
-                                        $this->output(
+                                        Output::output(
                                             sprintf(
                                                 s('waiting for %.1f seconds to meet target of %s seconds per message'),
                                                 $delay,
@@ -1039,7 +1047,7 @@ class MessageQueue
                             $this->cannotsend++;
                             # mark it as sent anyway, because otherwise the process will never finish
                             if (Config::VERBOSE) {
-                                $this->output(s('not sending to ') . $user->email);
+                                Output::output(s('not sending to ') . $user->email);
                             }
                             $message->updateUserMessageStatus($user->id, 'not sent');
                         }
@@ -1058,7 +1066,7 @@ class MessageQueue
 
                         if (!$user->confirmed || $user->disabled) {
                             if (Config::VERBOSE)
-                                $this->output(
+                                Output::output(
                                     s('Unconfirmed user') . ': ' . $user->id . ' ' . $user->email . ' ' . $user->id
                                 );
                             $this->unconfirmed++;
@@ -1069,7 +1077,7 @@ class MessageQueue
                             # }
                         } elseif ($user->email || $user->id) {
                             if (Config::VERBOSE) {
-                                $this->output(s('Invalid email address') . ': ' . $user->email . ' ' . $user->id);
+                                Output::output(s('Invalid email address') . ': ' . $user->email . ' ' . $user->id);
                             }
                             Logger::logEvent(
                                 s('Invalid email address') . ': userid  ' . $user->id . '  email ' . $user->email
@@ -1099,8 +1107,8 @@ class MessageQueue
                     $um = phpList::DB()->fetchRow($um);
                     $this->notsent++;
                     if (Config::VERBOSE) {
-                        $this->output(
-                            s('Not sending to') . ' ' . $user->id . ', ' . s('already sent') . ' ' . $um[0]
+                        Output::output(
+                            s('Not sending to').' '.$user->id.', '.s('already sent').' '.$um[0]
                         );
                     }
                 }
@@ -1108,11 +1116,11 @@ class MessageQueue
                 $this->processed = $this->notsent + $this->sent + $this->invalid + $this->unconfirmed + $this->cannotsend + $this->failed_sent;
                 #if ($this->processed % 10 == 0) {
                 if (0) {
-                    $this->output(
+                    Output::output(
                         'AR' . $affrows . ' N ' . $this->counters['total_users_for_message ' . $message->id] . ' P' . $this->processed . ' S' . $this->sent . ' N' . $this->notsent . ' I' . $this->invalid . ' U' . $this->unconfirmed . ' C' . $this->cannotsend . ' F' . $this->failed_sent
                     );
                     $rn = $reload * $this->num_per_batch;
-                    $this->output(
+                    Output::output(
                         'P ' . $this->processed . ' N' . $this->counters['total_users_for_message ' . $message->id] . ' NB' . $this->num_per_batch . ' BT' . $batch_total . ' R' . $reload . ' RN' . $rn
                     );
                 }
@@ -1124,7 +1132,7 @@ class MessageQueue
                  */
 
 
-                $totaltime = $this->processqueue_timer->elapsed(true);
+                $totaltime = Timer::get('PQC')->elapsed(true);
                 if ($this->sent > 0) {
                     $msgperhour = (3600 / $totaltime) * $this->sent;
                     $secpermsg = $totaltime / $this->sent;
@@ -1147,12 +1155,12 @@ class MessageQueue
                 );
                 $message->setDataItem('last msg sent', time());
                 #$message->setDataItem('totaltime', $this->timer->elapsed(true));
-                if (Config::get('get_speed_stats', false) !== false) $this->output(
+                if (Config::get('get_speed_stats', false) !== false) Output::output(
                     'end process user ' . "\n" . '-----------------------------------' . "\n" . $user->id
                 );
             }
             $this->processed = $this->notsent + $this->sent + $this->invalid + $this->unconfirmed + $this->cannotsend + $this->failed_sent;
-            $this->output(
+            Output::output(
                 s(
                     'Processed %d out of %d subscribers',
                     $this->counters['processed_users_for_message ' . $message->id],
@@ -1164,8 +1172,8 @@ class MessageQueue
 
             if (($this->counters['total_users_for_message ' . $message->id] - $this->sent) <= 0 || $stopSending) {
                 # this message is done
-                if (!someusers)
-                    $this->output(s('Hmmm, No users found to send to'), 1, 'progress');
+                if (!$someusers)
+                    Output::output(s('Hmmm, No users found to send to'), 1, 'progress');
                 if (!$this->failed_sent) {
                     $message->repeatMessage();
                     $message->setStatus('sent');
@@ -1196,7 +1204,7 @@ class MessageQueue
                         . " where id = ?";
                     $rs = Sql_Query_Params($query, array($message->id));
                     $timetaken = Sql_Fetch_Row($rs);*/
-                    $this->output(
+                    Output::output(
                         s('It took') . ' ' . Util::timeDiff($message->sent, $message->sendstart) . ' ' . s('to send this message')
                     );
                     $this->sendMessageStats($message->id);
@@ -1228,7 +1236,7 @@ class MessageQueue
     private function sendEmailTest ($message_id, $email) {
         $message = s('(test)') . ' ' . s('Would have sent') . ' ' . $message_id . s('to') . ' ' . $email;
         if (Config::VERBOSE){
-            $this->output($message);
+            Output::output($message);
         }else{
             Logger::addToReport($message);
         }
@@ -1277,29 +1285,29 @@ class MessageQueue
     private function processError($message)
     {
         Logger::addToReport($message);
-        $this->output("Error: $message");
+        Output::output("Error: $message");
         exit;
     }
 
     public function shutdown()
     {
-        #  $this->output( "Script status: ".connection_status(),0); # with PHP 4.2.1 buggy. http://bugs.php.net/bug.php?id=17774
-        $this->output(s('Script stage') . ': ' . $this->script_stage, 0, 'progress');
+        #  Output::output( "Script status: ".connection_status(),0); # with PHP 4.2.1 buggy. http://bugs.php.net/bug.php?id=17774
+        Output::output(s('Script stage') . ': ' . $this->script_stage, 0, 'progress');
 
         $some = $this->processed; #$this->sent;# || $this->invalid || $this->notsent;
         if (!$some) {
-            $this->output(s('Finished, Nothing to do'), 0, 'progress');
+            Output::output(s('Finished, Nothing to do'), 0, 'progress');
             $nothingtodo = 1;
         }
 
-        $totaltime = $GLOBALS['processqueue_timer']->elapsed(1);
+        $totaltime = Timer::get('PQC')->elapsed(true);
         if ($totaltime > 0) {
             $msgperhour = (3600 / $totaltime) * $this->sent;
         } else {
             $msgperhour = s('Calculating');
         }
         if ($this->sent)
-            $this->output(
+            Output::output(
                 sprintf(
                     '%d %s %01.2f %s (%d %s)',
                     $this->sent,
@@ -1313,17 +1321,17 @@ class MessageQueue
                 'progress'
             );
         if ($this->invalid) {
-            $this->output(s('%d invalid email addresses', $this->invalid), 1, 'progress');
+            Output::output(s('%d invalid email addresses', $this->invalid), 1, 'progress');
         }
         if ($this->failed_sent) {
-            $this->output(s('%d failed (will retry later)', $this->failed_sent), 1, 'progress');
+            Output::output(s('%d failed (will retry later)', $this->failed_sent), 1, 'progress');
             foreach ($this->counters as $label => $value) {
-                #  $this->output(sprintf('%d %s',$value,s($label)),1,'progress');
-                Util::cl_output(sprintf('%d %s', $value, s($label)));
+                #  Output::output(sprintf('%d %s',$value,s($label)),1,'progress');
+                Output::cl_output(sprintf('%d %s', $value, s($label)));
             }
         }
         if ($this->unconfirmed) {
-            $this->output(sprintf(s('%d emails unconfirmed (not sent)'), $this->unconfirmed), 1, 'progress');
+            Output::output(sprintf(s('%d emails unconfirmed (not sent)'), $this->unconfirmed), 1, 'progress');
         }
 
         /*
@@ -1333,7 +1341,7 @@ class MessageQueue
         }
         */
 
-        Util::flushClickTrackCache();
+        Cache::flushClickTrackCache();
         Process::releaseLock($this->send_process_id);
 
         //TODO: replace print function
@@ -1341,7 +1349,7 @@ class MessageQueue
         //function finish ($flag,$message,$this->script_stage) {
         $subject = s("Maillist Processing info");
         if (!$this->nothingtodo) {
-            $this->output(s('Finished this run'), 1, 'progress');
+            Output::output(s('Finished this run'), 1, 'progress');
             printf(
                 '<script type="text/javascript">
                                         var parentJQuery = window.parent.jQuery;
@@ -1361,7 +1369,7 @@ class MessageQueue
         */
 
         if ($this->script_stage < 5 && !$this->nothingtodo) {
-            $this->output(
+            Output::output(
                 s('Warning: script never reached stage 5') . "\n" . s(
                     'This may be caused by a too slow or too busy server'
                 ) . " \n"
@@ -1372,12 +1380,12 @@ class MessageQueue
             $this->reload++;
             if (!Config::get('commandline') && $this->num_per_batch && $this->batch_period) {
                 if ($this->sent + 10 < $this->original_num_per_batch) {
-                    $this->output(s('Less than batch size were sent, so reloading imminently'), 1, 'progress');
+                    Output::output(s('Less than batch size were sent, so reloading imminently'), 1, 'progress');
                     $delaytime = 10;
                 } else {
                     // TODO: we should actually want batch period minus time already spent.
                     // might be nice to calculate that at some point
-                    $this->output(
+                    Output::output(
                         sprintf(s('Waiting for %d seconds before reloading'), $this->batch_period),
                         1,
                         'progress'
@@ -1409,7 +1417,7 @@ class MessageQueue
             foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
                 $plugin->messageQueueFinished();
             }*/
-            $this->output(s('Finished, All done'), 0);
+            Output::output(s('Finished, All done'), 0);
             printf(
                 '<script type="text/javascript">
                                         var parentJQuery = window.parent.jQuery;
@@ -1419,7 +1427,7 @@ class MessageQueue
             );
 
         } else {
-            $this->output(s('Script finished, but not all messages have been sent yet.'));
+            Output::output(s('Script finished, but not all messages have been sent yet.'));
         }
         if (!Config::get('commandline') && empty($_GET['ajaxed'])) {
             include_once "footer.inc";
@@ -1428,79 +1436,5 @@ class MessageQueue
         }
         exit;
     }
-
-    private $shadecount = 0;
-    //TODO: create an Output class that handles all output to the user, so we can call it from other classe as well
-    private function output($message, $logit = 1, $target = 'summary')
-    {
-        /*
-         * Sander: Not used afaik
-         * if (isset($this->counters['total_users_for_message '.$this->messageid])) {
-            $total = $this->counters['total_users_for_message '.$this->messageid];
-        } else {
-            $total = 0;
-        }*/
-
-        if (is_array($message)) {
-            $tmp = '';
-            foreach ($message as $key => $val) {
-                $tmp .= $key . '=' . $val . '; ';
-            }
-            $message = $tmp;
-        }
-        if (Config::get('commandline')) {
-            Util::cl_output(
-                strip_tags($message) . ' [' . $this->processqueue_timer->interval(1) . '] (' . Config::get(
-                    'pagestats'
-                )["number_of_queries"] . ')'
-            );
-            $infostring = '[' . date('D j M Y H:i', time()) . '] [CL]';
-        } else {
-            $infostring = '[' . date('D j M Y H:i', time()) . '] [' . $_SERVER['REMOTE_ADDR'] . "]";
-            #print "$infostring $message<br/>\n";
-            $lines = explode("\n", $message);
-            foreach ($lines as $line) {
-                $line = preg_replace('/"/', '\"', $line);
-
-                ## contribution in forums, http://forums.phplist.com/viewtopic.php?p=14648
-                //Replace the "&rsquo;" which is not replaced by html_decode
-                $line = preg_replace("/&rsquo;/", "'", $line);
-                //Decode HTML chars
-                $line = html_entity_decode($line, ENT_QUOTES, 'UTF-8');
-
-                print "\n" . '<div class="output shade' . $this->shadecount . '">' . $line . '</div>';
-                $line = str_replace("'", "\'", $line); // #16880 - avoid JS error
-                printf(
-                    '<script type="text/javascript">
-                                                var parentJQuery = window.parent.jQuery;
-                                                parentJQuery("#processqueue%s").append(\'<div class="output shade%s">%s</div>\');
-                                                parentJQuery("#processqueue%s").animate({scrollTop:100000}, "slow");
-                                              </script>',
-                    $target,
-                    ($this->shadecount) ? 1 : 0,
-                    $line,
-                    $target
-                );
-
-                $this->shadecount = !$this->shadecount;
-
-                for ($i = 0; $i < 10000; $i++) {
-                    print '  ';
-                    if ($i % 100 == 0) print "\n";
-                }
-                @ob_flush();
-                flush();
-            }
-            flush();
-        }
-
-        Logger::addToReport($infostring . ' ' . $message);
-        if ($logit) {
-            Logger::logEvent($message, 'processqueue');
-        }
-
-        flush();
-    }
-
 
 } 

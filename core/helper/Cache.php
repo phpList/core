@@ -41,13 +41,14 @@ class Cache {
     }
 
     /**
+     * Get a message from cache, returns false when not available yet
      * @param Message $message
-     * @return Message
+     * @return Message|bool
      */
     public static function getMessageFromCache($message)
     {
         if(!isset(Cache::$_instance->message_cache[$message->id])){
-            Cache::$_instance->message_cache[$message->id] = $message;
+            return false;
         }
         return Cache::$_instance->message_cache[$message->id];
     }

@@ -9,115 +9,101 @@ namespace phpList;
 
 class PrepareMessage
 {
+    /**
+     * @param Message $message
+     * @param string $email
+     * @param string $hash
+     * @param int $htmlpref
+     * @param array $forwardedby
+     * @return bool
+     */
     public static function sendEmail(
-        $messageid,
+        $message,
         $email,
         $hash,
         $htmlpref = 0,
-        $rssitems = array(),
         $forwardedby = array()
     ) {
-        $getspeedstats = VERBOSE && !empty($GLOBALS['getspeedstats']) && isset($GLOBALS['processqueue_timer']);
-        $sqlCountStart = $GLOBALS["pagestats"]["number_of_queries"];
+        $getspeedstats = Config::VERBOSE && Config::get('getspeedstats', false) !== false && (Timer::get('PQC') != null);
+        $sqlCountStart = Config::get('pagestats')['number_of_queries'];
+        //TODO: remove $_GET from here
         $isTestMail = isset($_GET['page']) && $_GET['page'] == 'send';
 
         ## for testing concurrency, put in a delay to check if multiple send processes cause duplicates
         #usleep(rand(0,10) * 1000000);
 
-        if ($email == "") {
+        if ($email == '') {
             return 0;
         }
-        if ($getspeedstats) output('sendEmail start ' . $GLOBALS['processqueue_timer']->interval(1));
+        if ($getspeedstats) Output::output('sendEmail start ' . Timer::get('PQC')->interval(1));
 
         #0013076: different content when forwarding 'to a friend'
-        if (FORWARD_ALTERNATIVE_CONTENT) {
+        if (Config::FORWARD_ALTERNATIVE_CONTENT) {
             $forwardContent = sizeof($forwardedby) > 0;
         } else {
             $forwardContent = 0;
         }
 
-        if (empty($cached[$messageid])) {
-            if (!precacheMessage($messageid, $forwardContent)) {
-                unset($cached[$messageid]);
-                logEvent('Error loading message ' . $messageid . '  in cache');
-                return 0;
+        if (Cache::getMessageFromCache($message) == false){
+            if (!PrepareMessage::precacheMessage($message, $forwardContent)) {
+                Logger::logEvent('Error loading message ' . $message->id . '  in cache');
+                return false;
             }
         } else {
             #  dbg("Using cached {$cached->fromemail}");
-            if (VERBOSE) output('Using cached message');
+            if (Config::VERBOSE) Output::output('Using cached message');
         }
-        if (VERBOSE) {
-            output(s('Sending message %d with subject %s to %s', $messageid, $cached->subject, $email));
+        /**
+         * @var Message
+         */
+        $cached = Cache::getMessageFromCache($message);
+
+        if (Config::VERBOSE) {
+            Output::output(s('Sending message %d with subject %s to %s', $message->id, $cached->subject, $email));
         }
 
         ## at this stage we don't know whether the content is HTML or text, it's just content
-        $content = $cached[$messageid]['content'];
+        $content = $cached->content;
 
-        if (VERBOSE && $getspeedstats) {
-            output('Load user start');
+        if ($getspeedstats) {
+            Output::output('Load user start');
         }
-        $userdata = array();
-        $user_att_values = array();
 
         #0011857: forward to friend, retain attributes
-        if ($hash == 'forwarded' && defined('KEEPFORWARDERATTRIBUTES') && KEEPFORWARDERATTRIBUTES) {
-            $user_att_values = getUserAttributeValues($forwardedby['email']);
+        if ($hash == 'forwarded' && Config::KEEPFORWARDERATTRIBUTES) {
+            $user = User::getUserByEmail($forwardedby['email']);
         } elseif ($hash != 'forwarded') {
-            $user_att_values = getUserAttributeValues($email);
+            $user = User::getUserByEmail($email);
         }
-        if (!is_array($user_att_values)) $user_att_values = array();
 
-        foreach ($user_att_values as $key => $val) {
-            $newkey = cleanAttributeName($key);
-            ## in the help, we only list attributes with "strlen < 20"
-            unset($user_att_values[$key]);
-            if (strlen($key) < 20) {
-                $user_att_values[$newkey] = $val;
-            }
-        }
-        # print '<pre>';var_dump($user_att_values);print '</pre>';exit;
-        $query = sprintf('select * from %s where email = ?', $GLOBALS["tables"]["user"]);
-        $rs = Sql_Query_Params($query, array($email));
-        $userdata = Sql_Fetch_Assoc($rs);
-        if (empty($userdata['id'])) {
-            $userdata = array();
-        }
-        #var_dump($userdata);
+        $user_att_values = $user->getCleanAttributes();
 
+        $html = $text = array();
         if (stripos($content, "[LISTS]") !== false) {
-            $listsarr = array();
-            $req = Sql_Query(
-                sprintf(
-                    'select list.name from %s as list,%s as listuser where list.id = listuser.listid and listuser.userid = %d',
-                    $GLOBALS["tables"]["list"],
-                    $GLOBALS["tables"]["listuser"],
-                    $userdata["id"]
-                )
-            );
-            while ($row = Sql_Fetch_Row($req)) {
-                array_push($listsarr, $row[0]);
-            }
-            if (!empty($listsarr)) {
-                $html['lists'] = join('<br/>', $listsarr);
-                $text['lists'] = join("\n", $listsarr);
+            $lists = MailingList::getListsForUser($user->id);
+            if (!empty($lists)) {
+                foreach($lists as $list){
+                    $html['lists'] .= '<br/>' . $list->name;
+                    $text['lists'] .= "\n" . $list->name;
+                }
             } else {
-                $html['lists'] = $GLOBALS['strNoListsFound'];
-                $text['lists'] = $GLOBALS['strNoListsFound'];
+                $html['lists'] = s('strNoListsFound');
+                $text['lists'] = s('strNoListsFound');
             }
-            unset($listsarr);
         }
 
-        if (VERBOSE && $getspeedstats) {
-            output('Load user end');
+        if ($getspeedstats) {
+            Output::output('Load user end');
         }
 
-        if ($cached[$messageid]['userspecific_url']) {
-            if (VERBOSE && $getspeedstats) {
-                output('fetch personal URL start');
+        if ($cached->userspecific_url) {
+            if ($getspeedstats) {
+                Output::output('fetch personal URL start');
             }
 
             ## Fetch external content, only if the URL has placeholders
-            if ($GLOBALS["can_fetchUrl"] && preg_match("/\[URL:([^\s]+)\]/i", $content, $regs)) {
+            //TODO: changed can_fetchUrl to can_fetch_url -> make sure it's changed everywhere
+            if (Config::get('can_fetch_url') && preg_match("/\[URL:([^\s]+)\]/i", $content, $regs)) {
                 while (isset($regs[1]) && strlen($regs[1])) {
                     $url = $regs[1];
                     if (!preg_match('/^http/i', $url)) {
@@ -138,13 +124,13 @@ class PrepareMessage
                     preg_match("/\[URL:([^\s]+)\]/i", $content, $regs);
                 }
             }
-            if (VERBOSE && $getspeedstats) {
-                output('fetch personal URL end');
+            if ($getspeedstats) {
+                Output::output('fetch personal URL end');
             }
         }
 
-        if (VERBOSE && $getspeedstats) {
-            output('define placeholders start');
+        if ($getspeedstats) {
+            Output::output('define placeholders start');
         }
 
         $url = getConfig("unsubscribeurl");
@@ -282,14 +268,14 @@ class PrepareMessage
         }
 #  $content = $cached->htmlcontent;
 
-        if (VERBOSE && $getspeedstats) {
-            output('define placeholders end');
+        if ($getspeedstats) {
+            Output::output('define placeholders end');
         }
 
         ## Fill text and html versions depending on given versions.
 
-        if (VERBOSE && $getspeedstats) {
-            output('parse text to html or html to text start');
+        if ($getspeedstats) {
+            Output::output('parse text to html or html to text start');
         }
 
         if ($cached->htmlformatted) {
@@ -308,15 +294,15 @@ class PrepareMessage
             $htmlcontent = parseText($content);
         }
 
-        if (VERBOSE && $getspeedstats) {
-            output('parse text to html or html to text end');
+        if ($getspeedstats) {
+            Output::output('parse text to html or html to text end');
         }
 
         $defaultstyle = getConfig("html_email_style");
         $adddefaultstyle = 0;
 
-        if (VERBOSE && $getspeedstats) {
-            output('merge into template start');
+        if ($getspeedstats) {
+            Output::output('merge into template start');
         }
 
         if ($cached->template)
@@ -329,13 +315,13 @@ class PrepareMessage
         }
         $textmessage = $textcontent;
 
-        if (VERBOSE && $getspeedstats) {
-            output('merge into template end');
+        if ($getspeedstats) {
+            Output::output('merge into template end');
         }
         ## Parse placeholders
 
-        if (VERBOSE && $getspeedstats) {
-            output('parse placeholders start');
+        if ($getspeedstats) {
+            Output::output('parse placeholders start');
         }
 
 
@@ -461,12 +447,12 @@ class PrepareMessage
         $htmlmessage = parsePlaceHolders($htmlmessage, $html);
         $textmessage = parsePlaceHolders($textmessage, $text);
 
-        if (VERBOSE && $getspeedstats) {
-            output('parse placeholders end');
+        if ($getspeedstats) {
+            Output::output('parse placeholders end');
         }
 
-        if (VERBOSE && $getspeedstats) {
-            output('parse userdata start');
+        if ($getspeedstats) {
+            Output::output('parse userdata start');
         }
 
         $htmlmessage = parsePlaceHolders($htmlmessage, $userdata);
@@ -481,8 +467,8 @@ class PrepareMessage
             $textmessage = parsePlaceHolders($textmessage, $user_att_values);
         }
 
-        if (VERBOSE && $getspeedstats) {
-            output('parse userdata end');
+        if ($getspeedstats) {
+            Output::output('parse userdata end');
         }
 
         if (!$destinationemail) {
@@ -494,15 +480,15 @@ class PrepareMessage
             $destinationemail .= $GLOBALS["expand_unqualifiedemail"];
         }
 
-        if (VERBOSE && $getspeedstats) {
-            output('pass to plugins for destination email start');
+        if ($getspeedstats) {
+            Output::output('pass to plugins for destination email start');
         }
         foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
 #    print "Checking Destination for ".$plugin->name."<br/>";
             $destinationemail = $plugin->setFinalDestinationEmail($messageid, $user_att_values, $destinationemail);
         }
-        if (VERBOSE && $getspeedstats) {
-            output('pass to plugins for destination email end');
+        if ($getspeedstats) {
+            Output::output('pass to plugins for destination email end');
         }
 
         foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
@@ -512,8 +498,8 @@ class PrepareMessage
 
         ## click tracking
         # for now we won't click track forwards, as they are not necessarily users, so everything would fail
-        if (VERBOSE && $getspeedstats) {
-            output('click track start');
+        if ($getspeedstats) {
+            Output::output('click track start');
         }
 
         if (CLICKTRACK && $hash != 'forwarded' && !empty($userdata['id'])) {
@@ -721,8 +707,8 @@ class PrepareMessage
                 $textmessage = str_replace('[%%%' . $linkid . '%%%]', $newlink, $textmessage);
             }
         }
-        if (VERBOSE && $getspeedstats) {
-            output('click track end');
+        if ($getspeedstats) {
+            Output::output('click track end');
         }
 
         ## if we're not tracking clicks, we should add Google tracking here
@@ -798,8 +784,8 @@ class PrepareMessage
             $htmlmessage = nl2br($forwardedby['personalNote']) . '<br/>' . $htmlmessage;
             $textmessage = $forwardedby['personalNote'] . "\n" . $textmessage;
         }
-        if (VERBOSE && $getspeedstats) {
-            output('cleanup start');
+        if ($getspeedstats) {
+            Output::output('cleanup start');
         }
 
         ## allow fallback to default value for the ones that do not have a value
@@ -845,14 +831,14 @@ class PrepareMessage
         $htmlmessage = str_ireplace('<p><!DOCTYPE', '<!DOCTYPE', $htmlmessage);
         $htmlmessage = str_ireplace('</html></p>', '</html>', $htmlmessage);
 
-        if (VERBOSE && $getspeedstats) {
-            output('cleanup end');
+        if ($getspeedstats) {
+            Output::output('cleanup end');
         }
 #  $htmlmessage = compressContent($htmlmessage);
 
         # print htmlspecialchars($htmlmessage);exit;
 
-        if ($getspeedstats) output('build Start ' . $GLOBALS['processqueue_timer']->interval(1));
+        if ($getspeedstats) Output::output('build Start ' . $GLOBALS['processqueue_timer']->interval(1));
 
         # build the email
         $mail = new PHPlistMailer($messageid, $destinationemail);
@@ -868,8 +854,8 @@ class PrepareMessage
         $text_domains = explode("\n", trim(getConfig("alwayssendtextto")));
         if (in_array($domaincheck, $text_domains)) {
             $htmlpref = 0;
-            if (VERBOSE)
-                output($GLOBALS['I18N']->get('sendingtextonlyto') . " $domaincheck");
+            if (Config::VERBOSE)
+                Output::output($GLOBALS['I18N']->get('sendingtextonlyto') . " $domaincheck");
         }
 
         foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
@@ -1058,8 +1044,8 @@ class PrepareMessage
             if (!empty($cached->replytoemail)) {
                 $mail->AddReplyTo($cached->replytoemail, $cached->replytoname);
             }
-            if ($getspeedstats) output('build End ' . $GLOBALS['processqueue_timer']->interval(1));
-            if ($getspeedstats) output('send Start ' . $GLOBALS['processqueue_timer']->interval(1));
+            if ($getspeedstats) Output::output('build End ' . $GLOBALS['processqueue_timer']->interval(1));
+            if ($getspeedstats) Output::output('send Start ' . $GLOBALS['processqueue_timer']->interval(1));
 
             if (!empty($GLOBALS['developer_email'])) {
                 $destinationemail = $GLOBALS['developer_email'];
@@ -1070,7 +1056,7 @@ class PrepareMessage
                 foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
                     $plugin->processSendFailed($messageid, $userdata, $isTestMail);
                 }
-                output(
+                Output::output(
                     sprintf(
                         s('Error sending message %d (%d/%d) to %s (%s) '),
                         $messageid,
@@ -1084,7 +1070,7 @@ class PrepareMessage
                 return 0;
             } else {
                 ## only save the estimated size of the message when sending a test message
-                if ($getspeedstats) output('send End ' . $GLOBALS['processqueue_timer']->interval(1));
+                if ($getspeedstats) Output::output('send End ' . $GLOBALS['processqueue_timer']->interval(1));
                 if (!isset($GLOBALS['send_process_id'])) {
                     if (!empty($mail->mailsize)) {
                         $name = $htmlpref ? 'htmlsize' : 'textsize';
@@ -1096,7 +1082,7 @@ class PrepareMessage
                     }
                 }
                 $sqlCount = $GLOBALS["pagestats"]["number_of_queries"] - $sqlCountStart;
-                if ($getspeedstats) output('It took ' . $sqlCount . '  queries to send this message');
+                if ($getspeedstats) Output::output('It took ' . $sqlCount . '  queries to send this message');
                 foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
                     $plugin->processSendSuccess($messageid, $userdata, $isTestMail);
                 }
@@ -1538,16 +1524,18 @@ class PrepareMessage
      * Load message in memory cache
      * @param Message $message
      * @param bool $forwardContent
-     * @return bool|int
+     * @return bool
      */
     public static function precacheMessage($message, $forwardContent = false)
     {
         $domain = Config::get('domain');
-        $cache = Config::get('cached_messages');
         /**
          * @var Message $cached_message
          */
-        $cached_message = Cache::getMessageFromCache($message);
+        if(!($cached_message = Cache::getMessageFromCache($message)){
+            Cache::setMessageCache($message);
+            $cached_message = Cache::getMessageFromCache($message);
+        }
 
         ## the reply to is actually not in use
         if (preg_match('/([^ ]+@[^ ]+)/', $message->replyto, $regs)) {
@@ -1642,7 +1630,7 @@ class PrepareMessage
 
             if (Config::VERBOSE && (Config::get('getspeedstats', false) !== false)) {
                 //TODO: raplace output function call
-                output('fetch URL end');
+                Output::output('fetch URL end');
             }
             /*
             print $message->sendurl;
@@ -1664,8 +1652,7 @@ class PrepareMessage
         */
 
         if (Config::VERBOSE && (Config::get('getspeedstats', false) !== false)) {
-            //TODO: raplace output function call
-            output('parse config start');
+            Output::output('parse config start');
         }
 
         /*
@@ -1682,8 +1669,7 @@ class PrepareMessage
           }
           */
         if (Config::VERBOSE && (Config::get('getspeedstats', false) !== false)) {
-            //TODO: raplace output function call
-            output('parse config end');
+            Output::output('parse config end');
         }
         /*TODO: figure out what this does
         foreach ($message as $key => $val) {

@@ -52,7 +52,7 @@ class MySQLi implements IDatabase
     //TODO: convert if needed
     function error()
     {
-        if (empty($GLOBALS['commandline'])) {
+        if (Config::get('commandline', false) !== false) {
             /*
                 output('DB error'.$errno);
                 print debug_print_backtrace();

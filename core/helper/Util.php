@@ -18,41 +18,6 @@ class Util
         flush();
     }
 
-    public static function flushClickTrackCache()
-    {
-        //TODO: remove globals and output
-        if (!isset($GLOBALS['cached']['linktracksent'])) {
-            return;
-        }
-        foreach ($GLOBALS['cached']['linktracksent'] as $mid => $numsent) {
-            foreach ($numsent as $fwdid => $fwdtotal) {
-                if (Config::VERBOSE) {
-                    output("Flushing clicktrack stats for $mid: $fwdid => $fwdtotal");
-                }
-                phpList::DB()->query(
-                    sprintf(
-                        'UPDATE %s SET total = %d
-                        WHERE messageid = %d
-                        AND forwardid = %d',
-                        Config::getTableName('linktrack_ml'),
-                        $fwdtotal,
-                        $mid,
-                        $fwdid
-                    )
-                );
-            }
-        }
-    }
-
-    public static function cl_output($message)
-    {
-        if (Config::get('commandline')) {
-            @ob_end_clean();
-            print Config::get('installation_name') . ' - ' . strip_tags($message) . "\n";
-            @ob_start();
-        }
-    }
-
     public static function secs2time($secs)
     {
         $years = $days = $hours = $mins = 0;

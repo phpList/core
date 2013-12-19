@@ -318,7 +318,7 @@ class User
     public function getAttribute($attribute)
     {
         if (empty($this->attributes)) {
-            $this->getAttributes();
+            $this->loadAttributes();
         }
 
         if (!isset($this->attributes[$attribute])) {
@@ -328,7 +328,7 @@ class User
         }
     }
 
-    public function getAttributes()
+    public function loadAttributes()
     {
         $result = phpList::DB()->query(
             sprintf(
@@ -347,6 +347,23 @@ class User
             $this->attributes[$row['id']] = $row['value'];
             $this->attributes[$row['name']] = $row['name'];
         }
+    }
+
+    /**
+     * Get all user attributes
+     * @return array
+     */
+    public function getCleanAttributes()
+    {
+        $this->loadAttributes();
+        $clean_attributes = array();
+        foreach ($this->attributes as $key => $val) {
+            ## in the help, we only list attributes with "strlen < 20"
+            if (strlen($key) < 20) {
+                $clean_attributes[String::cleanAttributeName($key)] = $val;
+            }
+        }
+        return $clean_attributes;
     }
 
     public function addAttribute($id, $value)

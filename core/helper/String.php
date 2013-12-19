@@ -52,6 +52,16 @@ class String
         return $value;
     }
 
+    /**
+     * Clean out chars that make preg choke
+     * primarily used for parsing the placeholders in emails.
+     * @param string $name
+     * @return string
+     */
+    public static function cleanAttributeName($name) {
+        return str_replace(array('(', ')', '/', '\\', '*', '.'), '', $name);
+    }
+
     public static function HTML2Text($text)
     {
         # strip HTML, and turn links into the full URL
