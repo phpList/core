@@ -44,7 +44,7 @@ class PrepareMessage
             $forwardContent = 0;
         }
 
-        if (Cache::getMessageFromCache($message) == false){
+        if (Cache::getCachedMessage($message) == false){
             if (!PrepareMessage::precacheMessage($message, $forwardContent)) {
                 Logger::logEvent('Error loading message ' . $message->id . '  in cache');
                 return false;
@@ -56,14 +56,14 @@ class PrepareMessage
         /**
          * @var Message
          */
-        $cached = Cache::getMessageFromCache($message);
+        $cached_message = Cache::getCachedMessage($message);
 
         if (Config::VERBOSE) {
-            Output::output(s('Sending message %d with subject %s to %s', $message->id, $cached->subject, $email));
+            Output::output(s('Sending message %d with subject %s to %s', $message->id, $cached_message->subject, $email));
         }
 
         ## at this stage we don't know whether the content is HTML or text, it's just content
-        $content = $cached->content;
+        $content = $cached_message->content;
 
         if ($getspeedstats) {
             Output::output('Load user start');
@@ -79,7 +79,7 @@ class PrepareMessage
         $user_att_values = $user->getCleanAttributes();
 
         $html = $text = array();
-        if (stripos($content, "[LISTS]") !== false) {
+        if (stripos($content, '[LISTS]') !== false) {
             $lists = MailingList::getListsForUser($user->id);
             if (!empty($lists)) {
                 foreach($lists as $list){
@@ -96,32 +96,32 @@ class PrepareMessage
             Output::output('Load user end');
         }
 
-        if ($cached->userspecific_url) {
+        if ($cached_message->userspecific_url) {
             if ($getspeedstats) {
                 Output::output('fetch personal URL start');
             }
 
             ## Fetch external content, only if the URL has placeholders
-            //TODO: changed can_fetchUrl to can_fetch_url -> make sure it's changed everywhere
-            if (Config::get('can_fetch_url') && preg_match("/\[URL:([^\s]+)\]/i", $content, $regs)) {
+            //TODO: I changed can_fetchUrl to can_fetch_url -> make sure it's changed everywhere
+            if (Config::get('can_fetch_url') && preg_match('/\[URL:([^\s]+)\]/i', $content, $regs)) {
                 while (isset($regs[1]) && strlen($regs[1])) {
                     $url = $regs[1];
                     if (!preg_match('/^http/i', $url)) {
                         $url = 'http://' . $url;
                     }
-                    $remote_content = fetchUrl($url, $userdata);
+                    $remote_content = Util::fetchUrl($url, $user);
 
                     # @@ don't use this
                     #      $remote_content = includeStyles($remote_content);
 
                     if ($remote_content) {
                         $content = str_replace($regs[0], $remote_content, $content);
-                        $cached->htmlformatted = strip_tags($content) != $content;
+                        $cached_message->htmlformatted = strip_tags($content) != $content;
                     } else {
                         logEvent("Error fetching URL: $regs[1] to send to $email");
                         return 0;
                     }
-                    preg_match("/\[URL:([^\s]+)\]/i", $content, $regs);
+                    preg_match('/\[URL:([^\s]+)\]/i', $content, $regs);
                 }
             }
             if ($getspeedstats) {
@@ -133,98 +133,98 @@ class PrepareMessage
             Output::output('define placeholders start');
         }
 
-        $url = getConfig("unsubscribeurl");
+        $url = Config::get('unsubscribeurl');
         ## https://mantis.phplist.com/view.php?id=16680 -> the "sep" should be & for the text links
         $sep = strpos($url, '?') === false ? '?' : '&';
 
-        $html["unsubscribe"] = sprintf(
+        $html['unsubscribe'] = sprintf(
             '<a href="%s%suid=%s">%s</a>',
             $url,
             htmlspecialchars($sep),
             $hash,
-            $strUnsubscribe
+            s('Unsubscribe')
         );
-        $text["unsubscribe"] = sprintf('%s%suid=%s', $url, $sep, $hash);
-        $text["jumpoff"] = sprintf('%s%suid=%s&jo=1', $url, $sep, $hash);
-        $html["unsubscribeurl"] = sprintf('%s%suid=%s', $url, htmlspecialchars($sep), $hash);
-        $text["unsubscribeurl"] = sprintf('%s%suid=%s', $url, $sep, $hash);
-        $text["jumpoffurl"] = sprintf('%s%suid=%s&jo=1', $url, $sep, $hash);
+        $text['unsubscribe'] = sprintf('%s%suid=%s', $url, $sep, $hash);
+        $text['jumpoff'] = sprintf('%s%suid=%s&jo=1', $url, $sep, $hash);
+        $html['unsubscribeurl'] = sprintf('%s%suid=%s', $url, htmlspecialchars($sep), $hash);
+        $text['unsubscribeurl'] = sprintf('%s%suid=%s', $url, $sep, $hash);
+        $text['jumpoffurl'] = sprintf('%s%suid=%s&jo=1', $url, $sep, $hash);
 
         #0013076: Blacklisting posibility for unknown users
-        $url = getConfig("blacklisturl");
+        $url = Config::get('blacklisturl');
         $sep = strpos($url, '?') === false ? '?' : '&';
         $html["blacklist"] = sprintf(
             '<a href="%s%semail=%s">%s</a>',
             $url,
             htmlspecialchars($sep),
             $email,
-            $strUnsubscribe
+            s('Unsubscribe')
         );
-        $text["blacklist"] = sprintf('%s%semail=%s', $url, $sep, $email);
-        $html["blacklisturl"] = sprintf('%s%semail=%s', $url, htmlspecialchars($sep), $email);
-        $text["blacklisturl"] = sprintf('%s%semail=%s', $url, $sep, $email);
+        $text['blacklist'] = sprintf('%s%semail=%s', $url, $sep, $email);
+        $html['blacklisturl'] = sprintf('%s%semail=%s', $url, htmlspecialchars($sep), $email);
+        $text['blacklisturl'] = sprintf('%s%semail=%s', $url, $sep, $email);
 
         #0013076: Problem found during testing: message part must be parsed correctly as well.
         if (sizeof($forwardedby) && isset($forwardedby['email'])) {
-            $html["unsubscribe"] = $html["blacklist"];
-            $text["unsubscribe"] = $text["blacklist"];
-            $html["forwardedby"] = $forwardedby["email"];
-            $text["forwardedby"] = $forwardedby["email"];
+            $html['unsubscribe'] = $html['blacklist'];
+            $text['unsubscribe'] = $text['blacklist'];
+            $html['forwardedby'] = $forwardedby['email'];
+            $text['forwardedby'] = $forwardedby['email'];
         }
 
-        $url = getConfig("subscribeurl");
+        $url = Config::get('subscribeurl');
         $sep = strpos($url, '?') === false ? '?' : '&';
-        $html["subscribe"] = sprintf('<a href="%s">%s</a>', $url, $strThisLink);
-        $text["subscribe"] = sprintf('%s', $url);
-        $html["subscribeurl"] = sprintf('%s', $url);
-        $text["subscribeurl"] = sprintf('%s', $url);
-        $url = getConfig("forwardurl");
+        $html['subscribe'] = sprintf('<a href="%s">%s</a>', $url, s('this link'));
+        $text['subscribe'] = sprintf('%s', $url);
+        $html['subscribeurl'] = sprintf('%s', $url);
+        $text['subscribeurl'] = sprintf('%s', $url);
+        $url = Config::get('forwardurl');
         $sep = strpos($url, '?') === false ? '?' : '&';
-        $html["forward"] = sprintf(
+        $html['forward'] = sprintf(
             '<a href="%s%suid=%s&amp;mid=%d">%s</a>',
             $url,
             htmlspecialchars($sep),
             $hash,
-            $messageid,
-            $strThisLink
+            $message->id,
+            s('this link')
         );
-        $text["forward"] = sprintf('%s%suid=%s&mid=%d', $url, $sep, $hash, $messageid);
-        $html["forwardurl"] = sprintf('%s%suid=%s&amp;mid=%d', $url, htmlspecialchars($sep), $hash, $messageid);
-        $text["forwardurl"] = $text["forward"];
-        $html["messageid"] = sprintf('%d', $messageid);
-        $text["messageid"] = sprintf('%d', $messageid);
-        $url = getConfig("forwardurl");
+        $text['forward'] = sprintf('%s%suid=%s&mid=%d', $url, $sep, $hash, $message->id);
+        $html['forwardurl'] = sprintf('%s%suid=%s&amp;mid=%d', $url, htmlspecialchars($sep), $hash, $message->id);
+        $text['forwardurl'] = $text['forward'];
+        $html['messageid'] = sprintf('%d', $message->id);
+        $text['messageid'] = sprintf('%d', $message->id);
+        $url = Config::get('forwardurl');
 
         # make sure there are no newlines, otherwise they get turned into <br/>s
-        $html["forwardform"] = sprintf(
+        $html['forwardform'] = sprintf(
             '<form method="get" action="%s" name="forwardform" class="forwardform"><input type="hidden" name="uid" value="%s" /><input type="hidden" name="mid" value="%d" /><input type="hidden" name="p" value="forward" /><input type=text name="email" value="" class="forwardinput" /><input name="Send" type="submit" value="%s" class="forwardsubmit"/></form>',
             $url,
             $hash,
-            $messageid,
+            $message->id,
             $GLOBALS['strForward']
         );
-        $text["signature"] = "\n\n-- powered by phpList, www.phplist.com --\n\n";
-        $url = getConfig("preferencesurl");
+        $text['signature'] = "\n\n-- powered by phpList, www.phplist.com --\n\n";
+        $url = Config::get("preferencesurl");
         $sep = strpos($url, '?') === false ? '?' : '&';
-        $html["preferences"] = sprintf(
+        $html['preferences'] = sprintf(
             '<a href="%s%suid=%s">%s</a>',
             $url,
             htmlspecialchars($sep),
             $hash,
-            $strThisLink
+            s('this link')
         );
-        $text["preferences"] = sprintf('%s%suid=%s', $url, $sep, $hash);
-        $html["preferencesurl"] = sprintf('%s%suid=%s', $url, htmlspecialchars($sep), $hash);
-        $text["preferencesurl"] = sprintf('%s%suid=%s', $url, $sep, $hash);
+        $text['preferences'] = sprintf('%s%suid=%s', $url, $sep, $hash);
+        $html['preferencesurl'] = sprintf('%s%suid=%s', $url, htmlspecialchars($sep), $hash);
+        $text['preferencesurl'] = sprintf('%s%suid=%s', $url, $sep, $hash);
 
-        $url = getConfig("confirmationurl");
+        $url = Config::get("confirmationurl");
         $sep = strpos($url, '?') === false ? '?' : '&';
-        $html["confirmationurl"] = sprintf('%s%suid=%s', $url, htmlspecialchars($sep), $hash);
-        $text["confirmationurl"] = sprintf('%s%suid=%s', $url, $sep, $hash);
+        $html['confirmationurl'] = sprintf('%s%suid=%s', $url, htmlspecialchars($sep), $hash);
+        $text['confirmationurl'] = sprintf('%s%suid=%s', $url, $sep, $hash);
 
         #historical, not sure it's still used
-        $html["userid"] = $hash;
-        $text["userid"] = $hash;
+        $html['userid'] = $hash;
+        $text['userid'] = $hash;
 
         $html['website'] = $GLOBALS['website']; # Your website's address, e.g. www.yourdomain.com
         $text['website'] = $GLOBALS['website'];
@@ -232,14 +232,14 @@ class PrepareMessage
         $text['domain'] = $GLOBALS['domain'];
 
         if ($hash != 'forwarded') {
-            $text['footer'] = $cached->textfooter;
-            $html['footer'] = $cached->htmlfooter;
+            $text['footer'] = $cached_message->textfooter;
+            $html['footer'] = $cached_message->htmlfooter;
         } else {
             #0013076: different content when forwarding 'to a friend'
-            if (FORWARD_ALTERNATIVE_CONTENT) {
-                $text['footer'] = stripslashes($messagedata["forwardfooter"]);
+            if (Config::FORWARD_ALTERNATIVE_CONTENT) {
+                $text['footer'] = stripslashes($message->forwardfooter);
             } else {
-                $text['footer'] = getConfig('forwardfooter');
+                $text['footer'] = Config::get('forwardfooter');
             }
             $html['footer'] = $text['footer'];
         }
@@ -255,18 +255,18 @@ class PrepareMessage
 
           Michiel Dethmers, phpList Ltd 2003 - 2013
         */
-        if (!EMAILTEXTCREDITS) {
-            $html["signature"] = $PoweredByImage; #'<div align="center" id="signature"><a href="http://www.phplist.com"><img src="powerphplist.png" width=88 height=31 title="Powered by PHPlist" alt="Powered by PHPlist" border="0" /></a></div>';
+        if (!Config::EMAILTEXTCREDITS) {
+            $html['signature'] = Config::get('PoweredByImage'); #'<div align="center" id="signature"><a href="http://www.phplist.com"><img src="powerphplist.png" width=88 height=31 title="Powered by PHPlist" alt="Powered by PHPlist" border="0" /></a></div>';
             # oops, accidentally became spyware, never intended that, so take it out again :-)
-            $html["signature"] = preg_replace(
+            $html['signature'] = preg_replace(
                 '/src=".*power-phplist.png"/',
                 'src="powerphplist.png"',
-                $html["signature"]
+                $html['signature']
             );
         } else {
-            $html["signature"] = $PoweredByText;
+            $html['signature'] = Config::get('PoweredByText');
         }
-#  $content = $cached->htmlcontent;
+        #  $content = $cached->htmlcontent;
 
         if ($getspeedstats) {
             Output::output('define placeholders end');
@@ -278,36 +278,36 @@ class PrepareMessage
             Output::output('parse text to html or html to text start');
         }
 
-        if ($cached->htmlformatted) {
-            if (empty($cached->textcontent)) {
-                $textcontent = HTML2Text($content);
+        if ($cached_message->htmlformatted) {
+            if (empty($cached_message->textcontent)) {
+                $textcontent = String::HTML2Text($content);
             } else {
-                $textcontent = $cached->textcontent;
+                $textcontent = $cached_message->textcontent;
             }
             $htmlcontent = $content;
         } else {
-            if (empty($cached->textcontent)) {
+            if (empty($cached_message->textcontent)) {
                 $textcontent = $content;
             } else {
-                $textcontent = $cached->textcontent;
+                $textcontent = $cached_message->textcontent;
             }
-            $htmlcontent = parseText($content);
+            $htmlcontent = PrepareMessage::parseText($content);
         }
 
         if ($getspeedstats) {
             Output::output('parse text to html or html to text end');
         }
 
-        $defaultstyle = getConfig("html_email_style");
+        $defaultstyle = Config::get('html_email_style');
         $adddefaultstyle = 0;
 
         if ($getspeedstats) {
             Output::output('merge into template start');
         }
 
-        if ($cached->template)
+        if ($cached_message->template)
             # template used
-            $htmlmessage = str_replace("[CONTENT]", $htmlcontent, $cached->template);
+            $htmlmessage = str_replace('[CONTENT]', $htmlcontent, $cached_message->template);
         else {
             # no template used
             $htmlmessage = $htmlcontent;
@@ -333,39 +333,39 @@ class PrepareMessage
         */
 
 
-#  print htmlspecialchars($htmlmessage);exit;
+        #print htmlspecialchars($htmlmessage);exit;
 
         ### @@@TODO don't use forward and forward form in a forwarded message as it'll fail
 
-        if (strpos($htmlmessage, "[FOOTER]") !== false)
-            $htmlmessage = str_ireplace("[FOOTER]", $html["footer"], $htmlmessage);
-        elseif ($html["footer"])
-            $htmlmessage = addHTMLFooter($htmlmessage, '<br />' . $html["footer"]);
+        if (strpos($htmlmessage, '[FOOTER]') !== false)
+            $htmlmessage = str_ireplace('[FOOTER]', $html['footer'], $htmlmessage);
+        elseif ($html['footer'])
+            $htmlmessage = PrepareMessage::addHTMLFooter($htmlmessage, '<br />' . $html['footer']);
 
-        if (strpos($htmlmessage, "[SIGNATURE]") !== false) {
-            $htmlmessage = str_ireplace("[SIGNATURE]", $html["signature"], $htmlmessage);
+        if (strpos($htmlmessage, '[SIGNATURE]') !== false) {
+            $htmlmessage = str_ireplace('[SIGNATURE]', $html['signature'], $htmlmessage);
         } else {
-# BUGFIX 0015303, 2/2
-//    $htmlmessage .= '<br />'.$html["signature"];
-            $htmlmessage = addHTMLFooter(
+        # BUGFIX 0015303, 2/2
+        //    $htmlmessage .= '<br />'.$html['signature'];
+            $htmlmessage = PrepareMessage::addHTMLFooter(
                 $htmlmessage,
                 '
-               ' . $html["signature"]
+               ' . $html['signature']
             );
         }
 
 
-# END BUGFIX 0015303, 2/2
+        # END BUGFIX 0015303, 2/2
 
-        if (strpos($textmessage, "[FOOTER]"))
-            $textmessage = str_ireplace("[FOOTER]", $text["footer"], $textmessage);
+        if (strpos($textmessage, '[FOOTER]'))
+            $textmessage = str_ireplace('[FOOTER]', $text['footer'], $textmessage);
         else
-            $textmessage .= "\n\n" . $text["footer"];
+            $textmessage .= "\n\n" . $text['footer'];
 
         if (strpos($textmessage, '[SIGNATURE]'))
-            $textmessage = str_ireplace("[SIGNATURE]", $text["signature"], $textmessage);
+            $textmessage = str_ireplace('[SIGNATURE]', $text['signature'], $textmessage);
         else
-            $textmessage .= "\n" . $text["signature"];
+            $textmessage .= "\n" . $text['signature'];
 
         ### addition to handle [FORWARDURL:Message ID:Link Text] (link text optional)
 
@@ -380,7 +380,7 @@ class PrepareMessage
                 $forwardtext = 'this link';
             }
             if (!empty($forwardmessage)) {
-                $url = getConfig("forwardurl");
+                $url = Config::get('forwardurl');
                 $sep = strpos($url, '?') === false ? '?' : '&';
                 $forwardurl = sprintf('%s%suid=%s&mid=%d', $url, $sep, $hash, $forwardmessage);
                 $htmlmessage = str_replace(
@@ -406,7 +406,7 @@ class PrepareMessage
                 $forwardtext = 'this link';
             }
             if (!empty($forwardmessage)) {
-                $url = getConfig("forwardurl");
+                $url = Config::get('forwardurl');
                 $sep = strpos($url, '?') === false ? '?' : '&';
                 $forwardurl = sprintf('%s%suid=%s&mid=%d', $url, $sep, $hash, $forwardmessage);
                 $textmessage = str_replace($matchtext, $forwardtext . ' ' . $forwardurl, $textmessage);
@@ -416,24 +416,30 @@ class PrepareMessage
             }
         }
 
-#  $req = Sql_Query(sprintf('select filename,data from %s where template = %d',
-#    $GLOBALS["tables"]["templateimage"],$cached->templateid));
+        #  $req = Sql_Query(sprintf('select filename,data from %s where template = %d',
+        #    Config::getTableName('templateimage'),$cached->templateid));
 
-        if (ALWAYS_ADD_USERTRACK) {
+        if (Config::ALWAYS_ADD_USERTRACK) {
             if (stripos($htmlmessage, '</body>')) {
                 $htmlmessage = str_replace(
                     '</body>',
-                    '<img src="' . $GLOBALS['public_scheme'] . '://' . $website . $GLOBALS["pageroot"] . '/ut.php?u=' . $hash . '&amp;m=' . $messageid . '" width="1" height="1" border="0" /></body>',
+                    '<img src="' . Config::get('public_scheme') . '://' . Config::get('website') .
+                    Config::get('pageroot') . '/ut.php?u=' . $hash . '&amp;m=' . $message->id .
+                    '" width="1" height="1" border="0" /></body>',
                     $htmlmessage
                 );
             } else {
-                $htmlmessage .= '<img src="' . $GLOBALS['public_scheme'] . '://' . $website . $GLOBALS["pageroot"] . '/ut.php?u=' . $hash . '&amp;m=' . $messageid . '" width="1" height="1" border="0" />';
+                $htmlmessage .= '<img src="' . Config::get('public_scheme') . '://' . Config::get('website') .
+                    Config::get('pageroot') . '/ut.php?u=' . $hash . '&amp;m=' . $message->id .
+                    '" width="1" height="1" border="0" />';
             }
         } else {
             ## can't use str_replace or str_ireplace, because those replace all, and we only want to replace one
             $htmlmessage = preg_replace(
                 '/\[USERTRACK\]/i',
-                '<img src="' . $GLOBALS['public_scheme'] . '://' . $website . $GLOBALS["pageroot"] . '/ut.php?u=' . $hash . '&amp;m=' . $messageid . '" width="1" height="1" border="0" />',
+                '<img src="' . Config::get('public_scheme') . '://' . Config::get('website') .
+                Config::get('pageroot') . '/ut.php?u=' . $hash . '&amp;m=' . $message->id .
+                '" width="1" height="1" border="0" />',
                 $htmlmessage,
                 1
             );
@@ -441,8 +447,8 @@ class PrepareMessage
         # make sure to only include usertrack once, otherwise the stats would go silly
         $htmlmessage = str_ireplace('[USERTRACK]', '', $htmlmessage);
 
-        $html['subject'] = $cached->subject;
-        $text['subject'] = $cached->subject;
+        $html['subject'] = $cached_message->subject;
+        $text['subject'] = $cached_message->subject;
 
         $htmlmessage = parsePlaceHolders($htmlmessage, $html);
         $textmessage = parsePlaceHolders($textmessage, $text);
@@ -455,16 +461,20 @@ class PrepareMessage
             Output::output('parse userdata start');
         }
 
-        $htmlmessage = parsePlaceHolders($htmlmessage, $userdata);
-        $textmessage = parsePlaceHolders($textmessage, $userdata);
+        $userdata = array();
+        foreach(User::$DB_ATTRIBUTES as $key){
+            $userdata[$key] = $user->$key;
+        }
+        $htmlmessage = PrepareMessage::parsePlaceHolders($htmlmessage, $userdata);
+        $textmessage = PrepareMessage::parsePlaceHolders($textmessage, $userdata);
 
-//CUT 2
+        //CUT 2
 
         $destinationemail = '';
         if (is_array($user_att_values)) {
-// CUT 3
-            $htmlmessage = parsePlaceHolders($htmlmessage, $user_att_values);
-            $textmessage = parsePlaceHolders($textmessage, $user_att_values);
+        // CUT 3
+            $htmlmessage = PrepareMessage::parsePlaceHolders($htmlmessage, $user_att_values);
+            $textmessage = PrepareMessage::parsePlaceHolders($textmessage, $user_att_values);
         }
 
         if ($getspeedstats) {
@@ -476,25 +486,26 @@ class PrepareMessage
         }
 
         # this should move into a plugin
-        if (strpos($destinationemail, '@') === false && isset($GLOBALS["expand_unqualifiedemail"])) {
-            $destinationemail .= $GLOBALS["expand_unqualifiedemail"];
+        if (strpos($destinationemail, '@') === false && Config::get('expand_unqualifiedemail', false) !== false) {
+            $destinationemail .= Config::get('expand_unqualifiedemail');
         }
 
         if ($getspeedstats) {
             Output::output('pass to plugins for destination email start');
         }
+        /*TODO: enable plugins
         foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-#    print "Checking Destination for ".$plugin->name."<br/>";
-            $destinationemail = $plugin->setFinalDestinationEmail($messageid, $user_att_values, $destinationemail);
+        #    print "Checking Destination for ".$plugin->name."<br/>";
+            $destinationemail = $plugin->setFinalDestinationEmail($message->id, $user_att_values, $destinationemail);
         }
         if ($getspeedstats) {
             Output::output('pass to plugins for destination email end');
         }
 
         foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-            $textmessage = $plugin->parseOutgoingTextMessage($messageid, $textmessage, $destinationemail, $userdata);
-            $htmlmessage = $plugin->parseOutgoingHTMLMessage($messageid, $htmlmessage, $destinationemail, $userdata);
-        }
+            $textmessage = $plugin->parseOutgoingTextMessage($message->id, $textmessage, $destinationemail, $userdata);
+            $htmlmessage = $plugin->parseOutgoingHTMLMessage($message->id, $htmlmessage, $destinationemail, $userdata);
+        }*/
 
         ## click tracking
         # for now we won't click track forwards, as they are not necessarily users, so everything would fail
@@ -502,7 +513,7 @@ class PrepareMessage
             Output::output('click track start');
         }
 
-        if (CLICKTRACK && $hash != 'forwarded' && !empty($userdata['id'])) {
+        if (Config::CLICKTRACK && $hash != 'forwarded') {
             $urlbase = '';
             # let's leave this for now
             /*
@@ -515,12 +526,12 @@ class PrepareMessage
             */
 
             # convert html message
-#    preg_match_all('/<a href="?([^> "]*)"?([^>]*)>(.*)<\/a>/Umis',$htmlmessage,$links);
+            #preg_match_all('/<a href="?([^> "]*)"?([^>]*)>(.*)<\/a>/Umis',$htmlmessage,$links);
             preg_match_all('/<a (.*)href=["\'](.*)["\']([^>]*)>(.*)<\/a>/Umis', $htmlmessage, $links);
 
             # to process the Yahoo webpage with base href and link like <a href=link> we'd need this one
-#    preg_match_all('/<a href=([^> ]*)([^>]*)>(.*)<\/a>/Umis',$htmlmessage,$links);
-            $clicktrack_root = sprintf('%s://%s/lt.php', $GLOBALS["public_scheme"], $website . $GLOBALS["pageroot"]);
+            #preg_match_all('/<a href=([^> ]*)([^>]*)>(.*)<\/a>/Umis',$htmlmessage,$links);
+            $clicktrack_root = sprintf('%s://%s/lt.php', Config::get('public_scheme'), Config::get('website') . Config::get('pageroot'));
             for ($i = 0; $i < count($links[2]); $i++) {
                 $link = cleanUrl($links[2][$i]);
                 $link = str_replace('"', '', $link);
@@ -546,29 +557,29 @@ class PrepareMessage
                         )) && (stripos($link, 'www.phplist.com') === false) && !strpos($link, $clicktrack_root)
                 ) {
                     # take off personal uids
-                    $url = cleanUrl($link, array('PHPSESSID', 'uid'));
+                    $url = Util::cleanUrl($link, array('PHPSESSID', 'uid'));
 
-#        $url = preg_replace('/&uid=[^\s&]+/','',$link);
+                    #$url = preg_replace('/&uid=[^\s&]+/','',$link);
 
-#        if (!strpos('http:',$link)) {
-#          $link = $urlbase . $link;
-#        }
+                    #if (!strpos('http:',$link)) {
+                    #   $link = $urlbase . $link;
+                    #}
 
-                    $linkid = clickTrackLinkId($messageid, $userdata['id'], $url, $link);
+                    $linkid = PrepareMessage::clickTrackLinkId($message->id, $user->id, $url, $link);
 
-                    $masked = "H|$linkid|$messageid|" . $userdata['id'] ^ XORmask;
+                    $masked = "H|$linkid|$message->id|" . $user->id ^ Config::get('XORmask');
                     $masked = base64_encode($masked);
                     ## 15254- the encoding adds one or two extraneous = signs, take them off
                     $masked = preg_replace('/=$/', '', $masked);
                     $masked = preg_replace('/=$/', '', $masked);
                     $masked = urlencode($masked);
 
-                    if (!CLICKTRACK_LINKMAP) {
+                    if (Config::get('CLICKTRACK_LINKMAP', false) === false) {
                         $newlink = sprintf(
                             '<a %shref="%s://%s/lt.php?id=%s" %s>%s</a>',
                             $links[1][$i],
-                            $GLOBALS["public_scheme"],
-                            $website . $GLOBALS["pageroot"],
+                            Config::get('public_scheme'),
+                            Config::get('website') . Config::get('pageroot'),
                             $masked,
                             $links[3][$i],
                             $links[4][$i]
@@ -577,8 +588,8 @@ class PrepareMessage
                         $newlink = sprintf(
                             '<a %shref="%s://%s%s" %s>%s</a>',
                             $links[1][$i],
-                            $GLOBALS["public_scheme"],
-                            $website . CLICKTRACK_LINKMAP,
+                            Config::get('public_scheme'),
+                            Config::get('website') . Config::get('CLICKTRACK_LINKMAP'),
                             $masked,
                             $links[3][$i],
                             $links[4][$i]
@@ -594,53 +605,51 @@ class PrepareMessage
             # hmm, this is no point, it's not just *our* topdomain, but any
 
             if (0) {
-                preg_match_all('#(https?://' . $GLOBALS['website'] . '/?)\s+#mis', $textmessage, $links);
-#    preg_match_all('#(https?://[a-z0-9\./\#\?&:@=%\-]+)#ims',$textmessage,$links);
-#    preg_match_all('!(https?:\/\/www\.[a-zA-Z0-9\.\/#~\?+=&%@-_]+)!mis',$textmessage,$links);
+                preg_match_all('#(https?://' . Config::get('website') . '/?)\s+#mis', $textmessage, $links);
+                #preg_match_all('#(https?://[a-z0-9\./\#\?&:@=%\-]+)#ims',$textmessage,$links);
+                #preg_match_all('!(https?:\/\/www\.[a-zA-Z0-9\.\/#~\?+=&%@-_]+)!mis',$textmessage,$links);
 
                 for ($i = 0; $i < count($links[1]); $i++) {
                     # not entirely sure why strtolower was used, but it seems to break things http://mantis.phplist.com/view.php?id=4406
-#      $link = strtolower(cleanUrl($links[1][$i]));
-                    $link = cleanUrl($links[1][$i]);
+                    #$link = strtolower(cleanUrl($links[1][$i]));
+                    $link = Util::cleanUrl($links[1][$i]);
                     if (preg_match('/\.$/', $link)) {
                         $link = substr($link, 0, -1);
                     }
                     $linkid = 0;
-                    if (preg_match('/^http|ftp/', $link) && (stripos($link, 'www.phplist.com') === false) && !strpos(
-                            $link,
-                            $clicktrack_root
-                        )
+                    if (preg_match('/^http|ftp/', $link)
+                        && (stripos($link, 'www.phplist.com') === false)
+                        && !strpos($link, $clicktrack_root)
                     ) {
-                        $url = cleanUrl($link, array('PHPSESSID', 'uid'));
-                        $req = Sql_Query(
-                            sprintf(
-                                'insert ignore into %s (messageid,userid,url,forward)
-                                          values(%d,%d,"%s","%s")',
-                                $GLOBALS['tables']['linktrack'],
-                                $messageid,
-                                $userdata['id'],
+                        $url = Util::cleanUrl($link, array('PHPSESSID', 'uid'));
+                        phpList::DB()->query(sprintf(
+                                'INSERT IGNORE INTO %s (messageid, userid, url, forward)
+                                 VALUES(%d, %d, "%s", "%s")',
+                                Config::getTableName('linktrack'),
+                                $message->id,
+                                $user->id,
                                 $url,
                                 $link
-                            )
-                        );
-                        $req = Sql_Fetch_Row_Query(
-                            sprintf(
-                                'select linkid from %s where messageid = %s and userid = %d and forward = "%s"
-                                        ',
-                                $GLOBALS['tables']['linktrack'],
-                                $messageid,
-                                $userdata['id'],
+                            ));
+                        $req = phpList::DB()->fetchRowQuery(sprintf(
+                                'SELECT linkid FROM %s
+                                WHERE messageid = %s
+                                AND userid = %d
+                                AND forward = "%s"',
+                                Config::getTableName('linktrack'),
+                                $message->id,
+                                $user->id,
                                 $link
                             )
                         );
                         $linkid = $req[0];
 
-                        $masked = "T|$linkid|$messageid|" . $userdata['id'] ^ XORmask;
+                        $masked = "T|$linkid|$message->id|" . $user->id ^ Config::get('XORmask');
                         $masked = urlencode(base64_encode($masked));
                         $newlink = sprintf(
                             '%s://%s/lt.php?id=%s',
-                            $GLOBALS["public_scheme"],
-                            $website . $GLOBALS["pageroot"],
+                            Config::get('public_scheme'),
+                            Config::get('website') . Config::get('pageroot'),
                             $masked
                         );
                         $textmessage = str_replace($links[0][$i], '<' . $newlink . '>', $textmessage);
@@ -655,51 +664,49 @@ class PrepareMessage
             #https://user:password@www.website.com:2345/document.php?parameter=something%20&otherpar=somethingelse#anchor
 
             preg_match_all('#(https?://[^\s\>\}\,]+)#mis', $textmessage, $links);
-#    preg_match_all('#(https?://[a-z0-9\./\#\?&:@=%\-]+)#ims',$textmessage,$links);
-#    preg_match_all('!(https?:\/\/www\.[a-zA-Z0-9\.\/#~\?+=&%@-_]+)!mis',$textmessage,$links);
+            #preg_match_all('#(https?://[a-z0-9\./\#\?&:@=%\-]+)#ims',$textmessage,$links);
+            #preg_match_all('!(https?:\/\/www\.[a-zA-Z0-9\.\/#~\?+=&%@-_]+)!mis',$textmessage,$links);
             ## sort the results in reverse order, so that they are replaced correctly
             rsort($links[1]);
             $newlinks = array();
 
             for ($i = 0; $i < count($links[1]); $i++) {
-                $link = cleanUrl($links[1][$i]);
+                $link = Util::cleanUrl($links[1][$i]);
                 if (preg_match('/\.$/', $link)) {
                     $link = substr($link, 0, -1);
                 }
 
                 $linkid = 0;
-                if (preg_match('/^http|ftp/', $link) && (stripos(
-                            $link,
-                            'www.phplist.com'
-                        ) === false)
+                if (preg_match('/^http|ftp/', $link)
+                    && stripos($link, 'www.phplist.com') === false
                 ) { # && !strpos($link,$clicktrack_root)) {
-                    $url = cleanUrl($link, array('PHPSESSID', 'uid'));
+                    $url = Util::cleanUrl($link, array('PHPSESSID', 'uid'));
 
-                    $linkid = clickTrackLinkId($messageid, $userdata['id'], $url, $link);
+                    $linkid = PrepareMessage::clickTrackLinkId($message->id, $user->id, $url, $link);
 
-                    $masked = "T|$linkid|$messageid|" . $userdata['id'] ^ XORmask;
+                    $masked = "T|$linkid|$message->id|" . $user->id ^ Config::get('XORmask');
                     $masked = base64_encode($masked);
                     ## 15254- the encoding adds one or two extraneous = signs, take them off
                     $masked = preg_replace('/=$/', '', $masked);
                     $masked = preg_replace('/=$/', '', $masked);
                     $masked = urlencode($masked);
-                    if (!CLICKTRACK_LINKMAP) {
+                    if (Config::get('CLICKTRACK_LINKMAP', false) === false) {
                         $newlinks[$linkid] = sprintf(
                             '%s://%s/lt.php?id=%s',
-                            $GLOBALS["public_scheme"],
-                            $website . $GLOBALS["pageroot"],
+                            Config::get('public_scheme'),
+                            Config::get('website') . Config::get('pageroot'),
                             $masked
                         );
                     } else {
                         $newlinks[$linkid] = sprintf(
                             '%s://%s%s',
-                            $GLOBALS["public_scheme"],
-                            $website . CLICKTRACK_LINKMAP,
+                            Config::get('public_scheme'),
+                            Config::get('website') . Config::get('CLICKTRACK_LINKMAP'),
                             $masked
                         );
                     }
 
-#        print $links[0][$i] .' -> '.$newlink.'<br/>';
+                    #print $links[0][$i] .' -> '.$newlink.'<br/>';
                     $textmessage = str_replace($links[1][$i], '[%%%' . $linkid . '%%%]', $textmessage);
                 }
             }
@@ -713,16 +720,15 @@ class PrepareMessage
 
         ## if we're not tracking clicks, we should add Google tracking here
         ## otherwise, we can add it when redirecting on the click
-        if (!CLICKTRACK && !empty($cached[$messageid]['google_track'])) {
+        if (!Config::CLICKTRACK && !empty($cached_message->google_track)) {
             preg_match_all('/<a (.*)href=["\'](.*)["\']([^>]*)>(.*)<\/a>/Umis', $htmlmessage, $links);
             for ($i = 0; $i < count($links[2]); $i++) {
-                $link = cleanUrl($links[2][$i]);
+                $link = Util::cleanUrl($links[2][$i]);
                 $link = str_replace('"', '', $link);
                 ## http://www.google.com/support/analytics/bin/answer.py?hl=en&answer=55578
 
-                $trackingcode = 'utm_source=emailcampaign' . $messageid . '&utm_medium=phpList&utm_content=HTMLemail&utm_campaign=' . urlencode(
-                        $cached->subject
-                    );
+                $trackingcode = 'utm_source=emailcampaign' . $message->id .
+                    '&utm_medium=phpList&utm_content=HTMLemail&utm_campaign=' . urlencode($cached_message->subject);
                 ## take off existing tracking code, if found
                 if (strpos($link, 'utm_medium') !== false) {
                     $link = preg_replace('/utm_(\w+)\=[^&]+&/U', '', $link);
@@ -743,20 +749,17 @@ class PrepareMessage
             $newlinks = array();
 
             for ($i = 0; $i < count($links[1]); $i++) {
-                $link = cleanUrl($links[1][$i]);
+                $link = Util::cleanUrl($links[1][$i]);
                 if (preg_match('/\.$/', $link)) {
                     $link = substr($link, 0, -1);
                 }
 
-                if (preg_match('/^http|ftp/', $link) && (stripos(
-                            $link,
-                            'www.phplist.com'
-                        ) !== 0)
+                if (preg_match('/^http|ftp/', $link)
+                    && (stripos($link, 'www.phplist.com') !== 0)
                 ) { # && !strpos($link,$clicktrack_root)) {
-                    $url = cleanUrl($link, array('PHPSESSID', 'uid'));
-                    $trackingcode = 'utm_source=emailcampaign' . $messageid . '&utm_medium=phpList&utm_content=textemail&utm_campaign=' . urlencode(
-                            $cached->subject
-                        );
+                    //$url = Util::cleanUrl($link, array('PHPSESSID', 'uid'));
+                    $trackingcode = 'utm_source=emailcampaign' . $message->id .
+                        '&utm_medium=phpList&utm_content=textemail&utm_campaign=' . urlencode($cached_message->subject);
                     ## take off existing tracking code, if found
                     if (strpos($link, 'utm_medium') !== false) {
                         $link = preg_replace('/utm_(\w+)\=[^&]+/', '', $link);
@@ -777,10 +780,10 @@ class PrepareMessage
             unset($newlinks);
         }
 
-#  print htmlspecialchars($htmlmessage);exit;
+        #print htmlspecialchars($htmlmessage);exit;
 
         #0011996: forward to friend - personal message
-        if (FORWARD_PERSONAL_NOTE_SIZE && $hash == 'forwarded' && !empty($forwardedby['personalNote'])) {
+        if (Config::FORWARD_PERSONAL_NOTE_SIZE && $hash == 'forwarded' && !empty($forwardedby['personalNote'])) {
             $htmlmessage = nl2br($forwardedby['personalNote']) . '<br/>' . $htmlmessage;
             $textmessage = $forwardedby['personalNote'] . "\n" . $textmessage;
         }
@@ -805,7 +808,7 @@ class PrepareMessage
         ## that we'd like to keep
         //$htmlmessage = preg_replace("/\[[A-Z\. ]+\]/i","",$htmlmessage);
         //$textmessage = preg_replace("/\[[A-Z\. ]+\]/i","",$textmessage);
-#  print htmlspecialchars($htmlmessage);exit;
+        #print htmlspecialchars($htmlmessage);exit;
 
         # check that the HTML message as proper <head> </head> and <body> </body> tags
         # some readers fail when it doesn't
@@ -817,7 +820,7 @@ class PrepareMessage
                 $defaultstyle = "";
             }
             $htmlmessage = '<head>
-        <meta content="text/html;charset=' . $cached->html_charset . '" http-equiv="Content-Type">
+        <meta content="text/html;charset=' . $cached_message->html_charset . '" http-equiv="Content-Type">
         <title></title>' . $defaultstyle . '</head>' . $htmlmessage;
         }
         if (!preg_match("#<html.*</html>#ims", $htmlmessage)) {
@@ -838,52 +841,55 @@ class PrepareMessage
 
         # print htmlspecialchars($htmlmessage);exit;
 
-        if ($getspeedstats) Output::output('build Start ' . $GLOBALS['processqueue_timer']->interval(1));
+        if ($getspeedstats) Output::output('build Start ' . Config::get('processqueue_timer')->interval(1));
 
         # build the email
-        $mail = new PHPlistMailer($messageid, $destinationemail);
+        $mail = new phpListMailer($message->id, $destinationemail);
         if ($forwardedby) {
             $mail->add_timestamp();
         }
-        $mail->addCustomHeader("List-Help: <" . $text["preferences"] . ">");
-        $mail->addCustomHeader("List-Unsubscribe: <" . $text["jumpoffurl"] . ">");
-        $mail->addCustomHeader("List-Subscribe: <" . getConfig("subscribeurl") . ">");
-        $mail->addCustomHeader("List-Owner: <mailto:" . getConfig("admin_address") . ">");
+        $mail->addCustomHeader("List-Help: <" . $text['preferences'] . ">");
+        $mail->addCustomHeader("List-Unsubscribe: <" . $text['jumpoffurl'] . ">");
+        $mail->addCustomHeader("List-Subscribe: <" . Config::get("subscribeurl") . ">");
+        $mail->addCustomHeader("List-Owner: <mailto:" . Config::get("admin_address") . ">");
 
         list($dummy, $domaincheck) = explode('@', $destinationemail);
-        $text_domains = explode("\n", trim(getConfig("alwayssendtextto")));
+        $text_domains = explode("\n", trim(Config::get("alwayssendtextto")));
         if (in_array($domaincheck, $text_domains)) {
             $htmlpref = 0;
             if (Config::VERBOSE)
-                Output::output($GLOBALS['I18N']->get('sendingtextonlyto') . " $domaincheck");
+                Output::output(s('sendingtextonlyto') . " $domaincheck");
         }
-
-        foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-#    $textmessage = $plugin->parseOutgoingTextMessage($messageid,$textmessage,$destinationemail, $userdata);
-#    $htmlmessage = $plugin->parseOutgoingHTMLMessage($messageid,$htmlmessage,$destinationemail, $userdata);
-            $plugin_attachments = $plugin->getMessageAttachment($messageid, $mail->Body);
+        /*TODO: enable plugins
+        foreach (Config::get('plugins') as $pluginname => $plugin) {
+            #$textmessage = $plugin->parseOutgoingTextMessage($message->id,$textmessage,$destinationemail, $userdata);
+            #$htmlmessage = $plugin->parseOutgoingHTMLMessage($message->id,$htmlmessage,$destinationemail, $userdata);
+            $plugin_attachments = $plugin->getMessageAttachment($message->id, $mail->Body);
             if (!empty($plugin_attachments[0]['content'])) {
                 foreach ($plugins_attachments as $plugin_attachment) {
                     $mail->add_attachment(
                         $plugin_attachment['content'],
-                        basename($plugin_attachment["filename"]),
-                        $plugin_attachment["mimetype"]
+                        basename($plugin_attachment['filename']),
+                        $plugin_attachment['mimetype']
                     );
                 }
             }
-        }
+        }*/
 
         # so what do we actually send?
-        switch ($cached->sendformat) {
+        switch ($cached_message->sendformat) {
             case "PDF":
                 # send a PDF file to users who want html and text to everyone else
+                /*TODO: enable plugins
                 foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                    $plugin->processSuccesFailure($messageid, 'astext', $userdata);
-                }
+                    $plugin->processSuccesFailure($message->id, 'astext', $userdata);
+                }*/
                 if ($htmlpref) {
-                    if (!$isTestMail)
-                        Sql_Query("update {$GLOBALS["tables"]["message"]} set aspdf = aspdf + 1 where id = $messageid");
-                    $pdffile = createPdf($textmessage);
+                    if (!$isTestMail){
+                        $message->aspdf += 1;
+                        $message->update();
+                    }
+                    $pdffile = PrepareMessage::createPdf($textmessage);
                     if (is_file($pdffile) && filesize($pdffile)) {
                         $fp = fopen($pdffile, "r");
                         if ($fp) {
@@ -899,8 +905,8 @@ class PrepareMessage
               <embed src="message.pdf" width="450" height="450" href="message.pdf"></embed>
               </body>
               </html>';
-#            $mail->add_html($html,$textmessage);
-#            $mail->add_text($textmessage);
+                            #$mail->add_html($html,$textmessage);
+                            #$mail->add_text($textmessage);
                             $mail->add_attachment(
                                 $contents,
                                 "message.pdf",
@@ -908,25 +914,26 @@ class PrepareMessage
                             );
                         }
                     }
-                    addAttachments($messageid, $mail, "HTML");
+                    addAttachments($message->id, $mail, "HTML");
                 } else {
                     if (!$isTestMail)
                         Sql_Query(
-                            "update {$GLOBALS["tables"]["message"]} set astext = astext + 1 where id = $messageid"
+                            "update {Config::getTableName('message')} set astext = astext + 1 where id = $message->id"
                         );
                     $mail->add_text($textmessage);
-                    addAttachments($messageid, $mail, "text");
+                    addAttachments($message->id, $mail, "text");
                 }
                 break;
             case "text and PDF":
+                /*TODO: enable plugins
                 foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                    $plugin->processSuccesFailure($messageid, 'astext', $userdata);
-                }
+                    $plugin->processSuccesFailure($message->id, 'astext', $userdata);
+                }*/
                 # send a PDF file to users who want html and text to everyone else
                 if ($htmlpref) {
                     if (!$isTestMail)
                         Sql_Query(
-                            "update {$GLOBALS["tables"]["message"]} set astextandpdf = astextandpdf + 1 where id = $messageid"
+                            "update {Config::getTableName('message')} set astextandpdf = astextandpdf + 1 where id = $message->id"
                         );
                     $pdffile = createPdf($textmessage);
                     if (is_file($pdffile) && filesize($pdffile)) {
@@ -953,55 +960,58 @@ class PrepareMessage
                             );
                         }
                     }
-                    addAttachments($messageid, $mail, "HTML");
+                    addAttachments($message->id, $mail, "HTML");
                 } else {
                     if (!$isTestMail)
                         Sql_Query(
-                            "update {$GLOBALS["tables"]["message"]} set astext = astext + 1 where id = $messageid"
+                            "update {Config::getTableName('message')} set astext = astext + 1 where id = $message->id"
                         );
                     $mail->add_text($textmessage);
-                    addAttachments($messageid, $mail, "text");
+                    addAttachments($message->id, $mail, "text");
                 }
                 break;
             case "text":
                 # send as text
+                /*TODO: enable plugins
                 foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                    $plugin->processSuccesFailure($messageid, 'astext', $userdata);
-                }
+                    $plugin->processSuccesFailure($message->id, 'astext', $userdata);
+                }*/
                 if (!$isTestMail)
-                    Sql_Query("update {$GLOBALS["tables"]["message"]} set astext = astext + 1 where id = $messageid");
+                    Sql_Query("update {Config::getTableName('message')} set astext = astext + 1 where id = $message->id");
                 $mail->add_text($textmessage);
-                addAttachments($messageid, $mail, "text");
+                addAttachments($message->id, $mail, "text");
                 break;
             case "both":
             case "text and HTML":
             case "HTML":
             default:
                 $handled_by_plugin = 0;
-                if (!empty($GLOBALS['pluginsendformats'][$cached->sendformat])) {
+                /*TODO: enable plugins
+                if (!empty($GLOBALS['pluginsendformats'][$cached_message->sendformat])) {
                     # possibly handled by plugin
-                    $pl = $GLOBALS['plugins'][$GLOBALS['pluginsendformats'][$cached->sendformat]];
+                    $pl = $GLOBALS['plugins'][$GLOBALS['pluginsendformats'][$cached_message->sendformat]];
                     if (is_object($pl) && method_exists($pl, 'parseFinalMessage')) {
                         $handled_by_plugin = $pl->parseFinalMessage(
-                            $cached->sendformat,
+                            $cached_message->sendformat,
                             $htmlmessage,
                             $textmessage,
                             $mail,
-                            $messageid
+                            $message->id
                         );
                     }
                 }
-
+                */
                 if (!$handled_by_plugin) {
                     # send one big file to users who want html and text to everyone else
                     if ($htmlpref) {
                         if (!$isTestMail)
                             Sql_Query(
-                                "update {$GLOBALS["tables"]["message"]} set astextandhtml = astextandhtml + 1 where id = $messageid"
+                                "update {Config::getTableName('message')} set astextandhtml = astextandhtml + 1 where id = $message->id"
                             );
+                        /*TODO: enable plugins
                         foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                            $plugin->processSuccesFailure($messageid, 'ashtml', $userdata);
-                        }
+                            $plugin->processSuccesFailure($message->id, 'ashtml', $userdata);
+                        }*/
                         #  dbg("Adding HTML ".$cached->templateid);
                         if (WORDWRAP_HTML) {
                             ## wrap it: http://mantis.phplist.com/view.php?id=15528
@@ -1010,20 +1020,21 @@ class PrepareMessage
                             ## it probably has to do with the MTA used
                             $htmlmessage = wordwrap($htmlmessage, WORDWRAP_HTML, "\r\n");
                         }
-                        $mail->add_html($htmlmessage, $textmessage, $cached->templateid);
-                        addAttachments($messageid, $mail, "HTML");
+                        $mail->add_html($htmlmessage, $textmessage, $cached_message->templateid);
+                        addAttachments($message->id, $mail, "HTML");
                     } else {
                         if (!$isTestMail)
                             Sql_Query(
-                                "update {$GLOBALS["tables"]["message"]} set astext = astext + 1 where id = $messageid"
+                                "update {Config::getTableName('message')} set astext = astext + 1 where id = $message->id"
                             );
+                        /*TODO: enable plugins
                         foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                            $plugin->processSuccesFailure($messageid, 'astext', $userdata);
-                        }
+                            $plugin->processSuccesFailure($message->id, 'astext', $userdata);
+                        }*/
                         $mail->add_text($textmessage);
                         #$mail->setText($textmessage);
                         #$mail->Encoding = TEXTEMAIL_ENCODING;
-                        addAttachments($messageid, $mail, "text");
+                        addAttachments($message->id, $mail, "text");
                     }
                 }
                 break;
@@ -1032,160 +1043,155 @@ class PrepareMessage
 
         if (!TEST) {
             if ($hash != 'forwarded' || !sizeof($forwardedby)) {
-                $fromname = $cached->fromname;
-                $fromemail = $cached->fromemail;
-                $subject = $cached->subject;
+                $fromname = $cached_message->fromname;
+                $fromemail = $cached_message->fromemail;
+                $subject = $cached_message->subject;
             } else {
                 $fromname = '';
                 $fromemail = $forwardedby['email'];
-                $subject = $GLOBALS['strFwd'] . ': ' . $cached->subject;
+                $subject = s('Fwd') . ': ' . $cached_message->subject;
             }
 
-            if (!empty($cached->replytoemail)) {
-                $mail->AddReplyTo($cached->replytoemail, $cached->replytoname);
+            if (!empty($cached_message->replytoemail)) {
+                $mail->AddReplyTo($cached_message->replytoemail, $cached_message->replytoname);
             }
-            if ($getspeedstats) Output::output('build End ' . $GLOBALS['processqueue_timer']->interval(1));
-            if ($getspeedstats) Output::output('send Start ' . $GLOBALS['processqueue_timer']->interval(1));
+            if ($getspeedstats) Output::output('build End ' . Timer::get('PQT')->interval(1));
+            if ($getspeedstats) Output::output('send Start ' . Timer::get('PQT')->interval(1));
 
-            if (!empty($GLOBALS['developer_email'])) {
-                $destinationemail = $GLOBALS['developer_email'];
+            if (Config::get('developer_email', false) !== false) {
+                $destinationemail = Config::get('developer_email');
             }
 
-            if (!$mail->compatSend("", $destinationemail, $fromname, $fromemail, $subject)) {
+            if (!$mail->compatSend('', $destinationemail, $fromname, $fromemail, $subject)) {
             #if (!$mail->send(array($destinationemail),'spool')) {
+                /*TODO: enable plugins
                 foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                    $plugin->processSendFailed($messageid, $userdata, $isTestMail);
-                }
+                    $plugin->processSendFailed($message->id, $userdata, $isTestMail);
+                }*/
                 Output::output(
                     sprintf(
                         s('Error sending message %d (%d/%d) to %s (%s) '),
-                        $messageid,
-                        $counters['batch_count'],
-                        $counters['batch_total'],
+                        $message->id,
+                        /*$counters['batch_count'],
+                        $counters['batch_total'],*/
+                        0,0, //TODO: find solution to get counters from MessageQueue
                         $email,
                         $destinationemail
                     ),
                     0
                 );
-                return 0;
+                return false;
             } else {
                 ## only save the estimated size of the message when sending a test message
-                if ($getspeedstats) Output::output('send End ' . $GLOBALS['processqueue_timer']->interval(1));
+                if ($getspeedstats) Output::output('send End ' . Timer::get('PQT')->interval(1));
+                //TODO: find solution for send process id global var which currently is definded in MessageQueue
                 if (!isset($GLOBALS['send_process_id'])) {
                     if (!empty($mail->mailsize)) {
                         $name = $htmlpref ? 'htmlsize' : 'textsize';
-                        Sql_Replace(
-                            $GLOBALS['tables']['messagedata'],
-                            array('id' => $messageid, 'name' => $name, 'data' => $mail->mailsize),
-                            array('name', 'id')
-                        );
+                        $message->setDataItem($name, $mail->mailsize);
                     }
                 }
-                $sqlCount = $GLOBALS["pagestats"]["number_of_queries"] - $sqlCountStart;
+                //TODO: same as above, where do we get pagestats from
+                $sqlCount = $GLOBALS['pagestats']['number_of_queries'] - $sqlCountStart;
                 if ($getspeedstats) Output::output('It took ' . $sqlCount . '  queries to send this message');
+                /*TODO:enable plugins
                 foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                    $plugin->processSendSuccess($messageid, $userdata, $isTestMail);
-                }
-                #   logEvent("Sent message $messageid to $email ($destinationemail)");
-                return 1;
+                    $plugin->processSendSuccess($message->id, $userdata, $isTestMail);
+                }*/
+                #   logEvent("Sent message $message->id to $email ($destinationemail)");
+                return true;
             }
         }
-        return 0;
+        return false;
     }
 
-    public static function addAttachments($msgid, &$mail, $type)
+    /**
+     * @param Message $message
+     * @param phpListMailer $mail
+     * @param string $type
+     */
+    private static function addAttachments($message, &$mail, $type)
     {
-        global $attachment_repository, $website;
-        if (ALLOW_ATTACHMENTS) {
-            $req = Sql_Query(
-                "select * from {$GLOBALS["tables"]["message_attachment"]},{$GLOBALS["tables"]["attachment"]}
-      where {$GLOBALS["tables"]["message_attachment"]}.attachmentid = {$GLOBALS["tables"]["attachment"]}.id and
-      {$GLOBALS["tables"]["message_attachment"]}.messageid = $msgid"
-            );
-            if (!Sql_Affected_Rows())
-                return;
+        if (Config::ALLOW_ATTACHMENTS) {
+            $attachments = $message->getAttachments();
+            //if (empty($attachments))
+            //    return;
             if ($type == "text") {
-                $mail->append_text($GLOBALS["strAttachmentIntro"] . "\n");
+                $mail->append_text(s('This message contains attachments that can be viewed with a webbrowser:') . "\n");
             }
 
-            while ($att = Sql_Fetch_array($req)) {
+            /**
+             * @var Attachment $attachment
+             */
+            foreach ($attachments as $attachment) {
+                $file = Config::ATTACHMENT_REPOSITORY . '/' . $attachment->filename;
                 switch ($type) {
                     case "HTML":
-                        if (is_file($GLOBALS["attachment_repository"] . "/" . $att["filename"]) && filesize(
-                                $GLOBALS["attachment_repository"] . "/" . $att["filename"]
-                            )
-                        ) {
-                            $fp = fopen($GLOBALS["attachment_repository"] . "/" . $att["filename"], "r");
+                        if (is_file($file) && filesize($file)) {
+                            $fp = fopen($file, "r");
                             if ($fp) {
-                                $contents = fread(
-                                    $fp,
-                                    filesize($GLOBALS["attachment_repository"] . "/" . $att["filename"])
-                                );
+                                $contents = fread($fp, filesize($file));
                                 fclose($fp);
                                 $mail->add_attachment(
                                     $contents,
-                                    basename($att["remotefile"]),
-                                    $att["mimetype"]
+                                    basename($attachment->remotefile),
+                                    $attachment->mimetype
                                 );
                             }
-                        } elseif (is_file($att["remotefile"]) && filesize($att["remotefile"])) {
+                        } elseif (is_file($attachment->remotefile) && filesize($attachment->remotefile)) {
                             # handle local filesystem attachments
-                            $fp = fopen($att["remotefile"], "r");
+                            $fp = fopen($attachment->remotefile, 'r');
                             if ($fp) {
-                                $contents = fread($fp, filesize($att["remotefile"]));
+                                $contents = fread($fp, filesize($attachment->remotefile));
                                 fclose($fp);
                                 $mail->add_attachment(
                                     $contents,
-                                    basename($att["remotefile"]),
-                                    $att["mimetype"]
+                                    basename($attachment->remotefile),
+                                    $attachment->mimetype
                                 );
-                                list($name, $ext) = explode(".", basename($att["remotefile"]));
+                                list($name, $ext) = explode('.', basename($attachment->remotefile));
                                 # create a temporary file to make sure to use a unique file name to store with
-                                $newfile = tempnam($GLOBALS["attachment_repository"], $name);
+                                $newfile = tempnam(Config::ATTACHMENT_REPOSITORY, $name);
                                 $newfile .= "." . $ext;
                                 $newfile = basename($newfile);
-                                $fd = fopen($GLOBALS["attachment_repository"] . "/" . $newfile, "w");
+                                $fd = fopen(Config::ATTACHMENT_REPOSITORY . '/' . $newfile, 'w');
                                 fwrite($fd, $contents);
                                 fclose($fd);
                                 # check that it was successful
-                                if (filesize($GLOBALS["attachment_repository"] . "/" . $newfile)) {
-                                    Sql_Query(
-                                        sprintf(
-                                            'update %s set filename = "%s" where id = %d',
-                                            $GLOBALS["tables"]["attachment"],
-                                            $newfile,
-                                            $att["attachmentid"]
-                                        )
-                                    );
+                                if (filesize(Config::ATTACHMENT_REPOSITORY . '/' . $newfile)) {
+                                    $attachment->filename = $newfile;
+                                    $attachment->update();
                                 } else {
                                     # now this one could be sent many times, so send only once per run
-                                    if (!isset($GLOBALS[$att["remotefile"] . "_warned"])) {
-                                        logEvent(
-                                            "Unable to make a copy of attachment " . $att["remotefile"] . " in repository"
+                                    if (Config::get($attachment->remotefile . '_warned', false) === false) {
+                                        Logger::logEvent(
+                                            "Unable to make a copy of attachment {$attachment->remotefile} in repository"
                                         );
-                                        $msg = "Error, when trying to send message $msgid the filesystem attachment
-                    " . $att["remotefile"] . " could not be copied to the repository. Check for permissions.";
-                                        sendMail(getConfig("report_address"), "Mail list error", $msg, "");
-                                        $GLOBALS[$att["remotefile"] . "_warned"] = time();
+                                        $msg = sprintf(
+                                            'Error, when trying to send message %d the filesystem attachment %s could not be copied to the repository. Check for permissions.',
+                                            $message->id,
+                                            $attachment->remotefile
+                                        );
+                                        phplistMailer::sendMail(Config::get('report_address'), 'Mail list error', $msg, '');
+                                        Config::setRunningConfig($attachment->remotefile . '_warned', time());
                                     }
                                 }
                             } else {
-                                logEvent(
-                                    "failed to open attachment " . $att["remotefile"] . " to add to message $msgid "
+                                Logger::logEvent(
+                                    "failed to open attachment {$attachment->remotefile} to add to message {$message->id}"
                                 );
                             }
                         } else {
-                            logEvent("Attachment " . $att["remotefile"] . " does not exist");
-                            $msg = "Error, when trying to send message $msgid the attachment
-              " . $att["remotefile"] . " could not be found";
-                            sendMail(getConfig("report_address"), "Mail list error", $msg, "");
+                            Logger::logEvent("Attachment {$attachment->remotefile} does not exist");
+                            $msg = "Error, when trying to send message {$message->id} the attachment {$attachment->remotefile} could not be found";
+                            sendMail(Config::get('report_address'), 'Mail list error', $msg, '');
                         }
                         break;
 
                     case "text":
-                        $viewurl = $GLOBALS["public_scheme"] . "://" . $website . $GLOBALS["pageroot"] . '/dl.php?id=' . $att["id"];
+                        $viewurl = Config::get('public_scheme') . "://" . Config::get('website') . Config::get('pageroot') . '/dl.php?id=' . $attachment->id;
                         $mail->append_text(
-                            $att["description"] . "\n" . $GLOBALS["strLocation"] . ": " . $viewurl . "\n"
+                            $attachment->description . "\n" . s('Location') . ": " . $viewurl . "\n"
                         );
                         break;
                 }
@@ -1193,7 +1199,7 @@ class PrepareMessage
         }
     }
 
-    public static function createPDF($text)
+    private static function createPDF($text)
     {
         if (Config::get('pdf_font', false) !== false) {
             Config::setRunningConfig('pdf_font', 'Arial');
@@ -1322,89 +1328,93 @@ class PrepareMessage
 
     public static function clickTrackLinkId($messageid, $userid, $url, $link)
     {
-        global $cached;
-        if (!isset($cached['linktrack']) || !is_array($cached['linktrack'])) $cached['linktrack'] = array();
-        if (!isset($cached['linktracksent']) || !is_array($cached['linktracksent'])) $cached['linktracksent'] = array();
-        if (!isset($cached['linktrack'][$link])) {
-            $query
-                = ' select id'
-                . ' from ' . $GLOBALS['tables']['linktrack_forward']
-                . ' where url = ?';
-            $rs = Sql_Query_Params($query, array($url));
-            $exists = Sql_Fetch_Row($rs);
+        if (!isset(Cache::linktrackCache()[$link])) {
+            $exists = phpList::DB()->fetchRowQuery(sprintf(
+                    'SELECT id FROM %d
+                    WHERE url = "%s"',
+                    Config::getTableName('linktrack_forward'),
+                    $url
+                ));
             if (!$exists[0]) {
                 $personalise = preg_match('/uid=/', $link);
-                $query
-                    = ' insert into ' . $GLOBALS['tables']['linktrack_forward']
-                    . '    (url, personalise)'
-                    . ' values'
-                    . '    (?, ?)';
-                Sql_Query_Params($query, array($url, $personalise));
-                $fwdid = Sql_Insert_Id($GLOBALS['tables']['linktrack_forward'], 'id');
+                phpList::DB()->query(sprintf(
+                        'INSERT INTO %s (url, personalise)
+                        VALUES("%s", "%s")',
+                        Config::getTableName('linktrack_forward'),
+                        $url,
+                        $personalise
+                    ));
+                $fwdid = phpList::DB()->insertedId();
             } else {
                 $fwdid = $exists[0];
             }
-            $cached['linktrack'][$link] = $fwdid;
+            Cache::linktrackCache()[$link] = $fwdid;
         } else {
-            $fwdid = $cached['linktrack'][$link];
+            $fwdid = Cache::linktrackCache()[$link];
         }
 
-        if (!isset($cached['linktracksent'][$messageid]) || !is_array($cached['linktracksent'][$messageid]))
-            $cached['linktracksent'][$messageid] = array();
-        if (!isset($cached['linktracksent'][$messageid][$fwdid])) {
-            $query
-                = ' select total'
-                . ' from ' . $GLOBALS['tables']['linktrack_ml']
-                . ' where messageid = ?'
-                . '   and forwardid = ?';
-            $rs = Sql_Query_Params($query, array($messageid, $fwdid));
-            if (!Sql_Num_Rows($rs)) {
+        if (!isset(Cache::linktrackSentCache()[$messageid]) || !is_array(Cache::linktrackSentCache()[$messageid])){
+            Cache::linktrackSentCache()[$messageid] = array();
+        }
+        if (!isset(Cache::linktrackSentCache()[$messageid][$fwdid])) {
+            $rs = phpList::DB()->query(sprintf(
+                    'SELECT total FROM %s
+                    WHERE messageid = %d
+                    AND forwardid : %d',
+                    Config::getTableName('linktrack_ml'),
+                    $messageid,
+                    $fwdid
+                ));
+            if (!phpList::DB()->numRows($rs)) {
                 $total = 1;
                 ## first time for this link/message
                 # BCD: Isn't this just an insert?
-                Sql_Replace(
-                    $GLOBALS['tables']['linktrack_ml'],
-                    array('total' => $total, 'messageid' => $messageid, 'forwardid' => $fwdid),
-                    array('messageid', 'forwardid')
-                );
-            } else {
-                $tot = Sql_Fetch_Row($rs);
-                $total = $tot[0] + 1;
-                Sql_Query(
-                    sprintf(
-                        'update %s set total = %d where messageid = %d and forwardid = %d',
-                        $GLOBALS['tables']['linktrack_ml'],
+                phpList::DB()->query(sprintf(
+                        'REPLACE INTO %s (total, messageid, forwardid)
+                        VALUES(%d, %d, %d)',
+                        Config::getTableName('linktrack_ml'),
                         $total,
                         $messageid,
                         $fwdid
-                    )
-                );
-            }
-            $cached['linktracksent'][$messageid][$fwdid] = $total;
-        } else {
-            $cached['linktracksent'][$messageid][$fwdid]++;
-            ## write every so often, to make sure it's saved when interrupted
-            if ($cached['linktracksent'][$messageid][$fwdid] % 100 == 0) {
-                Sql_Query(
-                    sprintf(
-                        'update %s set total = %d where messageid = %d and forwardid = %d',
-                        $GLOBALS['tables']['linktrack_ml'],
-                        $cached['linktracksent'][$messageid][$fwdid],
+                    ));
+            } else {
+                $tot = phpList::DB()->fetchRow($rs);
+                $total = $tot[0] + 1;
+                phpList::DB()->query(sprintf(
+                        'UPDATE %s SET total = %d
+                        WHERE messageid = %d
+                        AND forwardid = %d',
+                        Config::getTableName('linktrack_ml'),
+                        $total,
                         $messageid,
                         $fwdid
-                    )
-                );
+                ));
+            }
+            Cache::linktrackSentCache()[$messageid][$fwdid] = $total;
+        } else {
+            Cache::linktrackSentCache()[$messageid][$fwdid]++;
+            ## write every so often, to make sure it's saved when interrupted
+            if (Cache::linktrackSentCache()[$messageid][$fwdid] % 100 == 0) {
+                Sql_Query(sprintf(
+                        'UPDATE %s SET total = %d
+                        WHERE messageid = %d
+                        AND forwardid = %d',
+                        Config::getTableName('linktrack_ml'),
+                        Cache::linktrackSentCache()[$messageid][$fwdid],
+                        $messageid,
+                        $fwdid
+                ));
             }
         }
 
         /*  $req = Sql_Query(sprintf('insert ignore into %s (messageid,userid,forwardid)
-            values(%d,%d,"%s","%s")',$GLOBALS['tables']['linktrack'],$messageid,$userdata['id'],$url,addslashes($link)));
+            values(%d,%d,"%s","%s")',Config::getTableName('linktrack'),$messageid,$userdata['id'],$url,addslashes($link)));
           $req = Sql_Fetch_Row_Query(sprintf('select linkid from %s where messageid = %s and userid = %d and forwardid = %d
-          ',$GLOBALS['tables']['linktrack'],$messageid,$userid,$fwdid));*/
+          ',Config::getTableName('linktrack'),$messageid,$userid,$fwdid));*/
         return $fwdid;
     }
 
-    public static function parsePlaceHolders($content, $array = array())
+    private static function parsePlaceHolders($content, $array = array())
     {
         ## the editor turns all non-ascii chars into the html equivalent so do that as well
         foreach ($array as $key => $val) {
@@ -1414,7 +1424,8 @@ class PrepareMessage
         }
 
         foreach ($array as $key => $val) {
-            if (PHP5) { ## the help only lists attributes with strlen($name) < 20
+            //Only using PHP5 now
+            //if (PHP5) { ## the help only lists attributes with strlen($name) < 20
                 #  print '<br/>'.$key.' '.$val.'<hr/>'.htmlspecialchars($content).'<hr/>';
                 if (stripos($content, '[' . $key . ']') !== false) {
                     $content = str_ireplace('[' . $key . ']', $val, $content);
@@ -1427,93 +1438,98 @@ class PrepareMessage
                         $content = str_ireplace($regs[0], $regs[1], $content);
                     }
                 }
-            } else {
+            /*} else {
                 $key = str_replace('/', '\/', $key);
                 if (preg_match('/\[' . $key . '\]/i', $content, $match)) {
                     $content = str_replace($match[0], $val, $content);
                 }
-            }
+            }*/
         }
         return $content;
     }
 
-    public static function parseText($text)
-    {
+
+    private static function parseText($text) {
         # bug in PHP? get rid of newlines at the beginning of text
         $text = ltrim($text);
 
         # make urls and emails clickable
-        $text = preg_replace("/([\._a-z0-9-]+@[\.a-z0-9-]+)/i", '<a href="mailto:\\1" class="email">\\1</a>', $text);
-        $link_pattern = "/(.*)<a.*href\s*=\s*\"(.*?)\"\s*(.*?)>(.*?)<\s*\/a\s*>(.*)/is";
+        $text = preg_replace("/([\._a-z0-9-]+@[\.a-z0-9-]+)/i",'<a href="mailto:\\1" class="email">\\1</a>',$text);
+        $link_pattern="/(.*)<a.*href\s*=\s*\"(.*?)\"\s*(.*?)>(.*?)<\s*\/a\s*>(.*)/is";
 
-        $i = 0;
-        while (preg_match($link_pattern, $text, $matches)) {
-            $url = $matches[2];
+        $i=0;
+        while (preg_match($link_pattern, $text, $matches)){
+            $url=$matches[2];
             $rest = $matches[3];
-            if (!preg_match("/^(http:)|(mailto:)|(ftp:)|(https:)/i", $url)) {
+            if (!preg_match("/^(http:)|(mailto:)|(ftp:)|(https:)/i",$url)){
                 # avoid this
                 #<a href="javascript:window.open('http://hacker.com?cookie='+document.cookie)">
-                $url = preg_replace("/:/", "", $url);
+                $url = preg_replace("/:/","",$url);
             }
-            $link[$i] = '<a href="' . $url . '" ' . $rest . '>' . $matches[4] . '</a>';
-            $text = $matches[1] . "%%$i%%" . $matches[5];
+            $link[$i]= '<a href="'.$url.'" '.$rest.'>'.$matches[4].'</a>';
+            $text = $matches[1]."%%$i%%".$matches[5];
             $i++;
         }
 
-        $text = preg_replace("/(www\.[a-zA-Z0-9\.\/#~:?+=&%@!_\\-]+)/i", "http://\\1", $text); #make www. -> http://www.
-        $text = preg_replace("/(https?:\/\/)http?:\/\//i", "\\1", $text); #take out duplicate schema
-        $text = preg_replace("/(ftp:\/\/)http?:\/\//i", "\\1", $text); #take out duplicate schema
+        $text = preg_replace('/(www\.[a-zA-Z0-9\.\/#~:?+=&%@!_\\-]+)/i', 'http://\\1', $text);#make www. -> http://www.
+        $text = preg_replace('/(https?:\/\/)http?:\/\//i', '\\1', $text);#take out duplicate schema
+        $text = preg_replace('/(ftp:\/\/)http?:\/\//i', '\\1', $text);#take out duplicate schema
         $text = preg_replace(
-            "/(https?:\/\/)(?!www)([a-zA-Z0-9\.\/#~:?+=&%@!_\\-]+)/i",
-            "<a href=\"\\1\\2\" class=\"url\" target=\"_blank\">\\2</a>",
+            '/(https?:\/\/)(?!www)([a-zA-Z0-9\.\/#~:?+=&%@!_\\-]+)/i',
+            '<a href="\\1\\2" class="url" target="_blank">\\2</a>',
             $text
         ); #eg-- http://kernel.org -> <a href"http://kernel.org" target="_blank">http://kernel.org</a>
 
         $text = preg_replace(
-            "/(https?:\/\/)(www\.)([a-zA-Z0-9\.\/#~:?+=&%@!\\-_]+)/i",
-            "<a href=\"\\1\\2\\3\" class=\"url\" target=\"_blank\">\\2\\3</a>",
+            '/(https?:\/\/)(www\.)([a-zA-Z0-9\.\/#~:?+=&%@!\\-_]+)/i',
+            '<a href="\\1\\2\\3" class="url" target="_blank">\\2\\3</a>',
             $text
         ); #eg -- http://www.google.com -> <a href"http://www.google.com" target="_blank">www.google.com</a>
 
         # take off a possible last full stop and move it outside
         $text = preg_replace(
-            "/<a href=\"(.*?)\.\" class=\"url\" target=\"_blank\">(.*)\.<\/a>/i",
-            "<a href=\"\\1\" class=\"url\" target=\"_blank\">\\2</a>.",
+            '/<a href="(.*?)\." class="url" target="_blank">(.*)\.<\/a>/i',
+            '<a href="\\1" class="url" target="_blank">\\2</a>.',
             $text
         );
 
-        for ($j = 0; $j < $i; $j++) {
+        for ($j = 0;$j<$i;$j++) {
             $replacement = $link[$j];
-            $text = preg_replace("/\%\%$j\%\%/", $replacement, $text);
+            $text = preg_replace('/\%\%$j\%\%/',$replacement, $text);
         }
 
         # hmm, regular expression choke on some characters in the text
         # first replace all the brackets with placeholders.
         # we cannot use htmlspecialchars or addslashes, because some are needed
 
-        $text = str_replace("\(", "<!--LB-->", $text);
-        $text = str_replace("\)", "<!--RB-->", $text);
-        $text = preg_replace('/\$/', "<!--DOLL-->", $text);
+        $text = str_replace('\(','<!--LB-->',$text);
+        $text = str_replace('\)','<!--RB-->',$text);
+        $text = preg_replace('/\$/','<!--DOLL-->',$text);
 
         # @@@ to be xhtml compabible we'd have to close the <p> as well
         # so for now, just make it two br/s, which will be done by replacing
         # \n with <br/>
-#  $paragraph = '<p class="x">';
+        # $paragraph = '<p class="x">';
         $br = '<br />';
-        $text = preg_replace("/\r/", "", $text);
-        $text = preg_replace("/\n/", "$br\n", $text);
+        $text = preg_replace("/\r/",'',$text);
+        $text = preg_replace("/\n/","$br\n",$text);
 
         # reverse our previous placeholders
-        $text = str_replace("<!--LB-->", "(", $text);
-        $text = str_replace("<!--RB-->", ")", $text);
-        $text = str_replace("<!--DOLL-->", "\$", $text);
+        $text = str_replace('<!--LB-->','(',$text);
+        $text = str_replace('<!--RB-->',')',$text);
+        $text = str_replace('<!--DOLL-->','\$',$text);
         return $text;
     }
 
-    public static function addHTMLFooter($message, $footer)
-    {
-        if (preg_match('#</body>#imUx', $message)) {
-            $message = preg_replace('#</body>#', $footer . '</body>', $message);
+    /**
+     * Add the footer
+     * @param string $message
+     * @param string $footer
+     * @return string
+     */
+    private static function addHTMLFooter($message,$footer) {
+        if (preg_match('#</body>#imUx',$message)) {
+            $message = preg_replace('#</body>#',$footer.'</body>',$message);
         } else {
             $message .= $footer;
         }
@@ -1532,9 +1548,9 @@ class PrepareMessage
         /**
          * @var Message $cached_message
          */
-        if(!($cached_message = Cache::getMessageFromCache($message)){
-            Cache::setMessageCache($message);
-            $cached_message = Cache::getMessageFromCache($message);
+        if(!($cached_message = Cache::getCachedMessage($message))){
+            Cache::setCachedMessage($message);
+            $cached_message = Cache::getCachedMessage($message);
         }
 
         ## the reply to is actually not in use
@@ -1623,7 +1639,7 @@ class PrepareMessage
                 } else {
                     #print Error(s('unable to fetch web page for sending'));
                     Logger::logEvent("Error fetching URL: " . $message->sendurl . ' cannot proceed');
-                    Cache::setMessageCache($cached_message);
+                    Cache::setCachedMessage($cached_message);
                     return false;
                 }
             }
@@ -1657,13 +1673,13 @@ class PrepareMessage
 
         /*
          * this is not a good idea, as it'll replace eg "unsubscribeurl" with a general one instead of personalised
-         *   if (is_array($GLOBALS["default_config"])) {
-            foreach($GLOBALS["default_config"] as $key => $val) {
+         *   if (is_array($GLOBALS['default_config'])) {
+            foreach($GLOBALS['default_config'] as $key => $val) {
               if (is_array($val)) {
-                $cached[$messageid]['content'] = str_ireplace("[$key]",getConfig($key),$cached[$messageid]['content']);
-                $cached->textcontent = str_ireplace("[$key]",getConfig($key),$cached->textcontent);
-                $cached->textfooter = str_ireplace("[$key]",getConfig($key),$cached[$messageid]['textfooter']);
-                $cached->htmlfooter = str_ireplace("[$key]",getConfig($key),$cached[$messageid]['htmlfooter']);
+                $cached[$messageid]['content'] = str_ireplace("[$key]",Config::get($key),$cached[$messageid]['content']);
+                $cached->textcontent = str_ireplace("[$key]",Config::get($key),$cached->textcontent);
+                $cached->textfooter = str_ireplace("[$key]",Config::get($key),$cached[$messageid]['textfooter']);
+                $cached->htmlfooter = str_ireplace("[$key]",Config::get($key),$cached[$messageid]['htmlfooter']);
               }
             }
           }
@@ -1717,9 +1733,10 @@ class PrepareMessage
         //if (defined('FCKIMAGES_DIR') && FCKIMAGES_DIR) {
         //$cached[$messageid]['content'] = preg_replace('/<img(.*)src="\/lists\/'.FCKIMAGES_DIR.'(.*)>/iU','<img\\1src="'.$GLOBALS['public_scheme'].'://'.$baseurl.'/lists/'.FCKIMAGES_DIR.'\\2>',$cached[$messageid]['content']);
         //}
-        Cache::setMessageCache($cached_message);
+        Cache::setCachedMessage($cached_message);
         return true;
     }
+
 
     /* TODO
     # make sure the 0 template has the powered by image
@@ -1728,14 +1745,14 @@ class PrepareMessage
     . ' from %s'
     . ' where filename = ?'
     . '   and template = 0';
-    $query = sprintf($query, $GLOBALS['tables']['templateimage']);
+    $query = sprintf($query, Config::getTableName('templateimage'));
     $rs = Sql_Query_Params($query, array('powerphplist.png'));
     if (!Sql_Num_Rows($rs)) {
     $query
     = ' insert into %s'
     . '   (template, mimetype, filename, data, width, height)'
     . ' values (0, ?, ?, ?, ?, ?)';
-    $query = sprintf($query, $GLOBALS["tables"]["templateimage"]);
+    $query = sprintf($query, Config::getTableName('templateimage'));
     Sql_Query_Params($query, array('image/png', 'powerphplist.png', $newpoweredimage, 70, 30));
     }
     */

@@ -269,4 +269,5 @@ class String
         }
         return $content;
     }
+
 } 

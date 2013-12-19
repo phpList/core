@@ -125,20 +125,21 @@ class Util
     /**
      * Fetch a URL
      * @param string $url
-     * @param array $userdata
+     * @param User $user
      * @return bool|int|mixed|string
      */
-    public static function fetchUrl($url, $userdata = array())
+    public static function fetchUrl($url, $user = null)
     {
         $content = '';
         ## fix the Editor replacing & with &amp;
         $url = str_ireplace('&amp;', '&', $url);
 
         # Logger::logEvent("Fetching $url");
-        if (sizeof($userdata)) {
-            foreach ($userdata as $key => $val) {
+        //user items to replace:
+        if ($user != null) {
+            foreach (User::$DB_ATTRIBUTES as $key) {
                 if ($key != 'password') {
-                    $url = utf8_encode(str_ireplace("[$key]", urlencode($val), utf8_decode($url)));
+                    $url = utf8_encode(str_ireplace("[$key]", urlencode($user->$key), utf8_decode($url)));
                 }
             }
         }
@@ -286,6 +287,65 @@ class Util
         }
 
         return $content;
+    }
+
+    public static function cleanUrl($url,$disallowed_params = array('PHPSESSID')) {
+        $parsed = @parse_url($url);
+        $params = array();
+        if (empty($parsed['query'])) {
+            $parsed['query'] = '';
+        }
+        # hmm parse_str should take the delimiters as a parameter
+        if (strpos($parsed['query'],'&amp;')) {
+            $pairs = explode('&amp;',$parsed['query']);
+            foreach ($pairs as $pair) {
+                if (strpos($pair,'=') !== false) {
+                    list($key,$val) = explode('=',$pair);
+                    $params[$key] = $val;
+                } else {
+                    $params[$pair] = '';
+                }
+            }
+        } else {
+            ## parse_str turns . into _ which is wrong
+        #    parse_str($parsed['query'],$params);
+            $params= Util::parseQueryString($parsed['query']);
+        }
+        $uri = !empty($parsed['scheme']) ? $parsed['scheme'].':'.((strtolower($parsed['scheme']) == 'mailto') ? '':'//'): '';
+        $uri .= !empty($parsed['user']) ? $parsed['user'].(!empty($parsed['pass'])? ':'.$parsed['pass']:'').'@':'';
+        $uri .= !empty($parsed['host']) ? $parsed['host'] : '';
+        $uri .= !empty($parsed['port']) ? ':'.$parsed['port'] : '';
+        $uri .= !empty($parsed['path']) ? $parsed['path'] : '';
+        #  $uri .= $parsed['query'] ? '?'.$parsed['query'] : '';
+        $query = '';
+        foreach ($params as $key => $val) {
+            if (!in_array($key,$disallowed_params)) {
+                //0008980: Link Conversion for Click Tracking. no = will be added if key is empty.
+                $query .= $key . ( $val != "" ? '=' . $val . '&' : '&' );
+            }
+        }
+        $query = substr($query,0,-1);
+        $uri .= $query ? '?'.$query : '';
+        #  if (!empty($params['p'])) {
+        #    $uri .= '?p='.$params['p'];
+        #  }
+        $uri .= !empty($parsed['fragment']) ? '#'.$parsed['fragment'] : '';
+        return $uri;
+    }
+
+    public static function parseQueryString($str) {
+        if (empty($str)) return array();
+        $op = array();
+        $pairs = explode('&', $str);
+        foreach ($pairs as $pair) {
+            if (strpos($pair,'=') !== false) {
+                list($k, $v) = array_map('urldecode', explode('=', $pair));
+                $op[$k] = $v;
+            } else {
+                $op[$pair] = '';
+            }
+        }
+        return $op;
     }
 
     public static function addAbsoluteResources($text,$url)

@@ -16,6 +16,7 @@ class Cache {
     public $url_cache = array();
     private $message_cache = array();
     private $linktrack_sent_cache = array();
+    private $linktrack_cache = array();
 
     private function __construct()
     {
@@ -40,12 +41,17 @@ class Cache {
         return Cache::instance()->linktrack_sent_cache;
     }
 
+    public static function linktrackCache()
+    {
+        return Cache::instance()->linktrack_cache;
+    }
+
     /**
      * Get a message from cache, returns false when not available yet
      * @param Message $message
      * @return Message|bool
      */
-    public static function getMessageFromCache($message)
+    public static function getCachedMessage($message)
     {
         if(!isset(Cache::$_instance->message_cache[$message->id])){
             return false;
@@ -57,7 +63,7 @@ class Cache {
      * Put a message in the cache
      * @param Message $message
      */
-    public static function setMessageCache($message)
+    public static function setCachedMessage($message)
     {
         Cache::$_instance->message_cache[$message->id] = $message;
     }
@@ -66,7 +72,7 @@ class Cache {
 
     public static function getPageCache($url, $lastmodified = 0)
     {
-        $req = phpList::DB()->Sql_Fetch_Row_Query(sprintf(
+        $req = phpList::DB()->fetchRowQuery(sprintf(
                 'SELECT content FROM %s
                 WHERE url = "%s"
                 AND lastmodified >= %d',
@@ -79,7 +85,7 @@ class Cache {
 
     public static function getPageCacheLastModified($url)
     {
-        $req = phpList::DB()->Sql_Fetch_Row_Query(sprintf(
+        $req = phpList::DB()->fetchRowQuery(sprintf(
                 'SELECT lastmodified FROM %s
                 WHERE url = "%s"',
                 Config::getTableName('urlcache'),
@@ -91,13 +97,13 @@ class Cache {
     public static function setPageCache($url, $lastmodified, $content)
     {
         #  if (isset($GLOBALS['developer_email'])) return;
-        phpList::DB()->Sql_Query(sprintf(
+        phpList::DB()->query(sprintf(
                 'DELETE FROM %s
                 WHERE url = "%s"',
                 Config::getTableName('urlcache'),
                 $url
             ));
-        phpList::DB()->Sql_Query(sprintf(
+        phpList::DB()->query(sprintf(
                 'INSERT INTO %s (url,lastmodified,added,content)
                 VALUES("%s",%d,CURRENT_TIMESTAMP,"%s")',
                 Config::getTableName('urlcache'),
@@ -109,7 +115,7 @@ class Cache {
 
     public static function clearPageCache()
     {
-        phpList::DB()->Sql_Query(sprintf(
+        phpList::DB()->query(sprintf(
             'DELETE FROM %s',
             Config::getTableName('urlcache')
             ));
@@ -120,8 +126,9 @@ class Cache {
         foreach (Cache::$_instance->linktrack_sent_cache as $mid => $numsent) {
             foreach ($numsent as $fwdid => $fwdtotal) {
                 //TODO: change output function
-                //if (Config::VERBOSE)
-                    //output("Flushing clicktrack stats for $mid: $fwdid => $fwdtotal");
+                if (Config::VERBOSE){
+                    Output::output("Flushing clicktrack stats for $mid: $fwdid => $fwdtotal");
+                }
                 phpList::DB()->query(sprintf(
                         'UPDATE %s SET total = %d
                         WHERE messageid = %d

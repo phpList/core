@@ -301,7 +301,7 @@ class Message
             sprintf(
                 'SELECT * FROM %s AS m_a, %s as a
                 WHERE m_a.attachmentid = a.id
-                AND m_a.messageid = ',
+                AND m_a.messageid = %d',
                 Config::getTableName('message_attachment'),
                 Config::getTableName('attachment'),
                 $this->id

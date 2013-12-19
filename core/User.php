@@ -48,6 +48,16 @@ class User
     public $extradata;
     public $foreignkey;
     private $attributes;
+    /**
+     * Used for looping over all usable user attributes
+     * for replacing in messages, urls etc. (see fetchUrl)
+     * @var array
+     */
+    public static $DB_ATTRIBUTES = array(
+        'id', 'email', 'confirmed', 'blacklisted', 'optedin', 'bouncecount',
+        'entered', 'modified', 'uniqid', 'htmlemail', 'subscribepage', 'rssfrequency',
+        'extradata', 'foreignkey'
+    );
 
     public function __construct()
     {

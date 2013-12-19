@@ -70,7 +70,7 @@ class phpListMailer extends PHPMailer
               * ok, decided:
         */
 
-        if (!USE_AMAZONSES && USE_PRECEDENCE_HEADER) {
+        if (Config::get('USE_AMAZONSES', false) === false && Config::get('USE_PRECEDENCE_HEADER', false) !== false) {
             $this->addCustomHeader('Precedence: bulk');
         }
 

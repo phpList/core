@@ -576,8 +576,8 @@ class UserConfig
     # as it relies on a little image being pulled from the phpList system to update the database
     # To add it to your campaigns, you need to add [USERTRACK] somewhere.
     # From version 3 onwards, this is automatically done with the following setting. If you do not
-    # want it, you can switch it off here, by uncommenting the next line
-    # const ALWAYS_ADD_USERTRACK = false;
+    # want it, you can switch it off here, by setting this false
+    const ALWAYS_ADD_USERTRACK = true;
 
     # Click tracking
     # If you set this to true, all links in your emails will be converted to links that
