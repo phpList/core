@@ -16,13 +16,13 @@ class Timer
     function __construct()
     {
         $now = gettimeofday();
-        $this->start = $now["sec"] * 1000000 + $now["usec"];
+        $this->start = $now['sec'] * 1000000 + $now['usec'];
     }
 
     public function elapsed($seconds = false)
     {
         $now = gettimeofday();
-        $end = $now["sec"] * 1000000 + $now["usec"];
+        $end = $now['sec'] * 1000000 + $now['usec'];
         $elapsed = $end - $this->start;
         if ($seconds) {
             return sprintf('%0.10f', $elapsed / 1000000);
@@ -34,7 +34,7 @@ class Timer
     public function interval($seconds = false)
     {
         $now = gettimeofday();
-        $end = $now["sec"] * 1000000 + $now["usec"];
+        $end = $now['sec'] * 1000000 + $now['usec'];
         if (!$this->previous) {
             $elapsed = $end - $this->start;
         } else {

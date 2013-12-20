@@ -34,7 +34,6 @@ class MessageQueue
     {
     }
 
-    //TODO: should we need an option to not output text and send it somewhere else (e.g. a file)
     public function process($message_id, $force = false, $reload = false, $cmd_max = 0)
     {
         //initialize the process queue timer
@@ -77,7 +76,8 @@ class MessageQueue
         # check for batch limits
         $ISPrestrictions = '';
         $ISPlockfile = '';
-        $user_attribute_query = '';
+
+        //TODO: change change this to use running config instead of $_GET
         $lastsent = !empty($_GET['lastsent']) ? sprintf('%d', $_GET['lastsent']) : 0;
         $lastskipped = !empty($_GET['lastskipped']) ? sprintf('%d', $_GET['lastskipped']) : 0;
 
@@ -90,15 +90,15 @@ class MessageQueue
                 list($key, $val) = explode("=", $line);
 
                 switch ($key) {
-                    case "maxbatch":
+                    case 'maxbatch':
                         $maxbatch = sprintf('%d', $val);
                         $ISPrestrictions .= "$key = $val\n";
                         break;
-                    case "minbatchperiod":
+                    case 'minbatchperiod':
                         $minbatchperiod = sprintf('%d', $val);
                         $ISPrestrictions .= "$key = $val\n";
                         break;
-                    case "lockfile":
+                    case 'lockfile':
                         $ISPlockfile = $val;
                 }
             }
@@ -176,10 +176,9 @@ class MessageQueue
             # keep an eye on timeouts
             $safemode = true;
             $this->num_per_batch = min(100, $this->num_per_batch);
-            //TODO: remove print below
-            print s('Running in safe mode') . '<br/>';
+            Output::customPrint(s('Running in safe mode') . '<br/>');
         }
-
+        $recently_sent = 0;
         $this->original_num_per_batch = $this->num_per_batch;
         if ($this->num_per_batch && $batch_period) {
             # check how many were sent in the last batch period and subtract that
@@ -207,18 +206,17 @@ class MessageQueue
             }
         }
         # output some stuff to make sure it's not buffered in the browser
-        //TODO: remove print below
         for ($i = 0; $i < 10000; $i++) {
-            print '  ';
+            Output::customPrint('  ');
             if ($i % 100 == 0) {
-                print "\n";
+                Output::customPrint("\n");
             }
         }
-        print '<style type="text/css" src="css/app.css"></style>';
-        print '<style type="text/css" src="ui/' . Config::get('ui') . '/css/style.css"></style>';
-        print '<script type="text/javascript" src="js/' . Config::get('jQuery') . '"></script>';
+        Output::customPrint('<style type="text/css" src="css/app.css"></style>');
+        Output::customPrint('<style type="text/css" src="ui/' . Config::get('ui') . '/css/style.css"></style>');
+        Output::customPrint('<script type="text/javascript" src="js/' . Config::get('jQuery') . '"></script>');
         ## not sure this works, but would be nice
-        print '<script type="text/javascript">$("#favicon").attr("href","images/busy.gif");</script>';
+        Output::customPrint('<script type="text/javascript">$("#favicon").attr("href","images/busy.gif");</script>');
 
         flush();
         # report keeps track of what is going on
@@ -373,11 +371,10 @@ class MessageQueue
             }
 
             ## check the end date of the campaign
-            $stopSending = false;
             //if (!empty($message->'finishsending')) {
             $finishSendingBefore = $message->finishsending->getTimestamp();
             $secondsTogo = $finishSendingBefore - time();
-            $stopSending = $secondsTogo < 0;
+            $stopSending = ($secondsTogo < 0);
             if (empty($this->reload)) {
                 ### Hmm, this is probably incredibly confusing. It won't finish then
                 if (Config::VERBOSE) {
@@ -436,14 +433,7 @@ class MessageQueue
                         )
                     );
                 }
-                //TODO: should probably move to Message class
-                phpList::DB()->Sql_Query(sprintf(
-                        'INSERT IGNORE INTO %s (name,id,data)
-                        VALUES("start_notified",%d,CURRENT_TIMESTAMP)',
-                        Config::getTableName('messagedata'),
-                        $message->id
-                    )
-                );
+                $message->setDataItem('start_notified', 'CURRENT_TIMESTAMP');
             }
 
             if (empty($this->reload)) {
@@ -502,7 +492,7 @@ class MessageQueue
                     $subject = s("Maillist Processing info");
                     if (!$this->nothingtodo) {
                         Output::output(s('Finished this run'), 1, 'progress');
-                        printf(
+                        Output::customPrintf(
                             '<script type="text/javascript">
                                 var parentJQuery = window.parent.jQuery;
                                 parentJQuery("#progressmeter").updateSendProgress("%s,%s");
@@ -1344,13 +1334,12 @@ class MessageQueue
         Cache::flushClickTrackCache();
         Process::releaseLock($this->send_process_id);
 
-        //TODO: replace print function
         //finish("info",$report,$this->script_stage);
         //function finish ($flag,$message,$this->script_stage) {
         $subject = s("Maillist Processing info");
         if (!$this->nothingtodo) {
             Output::output(s('Finished this run'), 1, 'progress');
-            printf(
+            Output::customPrintf(
                 '<script type="text/javascript">
                                         var parentJQuery = window.parent.jQuery;
                                         parentJQuery("#progressmeter").updateSendProgress("%s,%s");
@@ -1393,7 +1382,7 @@ class MessageQueue
                     $delaytime = $this->batch_period;
                 }
                 sleep($delaytime);
-                printf(
+                Output::customPrintf(
                     '<script type="text/javascript">
                                                document.location = "./?page=pageaction&action=processqueue&ajaxed=true&reload=%d&lastsent=%d&lastskipped=%d";
                                             </script>',
@@ -1402,7 +1391,7 @@ class MessageQueue
                     $this->notsent
                 );
             } else {
-                printf(
+                Output::customPrintf(
                     '<script type="text/javascript">
                                                document.location = "./?page=pageaction&action=processqueue&ajaxed=true&reload=%d&lastsent=%d&lastskipped=%d";
                                             </script>',
@@ -1413,12 +1402,12 @@ class MessageQueue
             }
         } elseif ($this->script_stage == 6 || $this->nothingtodo) {
             /*
-             * TODO: enable plugins and remove print
+             * TODO: enable plugins
             foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
                 $plugin->messageQueueFinished();
             }*/
             Output::output(s('Finished, All done'), 0);
-            printf(
+            Output::customPrintf(
                 '<script type="text/javascript">
                                         var parentJQuery = window.parent.jQuery;
                                         window.parent.allDone("%s");

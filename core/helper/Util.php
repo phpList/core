@@ -9,9 +9,11 @@ namespace phpList;
 
 class Util
 {
+    /**
+     * push some more output to the browser, so it displays things sooner
+     */
     public static function flushBrowser()
     {
-        ## push some more output to the browser, so it displays things sooner
         for ($i = 0; $i < 10000; $i++) {
             print ' ' . "\n";
         }
@@ -391,7 +393,7 @@ class Util
 
     public static function timeDiff($time1,$time2) {
         if (!$time1 || !$time2) {
-            return $GLOBALS['I18N']->get('Unknown');
+            return s('Unknown');
         }
         $t1 = strtotime($time1);
         $t2 = strtotime($time2);
@@ -404,5 +406,125 @@ class Util
         if ($diff == 0)
             return s('very little time');
         return secs2time($diff);
+    }
+
+    public static function encryptPass($pass)
+    {
+        if (empty($pass)) {
+            return '';
+        }
+
+        if (function_exists('hash')) {
+            if (!in_array(Config::ENCRYPTION_ALGO, hash_algos(), true)) {
+                ## fallback, not that secure, but better than none at all
+                $algo = 'md5';
+            } else {
+                $algo = ENCRYPTION_ALGO;
+            }
+            return hash($algo, $pass);
+        } else {
+            return md5($pass);
+        }
+    }
+
+    /**
+     * Turn register globals off, even if it's on
+     * taken from Wordpress
+     *
+     * @access public
+     * @since 2.2.10
+     * @return null Will return null if register_globals PHP directive was disabled
+     */
+    public static function unregister_GLOBALS()
+    {
+        if ( !ini_get('register_globals') )
+            return;
+
+        ## https://mantis.phplist.com/view.php?id=16882
+        ## no need to do this on commandline
+        if (php_sapi_name() == "cli")
+            return;
+
+        if ( isset($_REQUEST['GLOBALS']) )
+            die('GLOBALS overwrite attempt detected');
+
+        // Variables that shouldn't be unset
+        $noUnset = array('GLOBALS', '_GET', '_POST', '_COOKIE', '_REQUEST', '_SERVER', '_ENV', '_FILES');
+
+        $input = array_merge($_GET, $_POST, $_COOKIE, $_SERVER, $_ENV, $_FILES, isset($_SESSION) && is_array($_SESSION) ? $_SESSION : array());
+        foreach ( $input as $k => $v ){
+            if ( !in_array($k, $noUnset) && isset($GLOBALS[$k]) ) {
+                $GLOBALS[$k] = NULL;
+                unset($GLOBALS[$k]);
+            }
+        }
+
+    }
+
+    //TODO: should be removed
+    public static function magicQuotes()
+    {
+        if (!ini_get('magic_quotes_gpc') || ini_get('magic_quotes_gpc') == 'off') {
+            $_POST = Util::addSlashesArray($_POST);
+            $_GET = Util::addSlashesArray($_GET);
+            $_REQUEST = Util::addSlashesArray($_REQUEST);
+            $_COOKIE = Util::addSlashesArray($_COOKIE);
+            Config::setRunningConfig('NO_MAGIC_QUOTES', true);
+        }else{
+            #magic quotes are deprecated, so try to switch off if possible
+            ini_set('magic_quotes_gpc','off');
+            Config::setRunningConfig('NO_MAGIC_QUOTES', false);
+        }
+    }
+
+    public static function addSlashesArray($array)
+    {
+        foreach ($array as $key => $val) {
+            if (is_array($val)) {
+                $array[$key] = addSlashesArray($val);
+            } else {
+                $array[$key] = addslashes($val);
+            }
+        }
+        return $array;
+    }
+
+    public static function removeXss($string)
+    {
+        if (is_array($string)) {
+            $return = array();
+            foreach ($string as $key => $val) {
+                $return[Util::removeXss($key)] = Util::removeXss($val);
+            }
+            return $return;
+        }
+        #$string = preg_replace('/<script/im','&lt;script',$string);
+        $string = htmlspecialchars($string);
+        return $string;
+    }
+
+    public static function parseCline() {
+        $res = array();
+        $cur = "";
+        foreach ($GLOBALS['argv'] as $clinearg) {
+            if (substr($clinearg,0,1) == '-') {
+                $par = substr($clinearg,1,1);
+                $clinearg = substr($clinearg,2,strlen($clinearg));
+                # $res[$par] = "";
+                $cur = strtolower($par);
+                $res[$cur] .= $clinearg;
+            } elseif ($cur) {
+                if ($res[$cur])
+                    $res[$cur] .= ' '.$clinearg;
+                else
+                    $res[$cur] .= $clinearg;
+            }
+        }
+        /*  ob_end_clean();
+          foreach ($res as $key => $val) {
+            print "$key = $val\n";
+          }
+          ob_start();*/
+        return $res;
     }
 } 

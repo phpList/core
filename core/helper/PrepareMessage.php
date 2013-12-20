@@ -25,7 +25,7 @@ class PrepareMessage
         $forwardedby = array()
     ) {
         $getspeedstats = Config::VERBOSE && Config::get('getspeedstats', false) !== false && (Timer::get('PQC') != null);
-        $sqlCountStart = Config::get('pagestats')['number_of_queries'];
+        $sqlCountStart = phpList::DB()->getQueryCount();
         //TODO: remove $_GET from here
         $isTestMail = isset($_GET['page']) && $_GET['page'] == 'send';
 
@@ -424,13 +424,13 @@ class PrepareMessage
                 $htmlmessage = str_replace(
                     '</body>',
                     '<img src="' . Config::get('public_scheme') . '://' . Config::get('website') .
-                    Config::get('pageroot') . '/ut.php?u=' . $hash . '&amp;m=' . $message->id .
+                    Config::PAGEROOT . '/ut.php?u=' . $hash . '&amp;m=' . $message->id .
                     '" width="1" height="1" border="0" /></body>',
                     $htmlmessage
                 );
             } else {
                 $htmlmessage .= '<img src="' . Config::get('public_scheme') . '://' . Config::get('website') .
-                    Config::get('pageroot') . '/ut.php?u=' . $hash . '&amp;m=' . $message->id .
+                    Config::PAGEROOT . '/ut.php?u=' . $hash . '&amp;m=' . $message->id .
                     '" width="1" height="1" border="0" />';
             }
         } else {
@@ -438,7 +438,7 @@ class PrepareMessage
             $htmlmessage = preg_replace(
                 '/\[USERTRACK\]/i',
                 '<img src="' . Config::get('public_scheme') . '://' . Config::get('website') .
-                Config::get('pageroot') . '/ut.php?u=' . $hash . '&amp;m=' . $message->id .
+                Config::PAGEROOT . '/ut.php?u=' . $hash . '&amp;m=' . $message->id .
                 '" width="1" height="1" border="0" />',
                 $htmlmessage,
                 1
@@ -531,7 +531,7 @@ class PrepareMessage
 
             # to process the Yahoo webpage with base href and link like <a href=link> we'd need this one
             #preg_match_all('/<a href=([^> ]*)([^>]*)>(.*)<\/a>/Umis',$htmlmessage,$links);
-            $clicktrack_root = sprintf('%s://%s/lt.php', Config::get('public_scheme'), Config::get('website') . Config::get('pageroot'));
+            $clicktrack_root = sprintf('%s://%s/lt.php', Config::get('public_scheme'), Config::get('website') . Config::PAGEROOT);
             for ($i = 0; $i < count($links[2]); $i++) {
                 $link = cleanUrl($links[2][$i]);
                 $link = str_replace('"', '', $link);
@@ -579,7 +579,7 @@ class PrepareMessage
                             '<a %shref="%s://%s/lt.php?id=%s" %s>%s</a>',
                             $links[1][$i],
                             Config::get('public_scheme'),
-                            Config::get('website') . Config::get('pageroot'),
+                            Config::get('website') . Config::PAGEROOT,
                             $masked,
                             $links[3][$i],
                             $links[4][$i]
@@ -649,7 +649,7 @@ class PrepareMessage
                         $newlink = sprintf(
                             '%s://%s/lt.php?id=%s',
                             Config::get('public_scheme'),
-                            Config::get('website') . Config::get('pageroot'),
+                            Config::get('website') . Config::PAGEROOT,
                             $masked
                         );
                         $textmessage = str_replace($links[0][$i], '<' . $newlink . '>', $textmessage);
@@ -694,7 +694,7 @@ class PrepareMessage
                         $newlinks[$linkid] = sprintf(
                             '%s://%s/lt.php?id=%s',
                             Config::get('public_scheme'),
-                            Config::get('website') . Config::get('pageroot'),
+                            Config::get('website') . Config::PAGEROOT,
                             $masked
                         );
                     } else {
@@ -1091,8 +1091,7 @@ class PrepareMessage
                         $message->setDataItem($name, $mail->mailsize);
                     }
                 }
-                //TODO: same as above, where do we get pagestats from
-                $sqlCount = $GLOBALS['pagestats']['number_of_queries'] - $sqlCountStart;
+                $sqlCount = phpList::DB()->getQueryCount() - $sqlCountStart;
                 if ($getspeedstats) Output::output('It took ' . $sqlCount . '  queries to send this message');
                 /*TODO:enable plugins
                 foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
@@ -1189,7 +1188,7 @@ class PrepareMessage
                         break;
 
                     case "text":
-                        $viewurl = Config::get('public_scheme') . "://" . Config::get('website') . Config::get('pageroot') . '/dl.php?id=' . $attachment->id;
+                        $viewurl = Config::get('public_scheme') . "://" . Config::get('website') . Config::PAGEROOT . '/dl.php?id=' . $attachment->id;
                         $mail->append_text(
                             $attachment->description . "\n" . s('Location') . ": " . $viewurl . "\n"
                         );

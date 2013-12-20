@@ -423,6 +423,7 @@ class Message
 
     /**
      * Save this message to the database, calls update() when it already exists
+     * Will be filled with default values
      * @param int $owner
      */
     public function save($owner)

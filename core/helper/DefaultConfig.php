@@ -52,9 +52,6 @@ class DefaultConfig
             $D_domain = $regs[1];
         }
 
-        //TODO: pageroot was used but not defined, double check how it should be used
-        $pageroot = '';
-
         $this->default_config = array(
 
             /* any next line has the format
@@ -250,12 +247,12 @@ class DefaultConfig
                 'category' => 'transactional',
             ),
             ## the location of your subscribe script
-            #'public_baseurl' => array("http://[WEBSITE]$pageroot/",
+            #'public_baseurl' => array("http://[WEBSITE]Config::PAGEROOT/",
             #  'Base URL for public pages',"text"),
 
             # the location of your subscribe script
             'subscribeurl' => array(
-                'value' => Config::get('scheme') . "://[WEBSITE]$pageroot/?p=subscribe",
+                'value' => Config::get('scheme') . '://[WEBSITE]'.Config::PAGEROOT.'/?p=subscribe',
                 'description' => s('URL where subscribers can sign up'),
                 'type' => 'url',
                 'allowempty' => 0,
@@ -263,7 +260,7 @@ class DefaultConfig
             ),
             # the location of your unsubscribe script:
             'unsubscribeurl' => array(
-                'value' => Config::get('scheme') . "://[WEBSITE]$pageroot/?p=unsubscribe",
+                'value' => Config::get('scheme') . '://[WEBSITE]'.Config::PAGEROOT.'/?p=unsubscribe',
                 'description' => s('URL where subscribers can unsubscribe'),
                 'type' => 'url',
                 'allowempty' => 0,
@@ -272,7 +269,7 @@ class DefaultConfig
             #0013076: Blacklisting posibility for unknown users
             # the location of your blacklist script:
             'blacklisturl' => array(
-                'value' => Config::get('scheme') . "://[WEBSITE]$pageroot/?p=donotsend",
+                'value' => Config::get('scheme') . '://[WEBSITE]'.Config::PAGEROOT.'/?p=donotsend',
                 'description' => s('URL where unknown users can unsubscribe (do-not-send-list)'),
                 'type' => 'url',
                 'allowempty' => 0,
@@ -280,7 +277,7 @@ class DefaultConfig
             ),
             # the location of your confirm script:
             'confirmationurl' => array(
-                'value' => Config::get('scheme') . "://[WEBSITE]$pageroot/?p=confirm",
+                'value' => Config::get('scheme') . '://[WEBSITE]'.Config::PAGEROOT.'/?p=confirm',
                 'description' => s('URL where subscribers have to confirm their subscription'),
                 'type' => 'text',
                 'allowempty' => 0,
@@ -288,7 +285,7 @@ class DefaultConfig
             ),
             # url to change their preferences
             'preferencesurl' => array(
-                'value' => Config::get('scheme') . "://[WEBSITE]$pageroot/?p=preferences",
+                'value' => Config::get('scheme') . '://[WEBSITE]'.Config::PAGEROOT.'/?p=preferences',
                 'description' => s('URL where subscribers can update their details'),
                 'type' => 'text',
                 'allowempty' => 0,
@@ -296,7 +293,7 @@ class DefaultConfig
             ),
             # url to change their preferences
             'forwardurl' => array(
-                'value' => Config::get('scheme') . "://[WEBSITE]$pageroot/?p=forward",
+                'value' => Config::get('scheme') . '://[WEBSITE]'.Config::PAGEROOT.'/?p=forward',
                 'description' => s('URL for forwarding messages'),
                 'type' => 'text',
                 'allowempty' => 0,
@@ -312,7 +309,7 @@ class DefaultConfig
                 'category' => 'subscription',
             ),
             # the location of your subscribe script
-            #'subscribe_baseurl' => array("http://[WEBSITE]$pageroot/",
+            #'subscribe_baseurl' => array("http://[WEBSITE]".Config::PAGEROOT."/",
             #  'Base URL for public pages',"text"),
 
             # the subject of the message

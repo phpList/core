@@ -47,7 +47,7 @@ class Admin
      */
     public function setPassword($password)
     {
-        $this->password = phpList::encryptPass($password);
+        $this->password = Util::encryptPass($password);
         if ($this->id != 0) {
             phpList::DB()->query(
                 sprintf(
@@ -296,7 +296,7 @@ class Admin
             return $result;
         }
         $admin = Admin::adminFromArray($result);
-        $encryptedPass = phpList::encryptPass($password);
+        $encryptedPass = Util::encryptPass($password);
 
         /*
          * TODO: this should not happen imo, can this be removed

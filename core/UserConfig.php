@@ -20,7 +20,7 @@ class UserConfig
     # to find your language
     # this is the language for the frontend pages. In the admin pages you can
     # choose your language by using the dropdown in the pages.
-    const LANGUAGE_MODELE = 'english.inc';
+    const LANGUAGE_MODULE = 'english.inc';
 
     # what is your Mysql database server
     const DATABASE_HOST = 'localhost';
@@ -136,7 +136,7 @@ class UserConfig
     # you will be able to add administrators who control their own lists
     # default login is 'admin' with password 'phplist'
     #
-    const REQUIRE_LOGIN = 1;
+    const REQUIRE_LOGIN = true;
 
     # if you use login, how many lists can be created per administrator
     const MAXLIST = 1;
@@ -154,7 +154,7 @@ class UserConfig
     # see also https://mantis.phplist.com/view.php?id=15557
     # if you don't like that, you can stop this from happening and send the subscriber to the
     # preferences page instead. To do so, uncomment (remove the #) the next line
-    #const SILENT_RESUBSCRIBE = false;
+    const SILENT_RESUBSCRIBE = false;
 
     # as of version 2.4.1, you can have your users define a password for themselves as well
     # this will cause some public pages to ask for an email and a password when the password is
@@ -192,8 +192,8 @@ class UserConfig
 
     # Check for host of email entered for subscription
     # Do not use it if your server is not 24hr online
-    # make the 0 a 1, if you want to use it
-    const CHECK_FOR_HOST = 0;
+    # make true, if you want to use it
+    const CHECK_FOR_HOST = false;
 
     /*
 
@@ -410,7 +410,7 @@ class UserConfig
     # however, Google/Gmail requests that the header is used.
     # So, it's up to you what to do. Yes, or No. Defaults to 'yes' use it
     # see also https://mantis.phplist.com/view.php?id=16688
-    #const USE_PRECEDENCE_HEADER = false;
+    const USE_PRECEDENCE_HEADER = true;
 
     # the number of criterias you want to be able to select when sending a message.
     # Useful is is to make it the same as the number of selectable attributes you enter in the
@@ -431,9 +431,9 @@ class UserConfig
 
     # wrap html
     # in some cases, strange newlines appear in the HTML source of campaigns
-    # If that's happening to you, you may want to set this one
+    # If that's happening to you, you may want to set this one to 60 or so
     # check https://mantis.phplist.com/view.php?id=15603 for more info
-    # const WORDWRAP_HTML = 60;
+    const WORDWRAP_HTML = 0;
 
 
     # year ranges. If you use dates, by default the drop down for year will be from
@@ -653,13 +653,12 @@ class UserConfig
 
     # if you want to be able to send your messages as PDF attachments, you need to install
     # FPDF (http://www.fpdf.org) and set these variables accordingly
-
-    # const FPDF_FONTPATH = '/home/pdf/font/';
-    # require('fpdf.php');
-    # const USE_PDF = true;
-    # const PDF_FONT = 'Times';
-    # const PDF_FONTSTYLE = '';
-    # const PDF_FONTSIZE = 14;
+    const USE_PDF = false;
+    const FPDF_FONTPATH = '/home/pdf/font/';
+    const FPDF_PATH = 'fpdf.php';
+    const PDF_FONT = 'Times';
+    const PDF_FONTSTYLE = '';
+    const PDF_FONTSIZE = 14;
 
     # the mime type for the export files. You can try changing this to
     # application/vnd.ms-excel to make it open automatically in excel
@@ -679,13 +678,13 @@ class UserConfig
     # On Linux based systems, it will be good to make sure this directory is on the same
     # filesystem as your phpList installation. In some systems, renaming files or directories
     # across filesystems fails.
-
     const TMPDIR = '/tmp';
 
     # if you are on Windoze, and/or you are not using apache, in effect when you are getting
-    # 'Method not allowed' errors you will want to uncomment this
+    # 'Method not allowed' errors you will want to set this true
     # ie take off the #-character in the next line
     # using this is not guaranteed to work, sorry. Easier to use Apache instead :-)
+    const FORM_ACTION_METHOD_NOT_ALLOWED_WORKAROUND = false;
     # const FORM_ACTION = 'index.php';
 
     # select the database module to use
@@ -745,8 +744,8 @@ class UserConfig
     # http://dev.mysql.com/doc/refman/5.0/en/mysql-tzinfo-to-sql.html
     # make sure that the value you use works for both PHP and Mysql. If you find strange discrepancies
     # in the dates and times used in phpList, you probably used the wrong value.
-
-    # const SYSTEM_TIMEZONE = 'Europe/London';
+    const USE_CUSTOM_TIMEZONE = false;
+    const SYSTEM_TIMEZONE = 'Europe/London';
 
 
     # list exclude will add the option to send a message to users who are on a list
@@ -773,8 +772,7 @@ class UserConfig
     # phplist will look for a file in that directory, or you can enter the full path to the file
 
     # eg
-    #const ADMIN_AUTH_MODULE = 'phplist_auth.inc';
-
+    const ADMIN_AUTH_MODULE = 'phplist_auth.inc';
     # or
     #const ADMIN_AUTH_MODULE = '/usr/local/etc/auth.inc';
 
@@ -800,9 +798,10 @@ class UserConfig
     # Public protocol
     # phpList will automatically use the protocol you run the admin interface on for clicktrack links and
     # tracking images
-    # but if you want to force this to be http, when you eg run the admin on https, uncomment the below line
+    # but if you want to force this to be http, when you eg run the admin on https, set the below line true
     # see also https://mantis.phplist.com/view.php?id=16611
-    #const PUBLIC_PROTOCOL = 'http';
+    const USE_CUSTOM_PUBLIC_PROTOCOL = false;
+    const PUBLIC_PROTOCOL = 'http';
 
 
     # advanced bounce processing
@@ -845,5 +844,10 @@ class UserConfig
     #const ADODB_INC_FILE = '/path/to/adodb_inc.php';
     #const ADODB_DRIVER = 'mysql';
     #const ADODB_INC_FILE = '/usr/share/php/adodb/adodb.inc.php';
-    const ADODB_DRIVER = 'mysql'; // not really a site variable
+    const ADODB_DRIVER = 'mysqli'; // not really a site variable
+
+    # Amazon SES configuration
+    const USE_AMAZONSES = false;
+    const AWS_ACCESSKEYID = '';
+    const AWS_POSTURL = 'https://email.us-east-1.amazonaws.com/';
 }

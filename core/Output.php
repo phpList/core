@@ -39,7 +39,6 @@ class Output {
 
     /**
      * @param string|array $message
-     * @param Timer $timer
      * @param int $logit
      * @param string $target
      */
@@ -55,7 +54,7 @@ class Output {
         if (Config::get('commandline')) {
             Output::cl_output(
                 strip_tags($message) . ' [' . Timer::get('PQC')->interval(true) . '] (' .
-                Config::get('pagestats')["number_of_queries"] . ')'
+                phpList::DB()->getQueryCount() . ')'
             );
             $infostring = '[' . date('D j M Y H:i', time()) . '] [CL]';
         } else {
@@ -103,5 +102,24 @@ class Output {
         }
 
         flush();
+    }
+
+    //TODO: should we need an option to not output text and send it somewhere else (e.g. a file)
+    /**
+     * In case we should not want to output to the user, we can change this function here
+     * @param string $text
+     */
+    public static function customPrint($text)
+    {
+        print $text;
+    }
+
+    /**
+     * Wrapper for printf with the ability to disable output to the user
+     */
+    public static function customPrintf()
+    {
+        $args = func_get_args();
+        vprintf(array_shift($args), $args);
     }
 } 

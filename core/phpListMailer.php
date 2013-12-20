@@ -436,10 +436,10 @@ class phpListMailer extends PHPMailer
 
         return
             is_file(
-                $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['pageroot'] . '/' . Config::UPLOADIMAGES_DIR . '/image/' . $localfile
+                $_SERVER['DOCUMENT_ROOT'] . Config::PAGEROOT . '/' . Config::UPLOADIMAGES_DIR . '/image/' . $localfile
             )
             || is_file(
-                $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['pageroot'] . '/' . Config::UPLOADIMAGES_DIR . '/' . $localfile
+                $_SERVER['DOCUMENT_ROOT'] . Config::PAGEROOT . '/' . Config::UPLOADIMAGES_DIR . '/' . $localfile
             )
             ## commandline
             || is_file('../' . Config::UPLOADIMAGES_DIR . '/image/' . $localfile)
@@ -475,23 +475,23 @@ class phpListMailer extends PHPMailer
                 }
             }
         } elseif (is_file(
-            $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['pageroot'] . '/' . Config::UPLOADIMAGES_DIR . '/' . $localfile
+            $_SERVER['DOCUMENT_ROOT'] . Config::PAGEROOT . '/' . Config::UPLOADIMAGES_DIR . '/' . $localfile
         )
         ) {
             $elements = parse_url($filename);
             $localfile = basename($elements['path']);
             return base64_encode(
                 file_get_contents(
-                    $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['pageroot'] . '/' . Config::UPLOADIMAGES_DIR . '/' . $localfile
+                    $_SERVER['DOCUMENT_ROOT'] . Config::PAGEROOT . '/' . Config::UPLOADIMAGES_DIR . '/' . $localfile
                 )
             );
         } elseif (is_file(
-            $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['pageroot'] . '/' . Config::UPLOADIMAGES_DIR . '/image/' . $localfile
+            $_SERVER['DOCUMENT_ROOT'] . Config::PAGEROOT . '/' . Config::UPLOADIMAGES_DIR . '/image/' . $localfile
         )
         ) {
             return base64_encode(
                 file_get_contents(
-                    $_SERVER['DOCUMENT_ROOT'] . $GLOBALS['pageroot'] . '/' . Config::UPLOADIMAGES_DIR . '/image/' . $localfile
+                    $_SERVER['DOCUMENT_ROOT'] . Config::PAGEROOT . '/' . Config::UPLOADIMAGES_DIR . '/image/' . $localfile
                 )
             );
         } elseif (is_file('../' . Config::UPLOADIMAGES_DIR . '/' . $localfile)) { ## commandline

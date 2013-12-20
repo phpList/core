@@ -22,6 +22,7 @@ class Config extends UserConfig
         if (isset($_SESSION['running_config'])) {
             $this->running_config = $_SESSION['running_config'];
         } else {
+            $this->initConfig();
             $this->loadAllFromDB();
         }
     }
@@ -272,6 +273,406 @@ class Config extends UserConfig
     public static function defaultConfig($item)
     {
         return DefaultConfig::get($item);
+    }
+
+
+    /**
+     * Try to initialize some configuration values
+     * @throws \Exception
+     */
+    private static function initConfig()
+    {
+        if (Config::get('commandline') === false
+            && Config::get('developer_email', false) !== false
+            && $_SERVER['HTTP_HOST'] != 'dev.phplist.com'
+            && Config::get('show_dev_errors', false) !== false
+        ) {
+            error_reporting(E_ALL);
+            ini_set('display_errors',1);
+            foreach ($_REQUEST as $key => $val) {
+                unset($$key);
+            }
+        } else {
+            error_reporting(0);
+        }
+
+        if (function_exists('iconv_set_encoding')) {
+            iconv_set_encoding('input_encoding', 'UTF-8');
+            iconv_set_encoding('internal_encoding', 'UTF-8');
+            iconv_set_encoding('output_encoding', 'UTF-8');
+        }
+
+        if (function_exists('mb_internal_encoding')) {
+            mb_internal_encoding('UTF-8');
+        }
+
+        $zlib_compression = ini_get('zlib.output_compression');
+        # hmm older versions of PHP don't have this, but then again, upgrade php instead?
+        $handlers = ob_list_handlers();
+        $gzhandler = 0;
+        foreach ($handlers as $handler) {
+            $gzhandler = $gzhandler || $handler == 'ob_gzhandler';
+        }
+        # @@@ needs more work
+        Config::setRunningConfig('compression_used', ($zlib_compression || $gzhandler));
+
+        if (Config::get('ui', false) === false || !is_dir(dirname(__FILE__).'/ui/'.Config::get('ui', false))) {
+            ## prefer dressprow over orange
+            if (is_dir(dirname(__FILE__).'/ui/dressprow')) {
+                Config::setRunningConfig('ui', 'dressprow');
+            } else {
+                Config::setRunningConfig('ui', 'default');
+            }
+        }
+
+        ## @@ would be nice to move this to the config file at some point
+        # http://mantis.phplist.com/view.php?id=15521
+        ## set it on the fly, although that will probably only work with Apache
+        ## we need to save this in the DB, so that it'll work on commandline
+        Config::setRunningConfig(
+            'scheme',
+            (isset($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) == 'on')) ? 'https' : 'http'
+        );
+
+        if (Config::USE_CUSTOM_PUBLIC_PROTOCOL) {
+            Config::setRunningConfig('public_scheme', Config::PUBLIC_PROTOCOL);
+        } else {
+            Config::setRunningConfig('public_scheme', Config::get('scheme'));
+        }
+
+        # set some defaults if they are not specified
+        Config::setRunningConfig('DEVSITE', false);
+        Config::setRunningConfig('TRANSLATIONS_XML', 'http://translate.phplist.com/translations.xml');
+
+        //define('TLD_AUTH_LIST','http://data.iana.org/TLD/tlds-alpha-by-domain.txt');
+        //define('TLD_AUTH_MD5','http://data.iana.org/TLD/tlds-alpha-by-domain.txt.md5');
+        Config::setRunningConfig('TLD_AUTH_LIST','http://www.phplist.com/files/tlds-alpha-by-domain.txt');
+        Config::setRunningConfig('TLD_AUTH_MD5','http://www.phplist.com/files/tlds-alpha-by-domain.txt.md5');
+        Config::setRunningConfig('TLD_REFETCH_TIMEOUT',15552000); ## 180 days, about 6 months
+        Config::setRunningConfig('USEFCK', true);
+        Config::setRunningConfig('USECK', false); ## ckeditor integration, not finished yet
+        Config::setRunningConfig('SHOW_UNSUBSCRIBELINK',true);
+
+        if (function_exists('hash_algos') && in_array(Config::ENCRYPTION_ALGO, hash_algos())) {
+            throw new \Exception('Encription algorithm "' . Config::ENCRYPTION_ALGO . '" not supported, change your configuration');
+        }
+        ## remember the length of a hashed string
+        Config::setRunningConfig('hash_length', strlen(hash(ENCRYPTION_ALGO,'some text')));
+
+
+        Config::setRunningConfig('NUMATTACHMENTS',1);
+        Config::setRunningConfig('USE_EDITMESSAGE',0);
+        Config::setRunningConfig('FCKIMAGES_DIR','uploadimages');
+        Config::setRunningConfig('NAME','phpList');
+        Config::setRunningConfig('USE_OUTLOOK_OPTIMIZED_HTML',0);
+        Config::setRunningConfig('USE_PREPARE',0);
+        Config::setRunningConfig('HTMLEMAIL_ENCODING','quoted-printable');
+        Config::setRunningConfig('TEXTEMAIL_ENCODING','7bit');
+        Config::setRunningConfig('WARN_SAVECHANGES',1);
+        Config::setRunningConfig('USETINYMCEMESG',0);
+        Config::setRunningConfig('USETINYMCETEMPL',0);
+        Config::setRunningConfig('TINYMCEPATH','');
+        Config::setRunningConfig('STATS_INTERVAL','weekly');
+        Config::setRunningConfig('ALLOW_IMPORT',1);
+        Config::setRunningConfig('CLICKTRACK_LINKMAP',0);
+        Config::setRunningConfig('MERGE_DUPLICATES_DELETE_DUPLICATE',1);
+        Config::setRunningConfig('USE_PERSONALISED_REMOTEURLS',1);
+        Config::setRunningConfig('USE_LOCAL_SPOOL',0);
+        Config::setRunningConfig('SEND_LISTADMIN_COPY',true);
+        Config::setRunningConfig('BLACKLIST_EMAIL_ON_BOUNCE',5);
+        Config::setRunningConfig('UNBLACKLIST_IN_PROFILE',false);
+        Config::setRunningConfig('ENCRYPT_ADMIN_PASSWORDS',1);
+        Config::setRunningConfig('PASSWORD_CHANGE_TIMEFRAME','1 day');
+        Config::setRunningConfig('MAX_SENDPROCESSES',1);
+        Config::setRunningConfig('SENDPROCESS_SERVERNAME','localhost');
+        Config::setRunningConfig('DB_TRANSLATION',0);
+        Config::setRunningConfig('ALLOW_DELETEBOUNCE',1);
+        Config::setRunningConfig('MESSAGE_SENDSTATUS_INACTIVETHRESHOLD',120);
+        Config::setRunningConfig('MESSAGE_SENDSTATUS_SAMPLETIME',600);
+        Config::setRunningConfig('SEND_QUEUE_PROCESSING_REPORT',true);
+        Config::setRunningConfig('MAX_AVATAR_SIZE',2000);
+        Config::setRunningConfig('ADD_EMAIL_THROTTLE',1); ## seconds between addemail ajax requests
+        Config::setRunningConfig('SENDTEST_THROTTLE',1); ## seconds between send test
+        Config::setRunningConfig('SENDTEST_MAX',999); ## max number of emails in a send test
+        Config::setRunningConfig('installation_name', Config::get('installation_name', 'phpList'));
+        Config::setRunningConfig(
+            'SESSIONNAME',
+            Config::get('SESSIONNAME', 'phpList'.Config::get('installation_name').'session'
+            ));
+
+        ## this doesn't yet work with the FCKEditor
+        #ini_set('session.name',str_replace(' ','',SESSIONNAME));
+
+        if (Config::USE_AMAZONSES){
+            if(Config::AWS_ACCESSKEYID  == ''){
+                throw new \Exception('Invalid Amazon SES configuration: AWS_ACCESSKEYID not set');
+            }else if(!function_exists('curl_init')){
+                throw new \Exception('Invalid Amazon SES configuration: CURL not enabled');
+            }
+        }
+
+        Config::setRunningConfig('ACCESS_CONTROL_ALLOW_ORIGIN','http://'.$_SERVER['HTTP_HOST']);
+
+        Config::setRunningConfig('RFC_DIRECT_DELIVERY',false);  ## Request for Confirmation, delivery with SMTP
+        # check whether Pear HTTP/Request is available, and which version
+        # try 2 first
+
+        # @@TODO finish this, as it is more involved than just renaming the class
+        #@include_once 'HTTP/Request2.php';
+        if (0 && class_exists('HTTP_Request2')) {
+            Config::setRunningConfig('has_pear_http_request', 2);
+        } else {
+            @include_once 'HTTP/Request.php';
+            Config::setRunningConfig('has_pear_http_request', class_exists('HTTP_Request'));
+        }
+        Config::setRunningConfig('has_curl', function_exists('curl_init'));
+        Config::setRunningConfig('can_fetch_url', Config::get('has_pear_http_request') || Config::get('has_curl'));
+        Config::setRunningConfig('jQuery', 'jquery-1.7.1.min.js');
+
+        $system_tmpdir = ini_get('upload_tmp_dir');
+        if (Config::TMPDIR && !empty($system_tmpdir)) {
+            Config::setRunningConfig('tmpdir', $system_tmpdir);
+        }else if (Config::TMPDIR) {
+            Config::setRunningConfig('tmpdir', '/tmp');
+        }
+        if (!is_dir(Config::TMPDIR) || !is_writable(Config::TMPDIR) && !empty($system_tmpdir)) {
+            Config::setRunningConfig('tmpdir', $system_tmpdir);
+        }
+
+        ## as the 'admin' in adminpages is hardcoded, don't put it in the config file
+        ## remove possibly duplicated // at the beginning
+        Config::setRunningConfig(
+            'adminpages',
+            preg_replace('~^//~', '/', Config::PAGEROOT.'/admin')
+        );
+
+        Config::setRunningConfig('systemroot', dirname(__FILE__));
+
+        ## when click track links are detected, block sending
+        ## if false, will only show warning. For now defaulting to false, but may change that later
+        Config::setRunningConfig('BLOCK_PASTED_CLICKTRACKLINKS',false);
+
+        if (Config::FORWARD_EMAIL_COUNT < 1) {
+            throw new \Exception('Config Error: FORWARD_EMAIL_COUNT must be > (int) 0');
+        }
+
+        # allows FORWARD_EMAIL_COUNT forwards per user per period in mysql interval terms default one day
+        Config::setRunningConfig('FORWARD_EMAIL_PERIOD', '1 day');
+        Config::setRunningConfig('EMBEDUPLOADIMAGES',0);
+        Config::setRunningConfig('IMPORT_FILESIZE',5);
+        Config::setRunningConfig('SMTP_TIMEOUT',5);
+
+        ## experimental, mark mails 'todo' in the DB and process the 'todo' list, to avoid the user query being run every queue run
+        if (Config::MESSAGEQUEUE_PREPARE) {
+            ## with a multi-process config, we need the queue prepare mechanism and memcache
+            if (Config::get('MAX_SENDPROCESSES', 1) > 1) {
+                Config::setRunningConfig('MESSAGEQUEUE_PREPARE',true);
+            } else {
+                Config::setRunningConfig('MESSAGEQUEUE_PREPARE',false);
+            }
+        }
+        Config::setRunningConfig('noteditableconfig', Config::get('noteditableconfig', array()));
+
+        ## experimental, use minified JS and CSS
+        Config::setRunningConfig('USE_MINIFIED_ASSETS',false);
+
+        ## set up a memcached global object, and test it
+        if (Config::get('MEMCACHED', false) !== false) {
+            include_once dirname(__FILE__).'/class.memcached.php';
+            if (class_exists('phpListMC')) {
+                $MC = new phpListMC();
+                list($mc_server,$mc_port) = explode(':',Config::get('MEMCACHED'));
+                $MC->addServer($mc_server,$mc_port);
+
+                /* check that the MC connection is ok
+                $MC->add('Hello','World');
+                $test = $MC->get('Hello');
+                if ($test != 'World') {
+                  unset($MC);
+                }
+                */
+                Config::setRunningConfig('MC', $MC);
+            }
+        }
+
+        ## global counters array to keep track of things
+        Config::setRunningConfig(
+            'counters',
+            array(
+                'campaign' => 0,
+                'num_users_for_message' => 0,
+                'batch_count' => 0,
+                'batch_total' => 0,
+                'sendemail returned false' => 0,
+                'send blocked by domain throttle' => 0
+            ));
+
+        Config::setRunningConfig('disallowpages', array());
+        # list of pages and categorisation in the system
+        ## old version
+        Config::setRunningConfig(
+            'system_pages',
+            array (
+                'system' => array (
+                    'adminattributes' => 'none',
+                    'attributes' => 'none',
+                    'upgrade' => 'none',
+                    'configure' => 'none',
+                    'spage' => 'owner',
+                    'spageedit' => 'owner',
+                    'defaultconfig' => 'none',
+                    'defaults' => 'none',
+                    'initialise' => 'none',
+                    'bounces' => 'none',
+                    'bounce' => 'none',
+                    'processbounces' => 'none',
+                    'eventlog' => 'none',
+                    'reconcileusers' => 'none',
+                    'getrss' => 'owner',
+                    'viewrss' => 'owner',
+                    'purgerss' => 'none',
+                    'setup' => 'none',
+                    'dbcheck' => 'none',
+
+                ),
+                'list' => array (
+                    'list' => 'owner',
+                    'editlist' => 'owner',
+                    'members' => 'owner'
+                ),
+                'user' => array (
+                    'user' => 'none',
+                    'users' => 'none',
+                    'dlusers' => 'none',
+                    'editattributes' => 'none',
+                    'usercheck' => 'none',
+                    'import1' => 'none',
+                    'import2' => 'none',
+                    'import3' => 'none',
+                    'import4' => 'none',
+                    'import' => 'none',
+                    'export' => 'none',
+                    'massunconfirm' => 'none',
+
+                ),
+                'message' => array (
+                    'message' => 'owner',
+                    'messages' => 'owner',
+                    'processqueue' => 'none',
+                    'send' => 'owner',
+                    'preparesend' => 'none',
+                    'sendprepared' => 'all',
+                    'template' => 'none',
+                    'templates' => 'none'
+                ),
+                'clickstats' => array (
+                    'statsmgt' => 'owner',
+                    'mclicks' => 'owner',
+                    'uclicks' => 'owner',
+                    'userclicks' => 'owner',
+                    'mviews' => 'owner',
+                    'statsoverview' => 'owner',
+
+                ),
+                'admin' => array (
+                    'admins' => 'none',
+                    'admin' => 'owner'
+                )
+            ));
+
+        # Set revision
+        Config::setRunningConfig('CODEREVISION', '$Rev$');
+        if (preg_match('/Rev: (\d+)/','$Rev$',$match)) {
+            Config::setRunningConfig('REVISION',$match[1]);
+        }
+        if (Config::get('VERSION', false) === false) {
+            Config::setRunningConfig('VERSION','3.0.5');
+            Config::setRunningConfig(
+                'DEVVERSION',
+                !ini_get('open_basedir')
+                && is_dir(dirname(__FILE__).'/../../../.svn')
+            );
+        } else {
+            Config::setRunningConfig('DEVVERSION', false);
+        }
+
+        Config::setRunningConfig('organisation_name', Config::get('organisation_name', $_SERVER['SERVER_NAME']));
+        Config::setRunningConfig('domain', Config::get('domain', $_SERVER['SERVER_NAME']));
+        Config::setRunningConfig('website', Config::get('website', $_SERVER['SERVER_NAME']));
+
+        $xormask = Config::get('xormask');
+        if (empty($xormask)) {
+            $xormask = md5(uniqid(rand(), true));
+            Config::setRunningConfig('xormask',$xormask);
+            Config::setRunningConfig('XORmask',$xormask);
+        }
+
+        # if keys need expanding with 0-s
+        Config::setRunningConfig('checkboxgroup_storesize', 1); # this will allow 10000 options for checkboxes
+
+        # identify pages that can be run on commandline
+        Config::setRunningConfig(
+            'commandline_pages',
+            array(
+                'dbcheck','send','processqueueforked','processqueue',
+                'processbounces','import','upgrade','convertstats','reindex',
+                'blacklistemail','systemstats','converttoutf8','initlanguages'
+            ));
+
+        Config::setRunningConfig('envelope', '-f' . Config::MESSAGE_ENVELOPE);
+        Config::setRunningConfig('coderoot', dirname(__FILE__).'/');
+
+        /*
+          We request you retain the $PoweredBy variable including the links.
+          This not only gives respect to the large amount of time given freely
+          by the developers  but also helps build interest, traffic and use of
+          PHPlist, which is beneficial to it's future development.
+
+          You can configure your PoweredBy options in your config file
+
+          Michiel Dethmers, phpList Ltd 2001-2013
+        */
+        if (Config::get('DEVVERSION'))
+            $v = 'dev';
+        else
+            $v = Config::get('VERSION');
+        if (Config::REGISTER) {
+            $PoweredByImage = '<p class="poweredby"><a href="http://www.phplist.com/poweredby?utm_source=pl'.$v.'&amp;utm_medium=poweredhostedimg&amp;utm_campaign=phpList" title="visit the phpList website" ><img src="http://powered.phplist.com/images/'.$v.'/power-phplist.png" width="70" height="30" title="powered by phpList version '.$v.', &copy; phpList ltd" alt="powered by phpList '.$v.', &copy; phpList ltd" border="0" /></a></p>';
+        } else {
+            $PoweredByImage = '<p class="poweredby"><a href="http://www.phplist.com/poweredby?utm_source=pl'.$v.'&amp;utm_medium=poweredlocalimg&amp;utm_campaign=phpList" title="visit the phpList website"><img src="images/power-phplist.png" width="70" height="30" title="powered by phpList version '.$v.', &copy; phpList ltd" alt="powered by phpList '.$v.', &copy; phpList ltd" border="0"/></a></p>';
+        }
+        $PoweredByText = '<div style="clear: both; font-family: arial, verdana, sans-serif; font-size: 8px; font-variant: small-caps; font-weight: normal; padding: 2px; padding-left:10px;padding-top:20px;">powered by <a href="http://www.phplist.com/poweredby?utm_source=download'.$v.'&amp;utm_medium=poweredtxt&amp;utm_campaign=phpList" target="_blank" title="powered by phpList version '.$v.', &copy; phpList ltd">phpList</a></div>';
+        Config::setRunningConfig('PoweredBy', Config::PAGETEXTCREDITS ? $PoweredByText : $PoweredByImage);
+
+
+        # some other configuration variables, which need less tweaking
+        # number of users to show per page if there are more
+        Config::setRunningConfig('MAX_USER_PP',50);
+        Config::setRunningConfig('MAX_MSG_PP',5);
+
+        if (Config::MESSAGE_ENVELOPE == '') {
+            # why not try set it to "person in charge of this system". Will help get rid of a lot of bounces to nobody@server :-)
+            Config::setRunningConfig('message_envelope', Config::get('admin_address'));
+        }
+
+        Config::setRunningConfig('homepage', 'home');
+
+        /*
+        if (defined("IN_WEBBLER") && is_object($GLOBALS["config"]["plugins"]["phplist"])) {
+            $GLOBALS["tables"] = $GLOBALS["config"]["plugins"]["phplist"]->tables;
+        }
+        */
+        Config::setRunningConfig(
+            'bounceruleactions',
+            array(
+                'deleteuser' => s('delete user'),
+                'unconfirmuser' => s('unconfirm user'),
+                'blacklistuser' => s('blacklist user'),
+                'deleteuserandbounce' => s('delete user and bounce'),
+                'unconfirmuseranddeletebounce' => s('unconfirm user and delete bounce'),
+                'blacklistuseranddeletebounce' => s('blacklist user and delete bounce'),
+                'deletebounce' => s('delete bounce'),
+            ));
     }
 
 }

@@ -37,7 +37,7 @@ class User
      */
     public function setPassword($password)
     {
-        $this->password = phpList::encryptPass($password);
+        $this->password = Util::encryptPass($password);
         if ($this->id != null) {
             $this->updatePassword();
         }
