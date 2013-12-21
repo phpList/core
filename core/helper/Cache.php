@@ -18,10 +18,7 @@ class Cache {
     private $linktrack_sent_cache = array();
     private $linktrack_cache = array();
 
-    private function __construct()
-    {
-        $this->connect();
-    }
+    private function __construct(){}
 
     public static function instance()
     {

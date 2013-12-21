@@ -527,4 +527,73 @@ class Util
           ob_start();*/
         return $res;
     }
+
+
+    public static function clean2 ($value) {
+        $value = trim($value);
+        $value = preg_replace("/\r/","",$value);
+        $value = preg_replace("/\n/","",$value);
+        $value = str_replace('"',"&quot;",$value);
+        $value = str_replace("'","&rsquo;",$value);
+        $value = str_replace("`","&lsquo;",$value);
+        $value = stripslashes($value);
+        return $value;
+    }
+
+    public static function cleanEmail ($value) {
+        $value = trim($value);
+        $value = preg_replace("/\r/","",$value);
+        $value = preg_replace("/\n/","",$value);
+        $value = preg_replace('/"/',"&quot;",$value);
+        $value = preg_replace('/^mailto:/i','',$value);
+        $value = str_replace('(','',$value);
+        $value = str_replace(')','',$value);
+        $value = preg_replace('/\.$/','',$value);
+
+        ## these are allowed in emails
+        //  $value = preg_replace("/'/","&rsquo;",$value);
+        $value = preg_replace("/`/","&lsquo;",$value);
+        $value = stripslashes($value);
+        return $value;
+    }
+
+    public static function addSubscriberStatistics($item = '', $amount, $list = 0) {
+        switch (Config::get('STATS_INTERVAL')) {
+            case 'monthly':
+                # mark everything as the first day of the month
+                $time = mktime(0,0,0,date('m'),1,date('Y'));
+                break;
+            case 'weekly':
+                # mark everything for the first sunday of the week
+                $time = mktime(0,0,0,date('m'),date('d') - date('w'),date('Y'));
+                break;
+            case 'daily':
+                $time = mktime(0,0,0,date('m'),date('d'),date('Y'));
+                break;
+        }
+        phpList::DB()->query(sprintf(
+                'UPDATE %s
+                SET value = value + %d
+                WHERE unixdate = "%s"
+                AND item = "%s"
+                AND listid = %d',
+                Config::getTableName('userstats'),
+                $amount,
+                $time,
+                $item,
+                $list
+            ));
+        if (!phpList::DB()->affectedRows()) {
+            //TODO: why not use REPLACE INTO?
+            phpList::DB()->query(sprintf(
+                    'INSERT INTO %s (value, unixdate, item, listid)
+                    VALUES("%s", "%s", "%s", %d)',
+                    Config::getTableName('userstats'),
+                    $amount,
+                    $time,
+                    $item,
+                    $list
+                ));
+        }
+    }
 } 

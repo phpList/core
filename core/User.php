@@ -88,30 +88,44 @@ class User
      */
     public static function getUserByEmail($email)
     {
-        $result = phpList::DB()->fetchAssocQuery(
-            sprintf(
-                'SELECT * FROM %s
-                WHERE email = "%s"',
-                Config::getTableName('user', true),
-                $email
-            )
-        );
-        return User::userFromArray($result);
+        return User::getUserBy('email', $email);
     }
 
     /**
      * Get user object from foreign key value
-     * @param $fk string
+     * @param string $fk
      * @return User
      */
     public static function getUserByForeignKey($fk)
     {
+        return User::getUserBy('foreignkey', $fk);
+    }
+
+    /**
+     * Get user object from unique id value
+     * @param string $unique_id
+     * @return User
+     */
+    public static function getUserByUniqueId($unique_id)
+    {
+        return User::getUserBy('uniqueid', $unique_id);
+    }
+
+    /**
+     * Get a user by searching for a value in a given column
+     * @param string $column
+     * @param string $value
+     * @return User
+     */
+    private static function getUserBy($column, $value)
+    {
         $result = phpList::DB()->fetchAssocQuery(
             sprintf(
                 'SELECT * FROM %s
-                WHERE foreignkey = %s',
+                WHERE %s = "%s"',
                 Config::getTableName('user', true),
-                $fk
+                $column,
+                phpList::DB()->sqlEscape($value)
             )
         );
         return User::userFromArray($result);
@@ -288,25 +302,29 @@ class User
      */
     private static function userFromArray($array)
     {
-        $user = new User();
-        $user->id = $array['id'];
-        $user->email = $array['email'];
-        $user->confirmed = $array['confirmed'];
-        $user->blacklisted = $array['blacklisted'];
-        $user->optedin = $array['optedin'];
-        $user->bouncecount = $array['bouncecount'];
-        $user->entered = $array['entered'];
-        $user->modified = $array['modified'];
-        $user->uniqid = $array['uniqid'];
-        $user->htmlemail = $array['htmlemail'];
-        $user->subscribepage = $array['subscribepage'];
-        $user->rssfrequency = $array['rssfrequency'];
-        $user->password = $array['password'];
-        $user->passwordchanged = $array['passwordchanged'];
-        $user->disabled = $array['disabled'];
-        $user->extradata = $array['extradata'];
-        $user->foreignkey = $array['foreignkey'];
-        return $user;
+        if(!empty($array)){
+            $user = new User();
+            $user->id = $array['id'];
+            $user->email = $array['email'];
+            $user->confirmed = $array['confirmed'];
+            $user->blacklisted = $array['blacklisted'];
+            $user->optedin = $array['optedin'];
+            $user->bouncecount = $array['bouncecount'];
+            $user->entered = $array['entered'];
+            $user->modified = $array['modified'];
+            $user->uniqid = $array['uniqid'];
+            $user->htmlemail = $array['htmlemail'];
+            $user->subscribepage = $array['subscribepage'];
+            $user->rssfrequency = $array['rssfrequency'];
+            $user->password = $array['password'];
+            $user->passwordchanged = $array['passwordchanged'];
+            $user->disabled = $array['disabled'];
+            $user->extradata = $array['extradata'];
+            $user->foreignkey = $array['foreignkey'];
+            return $user;
+        }else{
+            return false;
+        }
     }
 
     /**

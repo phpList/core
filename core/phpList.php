@@ -8,52 +8,22 @@ namespace phpList;
 
 
 //Include core files
-include('helper/Cache.php');
-include('helper/IDatabase.php');
-include('helper/Language.php');
-include('helper/Logger.php');
-include('helper/MySQLi.php');
-include('helper/PrepareMessage.php');
-include('helper/Process.php');
-include('helper/String.php');
-include('helper/Timer.php');
-include('helper/Util.php');
-include('helper/Validation.php');
-include('Admin.php');
-include('Attachment.php');
-include('Config.php');
-include('MailingList.php');
-include('Message.php');
-include('MessageQueue.php');
-include('Output.php');
-include('phpListMailer.php');
-include('Session.php');
-include('Template.php');
-include('User.php');
-//include('UserConfig.php');
+include('../core/helper/IDatabase.php');
+include('../core/helper/Language.php');
+include('../core/helper/MySQLi.php');
+include('../core/helper/Validation.php');
+include('../core/helper/String.php');
+include('../core/Config.php');
+include('../core/User.php');
+include('../core/Admin.php');
+include('../core/Session.php');
+include('../core/Message.php');
+include('../core/MailingList.php');
+include('../core/Attachment.php');
+include('../core/Template.php');
 
 class phpList
 {
-    /**
-     * @var phpList
-     */
-    private static $_instance;
-    /**
-     * To send the headers to the browser, call phpList::sendHeaders()
-     * @var array
-     */
-    private $headers = array();
-
-    private function __construct(){}
-
-    public static function instance()
-    {
-        if (!phpList::$_instance instanceof self) {
-            phpList::$_instance = new self();
-        }
-        return phpList::$_instance;
-    }
-
     /**
      * @return IDatabase
      * @throws \Exception
@@ -65,67 +35,24 @@ class phpList
                 return MySQLi::instance();
                 break;
             default:
-                throw new \Exception('DB Module not available');
+                throw new \Exception("DB Module not available");
         }
     }
 
-    /**
-     * @throws \Exception
-     */
-    public static function initialize()
+    public static function encryptPass($pass)
     {
-        //Timer replaces $GLOBALS['pagestats']['time_start']
-        //DB->getQueryCount replaces $GLOBALS['pagestats']['number_of_queries']
-        Timer::start('pagestats');
-
-        $configfile = '';
-        if (isset($_SERVER['ConfigFile']) && is_file($_SERVER['ConfigFile'])) {
-            $configfile = $_SERVER['ConfigFile'];
-        } elseif (isset($cline['c']) && is_file($cline['c'])) {
-            $configfile = $cline['c'];
-        } else {
-            $configfile = 'UserConfig.php';
+        if (empty($pass)) {
+            return '';
         }
 
-        if (is_file($configfile) && filesize($configfile) > 20) {
-            include $configfile;
-        } elseif (PHP_SAPI == 'cli') {
-            throw new \Exception('Cannot find config file');
-        } else {
-            Config::setRunningConfig('installer', true);
-            return;
-        }
-
-        error_reporting(0);
-        //check for commandline and cli version
-        if (!isset($_SERVER['SERVER_NAME']) && PHP_SAPI != 'cli') {
-            throw new \Exception('Warning: commandline only works well with the cli version of PHP');
-        }
-        if (isset($_REQUEST['_SERVER'])) { return; }
-        $cline = array();
-        Config::setRunningConfig('commandline', false);
-
-        Util::unregister_GLOBALS();
-        Util::magicQuotes();
-
-        # setup commandline
-        if (php_sapi_name() == 'cli') {
-            for ($i=0; $i<$_SERVER['argc']; $i++) {
-                $my_args = array();
-                if (preg_match('/(.*)=(.*)/',$_SERVER['argv'][$i], $my_args)) {
-                    $_GET[$my_args[1]] = $my_args[2];
-                    $_REQUEST[$my_args[1]] = $my_args[2];
-                }
+        if (function_exists('hash')) {
+            if (!in_array(Config::ENCRYPTION_ALGO, hash_algos(), true)) {
+                ## fallback, not that secure, but better than none at all
+                $algo = 'md5';
+            } else {
+                $algo = ENCRYPTION_ALGO;
             }
-            Config::setRunningConfig('commandline', true);
-            $cline = Util::parseCLine();
-            $dir = dirname($_SERVER['SCRIPT_FILENAME']);
-            chdir($dir);
-
-            if (!is_file($cline['c'])) {
-                throw new \Exception('Cannot find config file');
-            }
-
+            return hash($algo, $pass);
         } else {
             Config::setRunningConfig('commandline', false);
         }

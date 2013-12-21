@@ -253,7 +253,7 @@ class MessageQueue
                 Output::output($ISPrestrictions);
             }
             if (is_file($ISPlockfile)) {
-                $this->processError(s('Processing has been suspended by your ISP, please try again later'), 1);
+                $this->queueProcessError(s('Processing has been suspended by your ISP, please try again later'), 1);
             }
         }
 
@@ -448,7 +448,7 @@ class MessageQueue
                 Output::output(s('Looking for users'));
             }
             if (phpList::DB()->hasError()) {
-                $this->processError(phpList::DB()->error());
+                $this->queueProcessError(phpList::DB()->error());
             }
 
             # make selection on attribute, users who at least apply to the attributes
@@ -643,7 +643,7 @@ class MessageQueue
             }
 
             if (phpList::DB()->hasError()) {
-                $this->processError(phpList::DB()->error());
+                $this->queueProcessError(phpList::DB()->error());
             }
 
             # now we have all our users to send the message to
@@ -705,7 +705,7 @@ class MessageQueue
                     }
                     $userids_result = phpList::DB()->query($userids_query);
                     if (phpList::DB()->hasError()) {
-                        $this->processError(phpList::DB()->error());
+                        $this->queueProcessError(phpList::DB()->error());
                     }
                 } else {
                     Output::output(s('No users to process for this batch'), 0, 'progress');
@@ -750,7 +750,7 @@ class MessageQueue
                     Output::output(s('Campaign sending timed out, is past date to process until'));
                     break;
                 } else {
-                    $this->processError(s('Process Killed by other process'));
+                    $this->queueProcessError(s('Process Killed by other process'));
                 }
 
                 # check if the message we are working on is still there and in process
@@ -1272,7 +1272,7 @@ class MessageQueue
         }
     }
 
-    private function processError($message)
+    private function queueProcessError($message)
     {
         Logger::addToReport($message);
         Output::output("Error: $message");

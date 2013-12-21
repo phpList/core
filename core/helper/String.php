@@ -1,6 +1,6 @@
 <?php
 /**
- * User: Sander
+ * User: SaWey
  * Date: 15/12/13
  */
 

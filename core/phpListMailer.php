@@ -906,5 +906,24 @@ class phpListMailer extends PHPMailer
         return $additional_headers;
     }
 
+    public static function sendReport($subject,$message) {
+        $report_addresses = explode(',',Config::get('report_address'));
+        foreach ($report_addresses as $address) {
+            phpListMailer::sendMail($address, Config::get('installation_name').' '.$subject,$message);
+        }
+        /*TODO: enable plugins
+        foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
+            $plugin->sendReport(Config::get('installation_name').' '.$subject,$message);
+        }*/
+    }
+
+    public static function sendError($message,$to,$subject) {
+        /*TODO: enable plugins
+        foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
+            $plugin->sendReport(Config::get('installation_name').'Error: '.$subject,$message);
+        }*/
+        //  Error($msg);
+    }
+
 
 }
