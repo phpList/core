@@ -150,14 +150,16 @@ class Util
         #  print "<h1>Fetching ".$url."</h1>";
 
         # keep in memory cache in case we send a page to many emails
-        if (isset(Cache::urlCache()[$url]) && is_array(Cache::urlCache()[$url])
-            && (time() - Cache::urlCache()[$url]['fetched'] < Config::REMOTE_URL_REFETCH_TIMEOUT)
+
+        $cache = Cache::instance();
+        if (isset($cache->url_cache[$url]) && is_array($cache->url_cache[$url])
+            && (time() - $cache->url_cache[$url]['fetched'] < Config::REMOTE_URL_REFETCH_TIMEOUT)
         ) {
         #Logger::logEvent($url . " is cached in memory");
             if (Config::VERBOSE && function_exists('output')) {
                 output('From memory cache: ' . $url);
             }
-            return Cache::urlCache()[$url]['content'];
+            return $cache->url_cache[$url]['content'];
         }
 
         $timeout = time() - Cache::getPageCacheLastModified($url);
@@ -206,10 +208,11 @@ class Util
             Logger::logEvent('Fetching ' . $url . ' success');
             Cache::setPageCache($url, $lastmodified, $content);
 
-            Cache::urlCache()[$url] = array(
+            Cache::instance()->url_cache[$url] = array(
                 'fetched' => time(),
                 'content' => $content,
             );
+
         }
 
         return $content;

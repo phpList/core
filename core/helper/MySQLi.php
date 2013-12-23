@@ -115,7 +115,7 @@ class MySQLi implements IDatabase
     {
         $this->last_query = null;
 
-        if (isset($GLOBALS['developer_email'])) {
+        if (Config::DEBUG) {
 
             $this->log($query, '/tmp/queries.log');
 
@@ -151,7 +151,7 @@ class MySQLi implements IDatabase
         }
         //TODO: make usable
         /*
-        if (($GLOBALS["developer_email"])) {
+        if (Config::DEBUG) {
             # log time queries take
             $now = gettimeofday();
             $end = $now["sec"] * 1000000 + $now["usec"];
@@ -217,7 +217,7 @@ class MySQLi implements IDatabase
 
     function verboseQuery($query, $ignore = 0)
     {
-        if (Config::get('developer_email') !== false) {
+        if (Config::DEBUG) {
             print "<b>$query</b><br>\n";
         }
         flush();

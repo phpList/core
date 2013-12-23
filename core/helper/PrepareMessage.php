@@ -1058,8 +1058,8 @@ class PrepareMessage
             if ($getspeedstats) Output::output('build End ' . Timer::get('PQT')->interval(1));
             if ($getspeedstats) Output::output('send Start ' . Timer::get('PQT')->interval(1));
 
-            if (Config::get('developer_email', false) !== false) {
-                $destinationemail = Config::get('developer_email');
+            if (Config::DEBUG) {
+                $destinationemail = Config::DEVELOPER_EMAIL;
             }
 
             if (!$mail->compatSend('', $destinationemail, $fromname, $fromemail, $subject)) {
@@ -1327,7 +1327,8 @@ class PrepareMessage
 
     public static function clickTrackLinkId($messageid, $userid, $url, $link)
     {
-        if (!isset(Cache::linktrackCache()[$link])) {
+        $cache = Cache::instance();
+        if (!isset($cache->linktrack_cache[$link])) {
             $exists = phpList::DB()->fetchRowQuery(sprintf(
                     'SELECT id FROM %d
                     WHERE url = "%s"',
@@ -1347,15 +1348,15 @@ class PrepareMessage
             } else {
                 $fwdid = $exists[0];
             }
-            Cache::linktrackCache()[$link] = $fwdid;
+            $cache->linktrack_cache[$link] = $fwdid;
         } else {
-            $fwdid = Cache::linktrackCache()[$link];
+            $fwdid = $cache->linktrack_cache[$link];
         }
-
-        if (!isset(Cache::linktrackSentCache()[$messageid]) || !is_array(Cache::linktrackSentCache()[$messageid])){
-            Cache::linktrackSentCache()[$messageid] = array();
+        
+        if (!isset($cache->linktrack_sent_cache[$messageid]) || !is_array($cache->linktrack_sent_cache[$messageid])){
+            $cache->linktrack_sent_cache[$messageid] = array();
         }
-        if (!isset(Cache::linktrackSentCache()[$messageid][$fwdid])) {
+        if (!isset($cache->linktrack_sent_cache[$messageid][$fwdid])) {
             $rs = phpList::DB()->query(sprintf(
                     'SELECT total FROM %s
                     WHERE messageid = %d
@@ -1389,17 +1390,17 @@ class PrepareMessage
                         $fwdid
                 ));
             }
-            Cache::linktrackSentCache()[$messageid][$fwdid] = $total;
+            $cache->linktrack_sent_cache[$messageid][$fwdid] = $total;
         } else {
-            Cache::linktrackSentCache()[$messageid][$fwdid]++;
+            $cache->linktrack_sent_cache[$messageid][$fwdid]++;
             ## write every so often, to make sure it's saved when interrupted
-            if (Cache::linktrackSentCache()[$messageid][$fwdid] % 100 == 0) {
+            if ($cache->linktrack_sent_cache[$messageid][$fwdid] % 100 == 0) {
                 Sql_Query(sprintf(
                         'UPDATE %s SET total = %d
                         WHERE messageid = %d
                         AND forwardid = %d',
                         Config::getTableName('linktrack_ml'),
-                        Cache::linktrackSentCache()[$messageid][$fwdid],
+                        $cache->linktrack_sent_cache[$messageid][$fwdid],
                         $messageid,
                         $fwdid
                 ));

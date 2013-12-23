@@ -161,7 +161,7 @@ class User
             );
 
             $this->id = phpList::DB()->insertedId();
-            self::giveUniqueId($this->id);
+            $this->uniqid = self::giveUniqueId($this->id);
         }
 
         return $this->id;
@@ -170,6 +170,7 @@ class User
     /**
      * Assign a unique id to a user
      * @param int $user_id
+     * @return string unique id
      */
     private static function giveUniqueId($user_id)
     {
@@ -185,15 +186,21 @@ class User
                 $user_id
             )
         ));
+        return $unique_id;
     }
 
     /**
      * Add new user to database
      * @param $email
      * @param $password
+     * @throws \InvalidArgumentException
      */
     public static function addUser($email, $password)
     {
+        if(!Validation::validateEmail($email)){
+            throw new \InvalidArgumentException('Invalid email address provided');
+        }
+
         $user = new User();
         $user->email = $email;
         $user->setPassword($password);

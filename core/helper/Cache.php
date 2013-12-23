@@ -15,10 +15,13 @@ class Cache {
     public $page_cache = array();
     public $url_cache = array();
     private $message_cache = array();
-    private $linktrack_sent_cache = array();
-    private $linktrack_cache = array();
+    public $linktrack_sent_cache = array();
+    public $linktrack_cache = array();
 
-    private function __construct(){}
+    private function __construct()
+    {
+        $this->connect();
+    }
 
     public static function instance()
     {
@@ -93,7 +96,7 @@ class Cache {
 
     public static function setPageCache($url, $lastmodified, $content)
     {
-        #  if (isset($GLOBALS['developer_email'])) return;
+        #  if (Config::DEBUG) return;
         phpList::DB()->query(sprintf(
                 'DELETE FROM %s
                 WHERE url = "%s"',

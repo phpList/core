@@ -7,17 +7,17 @@
 namespace phpList;
 
 //Probably better to move this out of here
-if (!Config::get('PHPMAILER_PATH', false)) {
+if (Config::PHPMAILER_PATH && is_file(Config::PHPMAILER_PATH)) {
     #require_once '/usr/share/php/libphp-phpmailer/class.phpmailer.php';
-    require_once Config::get('PHPMAILER_PATH');
+    require_once Config::PHPMAILER_PATH;
 }
 
 if (!class_exists('PHPmailer')) {
     //https://github.com/Synchro/PHPMailer/tags
-    require_once dirname(__FILE__) . '../admin/PHPMailer-5.2.5/class.phpmailer.php';
+    require_once __DIR__ . '/../admin/PHPMailer-5.2.5/class.phpmailer.php';
 }
 
-class phpListMailer extends PHPMailer
+class phpListMailer extends \PHPMailer
 {
     public $WordWrap = 75;
     public $encoding = 'base64';
@@ -231,11 +231,11 @@ class phpListMailer extends PHPMailer
             $this->FromName = $from_name;
         }
         //TODO: remove globals
-        if (!empty($GLOBALS["developer_email"])) {
+        if (Config::DEBUG) {
             # make sure we are not sending out emails to real users
             # when developing
-            $this->AddAddress($GLOBALS["developer_email"]);
-            if ($GLOBALS["developer_email"] != $to_addr) {
+            $this->AddAddress(Config::DEVELOPER_EMAIL);
+            if (Config::DEVELOPER_EMAIL != $to_addr) {
                 $this->Body = 'X-Originally to: ' . $to_addr . "\n\n" . $this->Body;
             }
         } else {
@@ -782,10 +782,10 @@ class phpListMailer extends PHPMailer
         #  print "Sending $to from $fromemail<br/>";
         if (DEVVERSION) {
             $message = "To: $to\n$message";
-            if ($GLOBALS['developer_email']) {
-                $destinationemail = $GLOBALS['developer_email'];
+            if (Config::DEBUG && Config::DEVELOPER_EMAIL != '') {
+                $destinationemail = Config::DEVELOPER_EMAIL;
             } else {
-                print 'Error: Running DEV version, but developer_email not set';
+                print 'Error: Running DEV version, but DEVELOPER_EMAIL not set';
             }
         } else {
             $destinationemail = $to;
@@ -816,7 +816,8 @@ class phpListMailer extends PHPMailer
         $GLOBALS['smtpError'] = '';
         ## try to deliver directly, so that any error (eg user not found) can be sent back to the
         ## subscriber, so they can fix it
-        unset($GLOBALS['developer_email']);
+        //TODO: fix this, now using Config::DEVELOPER_EMAIL
+        //unset($GLOBALS['developer_email']);
 
         list($htmlmessage, $textmessage) = phpListMailer::constructSystemMail($message, $subject);
         $mail = new phpListMailer('systemmessage', $destinationemail, false, true);

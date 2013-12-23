@@ -1199,11 +1199,12 @@ class MessageQueue
                     );
                     $this->sendMessageStats($message->id);
                 }
+                $cache = Cache::instance();
                 ## flush cached message track stats to the DB
-                if (isset(Cache::linktrackSentCache()[$message->id])) {
+                if (isset($cache->linktrack_sent_cache[$message->id])) {
                     Cache::flushClicktrackCache();
                     # we're done with $message->id, so get rid of the cache
-                    unset(Cache::linktrackSentCache()[$message->id]);
+                    unset($cache->linktrack_sent_cache[$message->id]);
                 }
 
             } else {

@@ -8,19 +8,31 @@ namespace phpList;
 
 
 //Include core files
-include('../core/helper/IDatabase.php');
-include('../core/helper/Language.php');
-include('../core/helper/MySQLi.php');
-include('../core/helper/Validation.php');
-include('../core/helper/String.php');
-include('../core/Config.php');
-include('../core/User.php');
-include('../core/Admin.php');
-include('../core/Session.php');
-include('../core/Message.php');
-include('../core/MailingList.php');
-include('../core/Attachment.php');
-include('../core/Template.php');
+include(__DIR__ .'/helper/Cache.php');
+include(__DIR__ .'/helper/DefaultConfig.php');
+include(__DIR__ .'/helper/IDatabase.php');
+include(__DIR__ .'/helper/Language.php');
+include(__DIR__ .'/helper/Logger.php');
+include(__DIR__ .'/helper/MySQLi.php');
+include(__DIR__ .'/helper/PrepareMessage.php');
+include(__DIR__ .'/helper/Process.php');
+include(__DIR__ .'/helper/String.php');
+include(__DIR__ .'/helper/Timer.php');
+include(__DIR__ .'/helper/Util.php');
+include(__DIR__ .'/helper/Validation.php');
+include(__DIR__ .'/Admin.php');
+include(__DIR__ .'/Attachment.php');
+include(__DIR__ .'/UserConfig.php');
+include(__DIR__ .'/Config.php');
+include(__DIR__ .'/MailingList.php');
+include(__DIR__ .'/Message.php');
+include(__DIR__ .'/MessageQueue.php');
+include(__DIR__ .'/Output.php');
+include(__DIR__ .'/phpListMailer.php');
+include(__DIR__ .'/Session.php');
+include(__DIR__ .'/Template.php');
+include(__DIR__ .'/User.php');
+Config::start();
 
 class phpList
 {
@@ -39,20 +51,63 @@ class phpList
         }
     }
 
-    public static function encryptPass($pass)
+    /**
+     * @throws \Exception
+     */
+    public static function initialize()
     {
-        if (empty($pass)) {
-            return '';
+        //Timer replaces $GLOBALS['pagestats']['time_start']
+        //DB->getQueryCount replaces $GLOBALS['pagestats']['number_of_queries']
+        Timer::start('pagestats');
+
+        $configfile = '';
+        if (isset($_SERVER['ConfigFile']) && is_file($_SERVER['ConfigFile'])) {
+            $configfile = $_SERVER['ConfigFile'];
+        } elseif (isset($cline['c']) && is_file($cline['c'])) {
+            $configfile = $cline['c'];
+        } else {
+            $configfile = 'UserConfig.php';
         }
 
-        if (function_exists('hash')) {
-            if (!in_array(Config::ENCRYPTION_ALGO, hash_algos(), true)) {
-                ## fallback, not that secure, but better than none at all
-                $algo = 'md5';
-            } else {
-                $algo = ENCRYPTION_ALGO;
+        if (is_file($configfile) && filesize($configfile) > 20) {
+            include $configfile;
+        } elseif (PHP_SAPI == 'cli') {
+            throw new \Exception('Cannot find config file');
+        } else {
+            Config::setRunningConfig('installer', true);
+            return;
+        }
+
+        error_reporting(0);
+        //check for commandline and cli version
+        if (!isset($_SERVER['SERVER_NAME']) && PHP_SAPI != 'cli') {
+            throw new \Exception('Warning: commandline only works well with the cli version of PHP');
+        }
+        if (isset($_REQUEST['_SERVER'])) { return; }
+        $cline = array();
+        Config::setRunningConfig('commandline', false);
+
+        Util::unregister_GLOBALS();
+        Util::magicQuotes();
+
+        # setup commandline
+        if (php_sapi_name() == 'cli') {
+            for ($i=0; $i<$_SERVER['argc']; $i++) {
+                $my_args = array();
+                if (preg_match('/(.*)=(.*)/',$_SERVER['argv'][$i], $my_args)) {
+                    $_GET[$my_args[1]] = $my_args[2];
+                    $_REQUEST[$my_args[1]] = $my_args[2];
+                }
             }
-            return hash($algo, $pass);
+            Config::setRunningConfig('commandline', true);
+            $cline = Util::parseCLine();
+            $dir = dirname($_SERVER['SCRIPT_FILENAME']);
+            chdir($dir);
+
+            if (!is_file($cline['c'])) {
+                throw new \Exception('Cannot find config file');
+            }
+
         } else {
             Config::setRunningConfig('commandline', false);
         }
@@ -81,7 +136,7 @@ class phpList
             #  print "Time now: ".date('Y-m-d H:i:s').'<br/>';
         }
 
-        if( Config::get('developer_email', false) === false ) {
+        if( !Config::DEBUG ) {
             ini_set('error_append_string',
                 'phpList version '.Config::get('VERSION')
             );
@@ -128,7 +183,7 @@ class phpList
     {
         /*
         print "\n\n".'<!--';
-        if (!empty($GLOBALS['developer_email'])) {
+        if (Config::DEBUG) {
             print '<br clear="all" />';
             print phpList::DB()->getQueryCount().' db queries in $elapsed seconds';
             if (function_exists('memory_get_peak_usage')) {

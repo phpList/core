@@ -603,7 +603,8 @@ class Message
         while ($row = phpList::DB()->fetchAssocQuery($req)) {
             $message = Message::messageFromArray($row);
             if ($message->embargo_in_past) {
-                $message->embargo = (new \DateTime('now'))->add(
+                $now = new \DateTime('now');
+                $message->embargo = $now->add(
                     date_interval_create_from_date_string($message->repeatinterval . 'minutes')
                 );
             } else {
@@ -762,7 +763,7 @@ class Message
      * @return mixed
      * @throws \Exception
      */
-    private function __get($item)
+    public function __get($item)
     {
         if (isset($this->messagedata[$item])) {
             return $this->messagedata[$item];
@@ -1134,7 +1135,8 @@ class Message
         # or "repeat" after this very moment to make sure that we're not sending the
         # message every time running the queue when there's no embargo set.
         $new_embargo = $this->embargo->add(\DateInterval::createFromDateString($this->repeatinterval . ' minutes'));
-        $new_embargo2 = (new \DateTime())->add(\DateInterval::createFromDateString($this->repeatinterval . ' minutes'));
+        $now = (new \DateTime());
+        $new_embargo2 = $now->add(\DateInterval::createFromDateString($this->repeatinterval . ' minutes'));
         $is_fututre = ($new_embargo->getTimestamp() > time());
 
         # copy the new message
@@ -1161,7 +1163,8 @@ class Message
                 $repeatinterval += $new_message->repeatinterval;
                 $loopcnt++;
                 $new_embargo = $new_message->embargo->add(\DateInterval::createFromDateString($repeatinterval . ' minutes'));
-                $new_embargo2 = (new \DateTime())->add(\DateInterval::createFromDateString($repeatinterval . ' minutes'));
+                $now = (new \DateTime());
+                $new_embargo2 = $now->add(\DateInterval::createFromDateString($repeatinterval . ' minutes'));
                 $is_fututre = ($new_embargo->getTimestamp() > time());
 
                 if ($loopcnt > 15) {

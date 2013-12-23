@@ -18,9 +18,9 @@ class Language
      */
     public function getLanguages()
     {
-        if (empty($this->_languages)) {
+        $landir = dirname(__FILE__) . '/locale/';
+        if (empty($this->_languages) && is_dir($landir)) {
             ## pick up languages from the lan directory
-            $landir = dirname(__FILE__) . '/locale/';
             $d = opendir($landir);
             while ($lancode = readdir($d)) {
                 if (!in_array($landir, array_keys($this->_languages)) && is_dir($landir . '/' . $lancode) && is_file(
@@ -53,8 +53,8 @@ class Language
             }
 
             ## pick up other languages from DB
-            if (Sql_table_exists('i18n')) {
-                $req = Sql_Query(
+            if (phpList::DB()->tableExists('i18n')) {
+                $req = phpList::DB()->query(
                     sprintf(
                         'SELECT lan,translation FROM %s WHERE
                                                                       original = "language-name" AND lan NOT IN ("%s")',
@@ -62,7 +62,7 @@ class Language
                         join('","', array_keys($this->_languages))
                     )
                 );
-                while ($row = Sql_Fetch_Assoc($req)) {
+                while ($row = phpList::DB()->fetchAssoc($req)) {
                     $this->_languages[$row['lan']] = array($row['translation'], 'UTF-8', 'UTF-8', $row['lan']);
                 }
             }
@@ -93,7 +93,7 @@ class Language
         }
         if (isset($_SESSION['hasI18Ntable'])) {
             $this->hasDB = $_SESSION['hasI18Ntable'];
-        } elseif (Sql_Check_For_Table('i18n')) {
+        } elseif (phpList::DB()->checkForTable('i18n')) {
             $_SESSION['hasI18Ntable'] = true;
             $this->hasDB = true;
         } else {
@@ -105,7 +105,7 @@ class Language
 
         if (is_file($this->basedir . $this->language . '/' . $page . '.php')) {
             @include $this->basedir . $this->language . '/' . $page . '.php';
-        } elseif (!isset($GLOBALS['developer_email'])) {
+        } elseif (!Config::DEBUG) {
             @include $this->basedir . $this->defaultlanguage . '/' . $page . '.php';
         }
         $this->lan = $lan;
@@ -113,7 +113,7 @@ class Language
 
         if (is_file($this->basedir . $this->language . '/common.php')) {
             @include $this->basedir . $this->language . '/common.php';
-        } elseif (!isset($GLOBALS['developer_email'])) {
+        } elseif (!Config::DEBUG) {
             @include $this->basedir . $this->defaultlanguage . '/common.php';
         }
         $this->lan += $lan;
@@ -121,7 +121,7 @@ class Language
 
         if (is_file($this->basedir . $this->language . '/frontend.php')) {
             @include $this->basedir . $this->language . '/frontend.php';
-        } elseif (!isset($GLOBALS['developer_email'])) {
+        } elseif (!Config::DEBUG) {
             @include $this->basedir . $this->defaultlanguage . '/frontend.php';
         }
         $this->lan += $lan;
@@ -191,32 +191,32 @@ class Language
         if (!$this->hasDB) {
             return '';
         }
-        $tr = Sql_Fetch_Row_Query(
+        $tr = phpList::DB()->fetchRowQuery(
             sprintf(
-                'select translation from ' . $GLOBALS['tables']['i18n'] . ' where original = "%s" and lan = "%s"',
-                sql_escape(trim($text)),
+                'select translation from %s where original = "%s" and lan = "%s"',
+                Config::getTableName('i18n'),
+                phpList::DB()->sqlEscape(trim($text)),
                 $this->language
-            ),
-            1
+            )
         );
         if (empty($tr[0])) {
-            $tr = Sql_Fetch_Row_Query(
+            $tr = phpList::DB()->fetchRowQuery(
                 sprintf(
-                    'select translation from ' . $GLOBALS['tables']['i18n'] . ' where original = "%s" and lan = "%s"',
-                    sql_escape($text),
+                    'select translation from %s where original = "%s" and lan = "%s"',
+                    Config::getTableName('i18n'),
+                    phpList::DB()->sqlEscape($text),
                     $this->language
-                ),
-                1
+                )
             );
         }
         if (empty($tr[0])) {
-            $tr = Sql_Fetch_Row_Query(
+            $tr = phpList::DB()->fetchRowQuery(
                 sprintf(
-                    'select translation from ' . $GLOBALS['tables']['i18n'] . ' where original = "%s" and lan = "%s"',
-                    sql_escape(str_replace('"', '\"', $text)),
+                    'select translation from %s where original = "%s" and lan = "%s"',
+                    Config::getTableName('i18n'),
+                    phpList::DB()->sqlEscape(str_replace('"', '\"', $text)),
                     $this->language
-                ),
-                1
+                )
             );
         }
         return stripslashes($tr[0]);
@@ -242,9 +242,10 @@ class Language
         }
         if (preg_match('/pi=([\w]+)/', $page, $regs)) {
             ## @@TODO call plugin to ask for title
+            /*
             if (isset($GLOBALS['plugins'][$regs[1]])) {
                 $title = $GLOBALS['plugins'][$regs[1]]->pageTitle($page);
-            } else {
+            } else*/ {
                 $title = $regs[1] . ' - ' . $page;
             }
 
@@ -280,7 +281,7 @@ class Language
         # we've decided to spell phplist with uc L
         $text = str_ireplace('phplist', 'phpList', $text);
 
-        if (isset($GLOBALS["developer_email"])) {
+        if (Config::DEBUG) {
             if (!empty($_SESSION['show_translation_colours'])) {
                 return '<span style="color:#A704FF">' . str_replace("\n", "", $text) . '</span>';
             }
@@ -296,7 +297,7 @@ class Language
 
     function missingText($text)
     {
-        if (isset($GLOBALS["developer_email"])) {
+        if (Config::DEBUG) {
             if (isset($_GET['page'])) {
                 $page = $_GET["page"];
             } else {
@@ -317,7 +318,7 @@ class Language
 
             $page = preg_replace('/\W/', '', $page);
 
-            #sendMail($GLOBALS["developer_email"],"phplist dev, missing text",$msg);
+            #sendMail(Config::DEVELOPER_EMAIL,"phplist dev, missing text",$msg);
             $line = "'" . str_replace("'", "\'", $text) . "' => '" . str_replace("'", "\'", $text) . "',";
 #      if (is_file($this->basedir.'/en/'.$page.'.php') && $_SESSION['adminlanguage']['iso'] == 'en') {
             if (empty($prefix) && $_SESSION['adminlanguage']['iso'] == 'en') {
@@ -368,6 +369,7 @@ $lan = array(
         $pl = $_GET['pi'];
         $pl = preg_replace('/\W/', '', $pl);
         $pluginroot = '';
+        /*
         if (isset($GLOBALS['plugins'][$pl]) && is_object($GLOBALS['plugins'][$pl])) {
             $pluginroot = $GLOBALS['plugins'][$pl]->coderoot;
         }
@@ -375,7 +377,7 @@ $lan = array(
             return $pluginroot . '/lan/';
         } else {
             return $pluginroot . '/';
-        }
+        }*/
     }
 
     function initFSTranslations($language = '')
@@ -395,8 +397,8 @@ $lan = array(
         }
         if (sizeof($translations)) {
             foreach ($translations as $orig => $trans) {
-                Sql_Replace(
-                    $GLOBALS['tables']['i18n'],
+                phpList::DB()->replaceQuery(
+                    Config::getTableName('i18n'),
                     array('lan' => $language, 'original' => $orig, 'translation' => $trans),
                     ''
                 );
@@ -435,7 +437,7 @@ $lan = array(
             }
         }
 
-        $lan = $this->lan;
+        $lan = $this->language;
 
         if (trim($text) == "") {
             return "";
@@ -476,13 +478,13 @@ $lan = array(
             $page = "home";
         }
         $page = preg_replace('/\W/', '', $page);
-
+/*
         if (!empty($_GET['pi'])) {
             $plugin_languagedir = $this->getPluginBasedir();
             if (is_dir($plugin_languagedir)) {
                 $translation = $this->getTranslation($text, $page, $plugin_languagedir);
             }
-        }
+        }*/
 
         ## if a plugin did not return the translation, find it in core
         if (empty($translation)) {

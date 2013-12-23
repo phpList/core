@@ -8,7 +8,14 @@ namespace phpList;
 
 class Config extends UserConfig
 {
+    /**
+     * Constants used for debugging and developping
+     */
+    const DEBUG = false;
+    const DEVELOPER_EMAIL = 'dev@localhost.local';
+
     private static $_instance;
+    private $config_ready = false;
     public $running_config = array();
 
     /**
@@ -16,35 +23,7 @@ class Config extends UserConfig
      * load configuration from database each new session
      * TODO: probably not a good idea when using an installation with multiple users
      */
-    private function __construct()
-    {
-        //do we have a configuration saved in session?
-        if (isset($_SESSION['running_config'])) {
-            $this->running_config = $_SESSION['running_config'];
-        } else {
-            $this->initConfig();
-            $this->loadAllFromDB();
-        }
-    }
-
-    /**
-     * Load the entire configuration from the database
-     */
-    private function loadAllFromDB()
-    {
-        //try to load additional configuration from db
-        /*$has_db_config = phpList::DB()->Sql_Table_Exists(Config::getTableName('config'), 1);
-        //TODO: Should we not automatically load config from db or do this selectively
-        Config::setRunningConfig('has_db_config', $has_db_config);
-        */
-        $this->running_config = array();
-        $result = phpList::DB()->query(sprintf('SELECT item, value FROM %s', Config::getTableName('config')));
-        while ($row = phpList::DB()->fetchAssocQuery($result)) {
-            $this->running_config[$row['item']] = $row['value'];
-        }
-
-        $_SESSION['running_config'] = $this->running_config;
-    }
+    private function __construct(){}
 
     /**
      * @return Config
@@ -53,8 +32,39 @@ class Config extends UserConfig
     {
         if (!Config::$_instance instanceof self) {
             Config::$_instance = new self();
+
+            //do we have a configuration saved in session?
+            if (isset($_SESSION['running_config'])) {
+                Config::$_instance->running_config = $_SESSION['running_config'];
+            } else {
+                Config::$_instance->initConfig();
+                Config::$_instance->loadAllFromDB();
+                Config::$_instance->afterInit();
+            }
         }
         return Config::$_instance;
+    }
+
+    public static function start(){
+        Config::instance();
+        Config::$_instance->config_ready = true;
+    }
+
+    /**
+     * Load the entire configuration from the database
+     */
+    private function loadAllFromDB()
+    {
+        //try to load additional configuration from db
+        //$has_db_config = phpList::DB()->tableExists(Config::getTableName('config'), 1);
+        Config::setRunningConfig('has_db_config', true);
+
+        $result = phpList::DB()->query(sprintf('SELECT item, value FROM %s', Config::getTableName('config')));
+        while ($row = phpList::DB()->fetchAssoc($result)) {
+            $this->running_config[$row['item']] = $row['value'];
+        }
+
+        $_SESSION['running_config'] = $this->running_config;
     }
 
     /**
@@ -76,6 +86,7 @@ class Config extends UserConfig
      */
     private function fromDB($item, $default = null)
     {
+        if(!$this->config_ready) return $default;
         if (Config::get('has_db_config')) {
             $query = sprintf(
                 'SELECT value, editable
@@ -207,20 +218,45 @@ class Config extends UserConfig
     public static function get($item, $default = null)
     {
         $value = '';
-        if (isset(Config::instance()->running_config[$item])) {
-            $value = Config::instance()->running_config[$item];
-        } else {
-            //try to find it in db
-            $value = Config::instance()->fromDB($item, $default);
+        $cofig = Config::instance();
+        if($cofig->config_ready){
+            if (isset($cofig->running_config[$item])) {
+                $value = $cofig->running_config[$item];
+            } else {
+                //try to find it in db
+                //$value = $cofig->fromDB($item, $default);
+                $dc = DefaultConfig::get($item);
+                if ($dc !== false) {
+                    //TODO: Old version would save default cfg to db, is this needed?
+                    # save the default value to the database, so we can obtain
+                    # the information when running from commandline
+                    //if (Sql_Table_Exists($tables["config"]))
+                    //    saveConfig($item, $value);
+                    #    print "$item => $value<br/>";
+                    $value = $dc['value'];
+                }else{
+                    $value = $default;
+                }
+            }
+
+            if(is_string($value)){
+                //TODO: should probably move this somewhere else
+                $find = array('[WEBSITE]', '[DOMAIN]', '<?=VERSION?>');
+                $replace = array(
+                    $cofig->running_config['website'],
+                    $cofig->running_config['domain'],
+                    $cofig->running_config['VERSION']
+                );
+                $value = str_replace($find, $replace, $value);
+            }
+        }else{
+            if (isset($cofig->running_config[$item])) {
+                $value = $cofig->running_config[$item];
+            }else{
+                $value = $default;
+            }
         }
 
-        $find = array('[WEBSITE]', '[DOMAIN]', '<?=VERSION?>');
-        $replace = array(
-            Config::instance()->running_config['website'],
-            Config::instance()->running_config['domain'],
-            Config::instance()->running_config['VERSION']
-        );
-        $value = str_replace($find, $replace, $value);
         return $value;
     }
 
@@ -282,19 +318,11 @@ class Config extends UserConfig
      */
     private static function initConfig()
     {
-        if (Config::get('commandline') === false
-            && Config::get('developer_email', false) !== false
-            && $_SERVER['HTTP_HOST'] != 'dev.phplist.com'
-            && Config::get('show_dev_errors', false) !== false
-        ) {
-            error_reporting(E_ALL);
-            ini_set('display_errors',1);
-            foreach ($_REQUEST as $key => $val) {
-                unset($$key);
-            }
-        } else {
-            error_reporting(0);
-        }
+        $version = '4.0.0 alpha';
+        $dev_version = true;
+
+        Config::setRunningConfig('VERSION', $version);
+        Config::setRunningConfig('DEVVERSION', $dev_version);
 
         if (function_exists('iconv_set_encoding')) {
             iconv_set_encoding('input_encoding', 'UTF-8');
@@ -316,28 +344,17 @@ class Config extends UserConfig
         # @@@ needs more work
         Config::setRunningConfig('compression_used', ($zlib_compression || $gzhandler));
 
-        if (Config::get('ui', false) === false || !is_dir(dirname(__FILE__).'/ui/'.Config::get('ui', false))) {
-            ## prefer dressprow over orange
-            if (is_dir(dirname(__FILE__).'/ui/dressprow')) {
-                Config::setRunningConfig('ui', 'dressprow');
-            } else {
-                Config::setRunningConfig('ui', 'default');
-            }
-        }
-
         ## @@ would be nice to move this to the config file at some point
         # http://mantis.phplist.com/view.php?id=15521
         ## set it on the fly, although that will probably only work with Apache
         ## we need to save this in the DB, so that it'll work on commandline
-        Config::setRunningConfig(
-            'scheme',
-            (isset($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) == 'on')) ? 'https' : 'http'
-        );
+        $public_scheme = (isset($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) == 'on')) ? 'https' : 'http';
+        Config::setRunningConfig('scheme', $public_scheme);
 
         if (Config::USE_CUSTOM_PUBLIC_PROTOCOL) {
             Config::setRunningConfig('public_scheme', Config::PUBLIC_PROTOCOL);
         } else {
-            Config::setRunningConfig('public_scheme', Config::get('scheme'));
+            Config::setRunningConfig('public_scheme', $public_scheme);
         }
 
         # set some defaults if they are not specified
@@ -353,11 +370,11 @@ class Config extends UserConfig
         Config::setRunningConfig('USECK', false); ## ckeditor integration, not finished yet
         Config::setRunningConfig('SHOW_UNSUBSCRIBELINK',true);
 
-        if (function_exists('hash_algos') && in_array(Config::ENCRYPTION_ALGO, hash_algos())) {
-            throw new \Exception('Encription algorithm "' . Config::ENCRYPTION_ALGO . '" not supported, change your configuration');
+        if (function_exists('hash_algos') && !in_array(Config::ENCRYPTION_ALGO, hash_algos())) {
+            throw new \Exception('Encryption algorithm "' . Config::ENCRYPTION_ALGO . '" not supported, change your configuration');
         }
         ## remember the length of a hashed string
-        Config::setRunningConfig('hash_length', strlen(hash(ENCRYPTION_ALGO,'some text')));
+        Config::setRunningConfig('hash_length', strlen(hash(Config::ENCRYPTION_ALGO,'some text')));
 
 
         Config::setRunningConfig('NUMATTACHMENTS',1);
@@ -394,11 +411,7 @@ class Config extends UserConfig
         Config::setRunningConfig('ADD_EMAIL_THROTTLE',1); ## seconds between addemail ajax requests
         Config::setRunningConfig('SENDTEST_THROTTLE',1); ## seconds between send test
         Config::setRunningConfig('SENDTEST_MAX',999); ## max number of emails in a send test
-        Config::setRunningConfig('installation_name', Config::get('installation_name', 'phpList'));
-        Config::setRunningConfig(
-            'SESSIONNAME',
-            Config::get('SESSIONNAME', 'phpList'.Config::get('installation_name').'session'
-            ));
+        Config::setRunningConfig('installation_name', 'phpList');
 
         ## this doesn't yet work with the FCKEditor
         #ini_set('session.name',str_replace(' ','',SESSIONNAME));
@@ -411,7 +424,9 @@ class Config extends UserConfig
             }
         }
 
-        Config::setRunningConfig('ACCESS_CONTROL_ALLOW_ORIGIN','http://'.$_SERVER['HTTP_HOST']);
+        if(isset($_SERVER['HTTP_HOST'])){
+            Config::setRunningConfig('ACCESS_CONTROL_ALLOW_ORIGIN','http://'.$_SERVER['HTTP_HOST']);
+        }
 
         Config::setRunningConfig('RFC_DIRECT_DELIVERY',false);  ## Request for Confirmation, delivery with SMTP
         # check whether Pear HTTP/Request is available, and which version
@@ -426,7 +441,7 @@ class Config extends UserConfig
             Config::setRunningConfig('has_pear_http_request', class_exists('HTTP_Request'));
         }
         Config::setRunningConfig('has_curl', function_exists('curl_init'));
-        Config::setRunningConfig('can_fetch_url', Config::get('has_pear_http_request') || Config::get('has_curl'));
+        Config::setRunningConfig('can_fetch_url', class_exists('HTTP_Request') || function_exists('curl_init'));
         Config::setRunningConfig('jQuery', 'jquery-1.7.1.min.js');
 
         $system_tmpdir = ini_get('upload_tmp_dir');
@@ -462,38 +477,10 @@ class Config extends UserConfig
         Config::setRunningConfig('IMPORT_FILESIZE',5);
         Config::setRunningConfig('SMTP_TIMEOUT',5);
 
-        ## experimental, mark mails 'todo' in the DB and process the 'todo' list, to avoid the user query being run every queue run
-        if (Config::MESSAGEQUEUE_PREPARE) {
-            ## with a multi-process config, we need the queue prepare mechanism and memcache
-            if (Config::get('MAX_SENDPROCESSES', 1) > 1) {
-                Config::setRunningConfig('MESSAGEQUEUE_PREPARE',true);
-            } else {
-                Config::setRunningConfig('MESSAGEQUEUE_PREPARE',false);
-            }
-        }
-        Config::setRunningConfig('noteditableconfig', Config::get('noteditableconfig', array()));
+        Config::setRunningConfig('noteditableconfig', array());
 
         ## experimental, use minified JS and CSS
         Config::setRunningConfig('USE_MINIFIED_ASSETS',false);
-
-        ## set up a memcached global object, and test it
-        if (Config::get('MEMCACHED', false) !== false) {
-            include_once dirname(__FILE__).'/class.memcached.php';
-            if (class_exists('phpListMC')) {
-                $MC = new phpListMC();
-                list($mc_server,$mc_port) = explode(':',Config::get('MEMCACHED'));
-                $MC->addServer($mc_server,$mc_port);
-
-                /* check that the MC connection is ok
-                $MC->add('Hello','World');
-                $test = $MC->get('Hello');
-                if ($test != 'World') {
-                  unset($MC);
-                }
-                */
-                Config::setRunningConfig('MC', $MC);
-            }
-        }
 
         ## global counters array to keep track of things
         Config::setRunningConfig(
@@ -585,27 +572,16 @@ class Config extends UserConfig
         if (preg_match('/Rev: (\d+)/','$Rev$',$match)) {
             Config::setRunningConfig('REVISION',$match[1]);
         }
-        if (Config::get('VERSION', false) === false) {
-            Config::setRunningConfig('VERSION','3.0.5');
-            Config::setRunningConfig(
-                'DEVVERSION',
-                !ini_get('open_basedir')
-                && is_dir(dirname(__FILE__).'/../../../.svn')
-            );
-        } else {
-            Config::setRunningConfig('DEVVERSION', false);
-        }
 
-        Config::setRunningConfig('organisation_name', Config::get('organisation_name', $_SERVER['SERVER_NAME']));
-        Config::setRunningConfig('domain', Config::get('domain', $_SERVER['SERVER_NAME']));
-        Config::setRunningConfig('website', Config::get('website', $_SERVER['SERVER_NAME']));
+        $server_name = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'cmd_line';
 
-        $xormask = Config::get('xormask');
-        if (empty($xormask)) {
-            $xormask = md5(uniqid(rand(), true));
-            Config::setRunningConfig('xormask',$xormask);
-            Config::setRunningConfig('XORmask',$xormask);
-        }
+        Config::setRunningConfig('organisation_name', $server_name);
+        Config::setRunningConfig('domain', $server_name);
+        Config::setRunningConfig('website', $server_name);
+
+        $xormask = md5(uniqid(rand(), true));
+        Config::setRunningConfig('xormask',$xormask);
+        Config::setRunningConfig('XORmask',$xormask);
 
         # if keys need expanding with 0-s
         Config::setRunningConfig('checkboxgroup_storesize', 1); # this will allow 10000 options for checkboxes
@@ -632,10 +608,10 @@ class Config extends UserConfig
 
           Michiel Dethmers, phpList Ltd 2001-2013
         */
-        if (Config::get('DEVVERSION'))
+        if ($dev_version)
             $v = 'dev';
         else
-            $v = Config::get('VERSION');
+            $v = $version;
         if (Config::REGISTER) {
             $PoweredByImage = '<p class="poweredby"><a href="http://www.phplist.com/poweredby?utm_source=pl'.$v.'&amp;utm_medium=poweredhostedimg&amp;utm_campaign=phpList" title="visit the phpList website" ><img src="http://powered.phplist.com/images/'.$v.'/power-phplist.png" width="70" height="30" title="powered by phpList version '.$v.', &copy; phpList ltd" alt="powered by phpList '.$v.', &copy; phpList ltd" border="0" /></a></p>';
         } else {
@@ -650,12 +626,74 @@ class Config extends UserConfig
         Config::setRunningConfig('MAX_USER_PP',50);
         Config::setRunningConfig('MAX_MSG_PP',5);
 
+        Config::setRunningConfig('homepage', 'home');
+    }
+
+    /**
+     * Some more initialisation that can only be done after basic init is done
+     */
+    private function afterInit(){
+        //TODO: move this somewhere else
+        if (Config::get('commandline') === false
+            && Config::DEBUG
+            && $_SERVER['HTTP_HOST'] != 'dev.phplist.com'
+            && Config::get('show_dev_errors', false) !== false
+        ) {
+            error_reporting(E_ALL);
+            ini_set('display_errors',1);
+            foreach ($_REQUEST as $key => $val) {
+                unset($$key);
+            }
+        } else {
+            error_reporting(0);
+        }
+        if (Config::get('ui', false) === false || !is_dir(dirname(__FILE__).'/ui/'.Config::get('ui', false))) {
+            ## prefer dressprow over orange
+            if (is_dir(dirname(__FILE__).'/ui/dressprow')) {
+                Config::setRunningConfig('ui', 'dressprow');
+            } else {
+                Config::setRunningConfig('ui', 'default');
+            }
+        }
+
+        Config::setRunningConfig(
+            'SESSIONNAME',
+            Config::get('SESSIONNAME', 'phpList'.Config::get('installation_name').'session'
+            ));
+
+        ## experimental, mark mails 'todo' in the DB and process the 'todo' list, to avoid the user query being run every queue run
+        if (Config::MESSAGEQUEUE_PREPARE) {
+            ## with a multi-process config, we need the queue prepare mechanism and memcache
+            if (Config::get('MAX_SENDPROCESSES', 1) > 1) {
+                Config::setRunningConfig('MESSAGEQUEUE_PREPARE',true);
+            } else {
+                Config::setRunningConfig('MESSAGEQUEUE_PREPARE',false);
+            }
+        }
+
+        ## set up a memcached global object, and test it
+        if (Config::get('MEMCACHED', false) !== false) {
+            include_once dirname(__FILE__).'/class.memcached.php';
+            if (class_exists('phpListMC')) {
+                $MC = new phpListMC();
+                list($mc_server,$mc_port) = explode(':',Config::get('MEMCACHED'));
+                $MC->addServer($mc_server,$mc_port);
+
+                /* check that the MC connection is ok
+                $MC->add('Hello','World');
+                $test = $MC->get('Hello');
+                if ($test != 'World') {
+                  unset($MC);
+                }
+                */
+                Config::setRunningConfig('MC', $MC);
+            }
+        }
+
         if (Config::MESSAGE_ENVELOPE == '') {
             # why not try set it to "person in charge of this system". Will help get rid of a lot of bounces to nobody@server :-)
             Config::setRunningConfig('message_envelope', Config::get('admin_address'));
         }
-
-        Config::setRunningConfig('homepage', 'home');
 
         /*
         if (defined("IN_WEBBLER") && is_object($GLOBALS["config"]["plugins"]["phplist"])) {
