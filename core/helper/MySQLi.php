@@ -111,7 +111,7 @@ class MySQLi implements IDatabase
         return false;
     }
 
-    function query($query, $ignore = 0)
+    function query($query, $ignore = false)
     {
         $this->last_query = null;
 
@@ -428,5 +428,17 @@ class MySQLi implements IDatabase
     function getLastQuery()
     {
         return $this->last_query;
+    }
+
+    /**
+     * @param array (tablename => columnname)
+     * @param int|string $id
+     */
+    function deleteFromArray($tables, $id)
+    {
+        $query = 'DELETE FROM %s WHERE %s = ' . (is_string($id)) ? '"%s"' : '%d';
+        foreach($tables as $table => $column){
+            phpList::DB()->query(sprintf($query, $table, $column, $id));
+        }
     }
 }

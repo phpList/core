@@ -95,4 +95,10 @@ interface IDatabase
     function getQueryCount();
 
     function getLastQuery();
+
+    /**
+     * @param array (tablename, columnname)
+     * @param int|string $id
+     */
+    function deleteFromArray($array, $id);
 }

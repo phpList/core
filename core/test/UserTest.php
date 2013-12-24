@@ -26,11 +26,6 @@ class UserTest extends \PHPUnit_Framework_TestCase {
         "n&me@company.com"	 	    => TRUE , //
         "n'me@company.com"	 	  	=> TRUE , //
         "name last@company.com"	 	=> FALSE, // unquoted space is wrong
-        '"namelast"@company.com'  => TRUE , // Quoted string can be anything, as long as certain chars are escaped with \
-        '"name last"@company.com' => TRUE , // Quoted string can be anything, as long as certain chars are escaped with \
-        '" "@company.com' 				=> TRUE , // Quoted string can be anything, as long as certain chars are escaped with \
-        "\"name\ last\"@company.com" => TRUE , // Quoted string can be anything, as long as certain chars are escaped with \
-        '"name\*last"@company.com'=> TRUE , // Quoted string can be anything, as long as certain chars are escaped with \
         ".@company.com"          	=> FALSE, // single dot is wrong
         "n.@company.com"          => FALSE, // Ending dot is nok
         ".n@company.com"          => FALSE, // Starting dot is nok
@@ -50,8 +45,6 @@ class UserTest extends \PHPUnit_Framework_TestCase {
         ## next one is actually officiall valid, but we're marking it as not, as it's rather uncommon
         # '"name\@tag"@example.com'   => TRUE ,
         '"name\@tag"@example.com'   => FALSE , // � this is a valid email address containing two @ symbols.
-        "escaped\ spaces\ are\ allowed@example.com"          => TRUE ,
-        '"spaces may be quoted"@example.com'        => TRUE ,
         "!#$%&'*+-/=.?^_`{|}~@example.com"          => TRUE ,
         #   "!#$%&'*+-/=.?^_`{|}~@[1.0.0.127]" => TRUE , # Excluded
         #		"!#$%&'*+-/=.?^_`{|}~@[IPv6:0123:4567:89AB:CDEF:0123:4567:89AB:CDEF]" => TRUE , #Excluded
@@ -78,13 +71,25 @@ class UserTest extends \PHPUnit_Framework_TestCase {
         "!def!xyz%abc@example.com" => TRUE
     );
 
+    private $emailAddresses3 = array(
+        '"namelast"@company.com'  => TRUE , // Quoted string can be anything, as long as certain chars are escaped with \
+        '"name last"@company.com' => TRUE , // Quoted string can be anything, as long as certain chars are escaped with \
+        '" "@company.com' 				=> TRUE , // Quoted string can be anything, as long as certain chars are escaped with \
+        "\"name\ last\"@company.com" => TRUE , // Quoted string can be anything, as long as certain chars are escaped with \
+        '"name\*last"@company.com'=> TRUE , // Quoted string can be anything, as long as certain chars are escaped with \
+        "escaped\ spaces\ are\ allowed@example.com"          => TRUE ,
+        '"spaces may be quoted"@example.com'        => TRUE ,
+    );
 
     /**
      *
      */
     public function testEmailValidation()
     {
-        //Will only work//succeed when Config::EMAIL_ADDRESS_VALIDATION_LEVEL = 3
+        //Check required validation level, will fail otherwise
+        if(Config::EMAIL_ADDRESS_VALIDATION_LEVEL == 3){
+            $this->emailAddresses = array_merge($this->emailAddresses, $this->emailAddresses3);
+        }
         foreach($this->emailAddresses as $email => $bool){
             if($bool){
                 $this->assertTrue(Validation::validateEmail($email), $email);

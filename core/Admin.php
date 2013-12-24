@@ -189,21 +189,12 @@ class Admin
     //TODO: not sure if this should be static
     public static function delete($id)
     {
-        phpList::DB()->query(
-            sprintf(
-                'DELETE FROM %s WHERE id = %d',
-                Config::getTableName('admin'),
-                $id
-            )
+        $tables = array(
+            Config::getTableName('admin') => 'id',
+            Config::getTableName('admin_attribute') => 'adminid',
+            Config::getTableName('admin_task') => 'adminid'
         );
-        phpList::DB()->query(
-            sprintf(
-                'DELETE FROM %s, %s WHERE adminid = %d',
-                Config::getTableName('admin_attribute'),
-                Config::getTableName('admin_task'),
-                $id
-            )
-        );
+        phpList::DB()->deleteFromArray($tables, $id);
     }
 
     /**

@@ -485,19 +485,12 @@ class Message
      */
     public function delete()
     {
-        phpList::DB()->query(
-            sprintf(
-                'DELETE FROM %s, %s, %s
-                WHERE id = %d',
-                Config::getTableName('message'),
-                Config::getTableName('usermessage'),
-                Config::getTableName('listmessage'),
-                $this->id
-            )
+        $tables = array(
+            Config::getTableName('message') => 'id',
+            Config::getTableName('usermessage') => 'id',
+            Config::getTableName('listmessage') => 'id'
         );
-
-        //phpList::DB()->Sql_query(sprintf('DELETE FROM %s WHERE id = %d', Config::getTableName('usermessage'), $this->id));
-        //phpList::DB()->Sql_query(sprintf('DELETE FROM %s WHERE id = %d', Config::getTableName('listmessage'), $this->id));
+        phpList::DB()->deleteFromArray($tables, $this->id);
 
         return phpList::DB()->affectedRows();
     }
@@ -1048,15 +1041,11 @@ class Message
             );
         }
 
-        phpList::DB()->query(
-            sprintf(
-                'DELETE FROM %s, %s
-                WHERE messageid = %d',
-                Config::getTableName('linktrack_uml_click'),
-                Config::getTableName('usermessage'),
-                $this->id
-            )
+        $tables = array(
+            Config::getTableName('linktrack_uml_click') => 'messageid',
+            Config::getTableName('usermessage') => 'messageid'
         );
+        phpList::DB()->deleteFromArray($tables, $this->id);
     }
 
     /**

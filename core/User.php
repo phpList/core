@@ -9,7 +9,27 @@ namespace phpList;
 class User
 {
     public $id;
-    public $email;
+    private $email;
+
+    /**
+     * @param string $email
+     * @throws \InvalidArgumentException
+     */
+    public function setEmail($email)
+    {
+        if(!Validation::validateEmail($email)){
+            throw new \InvalidArgumentException('Invalid email address provided');
+        }
+        $this->email = $email;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEmail()
+    {
+        return $this->email;
+    }
     public $confirmed;
     public $blacklisted;
     public $optedin;
@@ -59,8 +79,13 @@ class User
         'extradata', 'foreignkey'
     );
 
-    public function __construct()
+    /**
+     * @param string $email
+     * @throws \InvalidArgumentException
+     */
+    public function __construct($email)
     {
+        $this->setEmail($email);
     }
 
     /**
@@ -142,29 +167,29 @@ class User
 
     /**
      * Write user info to database
-     * @return int
+     * @return bool
      */
     public function save()
     {
         if ($this->id != 0) {
             $this->update();
         } else {
-            phpList::DB()->query(
-                sprintf(
-                    'INSERT INTO %s
-                    (email, entered, modified, password, passwordchanged, disabled, htmlemail)
-                    VALUES("%s", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "%s", CURRENT_TIMESTAMP, 0, "%s, 1")',
-                    Config::getTableName('user', true),
-                    $this->email,
-                    $this->password
-                )
+            $query = sprintf(
+                'INSERT INTO %s
+                (email, entered, modified, password, passwordchanged, disabled, htmlemail)
+                VALUES("%s", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "%s", CURRENT_TIMESTAMP, 0, 1)',
+                Config::getTableName('user', true),
+                $this->email,
+                $this->password
             );
-
-            $this->id = phpList::DB()->insertedId();
-            $this->uniqid = self::giveUniqueId($this->id);
+            if(phpList::DB()->query($query)){
+                $this->id = phpList::DB()->insertedId();
+                $this->uniqid = self::giveUniqueId($this->id);
+                return true;
+            }else{
+                return false;
+            }
         }
-
-        return $this->id;
     }
 
     /**
@@ -179,7 +204,7 @@ class User
             $unique_id = md5(uniqid(mt_rand()));
         } while (!phpList::DB()->query(
             sprintf(
-                'UPDATE % SET uniqid = "%s"
+                'UPDATE %s SET uniqid = "%s"
                 WHERE id = %d',
                 Config::getTableName('user', true),
                 $unique_id,
@@ -197,12 +222,7 @@ class User
      */
     public static function addUser($email, $password)
     {
-        if(!Validation::validateEmail($email)){
-            throw new \InvalidArgumentException('Invalid email address provided');
-        }
-
-        $user = new User();
-        $user->email = $email;
+        $user = new User($email);
         $user->setPassword($password);
         $user->save();
     }
@@ -256,44 +276,18 @@ class User
      */
     public function delete()
     {
-        $query = sprintf(
-            'DELETE FROM %s, %s, %s, %s
-                                        WHERE userid = %d',
-            Config::getTableName('listuser'),
-            Config::getTableName('user_attribute', true),
-            Config::getTableName('usermessage'),
-            Config::getTableName('user_history', true),
-            $this->id
+        $tables = array(
+            Config::getTableName('listuser') => 'userid',
+            Config::getTableName('user_attribute', true) => 'userid',
+            Config::getTableName('usermessage') => 'userid',
+            Config::getTableName('user_history', true) => 'userid',
+            Config::getTableName('user_message_bounce', true) => 'user',
+            Config::getTableName('user', true) => 'id'
         );
-        phpList::DB()->query($query);
-        phpList::DB()->query(
-            sprintf(
-                'DELETE FROM %s
-                WHERE user = %d',
-                Config::getTableName('user_message_bounce', true),
-                $this->id
-            )
-        );
-        phpList::DB()->query(
-            sprintf(
-                'DELETE FROM %s
-                WHERE id = %d',
-                Config::getTableName('user', true),
-                $this->id
-            )
-        );
-
-
         if (phpList::DB()->tableExists(Config::getTableName('user_group'))) {
-            phpList::DB()->query(
-                sprintf(
-                    'DELETE FROM user_group
-                    WHERE userid = %d',
-                    $this->id
-                ),
-                1
-            );
+            $tables[Config::getTableName('user_group')] = 'userid';
         }
+        phpList::DB()->deleteFromArray($tables, $this->id);
     }
 
     public function isMemberOf()
@@ -310,9 +304,8 @@ class User
     private static function userFromArray($array)
     {
         if(!empty($array)){
-            $user = new User();
+            $user = new User($array['email']);
             $user->id = $array['id'];
-            $user->email = $array['email'];
             $user->confirmed = $array['confirmed'];
             $user->blacklisted = $array['blacklisted'];
             $user->optedin = $array['optedin'];
@@ -483,7 +476,7 @@ class User
     }
 
     /**
-     * Get the number users who's unique id has not been set
+     * Get the number of users who's unique id has not been set
      * @return int
      */
     public static function checkUniqueIds()
@@ -643,15 +636,11 @@ class User
         if (!$user_id) return;
         $user = User::getUser($user_id);
 
-        phpList::DB()->query(
-            sprintf(
-                'DELETE FROM %s, %s
-                WHERE email = "%s"',
-                Config::getTableName('user_blacklist'),
-                Config::getTableName('user_blacklist_data'),
-                $user->email
-            )
+        $tables = array(
+            Config::getTableName('user_blacklist') => 'email',
+            Config::getTableName('user_blacklist_data') => 'email'
         );
+        phpList::DB()->deleteFromArray($tables, $user->email);
 
         $user->blacklisted = 0;
         $user->update();

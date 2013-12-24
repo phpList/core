@@ -114,11 +114,11 @@ class Bounce {
                     Config::getTableName('user', true),
                     Config::getTableName('message')
                 ));
-            phpList::DB()->query(sprintf(
-                    'DELETE FROM %s, %s',
-                    Config::getTableName('bounce'),
-                    Config::getTableName('user_message_bounce')
-                ));
+            $tables = array(
+                Config::getTableName('bounce') => '1',
+                Config::getTableName('user_message_bounce') => '1'
+            );
+            phpList::DB()->deleteFromArray($tables, 1);
         }
     }
 
@@ -199,13 +199,11 @@ class Bounce {
                 Config::getTableName('bounce'),
                 $bounce_id
             ));
-        phpList::DB()->query(sprintf(
-                'DELETE FROM %s, %s
-                WHERE bounce = %d',
-                Config::getTableName('user_message_bounce'),
-                Config::getTableName('bounceregex_bounce'),
-                $bounce_id
-            ));
+        $tables = array(
+            Config::getTableName('user_message_bounce') => 'bounce',
+            Config::getTableName('bounceregex_bounce') => 'bounce'
+        );
+        phpList::DB()->deleteFromArray($tables, $bounce_id);
     }
 
 
