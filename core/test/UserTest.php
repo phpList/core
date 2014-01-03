@@ -100,12 +100,11 @@ class UserTest extends \PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function testUserAddInvalidArgument()
     {
-        $user = new User();
-        $user->addUser('tester@', 'testpass');
+        User::addUser('tester@', 'testpass');
     }
 }
  

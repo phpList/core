@@ -120,7 +120,7 @@ class String
             500
         );
 
-        $text = replaceChars($text);
+        $text = String::replaceChars($text);
 
         $text = preg_replace("/###NL###/", "\n", $text);
         $text = preg_replace("/\n /", "\n", $text);
@@ -257,6 +257,7 @@ class String
         ## this needs loads more testing across systems to be sure
         return $content;
 
+        /*
         $content = preg_replace("/\n/",' ',$content);
         $content = preg_replace("/\r/",'',$content);
         $content = removeJavascript($content);
@@ -268,6 +269,7 @@ class String
             $content = preg_replace("/  /",' ',$content);
         }
         return $content;
+         */
     }
 
 } 

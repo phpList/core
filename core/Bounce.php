@@ -181,7 +181,7 @@ class Bounce {
                         $new_rule->comment = 'Auto Created from bounce ' . $this->id;
                         $new_rule->status = 'candidate';
                         $new_rule->save();
-                        $this->addToRule($new_rule->id);
+                        $this->addToRule($new_rule);
                     }
                     return true;
                 }
@@ -373,7 +373,7 @@ class BounceRule {
 
     /**
      * Remove a bouncerule from the database
-     * @param id $bounce_rule_id
+     * @param int $bounce_rule_id
      */
     public static function delete($bounce_rule_id)
     {
@@ -446,7 +446,7 @@ class BounceRule {
             $rules = BounceRule::getAllBounceRules();
         }
 
-        return BounceRule::matchBounceRules($text, $rules);
+        return BounceRule::matchedBounceRules($text, $rules);
     }
 
     /**

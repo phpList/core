@@ -149,7 +149,7 @@ class phpList
 
 
         //TODO: we probably will need >5.3
-        if (version_compare(PHP_VERSION, '5.1.2', '<') && WARN_ABOUT_PHP_SETTINGS) {
+        if (version_compare(PHP_VERSION, '5.1.2', '<') && Config::WARN_ABOUT_PHP_SETTINGS) {
             throw new \Exception(s('phpList requires PHP version 5.1.2 or higher'));
         }
 
@@ -211,7 +211,7 @@ class phpList
 
     /**
      * Send all headers in $headers to the browser
-     */
+
     public static function sendHeaders()
     {
         if(!empty(phpList::$_instance->headers)){
@@ -220,6 +220,6 @@ class phpList
             }
             phpList::$_instance->headers = array();
         }
-    }
+    }*/
 
 } 

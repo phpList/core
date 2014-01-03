@@ -32,6 +32,9 @@ class Message
      */
     public $repeatuntil;
     public $requeueinterval;
+    /**
+    * @var \DateTime
+    */
     public $requeueuntil;
     public $status;
     public $userselection;
@@ -165,7 +168,6 @@ class Message
             $condition .= sprintf(' AND owner = %d', $owner);
         }
 
-        $sortBySql = '';
         switch ($order) {
             case 'sentasc':
                 $sortBySql = ' ORDER BY sent ASC';
@@ -370,12 +372,12 @@ class Message
     public function listsExcluded()
     {
         $lists_excluded = array();
-        if ($this->getDataItem('excludelist')) {
+        if ($this->excludelist) {
             $result = phpList::DB()->query(
                 sprintf(
                     'SELECT * FROM %s WHERE id IN (%s)',
                     Config::getTableName('list'),
-                    implode(',', $this->getDataItem('excludelist'))
+                    implode(',', $this->excludelist)
                 )
             );
 
@@ -395,9 +397,9 @@ class Message
     {
         return preg_match('/lt\.php\?id=[\w%]{22}/', $this->message, $regs) ||
         preg_match('/lt\.php\?id=[\w%]{16}/', $this->message, $regs) ||
-        (CLICKTRACK_LINKMAP && //TODO: Change this constant to use config
-            (preg_match('#' . CLICKTRACK_LINKMAP . '/[\w%]{22}#', $this->message) ||
-                preg_match('#' . CLICKTRACK_LINKMAP . '/[\w%]{16}#', $this->message)));
+        (Config::get('CLICKTRACK_LINKMAP') && //TODO: Change this constant to use config
+            (preg_match('#' . Config::get('CLICKTRACK_LINKMAP') . '/[\w%]{22}#', $this->message) ||
+                preg_match('#' . Config::get('CLICKTRACK_LINKMAP') . '/[\w%]{16}#', $this->message)));
     }
 
     /**
@@ -406,10 +408,8 @@ class Message
      */
     public static function purgeDrafts($owner)
     {
-        $todelete = array();
-
         $ownerselect_and = sprintf(' AND owner = %d', $owner);
-        $result = phpList::DB()->query(
+        phpList::DB()->query(
             sprintf(
                 'DELETE FROM %s
                 WHERE status = "draft"
@@ -497,11 +497,11 @@ class Message
 
     /**
      * Add an attachment to this message
-     * @param $attachment
+     * @param Attachment $attachment
+     * @return int
      */
     public function addAttachment($attachment)
     {
-        $attachmentid = phpList::DB()->insertedId();
         phpList::DB()->query(
             sprintf(
                 'INSERT INTO %s (messageid,attachmentid) VALUES(%d,%d)',
@@ -510,15 +510,16 @@ class Message
                 $attachment->id
             )
         );
+        return phpList::DB()->insertedId();
     }
 
     /**
      * Remove an attachment from this message
-     * @param $attachment
+     * @param Attachment $attachment
      */
     public function removeAttachment($attachment)
     {
-        Sql_Query(
+        phpList::DB()->query(
             sprintf(
                 'DELETE FROM %s
                 WHERE id = %d
@@ -571,7 +572,7 @@ class Message
                 )
             );
 
-            if ($this->getDataItem('finishsending')->getTimestamp() < time()) {
+            if ($this->finishsending->getTimestamp() < time()) {
                 throw new \Exception('This campaign is scheduled to stop sending in the past. No mails will be sent.');
             }
         } else {
@@ -598,10 +599,12 @@ class Message
             if ($message->embargo_in_past) {
                 $now = new \DateTime('now');
                 $message->embargo = $now->add(
-                    date_interval_create_from_date_string($message->repeatinterval . 'minutes')
+                    \DateInterval::createFromDateString($message->repeatinterval . 'minutes')
                 );
             } else {
-                $message->embargo->add(date_interval_create_from_date_string($message->repeatinterval . 'minutes'));
+                $message->embargo->add(
+                    \DateInterval::createFromDateString($message->repeatinterval . 'minutes')
+                );
             }
             $message->requeue();
         }
@@ -672,7 +675,7 @@ class Message
      */
     public function suspend($owner)
     {
-        $result = phpList::DB()->query(
+        phpList::DB()->query(
             sprintf(
                 'UPDATE %s SET status = "suspended"
                 WHERE id = %d
@@ -694,7 +697,7 @@ class Message
      */
     public static function suspendAll($owner)
     {
-        $result = phpList::DB()->query(
+        phpList::DB()->query(
             sprintf(
                 'UPDATE %s SET status = "suspended"
                 WHERE (status = "inprocess"
@@ -715,7 +718,7 @@ class Message
      */
     public function markSent($owner)
     {
-        $result = phpList::DB()->query(
+        phpList::DB()->query(
             sprintf(
                 'UPDATE %s SET status = "sent"
                 WHERE id = %d
@@ -737,7 +740,7 @@ class Message
      */
     public static function markAllSent($owner)
     {
-        $result = phpList::DB()->query(
+        phpList::DB()->query(
             sprintf(
                 'UPDATE %s SET status = "sent"
                 WHERE (status = "suspended")
@@ -861,7 +864,7 @@ class Message
             )
         );
 
-        while ($lst = Sql_fetch_array($result)) {
+        while ($lst = phpList::DB()->fetchArray($result)) {
             $messagedata['targetlist'][$lst['id']] = 1;
         }
 

@@ -30,7 +30,7 @@ class Admin
      */
     public function setNamelc($namelc)
     {
-        $this->namelc = strtolower(normalize($namelc));
+        $this->namelc = strtolower(String::normalize($namelc));
     }
 
     public $email;
@@ -282,7 +282,7 @@ class Admin
             String::sqlEscape($login)
         );
 
-        $result = Sql_Fetch_Assoc_Query($query);
+        $result = phpList::DB()->fetchAssocQuery($query);
         if (empty($result)) {
             return $result;
         }
@@ -364,7 +364,7 @@ class Admin
         $emailBody .= sprintf('http://%s/?page=login&token=%s', $urlroot, $unique_key) . "\n\n";
         $emailBody .= s('You have 24 hours left to change your password. After that, your token won\'t be valid.');
         //TODO: convert to new mail class
-        return sendMail($this->email, s('New password'), "\n\n" . $emailBody, '', '', true);
+        return phpListMailer::sendMail($this->email, s('New password'), "\n\n" . $emailBody, '', '', true);
     }
 
     /**

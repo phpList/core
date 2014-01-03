@@ -14,6 +14,9 @@ class Config extends UserConfig
     const DEBUG = false;
     const DEVELOPER_EMAIL = 'dev@localhost.local';
 
+    /**
+     * @var Config $_instance
+     */
     private static $_instance;
     private $config_ready = false;
     public $running_config = array();
@@ -124,7 +127,7 @@ class Config extends UserConfig
      * Set an item in the running configuration
      * These values are only available in the current session
      * @param string $item
-     * @param mixed value
+     * @param mixed $value
      */
     public static function setRunningConfig($item, $value)
     {
@@ -217,7 +220,6 @@ class Config extends UserConfig
      */
     public static function get($item, $default = null)
     {
-        $value = '';
         $cofig = Config::instance();
         if($cofig->config_ready){
             if (isset($cofig->running_config[$item])) {

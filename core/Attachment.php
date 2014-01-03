@@ -36,10 +36,10 @@ class Attachment
                     VALUES("%s","%s","%s","%s",%d)',
                     Config::getTableName('attachment'),
                     $this->filename,
-                    $this->remotename,
-                    $this->type,
+                    $this->remotefile,
+                    $this->mimetype,
                     $this->description,
-                    $this->file_size
+                    $this->size
                 )
             );
             $this->id = phpList::DB()->insertedId();

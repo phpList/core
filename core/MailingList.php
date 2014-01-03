@@ -178,7 +178,7 @@ class MailingList
             return false;
         }
 
-        $req = Sql_Query(
+        $req = phpList::DB()->query(
             sprintf(
                 'SELECT data
                 FROM %s
@@ -272,7 +272,7 @@ class MailingList
                 $categories[] = $row[0];
             }
             if (!empty($categories)) {
-                saveConfig('list_categories', join(',', $categories));
+                Config::setDBConfig('list_categories', join(',', $categories));
             }
         } else {
             foreach ($categories as $key => $val) {

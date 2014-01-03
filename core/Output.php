@@ -74,10 +74,10 @@ class Output {
                 $line = str_replace("'", "\'", $line); // #16880 - avoid JS error
                 printf(
                     '<script type="text/javascript">
-                                                var parentJQuery = window.parent.jQuery;
-                                                parentJQuery("#processqueue%s").append(\'<div class="output shade%s">%s</div>\');
-                                                parentJQuery("#processqueue%s").animate({scrollTop:100000}, "slow");
-                                              </script>',
+                        var parentJQuery = window.parent.jQuery;
+                        parentJQuery("#processqueue%s").append(\'<div class="output shade%s">%s</div>\');
+                        parentJQuery("#processqueue%s").animate({scrollTop:100000}, "slow");
+                      </script>',
                     $target,
                     (Output::instance()->shadecount) ? 1 : 0,
                     $line,

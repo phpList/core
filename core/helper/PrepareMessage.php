@@ -118,7 +118,7 @@ class PrepareMessage
                         $content = str_replace($regs[0], $remote_content, $content);
                         $cached_message->htmlformatted = strip_tags($content) != $content;
                     } else {
-                        logEvent("Error fetching URL: $regs[1] to send to $email");
+                        Logger::logEvent("Error fetching URL: $regs[1] to send to $email");
                         return 0;
                     }
                     preg_match('/\[URL:([^\s]+)\]/i', $content, $regs);
@@ -173,7 +173,7 @@ class PrepareMessage
         }
 
         $url = Config::get('subscribeurl');
-        $sep = strpos($url, '?') === false ? '?' : '&';
+        //$sep = strpos($url, '?') === false ? '?' : '&';
         $html['subscribe'] = sprintf('<a href="%s">%s</a>', $url, s('this link'));
         $text['subscribe'] = sprintf('%s', $url);
         $html['subscribeurl'] = sprintf('%s', $url);
@@ -450,8 +450,8 @@ class PrepareMessage
         $html['subject'] = $cached_message->subject;
         $text['subject'] = $cached_message->subject;
 
-        $htmlmessage = parsePlaceHolders($htmlmessage, $html);
-        $textmessage = parsePlaceHolders($textmessage, $text);
+        $htmlmessage = PrepareMessage::parsePlaceHolders($htmlmessage, $html);
+        $textmessage = PrepareMessage::parsePlaceHolders($textmessage, $text);
 
         if ($getspeedstats) {
             Output::output('parse placeholders end');
@@ -533,12 +533,12 @@ class PrepareMessage
             #preg_match_all('/<a href=([^> ]*)([^>]*)>(.*)<\/a>/Umis',$htmlmessage,$links);
             $clicktrack_root = sprintf('%s://%s/lt.php', Config::get('public_scheme'), Config::get('website') . Config::PAGEROOT);
             for ($i = 0; $i < count($links[2]); $i++) {
-                $link = cleanUrl($links[2][$i]);
+                $link = Util::cleanUrl($links[2][$i]);
                 $link = str_replace('"', '', $link);
                 if (preg_match('/\.$/', $link)) {
                     $link = substr($link, 0, -1);
                 }
-                $linkid = 0;
+                //$linkid = 0;
 
                 $linktext = $links[4][$i];
 
@@ -914,14 +914,14 @@ class PrepareMessage
                             );
                         }
                     }
-                    addAttachments($message->id, $mail, "HTML");
+                    PrepareMessage::addAttachments($message, $mail, "HTML");
                 } else {
                     if (!$isTestMail)
-                        Sql_Query(
-                            "update {Config::getTableName('message')} set astext = astext + 1 where id = $message->id"
+                        phpList::DB()->query(
+                            "UPDATE {Config::getTableName('message')} SET astext = astext + 1 WHERE id = $message->id"
                         );
                     $mail->add_text($textmessage);
-                    addAttachments($message->id, $mail, "text");
+                    PrepareMessage::addAttachments($message, $mail, "text");
                 }
                 break;
             case "text and PDF":
@@ -932,8 +932,8 @@ class PrepareMessage
                 # send a PDF file to users who want html and text to everyone else
                 if ($htmlpref) {
                     if (!$isTestMail)
-                        Sql_Query(
-                            "update {Config::getTableName('message')} set astextandpdf = astextandpdf + 1 where id = $message->id"
+                        phpList::DB()->query(
+                            "UPDATE {Config::getTableName('message')} SET astextandpdf = astextandpdf + 1 WHERE id = $message->id"
                         );
                     $pdffile = createPdf($textmessage);
                     if (is_file($pdffile) && filesize($pdffile)) {
@@ -960,14 +960,14 @@ class PrepareMessage
                             );
                         }
                     }
-                    addAttachments($message->id, $mail, "HTML");
+                    PrepareMessage::addAttachments($message, $mail, "HTML");
                 } else {
                     if (!$isTestMail)
-                        Sql_Query(
-                            "update {Config::getTableName('message')} set astext = astext + 1 where id = $message->id"
+                        phpList::DB()->query(
+                            "UPDATE {Config::getTableName('message')} SET astext = astext + 1 WHERE id = $message->id"
                         );
                     $mail->add_text($textmessage);
-                    addAttachments($message->id, $mail, "text");
+                    PrepareMessage::addAttachments($message, $mail, "text");
                 }
                 break;
             case "text":
@@ -977,9 +977,9 @@ class PrepareMessage
                     $plugin->processSuccesFailure($message->id, 'astext', $userdata);
                 }*/
                 if (!$isTestMail)
-                    Sql_Query("update {Config::getTableName('message')} set astext = astext + 1 where id = $message->id");
+                    phpList::DB()->query("UPDATE {Config::getTableName('message')} SET astext = astext + 1 WHERE id = $message->id");
                 $mail->add_text($textmessage);
-                addAttachments($message->id, $mail, "text");
+                PrepareMessage::addAttachments($message, $mail, "text");
                 break;
             case "both":
             case "text and HTML":
@@ -1005,7 +1005,7 @@ class PrepareMessage
                     # send one big file to users who want html and text to everyone else
                     if ($htmlpref) {
                         if (!$isTestMail)
-                            Sql_Query(
+                            phpList::DB()->query(
                                 "update {Config::getTableName('message')} set astextandhtml = astextandhtml + 1 where id = $message->id"
                             );
                         /*TODO: enable plugins
@@ -1013,19 +1013,19 @@ class PrepareMessage
                             $plugin->processSuccesFailure($message->id, 'ashtml', $userdata);
                         }*/
                         #  dbg("Adding HTML ".$cached->templateid);
-                        if (WORDWRAP_HTML) {
+                        if (Config::WORDWRAP_HTML) {
                             ## wrap it: http://mantis.phplist.com/view.php?id=15528
                             ## some reports say, this fixes things and others say it breaks things https://mantis.phplist.com/view.php?id=15617
                             ## so for now, only switch on if requested.
                             ## it probably has to do with the MTA used
-                            $htmlmessage = wordwrap($htmlmessage, WORDWRAP_HTML, "\r\n");
+                            $htmlmessage = wordwrap($htmlmessage, Config::WORDWRAP_HTML, "\r\n");
                         }
                         $mail->add_html($htmlmessage, $textmessage, $cached_message->templateid);
-                        addAttachments($message->id, $mail, "HTML");
+                        PrepareMessage::addAttachments($message, $mail, "HTML");
                     } else {
                         if (!$isTestMail)
-                            Sql_Query(
-                                "update {Config::getTableName('message')} set astext = astext + 1 where id = $message->id"
+                            phpList::DB()->query(
+                                "UPDATE {Config::getTableName('message')} SET astext = astext + 1 WHERE id = $message->id"
                             );
                         /*TODO: enable plugins
                         foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
@@ -1034,14 +1034,14 @@ class PrepareMessage
                         $mail->add_text($textmessage);
                         #$mail->setText($textmessage);
                         #$mail->Encoding = TEXTEMAIL_ENCODING;
-                        addAttachments($message->id, $mail, "text");
+                        PrepareMessage::addAttachments($message, $mail, "text");
                     }
                 }
                 break;
         }
         #print htmlspecialchars($htmlmessage);exit;
 
-        if (!TEST) {
+        if (!Config::TEST) {
             if ($hash != 'forwarded' || !sizeof($forwardedby)) {
                 $fromname = $cached_message->fromname;
                 $fromemail = $cached_message->fromemail;
@@ -1183,7 +1183,7 @@ class PrepareMessage
                         } else {
                             Logger::logEvent("Attachment {$attachment->remotefile} does not exist");
                             $msg = "Error, when trying to send message {$message->id} the attachment {$attachment->remotefile} could not be found";
-                            sendMail(Config::get('report_address'), 'Mail list error', $msg, '');
+                            phpListMailer::sendMail(Config::get('report_address'), 'Mail list error', $msg, '');
                         }
                         break;
 
@@ -1205,13 +1205,13 @@ class PrepareMessage
             Config::setRunningConfig('pdf_fontsize', 12);
         }
         $pdf = new FPDF();
-        $pdf->SetCreator("PHPlist version " . Config::get('VERSION'));
+        $pdf->SetCreator('PHPlist version ' . Config::get('VERSION'));
         $pdf->Open();
         $pdf->AliasNbPages();
         $pdf->AddPage();
         $pdf->SetFont(Config::get('pdf_font'), Config::get('pdf_fontstyle'), Config::get('pdf_fontsize'));
         $pdf->Write((int)Config::get('pdf_fontsize') / 2, $text);
-        $fname = tempnam(Config::get('tmpdir'), "pdf");
+        $fname = tempnam(Config::get('tmpdir'), 'pdf');
         $pdf->Output($fname, false);
         return $fname;
     }
@@ -1221,17 +1221,17 @@ class PrepareMessage
         # converts <mailto:blabla> link to <a href="blabla"> links
         #~Bas 0008857
         $text = preg_replace(
-            "/(.*@.*\..*) *<mailto:(\\1[^>]*)>/Umis",
+            '/(.*@.*\..*) *<mailto:(\\1[^>]*)>/Umis',
             "[URLTEXT]\\1[ENDURLTEXT][LINK]\\2[ENDLINK]\n",
             $text
         );
         $text = preg_replace(
-            "/<mailto:(.*@.*\..*)(\?.*)?>/Umis",
+            '/<mailto:(.*@.*\..*)(\?.*)?>/Umis',
             "[URLTEXT]\\1[ENDURLTEXT][LINK]\\1\\2[ENDLINK]\n",
             $text
         );
         $text = preg_replace(
-            "/\[URLTEXT\](.*)\[ENDURLTEXT\]\[LINK\](.*)\[ENDLINK\]/Umis",
+            '/\[URLTEXT\](.*)\[ENDURLTEXT\]\[LINK\](.*)\[ENDLINK\]/Umis',
             '<a href="mailto:\\2">\\1</a>',
             $text
         );
@@ -1271,8 +1271,8 @@ class PrepareMessage
 
         if (!empty($port) && !empty($host))
             $host = '' . $host . ':';
-        elseif (!empty($host))
-            $host = $host;
+        /*elseif (!empty($host))
+            $host = $host;*/
 
         if (!empty($path)) {
             $arr = preg_split("/([\/;=@])/", $path, -1, PREG_SPLIT_DELIM_CAPTURE); // needs php > 4.0.5.
@@ -1317,7 +1317,7 @@ class PrepareMessage
 
         foreach ($links[0] as $matchindex => $fullmatch) {
             $linkurl = $links[2][$matchindex];
-            $linkreplace = '<a' . $links[1][$matchindex] . ' href="' . linkencode(
+            $linkreplace = '<a' . $links[1][$matchindex] . ' href="' . PrepareMessage::linkEncode(
                     $linkurl
                 ) . '"' . $links[3][$matchindex] . '>';
             $text = str_replace($fullmatch, $linkreplace, $text);
@@ -1395,7 +1395,7 @@ class PrepareMessage
             $cache->linktrack_sent_cache[$messageid][$fwdid]++;
             ## write every so often, to make sure it's saved when interrupted
             if ($cache->linktrack_sent_cache[$messageid][$fwdid] % 100 == 0) {
-                Sql_Query(sprintf(
+                phpList::DB()->query(sprintf(
                         'UPDATE %s SET total = %d
                         WHERE messageid = %d
                         AND forwardid = %d',
@@ -1458,6 +1458,7 @@ class PrepareMessage
         $link_pattern="/(.*)<a.*href\s*=\s*\"(.*?)\"\s*(.*?)>(.*?)<\s*\/a\s*>(.*)/is";
 
         $i=0;
+        $link = [];
         while (preg_match($link_pattern, $text, $matches)){
             $url=$matches[2];
             $rest = $matches[3];
@@ -1622,7 +1623,7 @@ class PrepareMessage
         if (!$cached_message->userspecific_url) {
             ## Fetch external content here, because URL does not contain placeholders
             if (Config::get('canFetchUrl') && preg_match('/\[URL:([^\s]+)\]/i', $cached_message->content, $regs)) {
-                $remote_content = Util::fetchUrl($regs[1], array());
+                $remote_content = Util::fetchUrl($regs[1]);
                 #  $remote_content = fetchUrl($message['sendurl'],array());
 
                 # @@ don't use this
@@ -1704,14 +1705,14 @@ class PrepareMessage
         }
 
         if (!empty($cached_message->listowner)) {
-            $att_req = phpList::DB()->Sql_Query(sprintf(
+            $att_req = phpList::DB()->query(sprintf(
                 'SELECT name,value FROM %s AS aa, %s AS a_a
                 WHERE aa.id = a_a.adminattributeid AND aa.adminid = %d'
                 ,Config::getTableName('adminattribute'),
                 Config::getTableName('admin_attribute'),
                 $cached_message->listowner
             ));
-            while ($att = phpList::DB()->Sql_Fetch_Array($att_req)) {
+            while ($att = phpList::DB()->fetchArray($att_req)) {
                 $cached_message->content = preg_replace(
                     '#\[LISTOWNER.' . strtoupper(preg_quote($att['name'])) . '\]#',
                     $att['value'],

@@ -118,8 +118,5 @@ class Validation
                 return (preg_match($pattern, $email) > 0);
                 break;
         }
-
-        //this point should never be reached
-        return false;
     }
 } 

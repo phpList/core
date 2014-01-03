@@ -109,7 +109,7 @@ class Util
             curl_setopt($curl, CURLOPT_HEADER, 0);
             curl_setopt($curl, CURLOPT_DNS_USE_GLOBAL_CACHE, true);
             curl_setopt($curl, CURLOPT_USERAGENT, 'phplist v' . Config::get('VERSION') . ' (http://www.phplist.com)');
-            $raw_result = curl_exec($curl);
+            curl_exec($curl);
             $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         } elseif (Config::get('has_pear_http_request')) {
             if (Config::VERBOSE) Logger::logEvent('Checking PEAR ');
@@ -179,7 +179,7 @@ class Util
             'method' => 'HEAD',
         );
 
-        $remote_charset = 'UTF-8';
+        //$remote_charset = 'UTF-8';
         ## relying on the last modified header doesn't work for many pages
         ## use current time instead
         ## see http://mantis.phplist.com/view.php?id=7684
@@ -408,7 +408,7 @@ class Util
         }
         if ($diff == 0)
             return s('very little time');
-        return secs2time($diff);
+        return Util::secs2time($diff);
     }
 
     public static function encryptPass($pass)
@@ -422,7 +422,7 @@ class Util
                 ## fallback, not that secure, but better than none at all
                 $algo = 'md5';
             } else {
-                $algo = ENCRYPTION_ALGO;
+                $algo = Config::ENCRYPTION_ALGO;
             }
             return hash($algo, $pass);
         } else {
@@ -484,7 +484,7 @@ class Util
     {
         foreach ($array as $key => $val) {
             if (is_array($val)) {
-                $array[$key] = addSlashesArray($val);
+                $array[$key] = Util::addSlashesArray($val);
             } else {
                 $array[$key] = addslashes($val);
             }
@@ -571,6 +571,7 @@ class Util
                 $time = mktime(0,0,0,date('m'),date('d') - date('w'),date('Y'));
                 break;
             case 'daily':
+            default:
                 $time = mktime(0,0,0,date('m'),date('d'),date('Y'));
                 break;
         }

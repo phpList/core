@@ -490,23 +490,6 @@ class DefaultConfig
                 'allowempty' => 0,
                 'category' => 'transactional',
             ),
-            'personallocation_message' => array(
-                'value' => '
-
-  You have requested your personal location to update your details in our newsletter database.
-  The location is below. Please make sure that you use the full line as mentioned below.
-  Sometimes email programmes can wrap the line into multiple lines.
-
-  Your personal location is:
-  [PREFERENCESURL]
-
-  Thank you.
-  ',
-                'description' => s('Message when subscribers request their personal location'),
-                'type' => 'textarea',
-                'allowempty' => 0,
-                'category' => 'transactional',
-            ),
             'messagefooter' => array(
                 'value' => '--
 

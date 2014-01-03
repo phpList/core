@@ -71,8 +71,6 @@ interface IDatabase
      */
     function fetchRow($result);
 
-    function createTable($table);
-
     function tableColumnExists($table, $column);
 
     function verboseQuery($query, $ignore = 0);

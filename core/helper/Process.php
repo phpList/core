@@ -39,7 +39,7 @@ class Process
         $running_processes = self::getRunningProcesses($page);
 
         if (Config::VERBOSE) {
-            cl_output($running_processes['count'] . ' out of ' . $max . ' active processes');
+            Output::cl_output($running_processes['count'] . ' out of ' . $max . ' active processes');
         }
         $waited = 0;
         # while ($running_res['age'] && $count >= $max) { # a process is already running
@@ -59,7 +59,7 @@ class Process
             } elseif ((int)$running_processes['count'] >= (int)$max) {
                 #   cl_output (sprintf($GLOBALS['I18N']->get('A process for this page is already running and it was still alive %s seconds ago'),$running_res['age']));
                 //TODO:change this output function call to something usefull in this rewrite
-                output(
+                Output::output(
                     sprintf(
                         s('A process for this page is already running and it was still alive %s seconds ago'),
                         $running_processes['result']['age']
@@ -68,10 +68,10 @@ class Process
                 );
                 sleep(1); # to log the messages in the correct order
                 if ($commandline) {
-                    cl_output(s('Running commandline, quitting. We\'ll find out what to do in the next run.'));
+                    Output::cl_output(s('Running commandline, quitting. We\'ll find out what to do in the next run.'));
                     exit;
                 }
-                output(s('Sleeping for 20 seconds, aborting will quit'), 0);
+                Output::output(s('Sleeping for 20 seconds, aborting will quit'), 0);
                 flush();
                 ignore_user_abort(0);
                 sleep(20);
@@ -79,7 +79,7 @@ class Process
             $waited++;
             if ($waited > 10) {
                 # we have waited 10 cycles, abort and quit script
-                output(s('We have been waiting too long, I guess the other process is still going ok'), 0);
+                Output::output(s('We have been waiting too long, I guess the other process is still going ok'), 0);
                 return false;
             }
         }

@@ -11,6 +11,9 @@ class Language
     private $hasGettext = false;
     private $hasDB = false;
     private $_languages = array();
+    /**
+     * @var Language
+     */
     private static $_instance;
 
     /**
@@ -128,6 +131,9 @@ class Language
         */
     }
 
+    /**
+     * @return Language
+     */
     public static function Instance()
     {
         if (!Language::$_instance instanceof self) {
@@ -259,7 +265,6 @@ class Language
 
     function pageTitleHover($page)
     {
-        $hoverText = '';
         $dbTitle = $this->databaseTranslation('pagetitlehover:' . $page);
         if ($dbTitle) {
             $hoverText = $dbTitle;
@@ -303,14 +308,14 @@ class Language
             } else {
                 $page = 'home';
             }
-            $pl = $prefix = '';
+            $prefix = '';
             if (!empty($_GET['pi'])) {
                 $pl = $_GET['pi'];
                 $pl = preg_replace('/\W/', '', $pl);
                 $prefix = $pl . '_';
             }
 
-            $msg = '
+            /*$msg = '
 
       Undefined text reference in page ' . $page . '
 
@@ -318,7 +323,7 @@ class Language
 
             $page = preg_replace('/\W/', '', $page);
 
-            #sendMail(Config::DEVELOPER_EMAIL,"phplist dev, missing text",$msg);
+            sendMail(Config::DEVELOPER_EMAIL,"phplist dev, missing text",$msg);*/
             $line = "'" . str_replace("'", "\'", $text) . "' => '" . str_replace("'", "\'", $text) . "',";
 #      if (is_file($this->basedir.'/en/'.$page.'.php') && $_SESSION['adminlanguage']['iso'] == 'en') {
             if (empty($prefix) && $_SESSION['adminlanguage']['iso'] == 'en') {
@@ -337,6 +342,7 @@ class Language
     function appendText($file, $text)
     {
         return;
+        /*
         $filecontents = '';
         if (is_file($file)) {
             $filecontents = file_get_contents($file);
@@ -362,6 +368,7 @@ $lan = array(
         }
 
         file_put_contents($file, $filecontents);
+        */
     }
 
     function getPluginBasedir()
@@ -404,7 +411,7 @@ $lan = array(
                 );
             }
         }
-        saveConfig('lastlanguageupdate-' . $language, $time, 0);
+        Config::setDBConfig('lastlanguageupdate-' . $language, $time, 0);
     }
 
     function getTranslation($text, $page, $basedir)
@@ -511,7 +518,7 @@ $lan = array(
  * function s($text)
  * @param $text string the text to find
  * @params 2-n variable - parameters to pass on to the sprintf of the text
- * @return translated text with parameters filled in
+ * @return string translated text with parameters filled in
  *
  *
  * eg s("This is a %s with a %d and a %0.2f","text",6,1.98765);

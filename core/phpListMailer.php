@@ -22,7 +22,7 @@ class phpListMailer extends \PHPMailer
     public $WordWrap = 75;
     public $encoding = 'base64';
     public $messageid = 0;
-    public $destionationemail = '';
+    public $destinationemail = '';
     public $estimatedsize = 0;
     public $mailsize = 0;
     private $inBlast = false;
@@ -48,7 +48,7 @@ class phpListMailer extends \PHPMailer
     {
         parent::__construct($exceptions);
         parent::SetLanguage('en', dirname(__FILE__) . '/phpmailer/language/');
-        $this->addCustomHeader('X-phpList-version: ' . VERSION);
+        $this->addCustomHeader('X-phpList-version: ' . Config::get('VERSION'));
         $this->addCustomHeader('X-MessageID: $messageid');
         $this->addCustomHeader('X-ListMember: $email');
 
@@ -143,7 +143,7 @@ class phpListMailer extends \PHPMailer
         if ($text) {
             $this->add_text($text);
         }
-        $this->Encoding = HTMLEMAIL_ENCODING;
+        $this->Encoding = Config::get('HTMLEMAIL_ENCODING');
         $this->find_html_images($templateid);
     }
 
@@ -171,7 +171,7 @@ class phpListMailer extends \PHPMailer
 
     function add_text($text)
     {
-        $this->TextEncoding = TEXTEMAIL_ENCODING;
+        $this->TextEncoding = Config::get('TEXTEMAIL_ENCODING');
         if (!$this->Body) {
             $this->IsHTML(false);
             $this->Body = html_entity_decode($text, ENT_QUOTES, 'UTF-8'); #$text;
@@ -255,12 +255,12 @@ class phpListMailer extends \PHPMailer
                 }
             }*/
             if (!parent::Send()) {
-                logEvent(s('Error sending email to %s', $to_addr) . ' ' . $this->ErrorInfo);
+                Logger::logEvent(s('Error sending email to %s', $to_addr) . ' ' . $this->ErrorInfo);
                 return 0;
             }
             #
         } else {
-            logEvent(s('Error, empty message-body sending email to %s', $to_addr));
+            Logger::logEvent(s('Error, empty message-body sending email to %s', $to_addr));
             return 0;
         }
         return 1;
@@ -269,7 +269,7 @@ class phpListMailer extends \PHPMailer
     function Send()
     {
         if (!parent::Send()) {
-            logEvent("Error sending email to " /*.$to_addr*/);
+            Logger::logEvent("Error sending email to " /*.$to_addr*/);
             return 0;
         }
         return 1;
@@ -317,7 +317,7 @@ class phpListMailer extends \PHPMailer
                 $this->Body = str_replace($images[1][$i], basename($images[1][$i]), $this->Body);
             }
             ## addition for filesystem images
-            if (EMBEDUPLOADIMAGES) {
+            if (Config::get('EMBEDUPLOADIMAGES')) {
                 if ($this->filesystem_image_exists($images[1][$i])) {
                     $filesystem_images[] = $images[1][$i];
                     $this->Body = str_replace($images[1][$i], basename($images[1][$i]), $this->Body);
@@ -414,9 +414,8 @@ class phpListMailer extends \PHPMailer
             $this->attachment[$cur][6] = "inline";
             $this->attachment[$cur][7] = $cid;
         } else {
-            logEvent("phpMailer needs patching to be able to use inline images from templates");
-            print Error("phpMailer needs patching to be able to use inline images from templates");
-            return;
+            Logger::logEvent("phpMailer needs patching to be able to use inline images from templates");
+            return false;
         }
         return $cid;
     }
@@ -509,7 +508,7 @@ class phpListMailer extends \PHPMailer
         if (basename($filename) == 'powerphplist.png') {
             $templateid = 0;
         }
-        $query = spirntf(
+        $query = sprintf(
             'SELECT * FROM %s
             WHERE template = %s
             AND (filename = "%s" or filename = "%s")',
@@ -525,10 +524,10 @@ class phpListMailer extends \PHPMailer
     function get_template_image($templateid, $filename)
     {
         if (basename($filename) == 'powerphplist.png') $templateid = 0;
-        $query = sprinf(
+        $query = sprintf(
             'SELECT data FROM %s
-                        WHERE template = %s
-                        AND (filename = "%s" or filename = "%s")',
+            WHERE template = %s
+            AND (filename = "%s" or filename = "%s")',
             Config::getTableName('templateimage'),
             $templateid,
             $filename,
@@ -554,13 +553,13 @@ class phpListMailer extends \PHPMailer
         #print nl2br(htmlspecialchars($messageheader));      exit;
 
         $date = date('r');
-        $aws_signature = base64_encode(hash_hmac('sha256', $date, AWS_SECRETKEY, true));
+        $aws_signature = base64_encode(hash_hmac('sha256', $date, Config::get('AWS_SECRETKEY'), true));
 
         $requestheader = array(
             'Host: email.us-east-1.amazonaws.com',
             'Content-Type: application/x-www-form-urlencoded',
             'Date: ' . $date,
-            'X-Amzn-Authorization: AWS3-HTTPS AWSAccessKeyId=' . AWS_ACCESSKEYID . ',Algorithm=HMACSHA256,Signature=' . $aws_signature,
+            'X-Amzn-Authorization: AWS3-HTTPS AWSAccessKeyId=' . Config::AWS_ACCESSKEYID . ',Algorithm=HMACSHA256,Signature=' . $aws_signature,
         );
 
         /*
@@ -590,7 +589,7 @@ class phpListMailer extends \PHPMailer
         }
 
         $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, AWS_POSTURL);
+        curl_setopt($curl, CURLOPT_URL, Config::AWS_POSTURL);
         curl_setopt($curl, CURLOPT_TIMEOUT, 30);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
@@ -603,7 +602,7 @@ class phpListMailer extends \PHPMailer
         curl_setopt(
             $curl,
             CURLOPT_USERAGENT,
-            NAME . " (phpList version " . Config::get('VERSION') . ", http://www.phplist.com/)"
+            Config::get('NAME') . " (phpList version " . Config::get('VERSION') . ", http://www.phplist.com/)"
         );
         curl_setopt($curl, CURLOPT_POST, 1);
 
@@ -623,7 +622,7 @@ class phpListMailer extends \PHPMailer
         #    print('Curl status '.$status);
         if ($status != 200) {
             $error = curl_error($curl);
-            logEvent('Amazon SES status ' . $status . ' ' . strip_tags($res) . ' ' . $error);
+            Logger::logEvent('Amazon SES status ' . $status . ' ' . strip_tags($res) . ' ' . $error);
         }
         curl_close($curl);
         #     print('Got remote admin response '.htmlspecialchars($res).'<br/>');
@@ -637,20 +636,20 @@ class phpListMailer extends \PHPMailer
         ## use Amazon, if set up, @@TODO redo with latest PHPMailer
         ## https://github.com/PHPMailer/PHPMailer/commit/57b183bf6a203cb69231bc3a235a00905feff75b
 
-        if (USE_AMAZONSES) {
+        if (Config::USE_AMAZONSES) {
             $header .= "To: " . $this->destinationemail . $this->LE;
             return $this->AmazonSESSend($header, $body);
         }
 
         ## we don't really use multiple to's so pass that on to phpmailer, if there are any
-        if (!$this->SingleTo || !USE_LOCAL_SPOOL) {
+        if (!$this->SingleTo || !Config::get('USE_LOCAL_SPOOL')) {
             return parent::MailSend($header, $body);
         }
-        if (!is_dir(USE_LOCAL_SPOOL) || !is_writable(USE_LOCAL_SPOOL)) {
+        if (!is_dir(Config::get('USE_LOCAL_SPOOL')) || !is_writable(Config::get('USE_LOCAL_SPOOL'))) {
             ## if local spool is not set, send the normal way
             return parent::MailSend($header, $body);
         }
-        $fname = tempnam(USE_LOCAL_SPOOL, 'msg');
+        $fname = tempnam(Config::get('USE_LOCAL_SPOOL'), 'msg');
         file_put_contents($fname, $header . "\n" . $body);
         file_put_contents($fname . '.S', $this->Sender);
         return true;
@@ -673,26 +672,26 @@ class phpListMailer extends \PHPMailer
         # do a quick check on mail injection attempt, @@@ needs more work
         if (preg_match("/\n/", $to)) {
             //TODO: convert to new logger
-            logEvent('Error: invalid recipient, containing newlines, email blocked');
+            Logger::logEvent('Error: invalid recipient, containing newlines, email blocked');
             return 0;
         }
         if (preg_match("/\n/", $subject)) {
-            logEvent('Error: invalid subject, containing newlines, email blocked');
+            Logger::logEvent('Error: invalid subject, containing newlines, email blocked');
             return 0;
         }
 
         if (!$to) {
-            logEvent("Error: empty To: in message with subject $subject to send");
+            Logger::logEvent("Error: empty To: in message with subject $subject to send");
             return 0;
         } elseif (!$subject) {
-            logEvent("Error: empty Subject: in message to send to $to");
+            Logger::logEvent("Error: empty Subject: in message to send to $to");
             return 0;
         }
 
         if (!$skipblacklistcheck && User::isBlackListed($to)) {
-            logEvent("Error, $to is blacklisted, not sending");
+            Logger::logEvent("Error, $to is blacklisted, not sending");
             User::blacklistUser($to);
-            addUserHistory(
+            User::addUserHistory(
                 User::getUserByEmail($to)->id,
                 'Marked Blacklisted',
                 'Found user in blacklist while trying to send an email, marked black listed'
@@ -780,7 +779,7 @@ class phpListMailer extends \PHPMailer
         $destinationemail = '';
 
         #  print "Sending $to from $fromemail<br/>";
-        if (DEVVERSION) {
+        if (Config::get('DEVVERSION')) {
             $message = "To: $to\n$message";
             if (Config::DEBUG && Config::DEVELOPER_EMAIL != '') {
                 $destinationemail = Config::DEVELOPER_EMAIL;
@@ -879,7 +878,7 @@ class phpListMailer extends \PHPMailer
                         $message,
                         PHPlistMailer::systemMessageHeaders($admin_mail)
                     );
-                    logEvent(s('Sending admin copy to') . ' ' . $admin_mail);
+                    Logger::logEvent(s('Sending admin copy to') . ' ' . $admin_mail);
                     $sent[$admin_mail] = 1;
                 }
             }

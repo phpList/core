@@ -185,11 +185,11 @@ class User
             if(phpList::DB()->query($query)){
                 $this->id = phpList::DB()->insertedId();
                 $this->uniqid = self::giveUniqueId($this->id);
-                return true;
             }else{
                 return false;
             }
         }
+        return true;
     }
 
     /**
@@ -234,7 +234,7 @@ class User
      */
     public function emailExists($email)
     {
-        $result = Sql_Fetch_Row_Query(
+        $result = phpList::DB()->fetchRowQuery(
             sprintf(
                 'SELECT id FROM %s
                 WHERE email = "%s"',

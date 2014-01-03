@@ -48,17 +48,17 @@ class BounceProcessor {
 
         switch (Config::BOUNCE_PROTOCOL) {
             case 'pop':
-                processPop(
+                $this->processPop(
                     Config::BOUNCE_MAILBOX_HOST,
                     Config::BOUNCE_MAILBOX_USER,
                     Config::BOUNCE_MAILBOX_PASSWORD
                 );
                 break;
             case 'mbox':
-                processMbox(Config::BOUNCE_MAILBOX);
+                $this->processMbox(Config::BOUNCE_MAILBOX);
                 break;
             default:
-                Error(s('bounce_protocol not supported'));
+                Output::output(s('bounce_protocol not supported'));
                 return;
         }
 
@@ -126,7 +126,6 @@ class BounceProcessor {
                 $rule = BounceRule::matchedBounceRules($row['data'],$bouncerules);
                 #    output('Action '.$rule['action']);
                 #    output('Rule'.$rule['id']);
-                $userdata = array();
                 if ($rule && is_array($rule)) {
                     if ($row['user']) {
                         $user = User::getUser($row['user']);
@@ -149,35 +148,35 @@ class BounceProcessor {
 
                     switch ($rule['action']) {
                         case 'deleteuser':
-                            Logger::logEvent('User '.$user->email.' deleted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
-                            $advanced_report .= 'User '.$user->email.' deleted by bounce rule '.$rule['id']."\n";
+                            Logger::logEvent('User '.$user->getEmail().' deleted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
+                            $advanced_report .= 'User '.$user->getEmail().' deleted by bounce rule '.$rule['id']."\n";
                             $advanced_report .= 'User: '.$report_linkroot.'/?page=user&amp;id='.$user->id."\n";
                             $advanced_report .= 'Rule: '.$report_linkroot.'/?page=bouncerule&amp;id='.$rule['id']."\n";
-                            deleteUser($row['user']);
+                            $user->delete();
                             break;
                         case 'unconfirmuser':
-                            Logger::logEvent('User '.$user->email.' unconfirmed by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
+                            Logger::logEvent('User '.$user->getEmail().' unconfirmed by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
                             $user->confirmed = 0;
                             $user->update();
-                            $advanced_report .= 'User '.$user->email.' made unconfirmed by bounce rule '.$rule['id']."\n";
+                            $advanced_report .= 'User '.$user->getEmail().' made unconfirmed by bounce rule '.$rule['id']."\n";
                             $advanced_report .= 'User: '.$report_linkroot.'/?page=user&amp;id='.$user->id."\n";
                             $advanced_report .= 'Rule: '.$report_linkroot.'/?page=bouncerule&amp;id='.$rule['id']."\n";
                             $user->addHistory(s('Auto Unconfirmed'),s('Subscriber auto unconfirmed for')." ".s('bounce rule').' '.$rule['id'], $user->id);
                             Util::addSubscriberStatistics('auto unsubscribe',1);
                             break;
                         case 'deleteuserandbounce':
-                            logEvent('User '.$row['user'].' deleted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
-                            $advanced_report .= 'User '.$user->email.' deleted by bounce rule '.$rule['id']."\n";
+                            Logger::logEvent('User '.$row['user'].' deleted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
+                            $advanced_report .= 'User '.$user->getEmail().' deleted by bounce rule '.$rule['id']."\n";
                             $advanced_report .= 'User: '.$report_linkroot.'/?page=user&amp;id='.$user->id."\n";
                             $advanced_report .= 'Rule: '.$report_linkroot.'/?page=bouncerule&amp;id='.$rule['id']."\n";
                             $user->delete();
                             Bounce::deleteBounce($row['bounce']);
                             break;
                         case 'unconfirmuseranddeletebounce':
-                            Logger::logEvent('User '.$user->email.' unconfirmed by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
+                            Logger::logEvent('User '.$user->getEmail().' unconfirmed by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
                             $user->confirmed = 0;
                             $user->update();
-                            $advanced_report .= 'User '.$user->email.' made unconfirmed by bounce rule '.$rule['id']."\n";
+                            $advanced_report .= 'User '.$user->getEmail().' made unconfirmed by bounce rule '.$rule['id']."\n";
                             $advanced_report .= 'User: '.$report_linkroot.'/?page=user&amp;id='.$user->id."\n";
                             $advanced_report .= 'Rule: '.$report_linkroot.'/?page=bouncerule&amp;id='.$rule['id']."\n";
                             $user->addHistory(s('Auto unconfirmed'),s('Subscriber auto unconfirmed for')." ".s("bounce rule").' '.$rule['id'], $user->id);
@@ -185,18 +184,18 @@ class BounceProcessor {
                             Bounce::deleteBounce($row['bounce']);
                             break;
                         case 'blacklistuser':
-                            Logger::logEvent('User '.$user->email.' blacklisted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
-                            $user->blacklistUser($user->email,s("Auto Blacklisted"),s("User auto blacklisted for")." ".s("bounce rule").' '.$rule['id']);
-                            $advanced_report .= 'User '.$user->email.' blacklisted by bounce rule '.$rule['id']."\n";
+                            Logger::logEvent('User '.$user->getEmail().' blacklisted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
+                            $user->blacklistUser($user->getEmail(),s("Auto Blacklisted"),s("User auto blacklisted for")." ".s("bounce rule").' '.$rule['id']);
+                            $advanced_report .= 'User '.$user->getEmail().' blacklisted by bounce rule '.$rule['id']."\n";
                             $advanced_report .= 'User: '.$report_linkroot.'/?page=user&amp;id='.$user->id."\n";
                             $advanced_report .= 'Rule: '.$report_linkroot.'/?page=bouncerule&amp;id='.$rule['id']."\n";
                             $user->addHistory(s("Auto Unsubscribed"),s("User auto unsubscribed for")." ".s("bounce rule").' '.$rule['id'], $user->id);
-                            Ustil::addSubscriberStatistics('auto blacklist',1);
+                            Util::addSubscriberStatistics('auto blacklist',1);
                             break;
                         case 'blacklistuseranddeletebounce':
-                            Logger::logEvent('User '.$user->email.' blacklisted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
-                            $user->blacklistUser($user->email,s("Auto Blacklisted"),s("User auto blacklisted for")." ".s("bounce rule").' '.$rule['id']);
-                            $advanced_report .= 'User '.$user->email.' blacklisted by bounce rule '.$rule['id']."\n";
+                            Logger::logEvent('User '.$user->getEmail().' blacklisted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
+                            $user->blacklistUser($user->getEmail(),s("Auto Blacklisted"),s("User auto blacklisted for")." ".s("bounce rule").' '.$rule['id']);
+                            $advanced_report .= 'User '.$user->getEmail().' blacklisted by bounce rule '.$rule['id']."\n";
                             $advanced_report .= 'User: '.$report_linkroot.'/?page=user&amp;id='.$user->id."\n";
                             $advanced_report .= 'Rule: '.$report_linkroot.'/?page=bouncerule&amp;id='.$rule['id']."\n";
                             $user->addHistory(s("Auto Unsubscribed"),s("User auto unsubscribed for")." ".s("bounce rule").' '.$rule['id'], $user->id);
@@ -279,7 +278,7 @@ class BounceProcessor {
             $alive = 1;
             $removed = $msgokay = $unconfirmed = $unsubscribed = 0;
             #while ($alive && !$removed && $bounce = Sql_Fetch_Array($msg_req)) { DT 051105
-            while ($alive && !$removed && !$msgokay && $bounce = Sql_Fetch_Array($msg_req)) {
+            while ($alive && !$removed && !$msgokay && $bounce = phpList::DB()->fetchArray($msg_req)) {
 
                 $alive = Process::checkLock($this->process_id);
                 if ($alive) {
@@ -308,7 +307,7 @@ class BounceProcessor {
                                     $user[0]
                                 ));
                             $email_req = phpList::DB()->query(sprintf('SELECT email FROM %s WHERE id = %d', Config::getTableName('user', true), $user[0]));
-                            $unsubscribed_users .= $email_req[0]."\t\t($cnt)\t\t". $GLOBALS['scheme'].'://'.getConfig('website').$GLOBALS['adminpages'].'/?page=user&amp;id='.$user[0]. "\n";
+                            $unsubscribed_users .= $email_req[0]."\t\t($cnt)\t\t". Config::get('scheme').'://'.Config::get('website').Config::get('adminpages').'/?page=user&amp;id='.$user[0]. "\n";
                             $unsubscribed = 1;
                         }
                         if (Config::get('BLACKLIST_EMAIL_ON_BOUNCE') && $cnt >= Config::get('BLACKLIST_EMAIL_ON_BOUNCE')) {
@@ -424,16 +423,16 @@ class BounceProcessor {
         } else {
             if ($reset)
                 print
-    '<script language="Javascript" type="text/javascript">
-          document.outputform.output.value = "";
-          document.outputform.output.value += "\n";
-     </script>';
+                    '<script language="Javascript" type="text/javascript">
+                          document.outputform.output.value = "";
+                          document.outputform.output.value += "\n";
+                     </script>';
 
             printf(
-    '<script language="Javascript" type="text/javascript">
-        document.outputform.output.value += "%s";
-        document.outputform.output.value += "\n";
-    </script>',
+                '<script language="Javascript" type="text/javascript">
+                    document.outputform.output.value += "%s";
+                    document.outputform.output.value += "\n";
+                </script>',
                 $message
             );
         }
