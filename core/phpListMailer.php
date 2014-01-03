@@ -14,7 +14,8 @@ if (Config::PHPMAILER_PATH && is_file(Config::PHPMAILER_PATH)) {
 
 if (!class_exists('PHPmailer')) {
     //https://github.com/Synchro/PHPMailer/tags
-    require_once __DIR__ . '/../admin/PHPMailer-5.2.5/class.phpmailer.php';
+    //TODO: if using composer, we can ommit this I think
+    require_once __DIR__ . '/../vendor/phpmailer/phpmailer/PHPMailerAutoload.php';
 }
 
 class phpListMailer extends \PHPMailer

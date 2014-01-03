@@ -138,7 +138,7 @@ class Admin
     {
         if ($this->id != 0) {
             //TODO: maybe not send empty modifiedby param?
-            $this->update('');
+            $this->update('call to save function');
         } else {
             if (!$this->isLoginUnique()) {
                 throw new \Exception('Login name already in use');

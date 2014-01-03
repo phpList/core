@@ -1,0 +1,20 @@
+{
+	"name": "phpList 4",
+	"description": "Most popular open source newsletter manager",
+	"keywords": ["phplist", "email", "newsletter", "manager"],
+	"homepage": "http://www.phpList.com/",
+	"type": "project",
+	"license": "GNU General Public License version 2.0 (GPLv2)",
+	"support": {
+		"issues": "https://github.com/phpList/phpList/issues",
+		"forum": "http://forums.phplist.com/",
+		"wiki": "http://resources.phplist.com/",
+		"irc": "irc://irc.freenode.net/yii",
+		"source": "https://github.com/phpList/phpList"
+	},
+	"minimum-stability": "dev",
+	"require": {
+		"php": ">=5.4.0",
+		"phpmailer/phpmailer": "v5.2.7"
+	}
+}

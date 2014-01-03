@@ -193,6 +193,31 @@ class User
     }
 
     /**
+     * Save user info to database
+     */
+    public function update()
+    {
+        $query = sprintf(
+            'UPDATE %s SET
+                email = "%s",
+                confirmed = "%s",
+                blacklisted = "%s",
+                optedin = "%s",
+                modified = CURRENT_TIMESTAMP,
+                htmlemail = "%s",
+                extradata = "%s"',
+            Config::getTableName('user', true),
+            $this->email,
+            $this->confirmed,
+            $this->blacklisted,
+            $this->optedin,
+            $this->htmlemail,
+            $this->extradata
+        );
+
+        phpList::DB()->query($query);
+    }
+    /**
      * Assign a unique id to a user
      * @param int $user_id
      * @return string unique id
@@ -232,7 +257,7 @@ class User
      * @param $email
      * @return bool
      */
-    public function emailExists($email)
+    public static function emailExists($email)
     {
         $result = phpList::DB()->fetchRowQuery(
             sprintf(
@@ -245,31 +270,6 @@ class User
         return !empty($result[0]);
     }
 
-    /**
-     * Save user info to database
-     */
-    public function update()
-    {
-        $query = sprintf(
-            'UPDATE %s SET
-                email = "%s",
-                confirmed = "%s",
-                blacklisted = "%s",
-                optedin = "%s",
-                modified = CURRENT_TIMESTAMP,
-                htmlemail = "%s",
-                extradata = "%s"',
-            Config::getTableName('user', true),
-            $this->email,
-            $this->confirmed,
-            $this->blacklisted,
-            $this->optedin,
-            $this->htmlemail,
-            $this->extradata
-        );
-
-        phpList::DB()->query($query);
-    }
 
     /**
      * Remove user from database
@@ -290,6 +290,10 @@ class User
         phpList::DB()->deleteFromArray($tables, $this->id);
     }
 
+    /**
+     * Get the lists this user is subscribed for
+     * @return array
+     */
     public function isMemberOf()
     {
         return MailingList::getListsForUser($this->id);
@@ -297,7 +301,7 @@ class User
 
 
     /**
-     *
+     * Create a User object from database values
      * @param $array
      * @return User
      */
@@ -343,6 +347,11 @@ class User
         phpList::DB()->query($query);
     }
 
+    /**
+     * Get a user attribute
+     * @param string $attribute
+     * @return string|null
+     */
     public function getAttribute($attribute)
     {
         if (empty($this->attributes)) {
@@ -356,6 +365,9 @@ class User
         }
     }
 
+    /**
+     * Load this users attributes from the database
+     */
     public function loadAttributes()
     {
         $result = phpList::DB()->query(
@@ -394,6 +406,11 @@ class User
         return $clean_attributes;
     }
 
+    /**
+     * Add an attribute to the database for this user
+     * @param int $id
+     * @param string $value
+     */
     public function addAttribute($id, $value)
     {
         phpList::DB()->query(
@@ -409,6 +426,12 @@ class User
         );
     }
 
+    /**
+     * Add a history item for this user
+     * @param string $msg
+     * @param string $detail
+     * @param string $user_id
+     */
     public static function addHistory($msg, $detail, $user_id)
     {
         if (empty($detail)) { ## ok duplicated, but looks better :-)
@@ -417,14 +440,7 @@ class User
 
         $sysinfo = "";
         $sysarrays = array_merge($_ENV, $_SERVER);
-        //TODO: change this
-        if (isset($GLOBALS['userhistory_systeminfo']) && is_array($GLOBALS['userhistory_systeminfo'])) {
-            foreach ($GLOBALS['userhistory_systeminfo'] as $key) {
-                if (isset($sysarrays[$key])) {
-                    $sysinfo .= "\n$key = $sysarrays[$key]";
-                }
-            }
-        } elseif (is_array(Config::$USERHISTORY_SYSTEMINFO)) {
+        if (is_array(Config::$USERHISTORY_SYSTEMINFO)) {
             foreach (Config::$USERHISTORY_SYSTEMINFO as $key) {
                 if ($sysarrays[$key]) {
                     $sysinfo .= "\n$key = $sysarrays[$key]";
