@@ -9,7 +9,6 @@
 		"issues": "https://github.com/phpList/phpList/issues",
 		"forum": "http://forums.phplist.com/",
 		"wiki": "http://resources.phplist.com/",
-		"irc": "irc://irc.freenode.net/yii",
 		"source": "https://github.com/phpList/phpList"
 	},
 	"minimum-stability": "dev",
