@@ -263,7 +263,7 @@ class User
             sprintf(
                 'SELECT id FROM %s
                 WHERE email = "%s"',
-                Config::getTableName('user'),
+                Config::getTableName('user', true),
                 $email
             )
         );

@@ -106,5 +106,25 @@ class UserTest extends \PHPUnit_Framework_TestCase {
     {
         User::addUser('tester@', 'testpass');
     }
+
+    public function testUserAddEditSave()
+    {
+        $email = 'unittest@example.com';
+        if(User::emailExists($email)){
+            User::getUserByEmail($email)->delete();
+        }
+        $user = new User($email);
+        $user->setPassword('IHAVEANEASYPASSWORD');
+        $user->save();
+
+        $second_user = User::getUser($user->id);
+        $this->assertEquals($user->getPassword(), $second_user->getPassword());
+
+        $second_user->delete();
+    }
+
+
+
+
 }
  
