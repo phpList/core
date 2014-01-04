@@ -7,7 +7,7 @@
 namespace phpList;
 
 
-class MessageQueue
+class QueueProcessor
 {
     private $status = 'OK';
     private $domainthrottle = array();
@@ -42,7 +42,7 @@ class MessageQueue
      * @param int $cmd_max
      * @return bool
      */
-    public function process($force = false, $reload = false, $cmd_max = 0)
+    public function startProcessing($force = false, $reload = false, $cmd_max = 0)
     {
         //initialize the process queue timer
         Timer::start('PQC');

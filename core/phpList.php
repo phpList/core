@@ -26,7 +26,7 @@ include(__DIR__ .'/UserConfig.php');
 include(__DIR__ .'/Config.php');
 include(__DIR__ .'/MailingList.php');
 include(__DIR__ .'/Message.php');
-include(__DIR__ .'/MessageQueue.php');
+include(__DIR__ . '/QueueProcessor.php');
 include(__DIR__ .'/Output.php');
 include(__DIR__ .'/phpListMailer.php');
 include(__DIR__ .'/Session.php');
