@@ -11,7 +11,10 @@ class MessageQueue
 {
     private $status = 'OK';
     private $domainthrottle = array();
-    public $messageid;
+    /**
+     * @var Message
+     */
+    private $current_message;
 
     public $script_stage = 0;
     public $reload = false;
@@ -30,15 +33,19 @@ class MessageQueue
     public $counters;
     public $original_num_per_batch;
 
-    function __construct()
-    {
-    }
+    function __construct(){}
 
-    public function process($message_id, $force = false, $reload = false, $cmd_max = 0)
+    /**
+     * Process message queue
+     * @param bool $force set true if this one has to cancel running send processes
+     * @param bool $reload
+     * @param int $cmd_max
+     * @return bool
+     */
+    public function process($force = false, $reload = false, $cmd_max = 0)
     {
         //initialize the process queue timer
         Timer::start('PQC');
-        $this->messageid = $message_id;
 
         $commandline = Config::get('commandline', false);
         if ($commandline && $force) {
@@ -347,6 +354,7 @@ class MessageQueue
          * @var $message Message
          */
         foreach ($messages as $message) {
+            $this->current_message = $message;
             $this->counters['campaign']++;
             $this->failed_sent = 0;
             $throttlecount = 0;
@@ -665,9 +673,8 @@ class MessageQueue
 
             if (empty($this->reload)) {
                 Output::output(
-                    s('Found them') . ': ' . $this->counters['total_users_for_message ' . $message->id] . ' ' . s(
-                        'to process'
-                    )
+                    s('Found them') . ': ' . $this->counters['total_users_for_message ' . $message->id] . ' ' .
+                    s('to process')
                 );
             }
             $message->setDataItem('to process', $this->counters['total_users_for_message ' . $message->id]);
@@ -1275,6 +1282,10 @@ class MessageQueue
         }
     }
 
+    /**
+     *
+     * @param string $message
+     */
     private function queueProcessError($message)
     {
         Logger::addToReport($message);
@@ -1282,6 +1293,10 @@ class MessageQueue
         exit;
     }
 
+    /**
+     * Shutdown function for execution on shutdown
+     * @link http://php.net/manual/en/function.register-shutdown-function.php
+     */
     public function shutdown()
     {
         #  Output::output( "Script status: ".connection_status(),0); # with PHP 4.2.1 buggy. http://bugs.php.net/bug.php?id=17774
@@ -1348,7 +1363,7 @@ class MessageQueue
                                         parentJQuery("#progressmeter").updateSendProgress("%s,%s");
                                      </script>',
                 $this->sent,
-                $this->counters['total_users_for_message ' . $this->messageid]
+                $this->counters['total_users_for_message ' . $this->current_message->id]
             );
         }
         //TODO:enable plugins
@@ -1387,8 +1402,8 @@ class MessageQueue
                 sleep($delaytime);
                 Output::customPrintf(
                     '<script type="text/javascript">
-                                               document.location = "./?page=pageaction&action=processqueue&ajaxed=true&reload=%d&lastsent=%d&lastskipped=%d";
-                                            </script>',
+                       document.location = "./?page=pageaction&action=processqueue&ajaxed=true&reload=%d&lastsent=%d&lastskipped=%d";
+                    </script>',
                     $this->reload,
                     $this->sent,
                     $this->notsent
@@ -1396,8 +1411,8 @@ class MessageQueue
             } else {
                 Output::customPrintf(
                     '<script type="text/javascript">
-                                               document.location = "./?page=pageaction&action=processqueue&ajaxed=true&reload=%d&lastsent=%d&lastskipped=%d";
-                                            </script>',
+                       document.location = "./?page=pageaction&action=processqueue&ajaxed=true&reload=%d&lastsent=%d&lastskipped=%d";
+                    </script>',
                     $this->reload,
                     $this->sent,
                     $this->notsent

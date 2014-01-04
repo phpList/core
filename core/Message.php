@@ -343,6 +343,7 @@ class Message
     }
 
     /**
+     * Get lists which have this message
      * @return array
      */
     public function listsDone()
@@ -367,6 +368,7 @@ class Message
     }
 
     /**
+     * Get lists which are excluded to send this message to
      * @return array
      */
     public function listsExcluded()
