@@ -231,7 +231,6 @@ class phpListMailer extends \PHPMailer
             $this->From = $from_addr;
             $this->FromName = $from_name;
         }
-        //TODO: remove globals
         if (Config::DEBUG) {
             # make sure we are not sending out emails to real users
             # when developing

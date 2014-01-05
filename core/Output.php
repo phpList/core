@@ -53,7 +53,7 @@ class Output {
         }
         if (Config::get('commandline')) {
             Output::cl_output(
-                strip_tags($message) . ' [' . Timer::get('PQC')->interval(true) . '] (' .
+                strip_tags($message) . ' [' . Timer::get('process_queue')->interval(true) . '] (' .
                 phpList::DB()->getQueryCount() . ')'
             );
             $infostring = '[' . date('D j M Y H:i', time()) . '] [CL]';
