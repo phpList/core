@@ -43,14 +43,6 @@ class User
     private $password;
 
     /**
-     * @return mixed
-     */
-    public function getPassword()
-    {
-        return $this->password;
-    }
-
-    /**
      * Set password and encrypt it
      * For existing users, password will be written to database
      * @param mixed $password
@@ -62,6 +54,15 @@ class User
             $this->updatePassword();
         }
     }
+
+    /**
+     * @return mixed
+     */
+    public function getPassword()
+    {
+        return $this->password;
+    }
+
 
     public $passwordchanged;
     public $disabled;
@@ -251,25 +252,6 @@ class User
         $user->setPassword($password);
         $user->save();
     }
-
-    /**
-     * Check if email address exists in database
-     * @param $email
-     * @return bool
-     */
-    public static function emailExists($email)
-    {
-        $result = phpList::DB()->fetchRowQuery(
-            sprintf(
-                'SELECT id FROM %s
-                WHERE email = "%s"',
-                Config::getTableName('user', true),
-                $email
-            )
-        );
-        return !empty($result[0]);
-    }
-
 
     /**
      * Remove user from database
@@ -489,184 +471,6 @@ class User
             )
         );
         return $result[0];
-    }
-
-    /**
-     * Get the number of users who's unique id has not been set
-     * @return int
-     */
-    public static function checkUniqueIds()
-    {
-        $result = phpList::DB()->query(
-            sprintf(
-                'SELECT id FROM %s
-                WHERE uniqid IS NULL
-                OR uniqid = ""',
-                Config::getTableName('user', true)
-            )
-        );
-        $num = phpList::DB()->affectedRows();
-        if ($num > 0) {
-            while ($row = phpList::DB()->fetchRow($result)) {
-                self::giveUniqueId($row[0]);
-            }
-        }
-        return $num;
-    }
-
-    /**
-     * Check if an email addres is blacklisted
-     * $immediate specifies if a gracetime is allowed for a last message
-     * @param string $email
-     * @param bool $immediate
-     * @return bool
-     */
-    public static function isBlackListed($email, $immediate = true)
-    {
-        //TODO: @Michiel why is there a check on the blacklist table?
-        if (!phpList::DB()->tableExists(Config::getTableName('user_blacklist'))) return false;
-        if (!$immediate) {
-            # allow 5 minutes to send the last message acknowledging unsubscription
-            $gracetime = sprintf('%d', Config::BLACKLIST_GRACETIME);
-            if (!$gracetime || $gracetime > 15 || $gracetime < 0) {
-                $gracetime = 5;
-            }
-        } else {
-            $gracetime = 0;
-        }
-        $row = phpList::DB()->fetchRowQuery(
-            sprintf(
-                'SELECT COUNT(email) FROM %s
-                WHERE email = "%s"
-                AND date_add(added, interval %d minute) < CURRENT_TIMESTAMP)',
-                Config::getTableName('user_blacklist'),
-                String::sqlEscape($email),
-                $gracetime
-            )
-        );
-        return ($row[0] == 0) ? false : true;
-    }
-
-    /**
-     * Check if the user with given id is blacklisted
-     * @param int $user_id
-     * @return bool
-     */
-    public static function isBlackListedID($user_id = 0)
-    {
-        $user = User::getUser($user_id);
-        return ($user == null || $user->blacklisted == 0) ? false : true;
-    }
-
-    /**
-     * Blacklist a user by his email address
-     * @param string $email
-     * @param string $reason
-     */
-    public static function blacklistUser($email, $reason = '')
-    {
-        $email = addslashes($email);
-        phpList::DB()->query(
-            sprintf(
-                'UPDATE %s SET blacklisted = 1
-                WHERE email = "%s"',
-                Config::getTableName('user', true),
-                $email
-            )
-        );
-        #0012262: blacklist only email when email bounces. (not users): Function split so email can be blacklisted without blacklisting user
-
-        $row = phpList::DB()->fetchRowQuery(
-            sprintf(
-                'SELECT id FROM %s
-                WHERE email = "%s"',
-                Config::getTableName('user', true),
-                $email
-            )
-        );
-        User::addHistory(s('Added to blacklist'), s('Added to blacklist for reason %s', $reason), $row[0]);
-    }
-
-    /**
-     * Blacklist an email address
-     * @param string $email
-     * @param string $reason
-     * @param string $date
-     */
-    public static function blacklistEmail($email, $reason = '', $date = '')
-    {
-        if (empty($date)) {
-            $sqldate = 'CURRENT_TIMESTAMP';
-        } else {
-            $sqldate = '"' . $date . '"';
-        }
-        $email = String::sqlEscape($email);
-
-        #0012262: blacklist only email when email bounces. (not users): Function split so email can be blacklisted without blacklisting user
-        phpList::DB()->query(
-            sprintf(
-                'INSERT IGNORE INTO %s (email,added)
-                VALUES("%s",%s)',
-                Config::getTableName('user_blacklist'),
-                String::sqlEscape($email),
-                $sqldate
-            )
-        );
-
-        # save the reason, and other data
-        phpList::DB()->query(
-            sprintf(
-                'INSERT IGNORE INTO %s (email, name, data)
-                VALUES("%s","%s","%s"),
-                ("%s","%s","%s")',
-                Config::getTableName('user_blacklist_data'),
-                $email,
-                'reason',
-                addslashes($reason),
-                $email,
-                'REMOTE_ADDR',
-                addslashes($_SERVER['REMOTE_ADDR'])
-            )
-        );
-
-        /*foreach (array("REMOTE_ADDR") as $item ) { # @@@do we want to know more?
-            if (isset($_SERVER['REMOTE_ADDR'])) {
-                phpList::DB()->Sql_Query(sprintf(
-                    'INSERT IGNORE INTO %s (email, name, data)
-                    VALUES("%s","%s","%s")',
-                    Config::getTableName('user_blacklist_data'),addslashes($email),
-                    $item,addslashes($_SERVER['REMOTE_ADDR'])));
-            }
-        }*/
-        //when blacklisting only an email address, don't add this to the history, only do this when blacklisting a user
-        //addUserHistory($email,s('Added to blacklist'),s('Added to blacklist for reason %s',$reason));
-    }
-
-    /**
-     * Remove user from blacklist
-     * @param int $user_id
-     * @param string $admin_name
-     */
-    public static function unBlackList($user_id = 0, $admin_name = '')
-    {
-        if (!$user_id) return;
-        $user = User::getUser($user_id);
-
-        $tables = array(
-            Config::getTableName('user_blacklist') => 'email',
-            Config::getTableName('user_blacklist_data') => 'email'
-        );
-        phpList::DB()->deleteFromArray($tables, $user->email);
-
-        $user->blacklisted = 0;
-        $user->update();
-
-        if ($admin_name != '') {
-            $msg = s("Removed from blacklist by %s", $admin_name);
-        } else {
-            $msg = s('Removed from blacklist');
-        }
-        User::addHistory($msg, '', $user->id);
     }
 
     /**

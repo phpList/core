@@ -110,7 +110,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
     public function testUserAddEditSave()
     {
         $email = 'unittest@example.com';
-        if(User::emailExists($email)){
+        if(Util::emailExists($email)){
             User::getUserByEmail($email)->delete();
         }
         $user = new User($email);
