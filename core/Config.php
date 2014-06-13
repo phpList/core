@@ -82,7 +82,7 @@ class Config extends UserConfig
     }
 
     /**
-     * Get an config item from the database
+     * Get a config item from the database
      * @param string $item
      * @param null $default
      * @return null|mixed
