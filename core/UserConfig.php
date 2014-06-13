@@ -745,7 +745,7 @@ class UserConfig
     # make sure that the value you use works for both PHP and Mysql. If you find strange discrepancies
     # in the dates and times used in phpList, you probably used the wrong value.
     const USE_CUSTOM_TIMEZONE = false;
-    const SYSTEM_TIMEZONE = 'Europe/London';
+    const SYSTEM_TIMEZONE = 'UTC';
 
 
     # list exclude will add the option to send a message to users who are on a list

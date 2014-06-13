@@ -11,8 +11,12 @@ class Config extends UserConfig
     /**
      * Constants used for debugging and developping
      */
-    const DEBUG = false;
+    const DEBUG = true;
     const DEVELOPER_EMAIL = 'dev@localhost.local';
+    const DEV_VERSION = true;
+
+    const VERSION = '4.0.0 alpha';
+
 
     /**
      * @var Config $_instance
@@ -48,7 +52,7 @@ class Config extends UserConfig
         return Config::$_instance;
     }
 
-    public static function start(){
+    public static function initialise(){
         Config::instance();
         Config::$_instance->config_ready = true;
     }
@@ -220,10 +224,10 @@ class Config extends UserConfig
      */
     public static function get($item, $default = null)
     {
-        $cofig = Config::instance();
-        if($cofig->config_ready){
-            if (isset($cofig->running_config[$item])) {
-                $value = $cofig->running_config[$item];
+        $config = Config::instance();
+        if($config->config_ready){
+            if (isset($config->running_config[$item])) {
+                $value = $config->running_config[$item];
             } else {
                 //try to find it in db
                 //$value = $cofig->fromDB($item, $default);
@@ -245,15 +249,15 @@ class Config extends UserConfig
                 //TODO: should probably move this somewhere else
                 $find = array('[WEBSITE]', '[DOMAIN]', '<?=VERSION?>');
                 $replace = array(
-                    $cofig->running_config['website'],
-                    $cofig->running_config['domain'],
-                    $cofig->running_config['VERSION']
+                    $config->running_config['website'],
+                    $config->running_config['domain'],
+                    Config::VERSION
                 );
                 $value = str_replace($find, $replace, $value);
             }
         }else{
-            if (isset($cofig->running_config[$item])) {
-                $value = $cofig->running_config[$item];
+            if (isset($config->running_config[$item])) {
+                $value = $config->running_config[$item];
             }else{
                 $value = $default;
             }
@@ -320,12 +324,6 @@ class Config extends UserConfig
      */
     private static function initConfig()
     {
-        $version = '4.0.0 alpha';
-        $dev_version = true;
-
-        Config::setRunningConfig('VERSION', $version);
-        Config::setRunningConfig('DEVVERSION', $dev_version);
-
         if (function_exists('iconv_set_encoding')) {
             iconv_set_encoding('input_encoding', 'UTF-8');
             iconv_set_encoding('internal_encoding', 'UTF-8');
@@ -610,10 +608,8 @@ class Config extends UserConfig
 
           Michiel Dethmers, phpList Ltd 2001-2013
         */
-        if ($dev_version)
-            $v = 'dev';
-        else
-            $v = $version;
+        $v = Config::DEV_VERSION ? 'dev' : Config::VERSION;
+
         if (Config::REGISTER) {
             $PoweredByImage = '<p class="poweredby"><a href="http://www.phplist.com/poweredby?utm_source=pl'.$v.'&amp;utm_medium=poweredhostedimg&amp;utm_campaign=phpList" title="visit the phpList website" ><img src="http://powered.phplist.com/images/'.$v.'/power-phplist.png" width="70" height="30" title="powered by phpList version '.$v.', &copy; phpList ltd" alt="powered by phpList '.$v.', &copy; phpList ltd" border="0" /></a></p>';
         } else {
@@ -636,10 +632,8 @@ class Config extends UserConfig
      */
     private function afterInit(){
         //TODO: move this somewhere else
-        if (Config::get('commandline') === false
-            && Config::DEBUG
-            && $_SERVER['HTTP_HOST'] != 'dev.phplist.com'
-            && Config::get('show_dev_errors', false) !== false
+        if (Config::DEBUG
+            && @($_SERVER['HTTP_HOST'] != 'dev.phplist.com')
         ) {
             error_reporting(E_ALL);
             ini_set('display_errors',1);

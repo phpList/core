@@ -1205,7 +1205,7 @@ class PrepareMessage
             Config::setRunningConfig('pdf_fontsize', 12);
         }
         $pdf = new FPDF();
-        $pdf->SetCreator('PHPlist version ' . Config::get('VERSION'));
+        $pdf->SetCreator('PHPlist version ' . Config::VERSION);
         $pdf->Open();
         $pdf->AliasNbPages();
         $pdf->AddPage();
@@ -1458,7 +1458,7 @@ class PrepareMessage
         $link_pattern="/(.*)<a.*href\s*=\s*\"(.*?)\"\s*(.*?)>(.*?)<\s*\/a\s*>(.*)/is";
 
         $i=0;
-        $link = [];
+        $link = array();
         while (preg_match($link_pattern, $text, $matches)){
             $url=$matches[2];
             $rest = $matches[3];

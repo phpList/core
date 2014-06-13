@@ -6,12 +6,6 @@
 
 namespace phpList;
 
-//Probably better to move this out of here
-if (Config::PHPMAILER_PATH && is_file(Config::PHPMAILER_PATH)) {
-    #require_once '/usr/share/php/libphp-phpmailer/class.phpmailer.php';
-    require_once Config::PHPMAILER_PATH;
-}
-
 if (!class_exists('PHPmailer')) {
     //https://github.com/Synchro/PHPMailer/tags
     //TODO: if using composer, we can ommit this I think
@@ -49,7 +43,7 @@ class phpListMailer extends \PHPMailer
     {
         parent::__construct($exceptions);
         parent::SetLanguage('en', dirname(__FILE__) . '/phpmailer/language/');
-        $this->addCustomHeader('X-phpList-version: ' . Config::get('VERSION'));
+        $this->addCustomHeader('X-phpList-version: ' . Config::VERSION);
         $this->addCustomHeader('X-MessageID: $messageid');
         $this->addCustomHeader('X-ListMember: $email');
 
@@ -603,7 +597,7 @@ class phpListMailer extends \PHPMailer
         curl_setopt(
             $curl,
             CURLOPT_USERAGENT,
-            Config::get('NAME') . " (phpList version " . Config::get('VERSION') . ", http://www.phplist.com/)"
+            Config::get('NAME') . " (phpList version " . Config::VERSION . ", http://www.phplist.com/)"
         );
         curl_setopt($curl, CURLOPT_POST, 1);
 
@@ -899,7 +893,7 @@ class phpListMailer extends \PHPMailer
             $additional_headers .= "Reply-To: $message_replyto_address\n";
         else
             $additional_headers .= "Reply-To: $from_address\n";
-        $v = Config::get('VERSION');
+        $v = Config::VERSION;
         $additional_headers .= "X-Mailer: phplist version $v (www.phplist.com)\n";
         $additional_headers .= "X-MessageID: systemmessage\n";
         if ($useremail)

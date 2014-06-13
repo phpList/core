@@ -444,7 +444,7 @@ class MySQLi implements IDatabase
      */
     public function deleteFromArray($tables, $id)
     {
-        $query = 'DELETE FROM %s WHERE %s = ' . (is_string($id)) ? '"%s"' : '%d';
+        $query = 'DELETE FROM %s WHERE %s = ' . ((is_string($id)) ? '"%s"' : '%d');
         foreach($tables as $table => $column){
             phpList::DB()->query(sprintf($query, $table, $column, $id));
         }

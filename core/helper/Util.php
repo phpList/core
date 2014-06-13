@@ -108,14 +108,14 @@ class Util
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
             curl_setopt($curl, CURLOPT_HEADER, 0);
             curl_setopt($curl, CURLOPT_DNS_USE_GLOBAL_CACHE, true);
-            curl_setopt($curl, CURLOPT_USERAGENT, 'phplist v' . Config::get('VERSION') . ' (http://www.phplist.com)');
+            curl_setopt($curl, CURLOPT_USERAGENT, 'phplist v' . Config::VERSION . ' (http://www.phplist.com)');
             curl_exec($curl);
             $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         } elseif (Config::get('has_pear_http_request')) {
             if (Config::VERBOSE) Logger::logEvent('Checking PEAR ');
             @require_once "HTTP/Request.php";
             $headreq = new HTTP_Request($url, '' /*$request_parameters*/);
-            $headreq->addHeader('User-Agent', 'phplist v' . Config::get('VERSION') . ' (http://www.phplist.com)');
+            $headreq->addHeader('User-Agent', 'phplist v' . Config::VERSION . ' (http://www.phplist.com)');
             if (!PEAR::isError($headreq->sendRequest(false))) {
                 $code = $headreq->getResponseCode();
             }

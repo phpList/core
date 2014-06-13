@@ -45,7 +45,7 @@ class DefaultConfig
         if (isset ($_SERVER['HTTP_HOST'])) {
             $D_website = $_SERVER['HTTP_HOST'];
         } else {
-            $D_website = $_SERVER['SERVER_NAME'];
+            $D_website = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost';
         }
         $D_domain = $D_website;
         if (preg_match('#^www\.(.*)#i', $D_domain, $regs)) {

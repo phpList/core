@@ -22,8 +22,9 @@ include(__DIR__ .'/helper/Util.php');
 include(__DIR__ .'/helper/Validation.php');
 include(__DIR__ .'/Admin.php');
 include(__DIR__ .'/Attachment.php');
-include(__DIR__ .'/UserConfig.php');
-include(__DIR__ .'/Config.php');
+//Included later, so alternate config can be passed
+//include(__DIR__ .'/UserConfig.php');
+//include(__DIR__ .'/Config.php');
 include(__DIR__ .'/MailingList.php');
 include(__DIR__ .'/Message.php');
 include(__DIR__ .'/MessageQueue.php');
@@ -32,7 +33,7 @@ include(__DIR__ .'/phpListMailer.php');
 include(__DIR__ .'/Session.php');
 include(__DIR__ .'/Template.php');
 include(__DIR__ .'/User.php');
-Config::start();
+
 
 class phpList
 {
@@ -54,31 +55,44 @@ class phpList
     /**
      * @throws \Exception
      */
-    public static function initialize()
+    public static function initialise()
     {
-        //Timer replaces $GLOBALS['pagestats']['time_start']
-        //DB->getQueryCount replaces $GLOBALS['pagestats']['number_of_queries']
-        Timer::start('pagestats');
-
-        $configfile = '';
+        //Handle some dynamicly generated include files
         if (isset($_SERVER['ConfigFile']) && is_file($_SERVER['ConfigFile'])) {
             $configfile = $_SERVER['ConfigFile'];
         } elseif (isset($cline['c']) && is_file($cline['c'])) {
             $configfile = $cline['c'];
         } else {
-            $configfile = 'UserConfig.php';
+            $configfile = __DIR__ . '\UserConfig.php';
         }
 
         if (is_file($configfile) && filesize($configfile) > 20) {
-            include $configfile;
-        } elseif (PHP_SAPI == 'cli') {
+            include($configfile);
+        } else{
             throw new \Exception('Cannot find config file');
-        } else {
-            Config::setRunningConfig('installer', true);
-            return;
         }
 
-        error_reporting(0);
+        include(__DIR__ .'/Config.php');
+        date_default_timezone_set(Config::SYSTEM_TIMEZONE);
+
+        //Timer replaces $GLOBALS['pagestats']['time_start']
+        //DB->getQueryCount replaces $GLOBALS['pagestats']['number_of_queries']
+        Timer::start('pagestats');
+
+
+        //Using phpmailer?
+        if (Config::PHPMAILER_PATH && is_file(Config::PHPMAILER_PATH)) {
+            #require_once '/usr/share/php/libphp-phpmailer/class.phpmailer.php';
+            require_once Config::PHPMAILER_PATH;
+        }
+
+        //Make sure some other inits have been executed
+        Language::initialise();
+        Config::initialise();
+
+        if(!Config::DEBUG){
+            error_reporting(0);
+        }
         //check for commandline and cli version
         if (!isset($_SERVER['SERVER_NAME']) && PHP_SAPI != 'cli') {
             throw new \Exception('Warning: commandline only works well with the cli version of PHP');
@@ -91,7 +105,7 @@ class phpList
         Util::magicQuotes();
 
         # setup commandline
-        if (php_sapi_name() == 'cli') {
+        if (php_sapi_name() == 'cli' && !strstr($GLOBALS['argv'][0], 'phpunit')) {
             for ($i=0; $i<$_SERVER['argc']; $i++) {
                 $my_args = array();
                 if (preg_match('/(.*)=(.*)/',$_SERVER['argv'][$i], $my_args)) {
@@ -104,7 +118,7 @@ class phpList
             $dir = dirname($_SERVER['SCRIPT_FILENAME']);
             chdir($dir);
 
-            if (!is_file($cline['c'])) {
+            if (!isset($cline['c']) || !is_file($cline['c'])) {
                 throw new \Exception('Cannot find config file');
             }
 
@@ -112,7 +126,6 @@ class phpList
             Config::setRunningConfig('commandline', false);
         }
         Config::setRunningConfig('ajax', isset($_GET['ajaxed']));
-
 
         ## this needs more testing, and docs on how to set the Timezones in the DB
         if (Config::USE_CUSTOM_TIMEZONE) {
@@ -123,7 +136,7 @@ class phpList
             if ($tz[0] != Config::SYSTEM_TIMEZONE) {
                 throw new \Exception('Error setting timezone in Sql Database');
             } else {
-            #    print "Mysql timezone set to $tz[0]<br/>";
+                #    print "Mysql timezone set to $tz[0]<br/>";
             }
             $phptz_set = date_default_timezone_set(Config::SYSTEM_TIMEZONE);
             $phptz = date_default_timezone_get ();
@@ -131,14 +144,14 @@ class phpList
                 ## I18N doesn't exist yet, @@TODO need better error catching here
                 throw new \Exception('Error setting timezone in PHP');
             } else {
-            #    print "PHP system timezone set to $phptz<br/>";
+                #    print "PHP system timezone set to $phptz<br/>";
             }
             #  print "Time now: ".date('Y-m-d H:i:s').'<br/>';
         }
 
         if( !Config::DEBUG ) {
             ini_set('error_append_string',
-                'phpList version '.Config::get('VERSION')
+                'phpList version '.Config::VERSION
             );
             ini_set(
                 'error_prepend_string',
@@ -222,4 +235,6 @@ class phpList
         }
     }*/
 
-} 
+}
+
+phpList::initialise();

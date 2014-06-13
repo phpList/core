@@ -88,8 +88,6 @@ class Language
         $languages = $this->getLanguages();
         if (isset($_SESSION['adminlanguage']) && isset($languages[$_SESSION['adminlanguage']['iso']])) {
             $this->language = $_SESSION['adminlanguage']['iso'];
-        } else {
-            unset($_SESSION['adminlanguage']);
         }
         if (function_exists('gettext')) {
             $this->hasGettext = true;
@@ -140,6 +138,14 @@ class Language
             Language::$_instance = new self();
         }
         return Language::$_instance;
+    }
+
+    /**
+     * Init language object
+     */
+    public static function initialise()
+    {
+         Language::Instance();
     }
 
     function gettext($text)
@@ -326,7 +332,7 @@ class Language
             sendMail(Config::DEVELOPER_EMAIL,"phplist dev, missing text",$msg);*/
             $line = "'" . str_replace("'", "\'", $text) . "' => '" . str_replace("'", "\'", $text) . "',";
 #      if (is_file($this->basedir.'/en/'.$page.'.php') && $_SESSION['adminlanguage']['iso'] == 'en') {
-            if (empty($prefix) && $_SESSION['adminlanguage']['iso'] == 'en') {
+            if (empty($prefix) && $this->language == 'en') {
                 $this->appendText($this->basedir . '/en/' . $page . '.php', $line);
             } else {
                 $this->appendText('/tmp/' . $prefix . $page . '.php', $line);
@@ -528,11 +534,6 @@ $lan = array(
         }
     }
 }
-
-/**
- * Make sure an instance of Language is created
- */
-Language::Instance();
 
 /**
  * Add a shortcut that seems common in other apps

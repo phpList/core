@@ -1249,7 +1249,7 @@ class MessageQueue
             return;
         }
 
-        $msg .= "phpList version ".Config::get('VERSION') . "\n";
+        $msg .= "phpList version ".Config::VERSION . "\n";
         $diff = Util::timeDiff($message->sendstart, $message->sent);
 
         if ($message->processed > 10 && $diff != 'very little time') {
