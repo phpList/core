@@ -465,7 +465,23 @@ $lan = array(
         return '';
     }
 
+    /**
+     * Funtion to skip initialisation to 'improve' performance
+     * When including this class we are sure an instance has been
+     * initialised.
+     * @param $text
+     * @return mixed|string
+     */
+    public static function getDirect($text)
+    {
+        return Language::$_instance->get($text);
+    }
 
+    /**
+     * Get the translated text
+     * @param $text
+     * @return mixed|string
+     */
     function get($text)
     {
         if (trim($text) == "") {
@@ -514,6 +530,11 @@ $lan = array(
 }
 
 /**
+ * Make sure an instance of Language is created
+ */
+Language::Instance();
+
+/**
  * Add a shortcut that seems common in other apps
  * function s($text)
  * @param $text string the text to find
@@ -528,9 +549,9 @@ $lan = array(
  **/
 function s($text)
 {
-    ## allow overloading with sprintf paramaters
-    $translation = Language::Instance()->get($text);
+    $translation = Language::getDirect($text);
 
+    ## allow overloading with sprintf paramaters
     if (func_num_args() > 1) {
         $args = func_get_args();
         array_shift($args);
@@ -547,7 +568,7 @@ function s($text)
  */
 function snbr($text)
 {
-    $trans = s($text);
-    $trans = str_replace(' ', '&nbsp;', $trans);
-    return $trans;
+    $translation = s($text);
+    $translation = str_replace(' ', '&nbsp;', $translation);
+    return $translation;
 }
