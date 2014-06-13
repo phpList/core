@@ -6,7 +6,10 @@
 
 namespace phpList;
 
-
+/**
+ * Class Template
+ * @package phpList
+ */
 class Template
 {
     public $id = 0;
@@ -14,6 +17,11 @@ class Template
     public $template;
     public $listorder;
 
+    /**
+     * @param $title
+     * @param $template
+     * @param $listorder
+     */
     public function __construct($title, $template, $listorder)
     {
         $this->title = $title;
@@ -21,6 +29,11 @@ class Template
         $this->listorder = $listorder;
     }
 
+    /**
+     * Get template with given id from database, returns false when it does not exist
+     * @param $id
+     * @return bool|Template
+     */
     public static function getTemplate($id)
     {
         $result = phpList::DB()->fetchAssocQuery(
@@ -38,6 +51,11 @@ class Template
         }
     }
 
+    /**
+     * Create a Template object from database values
+     * @param $array
+     * @return Template
+     */
     public static function templateFromArray($array)
     {
         $template = new Template($array['title'], $array['template'], $array['listorder']);
@@ -45,6 +63,9 @@ class Template
         return $template;
     }
 
+    /**
+     * Save template to databse, update when it already exists
+     */
     public function save()
     {
         if ($this->id != 0) {
@@ -65,18 +86,46 @@ class Template
         }
     }
 
+    /**
+     * Update the template in the database
+     */
     public function update()
     {
-        throw new \Exception('Not implemented yet');
+        $query = sprintf(
+            'UPDATE %s SET
+                title = "%s",
+                template = "%s",
+                listorder = "%s"
+             WHERE id = %d',
+            Config::getTableName('template', true),
+            $this->title,
+            addslashes($this->template),
+            $this->listorder,
+            $this->id
+        );
+
+        phpList::DB()->query($query);
     }
 
+    /**
+     * Add an image to this template
+     * @param $mime
+     * @param $filename
+     * @param $data
+     * @param $width
+     * @param $height
+     */
     public function addImage($mime, $filename, $data, $width, $height)
     {
         $image = new TemplateImage($this->id, $mime, $filename, $data, $width, $height);
-        $image->create();
+        $image->save();
     }
 
-    public function images()
+    /**
+     * Get images used in this template
+     * @return array
+     */
+    public function getImages()
     {
         $images = array();
         $result = phpList::DB()->fetchAssocQuery(
@@ -96,6 +145,10 @@ class Template
     }
 }
 
+/**
+ * Class TemplateImage
+ * @package phpList
+ */
 class TemplateImage
 {
     public $id;
@@ -106,6 +159,15 @@ class TemplateImage
     public $width;
     public $height;
 
+    /**
+     * Create new image
+     * @param $template_id
+     * @param $mime
+     * @param $filename
+     * @param $data
+     * @param $width
+     * @param $height
+     */
     public function __construct($template_id, $mime, $filename, $data, $width, $height)
     {
         $this->template = $template_id;
@@ -116,7 +178,10 @@ class TemplateImage
         $this->height = $height;
     }
 
-    public function create()
+    /**
+     * Save image to database
+     */
+    public function save()
     {
         phpList::DB()->query(
             sprintf(
@@ -135,6 +200,9 @@ class TemplateImage
         $this->id = phpList::DB()->insertedId();
     }
 
+    /**
+     * Remove this image from database
+     */
     public function delete()
     {
         phpList::DB()->query(

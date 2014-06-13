@@ -6,7 +6,10 @@
 
 namespace phpList;
 
-
+/**
+ * Class Attachment
+ * @package phpList
+ */
 class Attachment
 {
     public $id = 0;
@@ -16,6 +19,13 @@ class Attachment
     public $description;
     public $size;
 
+    /**
+     * @param string $filename
+     * @param string $remotefile
+     * @param string $mimetype
+     * @param string $description
+     * @param int $size
+     */
     public function __construct($filename, $remotefile, $mimetype, $description, $size)
     {
         $this->filename = $filename;
@@ -25,6 +35,9 @@ class Attachment
         $this->size = $size;
     }
 
+    /**
+     * Save attachment to database
+     */
     public function save()
     {
         if ($this->id != 0) {
@@ -46,11 +59,36 @@ class Attachment
         }
     }
 
+    /**
+     * Update attachment info in the database
+     */
     public function update()
     {
-        throw new \Exception('Not implemented yet');
+        phpList::DB()->query(
+            sprintf(
+                'UPDATE %s SET
+                filename = "%s",
+                remotefile = "%s",
+                mimetype = "%s",
+                description = "%s",
+                size = %d
+                WHERE id = %d',
+                Config::getTableName('attachment'),
+                $this->filename,
+                $this->remotefile,
+                $this->mimetype,
+                $this->description,
+                $this->size,
+                $this->id
+            )
+        );
     }
 
+    /**
+     * Get attachment with given id
+     * @param $id
+     * @return Attachment
+     */
     public static function getAttachment($id)
     {
         $result = phpList::DB()->fetchAssocQuery(
@@ -61,9 +99,24 @@ class Attachment
                 $id
             )
         );
-        return (object)$result;
+        return Attachment::attachmentFromArray($result);
     }
 
+    /**
+     * Create an attachment object from db array
+     * @param $array
+     * @return Attachment
+     */
+    private static function attachmentFromArray($array)
+    {
+        $attachment = new Attachment($array['filename'], $array['remotefile'], $array['mimetype'], $array['description'], $array['size']);
+        $attachment->id = $array['id'];
+        return $attachment;
+    }
+
+    /**
+     * Check if this attachment is used by any other messages and remove if not
+     */
     public function removeIfOrphaned()
     {
         $result = phpList::DB()->fetchAssocQuery(

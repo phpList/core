@@ -6,7 +6,10 @@
 
 namespace phpList;
 
-
+/**
+ * Class Bounce
+ * @package phpList
+ */
 class Bounce {
     public $id = 0;
     /**
@@ -18,6 +21,9 @@ class Bounce {
     public $status;
     public $comment;
 
+    /**
+     * Write bounce info to database
+     */
     public function save()
     {
         if($this->id != 0){
@@ -39,6 +45,9 @@ class Bounce {
 
     }
 
+    /**
+     * Update bounce info in database
+     */
     public function update()
     {
         phpList::DB()->query(sprintf(
@@ -285,6 +294,10 @@ class Bounce {
 
 }
 
+/**
+ * Class BounceRule
+ * @package phpList
+ */
 class BounceRule {
     public $id = 0;
     public $regex;

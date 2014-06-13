@@ -669,4 +669,14 @@ class User
         User::addHistory($msg, '', $user->id);
     }
 
+    /**
+     * Check if this user is allowed to send mails to
+     * @return bool
+     */
+    public function allowsReceivingMails()
+    {
+        $confirmed = $this->confirmed && !$this->disabled;
+        return (!$this->blacklisted && $confirmed);
+    }
+
 }

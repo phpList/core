@@ -44,23 +44,32 @@ class Cache {
     }
 
     /**
-     * Get a message from cache, returns false when not available yet
+     * Get a message from cache, will set it when not available yet
      * @param Message $message
-     * @return Message|bool
+     * @return Message
      */
-    public static function getCachedMessage($message)
+    public static function &getCachedMessage($message)
     {
         if(!isset(Cache::$_instance->message_cache[$message->id])){
-            return false;
+            Cache::$_instance->message_cache[$message->id] = $message;
         }
         return Cache::$_instance->message_cache[$message->id];
+    }
+
+    /**
+     * Check if a message has been cached already
+     * @param Message $message
+     * @return bool
+     */
+    public static function isMessageCached($message){
+        return isset(Cache::$_instance->message_cache[$message->id]);
     }
 
     /**
      * Put a message in the cache
      * @param Message $message
      */
-    public static function setCachedMessage($message)
+    private static function setCachedMessage($message)
     {
         Cache::$_instance->message_cache[$message->id] = $message;
     }
