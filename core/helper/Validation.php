@@ -4,8 +4,9 @@
  * Date: 14/12/13
  */
 
-namespace phpList;
+namespace phpList\helper;
 
+use phpList\Config;
 
 class Validation
 {

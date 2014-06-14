@@ -4,8 +4,9 @@
  * Date: 16/12/13
  */
 
-namespace phpList;
+namespace phpList\helper;
 
+use phpList\Config;
 
 class DefaultConfig
 {
@@ -34,13 +35,14 @@ class DefaultConfig
         $defaultheader = '</head><body>';
 
         $defaultfooter = '</body></html>';
-        //TODO: change this to correct uri
-        if (is_file(dirname(__FILE__) . '/ui/' . Config::get('ui') . '/frontendheader.php')) {
-            $defaultheader = file_get_contents(dirname(__FILE__) . '/ui/' . Config::get('ui') . '/frontendheader.php');
-        }
-        if (is_file(dirname(__FILE__) . '/ui/' . Config::get('ui') . '/frontendfooter.php')) {
-            $defaultfooter = file_get_contents(dirname(__FILE__) . '/ui/' . Config::get('ui') . '/frontendfooter.php');
-        }
+        // TODO: change this to correct uri
+		// Notes: This causes memory size error. Needs some discussion since UI is splitted
+        // if (is_file(dirname(__FILE__) . '/ui/' . Config::get('ui') . '/frontendheader.php')) {
+            // $defaultheader = file_get_contents(dirname(__FILE__) . '/ui/' . Config::get('ui') . '/frontendheader.php');
+        // }
+        // if (is_file(dirname(__FILE__) . '/ui/' . Config::get('ui') . '/frontendfooter.php')) {
+            // $defaultfooter = file_get_contents(dirname(__FILE__) . '/ui/' . Config::get('ui') . '/frontendfooter.php');
+        // }
 
         if (isset ($_SERVER['HTTP_HOST'])) {
             $D_website = $_SERVER['HTTP_HOST'];

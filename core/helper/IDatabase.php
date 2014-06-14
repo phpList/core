@@ -3,7 +3,7 @@
  * User: SaWey
  * Date: 6/12/13
  */
-namespace phpList;
+namespace phpList\helper;
 
 interface IDatabase
 {

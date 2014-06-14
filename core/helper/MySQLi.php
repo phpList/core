@@ -1,7 +1,10 @@
 <?php
-namespace phpList;
+namespace phpList\helper;
 
-class MySQLi implements IDatabase
+use phpList\phpList;
+use phpList\Config;
+
+class MySQLi implements \phpList\helper\IDatabase
 {
     private static $_instance;
 
