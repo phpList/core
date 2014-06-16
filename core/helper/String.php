@@ -4,7 +4,7 @@
  * Date: 15/12/13
  */
 
-namespace phpList;
+namespace phpList\helper;
 
 /**
  * Class StringFunctions

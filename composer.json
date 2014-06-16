@@ -18,5 +18,11 @@
 	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.*"
-	}
+	},
+    "autoload": {
+        "psr-4": {
+            "phpList\\": "core/"
+        },
+		"files": ["core/helper/Shortcuts.php"]
+    }
 }

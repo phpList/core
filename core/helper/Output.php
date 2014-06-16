@@ -4,7 +4,7 @@
  * Date: 19/12/13
  */
 
-namespace phpList;
+namespace phpList\helper;
 
 
 class Output {

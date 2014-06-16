@@ -4,8 +4,10 @@
  * Date: 17/12/13
  */
 
-namespace phpList;
+namespace phpList\helper;
 
+use phpList\phpList;
+use phpList\Config;
 
 class Util
 {

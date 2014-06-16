@@ -6,13 +6,13 @@
 
 namespace phpList\test;
 
-include __DIR__ . '\..\phpList.php';
+// include __DIR__ . '\..\phpList.php';
 
 
 use phpList\Config;
 use phpList\User;
-use phpList\Util;
-use phpList\Validation;
+use phpList\helper\Util;
+use phpList\helper\Validation;
 
 class UserTest extends \PHPUnit_Framework_TestCase {
     private  $emailAddresses = array(

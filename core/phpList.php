@@ -6,33 +6,28 @@
 
 namespace phpList;
 
-
-//Include core files
-include(__DIR__ .'/helper/Cache.php');
-include(__DIR__ .'/helper/DefaultConfig.php');
-include(__DIR__ .'/helper/IDatabase.php');
-include(__DIR__ .'/helper/Language.php');
-include(__DIR__ .'/helper/Logger.php');
-include(__DIR__ .'/helper/MySQLi.php');
-include(__DIR__ . '/helper/Output.php');
-include(__DIR__ .'/helper/PrepareMessage.php');
-include(__DIR__ .'/helper/Process.php');
-include(__DIR__ .'/helper/Session.php');
-include(__DIR__ .'/helper/String.php');
-include(__DIR__ .'/helper/Timer.php');
-include(__DIR__ .'/helper/Util.php');
-include(__DIR__ .'/helper/Validation.php');
-include(__DIR__ .'/Admin.php');
-include(__DIR__ .'/Attachment.php');
-//Included later, so alternate config can be passed
-//include(__DIR__ .'/UserConfig.php');
-//include(__DIR__ .'/Config.php');
-include(__DIR__ .'/MailingList.php');
-include(__DIR__ .'/Message.php');
-include(__DIR__ . '/QueueProcessor.php');
-include(__DIR__ .'/phpListMailer.php');
-include(__DIR__ .'/Template.php');
-include(__DIR__ .'/User.php');
+use phpList\helper\Cache;
+use phpList\helper\DefaultConfig;
+use phpList\helper\IDatabase;
+use phpList\helper\Language;
+use phpList\helper\Logger;
+use phpList\helper\MySQLi;
+use phpList\helper\Output;
+use phpList\helper\PrepareMessage;
+use phpList\helper\Process;
+use phpList\helper\Session;
+use phpList\helper\String;
+use phpList\helper\Util;
+use phpList\helper\Validation;
+use phpList\helper\Timer;
+use phpList\MailingList;
+use phpList\Message;
+use phpList\QueueProcessor;
+use phpList\phpListMailer;
+use phpList\Template;
+use phpList\User;
+use phpList\Config;
+// use phpList\UserConfig;
 
 
 class phpList
@@ -67,12 +62,12 @@ class phpList
         }
 
         if (is_file($configfile) && filesize($configfile) > 20) {
-            include($configfile);
+            include_once($configfile);
         } else{
             throw new \Exception('Cannot find config file');
         }
 
-        include(__DIR__ .'/Config.php');
+        include_once(__DIR__ .'/Config.php');
         date_default_timezone_set(Config::SYSTEM_TIMEZONE);
 
         //Timer replaces $GLOBALS['pagestats']['time_start']

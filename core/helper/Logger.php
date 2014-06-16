@@ -4,7 +4,7 @@
  * Date: 17/12/13
  */
 
-namespace phpList;
+namespace phpList\helper;
 
 
 class Logger

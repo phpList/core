@@ -6,6 +6,9 @@
 
 namespace phpList;
 
+use phpList\helper\Validation;
+use phpList\helper\Util;
+
 class User
 {
     public $id;

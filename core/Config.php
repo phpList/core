@@ -6,7 +6,10 @@
 
 namespace phpList;
 
-class Config extends UserConfig
+
+use phpList\helper\DefaultConfig;
+
+class Config extends \phpList\UserConfig
 {
     /**
      * Constants used for debugging and developping
