@@ -6,11 +6,7 @@
 
 namespace phpList;
 
-if (!class_exists('PHPmailer')) {
-    //https://github.com/Synchro/PHPMailer/tags
-    //TODO: if using composer, we can ommit this I think
-    require_once __DIR__ . '/../vendor/phpmailer/phpmailer/PHPMailerAutoload.php';
-}
+use PHPMailer;
 
 class phpListMailer extends \PHPMailer
 {
@@ -39,7 +35,7 @@ class phpListMailer extends \PHPMailer
     public $TextEncoding = '7bit';
 
 
-    function PHPlistMailer($messageid, $email, $inBlast = true, $exceptions = false)
+    function __construct($messageid, $email, $inBlast = true, $exceptions = false)
     {
         parent::__construct($exceptions);
         parent::SetLanguage('en', dirname(__FILE__) . '/phpmailer/language/');
@@ -109,7 +105,7 @@ class phpListMailer extends \PHPMailer
         }
         ## when the email is generated from a webpage (quite possible :-) add a "received line" to identify the origin
         if (!empty($_SERVER['REMOTE_ADDR'])) {
-            $this->add_timestamp();
+            $this->addTimestamp();
         }
         $this->messageid = $messageid;
     }
@@ -131,18 +127,18 @@ class phpListMailer extends \PHPMailer
         }
     }
 
-    function add_html($html, $text = '', $templateid = 0)
+    private function addHtml($html, $text = '', $templateid = 0)
     {
         $this->Body = $html;
         $this->IsHTML(true);
         if ($text) {
-            $this->add_text($text);
+            $this->addText($text);
         }
         $this->Encoding = Config::get('HTMLEMAIL_ENCODING');
-        $this->find_html_images($templateid);
+        $this->findHtmlImages($templateid);
     }
 
-    function add_timestamp()
+    private function addTimestamp()
     {
         #0013076:
         # Add a line like Received: from [10.1.2.3] by website.example.com with HTTP; 01 Jan 2003 12:34:56 -0000
@@ -156,15 +152,10 @@ class phpListMailer extends \PHPMailer
         $hostname = $_SERVER['HTTP_HOST'];
         $request_time = date('r', $_SERVER['REQUEST_TIME']);
         $sTimeStamp = "from $ip_domain [$ip_address] by $hostname with HTTP; $request_time";
-        $this->addTimeStamp($sTimeStamp);
-    }
-
-    function addTimeStamp($sTimeStamp)
-    {
         $this->timeStamp = $sTimeStamp;
     }
 
-    function add_text($text)
+    private function addText($text)
     {
         $this->TextEncoding = Config::get('TEXTEMAIL_ENCODING');
         if (!$this->Body) {
@@ -175,7 +166,7 @@ class phpListMailer extends \PHPMailer
         }
     }
 
-    function append_text($text)
+    private function appendText($text)
     {
         if ($this->AltBody) {
             $this->AltBody .= html_entity_decode($text, ENT_QUOTES, 'UTF-8'); #$text;
@@ -184,11 +175,7 @@ class phpListMailer extends \PHPMailer
         }
     }
 
-    function build_message()
-    {
-    }
-
-    function CreateHeader()
+    public function CreateHeader()
     {
         $parentheader = parent::CreateHeader();
         if (!empty($this->timeStamp)) {
@@ -217,7 +204,7 @@ class phpListMailer extends \PHPMailer
         return $body;
     }
 
-    function compatSend($to_name = "", $to_addr, $from_name, $from_addr, $subject = '', $headers = '', $envelope = '')
+    private function compatSend($to_name = "", $to_addr, $from_name, $from_addr, $subject = '', $headers = '', $envelope = '')
     {
         if (!empty($from_addr) && method_exists($this, 'SetFrom')) {
             $this->SetFrom($from_addr, $from_name);
@@ -260,7 +247,7 @@ class phpListMailer extends \PHPMailer
         return 1;
     }
 
-    function Send()
+    public function Send()
     {
         if (!parent::Send()) {
             Logger::logEvent("Error sending email to " /*.$to_addr*/);
@@ -269,7 +256,7 @@ class phpListMailer extends \PHPMailer
         return 1;
     }
 
-    function add_attachment($contents, $filename, $mimetype)
+    private function addAnAttachment($contents, $filename, $mimetype)
     {
         ## phpmailer 2.x
         if (method_exists($this, 'AddStringAttachment')) {
@@ -289,7 +276,7 @@ class phpListMailer extends \PHPMailer
         }
     }
 
-    function find_html_images($templateid)
+    private function findHtmlImages($templateid)
     {
         #if (!$templateid) return;
         ## no template can be templateid 0, find the powered by image
@@ -306,13 +293,13 @@ class phpListMailer extends \PHPMailer
         preg_match_all('/"([^"]+\.(' . implode('|', $extensions) . '))"/Ui', $this->Body, $images);
 
         for ($i = 0; $i < count($images[1]); $i++) {
-            if ($this->image_exists($templateid, $images[1][$i])) {
+            if ($this->imageExists($templateid, $images[1][$i])) {
                 $html_images[] = $images[1][$i];
                 $this->Body = str_replace($images[1][$i], basename($images[1][$i]), $this->Body);
             }
             ## addition for filesystem images
             if (Config::get('EMBEDUPLOADIMAGES')) {
-                if ($this->filesystem_image_exists($images[1][$i])) {
+                if ($this->filesystemImageExists($images[1][$i])) {
                     $filesystem_images[] = $images[1][$i];
                     $this->Body = str_replace($images[1][$i], basename($images[1][$i]), $this->Body);
                 }
@@ -324,11 +311,11 @@ class phpListMailer extends \PHPMailer
             $html_images = array_unique($html_images);
             sort($html_images);
             for ($i = 0; $i < count($html_images); $i++) {
-                if ($image = $this->get_template_image($templateid, $html_images[$i])) {
+                if ($image = $this->getTemplateImages($templateid, $html_images[$i])) {
                     $content_type = $this->image_types[strtolower(
                         substr($html_images[$i], strrpos($html_images[$i], '.') + 1)
                     )];
-                    $cid = $this->add_html_image($image, basename($html_images[$i]), $content_type);
+                    $cid = $this->addHtmlImage($image, basename($html_images[$i]), $content_type);
                     if (!empty($cid)) {
                         $this->Body = str_replace(basename($html_images[$i]), "cid:$cid", $this->Body);
                     }
@@ -341,11 +328,11 @@ class phpListMailer extends \PHPMailer
             $filesystem_images = array_unique($filesystem_images);
             sort($filesystem_images);
             for ($i = 0; $i < count($filesystem_images); $i++) {
-                if ($image = $this->get_filesystem_image($filesystem_images[$i])) {
+                if ($image = $this->getFilesystemImage($filesystem_images[$i])) {
                     $content_type = $this->image_types[strtolower(
                         substr($filesystem_images[$i], strrpos($filesystem_images[$i], '.') + 1)
                     )];
-                    $cid = $this->add_html_image($image, basename($filesystem_images[$i]), $content_type);
+                    $cid = $this->addHtmlImage($image, basename($filesystem_images[$i]), $content_type);
                     if (!empty($cid)) {
                         $this->Body = str_replace(basename($filesystem_images[$i]), "cid:$cid", $this->Body); #@@@
                     }
@@ -355,7 +342,7 @@ class phpListMailer extends \PHPMailer
         ## end addition
     }
 
-    function add_html_image($contents, $name = '', $content_type = 'application/octet-stream')
+    private function addHtmlImage($contents, $name = '', $content_type = 'application/octet-stream')
     {
         ## in phpMailer 2 and up we cannot use AddStringAttachment, because that doesn't use a cid
         ## we can't write to "attachment" either, because it's private
@@ -415,7 +402,7 @@ class phpListMailer extends \PHPMailer
     }
 
     ## addition for filesystem images
-    function filesystem_image_exists($filename)
+    private function filesystemImageExists($filename)
     {
         ##  find the image referenced and see if it's on the server
         $imageroot = Config::get('uploadimageroot');
@@ -439,7 +426,7 @@ class phpListMailer extends \PHPMailer
             || is_file('../' . Config::UPLOADIMAGES_DIR . '/' . $localfile);
     }
 
-    function get_filesystem_image($filename)
+    private function getFilesystemImage($filename)
     {
         ## get the image contents
         $localfile = basename(urldecode($filename));
@@ -497,7 +484,7 @@ class phpListMailer extends \PHPMailer
 
     ## end addition
 
-    function image_exists($templateid, $filename)
+    private function imageExists($templateid, $filename)
     {
         if (basename($filename) == 'powerphplist.png') {
             $templateid = 0;
@@ -515,7 +502,7 @@ class phpListMailer extends \PHPMailer
         return phpList::DB()->numRows($rs);
     }
 
-    function get_template_image($templateid, $filename)
+    private function getTemplateImages($templateid, $filename)
     {
         if (basename($filename) == 'powerphplist.png') $templateid = 0;
         $query = sprintf(
@@ -532,13 +519,13 @@ class phpListMailer extends \PHPMailer
         return $req[0];
     }
 
-    function EncodeFile($path, $encoding = "base64")
+    public function EncodeFile($path, $encoding = "base64")
     {
         # as we already encoded the contents in $path, return $path
         return chunk_split($path, 76, $this->LE);
     }
 
-    function AmazonSESSend($messageheader, $messagebody)
+    private function AmazonSESSend($messageheader, $messagebody)
     {
         //TODO: put environment vars in config
         $messageheader = preg_replace('/' . $this->LE . '$/', '', $messageheader);
@@ -623,7 +610,7 @@ class phpListMailer extends \PHPMailer
         return $status == 200;
     }
 
-    function MailSend($header, $body)
+    public function MailSend($header, $body)
     {
         $this->mailsize = strlen($header . $body);
 
@@ -692,7 +679,7 @@ class phpListMailer extends \PHPMailer
             );
             return 0;
         }
-        return PHPlistMailer::sendMailPhpMailer($to, $subject, $message);
+        return phpListMailer::sendMailPhpMailer($to, $subject, $message);
     }
 
 
@@ -787,12 +774,12 @@ class phpListMailer extends \PHPMailer
 
         $mail = new phpListMailer('systemmessage', $destinationemail, false);
         if (!empty($htmlmessage)) {
-            $mail->add_html($htmlmessage, $textmessage, Config::get('systemmessagetemplate'));
+            $mail->addHtml($htmlmessage, $textmessage, Config::get('systemmessagetemplate'));
             ## In the above phpMailer strips all tags, which removes the links which are wrapped in < and > by HTML2text
             ## so add it again
-            $mail->add_text($textmessage);
+            $mail->addText($textmessage);
         }
-        $mail->add_text($textmessage);
+        $mail->addText($textmessage);
         # 0008549: message envelope not passed to php mailer,
         $mail->Sender = Config::MESSAGE_ENVELOPE;
 
@@ -826,10 +813,10 @@ class phpListMailer extends \PHPMailer
         $mail->Port = 25;
         $mail->Mailer = 'smtp';
         if (!empty($htmlmessage)) {
-            $mail->add_html($htmlmessage, $textmessage, Config::get('systemmessagetemplate'));
-            $mail->add_text($textmessage);
+            $mail->addHtml($htmlmessage, $textmessage, Config::get('systemmessagetemplate'));
+            $mail->addText($textmessage);
         }
-        $mail->add_text($textmessage);
+        $mail->addText($textmessage);
         try {
             $mail->Send('', $destinationemail, $fromname, $fromemail, $subject);
         } catch (\Exception $e) {
@@ -870,7 +857,7 @@ class phpListMailer extends \PHPMailer
                         $admin_mail,
                         $subject,
                         $message,
-                        PHPlistMailer::systemMessageHeaders($admin_mail)
+                        phpListMailer::systemMessageHeaders($admin_mail)
                     );
                     Logger::logEvent(s('Sending admin copy to') . ' ' . $admin_mail);
                     $sent[$admin_mail] = 1;
