@@ -6,6 +6,7 @@
 
 namespace phpList;
 
+use phpList\helper\String;
 
 class Admin
 {
@@ -113,17 +114,18 @@ class Admin
         $condition = '';
         if ($search != '') {
             $search = String::sqlEscape($search);
-            $condition = sprintf(' WHERE loginname LIKE "%%s%" OR email LIKE "%%s%"', $search, $search);
+            $condition = sprintf(' WHERE loginname LIKE "%%%s%%" OR email LIKE "%%%s%%"', $search, $search);
         }
 
         $result = phpList::DB()->query(
             sprintf(
                 'SELECT * FROM %s
-                ORDER BY loginname %s',
+                %s ORDER BY loginname',
                 Config::getTableName('admin'),
                 $condition
             )
         );
+
 
         while ($row = phpList::DB()->fetchAssoc($result)) {
             $admins[] = Admin::adminFromArray($row);

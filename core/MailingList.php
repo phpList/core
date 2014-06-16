@@ -24,7 +24,23 @@ class MailingList
     public $owner;
     public $category;
 
-    public function __construct(){}
+    /**
+     * @param string $name
+     * @param string $description
+     * @param int $listorder
+     * @param int $owner
+     * @param bool $active
+     * @param int $category
+     */
+    public function __construct($name, $description, $listorder, $owner, $active, $category, $prefix)
+    {
+        $this->name = $name;
+        $this->description = $description;
+        $this->listorder = $listorder;
+        $this->owner = $owner;
+        $this->active = $active;
+        $this->category = $category;
+    }
 
     /**
      * Create a MailingList object from database values
@@ -33,18 +49,11 @@ class MailingList
      */
     private static function listFromArray($array)
     {
-        $list = new MailingList();
+        $list = new MailingList($array['name'], $array['description'], $array['listorder'], $array['owner'], $array['active'], $array['category'], $array['prefix']);
         $list->id = $array['id'];
-        $list->name = $array['name'];
-        $list->description = $array['description'];
         $list->entered = $array['entered'];
-        $list->listorder = $array['listorder'];
-        $list->prefix = $array['prefix'];
         $list->rssfeed = $array['rssfeed'];
         $list->modified = $array['modified'];
-        $list->active = $array['active'];
-        $list->owner = $array['owner'];
-        $list->category = $array['category'];
         return $list;
     }
 
@@ -67,7 +76,7 @@ class MailingList
      * @param int $id
      * @return array
      */
-    public static function getListsFromOwner($owner_id, $id = 0)
+    public static function getListsByOwner($owner_id, $id = 0)
     {
         $db_result = phpList::DB()->query(
             sprintf(
@@ -86,11 +95,11 @@ class MailingList
      * @param $id
      * @return MailingList
      */
-    public static function getList($id)
+    public static function getListById($id)
     {
         $result = phpList::DB()->fetchAssocQuery(
             sprintf(
-                'SELECT id FROM %s
+                'SELECT * FROM %s
                 WHERE id = %d',
                 Config::getTableName('list'),
                 $id
@@ -173,15 +182,16 @@ class MailingList
         } else {
             $query = sprintf(
                 'INSERT INTO %s
-                (name, description, entered, listorder, owner, prefix, active)
-                VALUES("%s", "%s", CURRENT_TIMESTAMP, %d, %d, "%s", %d)',
+                (name, description, entered, listorder, owner, prefix, active, category)
+                VALUES("%s", "%s", CURRENT_TIMESTAMP, %d, %d, "%s", %d, "%s")',
                 Config::getTableName('list'),
                 $this->name,
                 $this->description,
                 $this->listorder,
                 $this->owner,
                 $this->prefix,
-                $this->active
+                $this->active,
+                $this->category
             );
 
             phpList::DB()->query($query);

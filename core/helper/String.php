@@ -6,6 +6,8 @@
 
 namespace phpList\helper;
 
+use phpList\phpList;
+
 /**
  * Class StringFunctions
  * Class containing string helper functions
