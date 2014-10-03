@@ -59,15 +59,15 @@ class Language
 
             ## pick up other languages from DB
             if (phpList::DB()->tableExists('i18n')) {
-                $req = phpList::DB()->query(
+                $query = phpList::DB()->query(
                     sprintf(
-                        'SELECT lan,translation FROM %s WHERE
-                                                                      original = "language-name" AND lan NOT IN ("%s")',
+                        'SELECT lan,translation FROM %s WHERE original = "language-name" AND lan NOT IN ("%s")',
                         Config::getTableName('i18n'),
                         join('","', array_keys($this->_languages))
                     )
                 );
-                while ($row = phpList::DB()->fetchAssoc($req)) {
+                $result = phpList::DB()->query($query);
+                while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
                     $this->_languages[$row['lan']] = array($row['translation'], 'UTF-8', 'UTF-8', $row['lan']);
                 }
             }
@@ -205,35 +205,15 @@ class Language
         if (!$this->hasDB) {
             return '';
         }
-        $tr = phpList::DB()->fetchRowQuery(
-            sprintf(
-                'select translation from %s where original = "%s" and lan = "%s"',
-                Config::getTableName('i18n'),
-                phpList::DB()->sqlEscape(trim($text)),
-                $this->language
-            )
-        );
-        if (empty($tr[0])) {
-            $tr = phpList::DB()->fetchRowQuery(
-                sprintf(
-                    'select translation from %s where original = "%s" and lan = "%s"',
-                    Config::getTableName('i18n'),
-                    phpList::DB()->sqlEscape($text),
-                    $this->language
-                )
-            );
-        }
-        if (empty($tr[0])) {
-            $tr = phpList::DB()->fetchRowQuery(
-                sprintf(
-                    'select translation from %s where original = "%s" and lan = "%s"',
-                    Config::getTableName('i18n'),
-                    phpList::DB()->sqlEscape(str_replace('"', '\"', $text)),
-                    $this->language
-                )
-            );
-        }
-        return stripslashes($tr[0]);
+        $st = phpList::DB()->prepare(sprintf(
+                'select translation from %s where original = ? and lan = ?',
+                Config::getTableName('i18n')
+            ));
+        $st->bindParam(1, $text);
+        $st->bindParam(2, $this->language);
+        $st->execute();
+
+        return stripslashes($st->fetch());
     }
 
     function pageTitle($page)
@@ -292,16 +272,14 @@ class Language
     function formatText($text)
     {
         # we've decided to spell phplist with uc L
+        #todo: check if this is needed, maybe just correct all static text
         $text = str_ireplace('phplist', 'phpList', $text);
+        $text = str_replace("\n", "", $text);
 
         if (Config::DEBUG) {
-            if (!empty($_SESSION['show_translation_colours'])) {
-                return '<span style="color:#A704FF">' . str_replace("\n", "", $text) . '</span>';
-            }
-#       return 'TE'.$text.'XT';
+            $text = '<span style="color:#A704FF">' . $text . '</span>';
         }
-#    return '<span class="translateabletext">'.str_replace("\n","",$text).'</span>';
-        return str_replace("\n", "", $text);
+        return $text;
     }
 
     /**
@@ -323,26 +301,15 @@ class Language
                 $prefix = $pl . '_';
             }
 
-            /*$msg = '
-
-      Undefined text reference in page ' . $page . '
-
-      ' . $text;
-
-            $page = preg_replace('/\W/', '', $page);
-
-            sendMail(Config::DEVELOPER_EMAIL,"phplist dev, missing text",$msg);*/
             $line = "'" . str_replace("'", "\'", $text) . "' => '" . str_replace("'", "\'", $text) . "',";
-#      if (is_file($this->basedir.'/en/'.$page.'.php') && $_SESSION['adminlanguage']['iso'] == 'en') {
-            if (empty($prefix) && $this->language == 'en') {
+
+            /*if (empty($prefix) && $this->language == 'en') {
                 $this->appendText($this->basedir . '/en/' . $page . '.php', $line);
             } else {
                 $this->appendText('/tmp/' . $prefix . $page . '.php', $line);
-            }
+            }*/
 
-            if (!empty($_SESSION['show_translation_colours'])) {
-                return '<span style="color: #FF1717">' . $text . '</span>'; #MISSING TEXT
-            }
+            $text = '<span style="color: #FF1717">' . $text . '</span>'; #MISSING TEXT
         }
         return $text;
     }
@@ -379,22 +346,6 @@ $lan = array(
         */
     }
 
-    function getPluginBasedir()
-    {
-        $pl = $_GET['pi'];
-        $pl = preg_replace('/\W/', '', $pl);
-        $pluginroot = '';
-        /*
-        if (isset($GLOBALS['plugins'][$pl]) && is_object($GLOBALS['plugins'][$pl])) {
-            $pluginroot = $GLOBALS['plugins'][$pl]->coderoot;
-        }
-        if (is_dir($pluginroot . '/lan/')) {
-            return $pluginroot . '/lan/';
-        } else {
-            return $pluginroot . '/';
-        }*/
-    }
-
     function initFSTranslations($language = '')
     {
         if (empty($language)) {
@@ -424,7 +375,6 @@ $lan = array(
 
     function getTranslation($text, $page, $basedir)
     {
-
         ## try DB, as it will be the latest
         if ($this->hasDB) {
             $db_trans = $this->databaseTranslation($text);
@@ -525,8 +475,8 @@ $lan = array(
         #   print $this->language.' '.$text.' '.$translation. '<br/>';
 
         # spelling mistake, retry with old spelling
-        if ($text == 'over threshold, user marked unconfirmed' && empty($translation)) {
-            return $this->get('over treshold, user marked unconfirmed');
+        if ($text == 'over threshold, subscriber marked unconfirmed' && empty($translation)) {
+            return $this->get('over treshold, subscriber marked unconfirmed');
         }
 
         if (!empty($translation)) {

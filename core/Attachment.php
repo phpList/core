@@ -115,7 +115,7 @@ class Attachment
     }
 
     /**
-     * Check if this attachment is used by any other messages and remove if not
+     * Check if this attachment is used by any other campaigns and remove if not
      */
     public function removeIfOrphaned()
     {

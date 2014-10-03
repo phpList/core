@@ -12,7 +12,7 @@ class QueueProcessor
     private $status = 'OK';
     private $domainthrottle = array();
     /**
-     * @var Message
+     * @var Campaign
      */
     private $current_message;
     private $safemode = false;
@@ -71,7 +71,7 @@ class QueueProcessor
         ## let's make sure all subscribers have a uniqid
         ## only when on CL
         if ($commandline) {
-            $num = User::checkUniqueIds();
+            $num = Subscriber::checkUniqueIds();
             if ($num) {
                 Output::cl_output('Given a Unique ID to ' . $num . ' subscribers, this might have taken a while');
             }
@@ -79,7 +79,7 @@ class QueueProcessor
 
         $this->num_per_batch = 0;
         $this->batch_period = 0;
-        $someusers = /*$skipped =*/ 0;
+        $somesubscribers = /*$skipped =*/ 0;
 
         $restrictions = $this->checkRestrictions($cmd_max);
 
@@ -176,13 +176,13 @@ class QueueProcessor
         $this->notsent = $this->sent = $this->invalid = $this->unconfirmed = $this->cannotsend = 0;
 
         ## check for messages that need requeuing
-        Message::checkMessagesToRequeue();
+        Campaign::checkCampaignsToRequeue();
 
         if (Config::VERBOSE) {
             Output::output(phpList::DB()->getLastQuery());
         }
 
-        $messages = Message::getMessagesToQueue();
+        $messages = Campaign::getCampaignsToQueue();
         $num_messages = count($messages);
 
         if ($num_messages) {
@@ -215,7 +215,7 @@ class QueueProcessor
 
         $output_speed_stats = Config::get('get_speed_stats', false) !== false;
         /**
-         * @var $message Message
+         * @var $message Campaign
          */
         foreach ($messages as $message) {
             $this->current_message = $message;
@@ -223,8 +223,8 @@ class QueueProcessor
             $this->failed_sent = 0;
             $throttlecount = 0;
 
-            $this->counters['total_users_for_message ' . $message->id] = 0;
-            $this->counters['processed_users_for_message ' . $message->id] = 0;
+            $this->counters['total_subscribers_for_message ' . $message->id] = 0;
+            $this->counters['processed_subscribers_for_message ' . $message->id] = 0;
 
 
             if ($output_speed_stats){
@@ -238,7 +238,7 @@ class QueueProcessor
             }*/
 
             if ($message->resetstats == 1) {
-                $message->resetMessageStatistics();
+                $message->resetCampaignStatistics();
                 ## make sure to reset the resetstats flag, so it doesn't clear it every run
                 $message->setDataItem('resetstats', 0);
             }
@@ -262,9 +262,9 @@ class QueueProcessor
             }
             //}
 
-            $userselection = $message->userselection; ## @@ needs more work
+            $subscriberselection = $message->subscriberselection; ## @@ needs more work
             ## load message in cache
-            if (!PrepareMessage::precacheMessage($message)) {
+            if (!PrepareCampaign::precacheCampaign($message)) {
                 ## precache may fail on eg invalid remote URL
                 ## any reporting needed here?
 
@@ -318,50 +318,50 @@ class QueueProcessor
             $message->setStatus('inprocess');
 
             if (!$this->reload) {
-                Output::output(s('Looking for users'));
+                Output::output(s('Looking for subscribers'));
             }
             if (phpList::DB()->hasError()) {
                 $this->queueProcessError(phpList::DB()->error());
             }
 
-            # make selection on attribute, users who at least apply to the attributes
+            # make selection on attribute, subscribers who at least apply to the attributes
             # lots of ppl seem to use it as a normal mailinglist system, and do not use attributes.
             # Check this and take anyone in that case.
 
-            ## keep an eye on how long it takes to find users, and warn if it's a long time
-            $find_user_start = Timer::get('process_queue')->elapsed(true);
+            ## keep an eye on how long it takes to find subscribers, and warn if it's a long time
+            $find_subscriber_start = Timer::get('process_queue')->elapsed(true);
 
             $numattr = phpList::DB()->fetchRowQuery(sprintf(
                     'SELECT COUNT(*) FROM %s',
                     Config::getTableName('attribute')
                 ));
 
-            $user_attribute_query = ''; #16552
-            if ($userselection && $numattr[0]) {
-                $res = phpList::DB()->query($userselection);
-                $this->counters['total_users_for_message'] = phpList::DB()->numRows($res);
+            $subscriber_attribute_query = ''; #16552
+            if ($subscriberselection && $numattr[0]) {
+                $res = phpList::DB()->query($subscriberselection);
+                $this->counters['total_subscribers_for_message'] = phpList::DB()->numRows($res);
                 if (!$this->reload) {
                     Output::output(
-                        $this->counters['total_users_for_message'] . ' ' . s(
-                            'users apply for attributes, now checking lists'
+                        $this->counters['total_subscribers_for_message'] . ' ' . s(
+                            'subscribers apply for attributes, now checking lists'
                         ),
                         0,
                         'progress'
                     );
                 }
-                $user_list = '';
+                $subscriber_list = '';
                 while ($row = phpList::DB()->fetchRow($res)) {
-                    $user_list .= $row[0] . ",";
+                    $subscriber_list .= $row[0] . ",";
                 }
-                $user_list = substr($user_list, 0, -1);
-                if ($user_list)
-                    $user_attribute_query = " AND listuser.userid IN ($user_list)";
+                $subscriber_list = substr($subscriber_list, 0, -1);
+                if ($subscriber_list)
+                    $subscriber_attribute_query = " AND listuser.userid IN ($subscriber_list)";
                 else {
                     if (!$this->reload) {
-                        Output::output(s('No users apply for attributes'));
+                        Output::output(s('No subscribers apply for attributes'));
                     }
                     $message->setStatus('sent');
-                    //finish("info", "Message $messageid: \nNo users apply for attributes, ie nothing to do");
+                    //finish("info", "Campaign $messageid: \nNo subscribers apply for attributes, ie nothing to do");
                     $subject = s("Maillist Processing info");
                     if (!$this->nothingtodo) {
                         Output::output(s('Finished this run'), 1, 'progress');
@@ -371,14 +371,14 @@ class QueueProcessor
                                 parentJQuery("#progressmeter").updateSendProgress("%s,%s");
                              </script>',
                             $this->sent,
-                            $this->counters['total_users_for_message ' . $message->id]
+                            $this->counters['total_subscribers_for_message ' . $message->id]
                         );
                     }
                     //TODO:enable plugins
                     /*
                     if (!Config::TEST && !$this->nothingtodo && Config::get(('END_QUEUE_PROCESSING_REPORT'))) {
                         foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                            $plugin->sendReport($subject,"Message $message->id: \nNo users apply for attributes, ie nothing to do");
+                            $plugin->sendReport($subject,"Campaign $message->id: \nNo subscribers apply for attributes, ie nothing to do");
                         }
                     }
                     */
@@ -388,19 +388,19 @@ class QueueProcessor
                 }
             }
             if ($this->script_stage < 3){
-                $this->script_stage = 3; # we know the users by attribute
+                $this->script_stage = 3; # we know the subscribers by attribute
             }
 
-            # when using commandline we need to exclude users who have already received
+            # when using commandline we need to exclude subscribers who have already received
             # the email
             # we don't do this otherwise because it slows down the process, possibly
             # causing us to not find anything at all
             $exclusion = '';
 
-            /*$doneusers = array();
-            $skipusers = array();
+            /*$donesubscribers = array();
+            $skipsubscribers = array();
 
-            # 8478, avoid building large array in memory, when sending large amounts of users.
+            # 8478, avoid building large array in memory, when sending large amounts of subscribers.
 
 
               $req = Sql_Query("select userid from {$tables["usermessage"]} where messageid = $messageid");
@@ -412,30 +412,30 @@ class QueueProcessor
                     keepLock($this->send_process_id);
                   else
                     ProcessError(s('Process Killed by other process'));
-                  array_push($doneusers,$row[0]);
+                  array_push($donesubscribers,$row[0]);
                 }
               } else {
-                Output::output(s('Warning, disabling exclusion of done users, too many found'));
-                logEvent(s('Warning, disabling exclusion of done users, too many found'));
+                Output::output(s('Warning, disabling exclusion of done subscribers, too many found'));
+                logEvent(s('Warning, disabling exclusion of done subscribers, too many found'));
               }
 
-              # also exclude unconfirmed users, otherwise they'll block the process
+              # also exclude unconfirmed subscribers, otherwise they'll block the process
               # will give quite different statistics than when used web based
             #  $req = Sql_Query("select id from {$tables["user"]} where !confirmed");
             #  while ($row = Sql_Fetch_Row($req)) {
-            #    array_push($doneusers,$row[0]);
+            #    array_push($donesubscribers,$row[0]);
             #  }
-              if (sizeof($doneusers))
-                $exclusion = " and listuser.userid not in (".join(",",$doneusers).")";
+              if (sizeof($donesubscribers))
+                $exclusion = " and listuser.userid not in (".join(",",$donesubscribers).")";
             */
 
             if (Config::USE_LIST_EXCLUDE) {
                 if (Config::VERBOSE) {
-                    Output::output(s('looking for users who can be excluded from this mailing'));
+                    Output::output(s('looking for subscribers who can be excluded from this mailing'));
                 }
                 //TODO: change this so it happens automatically when set in the message object
                 if (!empty($message->excludelist)) {
-                    $message->excludeUsersOnList($message->excludelist);
+                    $message->excludeSubscribersOnList($message->excludelist);
                     /*if (Config::VERBOSE) {
                         Output::output('Exclude query ' . phpList::DB()->getLastQuery());
                     }*/
@@ -445,7 +445,7 @@ class QueueProcessor
 
             /*
               ## 8478
-              $userids_query = sprintf('select distinct user.id from
+              $subscriberids_query = sprintf('select distinct user.id from
                 %s as listuser,
                 %s as user,
                 %s as listmessage
@@ -455,27 +455,27 @@ class QueueProcessor
                 user.id = listuser.userid %s %s %s',
                 $tables['listuser'],$tables["user"],$tables['listmessage'],
                 $messageid,
-                $userconfirmed,
+                $subscriberconfirmed,
                 $exclusion,
-                $user_attribute_query);*/
+                $subscriber_attribute_query);*/
                 $queued = 0;
             if (Config::MESSAGEQUEUE_PREPARE) {
 
-                $userids_query = sprintf(
+                $subscriberids_query = sprintf(
                     'SELECT userid FROM %s
                     WHERE messageid = %d
                     AND status = "todo"',
                     Config::getTableName('usermessage'),
                     $message->id
                 );
-                phpList::DB()->query($userids_query);
-                $userids_result = phpList::DB()->affectedRows();
+                phpList::DB()->query($subscriberids_query);
+                $subscriberids_result = phpList::DB()->affectedRows();
                 # if (Config::VERBOSE) {
-                Output::cl_output('found pre-queued subscribers ' . $userids_result, 0, 'progress');
+                Output::cl_output('found pre-queued subscribers ' . $subscriberids_result, 0, 'progress');
             }
 
             ## if the above didn't find any, run the normal search (again)
-            if (empty($userids_result)) {
+            if (empty($subscriberids_result)) {
                 ## remove pre-queued messages, otherwise they wouldn't go out
                 phpList::DB()->query(sprintf(
                         'DELETE FROM %s
@@ -490,7 +490,7 @@ class QueueProcessor
                     Output::cl_output('removed pre-queued subscribers ' . $removed, 0, 'progress');
                 }
 
-                $userids_query = sprintf(
+                $subscriberids_query = sprintf(
                     'SELECT DISTINCT user.id FROM %s AS listuser
                             CROSS JOIN %s AS user
                             CROSS JOIN %s AS listmessage
@@ -510,29 +510,29 @@ class QueueProcessor
                     Config::getTableName('listmessage'),
                     Config::getTableName('usermessage'),
                     $exclusion,
-                    $user_attribute_query
+                    $subscriber_attribute_query
                 );
 
-                $userids_result = phpList::DB()->query($userids_query);
+                $subscriberids_result = phpList::DB()->query($subscriberids_query);
             }
 
             if (Config::VERBOSE) {
-                Output::output('User select query ' . $userids_query);
+                Output::output('Subscriber select query ' . $subscriberids_query);
             }
 
             if (phpList::DB()->hasError()) {
                 $this->queueProcessError(phpList::DB()->error());
             }
 
-            # now we have all our users to send the message to
-            $this->counters['total_users_for_message ' . $message->id] = phpList::DB()->numRows($userids_result);
+            # now we have all our subscribers to send the message to
+            $this->counters['total_subscribers_for_message ' . $message->id] = phpList::DB()->numRows($subscriberids_result);
             /*if ($skipped >= 10000) {
-                $this->counters['total_users_for_message ' . $message->id] -= $skipped;
+                $this->counters['total_subscribers_for_message ' . $message->id] -= $skipped;
             }*/
 
-            $find_user_end = Timer::get('process_queue')->elapsed(true);
+            $find_subscriber_end = Timer::get('process_queue')->elapsed(true);
 
-            if ($find_user_end - $find_user_start > 300 && $commandline) {
+            if ($find_subscriber_end - $find_subscriber_start > 300 && $commandline) {
                 Output::output(
                     s(
                         'Warning, finding the subscribers to send out to takes a long time, consider changing to commandline sending'
@@ -542,59 +542,59 @@ class QueueProcessor
 
             if (!$this->reload) {
                 Output::output(
-                    s('Found them') . ': ' . $this->counters['total_users_for_message ' . $message->id] . ' ' .
+                    s('Found them') . ': ' . $this->counters['total_subscribers_for_message ' . $message->id] . ' ' .
                     s('to process')
                 );
             }
-            $message->setDataItem('to process', $this->counters['total_users_for_message ' . $message->id]);
+            $message->setDataItem('to process', $this->counters['total_subscribers_for_message ' . $message->id]);
 
             if (Config::MESSAGEQUEUE_PREPARE) {
                 ## experimental MESSAGEQUEUE_PREPARE will first mark all messages as todo and then work it's way through the todo's
-                ## that should save time when running the queue multiple times, which avoids the user search after the first time
+                ## that should save time when running the queue multiple times, which avoids the subscriber search after the first time
                 ## only do this first time, ie empty($queued);
                 ## the last run will pick up changes
-                while ($user_ids = phpList::DB()->fetchRow($userids_result)) {
-                    ## mark message/user combination as "todo"
-                    $message->updateUserMessageStatus($user_ids[0], 'todo');
+                while ($subscriber_ids = phpList::DB()->fetchRow($subscriberids_result)) {
+                    ## mark message/subscriber combination as "todo"
+                    $message->updateSubscriberCampaignStatus($subscriber_ids[0], 'todo');
                 }
                 ## rerun the initial query, in order to continue as normal
-                $userids_query = sprintf(
+                $subscriberids_query = sprintf(
                     'SELECT userid FROM %s
                     WHERE messageid = %d
                     AND status = "todo"',
                     Config::getTableName('usermessage'),
                     $message->id
                 );
-                $userids_result = phpList::DB()->query($userids_query);
-                $this->counters['total_users_for_message ' . $message->id] = phpList::DB()->numRows($userids_result);
+                $subscriberids_result = phpList::DB()->query($subscriberids_query);
+                $this->counters['total_subscribers_for_message ' . $message->id] = phpList::DB()->numRows($subscriberids_result);
             }
 
             if (Config::MAILQUEUE_BATCH_SIZE > 0) {
                 ## in case of sending multiple campaigns, reduce batch with "sent"
                 $this->num_per_batch -= $this->sent;
 
-                # send in batches of $this->num_per_batch users
-                $batch_total = $this->counters['total_users_for_message ' . $message->id];
+                # send in batches of $this->num_per_batch subscribers
+                $batch_total = $this->counters['total_subscribers_for_message ' . $message->id];
                 if ($this->num_per_batch > 0) {
-                    $userids_query .= sprintf(' LIMIT 0,%d', $this->num_per_batch);
+                    $subscriberids_query .= sprintf(' LIMIT 0,%d', $this->num_per_batch);
                     if (Config::VERBOSE) {
-                        Output::output($this->num_per_batch . '  query -> ' . $userids_query);
+                        Output::output($this->num_per_batch . '  query -> ' . $subscriberids_query);
                     }
-                    $userids_result = phpList::DB()->query($userids_query);
+                    $subscriberids_result = phpList::DB()->query($subscriberids_query);
                     if (phpList::DB()->hasError()) {
                         $this->queueProcessError(phpList::DB()->error());
                     }
                 } else {
-                    Output::output(s('No users to process for this batch'), 0, 'progress');
+                    Output::output(s('No subscribers to process for this batch'), 0, 'progress');
                     //TODO: Can we remove this pointless query (will have to change the while loop below)
-                    $userids_result = phpList::DB()->query(sprintf('SELECT * FROM %s WHERE id = 0', Config::getTableName('user')));
+                    $subscriberids_result = phpList::DB()->query(sprintf('SELECT * FROM %s WHERE id = 0', Config::getTableName('user')));
                 }
-                $affrows = phpList::DB()->numRows($userids_result);
+                $affrows = phpList::DB()->numRows($subscriberids_result);
                 Output::output(s('Processing batch of ') . ': ' . $affrows, 0, 'progress');
             }
 
-            while ($userdata = phpList::DB()->fetchRow($userids_result)) {
-                $this->counters['processed_users_for_message ' . $message->id]++;
+            while ($subscriberdata = phpList::DB()->fetchRow($subscriberids_result)) {
+                $this->counters['processed_subscribers_for_message ' . $message->id]++;
                 $failure_reason = '';
                 if ($this->num_per_batch && $this->sent >= $this->num_per_batch) {
                     Output::output(s('batch limit reached') . ": $this->sent ($this->num_per_batch)", 1, 'progress');
@@ -602,9 +602,9 @@ class QueueProcessor
                     return false;
                 }
 
-                $user = User::getUser($userdata[0]); # id of the user
+                $subscriber = Subscriber::getSubscriber($subscriberdata[0]); # id of the subscriber
                 if ($output_speed_stats) Output::output(
-                    '-----------------------------------' . "\n" . 'start process user ' . $user->id
+                    '-----------------------------------' . "\n" . 'start process subscriber ' . $subscriber->id
                 );
                 $some = 1;
                 set_time_limit(120);
@@ -631,20 +631,20 @@ class QueueProcessor
                 }
 
                 # check if the message we are working on is still there and in process
-                $message = Message::getMessage($message->id);
+                $message = Campaign::getCampaign($message->id);
                 if (empty($message)) {
-                    $this->queueProcessError(s('Message I was working on has disappeared'));
+                    $this->queueProcessError(s('Campaign I was working on has disappeared'));
                 } elseif ($message->status != 'inprocess') {
                     $this->queueProcessError(s('Sending of this message has been suspended'));
                 }
                 flush();
 
                 ##
-                #Sql_Query_Params(sprintf('delete from %s where userid = ? and messageid = ? and status = "active"',$tables['usermessage']), array($userid,$message->id));
+                #Sql_Query_Params(sprintf('delete from %s where userid = ? and messageid = ? and status = "active"',$tables['usermessage']), array($subscriberid,$message->id));
 
-                # check whether the user has already received the message
+                # check whether the subscriber has already received the message
                 if ($output_speed_stats){
-                    Output::output('verify message can go out to ' . $user->id);
+                    Output::output('verify message can go out to ' . $subscriber->id);
                 }
 
                 $um = phpList::DB()->query(sprintf(
@@ -653,13 +653,13 @@ class QueueProcessor
                         AND messageid = %d
                         AND status != "todo"',
                         Config::getTableName('usermessage'),
-                        $user->id,
+                        $subscriber->id,
                         $message->id
                     ));
                 if (!phpList::DB()->numRows($um)) {
                     ## mark this message that we're working on it, so that no other process will take it
                     ## between two lines ago and here, should hopefully be quick enough
-                    $message->updateUserMessageStatus($user->id, 'active');
+                    $message->updateSubscriberCampaignStatus($subscriber->id, 'active');
                     //TODO: could this work to make sure no other process is already sending this email?
                     /*if(phpList::DB()->affectedRows() == 0){
                         break;
@@ -668,14 +668,14 @@ class QueueProcessor
                     if ($this->script_stage < 4){
                         $this->script_stage = 4; # we know a subscriber to send to
                     }
-                    $someusers = 1;
+                    $somesubscribers = 1;
 
                     # pick the first one (rather historical from before email was unique)
                     //TODO: since we don't allow invalid email addresses to be set, can we omit this check
                     // or is there a reason to keep it here?
-                    if ($user->confirmed && Validation::isEmail($user->getEmail())) {
+                    if ($subscriber->confirmed && Validation::isEmail($subscriber->getEmailAddress())) {
                         /*
-                        ## Ask plugins if they are ok with sending this message to this user
+                        ## Ask plugins if they are ok with sending this message to this subscriber
                         */
                         /*TODO: enable plugins
                         if ($output_speed_stats){
@@ -688,7 +688,7 @@ class QueueProcessor
                             if (Config::VERBOSE) {
                                 cl_output('Checking plugin ' . $plugin->name());
                             }
-                            $cansend = $plugin->canSend($message, $user);
+                            $cansend = $plugin->canSend($message, $subscriber);
                             if (!$cansend) {
                                 $failure_reason .= 'Sending blocked by plugin ' . $plugin->name;
                                 $this->counters['send blocked by ' . $plugin->name]++;
@@ -707,10 +707,10 @@ class QueueProcessor
                         # Throttling
 
                         $throttled = 0;
-                        if ($user->allowsReceivingMails() && Config::USE_DOMAIN_THROTTLE) {
+                        if ($subscriber->allowsReceivingMails() && Config::USE_DOMAIN_THROTTLE) {
                             //TODO: what if we were to put the domain name of the email address in a separate database field
                             //we could even query for the domain then
-                            list($mailbox, $domainname) = explode('@', $user->getEmail());
+                            list($mailbox, $domainname) = explode('@', $subscriber->getEmailAddress());
                             $now = time();
                             $interval = $now - ($now % Config::DOMAIN_BATCH_PERIOD);
                             if (!isset($this->domainthrottle[$domainname]) || !is_array($this->domainthrottle[$domainname])) {
@@ -727,7 +727,7 @@ class QueueProcessor
                                     if (Config::DOMAIN_AUTO_THROTTLE
                                         && $this->domainthrottle[$domainname]['attempted'] > 25 # skip a few before auto throttling
                                         && $num_messages <= 1 # only do this when there's only one message to process otherwise the other ones don't get a chance
-                                        && $this->counters['total_users_for_message ' . $message->id] < 1000 # and also when there's not too many left, because then it's likely they're all being throttled
+                                        && $this->counters['total_subscribers_for_message ' . $message->id] < 1000 # and also when there's not too many left, because then it's likely they're all being throttled
                                     ) {
                                         $this->domainthrottle[$domainname]['attempted'] = 0;
                                         Logger::logEvent(
@@ -763,15 +763,15 @@ class QueueProcessor
                             }
                         }
 
-                        if ($user->allowsReceivingMails()) {
+                        if ($subscriber->allowsReceivingMails()) {
                             $success = false;
                             if (Config::TEST) {
-                                $success = $this->sendEmailTest($message->id, $user->getEmail());
+                                $success = $this->sendEmailTest($message->id, $subscriber->getEmailAddress());
                             } else {
                                 /*TODO: enable plugins
                                 reset($GLOBALS['plugins']);
                                 while (!$throttled && $plugin = current($GLOBALS['plugins'])) {
-                                    $throttled = $plugin->throttleSend($msgdata, $user);
+                                    $throttled = $plugin->throttleSend($msgdata, $subscriber);
                                     if ($throttled) {
                                         if (!isset($this->counters['send throttled by plugin ' . $plugin->name])) {
                                             $this->counters['send throttled by plugin ' . $plugin->name] = 0;
@@ -785,11 +785,11 @@ class QueueProcessor
                                 if (!$throttled) {
                                     if (Config::VERBOSE)
                                         Output::output(
-                                            s('Sending') . ' ' . $message->id . ' ' . s('to') . ' ' . $user->getEmail()
+                                            s('Sending') . ' ' . $message->id . ' ' . s('to') . ' ' . $subscriber->getEmailAddress()
                                         );
                                     Timer::start('email_sent_timer');
                                     $this->counters['batch_count']++;
-                                    $success = PrepareMessage::sendEmail($message, $user);
+                                    $success = PrepareCampaign::sendEmail($message, $subscriber);
 
                                     if (!$success) {
                                         $this->counters['sendemail returned false']++;
@@ -809,7 +809,7 @@ class QueueProcessor
                             # tried to send email , process succes / failure
                             if ($success) {
                                 if (Config::USE_DOMAIN_THROTTLE) {
-                                    list($mailbox, $domainname) = explode('@', $user->getEmail());
+                                    list($mailbox, $domainname) = explode('@', $subscriber->getEmailAddress());
                                     if ($this->domainthrottle[$domainname]['interval'] != $interval) {
                                         $this->domainthrottle[$domainname]['interval'] = $interval;
                                         $this->domainthrottle[$domainname]['sent'] = 0;
@@ -818,7 +818,7 @@ class QueueProcessor
                                     }
                                 }
                                 $this->sent++;
-                                $message->updateUserMessageStatus($user->id, 'sent');
+                                $message->updateSubscriberCampaignStatus($subscriber->id, 'sent');
                             } else {
                                 $this->failed_sent++;
                                 ## need to check this, the entry shouldn't be there in the first place, so no need to delete it
@@ -830,7 +830,7 @@ class QueueProcessor
                                             AND messageid = %d
                                             AND status = "active"',
                                             Config::getTableName('usermessage'),
-                                            $user->id,
+                                            $subscriber->id,
                                             $message->id
                                         ));
                                 } else {
@@ -840,36 +840,36 @@ class QueueProcessor
                                             AND messageid = %d
                                             AND status = "active"',
                                             Config::getTableName('usermessage'),
-                                            $user->id,
+                                            $subscriber->id,
                                             $message->id
                                         ));
                                 }
                                 if (Config::VERBOSE) {
-                                    Output::output(s('Failed sending to') . ' ' . $user->getEmail());
-                                    Logger::logEvent(sprintf('Failed sending message %d to %s', $message->id, $user->getEmail()));
+                                    Output::output(s('Failed sending to') . ' ' . $subscriber->getEmailAddress());
+                                    Logger::logEvent(sprintf('Failed sending message %d to %s', $message->id, $subscriber->getEmailAddress()));
                                 }
                                 # make sure it's not because it's an underdeliverable email
-                                # unconfirm this user, so they're not included next time
+                                # unconfirm this subscriber, so they're not included next time
                                 //TODO: since we don't allow invalid email addresses to be set, can we omit this check
                                 // or is there a reason to keep it here?
-                                if (!$throttled && !Validation::validateEmail($user->getEmail())) {
+                                if (!$throttled && !Validation::validateEmail($subscriber->getEmailAddress())) {
                                     $this->unconfirmed++;
                                     $this->counters['email address invalidated']++;
-                                    Logger::logEvent(sprintf('invalid email address %s user marked unconfirmed', $user->getEmail()));
-                                    $user->confirmed  = false;
-                                    $user->save();
+                                    Logger::logEvent(sprintf('invalid email address %s subscriber marked unconfirmed', $subscriber->getEmailAddress()));
+                                    $subscriber->confirmed  = false;
+                                    $subscriber->save();
                                     /*Sql_Query(
                                         sprintf(
                                             'update %s set confirmed = 0 where email = "%s"',
                                             $GLOBALS['tables']['user'],
-                                            $useremail
+                                            $subscriberemail
                                         )
                                     );*/
                                 }
                             }
 
                             if ($this->script_stage < 5) {
-                                $this->script_stage = 5; # we have actually sent one user
+                                $this->script_stage = 5; # we have actually sent one subscriber
                             }
                             if (isset($running_throttle_delay)) {
                                 sleep($running_throttle_delay);
@@ -910,48 +910,48 @@ class QueueProcessor
                             $this->cannotsend++;
                             # mark it as sent anyway, because otherwise the process will never finish
                             if (Config::VERBOSE) {
-                                Output::output(s('not sending to ') . $user->getEmail());
+                                Output::output(s('not sending to ') . $subscriber->getEmailAddress());
                             }
-                            $message->updateUserMessageStatus($user->id, 'not sent');
+                            $message->updateSubscriberCampaignStatus($subscriber->id, 'not sent');
                         }
 
-                        # update possible other users matching this email as well,
+                        # update possible other subscribers matching this email as well,
                         # to avoid duplicate sending when people have subscribed multiple times
                         # bit of legacy code after making email unique in the database
-                        #$emails = Sql_query("select * from {$tables['user']} where email =\"$useremail\"");
+                        #$emails = Sql_query("select * from {$tables['user']} where email =\"$subscriberemail\"");
                         #while ($email = Sql_fetch_row($emails))
                         #Sql_query("replace into {$tables['usermessage']} (userid,messageid) values($email[0],$message->id)");
                     } else {
                         # some "invalid emails" are entirely empty, ah, that is because they are unconfirmed
 
-                        ## this is quite old as well, with the preselection that avoids unconfirmed users
+                        ## this is quite old as well, with the preselection that avoids unconfirmed subscribers
                         # it is unlikely this is every processed.
 
-                        if (!$user->confirmed || $user->disabled) {
+                        if (!$subscriber->confirmed || $subscriber->disabled) {
                             if (Config::VERBOSE)
                                 Output::output(
-                                    s('Unconfirmed user') . ': ' . $user->id . ' ' . $user->getEmail() . ' ' . $user->id
+                                    s('Unconfirmed subscriber') . ': ' . $subscriber->id . ' ' . $subscriber->getEmailAddress() . ' ' . $subscriber->id
                                 );
                             $this->unconfirmed++;
                             # when running from commandline we mark it as sent, otherwise we might get
                             # stuck when using batch processing
                             # if ($GLOBALS["commandline"]) {
-                            $message->updateUserMessageStatus($user->id, 'unconfirmed user');
+                            $message->updateSubscriberCampaignStatus($subscriber->id, 'unconfirmed subscriber');
                             # }
                             //TODO: can probably remove below check
-                        } elseif ($user->getEmail() || $user->id) {
+                        } elseif ($subscriber->getEmailAddress() || $subscriber->id) {
                             if (Config::VERBOSE) {
-                                Output::output(s('Invalid email address') . ': ' . $user->getEmail() . ' ' . $user->id);
+                                Output::output(s('Invalid email address') . ': ' . $subscriber->getEmailAddress() . ' ' . $subscriber->id);
                             }
                             Logger::logEvent(
-                                s('Invalid email address') . ': userid  ' . $user->id . '  email ' . $user->getEmail()
+                                s('Invalid email address') . ': userid  ' . $subscriber->id . '  email ' . $subscriber->getEmailAddress()
                             );
                             # mark it as sent anyway
-                            if ($user->id > 0) {
-                                $message->updateUserMessageStatus($user->id, 'invalid email address');
-                                $user->confirmed = 0;
-                                $user->save();
-                                $user->addHistory(
+                            if ($subscriber->id > 0) {
+                                $message->updateSubscriberCampaignStatus($subscriber->id, 'invalid email address');
+                                $subscriber->confirmed = 0;
+                                $subscriber->save();
+                                $subscriber->addHistory(
                                     s('Subscriber marked unconfirmed for invalid email address'),
                                     s('Marked unconfirmed while sending campaign %d', $message->id),
                                     $message->id
@@ -963,17 +963,17 @@ class QueueProcessor
                 } else {
                     //TODO: remove below
                     ## and this is quite historical, and also unlikely to be every called
-                    # because we now exclude users who have received the message from the
-                    # query to find users to send to
+                    # because we now exclude subscribers who have received the message from the
+                    # query to find subscribers to send to
 
-                    ## when trying to send the message, it was already marked for this user
+                    ## when trying to send the message, it was already marked for this subscriber
                     ## June 2010, with the multiple send process extension, that's quite possible to happen again
 
                     $um = phpList::DB()->fetchRow($um);
                     $this->notsent++;
                     if (Config::VERBOSE) {
                         Output::output(
-                            s('Not sending to').' '.$user->id.', '.s('already sent').' '.$um[0]
+                            s('Not sending to').' '.$subscriber->id.', '.s('already sent').' '.$um[0]
                         );
                     }
                 }
@@ -982,11 +982,11 @@ class QueueProcessor
                 #if ($this->processed % 10 == 0) {
                 if (0) {
                     Output::output(
-                        'AR' . $affrows . ' N ' . $this->counters['total_users_for_message ' . $message->id] . ' P' . $this->processed . ' S' . $this->sent . ' N' . $this->notsent . ' I' . $this->invalid . ' U' . $this->unconfirmed . ' C' . $this->cannotsend . ' F' . $this->failed_sent
+                        'AR' . $affrows . ' N ' . $this->counters['total_subscribers_for_message ' . $message->id] . ' P' . $this->processed . ' S' . $this->sent . ' N' . $this->notsent . ' I' . $this->invalid . ' U' . $this->unconfirmed . ' C' . $this->cannotsend . ' F' . $this->failed_sent
                     );
                     $rn = $reload * $this->num_per_batch;
                     Output::output(
-                        'P ' . $this->processed . ' N' . $this->counters['total_users_for_message ' . $message->id] . ' NB' . $this->num_per_batch . ' BT' . $batch_total . ' R' . $reload . ' RN' . $rn
+                        'P ' . $this->processed . ' N' . $this->counters['total_subscribers_for_message ' . $message->id] . ' NB' . $this->num_per_batch . ' BT' . $batch_total . ' R' . $reload . ' RN' . $rn
                     );
                 }
                 /*
@@ -1001,7 +1001,7 @@ class QueueProcessor
                 if ($this->sent > 0) {
                     $msgperhour = (3600 / $totaltime) * $this->sent;
                     $secpermsg = $totaltime / $this->sent;
-                    $timeleft = ($this->counters['total_users_for_message ' . $message->id] - $this->sent) * $secpermsg;
+                    $timeleft = ($this->counters['total_subscribers_for_message ' . $message->id] - $this->sent) * $secpermsg;
                     $eta = date('D j M H:i', time() + $timeleft);
                 } else {
                     $msgperhour = 0;
@@ -1016,31 +1016,31 @@ class QueueProcessor
 
                 $message->setDataItem(
                     'to process',
-                    $this->counters['total_users_for_message ' . $message->id] - $this->sent
+                    $this->counters['total_subscribers_for_message ' . $message->id] - $this->sent
                 );
                 $message->setDataItem('last msg sent', time());
                 #$message->setDataItem('totaltime', $this->timer->elapsed(true));
                 if ($output_speed_stats) Output::output(
-                    'end process user ' . "\n" . '-----------------------------------' . "\n" . $user->id
+                    'end process subscriber ' . "\n" . '-----------------------------------' . "\n" . $subscriber->id
                 );
             }
             $this->processed = $this->notsent + $this->sent + $this->invalid + $this->unconfirmed + $this->cannotsend + $this->failed_sent;
             Output::output(
                 s(
                     'Processed %d out of %d subscribers',
-                    $this->counters['processed_users_for_message ' . $message->id],
-                    $this->counters['total_users_for_message ' . $message->id]
+                    $this->counters['processed_subscribers_for_message ' . $message->id],
+                    $this->counters['total_subscribers_for_message ' . $message->id]
                 ),
                 1,
                 'progress'
             );
 
-            if (($this->counters['total_users_for_message ' . $message->id] - $this->sent) <= 0 || $stop_sending) {
+            if (($this->counters['total_subscribers_for_message ' . $message->id] - $this->sent) <= 0 || $stop_sending) {
                 # this message is done
-                if (!$someusers)
-                    Output::output(s('Hmmm, No users found to send to'), 1, 'progress');
+                if (!$somesubscribers)
+                    Output::output(s('Hmmm, No subscribers found to send to'), 1, 'progress');
                 if (!$this->failed_sent) {
-                    $message->repeatMessage();
+                    $message->repeatCampaign();
                     $message->setStatus('sent');
 
                     if (!empty($message->notify_end) && !isset($message->end_notified)) {
@@ -1048,7 +1048,7 @@ class QueueProcessor
                         foreach ($notifications as $notification) {
                             phpListMailer::sendMail(
                                 $notification,
-                                s('Message campaign finished'),
+                                s('Campaign campaign finished'),
                                 sprintf(
                                     s('phpList has finished sending the campaign with subject %s'),
                                     $message->subject
@@ -1072,7 +1072,7 @@ class QueueProcessor
                     Output::output(
                         s('It took') . ' ' . Util::timeDiff($message->sent, $message->sendstart) . ' ' . s('to send this message')
                     );
-                    $this->sendMessageStats($message);
+                    $this->sendCampaignStats($message);
                 }
                 $cache = Cache::instance();
                 ## flush cached message track stats to the DB
@@ -1272,9 +1272,9 @@ class QueueProcessor
 
     /**
      * Send statistics to phplist server
-     * @param Message $message
+     * @param Campaign $message
      */
-    private function sendMessageStats($message) {
+    private function sendCampaignStats($message) {
         $msg = '';
         if (Config::NOSTATSCOLLECTION) {
             return;
@@ -1376,7 +1376,7 @@ class QueueProcessor
                                         parentJQuery("#progressmeter").updateSendProgress("%s,%s");
                                      </script>',
                 $this->sent,
-                $this->counters['total_users_for_message ' . $this->current_message->id]
+                $this->counters['total_subscribers_for_message ' . $this->current_message->id]
             );
         }
         //TODO:enable plugins

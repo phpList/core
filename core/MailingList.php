@@ -110,10 +110,10 @@ class MailingList
 
     /**
      * Get lists a given user is subscribed to
-     * @param $user_id
+     * @param $subscriber_id
      * @return array
      */
-    public static function getListsForUser($user_id)
+    public static function getListsForSubscriber($subscriber_id)
     {
         $result = phpList::DB()->query(
             sprintf(
@@ -124,20 +124,20 @@ class MailingList
                 WHERE lu.userid = %d',
                 Config::getTableName('listuser'),
                 Config::getTableName('list'),
-                $user_id
+                $subscriber_id
             )
         );
         return MailingList::makeLists($result);
     }
 
     /**
-     * Get users subscribed to a given list
+     * Get subscribers subscribed to a given list
      * @param $list
      * @return array
      */
-    public static function getListUsers($list)
+    public static function getListSubscribers($list)
     {
-        $user_ids = array();
+        $subscriber_ids = array();
         if(is_array($list)){
             $where = ' WHERE listid IN (' . join(',', $list) .')';
         }else{
@@ -151,9 +151,9 @@ class MailingList
             )
         );
         while ($row = phpList::DB()->fetchRow($result)) {
-            $user_ids[] = $row;
+            $subscriber_ids[] = $row;
         }
-        return $user_ids;
+        return $subscriber_ids;
     }
 
     /**
@@ -248,11 +248,11 @@ class MailingList
     }
 
     /**
-     * Subscribe a user to given list
-     * @param $user_id
+     * Subscribe a subscriber to given list
+     * @param $subscriber_id
      * @param $list_id
      */
-    public static function addSubscriber($user_id, $list_id)
+    public static function addSubscriber($subscriber_id, $list_id)
     {
         phpList::DB()->query(
             sprintf(
@@ -260,20 +260,20 @@ class MailingList
                 (userid, listid)
                 VALUES(%d, %d)',
                 Config::getTableName('listuser'),
-                $user_id,
+                $subscriber_id,
                 $list_id
             )
         );
     }
 
     /**
-     * Subscribe an array of user ids to given list
-     * @param $user_ids
+     * Subscribe an array of subscriber ids to given list
+     * @param $subscriber_ids
      * @param $list_id
      */
-    public static function addSubscribers($user_ids, $list_id)
+    public static function addSubscribers($subscriber_ids, $list_id)
     {
-        if (!empty($user_ids)) {
+        if (!empty($subscriber_ids)) {
             $query = sprintf(
                 'INSERT INTO %s
                 (userid, listid, entered, modified)
@@ -281,7 +281,7 @@ class MailingList
                 Config::getTableName('listuser')
             );
 
-            foreach ($user_ids as $uid) {
+            foreach ($subscriber_ids as $uid) {
                 $query .= sprintf('(%d, %d, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),', $uid, $list_id);
             }
             $query = rtrim($query, ',') . ';';
@@ -290,11 +290,11 @@ class MailingList
     }
 
     /**
-     * Unsubscribe given user from given list
-     * @param $user_id
+     * Unsubscribe given subscriber from given list
+     * @param $subscriber_id
      * @param $list_id
      */
-    public static function removeSubscriber($user_id, $list_id)
+    public static function removeSubscriber($subscriber_id, $list_id)
     {
         phpList::DB()->query(
             sprintf(
@@ -302,27 +302,27 @@ class MailingList
                 WHERE userid = %d
                 AND listid = %d',
                 Config::getTableName('listuser'),
-                $user_id,
+                $subscriber_id,
                 $list_id
             )
         );
     }
 
     /**
-     * Unsubscribe an array of user ids from given list
-     * @param $user_ids
+     * Unsubscribe an array of subscriber ids from given list
+     * @param $subscriber_ids
      * @param $list_id
      */
-    public static function removeSubscribers($user_ids, $list_id)
+    public static function removeSubscribers($subscriber_ids, $list_id)
     {
-        if (!empty($user_ids)) {
+        if (!empty($subscriber_ids)) {
             phpList::DB()->query(
                 sprintf(
                     'DELETE FROM %s
                     WHERE userid IN (%s)
                     AND listid = %d',
                     Config::getTableName('listuser'),
-                    implode(',', $user_ids),
+                    implode(',', $subscriber_ids),
                     $list_id
                 )
             );

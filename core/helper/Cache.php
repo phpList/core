@@ -45,10 +45,10 @@ class Cache {
 
     /**
      * Get a message from cache, will set it when not available yet
-     * @param Message $message
-     * @return Message
+     * @param Campaign $message
+     * @return Campaign
      */
-    public static function &getCachedMessage($message)
+    public static function &getCachedCampaign($message)
     {
         if(!isset(Cache::$_instance->message_cache[$message->id])){
             Cache::$_instance->message_cache[$message->id] = $message;
@@ -58,18 +58,18 @@ class Cache {
 
     /**
      * Check if a message has been cached already
-     * @param Message $message
+     * @param Campaign $message
      * @return bool
      */
-    public static function isMessageCached($message){
+    public static function isCampaignCached($message){
         return isset(Cache::$_instance->message_cache[$message->id]);
     }
 
     /**
      * Put a message in the cache
-     * @param Message $message
+     * @param Campaign $message
      */
-    private static function setCachedMessage($message)
+    private static function setCachedCampaign($message)
     {
         Cache::$_instance->message_cache[$message->id] = $message;
     }

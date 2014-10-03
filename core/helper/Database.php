@@ -47,7 +47,7 @@ class Database
                 Config::DATABASE_PASSWORD
             );
         } catch (PDOException $e) {
-            throw new \Exception('Cannot connect to Database, please check your configuration. ' . $e->getMessage());
+            throw new \Exception('Cannot connect to Database, please check your configuration. ' . $e->getCampaign());
         }
         //TODO: check compatibility with other db engines
         $this->db->query('SET NAMES \'utf8\'');
@@ -67,6 +67,15 @@ class Database
             Output::cl_output($error);
         }
         Logger::logEvent('Database error: ' . $this->db->errorInfo()[2]);
+    }
+
+    /**
+     * Create prepared statement
+     * @param $query
+     * @return \PDOStatement
+     */
+    public function prepare($query){
+        return $this->db->prepare($query);
     }
 
     /**
@@ -355,12 +364,16 @@ class Database
     /**
      * @param array (tablename => columnname)
      * @param int|string $id
+     * @return int
      */
     public function deleteFromArray($tables, $id)
     {
         $query = 'DELETE FROM %s WHERE %s = ' . ((is_string($id)) ? '"%s"' : '%d');
+        $count = 0;
         foreach($tables as $table => $column){
-            phpList::DB()->query(sprintf($query, $table, $column, $id));
+            $result = $this->db->query(sprintf($query, $table, $column, $id));
+            $count += $result->rowCount();
         }
+        return $count;
     }
 }

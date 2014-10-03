@@ -8,8 +8,10 @@ namespace phpList;
 
 
 use phpList\helper\DefaultConfig;
+use phpList\helper\Validation;
 
-class Config extends \phpList\UserConfig
+//TODO: lots of configuration not related to core needs to be filtered out
+class Config extends UserConfig
 {
     /**
      * Constants used for debugging and developping
@@ -18,7 +20,7 @@ class Config extends \phpList\UserConfig
     const DEVELOPER_EMAIL = 'dev@localhost.local';
     const DEV_VERSION = true;
 
-    const VERSION = '4.0.0 alpha';
+    const VERSION = '4.0.0 dev';
 
 
     /**
@@ -31,11 +33,12 @@ class Config extends \phpList\UserConfig
     /**
      * Default constructor
      * load configuration from database each new session
-     * TODO: probably not a good idea when using an installation with multiple users
+     * TODO: probably not a good idea when using an installation with multiple subscribers
      */
     private function __construct(){}
 
     /**
+     * Get an instance of the configuration object
      * @return Config
      */
     private static function instance()
@@ -55,6 +58,9 @@ class Config extends \phpList\UserConfig
         return Config::$_instance;
     }
 
+    /**
+     * Initialise configuration
+     */
     public static function initialise(){
         Config::instance();
         Config::$_instance->config_ready = true;
@@ -62,6 +68,7 @@ class Config extends \phpList\UserConfig
 
     /**
      * Load the entire configuration from the database
+     * and put it in the session, so we don't need to reload it from db
      */
     private function loadAllFromDB()
     {
@@ -70,7 +77,7 @@ class Config extends \phpList\UserConfig
         Config::setRunningConfig('has_db_config', true);
 
         $result = phpList::DB()->query(sprintf('SELECT item, value FROM %s', Config::getTableName('config')));
-        while ($row = phpList::DB()->fetchAssoc($result)) {
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
             $this->running_config[$row['item']] = $row['value'];
         }
 
@@ -270,22 +277,22 @@ class Config extends \phpList\UserConfig
     }
 
     /**
-     * Get config item and replace with user unique id where needed
+     * Get config item and replace with subscriber unique id where needed
      * @param string $item
-     * @param int $user_id
+     * @param int $subscriber_id
      * @return mixed|null|string
      */
-    public static function getUserConfig($item, $user_id = 0)
+    public static function getUserConfig($item, $subscriber_id = 0)
     {
         $value = Config::get($item, false);
 
         # if this is a subpage item, and no value was found get the global one
         if (!$value && strpos($item, ":") !== false) {
             list ($a, $b) = explode(":", $item);
-            $value = Config::getUserConfig($a, $user_id);
+            $value = Config::getUserConfig($a, $subscriber_id);
         }
-        if ($user_id != 0) {
-            $uniq_id = User::getUniqueId($user_id);
+        if ($subscriber_id != 0) {
+            $uniq_id = Subscriber::getUniqueId($subscriber_id);
             # parse for placeholders
             # do some backwards compatibility:
             # hmm, reverted back to old system
@@ -474,7 +481,7 @@ class Config extends \phpList\UserConfig
             throw new \Exception('Config Error: FORWARD_EMAIL_COUNT must be > (int) 0');
         }
 
-        # allows FORWARD_EMAIL_COUNT forwards per user per period in mysql interval terms default one day
+        # allows FORWARD_EMAIL_COUNT forwards per subscriber per period in mysql interval terms default one day
         Config::setRunningConfig('FORWARD_EMAIL_PERIOD', '1 day');
         Config::setRunningConfig('EMBEDUPLOADIMAGES',0);
         Config::setRunningConfig('IMPORT_FILESIZE',5);
@@ -490,7 +497,7 @@ class Config extends \phpList\UserConfig
             'counters',
             array(
                 'campaign' => 0,
-                'num_users_for_message' => 0,
+                'num_subscribers_for_message' => 0,
                 'batch_count' => 0,
                 'batch_total' => 0,
                 'sendemail returned false' => 0,
@@ -517,7 +524,7 @@ class Config extends \phpList\UserConfig
                     'bounce' => 'none',
                     'processbounces' => 'none',
                     'eventlog' => 'none',
-                    'reconcileusers' => 'none',
+                    'reconcilesubscribers' => 'none',
                     'getrss' => 'owner',
                     'viewrss' => 'owner',
                     'purgerss' => 'none',
@@ -530,12 +537,12 @@ class Config extends \phpList\UserConfig
                     'editlist' => 'owner',
                     'members' => 'owner'
                 ),
-                'user' => array (
-                    'user' => 'none',
-                    'users' => 'none',
-                    'dlusers' => 'none',
+                'subscriber' => array (
+                    'subscriber' => 'none',
+                    'subscribers' => 'none',
+                    'dlsubscribers' => 'none',
                     'editattributes' => 'none',
-                    'usercheck' => 'none',
+                    'subscribercheck' => 'none',
                     'import1' => 'none',
                     'import2' => 'none',
                     'import3' => 'none',
@@ -559,7 +566,7 @@ class Config extends \phpList\UserConfig
                     'statsmgt' => 'owner',
                     'mclicks' => 'owner',
                     'uclicks' => 'owner',
-                    'userclicks' => 'owner',
+                    'subscriberclicks' => 'owner',
                     'mviews' => 'owner',
                     'statsoverview' => 'owner',
 
@@ -623,7 +630,7 @@ class Config extends \phpList\UserConfig
 
 
         # some other configuration variables, which need less tweaking
-        # number of users to show per page if there are more
+        # number of subscribers to show per page if there are more
         Config::setRunningConfig('MAX_USER_PP',50);
         Config::setRunningConfig('MAX_MSG_PP',5);
 
@@ -660,7 +667,7 @@ class Config extends \phpList\UserConfig
             Config::get('SESSIONNAME', 'phpList'.Config::get('installation_name').'session'
             ));
 
-        ## experimental, mark mails 'todo' in the DB and process the 'todo' list, to avoid the user query being run every queue run
+        ## experimental, mark mails 'todo' in the DB and process the 'todo' list, to avoid the subscriber query being run every queue run
         if (Config::MESSAGEQUEUE_PREPARE) {
             ## with a multi-process config, we need the queue prepare mechanism and memcache
             if (Config::get('MAX_SENDPROCESSES', 1) > 1) {
@@ -702,12 +709,12 @@ class Config extends \phpList\UserConfig
         Config::setRunningConfig(
             'bounceruleactions',
             array(
-                'deleteuser' => s('delete user'),
-                'unconfirmuser' => s('unconfirm user'),
-                'blacklistuser' => s('blacklist user'),
-                'deleteuserandbounce' => s('delete user and bounce'),
-                'unconfirmuseranddeletebounce' => s('unconfirm user and delete bounce'),
-                'blacklistuseranddeletebounce' => s('blacklist user and delete bounce'),
+                'deletesubscriber' => s('delete subscriber'),
+                'unconfirmsubscriber' => s('unconfirm subscriber'),
+                'blacklistsubscriber' => s('blacklist subscriber'),
+                'deletesubscriberandbounce' => s('delete subscriber and bounce'),
+                'unconfirmsubscriberanddeletebounce' => s('unconfirm subscriber and delete bounce'),
+                'blacklistsubscriberanddeletebounce' => s('blacklist subscriber and delete bounce'),
                 'deletebounce' => s('delete bounce'),
             ));
     }

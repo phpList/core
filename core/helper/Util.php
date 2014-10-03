@@ -129,21 +129,21 @@ class Util
     /**
      * Fetch a URL
      * @param string $url
-     * @param User $user
+     * @param Subscriber $subscriber
      * @return bool|int|mixed|string
      */
-    public static function fetchUrl($url, $user = null)
+    public static function fetchUrl($url, $subscriber = null)
     {
         $content = '';
         ## fix the Editor replacing & with &amp;
         $url = str_ireplace('&amp;', '&', $url);
 
         # Logger::logEvent("Fetching $url");
-        //user items to replace:
-        if ($user != null) {
-            foreach (User::$DB_ATTRIBUTES as $key) {
+        //subscriber items to replace:
+        if ($subscriber != null) {
+            foreach (Subscriber::$DB_ATTRIBUTES as $key) {
                 if ($key != 'password') {
-                    $url = utf8_encode(str_ireplace("[$key]", urlencode($user->$key), utf8_decode($url)));
+                    $url = utf8_encode(str_ireplace("[$key]", urlencode($subscriber->$key), utf8_decode($url)));
                 }
             }
         }
@@ -413,6 +413,7 @@ class Util
         return Util::secs2time($diff);
     }
 
+    //todo: check php5.5 password api
     public static function encryptPass($pass)
     {
         if (empty($pass)) {
@@ -596,32 +597,32 @@ class Util
     }
 
     /**
-     * Check if the user with given id is blacklisted
-     * @param int $user_id
+     * Check if the subscriber with given id is blacklisted
+     * @param int $subscriber_id
      * @return bool
      */
-    public static function isUserIDBlacklisted($user_id = 0)
+    public static function isSubscriberIDBlacklisted($subscriber_id = 0)
     {
-        $user = User::getUser($user_id);
-        return ($user == null || $user->blacklisted == 0) ? false : true;
+        $subscriber = Subscriber::getSubscriber($subscriber_id);
+        return ($subscriber == null || $subscriber->blacklisted == 0) ? false : true;
     }
 
     /**
-     * Blacklist a user by his email address
+     * Blacklist a subscriber by his email address
      * @param string $email
      * @param string $reason
      */
-    public static function blacklistUserByEmail($email, $reason = '')
+    public static function blacklistSubscriberByEmail($email, $reason = '')
     {
-        #0012262: blacklist only email when email bounces. (not users): Function split so email can be blacklisted without blacklisting user
-        $user = User::getUserByEmail($email);
-        $user->blacklisted = true;
-        $user->save();
-        User::addHistory(s('Added to blacklist'), s('Added to blacklist for reason %s', $reason), $user->id);
+        #0012262: blacklist only email when email bounces. (not subscribers): Function split so email can be blacklisted without blacklisting subscriber
+        $subscriber = Subscriber::getSubscriberByEmail($email);
+        $subscriber->blacklisted = true;
+        $subscriber->save();
+        Subscriber::addHistory(s('Added to blacklist'), s('Added to blacklist for reason %s', $reason), $subscriber->id);
     }
 
     /**
-     * Blacklist an email address, not a user specifically
+     * Blacklist an email address, not a subscriber specifically
      * @param string $email
      * @param string $reason
      * @param string $date
@@ -635,7 +636,7 @@ class Util
         }
         $email = String::sqlEscape($email);
 
-        #0012262: blacklist only email when email bounces. (not users): Function split so email can be blacklisted without blacklisting user
+        #0012262: blacklist only email when email bounces. (not subscribers): Function split so email can be blacklisted without blacklisting subscriber
         phpList::DB()->query(
             sprintf(
                 'INSERT IGNORE INTO %s (email,added)
@@ -671,35 +672,35 @@ class Util
                     $item,addslashes($_SERVER['REMOTE_ADDR'])));
             }
         }*/
-        //when blacklisting only an email address, don't add this to the history, only do this when blacklisting a user
-        //addUserHistory($email,s('Added to blacklist'),s('Added to blacklist for reason %s',$reason));
+        //when blacklisting only an email address, don't add this to the history, only do this when blacklisting a subscriber
+        //addSubscriberHistory($email,s('Added to blacklist'),s('Added to blacklist for reason %s',$reason));
     }
 
     /**
-     * Remove user from blacklist
-     * @param int $user_id
+     * Remove subscriber from blacklist
+     * @param int $subscriber_id
      * @param string $admin_name
      */
-    public static function unBlackList($user_id = 0, $admin_name = '')
+    public static function unBlackList($subscriber_id = 0, $admin_name = '')
     {
-        if (!$user_id) return;
-        $user = User::getUser($user_id);
+        if (!$subscriber_id) return;
+        $subscriber = Subscriber::getSubscriber($subscriber_id);
 
         $tables = array(
             Config::getTableName('user_blacklist') => 'email',
             Config::getTableName('user_blacklist_data') => 'email'
         );
-        phpList::DB()->deleteFromArray($tables, $user->getEmail());
+        phpList::DB()->deleteFromArray($tables, $subscriber->getEmail());
 
-        $user->blacklisted = 0;
-        $user->update();
+        $subscriber->blacklisted = 0;
+        $subscriber->update();
 
         if ($admin_name != '') {
             $msg = s("Removed from blacklist by %s", $admin_name);
         } else {
             $msg = s('Removed from blacklist');
         }
-        User::addHistory($msg, '', $user->id);
+        Subscriber::addHistory($msg, '', $subscriber->id);
     }
 
 
@@ -722,7 +723,7 @@ class Util
     }
 
     /**
-     * Get the number of users who's unique id has not been set
+     * Get the number of subscribers who's unique id has not been set
      * @return int
      */
     public static function checkUniqueIds()

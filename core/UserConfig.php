@@ -62,7 +62,7 @@ class UserConfig
 
     */
 
-    # Message envelope. This is the email that system messages come from
+    # Campaign envelope. This is the email that system messages come from
     # it is useful to make this one where you can process the bounces on
     # you will probably get a X-Authentication-Warning in your message
     # when using this with sendmail
@@ -219,7 +219,7 @@ class UserConfig
     # want to log. These are the ones that are found in the $_SERVER and the $_ENV
     # variables of PHP. check http://www.php.net/manual/en/language.variables.predefined.php
     # the values are different per system, but these ones are quite common.
-    static $USERHISTORY_SYSTEMINFO = array(
+    static $subscriberHISTORY_SYSTEMINFO = array(
         'HTTP_USER_AGENT',
         'HTTP_REFERER',
         'REMOTE_ADDR'
@@ -475,11 +475,11 @@ class UserConfig
     # your queue takes longer than the time identified here.
     const REMOTE_URL_REFETCH_TIMEOUT = 3600;
 
-    # Users Page Max. The page listing subscribers will stop listing them and require a search,
+    # Subscribers Page Max. The page listing subscribers will stop listing them and require a search,
     # when the amount of subscribers is over 1000. With this settings you can change that cut-off point
     const USERSPAGE_MAX = 1000;
 
-    # Message Age. The Scheduling tab has an option to stop sending a message when it has reached a certain date.
+    # Campaign Age. The Scheduling tab has an option to stop sending a message when it has reached a certain date.
     # This can be used to avoid the campaign going out, eg when an event has already taken place.
     # This value defaults to the moment of creating the campaign + the number of seconds set here.
     # phpList will mark the campaign as sent, when this date has been reached
@@ -507,7 +507,7 @@ class UserConfig
 
     =========================================================================
 
-    Message sending options
+    Campaign sending options
     * phpList now only uses phpMailer for sending, but below you can
     * tweak a few options on how that is done
 
@@ -567,8 +567,8 @@ class UserConfig
 
     */
 
-    # Usertrack
-    # Usertrack is used to track views or opens of campaigns. This only works in HTML messages
+    # Subscribertrack
+    # Subscribertrack is used to track views or opens of campaigns. This only works in HTML messages
     # as it relies on a little image being pulled from the phpList system to update the database
     # To add it to your campaigns, you need to add [USERTRACK] somewhere.
     # From version 3 onwards, this is automatically done with the following setting. If you do not

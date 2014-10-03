@@ -12,7 +12,7 @@ use phpList\helper\Database;
 use phpList\helper\Language;
 use phpList\helper\Logger;
 use phpList\helper\Output;
-use phpList\helper\PrepareMessage;
+use phpList\helper\PrepareCampaign;
 use phpList\helper\Process;
 use phpList\helper\Session;
 use phpList\helper\String;
@@ -20,11 +20,11 @@ use phpList\helper\Util;
 use phpList\helper\Validation;
 use phpList\helper\Timer;
 use phpList\MailingList;
-use phpList\Message;
+use phpList\Campaign;
 use phpList\QueueProcessor;
 use phpList\phpListMailer;
 use phpList\Template;
-use phpList\User;
+use phpList\Subscriber;
 use phpList\Config;
 // use phpList\UserConfig;
 
@@ -41,21 +41,13 @@ class phpList
     }
 
     /**
+     * Initialise phpList
      * @throws \Exception
      */
-    public static function initialise()
+    public static function initialise($subscriber_config)
     {
-        //Handle some dynamicly generated include files
-        if (isset($_SERVER['ConfigFile']) && is_file($_SERVER['ConfigFile'])) {
-            $configfile = $_SERVER['ConfigFile'];
-        } elseif (isset($cline['c']) && is_file($cline['c'])) {
-            $configfile = $cline['c'];
-        } else {
-            $configfile = __DIR__ . '\UserConfig.php';
-        }
-
-        if (is_file($configfile) && filesize($configfile) > 20) {
-            include_once($configfile);
+        if (is_file($subscriber_config) && filesize($subscriber_config) > 20) {
+            include_once($subscriber_config);
         } else{
             throw new \Exception('Cannot find config file');
         }
@@ -63,10 +55,7 @@ class phpList
         include_once(__DIR__ .'/Config.php');
         date_default_timezone_set(Config::SYSTEM_TIMEZONE);
 
-        //Timer replaces $GLOBALS['pagestats']['time_start']
-        //DB->getQueryCount replaces $GLOBALS['pagestats']['number_of_queries']
         Timer::start('pagestats');
-
 
         //Using phpmailer?
         if (Config::PHPMAILER_PATH && is_file(Config::PHPMAILER_PATH)) {
@@ -86,8 +75,9 @@ class phpList
             throw new \Exception('Warning: commandline only works well with the cli version of PHP');
         }
         if (isset($_REQUEST['_SERVER'])) { return; }
-        $cline = array();
-        Config::setRunningConfig('commandline', false);
+
+        //TODO: maybe move everything command line to separate class
+        $cline = null;
 
         Util::unregister_GLOBALS();
         Util::magicQuotes();
@@ -115,7 +105,7 @@ class phpList
         }
         Config::setRunningConfig('ajax', isset($_GET['ajaxed']));
 
-        ## this needs more testing, and docs on how to set the Timezones in the DB
+        ##todo: this needs more testing, and docs on how to set the Timezones in the DB
         if (Config::USE_CUSTOM_TIMEZONE) {
             #  print('set time_zone = "'.SYSTEM_TIMEZONE.'"<br/>');
             phpList::DB()->query('SET time_zone = "'.Config::SYSTEM_TIMEZONE.'"');
@@ -225,4 +215,14 @@ class phpList
 
 }
 
-phpList::initialise();
+
+
+//Handle some dynamicly generated include files
+if (isset($_SERVER['ConfigFile']) && is_file($_SERVER['ConfigFile'])) {
+    $configfile = $_SERVER['ConfigFile'];
+} elseif (isset($cline['c']) && is_file($cline['c'])) {
+    $configfile = $cline['c'];
+} else {
+    $configfile = __DIR__ . '/UserConfig.php';
+}
+phpList::initialise($configfile);

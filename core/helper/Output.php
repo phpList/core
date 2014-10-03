@@ -106,7 +106,7 @@ class Output {
 
     //TODO: should we need an option to not output text and send it somewhere else (e.g. a file)
     /**
-     * In case we should not want to output to the user, we can change this function here
+     * In case we should not want to output to the subscriber, we can change this function here
      * @param string $text
      */
     public static function customPrint($text)
@@ -115,7 +115,7 @@ class Output {
     }
 
     /**
-     * Wrapper for printf with the ability to disable output to the user
+     * Wrapper for printf with the ability to disable output to the subscriber
      */
     public static function customPrintf()
     {

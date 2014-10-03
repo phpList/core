@@ -213,7 +213,7 @@ class phpListMailer extends \PHPMailer
             $this->FromName = $from_name;
         }
         if (Config::DEBUG) {
-            # make sure we are not sending out emails to real users
+            # make sure we are not sending out emails to real subscribers
             # when developing
             $this->AddAddress(Config::DEVELOPER_EMAIL);
             if (Config::DEVELOPER_EMAIL != $to_addr) {
@@ -549,8 +549,8 @@ class phpListMailer extends \PHPMailer
                 'Action' => 'SendEmail',
                 'Source' => $this->Sender,
                 'Destination.ToAddresses.member.1' => $this->destinationemail,
-                'Message.Subject.Data' => $this->Subject,
-                'Message.Body.Text.Data' => $messagebody,
+                'Campaign.Subject.Data' => $this->Subject,
+                'Campaign.Body.Text.Data' => $messagebody,
               );
         */
         #     print '<hr/>Rawmessage '.nl2br(htmlspecialchars($messageheader. $this->LE. $this->LE.$messagebody));
@@ -669,13 +669,13 @@ class phpListMailer extends \PHPMailer
             return 0;
         }
 
-        if (!$skipblacklistcheck && User::isBlackListed($to)) {
+        if (!$skipblacklistcheck && Subscriber::isBlackListed($to)) {
             Logger::logEvent("Error, $to is blacklisted, not sending");
-            User::blacklistUser($to);
-            User::addUserHistory(
-                User::getUserByEmail($to)->id,
+            Subscriber::blacklistSubscriber($to);
+            Subscriber::addSubscriberHistory(
+                Subscriber::getSubscriberByEmailAddress($to)->id,
                 'Marked Blacklisted',
-                'Found user in blacklist while trying to send an email, marked black listed'
+                'Found subscriber in blacklist while trying to send an email, marked black listed'
             );
             return 0;
         }
@@ -794,7 +794,7 @@ class phpListMailer extends \PHPMailer
     public static function sendMailDirect($destinationemail, $subject, $message)
     {
         $GLOBALS['smtpError'] = '';
-        ## try to deliver directly, so that any error (eg user not found) can be sent back to the
+        ## try to deliver directly, so that any error (eg subscriber not found) can be sent back to the
         ## subscriber, so they can fix it
         //TODO: fix this, now using Config::DEVELOPER_EMAIL
         //unset($GLOBALS['developer_email']);
@@ -821,7 +821,7 @@ class phpListMailer extends \PHPMailer
             $mail->Send('', $destinationemail, $fromname, $fromemail, $subject);
         } catch (\Exception $e) {
             //TODO: replace globals
-            $GLOBALS['smtpError'] = $e->getMessage();
+            $GLOBALS['smtpError'] = $e->getCampaign();
             return false;
         }
         return true;
@@ -866,7 +866,7 @@ class phpListMailer extends \PHPMailer
         }
     }
 
-    private function systemMessageHeaders($useremail = "")
+    private function systemMessageHeaders($subscriberemail = "")
     {
         $from_address = Config::get('message_from_address');
         $from_name = Config::get('message_from_name');
@@ -882,8 +882,8 @@ class phpListMailer extends \PHPMailer
         $v = Config::VERSION;
         $additional_headers .= "X-Mailer: phplist version $v (www.phplist.com)\n";
         $additional_headers .= "X-MessageID: systemmessage\n";
-        if ($useremail)
-            $additional_headers .= "X-User: $useremail\n";
+        if ($subscriberemail)
+            $additional_headers .= "X-User: $subscriberemail\n";
         return $additional_headers;
     }
 

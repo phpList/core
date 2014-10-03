@@ -9,33 +9,33 @@ namespace phpList\test;
 // include __DIR__ . '\..\phpList.php';
 
 
-use phpList\User;
+use phpList\Subscriber;
 use phpList\helper\Util;
 
-class UserTest extends \PHPUnit_Framework_TestCase {
+class SubscriberTest extends \PHPUnit_Framework_TestCase {
 
     /**
      * @expectedException \InvalidArgumentException
      */
-    public function testUserAddInvalidArgument()
+    public function testSubscriberAddInvalidArgument()
     {
-        User::addUser('tester@', 'testpass');
+        Subscriber::addSubscriber('tester@', 'testpass');
     }
 
-    public function testUserAddEditSave()
+    public function testSubscriberAddEditSave()
     {
         $email = 'unittest@example.com';
         if(Util::emailExists($email)){
-            User::getUserByEmail($email)->delete();
+            Subscriber::getSubscriberByEmailAddress($email)->delete();
         }
-        $user = new User($email);
-        $user->setPassword('IHAVEANEASYPASSWORD');
-        $user->save();
+        $subscriber = new Subscriber($email);
+        $subscriber->setPassword('IHAVEANEASYPASSWORD');
+        $subscriber->save();
 
-        $second_user = User::getUser($user->id);
-        $this->assertEquals($user->getPassword(), $second_user->getPassword());
+        $second_subscriber = Subscriber::getSubscriber($subscriber->id);
+        $this->assertEquals($subscriber->getPassword(), $second_subscriber->getPassword());
 
-        $second_user->delete();
+        $second_subscriber->delete();
     }
 
 

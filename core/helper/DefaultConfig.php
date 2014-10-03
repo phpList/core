@@ -175,12 +175,12 @@ class DefaultConfig
                 'category' => 'transactional',
             ),
             # if there is only one visible list, do we hide it and automatically
-            # subscribe users who sign up
+            # subscribe subscribers who sign up
             ## not sure why you would not want this :-) maybe it should not be an option at all
             'hide_single_list' => array(
                 'value' => '1',
                 'description' => s(
-                    'If there is only one visible list, should it be hidden in the page and automatically subscribe users who sign up'
+                    'If there is only one visible list, should it be hidden in the page and automatically subscribe subscribers who sign up'
                 ),
                 'type' => 'boolean',
                 'allowempty' => true,
@@ -268,11 +268,11 @@ class DefaultConfig
                 'allowempty' => 0,
                 'category' => 'subscription',
             ),
-            #0013076: Blacklisting posibility for unknown users
+            #0013076: Blacklisting posibility for unknown subscribers
             # the location of your blacklist script:
             'blacklisturl' => array(
                 'value' => Config::get('scheme') . '://[WEBSITE]'.Config::PAGEROOT.'/?p=donotsend',
-                'description' => s('URL where unknown users can unsubscribe (do-not-send-list)'),
+                'description' => s('URL where unknown subscriber can unsubscribe (do-not-send-list)'),
                 'type' => 'url',
                 'allowempty' => 0,
                 'category' => 'subscription',
@@ -324,7 +324,7 @@ class DefaultConfig
             ),
             # message that is sent when people sign up to a list
             # [LISTS] will be replaced with the list of lists they have signed up to
-            # [CONFIRMATIONURL] will be replaced with the URL where a user has to confirm
+            # [CONFIRMATIONURL] will be replaced with the URL where a subscriber has to confirm
             # their subscription
             'subscribemessage' => array(
                 'value' => '
@@ -345,7 +345,7 @@ class DefaultConfig
   Thank you
 
     ',
-                'description' => s('Message subscribers receive when they sign up'),
+                'description' => s('Campaign subscribers receive when they sign up'),
                 'type' => 'textarea',
                 'allowempty' => 0,
                 'category' => 'transactional',
@@ -375,7 +375,7 @@ class DefaultConfig
   Thank you
 
   ',
-                'description' => s('Message subscribers receive when they unsubscribe'),
+                'description' => s('Campaign subscribers receive when they unsubscribe'),
                 'type' => 'textarea',
                 'allowempty' => 0,
                 'category' => 'transactional',
@@ -405,12 +405,12 @@ class DefaultConfig
   Thank you
 
   ',
-                'description' => s('Message subscribers receive after confirming their email address'),
+                'description' => s('Campaign subscribers receive after confirming their email address'),
                 'type' => 'textarea',
                 'allowempty' => 0,
                 'category' => 'transactional',
             ),
-            # the subject of the message sent when changing the user details
+            # the subject of the message sent when changing the subscriber details
             'updatesubject' => array(
                 'value' => s('[notify] Change of List-Membership details'),
                 'description' => s('Subject of the message subscribers receive when they have changed their details'),
@@ -418,7 +418,7 @@ class DefaultConfig
                 'allowempty' => 0,
                 'category' => 'transactional',
             ),
-            # the message that is sent when a user updates their information.
+            # the message that is sent when a subscriber updates their information.
             # just to make sure they approve of it.
             # confirmationinfo is replaced by one of the options below
             # userdata is replaced by the information in the database
@@ -444,7 +444,7 @@ class DefaultConfig
   Thank you
 
     ',
-                'description' => s('Message subscribers receive when they have changed their details'),
+                'description' => s('Campaign subscribers receive when they have changed their details'),
                 'type' => 'textarea',
                 'allowempty' => 0,
                 'category' => 'transactional',
@@ -559,7 +559,7 @@ Your personal location is:
 
 Thank you.
 ',
-                'description' => s('Message to send when they request their personal location'),
+                'description' => s('Campaign to send when they request their personal location'),
                 'type' => 'textarea',
                 'allowempty' => 0,
                 'category' => 'transactional',

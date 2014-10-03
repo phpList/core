@@ -26,7 +26,7 @@ class Validation
         $validhost = false;
         if (!empty($email) && Config::get('check_for_host', false) !== false) {
             if (strpos($email, '@')) {
-                list($username, $domaincheck) = explode('@', $email);
+                list($subscribername, $domaincheck) = explode('@', $email);
                 # checking for an MX is not sufficient
                 #    $mxhosts = array();
                 #    $validhost = getmxrr ($domaincheck,$mxhosts);

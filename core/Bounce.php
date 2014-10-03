@@ -159,8 +159,8 @@ class Bounce {
                     $rule = str_replace('(','.',$rule);
                     $rule = str_replace(')','.',$rule);
 
-                    if (stripos($rule,'Unknown local user') !== false) {
-                        $rule = 'Unknown local user';
+                    if (stripos($rule,'Unknown local subscriber') !== false) {
+                        $rule = 'Unknown local subscriber';
                     } elseif (preg_match('/Unknown local part (.*) in/iU',$rule,$regs)) {
                         $rule = preg_replace('/'.preg_quote($regs[1]).'/','.*',$rule);
                     } elseif (preg_match('/mta(.*)\.mail\.yahoo\.com/iU',$rule)) {
@@ -218,10 +218,10 @@ class Bounce {
 
     /**
      * Add this bounce to a user and message
-     * @param User $user
+     * @param Subscriber $subscriber
      * @param int $message_id
      */
-    public function connectMeToUserAndMessage($user, $message_id)
+    public function connectMeToSubscriberAndMessage($subscriber, $message_id)
     {
         ## check if we already have this um as a bounce
         ## so that we don't double count "delayed" like bounces
@@ -230,7 +230,7 @@ class Bounce {
                 WHERE user = %d
                 AND message = %d',
                 Config::getTableName('user_message_bounce'),
-                $user->id,
+                $subscriber->id,
                 $message_id
             ));
 
@@ -238,12 +238,12 @@ class Bounce {
                 'INSERT INTO %s
                  SET user = %d, message = %d, bounce = %d',
                 Config::getTableName('user_message_bounce'),
-                $user->id,
+                $subscriber->id,
                 $message_id,
                 $this->id
         ));
         $this->status = 'bounced list message ' . $message_id;
-        $this->comment = $user->id . 'bouncecount increased';
+        $this->comment = $subscriber->id . 'bouncecount increased';
         $this->save();
 
         ## if the relation did not exist yet, increment the counters
@@ -255,8 +255,8 @@ class Bounce {
                     Config::getTableName('message'),
                     $message_id
                 ));
-            $user->bouncecount ++;
-            $user->update();
+            $subscriber->bouncecount ++;
+            $subscriber->update();
         }
     }
 
