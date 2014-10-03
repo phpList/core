@@ -8,10 +8,9 @@ namespace phpList;
 
 use phpList\helper\Cache;
 use phpList\helper\DefaultConfig;
-use phpList\helper\IDatabase;
+use phpList\helper\Database;
 use phpList\helper\Language;
 use phpList\helper\Logger;
-use phpList\helper\MySQLi;
 use phpList\helper\Output;
 use phpList\helper\PrepareMessage;
 use phpList\helper\Process;
@@ -33,18 +32,12 @@ use phpList\Config;
 class phpList
 {
     /**
-     * @return IDatabase
+     * @return Database
      * @throws \Exception
      */
     public static function DB()
     {
-        switch (Config::DATABASE_MODULE) {
-            case 'mysqli':
-                return MySQLi::instance();
-                break;
-            default:
-                throw new \Exception("DB Module not available");
-        }
+        return Database::instance();
     }
 
     /**

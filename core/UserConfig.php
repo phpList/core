@@ -22,23 +22,19 @@ class UserConfig
     # choose your language by using the dropdown in the pages.
     const LANGUAGE_MODULE = 'english.inc';
 
-    # what is your Mysql database server
-    const DATABASE_HOST = 'localhost';
-
-    # what is the name of the database we are using
-    const DATABASE_NAME = 'phplist';
+    # select the database Data Source Name to use
+    #For MySQL/MariaDB
+    const DATABASE_DSN = 'mysql:host=localhost;port=3307;dbname=testdb';
+    #For PostgreSQL
+    #const DATABASE_DSN = 'pgsql:host=localhost;port=5432;dbname=testdb';
+    #For SQLite
+    #const DATABASE_DSN = 'sqlite:/opt/databases/mydb.sq3';
 
     # who do we log in as?
     const DATABASE_USER = 'phplist';
 
     # and what password do we use
     const DATABASE_PASSWORD = 'phplist';
-
-    # enable database connection compression
-    const DATABASE_CONNECTION_COMPRESSION = false;
-
-    # force database connection to use SSL
-    const DATABASE_CONNECTION_SSL = false;
 
     # if you use multiple installations of phpList you can set this to
     # something to identify this one. it will be prepended to email report
@@ -686,11 +682,6 @@ class UserConfig
     # using this is not guaranteed to work, sorry. Easier to use Apache instead :-)
     const FORM_ACTION_METHOD_NOT_ALLOWED_WORKAROUND = false;
     # const FORM_ACTION = 'index.php';
-
-    # select the database module to use
-    # anyone wanting to submit other database modules is
-    # very welcome!
-    const DATABASE_MODULE = 'mysqli';
 
     # you can store sessions in the database instead of the default place by setting
     # SESSION_STORE to mysql and assigning a session table name. The table will be
