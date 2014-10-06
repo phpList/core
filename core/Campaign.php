@@ -18,7 +18,7 @@ class Campaign
     public $tofield;
     public $replyto;
     public $message;
-    public $textmessage;
+    public $textcampaign;
     public $footer;
     /**
      * @var \DateTime
@@ -62,7 +62,7 @@ class Campaign
     public $sendstart;
     public $rsstemplate;
     public $owner;
-    public $messagedata;
+    public $campaigndata;
 
     //non database variables
     public $embargo_in_past;
@@ -75,54 +75,54 @@ class Campaign
     }
 
     /**
-     * Create a message object from an array from the database
+     * Create a campaign object from an array from the database
      * @param $array
      * @return Campaign
      */
-    private static function messageFromArray($array)
+    private static function campaignFromArray($array)
     {
-        $message = null;
+        $campaign = null;
         if(is_array($array)){
-            $message = new Campaign();
-            $message->id = $array['id'];
-            $message->subject = $array['subject'];
-            $message->fromfield = $array['fromfield'];
-            $message->tofield = $array['tofield'];
-            $message->replyto = $array['replyto'];
-            $message->message = $array['message'];
-            $message->textmessage = $array['textmessage'];
-            $message->footer = $array['footer'];
-            $message->entered = new \DateTime($array['entered']);
-            $message->modified = $array['modified'];
-            $message->embargo = new \DateTime($array['embargo']);
-            $message->repeatinterval = $array['repeatinterval'];
-            $message->repeatuntil = new \DateTime($array['repeatuntil']);
-            $message->requeueinterval = $array['requeueinterval'];
-            $message->requeueuntil = $array['requeueuntil'];
-            $message->status = $array['status'];
-            $message->userselection = $array['userselection'];
-            $message->sent = new \DateTime($array['sent']);
-            $message->htmlformatted = $array['htmlformatted'];
-            $message->sendformat = $array['sendformat'];
-            $message->template = $array['template'];
-            $message->processed = $array['processed'];
-            $message->astext = $array['astext'];
-            $message->ashtml = $array['ashtml'];
-            $message->astextandhtml = $array['astextandhtml'];
-            $message->aspdf = $array['aspdf'];
-            $message->astextandpdf = $array['astextandpdf'];
-            $message->viewed = $array['viewed'];
-            $message->bouncecount = $array['bouncecount'];
-            $message->sendstart = new \DateTime($array['sendstart']);
-            $message->rsstemplate = $array['rsstemplate'];
-            $message->owner = $array['owner'];
-            $message->embargo_in_past = isset($array['inthepast']) ? $array['inthepast'] : false;
+            $campaign = new Campaign();
+            $campaign->id = $array['id'];
+            $campaign->subject = $array['subject'];
+            $campaign->fromfield = $array['fromfield'];
+            $campaign->tofield = $array['tofield'];
+            $campaign->replyto = $array['replyto'];
+            $campaign->message = $array['message'];
+            $campaign->textcampaign = $array['textmessage'];
+            $campaign->footer = $array['footer'];
+            $campaign->entered = new \DateTime($array['entered']);
+            $campaign->modified = $array['modified'];
+            $campaign->embargo = new \DateTime($array['embargo']);
+            $campaign->repeatinterval = $array['repeatinterval'];
+            $campaign->repeatuntil = new \DateTime($array['repeatuntil']);
+            $campaign->requeueinterval = $array['requeueinterval'];
+            $campaign->requeueuntil = $array['requeueuntil'];
+            $campaign->status = $array['status'];
+            $campaign->userselection = $array['userselection'];
+            $campaign->sent = new \DateTime($array['sent']);
+            $campaign->htmlformatted = $array['htmlformatted'];
+            $campaign->sendformat = $array['sendformat'];
+            $campaign->template = $array['template'];
+            $campaign->processed = $array['processed'];
+            $campaign->astext = $array['astext'];
+            $campaign->ashtml = $array['ashtml'];
+            $campaign->astextandhtml = $array['astextandhtml'];
+            $campaign->aspdf = $array['aspdf'];
+            $campaign->astextandpdf = $array['astextandpdf'];
+            $campaign->viewed = $array['viewed'];
+            $campaign->bouncecount = $array['bouncecount'];
+            $campaign->sendstart = new \DateTime($array['sendstart']);
+            $campaign->rsstemplate = $array['rsstemplate'];
+            $campaign->owner = $array['owner'];
+            $campaign->embargo_in_past = isset($array['inthepast']) ? $array['inthepast'] : false;
         }
-        return $message;
+        return $campaign;
     }
 
     /**
-     * Get a message by id (for an owner if provided)
+     * Get a campaign by id (for an owner if provided)
      * @param int $id
      * @param int $owner
      * @return Campaign
@@ -142,12 +142,12 @@ class Campaign
                 $condition
             )
         );
-        return Campaign::messageFromArray($result->fetch(\PDO::FETCH_ASSOC));
+        return Campaign::campaignFromArray($result->fetch(\PDO::FETCH_ASSOC));
     }
 
     /**
      * Get an array of Campaigns by searching its status and subject
-     * When $owner is provided, only returns the messages for the given owner
+     * When $owner is provided, only returns the campaigns for the given owner
      * @param string|array $status
      * @param string $subject
      * @param int $owner
@@ -226,24 +226,24 @@ class Campaign
         );
 
         while ($msg = $result->fetch(\PDO::FETCH_ASSOC)) {
-            $return['messages'][] = Campaign::messageFromArray($msg);
+            $return['messages'][] = Campaign::campaignFromArray($msg);
         }
 
         return $return;
     }
 
     /**
-     * Get the messages that need to be processed
+     * Get the campaigns that need to be processed
      * @return array Campaign
      */
     public static function getCampaignsToQueue()
     {
-        $messagelimit = '';
+        $campaignlimit = '';
         ## limit the number of campaigns to work on
         if (is_numeric(Config::MAX_PROCESS_MESSAGE)) {
-            $messagelimit = sprintf(' limit %d ', Config::MAX_PROCESS_MESSAGE);
+            $campaignlimit = sprintf(' limit %d ', Config::MAX_PROCESS_MESSAGE);
         }
-        $messages = array();
+        $campaigns = array();
         $result = phpList::DB()->query(
             sprintf(
                 'SELECT id FROM %s
@@ -251,17 +251,17 @@ class Campaign
                 AND embargo < CURRENT_TIMESTAMP
                 ORDER BY entered',
                 Config::getTableName('message'),
-                $messagelimit
+                $campaignlimit
             )
         );
         while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
-            $messages[] = Campaign::messageFromArray($row);
+            $campaigns[] = Campaign::campaignFromArray($row);
         }
-        return $messages;
+        return $campaigns;
     }
 
     /**
-     * Get the number of views for this message
+     * Get the number of views for this campaign
      * @return int
      */
     public function getUniqueViews()
@@ -280,7 +280,7 @@ class Campaign
     }
 
     /**
-     * Get the number of clicks for this message
+     * Get the number of clicks for this campaign
      * @return int
      */
     public function getClicks()
@@ -297,7 +297,7 @@ class Campaign
     }
 
     /**
-     * Get attachments from this message
+     * Get attachments from this campaign
      * @return array Attachment
      */
     public function getAttachments()
@@ -324,7 +324,7 @@ class Campaign
     }
 
     /**
-     * Get the template for this message if set
+     * Get the template for this campaign if set
      * @return Template
      */
     public function getTemplateObject(){
@@ -337,7 +337,7 @@ class Campaign
 
 
     /**
-     * Does the message contain HTML formatting
+     * Does the campaign contain HTML formatting
      * @return bool
      */
     public function isHTMLFormatted()
@@ -346,7 +346,7 @@ class Campaign
     }
 
     /**
-     * Get lists which have this message
+     * Get lists which have this campaign
      * @return array
      */
     public function listsDone()
@@ -371,7 +371,7 @@ class Campaign
     }
 
     /**
-     * Get lists which are excluded to send this message to
+     * Get lists which are excluded to send this campaign to
      * @return array
      */
     public function listsExcluded()
@@ -395,7 +395,7 @@ class Campaign
     }
 
     /**
-     * Does the message contain Clicktrack links
+     * Does the campaign contain Clicktrack links
      * @return bool
      */
     public function hasClickTrackLinks()
@@ -427,7 +427,7 @@ class Campaign
     }
 
     /**
-     * Save this message to the database, calls update() when it already exists
+     * Save this campaign to the database, calls update() when it already exists
      * Will be filled with default values
      * @param int $owner
      */
@@ -452,7 +452,7 @@ class Campaign
     }
 
     /**
-     * Update this message's info in the database
+     * Update this campaign's info in the database
      */
     public function update()
     {
@@ -485,7 +485,7 @@ class Campaign
     }
 
     /**
-     * Delete this message from the database
+     * Delete this campaign from the database
      * @return int
      */
     public function delete()
@@ -499,7 +499,7 @@ class Campaign
     }
 
     /**
-     * Add an attachment to this message
+     * Add an attachment to this campaign
      * @param Attachment $attachment
      * @return int
      */
@@ -517,7 +517,7 @@ class Campaign
     }
 
     /**
-     * Remove an attachment from this message
+     * Remove an attachment from this campaign
      * @param Attachment $attachment
      */
     public function removeAttachment($attachment)
@@ -537,7 +537,7 @@ class Campaign
     }
 
     /**
-     * Put the message back on the queue
+     * Put the campaign back on the queue
      * @throws \Exception
      */
     public function requeue()
@@ -579,12 +579,12 @@ class Campaign
                 throw new \Exception('This campaign is scheduled to stop sending in the past. No mails will be sent.');
             }
         } else {
-            throw new \Exception('Could not resend this message');
+            throw new \Exception('Could not resend this campaign');
         }
     }
 
     /**
-     * Check for messages with a requeueinterval and requeue if needed
+     * Check for campaigns with a requeueinterval and requeue if needed
      */
     public static function checkCampaignsToRequeue()
     {
@@ -598,24 +598,24 @@ class Campaign
             )
         );
         while ($row = phpList::DB()->fetchAssocQuery($req)) {
-            $message = Campaign::messageFromArray($row);
-            if ($message->embargo_in_past) {
+            $campaign = Campaign::campaignFromArray($row);
+            if ($campaign->embargo_in_past) {
                 $now = new \DateTime('now');
-                $message->embargo = $now->add(
-                    \DateInterval::createFromDateString($message->repeatinterval . 'minutes')
+                $campaign->embargo = $now->add(
+                    \DateInterval::createFromDateString($campaign->repeatinterval . 'minutes')
                 );
             } else {
-                $message->embargo->add(
-                    \DateInterval::createFromDateString($message->repeatinterval . 'minutes')
+                $campaign->embargo->add(
+                    \DateInterval::createFromDateString($campaign->repeatinterval . 'minutes')
                 );
             }
-            $message->requeue();
+            $campaign->requeue();
         }
     }
 
 
     /**
-     * Add message to a mailing list
+     * Add campaign to a mailing list
      * @param int $list_id
      */
     public function addToList($list_id)
@@ -632,7 +632,7 @@ class Campaign
     }
 
     /**
-     * Update the status of a message
+     * Update the status of a campaign
      * @param string $status
      */
     public function setStatus($status)
@@ -672,7 +672,7 @@ class Campaign
     }
 
     /**
-     * Suspend a message from sending
+     * Suspend a campaign from sending
      * @param int $owner
      * @return int
      */
@@ -694,7 +694,7 @@ class Campaign
     }
 
     /**
-     * Suspend all messages from sending
+     * Suspend all campaigns from sending
      * @param int $owner
      * @return int
      */
@@ -715,7 +715,7 @@ class Campaign
     }
 
     /**
-     * Mark message from provided owner as sent
+     * Mark campaign from provided owner as sent
      * @param int $owner
      * @return int
      */
@@ -737,7 +737,7 @@ class Campaign
     }
 
     /**
-     * Mark all messages from provided owner as sent
+     * Mark all campaigns from provided owner as sent
      * @param int $owner
      * @return int
      */
@@ -757,15 +757,15 @@ class Campaign
     }
 
     /**
-     * Get a messagedata item
+     * Get a campaigndata item
      * @param string $item
      * @return mixed
      * @throws \Exception
      */
     public function __get($item)
     {
-        if (isset($this->messagedata[$item])) {
-            return $this->messagedata[$item];
+        if (isset($this->campaigndata[$item])) {
+            return $this->campaigndata[$item];
         }
 
         $default = array(
@@ -774,7 +774,7 @@ class Campaign
             'google_track' => Config::get('always_add_googletracking'),
         );
 
-        ## when loading an old message that hasn't got data stored in message data, load it from the message table
+        ## when loading an old campaign that hasn't got data stored in campaign data, load it from the campaign table
         $prevMsgData = phpList::DB()->query(
             sprintf(
                 'SELECT * FROM %s
@@ -785,7 +785,7 @@ class Campaign
         )->fetchAll(\PDO::FETCH_ASSOC);
 
 
-        $messagedata = array(
+        $campaigndata = array(
             'template' => Config::get('defaultmessagetemplate'),
             'sendformat' => 'HTML',
             'message' => '',
@@ -818,7 +818,7 @@ class Campaign
         );
         if (is_array($prevMsgData)) {
             foreach ($prevMsgData as $key => $val) {
-                $messagedata[$key] = $val;
+                $campaigndata[$key] = $val;
             }
         }
 
@@ -842,19 +842,19 @@ class Campaign
                 $row['name'],
                 array('astext', 'ashtml', 'astextandhtml', 'aspdf', 'astextandpdf')
             )
-            ) { ## don't overwrite counters in the message table from the data table
-                $messagedata[stripslashes($row['name'])] = $data;
+            ) { ## don't overwrite counters in the campaign table from the data table
+                $campaigndata[stripslashes($row['name'])] = $data;
             }
         }
 
         /*Is a DateTime object now
          * foreach (array('embargo','repeatuntil','requeueuntil') as $datefield) {
-            if (!is_array($messagedata[$datefield])) {
-                $messagedata[$datefield] = array('year' => date('Y'),'month' => date('m'),'day' => date('d'),'hour' => date('H'),'minute' => date('i'));
+            if (!is_array($campaigndata[$datefield])) {
+                $campaigndata[$datefield] = array('year' => date('Y'),'month' => date('m'),'day' => date('d'),'hour' => date('H'),'minute' => date('i'));
             }
         }*/
 
-        // Load lists that were targetted with message...
+        // Load lists that were targetted with campaign...
 
         $result = phpList::DB()->query(
             sprintf(
@@ -869,65 +869,65 @@ class Campaign
         );
 
         while ($lst = $result->fetch(\PDO::FETCH_ASSOC)) {
-            $messagedata['targetlist'][$lst['id']] = 1;
+            $campaigndata['targetlist'][$lst['id']] = 1;
         }
 
         ## backwards, check that the content has a url and use it to fill the sendurl
-        if (empty($messagedata['sendurl'])) {
+        if (empty($campaigndata['sendurl'])) {
 
             ## can't do "ungreedy matching, in case the URL has placeholders, but this can potentially
             ## throw problems
-            if (preg_match('/\[URL:(.*)\]/i', $messagedata['message'], $regs)) {
-                $messagedata['sendurl'] = $regs[1];
+            if (preg_match('/\[URL:(.*)\]/i', $campaigndata['message'], $regs)) {
+                $campaigndata['sendurl'] = $regs[1];
             }
         }
-        if (empty($messagedata['sendurl']) && !empty($messagedata['message'])) {
+        if (empty($campaigndata['sendurl']) && !empty($campaigndata['message'])) {
             # if there's a message and no url, make sure to show the editor, and not the URL input
-            $messagedata['sendmethod'] = 'inputhere';
+            $campaigndata['sendmethod'] = 'inputhere';
         }
 
         ### parse the from field into it's components - email and name
-        if (preg_match("/([^ ]+@[^ ]+)/", $messagedata['fromfield'], $regs)) {
+        if (preg_match("/([^ ]+@[^ ]+)/", $campaigndata['fromfield'], $regs)) {
             # if there is an email in the from, rewrite it as "name <email>"
-            $messagedata['fromname'] = str_replace($regs[0], "", $messagedata['fromfield']);
-            $messagedata['fromemail'] = $regs[0];
+            $campaigndata['fromname'] = str_replace($regs[0], "", $campaigndata['fromfield']);
+            $campaigndata['fromemail'] = $regs[0];
             # if the email has < and > take them out here
-            $messagedata['fromemail'] = str_replace('<', '', $messagedata['fromemail']);
-            $messagedata['fromemail'] = str_replace('>', '', $messagedata['fromemail']);
+            $campaigndata['fromemail'] = str_replace('<', '', $campaigndata['fromemail']);
+            $campaigndata['fromemail'] = str_replace('>', '', $campaigndata['fromemail']);
             # make sure there are no quotes around the name
-            $messagedata['fromname'] = str_replace('"', '', ltrim(rtrim($messagedata['fromname'])));
-        } elseif (strpos($messagedata['fromfield'], ' ')) {
+            $campaigndata['fromname'] = str_replace('"', '', ltrim(rtrim($campaigndata['fromname'])));
+        } elseif (strpos($campaigndata['fromfield'], ' ')) {
             # if there is a space, we need to add the email
-            $messagedata['fromname'] = $messagedata['fromfield'];
-            #  $cached[$messageid]['fromemail'] = 'listmaster@$domain';
-            $messagedata['fromemail'] = $default['from'];
+            $campaigndata['fromname'] = $campaigndata['fromfield'];
+            #  $cached[$campaignid]['fromemail'] = 'listmaster@$domain';
+            $campaigndata['fromemail'] = $default['from'];
         } else {
-            $messagedata['fromemail'] = $default['from'];
-            $messagedata['fromname'] = $messagedata["fromfield"];
+            $campaigndata['fromemail'] = $default['from'];
+            $campaigndata['fromname'] = $campaigndata["fromfield"];
         }
-        $messagedata["fromname"] = trim($messagedata["fromname"]);
+        $campaigndata["fromname"] = trim($campaigndata["fromname"]);
 
         # erase double spacing
-        while (strpos($messagedata['fromname'], '  ')) {
-            $messagedata['fromname'] = str_replace('  ', ' ', $messagedata['fromname']);
+        while (strpos($campaigndata['fromname'], '  ')) {
+            $campaigndata['fromname'] = str_replace('  ', ' ', $campaigndata['fromname']);
         }
 
         ## if the name ends up being empty, copy the email
-        if (empty($messagedata['fromname'])) {
-            $messagedata['fromname'] = $messagedata['fromemail'];
+        if (empty($campaigndata['fromname'])) {
+            $campaigndata['fromname'] = $campaigndata['fromemail'];
         }
 
-        if (!empty($messagedata['targetlist']['unselect'])) {
-            unset($messagedata['targetlist']['unselect']);
+        if (!empty($campaigndata['targetlist']['unselect'])) {
+            unset($campaigndata['targetlist']['unselect']);
         }
-        if (!empty($messagedata['excludelist']['unselect'])) {
-            unset($messagedata['excludelist']['unselect']);
+        if (!empty($campaigndata['excludelist']['unselect'])) {
+            unset($campaigndata['excludelist']['unselect']);
         }
 
-        $this->messagedata = $messagedata;
+        $this->campaigndata = $campaigndata;
 
-        if (isset($this->messagedata[$item])) {
-            return $this->messagedata[$item];
+        if (isset($this->campaigndata[$item])) {
+            return $this->campaigndata[$item];
         }else{
             return null;
         }
@@ -940,7 +940,7 @@ class Campaign
      */
     public function __isset($item)
     {
-        if (!isset($this->messagedata[$item])) {
+        if (!isset($this->campaigndata[$item])) {
             //try one last time to load from db
             return ($this->__get($item) != null && $this->__get($item) != '');
         }else{
@@ -949,18 +949,18 @@ class Campaign
     }
 
     /**
-     * Set a temporary message data item
+     * Set a temporary campaign data item
      * Only used in current object context
      * @param string $name
      * @param mixed $value
      */
     public function __set($name, $value)
     {
-        $this->messagedata[$name] = $value;
+        $this->campaigndata[$name] = $value;
     }
 
     /**
-     * Set a data item for this message
+     * Set a data item for this campaign
      * @param string $name
      * @param string $value
      */
@@ -969,7 +969,7 @@ class Campaign
         if ($name == 'PHPSESSID') return;
         if ($name == session_name()) return;
 
-        //TODO: setMessagData should probably not be used to add the message to a list
+        //TODO: setMessagData should probably not be used to add the campaign to a list
         if ($name == 'targetlist' && is_array($value)) {
             phpList::DB()->query(
                 sprintf(
@@ -1010,11 +1010,11 @@ class Campaign
     }
 
     /**
-     * Reset this message's statistics
+     * Reset this campaign's statistics
      */
     public function resetCampaignStatistics()
     {
-        ## remove the "forward" entries, but only if they are for one (this) message
+        ## remove the "forward" entries, but only if they are for one (this) campaign
         $delete = array();
         $result = phpList::DB()->query(
             sprintf(
@@ -1089,7 +1089,7 @@ class Campaign
     }
 
     /**
-     * Update the status of a message going out to a subscriber
+     * Update the status of a campaign going out to a subscriber
      * @param int $subscriber_id
      * @param string $status
      */
@@ -1118,7 +1118,7 @@ class Campaign
     }
 
     /**
-     * Duplicate a message and reschedule
+     * Duplicate a campaign and reschedule
      */
     public function repeatCampaign()
     {
@@ -1129,24 +1129,24 @@ class Campaign
 
         # get the future embargo, either "repeat" minutes after the old embargo
         # or "repeat" after this very moment to make sure that we're not sending the
-        # message every time running the queue when there's no embargo set.
+        # campaign every time running the queue when there's no embargo set.
         $new_embargo = $this->embargo->add(\DateInterval::createFromDateString($this->repeatinterval . ' minutes'));
         $now = (new \DateTime());
         $new_embargo2 = $now->add(\DateInterval::createFromDateString($this->repeatinterval . ' minutes'));
         $is_fututre = ($new_embargo->getTimestamp() > time());
 
-        # copy the new message
-        $new_message = $this;
-        $new_message->id = 0;
-        $new_message->update();
-        //also need to copy the message data for this one
+        # copy the new campaign
+        $new_campaign = $this;
+        $new_campaign->id = 0;
+        $new_campaign->update();
+        //also need to copy the campaign data for this one
         phpList::DB()->query(sprintf(
                 'INSERT INTO %s(name, id, data)
                     SELECT name, %d, data
                     FROM %s
                     WHERE id = %d',
                 Config::getTableName('messagedata'),
-                $new_message->id, /*New message id to copy to*/
+                $new_campaign->id, /*New campaign id to copy to*/
                 Config::getTableName('messagedata'),
                 $this->id
             ));
@@ -1156,15 +1156,15 @@ class Campaign
             $loopcnt = 0;
             $repeatinterval = 0;
             while ($this->excludedDateForRepetition($new_embargo)) {
-                $repeatinterval += $new_message->repeatinterval;
+                $repeatinterval += $new_campaign->repeatinterval;
                 $loopcnt++;
-                $new_embargo = $new_message->embargo->add(\DateInterval::createFromDateString($repeatinterval . ' minutes'));
+                $new_embargo = $new_campaign->embargo->add(\DateInterval::createFromDateString($repeatinterval . ' minutes'));
                 $now = (new \DateTime());
                 $new_embargo2 = $now->add(\DateInterval::createFromDateString($repeatinterval . ' minutes'));
                 $is_fututre = ($new_embargo->getTimestamp() > time());
 
                 if ($loopcnt > 15) {
-                    Logger::logEvent('Unable to find new embargo date too many exclusions? for message ' . $new_message->id);
+                    Logger::logEvent('Unable to find new embargo date too many exclusions? for campaign ' . $new_campaign->id);
                     return;
                 }
             }
@@ -1174,13 +1174,13 @@ class Campaign
             $new_embargo = $new_embargo2;
         }
 
-        $new_message->embargo = $new_embargo;
-        $new_message->status = 'submitted';
-        $new_message->sent = '';
+        $new_campaign->embargo = $new_embargo;
+        $new_campaign->status = 'submitted';
+        $new_campaign->sent = '';
         foreach (array("processed","astext","ashtml","astextandhtml","aspdf","astextandpdf","viewed", "bouncecount") as $item) {
-            $new_message->$item = 0;
+            $new_campaign->$item = 0;
         }
-        $new_message->update();
+        $new_campaign->update();
 
 
 
@@ -1191,7 +1191,7 @@ class Campaign
                     FROM %s
                     WHERE messageid = %d',
                 Config::getTableName('listmessage'),
-                $new_message->id, /*New message id to copy to*/
+                $new_campaign->id, /*New campaign id to copy to*/
                 Config::getTableName('listmessage'),
                 $this->id
             ));
@@ -1204,11 +1204,11 @@ class Campaign
             if(is_file($attachment->remotefile)){
                 $attachment->file = '';
             }
-            $new_message->addAttachment($attachment);
+            $new_campaign->addAttachment($attachment);
         }
-        Logger::logEvent("Campaign {$this->id} was successfully rescheduled as message {$new_message->id}");
+        Logger::logEvent("Campaign {$this->id} was successfully rescheduled as campaign {$new_campaign->id}");
         ## remember we duplicated, in order to avoid doing it again (eg when requeuing)
-        $this->setDataItem('repeatedid', $new_message->id);
+        $this->setDataItem('repeatedid', $new_campaign->id);
     }
 
     /**

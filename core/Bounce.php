@@ -219,9 +219,9 @@ class Bounce {
     /**
      * Add this bounce to a user and message
      * @param Subscriber $subscriber
-     * @param int $message_id
+     * @param int $campaign_id
      */
-    public function connectMeToSubscriberAndMessage($subscriber, $message_id)
+    public function connectMeToSubscriberAndMessage($subscriber, $campaign_id)
     {
         ## check if we already have this um as a bounce
         ## so that we don't double count "delayed" like bounces
@@ -231,7 +231,7 @@ class Bounce {
                 AND message = %d',
                 Config::getTableName('user_message_bounce'),
                 $subscriber->id,
-                $message_id
+                $campaign_id
             ));
 
         phpList::DB()->query(sprintf(
@@ -239,10 +239,10 @@ class Bounce {
                  SET user = %d, message = %d, bounce = %d',
                 Config::getTableName('user_message_bounce'),
                 $subscriber->id,
-                $message_id,
+                $campaign_id,
                 $this->id
         ));
-        $this->status = 'bounced list message ' . $message_id;
+        $this->status = 'bounced list message ' . $campaign_id;
         $this->comment = $subscriber->id . 'bouncecount increased';
         $this->save();
 
@@ -253,7 +253,7 @@ class Bounce {
                      SET bouncecount = bouncecount + 1
                      WHERE id = %d',
                     Config::getTableName('message'),
-                    $message_id
+                    $campaign_id
                 ));
             $subscriber->bouncecount ++;
             $subscriber->update();

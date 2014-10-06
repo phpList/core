@@ -12,7 +12,7 @@ class phpListMailer extends \PHPMailer
 {
     public $WordWrap = 75;
     public $encoding = 'base64';
-    public $messageid = 0;
+    public $message_id = 0;
     public $destinationemail = '';
     public $estimatedsize = 0;
     public $mailsize = 0;
@@ -35,12 +35,12 @@ class phpListMailer extends \PHPMailer
     public $TextEncoding = '7bit';
 
 
-    function __construct($messageid, $email, $inBlast = true, $exceptions = false)
+    function __construct($message_id, $email, $inBlast = true, $exceptions = false)
     {
         parent::__construct($exceptions);
         parent::SetLanguage('en', dirname(__FILE__) . '/phpmailer/language/');
         $this->addCustomHeader('X-phpList-version: ' . Config::VERSION);
-        $this->addCustomHeader('X-MessageID: $messageid');
+        $this->addCustomHeader('X-MessageID: $message_id');
         $this->addCustomHeader('X-ListMember: $email');
 
         ## amazon SES doesn't like this
@@ -107,7 +107,7 @@ class phpListMailer extends \PHPMailer
         if (!empty($_SERVER['REMOTE_ADDR'])) {
             $this->addTimestamp();
         }
-        $this->messageid = $messageid;
+        $this->messageid = $message_id;
     }
 
     private function checkSMTP($host, $port)
@@ -525,13 +525,13 @@ class phpListMailer extends \PHPMailer
         return chunk_split($path, 76, $this->LE);
     }
 
-    private function AmazonSESSend($messageheader, $messagebody)
+    private function AmazonSESSend($message_header, $message_body)
     {
         //TODO: put environment vars in config
-        $messageheader = preg_replace('/' . $this->LE . '$/', '', $messageheader);
-        $messageheader .= $this->LE . "Subject: " . $this->EncodeHeader($this->Subject) . $this->LE;
+        $message_header = preg_replace('/' . $this->LE . '$/', '', $message_header);
+        $message_header .= $this->LE . "Subject: " . $this->EncodeHeader($this->Subject) . $this->LE;
 
-        #print nl2br(htmlspecialchars($messageheader));      exit;
+        #print nl2br(htmlspecialchars($message_header));      exit;
 
         $date = date('r');
         $aws_signature = base64_encode(hash_hmac('sha256', $date, Config::get('AWS_SECRETKEY'), true));
@@ -550,12 +550,12 @@ class phpListMailer extends \PHPMailer
                 'Source' => $this->Sender,
                 'Destination.ToAddresses.member.1' => $this->destinationemail,
                 'Campaign.Subject.Data' => $this->Subject,
-                'Campaign.Body.Text.Data' => $messagebody,
+                'Campaign.Body.Text.Data' => $message_body,
               );
         */
-        #     print '<hr/>Rawmessage '.nl2br(htmlspecialchars($messageheader. $this->LE. $this->LE.$messagebody));
+        #     print '<hr/>Rawmessage '.nl2br(htmlspecialchars($message_header. $this->LE. $this->LE.$message_body));
 
-        $rawmessage = base64_encode($messageheader . $this->LE . $this->LE . $messagebody);
+        $rawmessage = base64_encode($message_header . $this->LE . $this->LE . $message_body);
         #   $rawmessage = str_replace('=','',$rawmessage);
 
         $requestdata = array(

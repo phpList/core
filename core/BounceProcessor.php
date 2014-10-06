@@ -84,10 +84,10 @@ class BounceProcessor {
             }
             $bounceBody = $this->decodeBody($bounce->header, $bounce->data);
             $subscriber = $this->findSubscriber($bounceBody);
-            $message_id = $this->findCampaignId($bounceBody);
-            if ($subscriber !== false || !empty($message_id)) {
+            $campaign_id = $this->findCampaignId($bounceBody);
+            if ($subscriber !== false || !empty($campaign_id)) {
                 $reparsed++;
-                if ($this->processBounceData($bounce['id'], $message_id, $subscriber->id)) {
+                if ($this->processBounceData($bounce['id'], $campaign_id, $subscriber->id)) {
                     $reidentified++;
                 }
             }
@@ -385,19 +385,19 @@ class BounceProcessor {
         }
     }
 
-    public function finish ($flag, $message) {
-        if (!Config::TEST && $message) {
+    public function finish ($flag, $campaign) {
+        if (!Config::TEST && $campaign) {
             $subject = s('Bounce Processing info');
             if ($flag == 'error') {
                 $subject = s('Bounce processing error');
             }
-            phpListMailer::sendReport($subject, $message);
+            phpListMailer::sendReport($subject, $campaign);
         }
     }
 
-    private function bounceProcessError ($message) {
-        $this->output($message);
-        $this->finish('error', $message);
+    private function bounceProcessError ($campaign) {
+        $this->output($campaign);
+        $this->finish('error', $campaign);
         exit;
     }
 
@@ -407,19 +407,19 @@ class BounceProcessor {
         $this->finish('info', Logger::getReport());
     }
 
-    private function output ($message, $reset = false) {
+    private function output ($campaign, $reset = false) {
         #$infostring = "[". date("D j M Y H:i",time()) . "] [" . getenv("REMOTE_HOST") ."] [" . getenv("REMOTE_ADDR") ."]";
-        #print "$infostring $message<br/>\n";
-        $message = preg_replace('/\n/','',$message);
+        #print "$infostring $campaign<br/>\n";
+        $campaign = preg_replace('/\n/','',$campaign);
         ## contribution from http://forums.phplist.com/viewtopic.php?p=14648
         ## in languages with accented characters replace the HTML back
         //Replace the "&rsquo;" which is not replaced by html_decode
-        $message = preg_replace('/&rsquo;/',"'",$message);
+        $campaign = preg_replace('/&rsquo;/',"'",$campaign);
         //Decode HTML chars
-        #$message = html_entity_decode($message,ENT_QUOTES,$_SESSION['adminlanguage']['charset']);
-        $message = html_entity_decode($message, ENT_QUOTES, 'UTF-8');
+        #$campaign = html_entity_decode($campaign,ENT_QUOTES,$_SESSION['adminlanguage']['charset']);
+        $campaign = html_entity_decode($campaign, ENT_QUOTES, 'UTF-8');
         if (Config::get('commandline')) {
-            Output::cl_output($message);
+            Output::cl_output($campaign);
         } else {
             if ($reset)
                 print
@@ -433,7 +433,7 @@ class BounceProcessor {
                     document.outputform.output.value += "%s";
                     document.outputform.output.value += "\n";
                 </script>',
-                $message
+                $campaign
             );
         }
         flush();
@@ -534,10 +534,10 @@ class BounceProcessor {
         $body = imap_body ($link,$num);
         $body = $this->decodeBody($header,$body);
 
-        $message_id = $this->findMessageId($body);
+        $campaign_id = $this->findMessageId($body);
         $subscriber = $this->findSubscriber($body);
         if (Config::VERBOSE) {
-            Output::output('UID'.$subscriber->id.' MSGID'.$message_id);
+            Output::output('UID'.$subscriber->id.' MSGID'.$campaign_id);
         }
 
         ## @TODO add call to plugins to determine what to do.
@@ -552,19 +552,19 @@ class BounceProcessor {
         $bounce->data = $body;
         $bounce->save();
 
-        return $this->processBounceData($bounce, $message_id, $subscriber);
+        return $this->processBounceData($bounce, $campaign_id, $subscriber);
     }
 
     /**
      * Porcess the bounce data and update the database
      * @param Bounce $bounce
-     * @param int $message_id
+     * @param int $campaign_id
      * @param Subscriber $subscriber
      * @return bool
      */
-    private function processBounceData($bounce, $message_id, $subscriber) {
+    private function processBounceData($bounce, $campaign_id, $subscriber) {
 
-        if ($message_id === 'systemmessage' && $subscriber !== false) {
+        if ($campaign_id === 'systemmessage' && $subscriber !== false) {
             $bounce->status = 'bounced system message';
             $bounce->comment = sprintf('%s marked unconfirmed', $subscriber->id);
             $bounce->update();
@@ -581,8 +581,8 @@ class BounceProcessor {
             );
             $subscriber->confirmed = 0;
             $subscriber->update();
-        } elseif (!empty($message_id) && $subscriber !== false) {
-            $bounce->connectMeToSubscriberAndMessage($subscriber, $message_id);
+        } elseif (!empty($campaign_id) && $subscriber !== false) {
+            $bounce->connectMeToSubscriberAndMessage($subscriber, $campaign_id);
         } elseif ($subscriber !== false) {
             $bounce->status = 'bounced unidentified message';
             $bounce->comment = $subscriber->id . ' bouncecount increased';
@@ -590,13 +590,13 @@ class BounceProcessor {
 
             $subscriber->bouncecount++;
             $subscriber->update();
-        } elseif ($message_id === 'systemmessage') {
+        } elseif ($campaign_id === 'systemmessage') {
             $bounce->status = 'bounced system message';
             $bounce->comment = 'unknown subscriber';
             $bounce->update();
             Logger::logEvent($subscriber->id . ' ' . s('system message bounced, but unknown subscriber'));
-        } elseif ($message_id) {
-            $bounce->status = sprintf('bounced list message %d', $message_id);
+        } elseif ($campaign_id) {
+            $bounce->status = sprintf('bounced list message %d', $campaign_id);
             $bounce->comment = 'unknown subscriber';
             $bounce->update();
             phpList::DB()->query(sprintf(
@@ -604,7 +604,7 @@ class BounceProcessor {
                      SET bouncecount = bouncecount + 1
                      WHERE id = %d',
                     Config::getTableName('message'),
-                    $message_id
+                    $campaign_id
                 ));
         } else {
             $bounce->status = 'unidentified bounce';

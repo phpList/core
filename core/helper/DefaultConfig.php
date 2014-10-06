@@ -230,10 +230,10 @@ class DefaultConfig
                 'allowempty' => true,
                 'category' => 'subscription',
             ),
-            # the default template for sending an html message
-            'defaultmessagetemplate' => array(
+            # the default template for sending an html campaign
+            'defaultcampaigntemplate' => array(
                 'value' => 0,
-                'description' => s('The default HTML template to use when sending a message'),
+                'description' => s('The default HTML template to use when sending a campaign'),
                 'type' => 'text',
                 'allowempty' => true,
                 'category' => 'campaign',
@@ -296,7 +296,7 @@ class DefaultConfig
             # url to change their preferences
             'forwardurl' => array(
                 'value' => Config::get('scheme') . '://[WEBSITE]'.Config::PAGEROOT.'/?p=forward',
-                'description' => s('URL for forwarding messages'),
+                'description' => s('URL for forwarding campaigns'),
                 'type' => 'text',
                 'allowempty' => 0,
                 'category' => 'subscription',
@@ -492,12 +492,12 @@ class DefaultConfig
                 'allowempty' => 0,
                 'category' => 'transactional',
             ),
-            'messagefooter' => array(
+            'campaignfooter' => array(
                 'value' => '--
 
     <div class="footer" style="text-align:left; font-size: 75%;">
-      <p>This message was sent to [EMAIL] by [FROMEMAIL]</p>
-      <p>To forward this message, please do not use the forward button of your email application, because this message was made specifically for you only. Instead use the <a href="[FORWARDURL]">forward page</a> in our newsletter system.<br/>
+      <p>This campaign was sent to [EMAIL] by [FROMEMAIL]</p>
+      <p>To forward this campaign, please do not use the forward button of your email application, because this campaign was made specifically for you only. Instead use the <a href="[FORWARDURL]">forward page</a> in our newsletter system.<br/>
       To change your details and to choose which lists to be subscribed to, visit your personal <a href="[PREFERENCESURL]">preferences page</a><br/>
       Or you can <a href="[UNSUBSCRIBEURL]">opt-out completely</a> from all future mailings.</p>
     </div>
@@ -511,13 +511,13 @@ class DefaultConfig
             'forwardfooter' => array(
                 'value' => '
      <div class="footer" style="text-align:left; font-size: 75%;">
-      <p>This message has been forwarded to you by [FORWARDEDBY].</p>
+      <p>This campaign has been forwarded to you by [FORWARDEDBY].</p>
       <p>You have not been automatically subscribed to this newsletter.</p>
       <p>If you think this newsletter may interest you, you can <a href="[SUBSCRIBEURL]">Subscribe</a> and you will receive our next newsletter directly to your inbox.</p>
       <p>You can also <a href="[BLACKLISTURL]">opt out completely</a> from receiving any further email from our newsletter application, phpList.</p>
     </div>
   ',
-                'description' => s('Footer used when a message has been forwarded'),
+                'description' => s('Footer used when a campaign has been forwarded'),
                 'type' => 'textarea',
                 'allowempty' => 0,
                 'category' => 'campaign',

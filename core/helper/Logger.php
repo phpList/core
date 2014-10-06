@@ -24,13 +24,13 @@ class Logger
         return Logger::$_instance;
     }
 
-    public static function logEvent($message, $page = 'unknown page')
+    public static function logEvent($campaign, $page = 'unknown page')
     {
         /*
          * TODO: enable plugins
         $logged = false;
         foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-            $logged = $logged || $plugin->logEvent($message);
+            $logged = $logged || $plugin->logEvent($campaign);
         }
         if ($logged) return;
         */
@@ -43,7 +43,7 @@ class Logger
             sprintf(
                 'INSERT INTO %s (entered,page,entry)
                 VALUES(CURRENT_TIMESTAMP, "%s", "%s")',
-                Config::getTableName('eventlog', $page, $message)
+                Config::getTableName('eventlog', $page, $campaign)
             ),
             1
         );

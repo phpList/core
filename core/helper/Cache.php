@@ -14,7 +14,7 @@ class Cache {
     private static $_instance;
     public $page_cache = array();
     public $url_cache = array();
-    private $message_cache = array();
+    private $campaign_cache = array();
     public $linktrack_sent_cache = array();
     public $linktrack_cache = array();
 
@@ -44,34 +44,34 @@ class Cache {
     }
 
     /**
-     * Get a message from cache, will set it when not available yet
-     * @param Campaign $message
+     * Get a campaign from cache, will set it when not available yet
+     * @param Campaign $campaign
      * @return Campaign
      */
-    public static function &getCachedCampaign($message)
+    public static function &getCachedCampaign($campaign)
     {
-        if(!isset(Cache::$_instance->message_cache[$message->id])){
-            Cache::$_instance->message_cache[$message->id] = $message;
+        if(!isset(Cache::$_instance->campaign_cache[$campaign->id])){
+            Cache::$_instance->campaign_cache[$campaign->id] = $campaign;
         }
-        return Cache::$_instance->message_cache[$message->id];
+        return Cache::$_instance->campaign_cache[$campaign->id];
     }
 
     /**
-     * Check if a message has been cached already
-     * @param Campaign $message
+     * Check if a campaign has been cached already
+     * @param Campaign $campaign
      * @return bool
      */
-    public static function isCampaignCached($message){
-        return isset(Cache::$_instance->message_cache[$message->id]);
+    public static function isCampaignCached($campaign){
+        return isset(Cache::$_instance->campaign_cache[$campaign->id]);
     }
 
     /**
-     * Put a message in the cache
-     * @param Campaign $message
+     * Put a campaign in the cache
+     * @param Campaign $campaign
      */
-    private static function setCachedCampaign($message)
+    private static function setCachedCampaign($campaign)
     {
-        Cache::$_instance->message_cache[$message->id] = $message;
+        Cache::$_instance->campaign_cache[$campaign->id] = $campaign;
     }
 
 
