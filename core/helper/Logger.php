@@ -7,6 +7,9 @@
 namespace phpList\helper;
 
 
+use phpList\Config;
+use phpList\phpList;
+
 class Logger
 {
     private static $_instance;

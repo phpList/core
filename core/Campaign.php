@@ -588,7 +588,7 @@ class Campaign
      */
     public static function checkCampaignsToRequeue()
     {
-        $req = phpList::DB()->query(
+        $result = phpList::DB()->query(
             sprintf(
                 'SELECT *, embargo < now() AS inthepast FROM %s
                 WHERE requeueinterval > 0
@@ -597,7 +597,7 @@ class Campaign
                 Config::getTableName('message')
             )
         );
-        while ($row = phpList::DB()->fetchAssocQuery($req)) {
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
             $campaign = Campaign::campaignFromArray($row);
             if ($campaign->embargo_in_past) {
                 $now = new \DateTime('now');
@@ -782,7 +782,7 @@ class Campaign
                 Config::getTableName('message'),
                 $this->id
             )
-        )->fetchAll(\PDO::FETCH_ASSOC);
+        )->fetch(\PDO::FETCH_ASSOC);
 
 
         $campaigndata = array(
@@ -1224,7 +1224,7 @@ class Campaign
                     'SELECT date_format("%s","%s")',
                     $date,
                     $exclusion['format']
-                ))->fetchAll();
+                ))->fetch();
             foreach ($exclusion['values'] as $disallowed) {
                 if ($formatted_value[0] == $disallowed) {
                     return true;

@@ -46,8 +46,8 @@ class Database
                 Config::DATABASE_USER,
                 Config::DATABASE_PASSWORD
             );
-        } catch (PDOException $e) {
-            throw new \Exception('Cannot connect to Database, please check your configuration. ' . $e->getCampaign());
+        } catch (\PDOException $e) {
+            throw new \Exception('Cannot connect to Database, please check your configuration. ' . $e->getMessage());
         }
         //TODO: check compatibility with other db engines
         $this->db->query('SET NAMES \'utf8\'');
@@ -94,8 +94,8 @@ class Database
 
             # time queries to see how slow they are, so they can
             # be optimized
-            $now = gettimeofday();
-            $start = $now['sec'] * 1000000 + $now['usec'];
+            //$now = gettimeofday();
+            //$start = $now['sec'] * 1000000 + $now['usec'];
             $this->last_query = $query;
             /*
             # keep track of queries to see which ones to optimize
@@ -147,39 +147,6 @@ class Database
     public function close()
     {
         $this->db = null;
-    }
-
-    public function queryParams($query, $params, $ignore = 0)
-    {
-        #  dbg($query);
-        #  dbg($params);
-
-        if (!is_array($params)) {
-            $params = Array($params);
-        }
-
-        foreach ($params as $index => $par) {
-            $qmark = strpos($query, '?');
-            if ($qmark === false) {
-                Logger::logEvent('Error, more parameters than placeholders');
-            } else {
-                ## first replace the ? with some other placeholder, in case the parameters contain ? themselves
-                $query = substr($query, 0, $qmark) . '"PARAM' . $index . 'MARAP"' . substr($query, $qmark + 1);
-            }
-        }
-        #  dbg($query);
-
-        foreach ($params as $index => $par) {
-            if (is_numeric($par)) {
-                $query = str_replace('"PARAM' . $index . 'MARAP"', phpList::DB()->sqlEscape($par), $query);
-            } else {
-                $query = str_replace('PARAM' . $index . 'MARAP', phpList::DB()->sqlEscape($par), $query);
-            }
-        }
-
-        #  dbg($query);
-        #  print $query."<br/>";
-        return $this->query($query, $ignore);
     }
 
     //TODO: move to logging class or something
@@ -238,14 +205,15 @@ class Database
             $_SESSION['dbtables'] = array();
 
             # need to improve this. http://bugs.mysql.com/bug.php?id=19588
-            $req = $this->query(
+            $result = $this->query(
                 sprintf(
                     'SELECT table_name FROM information_schema.tables WHERE table_schema = "%s"',
+                    //TODO: change this so it can be used with PDO dsn
                     Config::DATABASE_NAME
                 )
             );
-            while ($row = $this->fetchRow($req)) {
-                $_SESSION['dbtables'][] = $row[0];
+            while ($col = $result->fetchColumn(0)) {
+                $_SESSION['dbtables'][] = $col;
             }
         }
         return in_array($table, $_SESSION['dbtables']);
@@ -262,9 +230,9 @@ class Database
         ## table is the full table name including the prefix
         if ($this->tableExists($table)) {
             # need to improve this. http://bugs.mysql.com/bug.php?id=19588
-            $req = $this->query('SHOW columns FROM ' . $table);
-            while ($row = $this->fetchRow($req)) {
-                if ($row[0] == $column) {
+            $result = $this->query('SHOW columns FROM ' . $table);
+            while ($col = $result->fetchColumn(0)) {
+                if ($col == $column) {
                     return true;
                 }
             }

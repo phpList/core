@@ -6,28 +6,10 @@
 
 namespace phpList;
 
-use phpList\helper\Cache;
-use phpList\helper\DefaultConfig;
 use phpList\helper\Database;
 use phpList\helper\Language;
-use phpList\helper\Logger;
-use phpList\helper\Output;
-use phpList\helper\PrepareCampaign;
-use phpList\helper\Process;
-use phpList\helper\Session;
-use phpList\helper\String;
 use phpList\helper\Util;
-use phpList\helper\Validation;
 use phpList\helper\Timer;
-use phpList\MailingList;
-use phpList\Campaign;
-use phpList\QueueProcessor;
-use phpList\phpListMailer;
-use phpList\Template;
-use phpList\Subscriber;
-use phpList\Config;
-// use phpList\UserConfig;
-
 
 class phpList
 {
@@ -110,7 +92,7 @@ class phpList
             #  print('set time_zone = "'.SYSTEM_TIMEZONE.'"<br/>');
             phpList::DB()->query('SET time_zone = "'.Config::SYSTEM_TIMEZONE.'"');
             ## verify that it applied correctly
-            $tz = phpList::DB()->fetchRowQuery('SELECT @@session.time_zone');
+            $tz = phpList::DB()->query('SELECT @@session.time_zone')->fetch();
             if ($tz[0] != Config::SYSTEM_TIMEZONE) {
                 throw new \Exception('Error setting timezone in Sql Database');
             } else {

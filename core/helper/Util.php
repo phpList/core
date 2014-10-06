@@ -8,6 +8,7 @@ namespace phpList\helper;
 
 use phpList\phpList;
 use phpList\Config;
+use phpList\Subscriber;
 
 class Util
 {
@@ -267,25 +268,25 @@ class Util
 
             $request_parameters['method'] = 'GET';
             if (0 && Config::get('has_pear_http_request') == 2) {
-                $req = new HTTP_Request2($url, $request_parameters);
-                $req->setHeader('User-Agent', 'phplist v' . Config::get('VERSION') . 'p (http://www.phplist.com)');
+                $request = new HTTP_Request2($url, $request_parameters);
+                $request->setHeader('User-Agent', 'phplist v' . Config::get('VERSION') . 'p (http://www.phplist.com)');
             } else {
-                $req = new HTTP_Request($url, $request_parameters);
-                $req->addHeader('User-Agent', 'phplist v' . Config::get('VERSION') . 'p (http://www.phplist.com)');
+                $request = new HTTP_Request($url, $request_parameters);
+                $request->addHeader('User-Agent', 'phplist v' . Config::get('VERSION') . 'p (http://www.phplist.com)');
             }
             Logger::logEvent('Fetching ' . $url);
             if (Config::VERBOSE && function_exists('output')) {
                 output('Fetching remote: ' . $url);
             }
-            if (!PEAR::isError($req->sendRequest(true))) {
-                $content = $req->getResponseBody();
+            if (!PEAR::isError($request->sendRequest(true))) {
+                $content = $request->getResponseBody();
 
                 if ($remote_charset != 'UTF-8' && function_exists('iconv')) {
                     $content = iconv($remote_charset, 'UTF-8//TRANSLIT', $content);
                 }
 
             } else {
-                Logger::logEvent('Fetching ' . $url . ' failed on GET ' . $req->getResponseCode());
+                Logger::logEvent('Fetching ' . $url . ' failed on GET ' . $request->getResponseCode());
                 return 0;
             }
         } else {
@@ -583,7 +584,7 @@ class Util
         } else {
             $gracetime = 0;
         }
-        $row = phpList::DB()->fetchRowQuery(
+        $result = phpList::DB()->query(
             sprintf(
                 'SELECT COUNT(email) FROM %s
                 WHERE email = "%s"
@@ -593,7 +594,7 @@ class Util
                 $gracetime
             )
         );
-        return ($row[0] == 0) ? false : true;
+        return ($result->fetchColumn(0) > 0);
     }
 
     /**
@@ -609,13 +610,13 @@ class Util
 
     /**
      * Blacklist a subscriber by his email address
-     * @param string $email
+     * @param string $email_address
      * @param string $reason
      */
-    public static function blacklistSubscriberByEmail($email, $reason = '')
+    public static function blacklistSubscriberByEmail($email_address, $reason = '')
     {
         #0012262: blacklist only email when email bounces. (not subscribers): Function split so email can be blacklisted without blacklisting subscriber
-        $subscriber = Subscriber::getSubscriberByEmail($email);
+        $subscriber = Subscriber::getSubscriberByEmailAddress($email_address);
         $subscriber->blacklisted = true;
         $subscriber->save();
         Subscriber::addHistory(s('Added to blacklist'), s('Added to blacklist for reason %s', $reason), $subscriber->id);
@@ -623,18 +624,18 @@ class Util
 
     /**
      * Blacklist an email address, not a subscriber specifically
-     * @param string $email
+     * @param string $email_address
      * @param string $reason
      * @param string $date
      */
-    public static function blacklistEmail($email, $reason = '', $date = '')
+    public static function blacklistEmail($email_address, $reason = '', $date = '')
     {
         if (empty($date)) {
             $sqldate = 'CURRENT_TIMESTAMP';
         } else {
             $sqldate = '"' . $date . '"';
         }
-        $email = String::sqlEscape($email);
+        $email_address = String::sqlEscape($email_address);
 
         #0012262: blacklist only email when email bounces. (not subscribers): Function split so email can be blacklisted without blacklisting subscriber
         phpList::DB()->query(
@@ -642,7 +643,7 @@ class Util
                 'INSERT IGNORE INTO %s (email,added)
                 VALUES("%s",%s)',
                 Config::getTableName('user_blacklist'),
-                String::sqlEscape($email),
+                String::sqlEscape($email_address),
                 $sqldate
             )
         );
@@ -654,10 +655,10 @@ class Util
                 VALUES("%s","%s","%s"),
                 ("%s","%s","%s")',
                 Config::getTableName('user_blacklist_data'),
-                $email,
+                $email_address,
                 'reason',
                 addslashes($reason),
-                $email,
+                $email_address,
                 'REMOTE_ADDR',
                 addslashes($_SERVER['REMOTE_ADDR'])
             )
@@ -668,12 +669,12 @@ class Util
                 phpList::DB()->Sql_Query(sprintf(
                     'INSERT IGNORE INTO %s (email, name, data)
                     VALUES("%s","%s","%s")',
-                    Config::getTableName('user_blacklist_data'),addslashes($email),
+                    Config::getTableName('user_blacklist_data'),addslashes($email_address),
                     $item,addslashes($_SERVER['REMOTE_ADDR'])));
             }
         }*/
         //when blacklisting only an email address, don't add this to the history, only do this when blacklisting a subscriber
-        //addSubscriberHistory($email,s('Added to blacklist'),s('Added to blacklist for reason %s',$reason));
+        //addSubscriberHistory($email_address,s('Added to blacklist'),s('Added to blacklist for reason %s',$reason));
     }
 
     /**
@@ -690,7 +691,7 @@ class Util
             Config::getTableName('user_blacklist') => 'email',
             Config::getTableName('user_blacklist_data') => 'email'
         );
-        phpList::DB()->deleteFromArray($tables, $subscriber->getEmail());
+        phpList::DB()->deleteFromArray($tables, $subscriber->getEmailAddress());
 
         $subscriber->blacklisted = 0;
         $subscriber->update();
@@ -706,20 +707,20 @@ class Util
 
     /**
      * Check if email address exists in database
-     * @param $email
+     * @param $email_address
      * @return bool
      */
-    public static function emailExists($email)
+    public static function emailExists($email_address)
     {
-        $result = phpList::DB()->fetchRowQuery(
+        $prep_statement = phpList::DB()->prepare(
             sprintf(
                 'SELECT id FROM %s
-                WHERE email = "%s"',
-                Config::getTableName('user', true),
-                $email
+                WHERE email = :email_address',
+                Config::getTableName('user', true)
             )
         );
-        return !empty($result[0]);
+        $prep_statement->execute(array(':email_address' => $email_address));
+        return ($prep_statement->rowCount() > 0);
     }
 
     /**
@@ -736,13 +737,13 @@ class Util
                 Config::getTableName('user', true)
             )
         );
-        $num = phpList::DB()->affectedRows();
-        if ($num > 0) {
-            while ($row = phpList::DB()->fetchRow($result)) {
-                self::giveUniqueId($row[0]);
+        //todo: what should be done here?
+        /*if ($result->rowCount() > 0) {
+            while ($col = $result->fetchColumn(0)) {
+                self::giveUniqueId($col);
             }
-        }
-        return $num;
+        }*/
+        return $result->rowCount();
     }
 
 
@@ -762,7 +763,7 @@ class Util
                 $time = mktime(0,0,0,date('m'),date('d'),date('Y'));
                 break;
         }
-        phpList::DB()->query(sprintf(
+        $result = phpList::DB()->query(sprintf(
                 'UPDATE %s
                 SET value = value + %d
                 WHERE unixdate = "%s"
@@ -774,7 +775,7 @@ class Util
                 $item,
                 $list
             ));
-        if (!phpList::DB()->affectedRows()) {
+        if ($result->rowCount() <= 0) {
             //TODO: why not use REPLACE INTO?
             phpList::DB()->query(sprintf(
                     'INSERT INTO %s (value, unixdate, item, listid)

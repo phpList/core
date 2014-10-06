@@ -7,6 +7,10 @@
 namespace phpList\helper;
 
 
+use phpList\Campaign;
+use phpList\Config;
+use phpList\phpList;
+
 class Cache {
     /**
      * @var Cache $_instance
@@ -78,7 +82,7 @@ class Cache {
 
     public static function getPageCache($url, $lastmodified = 0)
     {
-        $req = phpList::DB()->fetchRowQuery(sprintf(
+        $result = phpList::DB()->query(sprintf(
                 'SELECT content FROM %s
                 WHERE url = "%s"
                 AND lastmodified >= %d',
@@ -86,18 +90,18 @@ class Cache {
                 $url,
                 $lastmodified
             ));
-        return $req[0];
+        return $result->fetchColumn(0);
     }
 
     public static function getPageCacheLastModified($url)
     {
-        $req = phpList::DB()->fetchRowQuery(sprintf(
+        $result = phpList::DB()->query(sprintf(
                 'SELECT lastmodified FROM %s
                 WHERE url = "%s"',
                 Config::getTableName('urlcache'),
                 $url
             ));
-        return $req[0];
+        return $result->fetchColumn(0);
     }
 
     public static function setPageCache($url, $lastmodified, $content)

@@ -7,6 +7,7 @@
 namespace phpList;
 
 use phpList\helper\String;
+use \phpList\helper\Util;
 
 class Admin
 {
@@ -98,8 +99,7 @@ class Admin
             )
         );
 
-        $row = phpList::DB()->fetchAssoc($result);
-        return Admin::adminFromArray($row);
+        return Admin::adminFromArray($result->fetch(\PDO::FETCH_ASSOC));
     }
 
     /**
@@ -127,7 +127,7 @@ class Admin
         );
 
 
-        while ($row = phpList::DB()->fetchAssoc($result)) {
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
             $admins[] = Admin::adminFromArray($row);
         }
         return $admins;
@@ -208,7 +208,7 @@ class Admin
         if ($this->id != 0) {
             $condition = ' AND NOT id = ' . $this->id;
         }
-        $result = phpList::DB()->fetchRowQuery(
+        $result = phpList::DB()->query(
             sprintf(
                 'SELECT COUNT(id) FROM %s
                 WHERE loginname = "%s" %s',
@@ -217,7 +217,7 @@ class Admin
                 $condition
             )
         );
-        return ($result[0] == 0) ? true : false;
+        return ($result->fetchColumn(0) == 0) ? true : false;
     }
 
     /**
@@ -245,7 +245,7 @@ class Admin
     public function getAttributes()
     {
         $attributes = array();
-        $res = phpList::DB()->query(
+        $result = phpList::DB()->query(
             sprintf(
                 'SELECT * FROM %s AS adm_att
                 INNER JOIN %s AS adm
@@ -257,7 +257,7 @@ class Admin
             )
         );
 
-        while ($row = phpList::DB()->fetchAssocQuery($res)) {
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
             $attributes[] = $row;
         }
         return $attributes;
@@ -271,22 +271,22 @@ class Admin
      */
     function validateLogin($login, $password)
     {
-        $result = array(
+        $return = array(
             'result' => false,
             'error' => s('Login failed'),
             'admin' => null
         );
 
-        $query = sprintf(
+        $sql = sprintf(
             'SELECT * FROM %s
             WHERE loginname = "%s"',
             Config::getTableName('admin'),
             String::sqlEscape($login)
         );
 
-        $result = phpList::DB()->fetchAssocQuery($query);
-        if (empty($result)) {
-            return $result;
+        $result = phpList::DB()->query($sql);
+        if ($result->rowCount() < 1) {
+            return $return;
         }
         $admin = Admin::adminFromArray($result);
         $encryptedPass = Util::encryptPass($password);
@@ -300,19 +300,19 @@ class Admin
             $query = "update %s set password = '%s' where loginname = ?";
             $query = sprintf($query, $GLOBALS['tables']['admin'], $encryptedPassDB);
             $passwordDB = $encryptedPassDB;
-            $req = Sql_Query_Params($query, array($login));
+            $result = Sql_Query_Params($query, array($login));
         }*/
         if ($admin->disabled) {
-            $result['error'] = s('Your account has been disabled');
+            $return['error'] = s('Your account has been disabled');
             #Password validation.
         } elseif ($encryptedPass == $admin->password) {
-            $result['result'] = true;
-            $result['error'] = '';
-            $result['admin'] = $admin;
+            $return['result'] = true;
+            $return['error'] = '';
+            $return['admin'] = $admin;
         } else {
-            $result['error'] = s('Incorrect password');
+            $return['error'] = s('Incorrect password');
         }
-        return $result;
+        return $return;
     }
 
     /**
@@ -406,19 +406,18 @@ class Admin
         }
 
         ## @@@TODO for now ignore the error. This will cause a block on editing admins if the table doesn't exist.
-        $req = phpList::DB()->fetchRowQuery(
+        $result = phpList::DB()->prepare(
             sprintf(
                 'SELECT id FROM %s
                 WHERE adminid = %d
-                AND value = "%s"
+                AND value = :token
                 AND expires > CURRENT_TIMESTAMP',
                 Config::getTableName('admintoken'),
-                $this->id,
-                String::sqlEscape($token)
-            ),
-            1
+                $this->id
+            )
         );
-        return empty($req[0]);
+        $result->execute(array(':token' => $token));
+        return ($result->rowCount() > 0);
     }
 }
 

@@ -7,6 +7,9 @@
 namespace phpList\helper;
 
 
+use phpList\Config;
+use phpList\phpList;
+
 class Process
 {
     public static function getPageLock($page, $force = false)
@@ -106,8 +109,8 @@ class Process
 
     private static function getRunningProcesses($page)
     {
-        $result = array();
-        $running_req = phpList::DB()->query(
+        $running_processes = array();
+        $result = phpList::DB()->query(
             sprintf(
                 ' SELECT CURRENT_TIMESTAMP - MODIFIED AS age, id FROM %s
                 WHERE page = "%s"
@@ -117,9 +120,9 @@ class Process
                 $page
             )
         );
-        $result['result'] = phpList::DB()->fetchAssoc($running_req);
-        $result['count'] = phpList::DB()->numRows($running_req);
-        return $result;
+        $running_processes['result'] = $result->fetch(\PDO::FETCH_ASSOC);
+        $running_processes['count'] = $result->rowCount();
+        return $running_processes;
     }
 
     public static function keepLock($processid)
@@ -136,14 +139,14 @@ class Process
 
     public static function checkLock($processid)
     {
-        $row = phpList::DB()->fetchRowQuery(
+        $row = phpList::DB()->query(
             sprintf(
                 'SELECT alive FROM %s WHERE id = %d',
                 Config::getTableName('sendprocess'),
                 $processid
             )
         );
-        return $row[0];
+        return $row->fetchColumn(0);
     }
 
     public static function releaseLock($processid)

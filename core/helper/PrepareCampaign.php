@@ -7,9 +7,12 @@
 namespace phpList\helper;
 
 
-use phpList;
+use phpList\Attachment;
 use phpList\Config;
 use phpList\Campaign;
+use phpList\MailingList;
+use phpList\phpList;
+use phpList\phpListMailer;
 use phpList\Subscriber;
 
 class PrepareCampaign
@@ -55,7 +58,7 @@ class PrepareCampaign
         $cached_campaign = Cache::getCachedCampaign($campaign);
 
         if (Config::VERBOSE) {
-            Output::output(s('Sending campaign %d with subject %s to %s', $campaign->id, $cached_campaign->subject, $subscriber->getEmail()));
+            Output::output(s('Sending campaign %d with subject %s to %s', $campaign->id, $cached_campaign->subject, $subscriber->getEmailAddress()));
         }
 
         ## at this stage we don't know whether the content is HTML or text, it's just content
@@ -67,7 +70,7 @@ class PrepareCampaign
 
         #0011857: forward to friend, retain attributes
         if ($subscriber->uniqid == 'forwarded' && Config::KEEPFORWARDERATTRIBUTES) {
-            $subscriber = Subscriber::getSubscriberByEmail($forwardedby['email']);
+            $subscriber = Subscriber::getSubscriberByEmailAddress($forwardedby['email']);
         }
 
         $subscriber_att_values = $subscriber->getCleanAttributes();
@@ -112,7 +115,7 @@ class PrepareCampaign
                         $content = str_replace($regs[0], $remote_content, $content);
                         $cached_campaign->htmlformatted = strip_tags($content) != $content;
                     } else {
-                        Logger::logEvent('Error fetching URL: '.$regs[1].' to send to ' . $subscriber->getEmail());
+                        Logger::logEvent('Error fetching URL: '.$regs[1].' to send to ' . $subscriber->getEmailAddress());
                         return 0;
                     }
                     preg_match('/\[URL:([^\s]+)\]/i', $content, $regs);
@@ -152,12 +155,12 @@ class PrepareCampaign
             '<a href="%s%semail=%s">%s</a>',
             $blacklist_url,
             htmlspecialchars($sep),
-            $subscriber->getEmail(),
+            $subscriber->getEmailAddress(),
             s('Unsubscribe')
         );
-        $text['blacklist'] = sprintf('%s%semail=%s', $blacklist_url, $sep, $subscriber->getEmail());
-        $html['blacklisturl'] = sprintf('%s%semail=%s', $blacklist_url, htmlspecialchars($sep), $subscriber->getEmail());
-        $text['blacklisturl'] = sprintf('%s%semail=%s', $blacklist_url, $sep, $subscriber->getEmail());
+        $text['blacklist'] = sprintf('%s%semail=%s', $blacklist_url, $sep, $subscriber->getEmailAddress());
+        $html['blacklisturl'] = sprintf('%s%semail=%s', $blacklist_url, htmlspecialchars($sep), $subscriber->getEmailAddress());
+        $text['blacklisturl'] = sprintf('%s%semail=%s', $blacklist_url, $sep, $subscriber->getEmailAddress());
 
         #0013076: Problem found during testing: campaign part must be parsed correctly as well.
         if (sizeof($forwardedby) && isset($forwardedby['email'])) {
@@ -405,7 +408,7 @@ class PrepareCampaign
             }
         }
 
-        #  $req = Sql_Query(sprintf('select filename,data from %s where template = %d',
+        #  $result = Sql_Query(sprintf('select filename,data from %s where template = %d',
         #    Config::getTableName('templateimage'),$cached->templateid));
 
         if (Config::ALWAYS_ADD_USERTRACK) {
@@ -470,7 +473,7 @@ class PrepareCampaign
         }
 
         if (!$destinationemail) {
-            $destinationemail = $subscriber->getEmail();
+            $destinationemail = $subscriber->getEmailAddress();
         }
 
         # this should move into a plugin
@@ -619,7 +622,7 @@ class PrepareCampaign
                                 $url,
                                 $link
                             ));
-                        $req = phpList::DB()->fetchRowQuery(sprintf(
+                        $result = phpList::DB()->query(sprintf(
                                 'SELECT linkid FROM %s
                                 WHERE campaignid = %s
                                 AND userid = %d
@@ -630,7 +633,7 @@ class PrepareCampaign
                                 $link
                             )
                         );
-                        $linkid = $req[0];
+                        $linkid = $result->fetchColumn(0);
 
                         $masked = "T|$linkid|$campaign->id|" . $subscriber->id ^ Config::get('XORmask');
                         $masked = urlencode(base64_encode($masked));
@@ -895,7 +898,7 @@ class PrepareCampaign
               </html>';
                             #$mail->add_html($html,$textcampaign);
                             #$mail->add_text($textcampaign);
-                            $mail->add_attachment(
+                            $mail->addAttachment(
                                 $contents,
                                 "campaign.pdf",
                                 "application/pdf"
@@ -923,7 +926,7 @@ class PrepareCampaign
                         phpList::DB()->query(
                             "UPDATE {Config::getTableName('campaign')} SET astextandpdf = astextandpdf + 1 WHERE id = $campaign->id"
                         );
-                    $pdffile = createPdf($textcampaign);
+                    $pdffile = PrepareCampaign::createPDF($textcampaign);
                     if (is_file($pdffile) && filesize($pdffile)) {
                         $fp = fopen($pdffile, "r");
                         if ($fp) {
@@ -1063,7 +1066,7 @@ class PrepareCampaign
                         /*$counters['batch_count'],
                         $counters['batch_total'],*/
                         0,0, //TODO: find solution to get counters from CampaignQueue
-                        $subscriber->getEmail(),
+                        $subscriber->getEmailAddress(),
                         $destinationemail
                     ),
                     0
@@ -1085,7 +1088,7 @@ class PrepareCampaign
                 foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
                     $plugin->processSendSuccess($campaign->id, $subscriberdata, $isTestMail);
                 }*/
-                #   logEvent("Sent campaign $campaign->id to $subscriber->getEmail() ($destinationemail)");
+                #   logEvent("Sent campaign $campaign->id to $subscriber->getEmailAddress() ($destinationemail)");
                 return true;
             }
         }
@@ -1317,13 +1320,13 @@ class PrepareCampaign
     {
         $cache = Cache::instance();
         if (!isset($cache->linktrack_cache[$link])) {
-            $exists = phpList::DB()->fetchRowQuery(sprintf(
+            $exists = phpList::DB()->query(sprintf(
                     'SELECT id FROM %d
                     WHERE url = "%s"',
                     Config::getTableName('linktrack_forward'),
                     $url
                 ));
-            if (!$exists[0]) {
+            if ($exists->rowCount() <= 0) {
                 $personalise = preg_match('/uid=/', $link);
                 phpList::DB()->query(sprintf(
                         'INSERT INTO %s (url, personalise)
@@ -1345,7 +1348,7 @@ class PrepareCampaign
             $cache->linktrack_sent_cache[$campaign_id] = array();
         }
         if (!isset($cache->linktrack_sent_cache[$campaign_id][$fwdid])) {
-            $rs = phpList::DB()->query(sprintf(
+            $result = phpList::DB()->query(sprintf(
                     'SELECT total FROM %s
                     WHERE messageid = %d
                     AND forwardid : %d',
@@ -1353,7 +1356,7 @@ class PrepareCampaign
                     $campaign_id,
                     $fwdid
                 ));
-            if (!phpList::DB()->numRows($rs)) {
+            if ($result->rowCount() <= 0) {
                 $total = 1;
                 ## first time for this link/campaign
                 # BCD: Isn't this just an insert?
@@ -1366,8 +1369,7 @@ class PrepareCampaign
                         $fwdid
                     ));
             } else {
-                $tot = phpList::DB()->fetchRow($rs);
-                $total = $tot[0] + 1;
+                $total = $result->fetchColumn(0) + 1;
                 phpList::DB()->query(sprintf(
                         'UPDATE %s SET total = %d
                         WHERE messageid = %d
@@ -1395,9 +1397,9 @@ class PrepareCampaign
             }
         }
 
-        /*  $req = Sql_Query(sprintf('insert ignore into %s (messageid,userid,forwardid)
+        /*  $result = Sql_Query(sprintf('insert ignore into %s (messageid,userid,forwardid)
             values(%d,%d,"%s","%s")',Config::getTableName('linktrack'),$campaign_id,$subscriberdata['id'],$url,addslashes($link)));
-          $req = Sql_Fetch_Row_Query(sprintf('select linkid from %s where messageid = %s and userid = %d and forwardid = %d
+          $result = Sql_Fetch_Row_Query(sprintf('select linkid from %s where messageid = %s and userid = %d and forwardid = %d
           ',Config::getTableName('linktrack'),$campaign_id,$subscriberid,$fwdid));*/
         return $fwdid;
     }
@@ -1688,14 +1690,14 @@ class PrepareCampaign
         }
 
         if (!empty($cached_campaign->listowner)) {
-            $att_req = phpList::DB()->query(sprintf(
+            $att_result = phpList::DB()->query(sprintf(
                 'SELECT name,value FROM %s AS aa, %s AS a_a
                 WHERE aa.id = a_a.adminattributeid AND aa.adminid = %d'
                 ,Config::getTableName('adminattribute'),
                 Config::getTableName('admin_attribute'),
                 $cached_campaign->listowner
             ));
-            while ($att = phpList::DB()->fetchArray($att_req)) {
+            while ($att = $att_result->fetch(\PDO::FETCH_ASSOC)) {
                 $cached_campaign->content = preg_replace(
                     '#\[LISTOWNER.' . strtoupper(preg_quote($att['name'])) . '\]#',
                     $att['value'],

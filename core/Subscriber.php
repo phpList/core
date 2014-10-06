@@ -108,7 +108,7 @@ class Subscriber
                 $id
             )
         );
-        return Subscriber::subscriberFromArray($result->fetchAll(\PDO::FETCH_ASSOC));
+        return Subscriber::subscriberFromArray($result->fetch(\PDO::FETCH_ASSOC));
     }
 
     /**
@@ -158,7 +158,7 @@ class Subscriber
         $result->bindParam(':value',$value);
         $result->execute();
 
-        return Subscriber::subscriberFromArray($result->fetchAll(\PDO::FETCH_ASSOC));
+        return Subscriber::subscriberFromArray($result->fetch(\PDO::FETCH_ASSOC));
     }
 
     /**

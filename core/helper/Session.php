@@ -7,6 +7,9 @@
 namespace phpList\helper;
 
 
+use phpList\Config;
+use phpList\phpList;
+
 class Session
 {
     function __construct()
@@ -144,7 +147,7 @@ class MySQLSessionHandler /*implements \SessionHandlerInterface*/
      */
     public function read($session_id)
     {
-        $session_data_req = phpList::DB()->query(
+        $result = phpList::DB()->query(
             sprintf(
                 'SELECT data FROM %s
                 WHERE sessionid = \'%s\'',
@@ -152,15 +155,7 @@ class MySQLSessionHandler /*implements \SessionHandlerInterface*/
                 addslashes($session_id)
             )
         );
-        $data = phpList::DB()->fetchRow($session_data_req);
-        return $data[0];
-        /*if (phpList::DB()->Sql_Affected_Rows() == 1) {
-
-            $data = phpList::DB()->Sql_Fetch_Row($session_data_req);
-            return $data[0];
-        } else {
-            return '';
-        }*/
+        return $result->fetchColumn(0);
     }
 
     /**
@@ -185,15 +180,15 @@ class MySQLSessionHandler /*implements \SessionHandlerInterface*/
         $session_id = addslashes($session_id);
         $session_data = addslashes($session_data);
 
-        $session_exists = phpList::DB()->fetchRowQuery(
+        $session_exists = phpList::DB()->query(
             sprintf(
                 'SELECT COUNT(*) FROM  %s
                 WHERE sessionid = \'%s\'',
                 Config::SESSION_TABLENAME,
                 addslashes($session_id)
             )
-        );
-        if ($session_exists[0] == 0) {
+        )->fetchColumn(0);
+        if ($session_exists <= 0) {
             $retval = phpList::DB()->query(
                 sprintf(
                     'INSERT INTO %s (sessionid,lastactive,data)
@@ -214,7 +209,7 @@ class MySQLSessionHandler /*implements \SessionHandlerInterface*/
                     $session_data
                 )
             );
-            if (phpList::DB()->affectedRows() < 0) {
+            if ($retval->rowCount() <= 0) {
                 //TODO: correct error handling
                 Logger::logEvent('unable to update session data for session ' . $session_id);
                 sendError('unable to update session data for session ' . $session_id);

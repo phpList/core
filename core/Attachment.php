@@ -91,7 +91,7 @@ class Attachment
      */
     public static function getAttachment($id)
     {
-        $result = phpList::DB()->fetchAssocQuery(
+        $result = phpList::DB()->query(
             sprintf(
                 'SELECT * FROM %s
                 WHERE a.id = %d',
@@ -99,7 +99,7 @@ class Attachment
                 $id
             )
         );
-        return Attachment::attachmentFromArray($result);
+        return Attachment::attachmentFromArray($result->fetch(\PDO::FETCH_ASSOC));
     }
 
     /**
@@ -119,7 +119,7 @@ class Attachment
      */
     public function removeIfOrphaned()
     {
-        $result = phpList::DB()->fetchAssocQuery(
+        $result = phpList::DB()->query(
             sprintf(
                 'SELECT messageid FROM %s
                 WHERE attachmentid = %d',
@@ -127,7 +127,7 @@ class Attachment
                 $this->id
             )
         );
-        if (empty($result)) {
+        if ($result->rowCount() == 0) {
             //remove from disk
             @unlink($this->remotefile);
         }

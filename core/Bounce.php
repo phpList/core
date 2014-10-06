@@ -29,16 +29,19 @@ class Bounce {
         if($this->id != 0){
             $this->update();
         }else{
-            phpList::DB()->query(sprintf(
+            $prep_statement = phpList::DB()->prepare(sprintf(
                     'INSERT INTO %s
                     (date, header, data, status, comment)
-                    VALUES("%s", "%s", "%s", "%s", "%s")',
+                    VALUES("%s", :header, :data, :status, :comment)',
                     Config::getTableName('bounce'),
-                    $this->date->format('Y-m-d H:i'),
-                    addslashes($this->header),
-                    addslashes($this->data),
-                    addslashes($this->status),
-                    addslashes($this->comment)
+                    $this->date->format('Y-m-d H:i')
+                ));
+
+            $prep_statement->execute(array(
+                    ":header"   =>  $this->header,
+                    ":data"     =>  $this->data,
+                    ":status"   =>  $this->status,
+                    ":comment"  =>  $this->comment,
                 ));
             $this->id = phpList::DB()->insertedId();
         }
@@ -50,17 +53,20 @@ class Bounce {
      */
     public function update()
     {
-        phpList::DB()->query(sprintf(
+        $prep_statement = phpList::DB()->prepare(sprintf(
                 'UPDATE %s SET
-                date = "%s", header = "%s", data = "%s", status = "%s", comment = "%s"
+                date = "%s", header = :header, data = :data, status = :status, comment = :comment
                 WHERE id = %d',
                 Config::getTableName('bounce'),
                 $this->date->format('Y-m-d H:i'),
-                addslashes($this->header),
-                addslashes($this->data),
-                addslashes($this->status),
-                addslashes($this->comment),
                 $this->id
+            ));
+
+        $prep_statement->execute(array(
+                ":header"   =>  $this->header,
+                ":data"     =>  $this->data,
+                ":status"   =>  $this->status,
+                ":comment"  =>  $this->comment,
             ));
     }
 
@@ -225,7 +231,7 @@ class Bounce {
     {
         ## check if we already have this um as a bounce
         ## so that we don't double count "delayed" like bounces
-        $exists = phpList::DB()->fetchRowQuery(sprintf(
+        $exists = phpList::DB()->query(sprintf(
                 'SELECT COUNT(*) FROM %s
                 WHERE user = %d
                 AND message = %d',
@@ -247,7 +253,7 @@ class Bounce {
         $this->save();
 
         ## if the relation did not exist yet, increment the counters
-        if(empty($exists[0])){
+        if($exists->rowCount() > 0){
             phpList::DB()->query(sprintf(
                     'UPDATE %s
                      SET bouncecount = bouncecount + 1
@@ -317,13 +323,13 @@ class BounceRule {
      */
     public static function getBounceRule($bounce_rule_id)
     {
-        $result = phpList::DB()->fetchAssocQuery(sprintf(
+        $result = phpList::DB()->query(sprintf(
                 'SELECT * FROM %s
                 WHERE id = %d',
                 Config::getTableName('bounceregex'),
                 $bounce_rule_id
             ));
-        return BounceRule::bounceRuleFromArray($result);
+        return BounceRule::bounceRuleFromArray($result->fetch(\PDO::FETCH_ASSOC));
     }
 
     /**
@@ -338,7 +344,7 @@ class BounceRule {
                 ORDER BY listorder',
                 Config::getTableName('bounceregex')
             ));
-        while($row = phpList::DB()->fetchAssoc($result)){
+        while($row = $result->fetch(\PDO::FETCH_ASSOC)){
             $rules[] = BounceRule::bounceRuleFromArray($row);
         }
         return $rules;
@@ -359,7 +365,7 @@ class BounceRule {
                 Config::getTableName('bounceregex'),
                 phpList::DB()->sqlEscape($status)
             ));
-        while($row = phpList::DB()->fetchAssoc($result)){
+        while($row = $result->fetch(\PDO::FETCH_ASSOC)){
             $rules[] = BounceRule::bounceRuleFromArray($row);
         }
         return $rules;
@@ -407,16 +413,18 @@ class BounceRule {
         if($this->id != 0){
             $this->update();
         }else{
-            phpList::DB()->query(sprintf(
+            $prep_statement = phpList::DB()->prepare(sprintf(
                     'INSERT INTO %s (regex, action, listorder, admin, comment, status)
-                    VALUES ("%s", "%s", %d, %d, "%s", "%s")',
+                    VALUES (:regex, "%s", %d, %d, :comment, :status)',
                     Config::getTableName('bounceregex'),
-                    phpList::DB()->sqlEscape($this->regex),
                     $this->action,
                     $this->listorder,
-                    $this->admin,
-                    phpList::DB()->sqlEscape($this->comment),
-                    phpList::DB()->sqlEscape($this->status)
+                    $this->admin
+                ));
+            $prep_statement->execute(array(
+                    ":regex"    =>  $this->regex,
+                    ":status"    =>  $this->status,
+                    ":comment"    =>  $this->comment
                 ));
             $this->id = phpList::DB()->insertedId();
         }
@@ -427,18 +435,21 @@ class BounceRule {
      */
     public function update()
     {
-        phpList::DB()->query(sprintf(
+        $prep_statement = phpList::DB()->prepare(sprintf(
                 'UPDATE %s SET
-                regex = "%s", action = "%s", listorder = %d, admin = %d, comment = "%s", status = "%s")
+                regex = :regex, action = "%s", listorder = %d, admin = %d, comment = :comment, status = :status)
                 WHERE id = %d',
                 Config::getTableName('bounceregex'),
-                phpList::DB()->sqlEscape($this->regex),
                 $this->action,
                 $this->listorder,
                 $this->admin,
-                phpList::DB()->sqlEscape($this->comment),
-                phpList::DB()->sqlEscape($this->status),
                 $this->id
+            ));
+
+        $prep_statement->execute(array(
+                ":regex"    =>  $this->regex,
+                ":status"    =>  $this->status,
+                ":comment"    =>  $this->comment
             ));
     }
 

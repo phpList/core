@@ -25,12 +25,14 @@ class MailingList
     public $category;
 
     /**
+     * Default constructor
      * @param string $name
      * @param string $description
      * @param int $listorder
      * @param int $owner
      * @param bool $active
      * @param int $category
+     * @param string $prefix
      */
     public function __construct($name, $description, $listorder, $owner, $active, $category, $prefix)
     {
@@ -40,6 +42,7 @@ class MailingList
         $this->owner = $owner;
         $this->active = $active;
         $this->category = $category;
+        $this->prefix = $prefix;
     }
 
     /**
@@ -64,10 +67,10 @@ class MailingList
     public static function getAllLists()
     {
         //TODO: probably best to replace the subselect with a function parameter
-        $db_result = phpList::DB()->query(
+        $result = phpList::DB()->query(
             sprintf('SELECT * FROM %s %s', Config::getTableName('list'), Config::get('subselect', ''))
         );
-        return MailingList::makeLists($db_result);
+        return MailingList::makeLists($result->fetch(\PDO::FETCH_ASSOC));
     }
 
     /**
@@ -78,7 +81,7 @@ class MailingList
      */
     public static function getListsByOwner($owner_id, $id = 0)
     {
-        $db_result = phpList::DB()->query(
+        $result = phpList::DB()->query(
             sprintf(
                 'SELECT * FROM %s
                 WHERE owner = %d %s',
@@ -87,7 +90,7 @@ class MailingList
                 (($id == 0) ? '' : " AND id = $id")
             )
         );
-        return MailingList::makeLists($db_result);
+        return MailingList::makeLists($result->fetch(\PDO::FETCH_ASSOC));
     }
 
     /**
@@ -97,7 +100,7 @@ class MailingList
      */
     public static function getListById($id)
     {
-        $result = phpList::DB()->fetchAssocQuery(
+        $result = phpList::DB()->query(
             sprintf(
                 'SELECT * FROM %s
                 WHERE id = %d',
@@ -105,7 +108,7 @@ class MailingList
                 $id
             )
         );
-        return MailingList::listFromArray($result);
+        return MailingList::listFromArray($result->fetch(\PDO::FETCH_ASSOC));
     }
 
     /**
@@ -127,7 +130,7 @@ class MailingList
                 $subscriber_id
             )
         );
-        return MailingList::makeLists($result);
+        return MailingList::makeLists($result->fetch(\PDO::FETCH_ASSOC));
     }
 
     /**
@@ -137,7 +140,6 @@ class MailingList
      */
     public static function getListSubscribers($list)
     {
-        $subscriber_ids = array();
         if(is_array($list)){
             $where = ' WHERE listid IN (' . join(',', $list) .')';
         }else{
@@ -150,22 +152,20 @@ class MailingList
                 $where
             )
         );
-        while ($row = phpList::DB()->fetchRow($result)) {
-            $subscriber_ids[] = $row;
-        }
-        return $subscriber_ids;
+
+        return $result->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
      * Make an array of MailingList objects from a db result
-     * @param $db_result
+     * @param null|\PDOStatement $db_result
      * @return array
      */
     private static function makeLists($db_result)
     {
         $list = array();
         if (!empty($db_result)) {
-            while ($row = phpList::DB()->fetchAssoc($db_result)) {
+            while ($row = $db_result->fetch(\PDO::FETCH_ASSOC)) {
                 $list[] = MailingList::listFromArray($row);
             }
         }
@@ -233,7 +233,7 @@ class MailingList
             return false;
         }
 
-        $req = phpList::DB()->query(
+        $result = phpList::DB()->query(
             sprintf(
                 'SELECT data
                 FROM %s
@@ -241,14 +241,14 @@ class MailingList
                 Config::getTableName('subscribepage_data')
             )
         );
-        while ($row = phpList::DB()->fetchAssoc($req)) {
-            $lists = explode(',', $row['data']);
-        }
+        $row = $result->fetch(\PDO::FETCH_ASSOC);
+        $lists = explode(',', $row['data']);
+
         return in_array($this->id, $lists);
     }
 
     /**
-     * Subscribe a subscriber to given list
+     * Add subscriber to given list
      * @param $subscriber_id
      * @param $list_id
      */
@@ -340,14 +340,14 @@ class MailingList
         if (!$categories) {
             $categories = array();
             ## try to fetch them from existing lists
-            $req = phpList::DB()->query(
+            $result = phpList::DB()->query(
                 sprintf(
                     'SELECT DISTINCT category FROM %s
                     WHERE category != "%s" ',
                     Config::getTableName('list')
                 )
             );
-            while ($row = phpList::DB()->fetchRow($req)) {
+            while ($row = $result->fetch()) {
                 $categories[] = $row[0];
             }
             if (!empty($categories)) {

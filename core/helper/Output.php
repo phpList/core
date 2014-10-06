@@ -7,6 +7,9 @@
 namespace phpList\helper;
 
 
+use phpList\Config;
+use phpList\phpList;
+
 class Output {
     private static $_instance;
     private $shadecount = 0;

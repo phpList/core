@@ -7,6 +7,11 @@
 namespace phpList;
 
 
+use phpList\helper\Logger;
+use phpList\helper\Output;
+use phpList\helper\Process;
+use phpList\helper\Util;
+
 class BounceProcessor {
     //TODO: replace print statements
     /**
@@ -69,15 +74,15 @@ class BounceProcessor {
         $reparsed = $count = 0;
         $reidentified = 0;
 
-        $req = phpList::DB()->query(sprintf(
+        $result = phpList::DB()->query(sprintf(
                 'SELECT * FROM %s
                 WHERE status = "unidentified bounce"',
                 Config::getTableName('bounce')
             ));
-        $total = phpList::DB()->affectedRows();
+        $total = $result->rowCount();
         Output::cl_output(s('%d bounces to reprocess', $total));
 
-        while ($bounce = phpList::DB()->fetchAssoc($req)) {
+        while ($bounce = $result->fetch(\PDO::FETCH_ASSOC)) {
             $count++;
             if ($count % 25 == 0) {
                 Output::cl_progress(s('%d out of %d processed', $count, $total));
@@ -106,22 +111,23 @@ class BounceProcessor {
             //$limit =  ' limit 10000';
             $limit = '';
             # @@ not sure whether this one would make sense
-            #  $req = Sql_Query(sprintf('select * from %s as bounce, %s as umb,%s as user where bounce.id = umb.bounce
+            #  $result = Sql_Query(sprintf('select * from %s as bounce, %s as umb,%s as user where bounce.id = umb.bounce
             #    and user.id = umb.user and !user.confirmed and !user.blacklisted %s',
             #    $GLOBALS['tables']['bounce'],$GLOBALS['tables']['user_message_bounce'],$GLOBALS['tables']['user'],$limit));
-            $req = phpList::DB()->query(sprintf(
+            $result = phpList::DB()->query(sprintf(
                     'SELECT * FROM %s AS bounce, %s AS umb
                     WHERE bounce.id = umb.bounce %s',
                     Config::getTableName('bounce'),
                     Config::getTableName('user_message_bounce'),
                     $limit
                 ));
-            while ($row = phpList::DB()->fetchAssoc($req)) {
+            while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
                 $alive = Process::checkLock($this->process_id);
-                if ($alive)
+                if ($alive){
                     Process::keepLock($this->process_id);
-                else
+                }else{
                     $this->bounceProcessError(s('Process Killed by other process'));
+                }
                 #    output('Subscriber '.$row['user']);
                 $rule = BounceRule::matchedBounceRules($row['data'],$bouncerules);
                 #    output('Action '.$rule['action']);
@@ -219,21 +225,21 @@ class BounceProcessor {
         $this->output(s("Identifying consecutive bounces"));
 
         # we only need subscriber who are confirmed at the moment
-        $subscriberid_req = phpList::DB()->query(sprintf(
+        $subscriberid_result = phpList::DB()->query(sprintf(
                 'SELECT DISTINCT umb.user FROM %s AS umb, %s AS u
                 WHERE u.id = umb.user
                 AND u.confirmed',
                 Config::getTableName('user_message_bounce'),
                 Config::getTableName('user', true)
             ));
-        $total = phpList::DB()->affectedRows();
-        if (!$total){
+
+        if ($subscriberid_result->rowCount() <= 0){
             $this->output(s("Nothing to do"));
         }
 
         $subscribercnt = 0;
         $unsubscribed_subscribers = "";
-        while ($subscriber = phpList::DB()->fetchRow($subscriberid_req)) {
+        while ($subscriber = $subscriberid_result->fetch(\PDO::FETCH_ASSOC)) {
             Process::keepLock($this->process_id);
             set_time_limit(600);
             $msg_req = phpList::DB()->query(sprintf(
@@ -278,7 +284,7 @@ class BounceProcessor {
             $alive = 1;
             $removed = $msgokay = $unconfirmed = $unsubscribed = 0;
             #while ($alive && !$removed && $bounce = Sql_Fetch_Array($msg_req)) { DT 051105
-            while ($alive && !$removed && !$msgokay && $bounce = phpList::DB()->fetchArray($msg_req)) {
+            while ($alive && !$removed && !$msgokay && $bounce = $msg_req->fetch(\PDO::FETCH_ASSOC)) {
 
                 $alive = Process::checkLock($this->process_id);
                 if ($alive) {
@@ -671,17 +677,19 @@ class BounceProcessor {
         $num = imap_num_msg($link);
         $this->output( $num . ' '.s('bounces to fetch from the mailbox')."\n");
         $this->output( s('Please do not interrupt this process')."\n");
-        $report = $num . ' '.s('bounces to process')."\n";
+        Logger::addToReport($num . ' '.s('bounces to process')."\n");
         if ($num > $max) {
             print s('Processing first')." $max ".s('bounces').'<br/>';
             Logger::addToReport($num . ' '.s('processing first')." $max ".s('bounces')."\n");
             $num = $max;
         }
+
         if (Config::TEST) {
             print s('Running in test mode, not deleting messages from mailbox').'<br/>';
         } else {
             print s('Processed messages will be deleted from mailbox').'<br/>';
         }
+
         #  for ($x=1;$x<150;$x++) {
         for($x=1; $x <= $num; $x++) {
             set_time_limit(60);

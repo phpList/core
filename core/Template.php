@@ -36,7 +36,7 @@ class Template
      */
     public static function getTemplate($id)
     {
-        $result = phpList::DB()->fetchAssocQuery(
+        $result = phpList::DB()->query(
             sprintf(
                 'SELECT * FROM %s
                 WHERE id = %d',
@@ -44,8 +44,8 @@ class Template
                 $id
             )
         );
-        if(!empty($result)){
-            return Template::templateFromArray($result);
+        if($result->rowCount() > 0){
+            return Template::templateFromArray($result->fetch(\PDO::FETCH_ASSOC));
         }else{
             return false;
         }
@@ -128,14 +128,14 @@ class Template
     public function getImages()
     {
         $images = array();
-        $result = phpList::DB()->fetchAssocQuery(
+        $result = phpList::DB()->query(
             sprintf(
                 'SELECT * FROM %s
                 WHERE template = %d',
                 Config::getTableName('templateimage'),
                 $this->id
             )
-        );
+        )->fetchAll(\PDO::FETCH_ASSOC);
         foreach ($result as $img) {
             $imo = new TemplateImage($img['template'], $img['mime'], $img['filename'], $img['data'], $img['width'], $img['height']);
             $imo->id = $img['id'];

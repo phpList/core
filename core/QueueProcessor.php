@@ -7,6 +7,15 @@
 namespace phpList;
 
 
+use phpList\helper\Cache;
+use phpList\helper\Logger;
+use phpList\helper\Output;
+use phpList\helper\PrepareCampaign;
+use phpList\helper\Process;
+use phpList\helper\Timer;
+use phpList\helper\Util;
+use phpList\helper\Validation;
+
 class QueueProcessor
 {
     private $status = 'OK';
@@ -71,7 +80,7 @@ class QueueProcessor
         ## let's make sure all subscribers have a uniqid
         ## only when on CL
         if ($commandline) {
-            $num = Subscriber::checkUniqueIds();
+            $num = Util::checkUniqueIds();
             if ($num) {
                 Output::cl_output('Given a Unique ID to ' . $num . ' subscribers, this might have taken a while');
             }
@@ -331,15 +340,15 @@ class QueueProcessor
             ## keep an eye on how long it takes to find subscribers, and warn if it's a long time
             $find_subscriber_start = Timer::get('process_queue')->elapsed(true);
 
-            $numattr = phpList::DB()->fetchRowQuery(sprintf(
+            $attribute_count = phpList::DB()->query(sprintf(
                     'SELECT COUNT(*) FROM %s',
                     Config::getTableName('attribute')
-                ));
+                ))->fetchColumn(0);
 
             $subscriber_attribute_query = ''; #16552
-            if ($subscriberselection && $numattr[0]) {
-                $res = phpList::DB()->query($subscriberselection);
-                $this->counters['total_subscribers_for_campaign'] = phpList::DB()->numRows($res);
+            if ($subscriberselection && $attribute_count) {
+                $result = phpList::DB()->query($subscriberselection);
+                $this->counters['total_subscribers_for_campaign'] = $result->rowCount();
                 if (!$this->reload) {
                     Output::output(
                         $this->counters['total_subscribers_for_campaign'] . ' ' . s(
@@ -350,13 +359,13 @@ class QueueProcessor
                     );
                 }
                 $subscriber_list = '';
-                while ($row = phpList::DB()->fetchRow($res)) {
-                    $subscriber_list .= $row[0] . ",";
+                while ($fetched_subscriber = $result->fetchColumn(0)) {
+                    $subscriber_list .= $fetched_subscriber . ",";
                 }
                 $subscriber_list = substr($subscriber_list, 0, -1);
-                if ($subscriber_list)
+                if ($subscriber_list){
                     $subscriber_attribute_query = " AND listuser.userid IN ($subscriber_list)";
-                else {
+                }else {
                     if (!$this->reload) {
                         Output::output(s('No subscribers apply for attributes'));
                     }
@@ -403,10 +412,10 @@ class QueueProcessor
             # 8478, avoid building large array in memory, when sending large amounts of subscribers.
 
 
-              $req = Sql_Query("select userid from {$tables["usermessage"]} where messageid = $campaignid");
+              $result = Sql_Query("select userid from {$tables["usermessage"]} where messageid = $campaignid");
               $skipped = Sql_Affected_Rows();
               if ($skipped < 10000) {
-                while ($row = Sql_Fetch_Row($req)) {
+                while ($row = Sql_Fetch_Row($result)) {
                   $alive = checkLock($this->send_process_id);
                   if ($alive)
                     keepLock($this->send_process_id);
@@ -421,8 +430,8 @@ class QueueProcessor
 
               # also exclude unconfirmed subscribers, otherwise they'll block the process
               # will give quite different statistics than when used web based
-            #  $req = Sql_Query("select id from {$tables["user"]} where !confirmed");
-            #  while ($row = Sql_Fetch_Row($req)) {
+            #  $result = Sql_Query("select id from {$tables["user"]} where !confirmed");
+            #  while ($row = Sql_Fetch_Row($result)) {
             #    array_push($donesubscribers,$row[0]);
             #  }
               if (sizeof($donesubscribers))
@@ -468,25 +477,24 @@ class QueueProcessor
                     Config::getTableName('usermessage'),
                     $campaign->id
                 );
-                phpList::DB()->query($subscriberids_query);
-                $subscriberids_result = phpList::DB()->affectedRows();
+
+                $subscriberids_result = phpList::DB()->query($subscriberids_query)->rowCount();
                 # if (Config::VERBOSE) {
                 Output::cl_output('found pre-queued subscribers ' . $subscriberids_result, 0, 'progress');
             }
 
             ## if the above didn't find any, run the normal search (again)
-            if (empty($subscriberids_result)) {
+            if ($subscriberids_result <= 0) {
                 ## remove pre-queued campaigns, otherwise they wouldn't go out
-                phpList::DB()->query(sprintf(
+                $removed = phpList::DB()->query(sprintf(
                         'DELETE FROM %s
                         WHERE messageid = %d
                         AND status = "todo"',
                         Config::getTableName('usermessage'),
                         $campaign->id
-                    ));
+                    ))->rowCount();
 
-                $removed = phpList::DB()->affectedRows();
-                if ($removed) {
+                if ($removed > 0) {
                     Output::cl_output('removed pre-queued subscribers ' . $removed, 0, 'progress');
                 }
 
@@ -525,7 +533,7 @@ class QueueProcessor
             }
 
             # now we have all our subscribers to send the campaign to
-            $this->counters['total_subscribers_for_campaign ' . $campaign->id] = phpList::DB()->numRows($subscriberids_result);
+            $this->counters['total_subscribers_for_campaign ' . $campaign->id] = $subscriberids_result->rowCount();
             /*if ($skipped >= 10000) {
                 $this->counters['total_subscribers_for_campaign ' . $campaign->id] -= $skipped;
             }*/
@@ -553,9 +561,9 @@ class QueueProcessor
                 ## that should save time when running the queue multiple times, which avoids the subscriber search after the first time
                 ## only do this first time, ie empty($queued);
                 ## the last run will pick up changes
-                while ($subscriber_ids = phpList::DB()->fetchRow($subscriberids_result)) {
+                while ($fetched_subscriber_id = $subscriberids_result->fetchColumn(0)) {
                     ## mark campaign/subscriber combination as "todo"
-                    $campaign->updateSubscriberCampaignStatus($subscriber_ids[0], 'todo');
+                    $campaign->updateSubscriberCampaignStatus($fetched_subscriber_id, 'todo');
                 }
                 ## rerun the initial query, in order to continue as normal
                 $subscriberids_query = sprintf(
@@ -566,7 +574,7 @@ class QueueProcessor
                     $campaign->id
                 );
                 $subscriberids_result = phpList::DB()->query($subscriberids_query);
-                $this->counters['total_subscribers_for_campaign ' . $campaign->id] = phpList::DB()->numRows($subscriberids_result);
+                $this->counters['total_subscribers_for_campaign ' . $campaign->id] = $subscriberids_result->rowCount();
             }
 
             if (Config::MAILQUEUE_BATCH_SIZE > 0) {
@@ -580,20 +588,21 @@ class QueueProcessor
                     if (Config::VERBOSE) {
                         Output::output($this->num_per_batch . '  query -> ' . $subscriberids_query);
                     }
-                    $subscriberids_result = phpList::DB()->query($subscriberids_query);
-                    if (phpList::DB()->hasError()) {
-                        $this->queueProcessError(phpList::DB()->error());
+                    try{
+                        $subscriberids_result = phpList::DB()->query($subscriberids_query);
+                    }catch (\PDOException $e){
+                        $this->queueProcessError($e->getMessage());
                     }
                 } else {
                     Output::output(s('No subscribers to process for this batch'), 0, 'progress');
                     //TODO: Can we remove this pointless query (will have to change the while loop below)
                     $subscriberids_result = phpList::DB()->query(sprintf('SELECT * FROM %s WHERE id = 0', Config::getTableName('user')));
                 }
-                $affrows = phpList::DB()->numRows($subscriberids_result);
+                $affrows = $subscriberids_result->rowCount();
                 Output::output(s('Processing batch of ') . ': ' . $affrows, 0, 'progress');
             }
 
-            while ($subscriberdata = phpList::DB()->fetchRow($subscriberids_result)) {
+            while ($subscriberdata = $subscriberids_result->fetch()) {
                 $this->counters['processed_subscribers_for_campaign ' . $campaign->id]++;
                 $failure_reason = '';
                 if ($this->num_per_batch && $this->sent >= $this->num_per_batch) {
@@ -656,7 +665,7 @@ class QueueProcessor
                         $subscriber->id,
                         $campaign->id
                     ));
-                if (!phpList::DB()->numRows($um)) {
+                if ($um->rowCount() <= 0) {
                     ## mark this campaign that we're working on it, so that no other process will take it
                     ## between two lines ago and here, should hopefully be quick enough
                     $campaign->updateSubscriberCampaignStatus($subscriber->id, 'active');
@@ -969,7 +978,7 @@ class QueueProcessor
                     ## when trying to send the campaign, it was already marked for this subscriber
                     ## June 2010, with the multiple send process extension, that's quite possible to happen again
 
-                    $um = phpList::DB()->fetchRow($um);
+                    $um = $um->fetch();
                     $this->notsent++;
                     if (Config::VERBOSE) {
                         Output::output(
@@ -1217,7 +1226,7 @@ class QueueProcessor
               Output::output(sprintf('select count(*) from %s where entered > date_sub(current_timestamp,interval %d second) and status = "sent"',
                 $tables["usermessage"],$this->batch_period));
             */
-            $result = phpList::DB()->fetchRowQuery(
+            $result = phpList::DB()->query(
                 sprintf(
                     'SELECT COUNT(*) FROM %s
                     WHERE entered > date_sub(CURRENT_TIMESTAMP,INTERVAL %d second)
@@ -1226,7 +1235,7 @@ class QueueProcessor
                     $this->batch_period
                 )
             );
-            $recently_sent = $result[0];
+            $recently_sent = $result->fetchColumn(0);
             Output::cl_output('Recently sent : ' . $recently_sent);
             $this->num_per_batch -= $recently_sent;
 

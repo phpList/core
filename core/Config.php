@@ -113,7 +113,7 @@ class Config extends UserConfig
                 $item
             );
             $result = phpList::DB()->query($query);
-            if (phpList::DB()->numRows($result) == 0) {
+            if ($result->rowCount() == 0) {
                 if ($default == null) {
                     //try to get from default config
                     $dc = DefaultConfig::get($item);
@@ -130,8 +130,7 @@ class Config extends UserConfig
                     return $default;
                 }
             } else {
-                $row = phpList::DB()->fetchRow($result);
-                return $row[0];
+                return $result->fetch();
             }
         }
         return $default;

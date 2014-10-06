@@ -6,6 +6,9 @@
 
 namespace phpList;
 
+use phpList\helper\Logger;
+use phpList\helper\String;
+use phpList\helper\Util;
 use PHPMailer;
 
 class phpListMailer extends \PHPMailer
@@ -204,7 +207,7 @@ class phpListMailer extends \PHPMailer
         return $body;
     }
 
-    private function compatSend($to_name = "", $to_addr, $from_name, $from_addr, $subject = '', $headers = '', $envelope = '')
+    public function compatSend($to_name = "", $to_addr, $from_name, $from_addr, $subject = '', $headers = '', $envelope = '')
     {
         if (!empty($from_addr) && method_exists($this, 'SetFrom')) {
             $this->SetFrom($from_addr, $from_name);
@@ -498,14 +501,13 @@ class phpListMailer extends \PHPMailer
             $filename,
             basename($filename)
         );
-        $rs = phpList::DB()->query($query);
-        return phpList::DB()->numRows($rs);
+        return phpList::DB()->query($query)->rowCount();
     }
 
     private function getTemplateImages($templateid, $filename)
     {
         if (basename($filename) == 'powerphplist.png') $templateid = 0;
-        $query = sprintf(
+        $result = phpList::DB()->query(sprintf(
             'SELECT data FROM %s
             WHERE template = %s
             AND (filename = "%s" or filename = "%s")',
@@ -513,10 +515,9 @@ class phpListMailer extends \PHPMailer
             $templateid,
             $filename,
             basename($filename)
-        );
+        ));
 
-        $req = phpList::DB()->fetchRowQuery($query);
-        return $req[0];
+        return $result->fetchColumn(0);
     }
 
     public function EncodeFile($path, $encoding = "base64")
@@ -669,13 +670,13 @@ class phpListMailer extends \PHPMailer
             return 0;
         }
 
-        if (!$skipblacklistcheck && Subscriber::isBlackListed($to)) {
+        if (!$skipblacklistcheck && Util::isEmailBlacklisted($to)) {
             Logger::logEvent("Error, $to is blacklisted, not sending");
-            Subscriber::blacklistSubscriber($to);
-            Subscriber::addSubscriberHistory(
-                Subscriber::getSubscriberByEmailAddress($to)->id,
+            Util::blacklistSubscriberByEmail($to);
+            Subscriber::addHistory(
                 'Marked Blacklisted',
-                'Found subscriber in blacklist while trying to send an email, marked black listed'
+                'Found subscriber in blacklist while trying to send an email, marked black listed',
+                Subscriber::getSubscriberByEmailAddress($to)->id
             );
             return 0;
         }
@@ -821,7 +822,7 @@ class phpListMailer extends \PHPMailer
             $mail->Send('', $destinationemail, $fromname, $fromemail, $subject);
         } catch (\Exception $e) {
             //TODO: replace globals
-            $GLOBALS['smtpError'] = $e->getCampaign();
+            $GLOBALS['smtpError'] = $e->getMessage();
             return false;
         }
         return true;
@@ -835,7 +836,7 @@ class phpListMailer extends \PHPMailer
             $mails = array();
             if (sizeof($lists) && Config::get('SEND_LISTADMIN_COPY')) {
                 foreach ($lists as $list) {
-                    $tmp_list = MailingList::getList($list);
+                    $tmp_list = MailingList::getListById($list);
                     $mails[] = Admin::getAdmin($tmp_list->id)->email;
                 }
             }
