@@ -1,9 +1,4 @@
 <?php
-/**
- * User: SaWey
- * Date: 16/06/14
- */
-
 namespace phpList\test;
 
 use phpList\Config;

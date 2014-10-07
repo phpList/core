@@ -1,9 +1,4 @@
 <?php
-/**
- * User: SaWey
- * Date: 15/12/13
- */
-
 namespace phpList\helper;
 
 use phpList\phpList;
@@ -60,8 +55,22 @@ class String
      * @param string $name
      * @return string
      */
-    public static function cleanAttributeName($name) {
+    public static function cleanAttributeName($name)
+    {
         return str_replace(array('(', ')', '/', '\\', '*', '.'), '', $name);
+    }
+
+    /**
+     *  Remove extra spaces
+     * @param string $string
+     * @return string
+     */
+    public static function removeDoubleSpaces($string)
+    {
+        while (strpos($string, '  ')) {
+            $string = str_replace('  ', ' ', $string);
+        }
+        return $string;
     }
 
     public static function HTML2Text($text)
@@ -215,14 +224,14 @@ class String
                     # starts with /
                     $text = preg_replace(
                         '#' . preg_quote($foundtags[0][$i]) . '#im',
-                        $tagmatch . '"' . $parts["scheme"] . '://' . $parts["host"] . $match . '"',
+                        $tagmatch . '"' . $parts['scheme'] . '://' . $parts['host'] . $match . '"',
                         $text,
                         1
                     );
                 } else {
                     $path = '';
                     if (isset($parts['path'])) {
-                        $path = $parts["path"];
+                        $path = $parts['path'];
                     }
                     if (!preg_match('#/$#', $path)) {
                         $pathparts = explode('/', $path);
@@ -232,7 +241,7 @@ class String
                     }
                     $text = preg_replace(
                         '#' . preg_quote($foundtags[0][$i]) . '#im',
-                        $tagmatch . '"' . $parts["scheme"] . '://' . $parts["host"] . $path . $match . '"',
+                        $tagmatch . '"' . $parts['scheme'] . '://' . $parts['host'] . $path . $match . '"',
                         $text,
                         1
                     );

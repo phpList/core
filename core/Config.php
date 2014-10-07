@@ -1,9 +1,4 @@
 <?php
-/**
- * User: SaWey
- * Date: 16/12/13
- */
-
 namespace phpList;
 
 
@@ -121,7 +116,7 @@ class Config extends UserConfig
                         //TODO: Old version would save default cfg to db, is this needed?
                         # save the default value to the database, so we can obtain
                         # the information when running from commandline
-                        //if (Sql_Table_Exists($tables["config"]))
+                        //if (Sql_Table_Exists($tables['config']))
                         //    saveConfig($item, $value);
                         #    print "$item => $value<br/>";
                         return $dc['value'];
@@ -245,7 +240,7 @@ class Config extends UserConfig
                     //TODO: Old version would save default cfg to db, is this needed?
                     # save the default value to the database, so we can obtain
                     # the information when running from commandline
-                    //if (Sql_Table_Exists($tables["config"]))
+                    //if (Sql_Table_Exists($tables['config']))
                     //    saveConfig($item, $value);
                     #    print "$item => $value<br/>";
                     $value = $dc['value'];
@@ -701,8 +696,8 @@ class Config extends UserConfig
         }
 
         /*
-        if (defined("IN_WEBBLER") && is_object($GLOBALS["config"]["plugins"]["phplist"])) {
-            $GLOBALS["tables"] = $GLOBALS["config"]["plugins"]["phplist"]->tables;
+        if (defined("IN_WEBBLER") && is_object($GLOBALS['config']['plugins']['phplist'])) {
+            $GLOBALS['tables'] = $GLOBALS['config']['plugins']['phplist']->tables;
         }
         */
         Config::setRunningConfig(

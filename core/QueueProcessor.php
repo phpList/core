@@ -1,9 +1,4 @@
 <?php
-/**
- * User: SaWey
- * Date: 17/12/13
- */
-
 namespace phpList;
 
 
@@ -80,7 +75,7 @@ class QueueProcessor
         ## let's make sure all subscribers have a uniqid
         ## only when on CL
         if ($commandline) {
-            $num = Util::checkUniqueIds();
+            $num = Subscriber::checkUniqueIds();
             if ($num) {
                 Output::cl_output('Given a Unique ID to ' . $num . ' subscribers, this might have taken a while');
             }
@@ -412,7 +407,7 @@ class QueueProcessor
             # 8478, avoid building large array in memory, when sending large amounts of subscribers.
 
 
-              $result = Sql_Query("select userid from {$tables["usermessage"]} where messageid = $campaignid");
+              $result = Sql_Query("select userid from {$tables['usermessage']} where messageid = $campaignid");
               $skipped = Sql_Affected_Rows();
               if ($skipped < 10000) {
                 while ($row = Sql_Fetch_Row($result)) {
@@ -430,7 +425,7 @@ class QueueProcessor
 
               # also exclude unconfirmed subscribers, otherwise they'll block the process
               # will give quite different statistics than when used web based
-            #  $result = Sql_Query("select id from {$tables["user"]} where !confirmed");
+            #  $result = Sql_Query("select id from {$tables['user']} where !confirmed");
             #  while ($row = Sql_Fetch_Row($result)) {
             #    array_push($donesubscribers,$row[0]);
             #  }
@@ -462,7 +457,7 @@ class QueueProcessor
                 listmessage.messageid = %d and
                 listmessage.listid = listuser.listid and
                 user.id = listuser.userid %s %s %s',
-                $tables['listuser'],$tables["user"],$tables['listmessage'],
+                $tables['listuser'],$tables['user'],$tables['listmessage'],
                 $campaignid,
                 $subscriberconfirmed,
                 $exclusion,
@@ -944,7 +939,7 @@ class QueueProcessor
                             $this->unconfirmed++;
                             # when running from commandline we mark it as sent, otherwise we might get
                             # stuck when using batch processing
-                            # if ($GLOBALS["commandline"]) {
+                            # if ($GLOBALS['commandline']) {
                             $campaign->updateSubscriberCampaignStatus($subscriber->id, 'unconfirmed subscriber');
                             # }
                             //TODO: can probably remove below check
@@ -1224,7 +1219,7 @@ class QueueProcessor
             # amount from this batch
             /*
               Output::output(sprintf('select count(*) from %s where entered > date_sub(current_timestamp,interval %d second) and status = "sent"',
-                $tables["usermessage"],$this->batch_period));
+                $tables['usermessage'],$this->batch_period));
             */
             $result = phpList::DB()->query(
                 sprintf(
@@ -1404,7 +1399,7 @@ class QueueProcessor
                 ) . " \n"
             );
             //TODO: remove globals
-        } elseif ($this->script_stage == 5 && (!$this->nothingtodo || isset($GLOBALS["wait"]))) {
+        } elseif ($this->script_stage == 5 && (!$this->nothingtodo || isset($GLOBALS['wait']))) {
             # if the script timed out in stage 5, reload the page to continue with the rest
             $this->reload++;
             if (!Config::get('commandline') && $this->num_per_batch && $this->batch_period) {

@@ -1,6 +1,4 @@
 <?php
-
-
 /**
  * Add a shortcut that seems common in other apps
  * function s($text)

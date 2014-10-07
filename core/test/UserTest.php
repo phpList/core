@@ -1,9 +1,4 @@
 <?php
-/**
- * User: SaWey
- * Date: 23/12/13
- */
-
 namespace phpList\test;
 
 // include __DIR__ . '\..\phpList.php';

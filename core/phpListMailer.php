@@ -1,9 +1,4 @@
 <?php
-/**
- * User: SaWey
- * Date: 16/12/13
- */
-
 namespace phpList;
 
 use phpList\helper\Logger;

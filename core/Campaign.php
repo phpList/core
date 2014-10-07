@@ -1,14 +1,10 @@
 <?php
-/**
- * User: SaWey
- * Date: 5/12/13
- */
-
 namespace phpList;
 
 
 use phpList\helper\Logger;
 use phpList\helper\String;
+use phpList\helper\Util;
 
 class Campaign
 {
@@ -769,9 +765,8 @@ class Campaign
         }
 
         $default = array(
-            'from' => Config::get('message_from_address', Config::get('admin_address')),
             ## can add some more from below
-            'google_track' => Config::get('always_add_googletracking'),
+            'google_track' => Config::get('always_add_googletracking')
         );
 
         ## when loading an old campaign that hasn't got data stored in campaign data, load it from the campaign table
@@ -887,30 +882,13 @@ class Campaign
         }
 
         ### parse the from field into it's components - email and name
-        if (preg_match("/([^ ]+@[^ ]+)/", $campaigndata['fromfield'], $regs)) {
-            # if there is an email in the from, rewrite it as "name <email>"
-            $campaigndata['fromname'] = str_replace($regs[0], "", $campaigndata['fromfield']);
-            $campaigndata['fromemail'] = $regs[0];
-            # if the email has < and > take them out here
-            $campaigndata['fromemail'] = str_replace('<', '', $campaigndata['fromemail']);
-            $campaigndata['fromemail'] = str_replace('>', '', $campaigndata['fromemail']);
-            # make sure there are no quotes around the name
-            $campaigndata['fromname'] = str_replace('"', '', ltrim(rtrim($campaigndata['fromname'])));
-        } elseif (strpos($campaigndata['fromfield'], ' ')) {
-            # if there is a space, we need to add the email
-            $campaigndata['fromname'] = $campaigndata['fromfield'];
-            #  $cached[$campaignid]['fromemail'] = 'listmaster@$domain';
-            $campaigndata['fromemail'] = $default['from'];
-        } else {
-            $campaigndata['fromemail'] = $default['from'];
-            $campaigndata['fromname'] = $campaigndata["fromfield"];
-        }
-        $campaigndata["fromname"] = trim($campaigndata["fromname"]);
+        $parsed_email = Util::parseEmailAndName(
+                            $campaigndata['fromname'],
+                            Config::get('message_from_address', Config::get('admin_address'))
+                        );
 
-        # erase double spacing
-        while (strpos($campaigndata['fromname'], '  ')) {
-            $campaigndata['fromname'] = str_replace('  ', ' ', $campaigndata['fromname']);
-        }
+        $campaigndata['fromname'] = $parsed_email['name'];
+        $campaigndata['fromemail'] = $parsed_email['email'];
 
         ## if the name ends up being empty, copy the email
         if (empty($campaigndata['fromname'])) {

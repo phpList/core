@@ -1,9 +1,4 @@
 <?php
-/**
- * User: SaWey
- * Date: 14/12/13
- */
-
 namespace phpList\helper;
 
 use phpList\Config;
@@ -13,7 +8,7 @@ class Validation
 
     static function validateEmail($email)
     {
-        /* TODO: this used to be if(!empty($GLOBALS["config"]["dont_require_validemail"]
+        /* TODO: this used to be if(!empty($GLOBALS['config']['dont_require_validemail']
         * probably better to only have one constant to set email validation?
          *
          */

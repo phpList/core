@@ -1,9 +1,4 @@
 <?php
-/**
- * User: SaWey
- * Date: 17/12/13
- */
-
 namespace phpList\helper;
 
 

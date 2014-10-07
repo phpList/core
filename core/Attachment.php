@@ -1,9 +1,4 @@
 <?php
-/**
- * User: SaWey
- * Date: 12/12/13
- */
-
 namespace phpList;
 
 /**

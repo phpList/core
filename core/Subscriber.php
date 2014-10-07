@@ -1,9 +1,4 @@
 <?php
-/**
- * User: SaWey
- * Date: 13/12/13
- */
-
 namespace phpList;
 
 use phpList\helper\String;
@@ -154,8 +149,8 @@ class Subscriber
                 WHERE :key = :value',
                 Config::getTableName('Subscriber', true)
             ));
-        $result->bindParam(':key',$column);
-        $result->bindParam(':value',$value);
+        $result->bindValue(':key',$column);
+        $result->bindValue(':value',$value);
         $result->execute();
 
         return Subscriber::subscriberFromArray($result->fetch(\PDO::FETCH_ASSOC));
@@ -242,6 +237,29 @@ class Subscriber
             )
         ));
         return $unique_id;
+    }
+
+    /**
+     * Get the number of subscribers who's unique id has not been set
+     * @return int
+     */
+    public static function checkUniqueIds()
+    {
+        $result = phpList::DB()->query(
+            sprintf(
+                'SELECT id FROM %s
+                WHERE uniqid IS NULL
+                OR uniqid = ""',
+                Config::getTableName('user', true)
+            )
+        );
+        $to_do = $result->rowCount();
+        if ($to_do > 0) {
+            while ($col = $result->fetchColumn(0)) {
+                self::giveUniqueId($col);
+            }
+        }
+        return $to_do;
     }
 
     /**

@@ -129,7 +129,7 @@ class Database
         if (Config::DEBUG) {
             # log time queries take
             $now = gettimeofday();
-            $end = $now["sec"] * 1000000 + $now["usec"];
+            $end = $now['sec'] * 1000000 + $now['usec'];
             $elapsed = $end - $start;
             if ($elapsed > 300000) {
                 $query = substr($query, 0, 200);

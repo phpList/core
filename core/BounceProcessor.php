@@ -1,9 +1,4 @@
 <?php
-/**
- * User: SaWey
- * Date: 21/12/13
- */
-
 namespace phpList;
 
 
@@ -261,21 +256,21 @@ class BounceProcessor {
                   keepLock($process_id);
                 else
                   ProcessError(s("Process Killed by other process"));
-                if (sprintf('%d',$bounce["bounce"]) == $bounce["bounce"]) {
+                if (sprintf('%d',$bounce['bounce']) == $bounce['bounce']) {
                   $cnt++;
                   if ($cnt >= $bounce_unsubscribe_threshold) {
                     $removed = 1;
                     output(sprintf('unsubscribing %d -> %d bounces',$subscriber[0],$cnt));
                     $subscriberurl = PageLink2("user&amp;id=$subscriber[0]",$subscriber[0]);
                     logEvent(s("Subscriber")." $subscriberurl ".s("has consecutive bounces")." ($cnt) ".s("over threshold, user marked unconfirmed"));
-                    $emailreq = Sql_Fetch_Row_Query("select email from {$tables["user"]} where id = $subscriber[0]");
+                    $emailreq = Sql_Fetch_Row_Query("select email from {$tables['user']} where id = $subscriber[0]");
                     addSubscriberHistory($emailreq[0],s("Auto Unsubscribed"),s("Subscriber auto unsubscribed for")." $cnt ".s("consecutive bounces"));
-                    Sql_Query(sprintf('update %s set confirmed = 0 where id = %d',$tables["user"],$subscriber[0]));
+                    Sql_Query(sprintf('update %s set confirmed = 0 where id = %d',$tables['user'],$subscriber[0]));
                     addSubscriberStatistics('auto unsubscribe',1);
-                    $email_req = Sql_Fetch_Row_Query(sprintf('select email from %s where id = %d',$tables["user"],$subscriber[0]));
+                    $email_req = Sql_Fetch_Row_Query(sprintf('select email from %s where id = %d',$tables['user'],$subscriber[0]));
                     $unsubscribed_users .= $email_req[0] . " [$subscriber[0]] ($cnt)\n";
                   }
-                } elseif ($bounce["bounce"] == "") {
+                } elseif ($bounce['bounce'] == "") {
                   $cnt = 0;
                 }
               }*/

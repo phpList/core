@@ -209,8 +209,8 @@ class Language
                 'select translation from %s where original = ? and lan = ?',
                 Config::getTableName('i18n')
             ));
-        $st->bindParam(1, $text);
-        $st->bindParam(2, $this->language);
+        $st->bindValue(1, $text);
+        $st->bindValue(2, $this->language);
         $st->execute();
 
         return stripslashes($st->fetch());
@@ -290,7 +290,7 @@ class Language
     {
         if (Config::DEBUG) {
             if (isset($_GET['page'])) {
-                $page = $_GET["page"];
+                $page = $_GET['page'];
             } else {
                 $page = 'home';
             }
@@ -452,9 +452,9 @@ $lan = array(
 
         $this->basedir = dirname(__FILE__) . '/lan/';
         if (isset($_GET['origpage']) && !empty($_GET['ajaxed'])) { ## used in ajaxed requests
-            $page = basename($_GET["origpage"]);
-        } elseif (isset($_GET["page"])) {
-            $page = basename($_GET["page"]);
+            $page = basename($_GET['origpage']);
+        } elseif (isset($_GET['page'])) {
+            $page = basename($_GET['page']);
         } else {
             $page = "home";
         }

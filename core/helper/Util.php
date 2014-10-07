@@ -1,9 +1,4 @@
 <?php
-/**
- * User: SaWey
- * Date: 17/12/13
- */
-
 namespace phpList\helper;
 
 use phpList\phpList;
@@ -379,7 +374,7 @@ class Util
                 } else {
                     $path = '';
                     if (isset($parts['path'])) {
-                        $path = $parts["path"];
+                        $path = $parts['path'];
                     }
                     if (!preg_match('#/$#',$path)) {
                         $pathparts = explode('/',$path);
@@ -724,28 +719,36 @@ class Util
     }
 
     /**
-     * Get the number of subscribers who's unique id has not been set
-     * @return int
+     * Parse the from field into it's components - email and name
+     * @param $string
+     * @param $default_address
+     * @return array with fields 'email' and 'name'
      */
-    public static function checkUniqueIds()
+    public static function parseEmailAndName($string, $default_address)
     {
-        $result = phpList::DB()->query(
-            sprintf(
-                'SELECT id FROM %s
-                WHERE uniqid IS NULL
-                OR uniqid = ""',
-                Config::getTableName('user', true)
-            )
-        );
-        //todo: what should be done here?
-        /*if ($result->rowCount() > 0) {
-            while ($col = $result->fetchColumn(0)) {
-                self::giveUniqueId($col);
-            }
-        }*/
-        return $result->rowCount();
-    }
+        if (preg_match("/([^ ]+@[^ ]+)/", $string, $regs)) {
+            # if there is an email in the from, rewrite it as "name <email>"
+            $name = str_replace($regs[0], "", $string);
+            $email_address = $regs[0];
+            # if the email has < and > take them out here
+            $email_address = str_replace('<', '', $email_address);
+            $email_address = str_replace('>', '', $email_address);
+            # make sure there are no quotes around the name
+            $name = str_replace('"', '', ltrim(rtrim($name)));
+        } elseif (strpos($string, ' ')) {
+            # if there is a space, we need to add the email
+            $name = $string;
+            $email_address = $default_address;
+        } else {
+            $email_address = $default_address;
+            $name = $string;
+        }
 
+        return [
+            'email' =>  $email_address,
+            'name'  =>  String::removeDoubleSpaces(trim($name))
+        ];
+    }
 
 
     public static function addSubscriberStatistics($item = '', $amount, $list = 0) {
