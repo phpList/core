@@ -206,7 +206,7 @@ class MySQLSessionHandler /*implements \SessionHandlerInterface*/
             );
             if ($retval->rowCount() <= 0) {
                 //TODO: correct error handling
-                Logger::logEvent('unable to update session data for session ' . $session_id);
+                phpList::log()->notice('unable to update session data for session ' . $session_id);
                 sendError('unable to update session data for session ' . $session_id);
             }
         }

@@ -92,11 +92,11 @@ class Util
     public static function testUrl($url)
     {
         if (Config::VERBOSE) {
-            Logger::logEvent('Checking ' . $url);
+            phpList::log()->notice('Checking ' . $url);
         }
         $code = 500;
         if (Config::get('has_curl')) {
-            if (Config::VERBOSE) Logger::logEvent('Checking curl ');
+            if (Config::VERBOSE) phpList::log()->notice('Checking curl ');
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $url);
             curl_setopt($curl, CURLOPT_TIMEOUT, 10);
@@ -110,7 +110,7 @@ class Util
             curl_exec($curl);
             $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         } elseif (Config::get('has_pear_http_request')) {
-            if (Config::VERBOSE) Logger::logEvent('Checking PEAR ');
+            if (Config::VERBOSE) phpList::log()->notice('Checking PEAR ');
             @require_once "HTTP/Request.php";
             $headreq = new HTTP_Request($url, '' /*$request_parameters*/);
             $headreq->addHeader('User-Agent', 'phplist v' . Config::VERSION . ' (http://www.phplist.com)');
@@ -118,7 +118,7 @@ class Util
                 $code = $headreq->getResponseCode();
             }
         }
-        if (Config::VERBOSE) Logger::logEvent('Checking ' . $url . ' => ' . $code);
+        if (Config::VERBOSE) phpList::log()->notice('Checking ' . $url . ' => ' . $code);
         return $code;
     }
 
@@ -134,7 +134,7 @@ class Util
         ## fix the Editor replacing & with &amp;
         $url = str_ireplace('&amp;', '&', $url);
 
-        # Logger::logEvent("Fetching $url");
+        # phpList::log()->notice("Fetching $url");
         //subscriber items to replace:
         if ($subscriber != null) {
             foreach (Subscriber::$DB_ATTRIBUTES as $key) {
@@ -153,7 +153,7 @@ class Util
         if (isset($cache->url_cache[$url]) && is_array($cache->url_cache[$url])
             && (time() - $cache->url_cache[$url]['fetched'] < Config::REMOTE_URL_REFETCH_TIMEOUT)
         ) {
-        #Logger::logEvent($url . " is cached in memory");
+        #phpList::log()->notice($url . " is cached in memory");
             if (Config::VERBOSE && function_exists('output')) {
                 output('From memory cache: ' . $url);
             }
@@ -162,13 +162,13 @@ class Util
 
         $timeout = time() - Cache::getPageCacheLastModified($url);
         if ($timeout < Config::REMOTE_URL_REFETCH_TIMEOUT) {
-        #Logger::logEvent($url.' was cached in database');
+        #phpList::log()->notice($url.' was cached in database');
             if (Config::VERBOSE && function_exists('output')) {
                 output('From database cache: ' . $url);
             }
             return Cache::getPageCache($url);
         } else {
-        #Logger::logEvent($url.' is not cached in database '.$timeout.' '. $dbcache_lastmodified." ".time());
+        #phpList::log()->notice($url.' is not cached in database '.$timeout.' '. $dbcache_lastmodified." ".time());
         }
 
         $request_parameters = array(
@@ -197,13 +197,13 @@ class Util
                 return false;
             }
         } else {
-            if (Config::VERBOSE) Logger::logEvent($url . ' was cached in database');
+            if (Config::VERBOSE) phpList::log()->notice($url . ' was cached in database');
             $content = $cache;
         }
 
         if (!empty($content)) {
             $content = Util::addAbsoluteResources($content, $url);
-            Logger::logEvent('Fetching ' . $url . ' success');
+            phpList::log()->notice('Fetching ' . $url . ' success');
             Cache::setPageCache($url, $lastmodified, $content);
 
             Cache::instance()->url_cache[$url] = array(
@@ -218,7 +218,7 @@ class Util
 
     public static function fetchUrlCurl($url, $request_parameters)
     {
-        if (Config::VERBOSE) Logger::logEvent($url . ' fetching with curl ');
+        if (Config::VERBOSE) phpList::log()->notice($url . ' fetching with curl ');
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_TIMEOUT, $request_parameters['timeout']);
@@ -232,7 +232,7 @@ class Util
         $raw_result = curl_exec($curl);
         $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
-        if (Config::VERBOSE) Logger::logEvent('fetched ' . $url . ' status ' . $status);
+        if (Config::VERBOSE) phpList::log()->notice('fetched ' . $url . ' status ' . $status);
         #var_dump($status); exit;
         return $raw_result;
     }
@@ -240,7 +240,7 @@ class Util
     //TODO: convert to using namespaces
     public static function fetchUrlPear($url, $request_parameters)
     {
-        if (Config::VERBOSE) Logger::logEvent($url . ' fetching with PEAR');
+        if (Config::VERBOSE) phpList::log()->notice($url . ' fetching with PEAR');
 
         if (0 && Config::get('has_pear_http_request')== 2) {
             $headreq = new HTTP_Request2($url, $request_parameters);
@@ -252,7 +252,7 @@ class Util
         if (!PEAR::isError($headreq->sendRequest(false))) {
             $code = $headreq->getResponseCode();
             if ($code != 200) {
-                Logger::logEvent('Fetching ' . $url . ' failed, error code ' . $code);
+                phpList::log()->notice('Fetching ' . $url . ' failed, error code ' . $code);
                 return 0;
             }
             $header = $headreq->getResponseHeader();
@@ -269,7 +269,7 @@ class Util
                 $request = new HTTP_Request($url, $request_parameters);
                 $request->addHeader('User-Agent', 'phplist v' . Config::get('VERSION') . 'p (http://www.phplist.com)');
             }
-            Logger::logEvent('Fetching ' . $url);
+            phpList::log()->notice('Fetching ' . $url);
             if (Config::VERBOSE && function_exists('output')) {
                 output('Fetching remote: ' . $url);
             }
@@ -281,11 +281,11 @@ class Util
                 }
 
             } else {
-                Logger::logEvent('Fetching ' . $url . ' failed on GET ' . $request->getResponseCode());
+                phpList::log()->notice('Fetching ' . $url . ' failed on GET ' . $request->getResponseCode());
                 return 0;
             }
         } else {
-            Logger::logEvent('Fetching ' . $url . ' failed on HEAD');
+            phpList::log()->notice('Fetching ' . $url . ' failed on HEAD');
             return 0;
         }
 

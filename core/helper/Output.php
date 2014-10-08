@@ -94,9 +94,9 @@ class Output {
             flush();
         }
 
-        Logger::addToReport($infostring . ' ' . $message);
+        phpList::log()->addToReport($infostring . ' ' . $message);
         if ($logit) {
-            Logger::logEvent($message, 'processqueue');
+            phpList::log()->notice($message, ['page' => 'processqueue']);
         }
 
         flush();

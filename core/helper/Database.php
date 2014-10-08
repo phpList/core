@@ -66,7 +66,7 @@ class Database
         } else {
             Output::cl_output($error);
         }
-        Logger::logEvent('Database error: ' . $this->db->errorInfo()[2]);
+        phpList::log()->notice('Database error: ' . $this->db->errorInfo()[2]);
     }
 
     /**
@@ -116,7 +116,7 @@ class Database
             $result = $this->db->query($query);
         }catch (\PDOException $e){
             if (!$ignore) {
-                Logger::logEvent("Sql error in $query");
+                phpList::log()->notice("Sql error in $query");
                 Output::cl_output('Sql error ' . $query);
             }
         }

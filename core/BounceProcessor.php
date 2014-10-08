@@ -149,14 +149,14 @@ class BounceProcessor {
 
                     switch ($rule['action']) {
                         case 'deletesubscriber':
-                            Logger::logEvent('Subscriber '.$subscriber->getEmailAddress().' deleted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
+                            phpList::log()->notice('Subscriber '.$subscriber->getEmailAddress().' deleted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
                             $advanced_report .= 'Subscriber '.$subscriber->getEmailAddress().' deleted by bounce rule '.$rule['id']."\n";
                             $advanced_report .= 'Subscriber: '.$report_linkroot.'/?page=subscriber&amp;id='.$subscriber->id."\n";
                             $advanced_report .= 'Rule: '.$report_linkroot.'/?page=bouncerule&amp;id='.$rule['id']."\n";
                             $subscriber->delete();
                             break;
                         case 'unconfirmsubscriber':
-                            Logger::logEvent('Subscriber '.$subscriber->getEmailAddress().' unconfirmed by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
+                            phpList::log()->notice('Subscriber '.$subscriber->getEmailAddress().' unconfirmed by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
                             $subscriber->confirmed = 0;
                             $subscriber->update();
                             $advanced_report .= 'Subscriber '.$subscriber->getEmailAddress().' made unconfirmed by bounce rule '.$rule['id']."\n";
@@ -166,7 +166,7 @@ class BounceProcessor {
                             Util::addSubscriberStatistics('auto unsubscribe',1);
                             break;
                         case 'deletesubscriberandbounce':
-                            Logger::logEvent('Subscriber '.$row['user'].' deleted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
+                            phpList::log()->notice('Subscriber '.$row['user'].' deleted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
                             $advanced_report .= 'Subscriber '.$subscriber->getEmailAddress().' deleted by bounce rule '.$rule['id']."\n";
                             $advanced_report .= 'Subscriber: '.$report_linkroot.'/?page=subscriber&amp;id='.$subscriber->id."\n";
                             $advanced_report .= 'Rule: '.$report_linkroot.'/?page=bouncerule&amp;id='.$rule['id']."\n";
@@ -174,7 +174,7 @@ class BounceProcessor {
                             Bounce::deleteBounce($row['bounce']);
                             break;
                         case 'unconfirmsubscriberanddeletebounce':
-                            Logger::logEvent('Subscriber '.$subscriber->getEmailAddress().' unconfirmed by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
+                            phpList::log()->notice('Subscriber '.$subscriber->getEmailAddress().' unconfirmed by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
                             $subscriber->confirmed = 0;
                             $subscriber->update();
                             $advanced_report .= 'Subscriber '.$subscriber->getEmailAddress().' made unconfirmed by bounce rule '.$rule['id']."\n";
@@ -185,7 +185,7 @@ class BounceProcessor {
                             Bounce::deleteBounce($row['bounce']);
                             break;
                         case 'blacklistsubscriber':
-                            Logger::logEvent('Subscriber '.$subscriber->getEmailAddress().' blacklisted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
+                            phpList::log()->notice('Subscriber '.$subscriber->getEmailAddress().' blacklisted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
                             $subscriber->blacklistSubscriber($subscriber->getEmailAddress(),s("Auto Blacklisted"),s("Subscriber auto blacklisted for")." ".s("bounce rule").' '.$rule['id']);
                             $advanced_report .= 'Subscriber '.$subscriber->getEmailAddress().' blacklisted by bounce rule '.$rule['id']."\n";
                             $advanced_report .= 'Subscriber: '.$report_linkroot.'/?page=subscriber&amp;id='.$subscriber->id."\n";
@@ -194,7 +194,7 @@ class BounceProcessor {
                             Util::addSubscriberStatistics('auto blacklist',1);
                             break;
                         case 'blacklistsubscriberanddeletebounce':
-                            Logger::logEvent('Subscriber '.$subscriber->getEmailAddress().' blacklisted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
+                            phpList::log()->notice('Subscriber '.$subscriber->getEmailAddress().' blacklisted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'],$rule['id']));
                             $subscriber->blacklistSubscriber($subscriber->getEmailAddress(),s("Auto Blacklisted"),s("Subscriber auto blacklisted for")." ".s("bounce rule").' '.$rule['id']);
                             $advanced_report .= 'Subscriber '.$subscriber->getEmailAddress().' blacklisted by bounce rule '.$rule['id']."\n";
                             $advanced_report .= 'Subscriber: '.$report_linkroot.'/?page=subscriber&amp;id='.$subscriber->id."\n";
@@ -294,7 +294,7 @@ class BounceProcessor {
                         if (!$unsubscribed) {
                             $this->output(sprintf('unsubscribing %d -> %d bounces',$subscriber[0],$cnt));
                             $subscriberurl = PageLink2("user&amp;id=$subscriber[0]",$subscriber[0]);
-                            Logger::logEvent(
+                            phpList::log()->notice(
                                 s('Subscriber (url:%s) has consecutive bounces (%d) over threshold (%d), user marked unconfirmed',
                                     $subscriberurl,
                                     $cnt,
@@ -341,8 +341,8 @@ class BounceProcessor {
         /*
         $report = '';
 
-        if (Logger::getReport()) {
-            $report .= s('Report:')."\n" . Logger::getReport() . "\n";
+        if (phpList::log()->getReport()) {
+            $report .= s('Report:')."\n" . phpList::log()->getReport() . "\n";
         }
 
         if ($advanced_report) {
@@ -404,8 +404,8 @@ class BounceProcessor {
 
     public function processBouncesShutdown() {
         Process::releaseLock($this->process_id);
-        # Logger::addToReport('Connection status:'.connection_status());
-        $this->finish('info', Logger::getReport());
+        # phpList::log()->addToReport('Connection status:'.connection_status());
+        $this->finish('info', phpList::log()->getReport());
     }
 
     private function output ($campaign, $reset = false) {
@@ -569,7 +569,7 @@ class BounceProcessor {
             $bounce->status = 'bounced system message';
             $bounce->comment = sprintf('%s marked unconfirmed', $subscriber->id);
             $bounce->update();
-            Logger::logEvent($subscriber->id . ' '.s('system message bounced, subscriber marked unconfirmed'));
+            phpList::log()->notice($subscriber->id . ' '.s('system message bounced, subscriber marked unconfirmed'));
             $subscriber->addHistory(
                 s('Bounced system message'),
                 sprintf(
@@ -595,7 +595,7 @@ class BounceProcessor {
             $bounce->status = 'bounced system message';
             $bounce->comment = 'unknown subscriber';
             $bounce->update();
-            Logger::logEvent($subscriber->id . ' ' . s('system message bounced, but unknown subscriber'));
+            phpList::log()->notice($subscriber->id . ' ' . s('system message bounced, but unknown subscriber'));
         } elseif ($campaign_id) {
             $bounce->status = sprintf('bounced list message %d', $campaign_id);
             $bounce->comment = 'unknown subscriber';
@@ -672,10 +672,10 @@ class BounceProcessor {
         $num = imap_num_msg($link);
         $this->output( $num . ' '.s('bounces to fetch from the mailbox')."\n");
         $this->output( s('Please do not interrupt this process')."\n");
-        Logger::addToReport($num . ' '.s('bounces to process')."\n");
+        phpList::log()->addToReport($num . ' '.s('bounces to process')."\n");
         if ($num > $max) {
             print s('Processing first')." $max ".s('bounces').'<br/>';
-            Logger::addToReport($num . ' '.s('processing first')." $max ".s('bounces')."\n");
+            phpList::log()->addToReport($num . ' '.s('processing first')." $max ".s('bounces')."\n");
             $num = $max;
         }
 

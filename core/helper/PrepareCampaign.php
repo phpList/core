@@ -42,7 +42,7 @@ class PrepareCampaign
 
         if (!Cache::isCampaignCached($campaign)){
             if (!PrepareCampaign::precacheCampaign($campaign, $forwardContent)) {
-                Logger::logEvent('Error loading campaign ' . $campaign->id . '  in cache');
+                phpList::log()->notice('Error loading campaign ' . $campaign->id . '  in cache');
                 return false;
             }
         } else {
@@ -110,7 +110,7 @@ class PrepareCampaign
                         $content = str_replace($regs[0], $remote_content, $content);
                         $cached_campaign->htmlformatted = strip_tags($content) != $content;
                     } else {
-                        Logger::logEvent('Error fetching URL: '.$regs[1].' to send to ' . $subscriber->getEmailAddress());
+                        phpList::log()->notice('Error fetching URL: '.$regs[1].' to send to ' . $subscriber->getEmailAddress());
                         return 0;
                     }
                     preg_match('/\[URL:([^\s]+)\]/i', $content, $regs);
@@ -1149,7 +1149,7 @@ class PrepareCampaign
                                 } else {
                                     # now this one could be sent many times, so send only once per run
                                     if (Config::get($attachment->remotefile . '_warned', false) === false) {
-                                        Logger::logEvent(
+                                        phpList::log()->notice(
                                             "Unable to make a copy of attachment {$attachment->remotefile} in repository"
                                         );
                                         $msg = sprintf(
@@ -1162,12 +1162,12 @@ class PrepareCampaign
                                     }
                                 }
                             } else {
-                                Logger::logEvent(
+                                phpList::log()->notice(
                                     "failed to open attachment {$attachment->remotefile} to add to campaign {$campaign->id}"
                                 );
                             }
                         } else {
-                            Logger::logEvent("Attachment {$attachment->remotefile} does not exist");
+                            phpList::log()->notice("Attachment {$attachment->remotefile} does not exist");
                             $msg = "Error, when trying to send campaign {$campaign->id} the attachment {$attachment->remotefile} could not be found";
                             phpListMailer::sendMail(Config::get('report_address'), 'Mail list error', $msg, '');
                         }
@@ -1621,7 +1621,7 @@ class PrepareCampaign
                     $cached_campaign->htmlformatted = strip_tags($remote_content) != $remote_content;
                 } else {
                     #print Error(s('unable to fetch web page for sending'));
-                    Logger::logEvent("Error fetching URL: " . $campaign->sendurl . ' cannot proceed');
+                    phpList::log()->notice("Error fetching URL: " . $campaign->sendurl . ' cannot proceed');
                     return false;
                 }
             }

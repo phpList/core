@@ -1142,7 +1142,7 @@ class Campaign
                 $is_fututre = ($new_embargo->getTimestamp() > time());
 
                 if ($loopcnt > 15) {
-                    Logger::logEvent('Unable to find new embargo date too many exclusions? for campaign ' . $new_campaign->id);
+                    phpList::log()->notice('Unable to find new embargo date too many exclusions? for campaign ' . $new_campaign->id);
                     return;
                 }
             }
@@ -1184,7 +1184,7 @@ class Campaign
             }
             $new_campaign->addAttachment($attachment);
         }
-        Logger::logEvent("Campaign {$this->id} was successfully rescheduled as campaign {$new_campaign->id}");
+        phpList::log()->notice("Campaign {$this->id} was successfully rescheduled as campaign {$new_campaign->id}");
         ## remember we duplicated, in order to avoid doing it again (eg when requeuing)
         $this->setDataItem('repeatedid', $new_campaign->id);
     }

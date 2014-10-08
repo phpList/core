@@ -3,12 +3,42 @@ namespace phpList;
 
 use phpList\helper\Database;
 use phpList\helper\Language;
+use phpList\helper\Logger;
 use phpList\helper\Util;
 use phpList\helper\Timer;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 
-class phpList
+class phpList implements LoggerAwareInterface
 {
     /**
+     * @var phpList $_instance
+     */
+    private static $_instance;
+
+    /**
+     * @var LoggerInterface
+     */
+    private $_logger;
+
+    /**
+     * Default constructor
+     */
+    private function __construct(){}
+
+    /**
+     * Get an instance of the phpList object
+     * @return phpList
+     */
+    private static function instance()
+    {
+        if (!phpList::$_instance instanceof self) {
+            phpList::$_instance = new self();
+        }
+        return phpList::$_instance;
+    }
+
+     /**
      * @return Database
      * @throws \Exception
      */
@@ -18,11 +48,25 @@ class phpList
     }
 
     /**
+     * @return LoggerInterface
+     */
+    public static function log()
+    {
+        return phpList::$_instance->_logger;
+    }
+
+    /**
      * Initialise phpList
      * @throws \Exception
      */
-    public static function initialise($subscriber_config)
+    public static function initialise($subscriber_config, $logger = null)
     {
+        if($logger != null){
+            phpList::$_instance->setLogger($logger);
+        }else{
+            phpList::$_instance->setLogger(new Logger());
+        }
+
         if (is_file($subscriber_config) && filesize($subscriber_config) > 20) {
             include_once($subscriber_config);
         } else{
@@ -190,16 +234,14 @@ class phpList
         }
     }*/
 
+    /**
+     * Sets a logger instance on the object
+     *
+     * @param LoggerInterface $logger
+     * @return null
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->_logger = $logger;
+    }
 }
-
-
-
-//Handle some dynamicly generated include files
-if (isset($_SERVER['ConfigFile']) && is_file($_SERVER['ConfigFile'])) {
-    $configfile = $_SERVER['ConfigFile'];
-} elseif (isset($cline['c']) && is_file($cline['c'])) {
-    $configfile = $cline['c'];
-} else {
-    $configfile = __DIR__ . '/UserConfig.php';
-}
-phpList::initialise($configfile);

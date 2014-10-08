@@ -734,13 +734,13 @@ class QueueProcessor
                                         && $this->counters['total_subscribers_for_campaign ' . $campaign->id] < 1000 # and also when there's not too many left, because then it's likely they're all being throttled
                                     ) {
                                         $this->domainthrottle[$domainname]['attempted'] = 0;
-                                        Logger::logEvent(
+                                        phpList::log()->notice(
                                             sprintf(
                                                 s('There have been more than 10 attempts to send to %s that have been blocked for domain throttling.'),
                                                 $domainname
                                             )
                                         );
-                                        Logger::logEvent(s('Introducing extra delay to decrease throttle failures'));
+                                        phpList::log()->notice(s('Introducing extra delay to decrease throttle failures'));
                                         if (Config::VERBOSE) {
                                             Output::output(
                                                 s('Introducing extra delay to decrease throttle failures')
@@ -850,7 +850,7 @@ class QueueProcessor
                                 }
                                 if (Config::VERBOSE) {
                                     Output::output(s('Failed sending to') . ' ' . $subscriber->getEmailAddress());
-                                    Logger::logEvent(sprintf('Failed sending campaign %d to %s', $campaign->id, $subscriber->getEmailAddress()));
+                                    phpList::log()->notice(sprintf('Failed sending campaign %d to %s', $campaign->id, $subscriber->getEmailAddress()));
                                 }
                                 # make sure it's not because it's an underdeliverable email
                                 # unconfirm this subscriber, so they're not included next time
@@ -859,7 +859,7 @@ class QueueProcessor
                                 if (!$throttled && !Validation::validateEmail($subscriber->getEmailAddress())) {
                                     $this->unconfirmed++;
                                     $this->counters['email address invalidated']++;
-                                    Logger::logEvent(sprintf('invalid email address %s subscriber marked unconfirmed', $subscriber->getEmailAddress()));
+                                    phpList::log()->notice(sprintf('invalid email address %s subscriber marked unconfirmed', $subscriber->getEmailAddress()));
                                     $subscriber->confirmed  = false;
                                     $subscriber->save();
                                     /*Sql_Query(
@@ -947,7 +947,7 @@ class QueueProcessor
                             if (Config::VERBOSE) {
                                 Output::output(s('Invalid email address') . ': ' . $subscriber->getEmailAddress() . ' ' . $subscriber->id);
                             }
-                            Logger::logEvent(
+                            phpList::log()->notice(
                                 s('Invalid email address') . ': userid  ' . $subscriber->id . '  email ' . $subscriber->getEmailAddress()
                             );
                             # mark it as sent anyway
@@ -1250,7 +1250,7 @@ class QueueProcessor
      */
     private function queueProcessError($campaign)
     {
-        Logger::addToReport($campaign);
+        phpList::log()->addToReport($campaign);
         Output::output("Error: $campaign");
         exit;
     }
@@ -1266,7 +1266,7 @@ class QueueProcessor
         if (Config::VERBOSE){
             Output::output($campaign);
         }else{
-            Logger::addToReport($campaign);
+            phpList::log()->addToReport($campaign);
         }
         // fake a bit of a delay,
         usleep(0.75 * 1000000);

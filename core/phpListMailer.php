@@ -234,12 +234,12 @@ class phpListMailer extends \PHPMailer
                 }
             }*/
             if (!parent::Send()) {
-                Logger::logEvent(s('Error sending email to %s', $to_addr) . ' ' . $this->ErrorInfo);
+                phpList::log()->notice(s('Error sending email to %s', $to_addr) . ' ' . $this->ErrorInfo);
                 return 0;
             }
             #
         } else {
-            Logger::logEvent(s('Error, empty message-body sending email to %s', $to_addr));
+            phpList::log()->notice(s('Error, empty message-body sending email to %s', $to_addr));
             return 0;
         }
         return 1;
@@ -248,7 +248,7 @@ class phpListMailer extends \PHPMailer
     public function Send()
     {
         if (!parent::Send()) {
-            Logger::logEvent("Error sending email to " /*.$to_addr*/);
+            phpList::log()->notice("Error sending email to " /*.$to_addr*/);
             return 0;
         }
         return 1;
@@ -393,7 +393,7 @@ class phpListMailer extends \PHPMailer
             $this->attachment[$cur][6] = "inline";
             $this->attachment[$cur][7] = $cid;
         } else {
-            Logger::logEvent("phpMailer needs patching to be able to use inline images from templates");
+            phpList::log()->notice("phpMailer needs patching to be able to use inline images from templates");
             return false;
         }
         return $cid;
@@ -599,7 +599,7 @@ class phpListMailer extends \PHPMailer
         #    print('Curl status '.$status);
         if ($status != 200) {
             $error = curl_error($curl);
-            Logger::logEvent('Amazon SES status ' . $status . ' ' . strip_tags($res) . ' ' . $error);
+            phpList::log()->notice('Amazon SES status ' . $status . ' ' . strip_tags($res) . ' ' . $error);
         }
         curl_close($curl);
         #     print('Got remote admin response '.htmlspecialchars($res).'<br/>');
@@ -649,24 +649,24 @@ class phpListMailer extends \PHPMailer
         # do a quick check on mail injection attempt, @@@ needs more work
         if (preg_match("/\n/", $to)) {
             //TODO: convert to new logger
-            Logger::logEvent('Error: invalid recipient, containing newlines, email blocked');
+            phpList::log()->notice('Error: invalid recipient, containing newlines, email blocked');
             return 0;
         }
         if (preg_match("/\n/", $subject)) {
-            Logger::logEvent('Error: invalid subject, containing newlines, email blocked');
+            phpList::log()->notice('Error: invalid subject, containing newlines, email blocked');
             return 0;
         }
 
         if (!$to) {
-            Logger::logEvent("Error: empty To: in message with subject $subject to send");
+            phpList::log()->notice("Error: empty To: in message with subject $subject to send");
             return 0;
         } elseif (!$subject) {
-            Logger::logEvent("Error: empty Subject: in message to send to $to");
+            phpList::log()->notice("Error: empty Subject: in message to send to $to");
             return 0;
         }
 
         if (!$skipblacklistcheck && Util::isEmailBlacklisted($to)) {
-            Logger::logEvent("Error, $to is blacklisted, not sending");
+            phpList::log()->notice("Error, $to is blacklisted, not sending");
             Util::blacklistSubscriberByEmail($to);
             Subscriber::addHistory(
                 'Marked Blacklisted',
@@ -855,7 +855,7 @@ class phpListMailer extends \PHPMailer
                         $message,
                         phpListMailer::systemMessageHeaders($admin_mail)
                     );
-                    Logger::logEvent(s('Sending admin copy to') . ' ' . $admin_mail);
+                    phpList::log()->notice(s('Sending admin copy to') . ' ' . $admin_mail);
                     $sent[$admin_mail] = 1;
                 }
             }
