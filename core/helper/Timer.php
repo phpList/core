@@ -1,7 +1,6 @@
 <?php
 namespace phpList\helper;
 
-
 class Timer
 {
     /**

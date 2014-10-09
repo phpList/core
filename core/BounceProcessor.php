@@ -1,14 +1,10 @@
 <?php
 namespace phpList;
 
-
-use phpList\helper\Logger;
-use phpList\helper\Output;
 use phpList\helper\Process;
 use phpList\helper\Util;
 
 class BounceProcessor {
-    //TODO: replace print statements
     /**
      * @var BounceProcessor $_instance
      */
@@ -37,7 +33,7 @@ class BounceProcessor {
         ignore_user_abort(1);
         if (Config::get('commandline', false) !== false && Config::get('commandline_force', false) !== false) {
             # force set, so kill other processes
-            Output::cl_output('Force set, killing other send processes');
+            phpList::log()->info('Force set, killing other send processes', ['page' => 'procesbounces']);
             $this->process_id = Process::getPageLock('BounceProcessor', true);
         } else {
             $this->process_id = Process::getPageLock('BounceProcessor');
@@ -58,14 +54,13 @@ class BounceProcessor {
                 $this->processMbox(Config::BOUNCE_MAILBOX);
                 break;
             default:
-                Output::output(s('bounce_protocol not supported'));
+                phpList::log()->critical(s('bounce_protocol not supported'), ['page' => 'processbounces']);
                 return;
         }
 
         # now we have filled database with all available bounces
         ## reprocess the unidentified ones, as the bounce detection has improved, so it might catch more
-
-        Output::cl_output('reprocessing');
+        phpList::log()->info('reprocessing', ['page' => 'procesbounces']);
         $reparsed = $count = 0;
         $reidentified = 0;
 
@@ -75,7 +70,7 @@ class BounceProcessor {
                 Config::getTableName('bounce')
             ));
         $total = $result->rowCount();
-        Output::cl_output(s('%d bounces to reprocess', $total));
+        phpList::log()->info(s('%d bounces to reprocess', $total), ['page' => 'procesbounces']);
 
         while ($bounce = $result->fetch(\PDO::FETCH_ASSOC)) {
             $count++;
@@ -92,7 +87,7 @@ class BounceProcessor {
                 }
             }
         }
-        Output::cl_output(s('%d out of %d processed', $count, $total));
+        phpList::log()->info(s('%d out of %d processed', $count, $total), ['page' => 'procesbounces']);
         if (Config::VERBOSE) {
             $this->output(s('%d bounces were re-processed and %d bounces were re-identified',$reparsed,$reidentified));
         }
@@ -314,7 +309,7 @@ class BounceProcessor {
                         if (Config::get('BLACKLIST_EMAIL_ON_BOUNCE') && $cnt >= Config::get('BLACKLIST_EMAIL_ON_BOUNCE')) {
                             $removed = 1;
                             #0012262: blacklist email when email bounces
-                            Output::cl_output(s('%d consecutive bounces, threshold reached, blacklisting subscriber',$cnt));
+                            phpList::log()->info(s('%d consecutive bounces, threshold reached, blacklisting subscriber',$cnt), ['page' => 'procesbounces']);
                             Subscriber::blacklistSubscriber($subscriber[0], s('%d consecutive bounces, threshold reached',$cnt));
                         }
                     }
@@ -326,13 +321,9 @@ class BounceProcessor {
             }
             if ($subscribercnt % 5 == 0) {
             #    output(s("Identifying consecutive bounces"));
-                Output::cl_output(s('processed %d out of %d subscribers',$subscribercnt, $total),1);
+                phpList::log()->info(s('processed %d out of %d subscribers',$subscribercnt, $total), ['page' => 'procesbounces']);
             }
             $subscribercnt++;
-            flush();
-        }
-        if (Config::get('commandline')) {
-            print '<script language="Javascript" type="text/javascript"> finish(); </script>';
         }
 
         #output(s("Identifying consecutive bounces"));
@@ -408,36 +399,18 @@ class BounceProcessor {
         $this->finish('info', phpList::log()->getReport());
     }
 
-    private function output ($campaign, $reset = false) {
+    private function output ($message, $reset = false) {
         #$infostring = "[". date("D j M Y H:i",time()) . "] [" . getenv("REMOTE_HOST") ."] [" . getenv("REMOTE_ADDR") ."]";
         #print "$infostring $campaign<br/>\n";
-        $campaign = preg_replace('/\n/','',$campaign);
+        $message = preg_replace('/\n/','',$message);
         ## contribution from http://forums.phplist.com/viewtopic.php?p=14648
         ## in languages with accented characters replace the HTML back
         //Replace the "&rsquo;" which is not replaced by html_decode
-        $campaign = preg_replace('/&rsquo;/',"'",$campaign);
+        $message = preg_replace('/&rsquo;/',"'",$message);
         //Decode HTML chars
         #$campaign = html_entity_decode($campaign,ENT_QUOTES,$_SESSION['adminlanguage']['charset']);
-        $campaign = html_entity_decode($campaign, ENT_QUOTES, 'UTF-8');
-        if (Config::get('commandline')) {
-            Output::cl_output($campaign);
-        } else {
-            if ($reset)
-                print
-                    '<script language="Javascript" type="text/javascript">
-                          document.outputform.output.value = "";
-                          document.outputform.output.value += "\n";
-                     </script>';
-
-            printf(
-                '<script language="Javascript" type="text/javascript">
-                    document.outputform.output.value += "%s";
-                    document.outputform.output.value += "\n";
-                </script>',
-                $campaign
-            );
-        }
-        flush();
+        $message = html_entity_decode($message, ENT_QUOTES, 'UTF-8');
+        phpList::log()->info($message, ['page' => 'bounceprocessor']);
     }
 
     /**
@@ -538,7 +511,7 @@ class BounceProcessor {
         $campaign_id = $this->findMessageId($body);
         $subscriber = $this->findSubscriber($body);
         if (Config::VERBOSE) {
-            Output::output('UID'.$subscriber->id.' MSGID'.$campaign_id);
+            phpList::log()->debug('UID'.$subscriber->id.' MSGID'.$campaign_id, ['page' => 'procesbounces']);
         }
 
         ## @TODO add call to plugins to determine what to do.
@@ -674,15 +647,14 @@ class BounceProcessor {
         $this->output( s('Please do not interrupt this process')."\n");
         phpList::log()->addToReport($num . ' '.s('bounces to process')."\n");
         if ($num > $max) {
-            print s('Processing first')." $max ".s('bounces').'<br/>';
             phpList::log()->addToReport($num . ' '.s('processing first')." $max ".s('bounces')."\n");
             $num = $max;
         }
 
         if (Config::TEST) {
-            print s('Running in test mode, not deleting messages from mailbox').'<br/>';
+            phpList::log()->info(s('Running in test mode, not deleting messages from mailbox'), ['page' => 'processbounces']);
         } else {
-            print s('Processed messages will be deleted from mailbox').'<br/>';
+            phpList::log()->info(s('Processed messages will be deleted from mailbox'), ['page' => 'processbounces']);
         }
 
         #  for ($x=1;$x<150;$x++) {
@@ -692,8 +664,6 @@ class BounceProcessor {
             if ($x % 25 == 0)
                 #    $this->output( $x . " ". nl2br($header));
                 $this->output($x . ' done',1);
-            print "\n";
-            flush();
             $processed = $this->processImapBounce($link,$x,$header);
             if ($processed) {
                 if (!Config::TEST && Config::BOUNCE_MAILBOX_PURGE) {
@@ -710,9 +680,7 @@ class BounceProcessor {
                     $this->output(s('Not deleting unprocessed message').' '.$x);
                 }
             }
-            flush();
         }
-        flush();
         $this->output(s('Closing mailbox, and purging messages'));
         set_time_limit(60 * $num);
         imap_close($link);

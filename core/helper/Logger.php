@@ -10,6 +10,7 @@ class Logger implements LoggerInterface
 {
     private $report;
 
+
     private function logToDatabase($message, $page = 'unknown page')
     {
         @phpList::DB()->query(
@@ -20,6 +21,16 @@ class Logger implements LoggerInterface
             ),
             1
         );
+    }
+
+    private function logToFile($message, $page = 'unknown page')
+    {
+        //todo: change to config var?
+        $logfile = './debug.log';
+        $fp = @fopen($logfile, 'a');
+        $line = '[' . date('d M Y, H:i:s') . '] ' . $page . ' - ' . $message . "\n";
+        @fwrite($fp, $line);
+        @fclose($fp);
     }
 
     //todo: remove below functions
@@ -144,7 +155,12 @@ class Logger implements LoggerInterface
      */
     public function debug($message, array $context = array())
     {
-        $this->log(LogLevel::DEBUG, $context);
+        if(isset($context['page'])){
+            $this->logToFile($message, $context['page']);
+        }else{
+            $this->logToFile($message);
+        }
+        //$this->log(LogLevel::DEBUG, $context);
     }
 
     /**
@@ -158,5 +174,6 @@ class Logger implements LoggerInterface
     public function log($level, $message, array $context = array())
     {
         // TODO: Implement log() method.
+        throw new \Exception("log() not implemented yet!");
     }
 }

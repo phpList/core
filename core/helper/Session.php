@@ -1,7 +1,6 @@
 <?php
 namespace phpList\helper;
 
-
 use phpList\Config;
 use phpList\phpList;
 

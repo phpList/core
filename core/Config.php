@@ -1,7 +1,6 @@
 <?php
 namespace phpList;
 
-
 use phpList\helper\DefaultConfig;
 use phpList\helper\Validation;
 

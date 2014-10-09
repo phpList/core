@@ -1,7 +1,6 @@
 <?php
 namespace phpList\helper;
 
-
 use phpList\Config;
 use phpList\phpList;
 
@@ -36,9 +35,7 @@ class Process
 
         $running_processes = self::getRunningProcesses($page);
 
-        if (Config::VERBOSE) {
-            Output::cl_output($running_processes['count'] . ' out of ' . $max . ' active processes');
-        }
+        phpList::log()->info($running_processes['count'] . ' out of ' . $max . ' active processes', ['page' => 'process']);
         $waited = 0;
         # while ($running_res['age'] && $count >= $max) { # a process is already running
         while ($running_processes['count'] >= $max) { # don't check age, as it may be 0
@@ -55,21 +52,20 @@ class Process
                     )
                 );
             } elseif ((int)$running_processes['count'] >= (int)$max) {
-                #   cl_output (sprintf($GLOBALS['I18N']->get('A process for this page is already running and it was still alive %s seconds ago'),$running_res['age']));
-                //TODO:change this output function call to something usefull in this rewrite
-                Output::output(
+                phpList::log()->log(
                     sprintf(
                         s('A process for this page is already running and it was still alive %s seconds ago'),
                         $running_processes['result']['age']
                     ),
-                    0
+                    ['page' => 'process']
                 );
+
                 sleep(1); # to log the messages in the correct order
                 if ($commandline) {
-                    Output::cl_output(s('Running commandline, quitting. We\'ll find out what to do in the next run.'));
+                    phpList::log()->info(s('Running commandline, quitting. We\'ll find out what to do in the next run.'), ['page' => 'process']);
                     exit;
                 }
-                Output::output(s('Sleeping for 20 seconds, aborting will quit'), 0);
+                phpList::log()->info(s('Sleeping for 20 seconds, aborting will quit'), ['page' => 'process']);
                 flush();
                 ignore_user_abort(0);
                 sleep(20);
@@ -77,7 +73,7 @@ class Process
             $waited++;
             if ($waited > 10) {
                 # we have waited 10 cycles, abort and quit script
-                Output::output(s('We have been waiting too long, I guess the other process is still going ok'), 0);
+                phpList::log()->info(s('We have been waiting too long, I guess the other process is still going ok'), ['page' => 'process']);
                 return false;
             }
         }

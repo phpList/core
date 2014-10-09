@@ -1,7 +1,6 @@
 <?php
 namespace phpList\helper;
 
-
 use phpList\Attachment;
 use phpList\Config;
 use phpList\Campaign;
@@ -31,7 +30,7 @@ class PrepareCampaign
         ## for testing concurrency, put in a delay to check if multiple send processes cause duplicates
         #usleep(rand(0,10) * 1000000);
 
-        if ($get_speed_stats) Output::output('sendEmail start ' . Timer::get('process_queue')->interval(1));
+        if ($get_speed_stats) phpList::log()->debug('sendEmail start ' . Timer::get('process_queue')->interval(1), ['page' => 'preparecampaign']);
 
         #0013076: different content when forwarding 'to a friend'
         if (Config::FORWARD_ALTERNATIVE_CONTENT) {
@@ -47,20 +46,28 @@ class PrepareCampaign
             }
         } else {
             #  dbg("Using cached {$cached->fromemail}");
-            if (Config::VERBOSE) Output::output('Using cached campaign');
+            if (Config::VERBOSE) phpList::log()->debug('Using cached campaign', ['page' => 'preparecampaign']);
         }
 
         $cached_campaign = Cache::getCachedCampaign($campaign);
 
         if (Config::VERBOSE) {
-            Output::output(s('Sending campaign %d with subject %s to %s', $campaign->id, $cached_campaign->subject, $subscriber->getEmailAddress()));
+            phpList::log()->debug(
+                s(
+                    'Sending campaign %d with subject %s to %s',
+                    $campaign->id,
+                    $cached_campaign->subject,
+                    $subscriber->getEmailAddress()
+                ),
+                ['page' => 'preparecampaign']
+            );
         }
 
         ## at this stage we don't know whether the content is HTML or text, it's just content
         $content = $cached_campaign->content;
 
         if ($get_speed_stats) {
-            Output::output('Load subscriber start');
+            phpList::log()->debug('Load subscriber start', ['page' => 'preparecampaign']);;
         }
 
         #0011857: forward to friend, retain attributes
@@ -85,12 +92,12 @@ class PrepareCampaign
         }
 
         if ($get_speed_stats) {
-            Output::output('Load subscriber end');
+            phpList::log()->debug('Load subscriber end', ['page' => 'preparecampaign']);;
         }
 
         if ($cached_campaign->subscriberpecific_url) {
             if ($get_speed_stats) {
-                Output::output('fetch personal URL start');
+                phpList::log()->debug('fetch personal URL start', ['page' => 'preparecampaign']);;
             }
 
             ## Fetch external content, only if the URL has placeholders
@@ -117,12 +124,12 @@ class PrepareCampaign
                 }
             }
             if ($get_speed_stats) {
-                Output::output('fetch personal URL end');
+                phpList::log()->debug('fetch personal URL end', ['page' => 'preparecampaign']);;
             }
         }
 
         if ($get_speed_stats) {
-            Output::output('define placeholders start');
+            phpList::log()->debug('define placeholders start', ['page' => 'preparecampaign']);;
         }
 
         //TODO: can't we precache parts of the urls and the just use string concatenation for better performance
@@ -258,13 +265,13 @@ class PrepareCampaign
         #  $content = $cached->htmlcontent;
 
         if ($get_speed_stats) {
-            Output::output('define placeholders end');
+            phpList::log()->debug('define placeholders end', ['page' => 'preparecampaign']);;
         }
 
         ## Fill text and html versions depending on given versions.
 
         if ($get_speed_stats) {
-            Output::output('parse text to html or html to text start');
+            phpList::log()->debug('parse text to html or html to text start', ['page' => 'preparecampaign']);;
         }
 
         if ($cached_campaign->htmlformatted) {
@@ -284,14 +291,14 @@ class PrepareCampaign
         }
 
         if ($get_speed_stats) {
-            Output::output('parse text to html or html to text end');
+            phpList::log()->debug('parse text to html or html to text end', ['page' => 'preparecampaign']);;
         }
 
         $defaultstyle = Config::get('html_email_style');
         $adddefaultstyle = 0;
 
         if ($get_speed_stats) {
-            Output::output('merge into template start');
+            phpList::log()->debug('merge into template start', ['page' => 'preparecampaign']);;
         }
 
         if ($cached_campaign->template)
@@ -305,12 +312,12 @@ class PrepareCampaign
         $textcampaign = $textcontent;
 
         if ($get_speed_stats) {
-            Output::output('merge into template end');
+            phpList::log()->debug('merge into template end', ['page' => 'preparecampaign']);;
         }
         ## Parse placeholders
 
         if ($get_speed_stats) {
-            Output::output('parse placeholders start');
+            phpList::log()->debug('parse placeholders start', ['page' => 'preparecampaign']);;
         }
 
 
@@ -440,11 +447,11 @@ class PrepareCampaign
         $textcampaign = PrepareCampaign::parsePlaceHolders($textcampaign, $text);
 
         if ($get_speed_stats) {
-            Output::output('parse placeholders end');
+            phpList::log()->debug('parse placeholders end', ['page' => 'preparecampaign']);;
         }
 
         if ($get_speed_stats) {
-            Output::output('parse subscriberdata start');
+            phpList::log()->debug('parse subscriberdata start', ['page' => 'preparecampaign']);;
         }
 
         $subscriberdata = array();
@@ -464,7 +471,7 @@ class PrepareCampaign
         }
 
         if ($get_speed_stats) {
-            Output::output('parse subscriberdata end');
+            phpList::log()->debug('parse subscriberdata end', ['page' => 'preparecampaign']);;
         }
 
         if (!$destinationemail) {
@@ -477,7 +484,7 @@ class PrepareCampaign
         }
 
         if ($get_speed_stats) {
-            Output::output('pass to plugins for destination email start');
+            phpList::log()->debug('pass to plugins for destination email start', ['page' => 'preparecampaign']);;
         }
         /*TODO: enable plugins
         foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
@@ -485,7 +492,7 @@ class PrepareCampaign
             $destinationemail = $plugin->setFinalDestinationEmail($campaign->id, $subscriber_att_values, $destinationemail);
         }
         if ($getspeedstats) {
-            Output::output('pass to plugins for destination email end');
+            phpList::log()->debug('pass to plugins for destination email end', ['page' => 'preparecampaign']);;
         }
 
         foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
@@ -496,7 +503,7 @@ class PrepareCampaign
         ## click tracking
         # for now we won't click track forwards, as they are not necessarily subscribers, so everything would fail
         if ($get_speed_stats) {
-            Output::output('click track start');
+            phpList::log()->debug('click track start', ['page' => 'preparecampaign']);;
         }
 
         if (Config::CLICKTRACK && $subscriber->uniqid != 'forwarded') {
@@ -701,7 +708,7 @@ class PrepareCampaign
             }
         }
         if ($get_speed_stats) {
-            Output::output('click track end');
+            phpList::log()->debug('click track end', ['page' => 'preparecampaign']);;
         }
 
         ## if we're not tracking clicks, we should add Google tracking here
@@ -774,7 +781,7 @@ class PrepareCampaign
             $textcampaign = $forwardedby['personalNote'] . "\n" . $textcampaign;
         }
         if ($get_speed_stats) {
-            Output::output('cleanup start');
+            phpList::log()->debug('cleanup start', ['page' => 'preparecampaign']);;
         }
 
         ## allow fallback to default value for the ones that do not have a value
@@ -821,13 +828,13 @@ class PrepareCampaign
         $htmlcampaign = str_ireplace('</html></p>', '</html>', $htmlcampaign);
 
         if ($get_speed_stats) {
-            Output::output('cleanup end');
+            phpList::log()->debug('cleanup end', ['page' => 'preparecampaign']);;
         }
 #  $htmlcampaign = compressContent($htmlcampaign);
 
         # print htmlspecialchars($htmlcampaign);exit;
 
-        if ($get_speed_stats) Output::output('build Start ' . Config::get('processqueue_timer')->interval(1));
+        if ($get_speed_stats) phpList::log()->debug('build Start ' . Config::get('processqueue_timer')->interval(1), ['page' => 'preparecampaign']);
 
         # build the email
         $mail = new phpListMailer($campaign->id, $destinationemail);
@@ -844,7 +851,7 @@ class PrepareCampaign
         if (in_array($domaincheck, $text_domains)) {
             $subscriber->htmlemail = 0;
             if (Config::VERBOSE)
-                Output::output(s('sendingtextonlyto') . " $domaincheck");
+                phpList::log()->debug(s('sendingtextonlyto') . " $domaincheck", ['page' => 'preparecampaign']);
         }
         /*TODO: enable plugins
         foreach (Config::get('plugins') as $pluginname => $plugin) {
@@ -1041,8 +1048,8 @@ class PrepareCampaign
             if (!empty($cached_campaign->replytoemail)) {
                 $mail->AddReplyTo($cached_campaign->replytoemail, $cached_campaign->replytoname);
             }
-            if ($get_speed_stats) Output::output('build End ' . Timer::get('PQT')->interval(1));
-            if ($get_speed_stats) Output::output('send Start ' . Timer::get('PQT')->interval(1));
+            if ($get_speed_stats) phpList::log()->debug('build End ' . Timer::get('PQT')->interval(1), ['page' => 'preparecampaign']);
+            if ($get_speed_stats) phpList::log()->debug('send Start ' . Timer::get('PQT')->interval(1), ['page' => 'preparecampaign']);
 
             if (Config::DEBUG) {
                 $destinationemail = Config::DEVELOPER_EMAIL;
@@ -1054,7 +1061,7 @@ class PrepareCampaign
                 foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
                     $plugin->processSendFailed($campaign->id, $subscriberdata, $isTestMail);
                 }*/
-                Output::output(
+                phpList::log()->debug(
                     sprintf(
                         s('Error sending campaign %d (%d/%d) to %s (%s) '),
                         $campaign->id,
@@ -1064,12 +1071,12 @@ class PrepareCampaign
                         $subscriber->getEmailAddress(),
                         $destinationemail
                     ),
-                    0
+                    ['page' => 'preparecampaign']
                 );
                 return false;
             } else {
                 ## only save the estimated size of the campaign when sending a test campaign
-                if ($get_speed_stats) Output::output('send End ' . Timer::get('PQT')->interval(1));
+                if ($get_speed_stats) phpList::log()->debug('send End ' . Timer::get('PQT')->interval(1), ['page' => 'preparecampaign']);
                 //TODO: find solution for send process id global var which currently is definded in CampaignQueue
                 if (!isset($GLOBALS['send_process_id'])) {
                     if (!empty($mail->mailsize)) {
@@ -1078,7 +1085,7 @@ class PrepareCampaign
                     }
                 }
                 $sqlCount = phpList::DB()->getQueryCount() - $sql_count_start;
-                if ($get_speed_stats) Output::output('It took ' . $sqlCount . '  queries to send this campaign');
+                if ($get_speed_stats) phpList::log()->debug('It took ' . $sqlCount . '  queries to send this campaign', ['page' => 'preparecampaign']);
                 /*TODO:enable plugins
                 foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
                     $plugin->processSendSuccess($campaign->id, $subscriberdata, $isTestMail);
@@ -1627,7 +1634,7 @@ class PrepareCampaign
             }
 
             if (Config::VERBOSE && (Config::get('getspeedstats', false) !== false)) {
-                Output::output('fetch URL end');
+                phpList::log()->debug('fetch URL end', ['page' => 'preparecampaign']);
             }
             /*
             print $campaign->sendurl;
@@ -1649,7 +1656,7 @@ class PrepareCampaign
         */
 
         if (Config::VERBOSE && (Config::get('getspeedstats', false) !== false)) {
-            Output::output('parse config start');
+            phpList::log()->debug('parse config start', ['page' => 'preparecampaign']);
         }
 
         /*
@@ -1666,7 +1673,7 @@ class PrepareCampaign
           }
           */
         if (Config::VERBOSE && (Config::get('getspeedstats', false) !== false)) {
-            Output::output('parse config end');
+            phpList::log()->debug('parse config end', ['page' => 'preparecampaign']);
         }
         /*TODO: figure out what this does
         foreach ($campaign as $key => $val) {

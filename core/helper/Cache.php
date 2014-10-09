@@ -1,7 +1,6 @@
 <?php
 namespace phpList\helper;
 
-
 use phpList\Campaign;
 use phpList\Config;
 use phpList\phpList;
@@ -130,9 +129,8 @@ class Cache {
         if (count(Cache::$_instance->linktrack_sent_cache) == 0) return;
         foreach (Cache::$_instance->linktrack_sent_cache as $mid => $numsent) {
             foreach ($numsent as $fwdid => $fwdtotal) {
-                //TODO: change output function
                 if (Config::VERBOSE){
-                    Output::output("Flushing clicktrack stats for $mid: $fwdid => $fwdtotal");
+                    phpList::log()->debug("Flushing clicktrack stats for $mid: $fwdid => $fwdtotal", ['page' => 'cache']);
                 }
                 phpList::DB()->query(sprintf(
                         'UPDATE %s SET total = %d

@@ -1,7 +1,6 @@
 <?php
 namespace phpList;
 
-use phpList\helper\Logger;
 use phpList\helper\String;
 use phpList\helper\Util;
 use PHPMailer;
@@ -761,7 +760,7 @@ class phpListMailer extends \PHPMailer
             if (Config::DEBUG && Config::DEVELOPER_EMAIL != '') {
                 $destinationemail = Config::DEVELOPER_EMAIL;
             } else {
-                print 'Error: Running DEV version, but DEVELOPER_EMAIL not set';
+                phpList::log()->critical('Error: Running DEV version, but DEVELOPER_EMAIL not set', ['page' => 'phpListMailer']);
             }
         } else {
             $destinationemail = $to;

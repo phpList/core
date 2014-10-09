@@ -1,8 +1,6 @@
 <?php
 namespace phpList;
 
-
-use phpList\helper\Logger;
 use phpList\helper\String;
 use phpList\helper\Util;
 

@@ -7,17 +7,6 @@ use phpList\Subscriber;
 
 class Util
 {
-    /**
-     * push some more output to the browser, so it displays things sooner
-     */
-    public static function flushBrowser()
-    {
-        for ($i = 0; $i < 10000; $i++) {
-            print ' ' . "\n";
-        }
-        flush();
-    }
-
     public static function secs2time($secs)
     {
         $years = $days = $hours = $mins = 0;

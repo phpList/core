@@ -61,12 +61,7 @@ class Database
     public function error()
     {
         $error = 'Database error ' . $this->db->errorCode() . ' while doing query ' . $this->last_query . ' ' . $this->db->errorInfo()[2];
-        if (Config::get('commandline', false) === false) {
-            Output::output($error);
-        } else {
-            Output::cl_output($error);
-        }
-        phpList::log()->notice('Database error: ' . $this->db->errorInfo()[2]);
+        phpList::log()->error($error);
     }
 
     /**
@@ -90,7 +85,7 @@ class Database
         $this->last_query = $result = null;
 
         if (Config::DEBUG) {
-            $this->log($query, '/tmp/queries.log');
+            phpList::log()->debug('(' . $this->query_count . ") $query \n", ['page' => 'database']);
 
             # time queries to see how slow they are, so they can
             # be optimized
@@ -117,7 +112,6 @@ class Database
         }catch (\PDOException $e){
             if (!$ignore) {
                 phpList::log()->notice("Sql error in $query");
-                Output::cl_output('Sql error ' . $query);
             }
         }
 
@@ -133,9 +127,9 @@ class Database
             $elapsed = $end - $start;
             if ($elapsed > 300000) {
                 $query = substr($query, 0, 200);
-                sqllog(' [' . $elapsed . '] ' . $query, "/tmp/phplist-sqltimer.log");
+                phpList::log()->debug('(' . $this->query_count . ") ' [' . $elapsed . '] ' . $query \n", ['page' => 'database']);
             } else {
-                #      sqllog(' ['.$elapsed.'] '.$query,"/tmp/phplist-sqltimer.log");
+                #      phpList::log()->debug('(' . $this->query_count . ") ' [' . $elapsed . '] ' . $query \n", ['page' => 'database']);
             }
         }*/
         return $result;
@@ -149,18 +143,6 @@ class Database
         $this->db = null;
     }
 
-    //TODO: move to logging class or something
-    public function log($msg, $logfile = "")
-    {
-        if (!$logfile) {
-            return;
-        }
-        $fp = @fopen($logfile, 'a');
-        $line = '[' . date('d M Y, H:i:s') . '] ' . getenv('REQUEST_URI') . '(' . $this->query_count . ") $msg \n";
-        @fwrite($fp, $line);
-        @fclose($fp);
-    }
-
     /**
      * Execute query and print statement
      * @param $query
@@ -170,13 +152,7 @@ class Database
     public function verboseQuery($query, $ignore = 0)
     {
         if (Config::DEBUG) {
-            print "<b>$query</b><br>\n";
-        }
-        flush();
-        if (Config::get('commandline')) {
-            ob_end_clean();
-            print "Sql: $query\n";
-            ob_start();
+            phpList::log()->debug($query, ['page' => 'database']);
         }
         return $this->query($query, $ignore);
     }

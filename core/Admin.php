@@ -2,7 +2,7 @@
 namespace phpList;
 
 use phpList\helper\String;
-use \phpList\helper\Util;
+use phpList\helper\Util;
 
 class Admin
 {
