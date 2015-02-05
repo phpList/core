@@ -84,7 +84,7 @@ class Database
     {
         $this->last_query = $result = null;
 
-        if (Config::DEBUG) {
+        if (DEBUG) {
             phpList::log()->debug('(' . $this->query_count . ") $query \n", ['page' => 'database']);
 
             # time queries to see how slow they are, so they can
@@ -120,7 +120,7 @@ class Database
 
         //TODO: make usable
         /*
-        if (Config::DEBUG) {
+        if (DEBUG) {
             # log time queries take
             $now = gettimeofday();
             $end = $now['sec'] * 1000000 + $now['usec'];
@@ -151,7 +151,7 @@ class Database
      */
     public function verboseQuery($query, $ignore = 0)
     {
-        if (Config::DEBUG) {
+        if (DEBUG) {
             phpList::log()->debug($query, ['page' => 'database']);
         }
         return $this->query($query, $ignore);

@@ -1051,8 +1051,8 @@ class PrepareCampaign
             if ($get_speed_stats) phpList::log()->debug('build End ' . Timer::get('PQT')->interval(1), ['page' => 'preparecampaign']);
             if ($get_speed_stats) phpList::log()->debug('send Start ' . Timer::get('PQT')->interval(1), ['page' => 'preparecampaign']);
 
-            if (Config::DEBUG) {
-                $destinationemail = Config::DEVELOPER_EMAIL;
+            if (DEBUG) {
+                $destinationemail = PHPLIST_DEVELOPER_EMAIL;
             }
 
             if (!$mail->compatSend('', $destinationemail, $fromname, $fromemail, $subject)) {
@@ -1198,7 +1198,7 @@ class PrepareCampaign
             Config::setRunningConfig('pdf_fontsize', 12);
         }
         $pdf = new FPDF();
-        $pdf->SetCreator('PHPlist version ' . Config::VERSION);
+        $pdf->SetCreator('PHPlist version ' . PHPLIST_VERSION);
         $pdf->Open();
         $pdf->AliasNbPages();
         $pdf->AddPage();

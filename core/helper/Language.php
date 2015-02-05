@@ -1,8 +1,8 @@
 <?php
 namespace phpList\helper;
 
-use phpList\phpList;
-use phpList\config;
+
+use phpList\Config;
 
 class Language
 {
@@ -13,10 +13,61 @@ class Language
     private $hasGettext = false;
     private $hasDB = false;
     private $_languages = array();
-    /**
-     * @var Language
-     */
-    private static $_instance;
+
+
+    public function __construct(Database $db, Config $config)
+    {
+        $this->config = $config;
+        $this->db = $db;
+
+
+        $this->basedir = dirname(__FILE__) . '/locale/';
+        $this->defaultlanguage = $this->config->get('DEFAULT_SYSTEM_LANGUAGE');
+        $this->language = $this->config->get('DEFAULT_SYSTEM_LANGUAGE');
+
+        $languages = $this->getLanguages();
+        if (isset($_SESSION['adminlanguage']) && isset($languages[$_SESSION['adminlanguage']['iso']])) {
+            $this->language = $_SESSION['adminlanguage']['iso'];
+        }
+        if (function_exists('gettext')) {
+            $this->hasGettext = true;
+        }
+        if (isset($_SESSION['hasI18Ntable'])) {
+            $this->hasDB = $_SESSION['hasI18Ntable'];
+        } elseif ($this->db->checkForTable('i18n')) {
+            $_SESSION['hasI18Ntable'] = true;
+            $this->hasDB = true;
+        } else {
+            $_SESSION['hasI18Ntable'] = false;
+        }
+
+        /*
+        $lan = array();
+
+        if (is_file($this->basedir . $this->language . '/' . $page . '.php')) {
+            @include $this->basedir . $this->language . '/' . $page . '.php';
+        } elseif (!$this->config->get('DEBUG')) {
+            @include $this->basedir . $this->defaultlanguage . '/' . $page . '.php';
+        }
+        $this->lan = $lan;
+        $lan = array();
+
+        if (is_file($this->basedir . $this->language . '/common.php')) {
+            @include $this->basedir . $this->language . '/common.php';
+        } elseif (!DEBUG) {
+            @include $this->basedir . $this->defaultlanguage . '/common.php';
+        }
+        $this->lan += $lan;
+        $lan = array();
+
+        if (is_file($this->basedir . $this->language . '/frontend.php')) {
+            @include $this->basedir . $this->language . '/frontend.php';
+        } elseif (!DEBUG) {
+            @include $this->basedir . $this->defaultlanguage . '/frontend.php';
+        }
+        $this->lan += $lan;
+        */
+    }
 
     /**
      * @return array
@@ -58,15 +109,15 @@ class Language
             }
 
             ## pick up other languages from DB
-            if (phpList::DB()->tableExists('i18n')) {
-                $query = phpList::DB()->query(
+            if ($this->db->tableExists('i18n')) {
+                $query = $this->db->query(
                     sprintf(
                         'SELECT lan,translation FROM %s WHERE original = "language-name" AND lan NOT IN ("%s")',
-                        Config::getTableName('i18n'),
+                        $this->config->getTableName('i18n'),
                         join('","', array_keys($this->_languages))
                     )
                 );
-                $result = phpList::DB()->query($query);
+                $result = $this->db->query($query);
                 while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
                     $this->_languages[$row['lan']] = array($row['translation'], 'UTF-8', 'UTF-8', $row['lan']);
                 }
@@ -74,72 +125,6 @@ class Language
             uasort($this->_languages, "lanSort");
         }
         return $this->_languages;
-    }
-
-    private static function lanSort($a, $b)
-    {
-        return strcmp(strtolower($a[0]), strtolower($b[0]));
-    }
-
-    private function __construct()
-    {
-        $this->basedir = dirname(__FILE__) . '/locale/';
-        $this->defaultlanguage = Config::DEFAULT_SYSTEM_LANGUAGE;
-        $this->language = Config::DEFAULT_SYSTEM_LANGUAGE;
-
-        $languages = $this->getLanguages();
-        if (isset($_SESSION['adminlanguage']) && isset($languages[$_SESSION['adminlanguage']['iso']])) {
-            $this->language = $_SESSION['adminlanguage']['iso'];
-        }
-        if (function_exists('gettext')) {
-            $this->hasGettext = true;
-        }
-        if (isset($_SESSION['hasI18Ntable'])) {
-            $this->hasDB = $_SESSION['hasI18Ntable'];
-        } elseif (phpList::DB()->checkForTable('i18n')) {
-            $_SESSION['hasI18Ntable'] = true;
-            $this->hasDB = true;
-        } else {
-            $_SESSION['hasI18Ntable'] = false;
-        }
-
-        /*
-        $lan = array();
-
-        if (is_file($this->basedir . $this->language . '/' . $page . '.php')) {
-            @include $this->basedir . $this->language . '/' . $page . '.php';
-        } elseif (!Config::DEBUG) {
-            @include $this->basedir . $this->defaultlanguage . '/' . $page . '.php';
-        }
-        $this->lan = $lan;
-        $lan = array();
-
-        if (is_file($this->basedir . $this->language . '/common.php')) {
-            @include $this->basedir . $this->language . '/common.php';
-        } elseif (!Config::DEBUG) {
-            @include $this->basedir . $this->defaultlanguage . '/common.php';
-        }
-        $this->lan += $lan;
-        $lan = array();
-
-        if (is_file($this->basedir . $this->language . '/frontend.php')) {
-            @include $this->basedir . $this->language . '/frontend.php';
-        } elseif (!Config::DEBUG) {
-            @include $this->basedir . $this->defaultlanguage . '/frontend.php';
-        }
-        $this->lan += $lan;
-        */
-    }
-
-    /**
-     * @return Language
-     */
-    public static function Instance()
-    {
-        if (!Language::$_instance instanceof self) {
-            Language::$_instance = new self();
-        }
-        return Language::$_instance;
     }
 
     /**
@@ -205,9 +190,9 @@ class Language
         if (!$this->hasDB) {
             return '';
         }
-        $st = phpList::DB()->prepare(sprintf(
+        $st = $this->db->prepare(sprintf(
                 'select translation from %s where original = ? and lan = ?',
-                Config::getTableName('i18n')
+                $this->config->getTableName('i18n')
             ));
         $st->bindValue(1, $text);
         $st->bindValue(2, $this->language);
@@ -276,7 +261,7 @@ class Language
         $text = str_ireplace('phplist', 'phpList', $text);
         $text = str_replace("\n", "", $text);
 
-        if (Config::DEBUG) {
+        if (DEBUG) {
             $text = '<span style="color:#A704FF">' . $text . '</span>';
         }
         return $text;
@@ -288,7 +273,7 @@ class Language
 
     function missingText($text)
     {
-        if (Config::DEBUG) {
+        if (DEBUG) {
             if (isset($_GET['page'])) {
                 $page = $_GET['page'];
             } else {
@@ -363,14 +348,14 @@ $lan = array(
         }
         if (sizeof($translations)) {
             foreach ($translations as $orig => $trans) {
-                phpList::DB()->replaceQuery(
-                    Config::getTableName('i18n'),
+                $this->db->replaceQuery(
+                    $this->config->getTableName('i18n'),
                     array('lan' => $language, 'original' => $orig, 'translation' => $trans),
                     ''
                 );
             }
         }
-        Config::setDBConfig('lastlanguageupdate-' . $language, $time, 0);
+        $this->config->setDBConfig('lastlanguageupdate-' . $language, $time, 0);
     }
 
     function getTranslation($text, $page, $basedir)
@@ -421,18 +406,6 @@ $lan = array(
         }
 
         return '';
-    }
-
-    /**
-     * Funtion to skip initialisation to 'improve' performance
-     * When including this class we are sure an instance has been
-     * initialised.
-     * @param $text
-     * @return mixed|string
-     */
-    public static function getDirect($text)
-    {
-        return Language::$_instance->get($text);
     }
 
     /**

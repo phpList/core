@@ -1,0 +1,24 @@
+services:
+# Classes without dependencies
+
+
+
+# Classes with dependencies
+  phpList:
+    class:  phpList\phpList
+    arguments: [@Config, @Language, @Database]
+  Database:
+    class:  phpList\helper\Database
+    arguments: [@Config]
+  Config:
+    class:     phpList\Config
+    arguments: [%config.configfile%, @Database]
+  Language:
+    class:     phpList\Language
+    arguments: [@Database, @Config]
+
+# Define parameters, to be set in app logic
+# NOTE: the classname.parameter syntax is just a Symfony convention; parameter
+# names are handles as single simple strings
+parameters:
+  config.configfile: config_file
