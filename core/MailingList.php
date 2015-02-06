@@ -24,7 +24,7 @@ class MailingList
     /**
      * Create a MailingList object from database values
      * @param $array
-     * @return MailingList
+     * @return MailingListEntity
      */
     private function listFromArray($array)
     {
@@ -72,7 +72,7 @@ class MailingList
     /**
      * Get list with given id
      * @param $id
-     * @return MailingList
+     * @return MailingListEntity
      */
     public function getListById($id)
     {

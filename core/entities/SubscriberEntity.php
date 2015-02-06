@@ -1,6 +1,8 @@
 <?php
 namespace phpList\entities;
 
+use phpList\helper\Validation;
+use phpList\helper\Util;
 
 class SubscriberEntity {
     public $id;
@@ -45,9 +47,6 @@ class SubscriberEntity {
     public function setPassword($password)
     {
         $this->password = Util::encryptPass($password);
-        if ($this->id != null) {
-            $this->updatePassword();
-        }
     }
 
     /**
@@ -64,12 +63,72 @@ class SubscriberEntity {
     public $extradata;
     public $foreignkey;
 
+    private $attributes;
+    private $has_attributes = false;
+
     /**
      * @param string $email_address
+     * @param string $password (can be passed when reading from database)
      * @throws \InvalidArgumentException
      */
-    public function __construct($email_address)
+    public function __construct($email_address, $password = null)
     {
         $this->setEmailAddress($email_address);
+
+        if($password != null){
+            $this->password = $password;
+        }
+    }
+
+    /**
+     * Set attributes for this subscriber
+     * @param $key
+     * @param $value
+     */
+    public function setAttribute($key, $value){
+        $this->attributes[$key] = $value;
+        $this->has_attributes = true;
+    }
+
+    /**
+     * Get a subscriber attribute
+     * @param string $attribute
+     * @return string|null
+     */
+    public function getAttribute($attribute)
+    {
+        if (empty($this->attributes) ||!isset($this->attributes[$attribute])) {
+            return null;
+        } else {
+            return $this->attributes[$attribute];
+        }
+    }
+
+    /**
+     * Get a subscriber attribute
+     * @return array
+     */
+    public function getAttributes()
+    {
+        return $this->attributes;
+    }
+
+    /**
+     * Check if attributes have been loaded already
+     * @return bool
+     */
+    public function hasAttributes(){
+        return $this->has_attributes;
+    }
+
+
+    /**
+     * Check if this subscriber is allowed to send mails to
+     * @return bool
+     */
+    public function allowsReceivingMails()
+    {
+        $confirmed = $this->confirmed && !$this->disabled;
+        return (!$this->blacklisted && $confirmed);
     }
 } 

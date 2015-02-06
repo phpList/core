@@ -1,13 +1,14 @@
 <?php
 namespace phpList;
 
+use phpList\entities\SubscriberEntity;
 use phpList\helper\String;
-use phpList\helper\Validation;
-use phpList\helper\Util;
 
 class Subscriber
 {
-    private $attributes;
+    protected $config;
+    protected $db;
+
     /**
      * Used for looping over all usable subscriber attributes
      * for replacing in messages, urls etc. (@see fetchUrl)
@@ -20,122 +21,131 @@ class Subscriber
     );
 
     /**
-     * @param string $email_address
-     * @throws \InvalidArgumentException
+     * @param Config $config
+     * @param helper\Database $db
+     * @internal param string $email_address
      */
-    public function __construct($email_address)
+    public function __construct(Config $config, helper\Database $db)
     {
-        $this->setEmailAddress($email_address);
+        $this->config = $config;
+        $this->db = $db;
     }
 
     /**
      * Get subscriber by id
      * @param int $id
-     * @return Subscriber
+     * @return SubscriberEntity
      */
-    public static function getSubscriber($id)
+    public function getSubscriber($id)
     {
-        $result = phpList::DB()->query(
+        $result = $this->db->query(
             sprintf(
                 'SELECT * FROM %s
                 WHERE id = %d',
-                Config::getTableName('user', true),
+                $this->config->getTableName('user', true),
                 $id
             )
         );
-        return Subscriber::subscriberFromArray($result->fetch(\PDO::FETCH_ASSOC));
+        return $this->subscriberFromArray($result->fetch(\PDO::FETCH_ASSOC));
     }
 
     /**
      * Get subscriber by email address
      * @param string $email_address
-     * @return Subscriber
+     * @return SubscriberEntity
      */
-    public static function getSubscriberByEmailAddress($email_address)
+    public function getSubscriberByEmailAddress($email_address)
     {
-        return Subscriber::getSubscriberBy('email', $email_address);
+        return $this->getSubscriberBy('email', $email_address);
     }
 
     /**
      * Get Subscriber object from foreign key value
      * @param string $fk
-     * @return Subscriber
+     * @return SubscriberEntity
      */
-    public static function getSubscriberByForeignKey($fk)
+    public function getSubscriberByForeignKey($fk)
     {
-        return Subscriber::getSubscriberBy('foreignkey', $fk);
+        return $this->getSubscriberBy('foreignkey', $fk);
     }
 
     /**
      * Get Subscriber object from unique id value
      * @param string $unique_id
-     * @return Subscriber
+     * @return SubscriberEntity
      */
-    public static function getSubscriberByUniqueId($unique_id)
+    public function getSubscriberByUniqueId($unique_id)
     {
-        return Subscriber::getSubscriberBy('uniqueid', $unique_id);
+        return $this->getSubscriberBy('uniqueid', $unique_id);
     }
 
     /**
      * Get a Subscriber by searching for a value in a given column
      * @param string $column
      * @param string $value
-     * @return Subscriber
+     * @return SubscriberEntity
      */
-    private static function getSubscriberBy($column, $value)
+    private function getSubscriberBy($column, $value)
     {
-        $result = phpList::DB()->prepare(sprintf(
+        $result = $this->db->prepare(
+            sprintf(
                 'SELECT * FROM %s
                 WHERE :key = :value',
-                Config::getTableName('Subscriber', true)
+                $this->config->getTableName('Subscriber', true)
             ));
         $result->bindValue(':key',$column);
         $result->bindValue(':value',$value);
         $result->execute();
 
-        return Subscriber::subscriberFromArray($result->fetch(\PDO::FETCH_ASSOC));
+        return $this->subscriberFromArray($result->fetch(\PDO::FETCH_ASSOC));
     }
 
     /**
-     * Add Subscriber to selected list
-     * @param $list_id
+     * Add new Subscriber to database
+     * @param $email_address
+     * @param $password
+     * @throws \InvalidArgumentException
      */
-    public function addToList($list_id)
+    public function addSubscriber($email_address, $password)
     {
-        MailingList::addSubscriber($this->id, $list_id);
+        $subscriber = new SubscriberEntity($email_address);
+        $subscriber->setPassword($password);
+        $this->save($subscriber);
     }
 
     /**
      * Write Subscriber info to database
-     * @return bool
+     * @param SubscriberEntity $subscriber
+     * @throws \Exception
      */
-    public function save()
+    public function save(SubscriberEntity &$subscriber)
     {
-        if ($this->id != 0) {
-            $this->update();
+        if ($subscriber->id != 0) {
+            $this->update($subscriber);
         } else {
             $query = sprintf(
                 'INSERT INTO %s
                 (email, entered, modified, password, passwordchanged, disabled, htmlemail)
                 VALUES("%s", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "%s", CURRENT_TIMESTAMP, 0, 1)',
-                Config::getTableName('user', true),
-                $this->email_address,
-                $this->password
+                $this->config->getTableName('user', true),
+                $subscriber->getEmailAddress(),
+                $subscriber->getPassword()
             );
-            if(phpList::DB()->query($query)){
-                $this->id = phpList::DB()->insertedId();
-                $this->uniqid = self::giveUniqueId($this->id);
+            if ($this->db->query($query)) {
+                $subscriber->id = $this->db->insertedId();
+                $subscriber->uniqid = $this->giveUniqueId($subscriber->id);
             }else{
-                return false;
+                throw new \Exception('There was an error inserting the subscriber');
             }
         }
-        return true;
     }
 
     /**
      * Save Subscriber info to database
+     * when the password has to be updates, use @updatePassword
+     * @param SubscriberEntity $subscriber
      */
-    public function update()
+    public function update(SubscriberEntity $subscriber)
     {
         $query = sprintf(
             'UPDATE %s SET
@@ -146,32 +156,52 @@ class Subscriber
                 modified = CURRENT_TIMESTAMP,
                 htmlemail = "%s",
                 extradata = "%s"',
-            Config::getTableName('user', true),
-            $this->email_address,
-            $this->confirmed,
-            $this->blacklisted,
-            $this->optedin,
-            $this->htmlemail,
-            $this->extradata
+            $this->config->getTableName('user', true),
+            $subscriber->getEmailAddress(),
+            $subscriber->confirmed,
+            $subscriber->blacklisted,
+            $subscriber->optedin,
+            $subscriber->htmlemail,
+            $subscriber->extradata
         );
 
-        phpList::DB()->query($query);
+        $this->db->query($query);
     }
+
+    /**
+     * Remove subscriber from database
+     */
+    public function delete($id)
+    {
+        $tables = array(
+            $this->config->getTableName('listuser') => 'userid',
+            $this->config->getTableName('user_attribute', true) => 'userid',
+            $this->config->getTableName('usermessage') => 'userid',
+            $this->config->getTableName('user_history', true) => 'userid',
+            $this->config->getTableName('user_message_bounce', true) => 'user',
+            $this->config->getTableName('user', true) => 'id'
+        );
+        if ($this->db->tableExists($this->config->getTableName('user_group'))) {
+            $tables[$this->config->getTableName('user_group')] = 'userid';
+        }
+        $this->db->deleteFromArray($tables, $id);
+    }
+
     /**
      * Assign a unique id to a Subscriber
      * @param int $subscriber_id
      * @return string unique id
      */
-    private static function giveUniqueId($subscriber_id)
+    private function giveUniqueId($subscriber_id)
     {
         //TODO: make uniqueid a unique field in database
         do {
             $unique_id = md5(uniqid(mt_rand()));
-        } while (!phpList::DB()->query(
+        } while (!$this->db->query(
             sprintf(
                 'UPDATE %s SET uniqid = "%s"
                 WHERE id = %d',
-                Config::getTableName('user', true),
+                $this->config->getTableName('user', true),
                 $unique_id,
                 $subscriber_id
             )
@@ -183,76 +213,35 @@ class Subscriber
      * Get the number of subscribers who's unique id has not been set
      * @return int
      */
-    public static function checkUniqueIds()
+    public function checkUniqueIds()
     {
-        $result = phpList::DB()->query(
+        $result = $this->db->query(
             sprintf(
                 'SELECT id FROM %s
                 WHERE uniqid IS NULL
                 OR uniqid = ""',
-                Config::getTableName('user', true)
+                $this->config->getTableName('user', true)
             )
         );
         $to_do = $result->rowCount();
         if ($to_do > 0) {
             while ($col = $result->fetchColumn(0)) {
-                self::giveUniqueId($col);
+                $this->giveUniqueId($col);
             }
         }
         return $to_do;
-    }
-
-    /**
-     * Add new Subscriber to database
-     * @param $email_address
-     * @param $password
-     * @throws \InvalidArgumentException
-     */
-    public static function addSubscriber($email_address, $password)
-    {
-        $subscriber = new Subscriber($email_address);
-        $subscriber->setPassword($password);
-        $subscriber->save();
-    }
-
-    /**
-     * Remove subscriber from database
-     */
-    public function delete()
-    {
-        $tables = array(
-            Config::getTableName('listuser') => 'userid',
-            Config::getTableName('user_attribute', true) => 'userid',
-            Config::getTableName('usermessage') => 'userid',
-            Config::getTableName('user_history', true) => 'userid',
-            Config::getTableName('user_message_bounce', true) => 'user',
-            Config::getTableName('user', true) => 'id'
-        );
-        if (phpList::DB()->tableExists(Config::getTableName('user_group'))) {
-            $tables[Config::getTableName('user_group')] = 'userid';
-        }
-        phpList::DB()->deleteFromArray($tables, $this->id);
-    }
-
-    /**
-     * Get the lists this subscriber is subscribed for
-     * @return array
-     */
-    public function isMemberOf()
-    {
-        return MailingList::getListsForSubscriber($this->id);
     }
 
 
     /**
      * Create a Subscriber object from database values
      * @param $array
-     * @return Subscriber
+     * @return SubscriberEntity
      */
-    private static function subscriberFromArray($array)
+    private function subscriberFromArray($array)
     {
         if(!empty($array)){
-            $subscriber = new Subscriber($array['email']);
+            $subscriber = new SubscriberEntity($array['email'], $array['password']);
             $subscriber->id = $array['id'];
             $subscriber->confirmed = $array['confirmed'];
             $subscriber->blacklisted = $array['blacklisted'];
@@ -264,7 +253,6 @@ class Subscriber
             $subscriber->htmlemail = $array['htmlemail'];
             $subscriber->subscribepage = $array['subscribepage'];
             $subscriber->rssfrequency = $array['rssfrequency'];
-            $subscriber->password = $array['password'];
             $subscriber->passwordchanged = $array['passwordchanged'];
             $subscriber->disabled = $array['disabled'];
             $subscriber->extradata = $array['extradata'];
@@ -277,44 +265,28 @@ class Subscriber
 
     /**
      * Update password in db
+     * @param SubscriberEntity $subscriber
      */
-    private function updatePassword()
+    public function updatePassword(SubscriberEntity $subscriber)
     {
         $query = sprintf(
             'UPDATE %s
             SET password = "%s", passwordchanged = CURRENT_TIMESTAMP
             WHERE id = %d',
-            Config::getTableName('user'),
-            $this->password,
-            $this->id
+            $this->config->getTableName('user'),
+            $subscriber->getPassword(),
+            $subscriber->id
         );
-        phpList::DB()->query($query);
-    }
-
-    /**
-     * Get a subscriber attribute
-     * @param string $attribute
-     * @return string|null
-     */
-    public function getAttribute($attribute)
-    {
-        if (empty($this->attributes)) {
-            $this->loadAttributes();
-        }
-
-        if (!isset($this->attributes[$attribute])) {
-            return null;
-        } else {
-            return $this->attributes[$attribute];
-        }
+        $this->db->query($query);
     }
 
     /**
      * Load this subscribers attributes from the database
+     * @param SubscriberEntity $subscriber
      */
-    public function loadAttributes()
+    public function loadAttributes(SubscriberEntity &$subscriber)
     {
-        $result = phpList::DB()->query(
+        $result = $this->db->query(
             sprintf(
                 'SELECT a.id, a.name, ua.value
                 FROM %s AS a
@@ -322,27 +294,31 @@ class Subscriber
                     ON a.id = ua.attributeid
                 WHERE ua.userid = %d
                 ORDER BY listorder',
-                Config::getTableName('attribute', true),
-                Config::getTableName('user_attribute', true),
-                $this->id
+                $this->config->getTableName('attribute', true),
+                $this->config->getTableName('user_attribute', true),
+                $subscriber->id
             )
         );
 
         while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
-            $this->attributes[$row['id']] = $row['value'];
-            $this->attributes[$row['name']] = $row['name'];
+            $subscriber->setAttribute($row['id'], $row['value']);
+            $subscriber->setAttribute($row['name'], $row['name']);
         }
     }
 
     /**
      * Get all subscriber attributes
+     * @param SubscriberEntity $subscriber
      * @return array
      */
-    public function getCleanAttributes()
+    public function getCleanAttributes(SubscriberEntity $subscriber)
     {
-        $this->loadAttributes();
+        if (!$subscriber->hasAttributes()) {
+            $this->loadAttributes($subscriber);
+        }
+
         $clean_attributes = array();
-        foreach ($this->attributes as $key => $val) {
+        foreach ($subscriber->getAttributes() as $key => $val) {
             ## in the help, we only list attributes with "strlen < 20"
             if (strlen($key) < 20) {
                 $clean_attributes[String::cleanAttributeName($key)] = $val;
@@ -353,19 +329,21 @@ class Subscriber
 
     /**
      * Add an attribute to the database for this subscriber
-     * @param int $id
+     * @param entities\SubscriberEntity $subscriber
+     * @param $attribute_id
      * @param string $value
+     * @internal param int $id
      */
-    public function addAttribute($id, $value)
+    public function addAttribute(SubscriberEntity $subscriber, $attribute_id, $value)
     {
-        phpList::DB()->query(
+        $this->db->query(
             sprintf(
                 'REPLACE INTO %s
                 (userid,attributeid,value)
                 VALUES(%d,%d,"%s")',
-                Config::getTableName('user_attribute'),
-                $this->id,
-                $id,
+                $this->config->getTableName('user_attribute'),
+                $subscriber->id,
+                $attribute_id,
                 String::sqlEscape($value)
             )
         );
@@ -377,7 +355,7 @@ class Subscriber
      * @param string $detail
      * @param string $subscriber_id
      */
-    public static function addHistory($msg, $detail, $subscriber_id)
+    public function addHistory($msg, $detail, $subscriber_id)
     {
         if (empty($detail)) { ## ok duplicated, but looks better :-)
             $detail = $msg;
@@ -385,8 +363,8 @@ class Subscriber
 
         $sysinfo = "";
         $sysarrays = array_merge($_ENV, $_SERVER);
-        if (is_array(Config::$subscriberHISTORY_SYSTEMINFO)) {
-            foreach (Config::$subscriberHISTORY_SYSTEMINFO as $key) {
+        if (is_array($this->config->get('SUBSCRIBER_HISTORY_SYSTEMINFO'))) {
+            foreach ($this->config->get('SUBSCRIBER_HISTORY_SYSTEMINFO') as $key) {
                 if ($sysarrays[$key]) {
                     $sysinfo .= "\n$key = $sysarrays[$key]";
                 }
@@ -403,12 +381,12 @@ class Subscriber
         } else {
             $ip = '';
         }
-        phpList::DB()->query(
+        $this->db->query(
             sprintf(
                 'INSERT INTO %s
                 (ip,userid,date,summary,detail,systeminfo)
                 VALUES("%s",%d,now(),"%s","%s","%s")',
-                Config::getTableName('user_history', true),
+                $this->config->getTableName('user_history', true),
                 $ip,
                 $subscriber_id,
                 addslashes($msg),
@@ -423,27 +401,16 @@ class Subscriber
      * @param int $subscriber_id
      * @return int unique_id
      */
-    public static function getUniqueId($subscriber_id)
+    public function getUniqueId($subscriber_id)
     {
-        $result = phpList::DB()->query(
+        $result = $this->db->query(
             sprintf(
                 'SELECT uniqid FROM %s
                 WHERE id = %d',
-                Config::getTableName('user', true),
+                $this->config->getTableName('user', true),
                 $subscriber_id
             )
         );
         return $result->fetch();
     }
-
-    /**
-     * Check if this subscriber is allowed to send mails to
-     * @return bool
-     */
-    public function allowsReceivingMails()
-    {
-        $confirmed = $this->confirmed && !$this->disabled;
-        return (!$this->blacklisted && $confirmed);
-    }
-
 }
