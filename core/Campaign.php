@@ -16,6 +16,7 @@ class Campaign
     /**
      * @param Config $config
      * @param helper\Database $db
+     * @param MailingList $mailing_list
      */
     public function __construct(Config $config, helper\Database $db, MailingList $mailing_list)
     {
