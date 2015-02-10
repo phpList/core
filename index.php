@@ -3,7 +3,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use phpList;
 
 require_once 'vendor/autoload.php';
 
@@ -12,7 +11,7 @@ $container = new ContainerBuilder();
 // Create new Symfony file loader to handle the YAML service config file
 $loader = new YamlFileLoader( $container, new FileLocator(__DIR__) );
 // Load the service config file, which is in YAML format
-$loader->load( 'services.yml' );
+$loader->load( 'core/services.yml' );
 
 //Handle some dynamicly generated include files
 if (isset($_SERVER['ConfigFile']) && is_file($_SERVER['ConfigFile'])) {

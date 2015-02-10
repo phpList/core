@@ -355,7 +355,7 @@ $lan = array(
                 );
             }
         }
-        $this->config->setDBConfig('lastlanguageupdate-' . $language, $time, 0);
+        $this->config->setDBConfig($this->db, 'lastlanguageupdate-' . $language, $time, 0);
     }
 
     function getTranslation($text, $page, $basedir)

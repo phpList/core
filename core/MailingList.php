@@ -303,7 +303,7 @@ class MailingList
                 $categories[] = $row[0];
             }
             if (!empty($categories)) {
-                $this->config->setDBConfig('list_categories', join(',', $categories));
+                $this->config->setDBConfig($this->db, 'list_categories', join(',', $categories));
             }
         } else {
             foreach ($categories as $key => $val) {

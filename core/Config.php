@@ -1,6 +1,7 @@
 <?php
 namespace phpList;
 
+use phpList\helper\Database;
 use phpList\helper\Validation;
 
 class Config
@@ -13,7 +14,7 @@ class Config
      * load configuration from database each new session
      * TODO: probably not a good idea when using an installation with multiple subscribers
      */
-    public function __construct($config_file, helper\Database $db)
+    public function __construct($config_file)
     {
         /**
          * Constants used for debugging and developping
@@ -22,8 +23,6 @@ class Config
         define('PHPLIST_DEVELOPER_EMAIL', 'dev@localhost.local');
         define('PHPLIST_DEV_VERSION', true);
         define('PHPLIST_VERSION', '4.0.0 dev');
-
-        $this->db = $db;
 
         //do we have a configuration saved in session?
         if (isset($_SESSION['running_config'])) {
@@ -40,6 +39,14 @@ class Config
                 throw new \Exception('Cannot find config file');
             }
         }
+    }
+
+    /**
+     * Run this after db has been initialized, so we get the config from inside the database as well.
+     * @param Database $db
+     */
+    public function runAfterDBInitialised(Database $db){
+        $this->loadDBConfig($db);
     }
 
     /**
@@ -69,13 +76,13 @@ class Config
      * Load the entire configuration from the database
      * and put it in the session, so we don't need to reload it from db
      */
-    private function loadDBConfig()
+    private function loadDBConfig(Database $db)
     {
         //try to load additional configuration from db
         //$has_db_config = $this->db->tableExists($this->getTableName('config'), 1);
         $this->running_config['has_db_config'] =  true;
 
-        $result = $this->db->query(sprintf('SELECT item, value FROM %s', $this->getTableName('config')));
+        $result = $db->query(sprintf('SELECT item, value FROM %s', $this->getTableName('config')));
         while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
             $this->running_config[$row['item']] = $row['value'];
         }
@@ -85,12 +92,13 @@ class Config
 
     /**
      * Write a configuration value to the database
+     * @param helper\Database $db
      * @param string $item
      * @param mixed $value
      * @param int $editable
      * @return bool|string
      */
-    public function setDBConfig($item, $value, $editable = 1)
+    public function setDBConfig(Database $db, $item, $value, $editable = 1)
     {
         ## in case DB hasn't been initialised
         if (!$this->get('has_db_config')) {
@@ -151,7 +159,7 @@ class Config
             $editable = false;
         }
 
-        $this->db->replaceQuery(
+        $db->replaceQuery(
             $this->getTableName('config'),
             array('item' => $item, 'value' => $value, 'editable' => $editable),
             'item'

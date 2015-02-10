@@ -14,7 +14,12 @@
  **/
 function s($text)
 {
-    $translation = \phpList\helper\Language::getDirect($text);
+    global $container;
+    /**
+     * @var \phpList\helper\Language $lan
+     */
+    $lan = $container->get( 'Language' );
+    $translation = $lan->getDirect($text);
 
     ## allow overloading with sprintf paramaters
     if (func_num_args() > 1) {

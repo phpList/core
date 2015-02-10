@@ -1,7 +1,6 @@
 <?php
 namespace phpList\helper;
 
-use phpList\phpList;
 use phpList\Config;
 
 class Database
@@ -13,21 +12,12 @@ class Database
     private $last_query;
     private $query_count = 0;
 
-    private function __construct()
-    {
-        $this->connect();
-    }
+    protected $config;
 
-    /**
-     * Get an instance of this class
-     * @return Database
-     */
-    public static function instance()
+    private function __construct(Config $config)
     {
-        if (!Database::$_instance instanceof self) {
-            Database::$_instance = new self();
-        }
-        return Database::$_instance;
+        $this->config = $config;
+        $this->connect();
     }
 
     /**
@@ -42,9 +32,9 @@ class Database
 
         try {
             $this->db = new \PDO(
-                Config::DATABASE_DSN,
-                Config::DATABASE_USER,
-                Config::DATABASE_PASSWORD
+                $this->config->get('DATABASE_DSN'),
+                $this->config->get('DATABASE_USER'),
+                $this->config->get('DATABASE_PASSWORD')
             );
         } catch (\PDOException $e) {
             throw new \Exception('Cannot connect to Database, please check your configuration. ' . $e->getMessage());
@@ -53,6 +43,8 @@ class Database
         $this->db->query('SET NAMES \'utf8\'');
 
         $this->last_query = null;
+
+        $this->config->runAfterDBInitialised($this);
     }
 
     /**
@@ -185,7 +177,7 @@ class Database
                 sprintf(
                     'SELECT table_name FROM information_schema.tables WHERE table_schema = "%s"',
                     //TODO: change this so it can be used with PDO dsn
-                    Config::DATABASE_NAME
+                    $this->config->get('DATABASE_NAME')
                 )
             );
             while ($col = $result->fetchColumn(0)) {
@@ -222,7 +214,7 @@ class Database
      */
     public function checkForTable($table)
     {
-        return $this->tableExists($table) || $this->tableExists(Config::getTableName($table));
+        return $this->tableExists($table) || $this->tableExists($this->config->getTableName($table));
     }
 
     /**

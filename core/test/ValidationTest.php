@@ -71,6 +71,11 @@ class ValidationTest extends \PHPUnit_Framework_TestCase {
         '"spaces may be quoted"@example.com'        => TRUE ,
     );
 
+    public function setUp()
+    {
+
+    }
+
     /**
      *
      */

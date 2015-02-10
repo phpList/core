@@ -15,11 +15,11 @@ class phpList
     /**
      * Default constructor
      */
-    public function __construct(Config $config, Language $lan, Database $db)
+    public function __construct(Config $config, Database $db, Language $lan)
     {
         $this->config = $config;
-        $this->lan = $lan;
         $this->db = $db;
+        $this->lan = $lan;
 
         date_default_timezone_set($this->config->get('SYSTEM_TIMEZONE'));
 
@@ -108,7 +108,7 @@ class phpList
 
         //TODO: we probably will need >5.3
         if (version_compare(PHP_VERSION, '5.1.2', '<') && $this->config->get('WARN_ABOUT_PHP_SETTINGS')) {
-            throw new \Exception(s('phpList requires PHP version 5.1.2 or higher'));
+            throw new \Exception($this->lan->get('phpList requires PHP version 5.1.2 or higher'));
         }
 
         if ($this->config->get('ALLOW_ATTACHMENTS')
@@ -119,9 +119,9 @@ class phpList
         ) {
             $tmperror = '';
             if(ini_get('open_basedir')) {
-                $tmperror = s('open_basedir restrictions are in effect, which may be the cause of the next warning: ');
+                $tmperror = $this->lan->get('open_basedir restrictions are in effect, which may be the cause of the next warning: ');
             }
-            $tmperror .= s('The attachment repository does not exist or is not writable');
+            $tmperror .= $this->lan->get('The attachment repository does not exist or is not writable');
             throw new \Exception($tmperror);
         }
 
@@ -130,7 +130,7 @@ class phpList
             $check_pageroot = $this->config->get('PAGEROOT');
             $check_pageroot = preg_replace('#/$#','',$check_pageroot);
             if ($check_pageroot != $regs[1] && $this->config->get('WARN_ABOUT_PHP_SETTINGS'))
-                throw new \Exception(s('The pageroot in your config does not match the current locationCheck your config file.'));
+                throw new \Exception($this->lan->get('The pageroot in your config does not match the current locationCheck your config file.'));
         }
     }
 

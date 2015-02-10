@@ -12,17 +12,20 @@ class Campaign
     protected $config;
     protected $db;
     protected $mailing_list;
+    protected $template;
 
     /**
      * @param Config $config
      * @param helper\Database $db
      * @param MailingList $mailing_list
+     * @param Template $template
      */
-    public function __construct(Config $config, helper\Database $db, MailingList $mailing_list)
+    public function __construct(Config $config, helper\Database $db, MailingList $mailing_list, Template $template)
     {
         $this->config = $config;
         $this->db = $db;
         $this->mailing_list = $mailing_list;
+        $this->template = $template;
 
     }
 
@@ -288,8 +291,7 @@ class Campaign
      */
     public function getTemplateObject(CampaignEntity &$campaign){
         if($campaign->template_object == null){
-            //TODO: replace static call
-            $campaign->template_object = Template::getTemplate($campaign->template);
+            $campaign->template_object = $this->template->getTemplate($campaign->template);
         }
         return $campaign->template_object;
     }
@@ -582,6 +584,24 @@ class Campaign
             sprintf(
                 'INSERT INTO %s (messageid,listid,entered)
                 VALUES(%d,%d,CURRENT_TIMESTAMP)',
+                $this->config->getTableName('listmessage'),
+                $campaign->id,
+                $list_id
+            )
+        );
+    }
+
+    /**
+     * Remove campaign from a mailing list
+     * @param CampaignEntity $campaign
+     * @param $list_id
+     */
+    public function removeFromList(CampaignEntity $campaign, $list_id)
+    {
+        $this->db->query(
+            sprintf(
+                'DELETE FROM %s
+                WHERE messageid = "%d" AND listid = "%d"',
                 $this->config->getTableName('listmessage'),
                 $campaign->id,
                 $list_id
