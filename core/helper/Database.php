@@ -13,10 +13,12 @@ class Database
     private $query_count = 0;
 
     protected $config;
+    protected $log;
 
-    private function __construct(Config $config)
+    public function __construct(Config $config, Logger $log)
     {
         $this->config = $config;
+        $this->log = $log;
         $this->connect();
     }
 
@@ -52,8 +54,9 @@ class Database
      */
     public function error()
     {
-        $error = 'Database error ' . $this->db->errorCode() . ' while doing query ' . $this->last_query . ' ' . $this->db->errorInfo()[2];
-        phpList::log()->error($error);
+        $error_info = $this->db->errorInfo();
+        $error = 'Database error ' . $this->db->errorCode() . ' while doing query ' . $this->last_query . ' ' . $error_info[2];
+        $this->log->error($error);
     }
 
     /**
@@ -77,7 +80,7 @@ class Database
         $this->last_query = $result = null;
 
         if (DEBUG) {
-            phpList::log()->debug('(' . $this->query_count . ") $query \n", ['page' => 'database']);
+            $this->log->debug('(' . $this->query_count . ") $query \n", ['page' => 'database']);
 
             # time queries to see how slow they are, so they can
             # be optimized
@@ -103,7 +106,7 @@ class Database
             $result = $this->db->query($query);
         }catch (\PDOException $e){
             if (!$ignore) {
-                phpList::log()->notice("Sql error in $query");
+                $this->log->notice("Sql error in $query");
             }
         }
 
@@ -119,9 +122,9 @@ class Database
             $elapsed = $end - $start;
             if ($elapsed > 300000) {
                 $query = substr($query, 0, 200);
-                phpList::log()->debug('(' . $this->query_count . ") ' [' . $elapsed . '] ' . $query \n", ['page' => 'database']);
+                $this->log->debug('(' . $this->query_count . ") ' [' . $elapsed . '] ' . $query \n", ['page' => 'database']);
             } else {
-                #      phpList::log()->debug('(' . $this->query_count . ") ' [' . $elapsed . '] ' . $query \n", ['page' => 'database']);
+                #      $this->log->debug('(' . $this->query_count . ") ' [' . $elapsed . '] ' . $query \n", ['page' => 'database']);
             }
         }*/
         return $result;
@@ -144,7 +147,7 @@ class Database
     public function verboseQuery($query, $ignore = 0)
     {
         if (DEBUG) {
-            phpList::log()->debug($query, ['page' => 'database']);
+            $this->log->debug($query, ['page' => 'database']);
         }
         return $this->query($query, $ignore);
     }

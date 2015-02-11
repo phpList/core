@@ -1,8 +1,6 @@
 <?php
 namespace phpList\helper;
 
-use phpList\Config;
-use phpList\phpList;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
@@ -10,17 +8,20 @@ class Logger implements LoggerInterface
 {
     private $report;
 
+    public function __construct(){}
 
     private function logToDatabase($message, $page = 'unknown page')
     {
-        @phpList::DB()->query(
+        $this->logToFile($message, $page);
+        /* TODO: logger can't depend on database which depends on logger
+        @$this->db->query(
             sprintf(
                 'INSERT INTO %s (entered,page,entry)
                 VALUES(CURRENT_TIMESTAMP, "%s", "%s")',
-                Config::getTableName('eventlog', $page, $message)
+                $this->config->getTableName('eventlog', $page, $message)
             ),
             1
-        );
+        );*/
     }
 
     private function logToFile($message, $page = 'unknown page')
@@ -173,7 +174,10 @@ class Logger implements LoggerInterface
      */
     public function log($level, $message, array $context = array())
     {
-        // TODO: Implement log() method.
-        throw new \Exception("log() not implemented yet!");
+        if(isset($context['page'])){
+            $this->logToFile($message, $context['page']);
+        }else{
+            $this->logToFile($message);
+        }
     }
 }

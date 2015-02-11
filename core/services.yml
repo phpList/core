@@ -4,38 +4,43 @@ services:
   MailingListEntity:
     class: phpList\helper\MailingListEntity
   SubscriberEntity:
-      class: phpList\helper\SubscriberEntity
+    class: phpList\helper\SubscriberEntity
   TemplateEntity:
-        class: phpList\helper\TemplateEntity
+    class: phpList\helper\TemplateEntity
   TemplateImageEntity:
-          class: phpList\helper\TemplateImageEntity
+    class: phpList\helper\TemplateImageEntity
+  Logger:
+    class: phpList\helper\Logger
+  Util:
+    class: phpList\helper\Util
+    arguments: [@Config, @Logger]
   Config:
     class: phpList\Config
     arguments: [%config.configfile%]
   Database:
     class:  phpList\helper\Database
-    arguments: [@Config]
+    arguments: [@Config, @Logger]
   Language:
-    class: phpList\Language
+    class: phpList\helper\Language
     arguments: [@Database, @Config]
   phpList:
     class: phpList\phpList
-    arguments: [@Config, @Language, @Database]
+    arguments: [@Config, @Database, @Language, @Util]
   Campaign:
     class: phpList\Campaign
     arguments: [@Config, @Database, @MailingList, @Template]
   MailingList:
-      class: phpList\MailingList
-      arguments: [@Config, @Database]
+    class: phpList\MailingList
+    arguments: [@Config, @Database]
   Subscriber:
-      class: phpList\Subscriber
-      arguments: [@Config, @Database]
+    class: phpList\Subscriber
+    arguments: [@Config, @Database]
   Template:
-        class: phpList\Template
-        arguments: [@Config, @Database, @TemplateImage]
+    class: phpList\Template
+    arguments: [@Config, @Database, @TemplateImage]
   TemplateImage:
-        class: phpList\TemplateImage
-        arguments: [@Config, @Database]
+    class: phpList\TemplateImage
+    arguments: [@Config, @Database]
 
 # Define parameters, to be set in app logic
 # NOTE: the classname.parameter syntax is just a Symfony convention; parameter

@@ -14,6 +14,9 @@ class Language
     private $hasDB = false;
     private $_languages = array();
 
+    protected $config;
+    protected $db;
+
 
     public function __construct(Database $db, Config $config)
     {
@@ -40,6 +43,8 @@ class Language
         } else {
             $_SESSION['hasI18Ntable'] = false;
         }
+
+        $this->config->runAfterLanguageInitialised($this);
 
         /*
         $lan = array();
@@ -125,14 +130,6 @@ class Language
             uasort($this->_languages, "lanSort");
         }
         return $this->_languages;
-    }
-
-    /**
-     * Init language object
-     */
-    public static function initialise()
-    {
-         Language::Instance();
     }
 
     function gettext($text)

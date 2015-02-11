@@ -2,6 +2,7 @@
 namespace phpList;
 
 use phpList\helper\Database;
+use phpList\helper\Language;
 use phpList\helper\Validation;
 
 class Config
@@ -33,8 +34,6 @@ class Config
                 $this->running_config = parse_ini_file($config_file);
                 //Initialise further config
                 $this->initConfig();
-                $this->loadDBConfig();
-
             } else{
                 throw new \Exception('Cannot find config file');
             }
@@ -47,6 +46,14 @@ class Config
      */
     public function runAfterDBInitialised(Database $db){
         $this->loadDBConfig($db);
+    }
+
+    /**
+     * Run this after language has been initialized.
+     * @param Language $lan
+     */
+    public function runAfterLanguageInitialised(Language $lan){
+        $this->loadDefaultConfig($lan);
     }
 
     /**
@@ -105,8 +112,6 @@ class Config
             return false;
         }
 
-        $configInfo = array();
-
         if (!isset($this->default_config[$item])) {
             $configInfo = array(
                 'type' => 'unknown',
@@ -135,7 +140,7 @@ class Config
                 break;
             case 'email':
                 if (!Validation::isEmail($value)) {
-                    return $configInfo['description'] . ': ' . s('Invalid value for email address');
+                    return $configInfo['description'] . ': ' . $lan->get('Invalid value for email address');
                 }
                 break;
             case 'emaillist':
@@ -145,7 +150,7 @@ class Config
                     if (Validation::isEmail($email)) {
                         $valid[] = $email;
                     } else {
-                        return $configInfo['description'] . ': ' . s('Invalid value for email address');
+                        return $configInfo['description'] . ': ' . $lan->get('Invalid value for email address');
                     }
                 }
                 $value = join(',', $valid);
@@ -469,10 +474,14 @@ class Config
             $this->running_config['message_envelope'] = $this->get('admin_address');
         }
 
-        $this->loadDefaultConfig();
+        //$this->loadDefaultConfig();
     }
 
-    private function loadDefaultConfig(){
+    /**
+     * Load default configuration
+     * @param Language $lan
+     */
+    private function loadDefaultConfig(Language $lan){
             $defaultheader = '</head><body>';
             $defaultfooter = '</body></html>';
 
@@ -501,7 +510,7 @@ class Config
                 # what is your website location (url)
                 'website' => array(
                     'value' => $D_website,
-                    'description' => s('Website address (without http://)'),
+                    'description' => $lan->get('Website address (without http://)'),
                     'type' => 'text',
                     'allowempty' => false, ## indication this value cannot be empty (1 being it can be empty)
                     'category' => 'general'
@@ -509,7 +518,7 @@ class Config
                 # what is your domain (for sending emails)
                 'domain' => array(
                     'value' => $D_domain,
-                    'description' => s('Domain Name of your server (for email)'),
+                    'description' => $lan->get('Domain Name of your server (for email)'),
                     'type' => 'text',
                     'allowempty' => false,
                     'category' => 'general',
@@ -517,7 +526,7 @@ class Config
                 # admin address is the person who is in charge of this system
                 'admin_address' => array(
                     'value' => 'webmaster@[DOMAIN]',
-                    'description' => s('Person in charge of this system (one email address)'),
+                    'description' => $lan->get('Person in charge of this system (one email address)'),
                     'type' => 'email',
                     'allowempty' => false,
                     'category' => 'general',
@@ -525,7 +534,7 @@ class Config
                 # name of the organisation
                 'organisation_name' => array(
                     'value' => '',
-                    'description' => s('Name of the organisation'),
+                    'description' => $lan->get('Name of the organisation'),
                     'type' => 'text',
                     'allowempty' => true,
                     'category' => 'general',
@@ -533,7 +542,7 @@ class Config
                 # how often to check for new versions of PHPlist
                 'check_new_version' => array(
                     'value' => '7',
-                    'description' => s('How often do you want to check for a new version of phplist (days)'),
+                    'description' => $lan->get('How often do you want to check for a new version of phplist (days)'),
                     'type' => 'integer',
                     'min' => 1,
                     'max' => 180,
@@ -542,35 +551,35 @@ class Config
                 # admin addresses are other people who receive copies of subscriptions
                 'admin_addresses' => array(
                     'value' => '',
-                    'description' => s('List of email addresses to CC in system messages (separate by commas)'),
+                    'description' => $lan->get('List of email addresses to CC in system messages (separate by commas)'),
                     'type' => 'emaillist',
                     'allowempty' => true,
                     'category' => 'reporting',
                 ),
                 'campaignfrom_default' => array(
                     'value' => '',
-                    'description' => s('Default for \'From:\' in a campaign'),
+                    'description' => $lan->get('Default for \'From:\' in a campaign'),
                     'type' => 'text',
                     'allowempty' => true,
                     'category' => 'campaign',
                 ),
                 'notifystart_default' => array(
                     'value' => '',
-                    'description' => s('Default for \'address to alert when sending starts\''),
+                    'description' => $lan->get('Default for \'address to alert when sending starts\''),
                     'type' => 'email',
                     'allowempty' => true,
                     'category' => 'campaign',
                 ),
                 'notifyend_default' => array(
                     'value' => '',
-                    'description' => s('Default for \'address to alert when sending finishes\''),
+                    'description' => $lan->get('Default for \'address to alert when sending finishes\''),
                     'type' => 'email',
                     'allowempty' => true,
                     'category' => 'campaign',
                 ),
                 'always_add_googletracking' => array(
                     'value' => '0',
-                    'description' => s('Always add Google tracking code to campaigns'),
+                    'description' => $lan->get('Always add Google tracking code to campaigns'),
                     'type' => 'boolean',
                     'allowempty' => true,
                     'category' => 'campaign',
@@ -578,7 +587,7 @@ class Config
                 # report address is the person who gets the reports
                 'report_address' => array(
                     'value' => 'listreports@[DOMAIN]',
-                    'description' => s('Who gets the reports (email address, separate multiple emails with a comma)'),
+                    'description' => $lan->get('Who gets the reports (email address, separate multiple emails with a comma)'),
                     'type' => 'emaillist',
                     'allowempty' => true,
                     'category' => 'reporting',
@@ -586,14 +595,14 @@ class Config
                 # where will messages appear to come from
                 'message_from_address' => array(
                     'value' => 'noreply@[DOMAIN]',
-                    'description' => s('From email address for system messages'),
+                    'description' => $lan->get('From email address for system messages'),
                     'type' => 'email',
                     'allowempty' => 0,
                     'category' => 'transactional',
                 ),
                 'message_from_name' => array(
-                    'value' => s('Webmaster'),
-                    'description' => s('Name for system messages'),
+                    'value' => $lan->get('Webmaster'),
+                    'description' => $lan->get('Name for system messages'),
                     'type' => 'text',
                     'allowempty' => 0,
                     'category' => 'transactional',
@@ -601,7 +610,7 @@ class Config
                 # what is the reply-to on messages?
                 'message_replyto_address' => array(
                     'value' => 'noreply@[DOMAIN]',
-                    'description' => s('Reply-to email address for system messages'),
+                    'description' => $lan->get('Reply-to email address for system messages'),
                     'type' => 'email',
                     'allowempty' => 0,
                     'category' => 'transactional',
@@ -611,7 +620,7 @@ class Config
                 ## not sure why you would not want this :-) maybe it should not be an option at all
                 'hide_single_list' => array(
                     'value' => '1',
-                    'description' => s(
+                    'description' => $lan->get(
                         'If there is only one visible list, should it be hidden in the page and automatically subscribe subscribers who sign up'
                     ),
                     'type' => 'boolean',
@@ -622,7 +631,7 @@ class Config
                 # comma separated list of words
                 'list_categories' => array(
                     'value' => '',
-                    'description' => s('Categories for lists. Separate with commas.'),
+                    'description' => $lan->get('Categories for lists. Separate with commas.'),
                     'type' => 'text',
                     'allowempty' => true,
                     'category' => 'segmentation',
@@ -630,7 +639,7 @@ class Config
                 # width of a textline field
                 'textline_width' => array(
                     'value' => '40',
-                    'description' => s('Width of a textline field (numerical)'),
+                    'description' => $lan->get('Width of a textline field (numerical)'),
                     'type' => 'integer',
                     'min' => 20,
                     'max' => 150,
@@ -639,7 +648,7 @@ class Config
                 # dimensions of a textarea field
                 'textarea_dimensions' => array(
                     'value' => '10,40',
-                    'description' => s('Dimensions of a textarea field (rows,columns)'),
+                    'description' => $lan->get('Dimensions of a textarea field (rows,columns)'),
                     'type' => 'text',
                     'allowempty' => 0,
                     'category' => 'subscription-ui',
@@ -647,7 +656,7 @@ class Config
                 # send copies of subscribe, update unsubscribe messages to the administrator
                 'send_admin_copies' => array(
                     'value' => '0',
-                    'description' => s('Send notifications about subscribe, update and unsubscribe'),
+                    'description' => $lan->get('Send notifications about subscribe, update and unsubscribe'),
                     'type' => 'boolean',
                     'allowempty' => true,
                     'category' => 'reporting',
@@ -655,7 +664,7 @@ class Config
                 # the main subscribe page, when there are multiple
                 'defaultsubscribepage' => array(
                     'value' => 1,
-                    'description' => s('The default subscribe page when there are multiple'),
+                    'description' => $lan->get('The default subscribe page when there are multiple'),
                     'type' => 'integer',
                     'min' => 1,
                     'max' => 999, // max(id) from subscribepage
@@ -665,7 +674,7 @@ class Config
                 # the default template for sending an html campaign
                 'defaultcampaigntemplate' => array(
                     'value' => 0,
-                    'description' => s('The default HTML template to use when sending a campaign'),
+                    'description' => $lan->get('The default HTML template to use when sending a campaign'),
                     'type' => 'text',
                     'allowempty' => true,
                     'category' => 'campaign',
@@ -673,7 +682,7 @@ class Config
                 # the template for system messages (welcome confirm subscribe etc)
                 'systemmessagetemplate' => array(
                     'value' => 0,
-                    'description' => s('The HTML wrapper template for system messages'),
+                    'description' => $lan->get('The HTML wrapper template for system messages'),
                     'type' => 'integer',
                     'min' => 0,
                     'max' => 999, // or max(id) from template
@@ -681,21 +690,21 @@ class Config
                     'category' => 'transactional',
                 ),
                 ## the location of your subscribe script
-                #'public_baseurl' => array("http://[WEBSITE]Config::PAGEROOT/",
+                #'public_baseurl' => array("http://[WEBSITE]$this->get('PAGEROOT')/",
                 #  'Base URL for public pages',"text"),
 
                 # the location of your subscribe script
                 'subscribeurl' => array(
-                    'value' => Config::get('scheme') . '://[WEBSITE]'.Config::PAGEROOT.'/?p=subscribe',
-                    'description' => s('URL where subscribers can sign up'),
+                    'value' => $this->get('scheme') . '://[WEBSITE]'.$this->get('PAGEROOT').'/?p=subscribe',
+                    'description' => $lan->get('URL where subscribers can sign up'),
                     'type' => 'url',
                     'allowempty' => 0,
                     'category' => 'subscription',
                 ),
                 # the location of your unsubscribe script:
                 'unsubscribeurl' => array(
-                    'value' => Config::get('scheme') . '://[WEBSITE]'.Config::PAGEROOT.'/?p=unsubscribe',
-                    'description' => s('URL where subscribers can unsubscribe'),
+                    'value' => $this->get('scheme') . '://[WEBSITE]'.$this->get('PAGEROOT').'/?p=unsubscribe',
+                    'description' => $lan->get('URL where subscribers can unsubscribe'),
                     'type' => 'url',
                     'allowempty' => 0,
                     'category' => 'subscription',
@@ -703,53 +712,53 @@ class Config
                 #0013076: Blacklisting posibility for unknown subscribers
                 # the location of your blacklist script:
                 'blacklisturl' => array(
-                    'value' => Config::get('scheme') . '://[WEBSITE]'.Config::PAGEROOT.'/?p=donotsend',
-                    'description' => s('URL where unknown subscriber can unsubscribe (do-not-send-list)'),
+                    'value' => $this->get('scheme') . '://[WEBSITE]'.$this->get('PAGEROOT').'/?p=donotsend',
+                    'description' => $lan->get('URL where unknown subscriber can unsubscribe (do-not-send-list)'),
                     'type' => 'url',
                     'allowempty' => 0,
                     'category' => 'subscription',
                 ),
                 # the location of your confirm script:
                 'confirmationurl' => array(
-                    'value' => Config::get('scheme') . '://[WEBSITE]'.Config::PAGEROOT.'/?p=confirm',
-                    'description' => s('URL where subscribers have to confirm their subscription'),
+                    'value' => $this->get('scheme') . '://[WEBSITE]'.$this->get('PAGEROOT').'/?p=confirm',
+                    'description' => $lan->get('URL where subscribers have to confirm their subscription'),
                     'type' => 'text',
                     'allowempty' => 0,
                     'category' => 'subscription',
                 ),
                 # url to change their preferences
                 'preferencesurl' => array(
-                    'value' => Config::get('scheme') . '://[WEBSITE]'.Config::PAGEROOT.'/?p=preferences',
-                    'description' => s('URL where subscribers can update their details'),
+                    'value' => $this->get('scheme') . '://[WEBSITE]'.$this->get('PAGEROOT').'/?p=preferences',
+                    'description' => $lan->get('URL where subscribers can update their details'),
                     'type' => 'text',
                     'allowempty' => 0,
                     'category' => 'subscription',
                 ),
                 # url to change their preferences
                 'forwardurl' => array(
-                    'value' => Config::get('scheme') . '://[WEBSITE]'.Config::PAGEROOT.'/?p=forward',
-                    'description' => s('URL for forwarding campaigns'),
+                    'value' => $this->get('scheme') . '://[WEBSITE]'.$this->get('PAGEROOT').'/?p=forward',
+                    'description' => $lan->get('URL for forwarding campaigns'),
                     'type' => 'text',
                     'allowempty' => 0,
                     'category' => 'subscription',
                 ),
                 'ajax_subscribeconfirmation' => array(
-                    'value' => s(
+                    'value' => $lan->get(
                         '<h3>Thanks, you have been added to our newsletter</h3><p>You will receive an email to confirm your subscription. Please click the link in the email to confirm</p>'
                     ),
-                    'description' => s('Text to display when subscription with an AJAX request was successful'),
+                    'description' => $lan->get('Text to display when subscription with an AJAX request was successful'),
                     'type' => 'textarea',
                     'allowempty' => true,
                     'category' => 'subscription',
                 ),
                 # the location of your subscribe script
-                #'subscribe_baseurl' => array("http://[WEBSITE]".Config::PAGEROOT."/",
+                #'subscribe_baseurl' => array("http://[WEBSITE]".$this->get('PAGEROOT')."/",
                 #  'Base URL for public pages',"text"),
 
                 # the subject of the message
                 'subscribesubject' => array(
-                    'value' => s('Request for confirmation'),
-                    'description' => s('Subject of the message subscribers receive when they sign up'),
+                    'value' => $lan->get('Request for confirmation'),
+                    'description' => $lan->get('Subject of the message subscribers receive when they sign up'),
                     'type' => 'text',
                     'allowempty' => 0,
                     'category' => 'transactional',
@@ -777,15 +786,15 @@ class Config
   Thank you
 
     ',
-                    'description' => s('Campaign subscribers receive when they sign up'),
+                    'description' => $lan->get('Campaign subscribers receive when they sign up'),
                     'type' => 'textarea',
                     'allowempty' => 0,
                     'category' => 'transactional',
                 ),
                 # subject of the message when they unsubscribe
                 'unsubscribesubject' => array(
-                    'value' => s('Goodbye from our Newsletter'),
-                    'description' => s('Subject of the message subscribers receive when they unsubscribe'),
+                    'value' => $lan->get('Goodbye from our Newsletter'),
+                    'description' => $lan->get('Subject of the message subscribers receive when they unsubscribe'),
                     'type' => 'text',
                     'allowempty' => 0,
                     'category' => 'transactional',
@@ -807,15 +816,15 @@ class Config
   Thank you
 
   ',
-                    'description' => s('Campaign subscribers receive when they unsubscribe'),
+                    'description' => $lan->get('Campaign subscribers receive when they unsubscribe'),
                     'type' => 'textarea',
                     'allowempty' => 0,
                     'category' => 'transactional',
                 ),
                 # confirmation of subscription
                 'confirmationsubject' => array(
-                    'value' => s('Welcome to our Newsletter'),
-                    'description' => s('Subject of the message subscribers receive after confirming their email address'),
+                    'value' => $lan->get('Welcome to our Newsletter'),
+                    'description' => $lan->get('Subject of the message subscribers receive after confirming their email address'),
                     'type' => 'text',
                     'allowempty' => 0,
                     'category' => 'transactional',
@@ -837,15 +846,15 @@ class Config
   Thank you
 
   ',
-                    'description' => s('Campaign subscribers receive after confirming their email address'),
+                    'description' => $lan->get('Campaign subscribers receive after confirming their email address'),
                     'type' => 'textarea',
                     'allowempty' => 0,
                     'category' => 'transactional',
                 ),
                 # the subject of the message sent when changing the subscriber details
                 'updatesubject' => array(
-                    'value' => s('[notify] Change of List-Membership details'),
-                    'description' => s('Subject of the message subscribers receive when they have changed their details'),
+                    'value' => $lan->get('[notify] Change of List-Membership details'),
+                    'description' => $lan->get('Subject of the message subscribers receive when they have changed their details'),
                     'type' => 'text',
                     'allowempty' => 0,
                     'category' => 'transactional',
@@ -876,7 +885,7 @@ class Config
   Thank you
 
     ',
-                    'description' => s('Campaign subscribers receive when they have changed their details'),
+                    'description' => $lan->get('Campaign subscribers receive when they have changed their details'),
                     'type' => 'textarea',
                     'allowempty' => 0,
                     'category' => 'transactional',
@@ -892,7 +901,7 @@ class Config
   [CONFIRMATIONURL]
 
   ',
-                    'description' => s(
+                    'description' => $lan->get(
                         'Part of the message that is sent to their new email address when subscribers change their information, and the email address has changed'
                     ),
                     'type' => 'textarea',
@@ -910,7 +919,7 @@ class Config
   to confirm this change. Please visit this website to activate
   your membership.
   ',
-                    'description' => s(
+                    'description' => $lan->get(
                         'Part of the message that is sent to their old email address when subscribers change their information, and the email address has changed'
                     ),
                     'type' => 'textarea',
@@ -918,8 +927,8 @@ class Config
                     'category' => 'transactional',
                 ),
                 'personallocation_subject' => array(
-                    'value' => s('Your personal location'),
-                    'description' => s('Subject of message when subscribers request their personal location'),
+                    'value' => $lan->get('Your personal location'),
+                    'description' => $lan->get('Subject of message when subscribers request their personal location'),
                     'type' => 'text',
                     'allowempty' => 0,
                     'category' => 'transactional',
@@ -935,7 +944,7 @@ class Config
     </div>
 
   ',
-                    'description' => s('Default footer for sending a campaign'),
+                    'description' => $lan->get('Default footer for sending a campaign'),
                     'type' => 'textarea',
                     'allowempty' => 0,
                     'category' => 'campaign',
@@ -949,21 +958,21 @@ class Config
       <p>You can also <a href="[BLACKLISTURL]">opt out completely</a> from receiving any further email from our newsletter application, phpList.</p>
     </div>
   ',
-                    'description' => s('Footer used when a campaign has been forwarded'),
+                    'description' => $lan->get('Footer used when a campaign has been forwarded'),
                     'type' => 'textarea',
                     'allowempty' => 0,
                     'category' => 'campaign',
                 ),
                 'pageheader' => array(
                     'value' => $defaultheader,
-                    'description' => s('Header of public pages.'),
+                    'description' => $lan->get('Header of public pages.'),
                     'type' => 'textarea',
                     'allowempty' => 0,
                     'category' => 'subscription-ui',
                 ),
                 'pagefooter' => array(
                     'value' => $defaultfooter,
-                    'description' => s('Footer of public pages'),
+                    'description' => $lan->get('Footer of public pages'),
                     'type' => 'textarea',
                     'allowempty' => 0,
                     'category' => 'subscription-ui',
@@ -991,42 +1000,42 @@ Your personal location is:
 
 Thank you.
 ',
-                    'description' => s('Campaign to send when they request their personal location'),
+                    'description' => $lan->get('Campaign to send when they request their personal location'),
                     'type' => 'textarea',
                     'allowempty' => 0,
                     'category' => 'transactional',
                 ),
                 'remoteurl_append' => array(
                     'value' => '',
-                    'description' => s('String to always append to remote URL when using send-a-webpage'),
+                    'description' => $lan->get('String to always append to remote URL when using send-a-webpage'),
                     'type' => 'text',
                     'allowempty' => true,
                     'category' => 'campaign',
                 ),
                 'wordwrap' => array(
                     'value' => '75',
-                    'description' => s('Width for Wordwrap of Text messages'),
+                    'description' => $lan->get('Width for Wordwrap of Text messages'),
                     'type' => 'text',
                     'allowempty' => true,
                     'category' => 'campaign',
                 ),
                 'html_email_style' => array(
                     'value' => '',
-                    'description' => s('CSS for HTML messages without a template'),
+                    'description' => $lan->get('CSS for HTML messages without a template'),
                     'type' => 'textarea',
                     'allowempty' => true,
                     'category' => 'campaign',
                 ),
                 'alwayssendtextto' => array(
                     'value' => '',
-                    'description' => s('Domains that only accept text emails, one per line'),
+                    'description' => $lan->get('Domains that only accept text emails, one per line'),
                     'type' => 'textarea',
                     'allowempty' => true,
                     'category' => 'campaign',
                 ),
                 'tld_last_sync' => array(
                     'value' => '0',
-                    'description' => s('last time TLDs were fetched'),
+                    'description' => $lan->get('last time TLDs were fetched'),
                     'type' => 'text',
                     'allowempty' => true,
                     'category' => 'system',
@@ -1034,7 +1043,7 @@ Thank you.
                 ),
                 'internet_tlds' => array(
                     'value' => '',
-                    'description' => s('Top level domains'),
+                    'description' => $lan->get('Top level domains'),
                     'type' => 'textarea',
                     'allowempty' => true,
                     'category' => 'system',

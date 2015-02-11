@@ -10,16 +10,23 @@ class phpList
 {
     protected $config;
     protected $lan;
+    protected $util;
     protected $db;
 
     /**
      * Default constructor
+     * @param Config $config
+     * @param Database $db
+     * @param Language $lan
+     * @param Util $util
+     * @throws \Exception
      */
-    public function __construct(Config $config, Database $db, Language $lan)
+    public function __construct(Config $config, Database $db, Language $lan, Util $util)
     {
         $this->config = $config;
         $this->db = $db;
         $this->lan = $lan;
+        $this->util = $util;
 
         date_default_timezone_set($this->config->get('SYSTEM_TIMEZONE'));
 
@@ -32,7 +39,7 @@ class phpList
         }
 
         //Make sure some other inits have been executed
-        Language::initialise();
+        //Language::initialise();
 
         if(!DEBUG){
             error_reporting(0);
@@ -46,8 +53,8 @@ class phpList
         //TODO: maybe move everything command line to separate class
         $cline = null;
 
-        Util::unregister_GLOBALS();
-        Util::magicQuotes();
+        $this->util->unregister_GLOBALS();
+        $this->util->magicQuotes();
 
         # setup commandline
         if (php_sapi_name() == 'cli' && !strstr($GLOBALS['argv'][0], 'phpunit')) {
@@ -59,7 +66,7 @@ class phpList
                 }
             }
             $this->config->setRunningConfig('commandline', true);
-            $cline = Util::parseCLine();
+            $cline = $this->util->parseCLine();
             $dir = dirname($_SERVER['SCRIPT_FILENAME']);
             chdir($dir);
 
