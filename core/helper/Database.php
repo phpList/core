@@ -9,16 +9,15 @@ class Database
 
     /* @var $db \PDO */
     private $db;
-    private $last_query;
     private $query_count = 0;
+    private $query_log = [];
 
     protected $config;
-    protected $log;
 
-    public function __construct(Config $config, Logger $log)
+
+    public function __construct(Config $config)
     {
         $this->config = $config;
-        $this->log = $log;
         $this->connect();
     }
 
@@ -44,20 +43,19 @@ class Database
         //TODO: check compatibility with other db engines
         $this->db->query('SET NAMES \'utf8\'');
 
-        $this->last_query = null;
-
         $this->config->runAfterDBInitialised($this);
     }
 
     /**
      * Generate an error message and write it to screen or console and log
+     * TODO: this should be moved out of this class
      */
-    public function error()
-    {
-        $error_info = $this->db->errorInfo();
-        $error = 'Database error ' . $this->db->errorCode() . ' while doing query ' . $this->last_query . ' ' . $error_info[2];
-        $this->log->error($error);
-    }
+//    public function error()
+//    {
+//        $error_info = $this->db->errorInfo();
+//        $error = 'Database error ' . $this->db->errorCode() . ' while doing query ' . $this->last_query . ' ' . $error_info[2];
+//        //$this->log->error($error);
+//    }
 
     /**
      * Create prepared statement
@@ -77,16 +75,10 @@ class Database
      */
     public function query($query, $ignore = false)
     {
-        $this->last_query = $result = null;
-
         if (DEBUG) {
-            $this->log->debug('(' . $this->query_count . ") $query \n", ['page' => 'database']);
-
             # time queries to see how slow they are, so they can
             # be optimized
-            //$now = gettimeofday();
-            //$start = $now['sec'] * 1000000 + $now['usec'];
-            $this->last_query = $query;
+            Timer::start('query_timer');
             /*
             # keep track of queries to see which ones to optimize
             if (function_exists('stripos')) {
@@ -101,32 +93,16 @@ class Database
                  }
              }*/
         }
-
-        try{
-            $result = $this->db->query($query);
-        }catch (\PDOException $e){
-            if (!$ignore) {
-                $this->log->notice("Sql error in $query");
-            }
-        }
-
-        # dbg($query);
+        $result = $this->db->query($query);
         $this->query_count++;
 
-        //TODO: make usable
-        /*
         if (DEBUG) {
             # log time queries take
-            $now = gettimeofday();
-            $end = $now['sec'] * 1000000 + $now['usec'];
-            $elapsed = $end - $start;
-            if ($elapsed > 300000) {
-                $query = substr($query, 0, 200);
-                $this->log->debug('(' . $this->query_count . ") ' [' . $elapsed . '] ' . $query \n", ['page' => 'database']);
-            } else {
-                #      $this->log->debug('(' . $this->query_count . ") ' [' . $elapsed . '] ' . $query \n", ['page' => 'database']);
-            }
-        }*/
+            $this->query_log[] = [
+                'query' => $query,
+                'time'  => Timer::get('query_timer')->elapsed()
+            ];
+        }
         return $result;
     }
 
@@ -136,20 +112,6 @@ class Database
     public function close()
     {
         $this->db = null;
-    }
-
-    /**
-     * Execute query and print statement
-     * @param $query
-     * @param int $ignore
-     * @return null|\PDOStatement
-     */
-    public function verboseQuery($query, $ignore = 0)
-    {
-        if (DEBUG) {
-            $this->log->debug($query, ['page' => 'database']);
-        }
-        return $this->query($query, $ignore);
     }
 
     /**
@@ -297,7 +259,17 @@ class Database
      */
     public function getLastQuery()
     {
-        return $this->last_query;
+        return $this->query_log[count($this->query_log)];
+    }
+
+    /**
+     * Get a list of executed queries
+     * Will be empty when DEBUG is disabled
+     * @return array
+     */
+    public function getQueryLog()
+    {
+        return $this->query_log;
     }
 
     /**
