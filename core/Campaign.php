@@ -442,7 +442,6 @@ class Campaign
     /**
      * Delete this campaign from the database
      * @param entities\CampaignEntity $campaign
-     * @return int
      */
     public function delete(CampaignEntity $campaign)
     {
@@ -451,7 +450,7 @@ class Campaign
             $this->config->getTableName('usermessage') => 'id',
             $this->config->getTableName('listmessage') => 'id'
         );
-        return $this->db->deleteFromArray($tables, $campaign->id);
+        $this->db->deleteFromArray($tables, $campaign->id);
     }
 
     /**

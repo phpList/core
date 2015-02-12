@@ -29,7 +29,6 @@ class Config
         if (isset($_SESSION['running_config'])) {
             $this->running_config = $_SESSION['running_config'];
         } else {
-            $config_file = __DIR__ . $config_file;
             if (is_file($config_file) && filesize($config_file) > 20) {
                 //load from config file
                 $this->running_config = parse_ini_file($config_file);

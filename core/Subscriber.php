@@ -23,7 +23,6 @@ class Subscriber
     /**
      * @param Config $config
      * @param helper\Database $db
-     * @internal param string $email_address
      */
     public function __construct(Config $config, helper\Database $db)
     {
@@ -139,7 +138,7 @@ class Subscriber
                 $subscriber->id = $this->db->insertedId();
                 $subscriber->uniqid = $this->giveUniqueId($subscriber->id);
             }else{
-                throw new \Exception('There was an error inserting the subscriber');
+                throw new \Exception('There was an error inserting the subscriber: ' . $this->db->getErrorMessage());
             }
         }
     }

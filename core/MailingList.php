@@ -46,7 +46,7 @@ class MailingList
         $result = $this->db->query(
             sprintf('SELECT * FROM %s %s', $this->config->getTableName('list'), $this->config->get('subselect', ''))
         );
-        return $this->makeLists($result->fetch(\PDO::FETCH_ASSOC));
+        return $this->makeLists($result);
     }
 
     /**
@@ -66,7 +66,7 @@ class MailingList
                 (($id == 0) ? '' : " AND id = $id")
             )
         );
-        return $this->makeLists($result->fetch(\PDO::FETCH_ASSOC));
+        return $this->makeLists($result);
     }
 
     /**
@@ -106,7 +106,7 @@ class MailingList
                 $subscriber_id
             )
         );
-        return $this->makeLists($result->fetch(\PDO::FETCH_ASSOC));
+        return $this->makeLists($result);
     }
 
     /**

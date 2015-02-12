@@ -17,6 +17,9 @@ services:
   EmailAddress:
     class:  phpList\EmailAddress
     arguments: [@Config, %emailaddress.address%]
+  Password:
+    class:  phpList\Password
+    arguments: [@Config, %password.password%]
   Config:
     class: phpList\Config
     arguments: [%config.configfile%]
@@ -51,3 +54,4 @@ services:
 parameters:
   config.configfile: config_file
   emailaddress.address: email_address
+  password.password: password

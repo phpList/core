@@ -14,7 +14,8 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
 
     public function setUp()
     {
-        $this->config = new Config('\..\config.ini');
+        $this->configFile = dirname( __FILE__ ) . '/../../config.ini';
+        $this->config = new Config($this->configFile);
         $this->db = new Database($this->config);
         $this->subscriber = new Subscriber($this->config, $this->db);
     }
@@ -38,7 +39,7 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
         $this->subscriber->save($new_subscriber);
 
         $second_subscriber = $this->subscriber->getSubscriber($new_subscriber->id);
-        $this->assertEquals($new_subscriber->getPassword(), $second_subscriber->getPassword());
+        $this->assertEquals($new_subscriber->password->getEncryptedPassword(), $second_subscriber->password->getEncryptedPassword());
 
         $this->subscriber->delete($second_subscriber->id);
     }

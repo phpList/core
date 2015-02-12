@@ -5,8 +5,6 @@ use phpList\Config;
 
 class Database
 {
-    private static $_instance;
-
     /* @var $db \PDO */
     private $db;
     private $query_count = 0;
@@ -27,7 +25,7 @@ class Database
      */
     private function connect()
     {
-        if(!class_exists('PDO')){
+        if (!class_exists('PDO')) {
             throw new \Exception('Fatal Error: PDO is not supported in your PHP, recompile and try again.');
         }
 
@@ -45,17 +43,6 @@ class Database
 
         $this->config->runAfterDBInitialised($this);
     }
-
-    /**
-     * Generate an error message and write it to screen or console and log
-     * TODO: this should be moved out of this class
-     */
-//    public function error()
-//    {
-//        $error_info = $this->db->errorInfo();
-//        $error = 'Database error ' . $this->db->errorCode() . ' while doing query ' . $this->last_query . ' ' . $error_info[2];
-//        //$this->log->error($error);
-//    }
 
     /**
      * Create prepared statement
@@ -104,6 +91,16 @@ class Database
             ];
         }
         return $result;
+    }
+
+    /**
+     * Get an error message
+     * @return array
+     */
+    public function getErrorMessage()
+    {
+        $error_info = $this->db->errorInfo();
+        return 'Database error ' . $this->db->errorCode() . ' while doing query ' . $this->getLastQuery() . ' ' . $error_info[2];
     }
 
     /**
@@ -275,16 +272,12 @@ class Database
     /**
      * @param array (tablename => columnname)
      * @param int|string $id
-     * @return int
      */
     public function deleteFromArray($tables, $id)
     {
         $query = 'DELETE FROM %s WHERE %s = ' . ((is_string($id)) ? '"%s"' : '%d');
-        $count = 0;
         foreach($tables as $table => $column){
-            $result = $this->db->query(sprintf($query, $table, $column, $id));
-            $count += $result->rowCount();
+            $this->db->query(sprintf($query, $table, $column, $id));
         }
-        return $count;
     }
 }
