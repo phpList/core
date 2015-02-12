@@ -20,22 +20,23 @@ class Config
         /**
          * Constants used for debugging and developping
          */
-        define('DEBUG', true);
-        define('PHPLIST_DEVELOPER_EMAIL', 'dev@localhost.local');
-        define('PHPLIST_DEV_VERSION', true);
-        define('PHPLIST_VERSION', '4.0.0 dev');
+        defined('DEBUG') ? null : define('DEBUG', true);
+        defined('PHPLIST_DEVELOPER_EMAIL') ? null : define('PHPLIST_DEVELOPER_EMAIL', 'dev@localhost.local');
+        defined('PHPLIST_DEV_VERSION') ? null : define('PHPLIST_DEV_VERSION', true);
+        defined('PHPLIST_VERSION') ? null : define('PHPLIST_VERSION', '4.0.0 dev');
 
         //do we have a configuration saved in session?
         if (isset($_SESSION['running_config'])) {
             $this->running_config = $_SESSION['running_config'];
         } else {
+            $config_file = __DIR__ . $config_file;
             if (is_file($config_file) && filesize($config_file) > 20) {
                 //load from config file
                 $this->running_config = parse_ini_file($config_file);
                 //Initialise further config
                 $this->initConfig();
             } else{
-                throw new \Exception('Cannot find config file');
+                throw new \Exception('Cannot find config file: ' . $config_file);
             }
         }
     }
@@ -139,18 +140,18 @@ class Config
                 if ($value > $configInfo['max']) $value = $configInfo['max'];
                 break;
             case 'email':
-                if (!Validation::isEmail($value)) {
-                    return $configInfo['description'] . ': ' . $lan->get('Invalid value for email address');
+                if (!Validation::validateEmail($value, $this->get('EMAIL_ADDRESS_VALIDATION_LEVEL'), $this->get('internet_tlds'))) {
+                    return $configInfo['description'] . ': ' . 'Invalid value for email address';
                 }
                 break;
             case 'emaillist':
                 $valid = array();
                 $emails = explode(',', $value);
                 foreach ($emails as $email) {
-                    if (Validation::isEmail($email)) {
+                    if (Validation::validateEmail($email, $this->get('EMAIL_ADDRESS_VALIDATION_LEVEL'), $this->get('internet_tlds'))) {
                         $valid[] = $email;
                     } else {
-                        return $configInfo['description'] . ': ' . $lan->get('Invalid value for email address');
+                        return $configInfo['description'] . ': ' . 'Invalid value for email address';
                     }
                 }
                 $value = join(',', $valid);
