@@ -1,62 +1,40 @@
 <?php
 namespace phpList\entities;
 
-use phpList\helper\Validation;
-use phpList\helper\Util;
+use phpList\interfaces\EmailAddressInterface;
+use phpList\interfaces\PasswordInterface;
 
 class SubscriberEntity {
     public $id;
-    private $email_address;
 
     /**
-     * @param string $email_address
-     * @throws \InvalidArgumentException
+     * @var EmailAddressInterface
      */
-    public function setEmailAddress($email_address)
-    {
-        if(!Validation::validateEmail($email_address)){
-            throw new \InvalidArgumentException('Invalid email address provided');
-        }
-        $this->email_address = $email_address;
-    }
+    public $email_address;
 
-    /**
-     * @return string
-     */
-    public function getEmailAddress()
-    {
-        return $this->email_address;
-    }
     public $confirmed;
     public $blacklisted;
     public $optedin;
     public $bouncecount;
+
+    /**
+     * @var \DateTime
+     */
     public $entered;
+
+    /**
+     * @var \DateTime
+     */
     public $modified;
+
     public $uniqid;
     public $htmlemail;
     public $subscribepage;
     public $rssfrequency;
-    private $password;
-
     /**
-     * Set password and encrypt it
-     * For existing subscribers, password will be written to database
-     * @param mixed $password
+     * @var PasswordInterface
      */
-    public function setPassword($password)
-    {
-        $this->password = Util::encryptPass($password);
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPassword()
-    {
-        return $this->password;
-    }
-
+    public $password;
 
     public $passwordchanged;
     public $disabled;
@@ -67,17 +45,13 @@ class SubscriberEntity {
     private $has_attributes = false;
 
     /**
-     * @param string $email_address
-     * @param string $password (can be passed when reading from database)
-     * @throws \InvalidArgumentException
+     * @param \phpList\interfaces\EmailAddressInterface $email_address
+     * @param \phpList\interfaces\PasswordInterface $password (can be passed when reading from database)
      */
-    public function __construct($email_address, $password = null)
+    public function __construct(EmailAddressInterface $email_address, PasswordInterface $password)
     {
-        $this->setEmailAddress($email_address);
-
-        if($password != null){
-            $this->password = $password;
-        }
+        $this->email_address = $email_address;
+        $this->password = $password;
     }
 
     /**

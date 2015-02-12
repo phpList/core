@@ -409,26 +409,6 @@ class Util
         return $this->secs2time($diff);
     }
 
-    //todo: check php5.5 password api
-    public function encryptPass($pass)
-    {
-        if (empty($pass)) {
-            return '';
-        }
-
-        if (function_exists('hash')) {
-            if (!in_array($this->config->get('ENCRYPTION_ALGO'), hash_algos(), true)) {
-                ## fallback, not that secure, but better than none at all
-                $algo = 'md5';
-            } else {
-                $algo = $this->config->get('ENCRYPTION_ALGO');
-            }
-            return hash($algo, $pass);
-        } else {
-            return md5($pass);
-        }
-    }
-
     /**
      * Turn register globals off, even if it's on
      * taken from Wordpress
@@ -585,7 +565,7 @@ class Util
                 WHERE email = "%s"
                 AND date_add(added, interval %d minute) < CURRENT_TIMESTAMP)',
                 $this->config->getTableName('user_blacklist'),
-                String::sqlEscape($email),
+                $this->db->sqlEscape($email),
                 $gracetime
             )
         );

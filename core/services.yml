@@ -14,12 +14,15 @@ services:
   Util:
     class: phpList\helper\Util
     arguments: [@Config, @Logger]
+  EmailAddress:
+    class:  phpList\EmailAddress
+    arguments: [@Config, %emailaddress.address%]
   Config:
     class: phpList\Config
     arguments: [%config.configfile%]
   Database:
     class:  phpList\helper\Database
-    arguments: [@Config, @Logger]
+    arguments: [@Config]
   Language:
     class: phpList\helper\Language
     arguments: [@Database, @Config]
@@ -47,3 +50,4 @@ services:
 # names are handles as single simple strings
 parameters:
   config.configfile: config_file
+  emailaddress.address: email_address

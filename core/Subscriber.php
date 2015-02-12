@@ -106,10 +106,14 @@ class Subscriber
      * @param $password
      * @throws \InvalidArgumentException
      */
-    public function addSubscriber($email_address, $password)
+    public function addSubscriber($email_address, $password = null)
     {
-        $subscriber = new SubscriberEntity($email_address);
-        $subscriber->setPassword($password);
+        if($password == null){
+            $subscriber_password = new Password($this->config, '');
+        }else{
+            $subscriber_password = new Password($this->config, $password);
+        }
+        $subscriber = new SubscriberEntity(new EmailAddress($this->config, $email_address), $subscriber_password);
         $this->save($subscriber);
     }
 
@@ -128,8 +132,8 @@ class Subscriber
                 (email, entered, modified, password, passwordchanged, disabled, htmlemail)
                 VALUES("%s", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "%s", CURRENT_TIMESTAMP, 0, 1)',
                 $this->config->getTableName('user', true),
-                $subscriber->getEmailAddress(),
-                $subscriber->getPassword()
+                $subscriber->email_address->getAddress(),
+                $subscriber->password->getEncryptedPassword()
             );
             if ($this->db->query($query)) {
                 $subscriber->id = $this->db->insertedId();
@@ -157,7 +161,7 @@ class Subscriber
                 htmlemail = "%s",
                 extradata = "%s"',
             $this->config->getTableName('user', true),
-            $subscriber->getEmailAddress(),
+            $subscriber->email_address->getAddress(),
             $subscriber->confirmed,
             $subscriber->blacklisted,
             $subscriber->optedin,
@@ -241,7 +245,10 @@ class Subscriber
     private function subscriberFromArray($array)
     {
         if(!empty($array)){
-            $subscriber = new SubscriberEntity($array['email'], $array['password']);
+            $subscriber = new SubscriberEntity(
+                new EmailAddress($this->config, $array['email'], EmailAddress::$SKIP_VALIDATION),
+                new Password($this->config, $array['password'])
+            );
             $subscriber->id = $array['id'];
             $subscriber->confirmed = $array['confirmed'];
             $subscriber->blacklisted = $array['blacklisted'];
@@ -274,7 +281,7 @@ class Subscriber
             SET password = "%s", passwordchanged = CURRENT_TIMESTAMP
             WHERE id = %d',
             $this->config->getTableName('user'),
-            $subscriber->getPassword(),
+            $subscriber->password->getEncryptedPassword(),
             $subscriber->id
         );
         $this->db->query($query);
@@ -344,7 +351,7 @@ class Subscriber
                 $this->config->getTableName('user_attribute'),
                 $subscriber->id,
                 $attribute_id,
-                String::sqlEscape($value)
+                $this->db->sqlEscape($value)
             )
         );
     }
