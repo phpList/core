@@ -91,7 +91,8 @@ class Subscriber
                 'SELECT * FROM %s
                 WHERE :key = :value',
                 $this->config->getTableName('Subscriber', true)
-            ));
+            )
+        );
         $result->bindValue(':key',$column);
         $result->bindValue(':value',$value);
         $result->execute();
@@ -237,33 +238,33 @@ class Subscriber
 
 
     /**
-     * Create a Subscriber object from database values
+     * Create a SubscriberEntity object from database values
      * @param $array
      * @return SubscriberEntity
      */
     private function subscriberFromArray($array)
     {
         if(!empty($array)){
-            $subscriber = new SubscriberEntity(
+            $scrEntity = new SubscriberEntity(
                 new EmailAddress($this->config, $array['email'], EmailAddress::$SKIP_VALIDATION),
                 new Password($this->config, $array['password'])
             );
-            $subscriber->id = $array['id'];
-            $subscriber->confirmed = $array['confirmed'];
-            $subscriber->blacklisted = $array['blacklisted'];
-            $subscriber->optedin = $array['optedin'];
-            $subscriber->bouncecount = $array['bouncecount'];
-            $subscriber->entered = $array['entered'];
-            $subscriber->modified = $array['modified'];
-            $subscriber->uniqid = $array['uniqid'];
-            $subscriber->htmlemail = $array['htmlemail'];
-            $subscriber->subscribepage = $array['subscribepage'];
-            $subscriber->rssfrequency = $array['rssfrequency'];
-            $subscriber->passwordchanged = $array['passwordchanged'];
-            $subscriber->disabled = $array['disabled'];
-            $subscriber->extradata = $array['extradata'];
-            $subscriber->foreignkey = $array['foreignkey'];
-            return $subscriber;
+            $scrEntity->id = $array['id'];
+            $scrEntity->confirmed = $array['confirmed'];
+            $scrEntity->blacklisted = $array['blacklisted'];
+            $scrEntity->optedin = $array['optedin'];
+            $scrEntity->bouncecount = $array['bouncecount'];
+            $scrEntity->entered = $array['entered'];
+            $scrEntity->modified = $array['modified'];
+            $scrEntity->uniqid = $array['uniqid'];
+            $scrEntity->htmlemail = $array['htmlemail'];
+            $scrEntity->subscribepage = $array['subscribepage'];
+            $scrEntity->rssfrequency = $array['rssfrequency'];
+            $scrEntity->passwordchanged = $array['passwordchanged'];
+            $scrEntity->disabled = $array['disabled'];
+            $scrEntity->extradata = $array['extradata'];
+            $scrEntity->foreignkey = $array['foreignkey'];
+            return $scrEntity;
         }else{
             return false;
         }
@@ -290,7 +291,7 @@ class Subscriber
      * Load this subscribers attributes from the database
      * @param SubscriberEntity $subscriber
      */
-    public function loadAttributes(SubscriberEntity &$subscriber)
+    public function loadAttributes( SubscriberEntity &$scrEntity )
     {
         $result = $this->db->query(
             sprintf(
@@ -302,13 +303,13 @@ class Subscriber
                 ORDER BY listorder',
                 $this->config->getTableName('attribute', true),
                 $this->config->getTableName('user_attribute', true),
-                $subscriber->id
+                $scrEntity->id
             )
         );
 
         while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
-            $subscriber->setAttribute($row['id'], $row['value']);
-            $subscriber->setAttribute($row['name'], $row['name']);
+            $scrEntity->setAttribute($row['id'], $row['value']);
+            $scrEntity->setAttribute($row['name'], $row['name']);
         }
     }
 
