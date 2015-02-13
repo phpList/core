@@ -10,6 +10,9 @@ use phpList\helper;
 use phpList\MailingList;
 use phpList\entities\MailingListEntity;
 
+/**
+ * @Note: Assumes that the database contains an admin and multiple mailing lists
+ */
 class MailingListTest extends \PHPUnit_Framework_TestCase {
 
     public function setUp()
@@ -20,7 +23,37 @@ class MailingListTest extends \PHPUnit_Framework_TestCase {
         $this->database = new phplist\helper\Database( $this->config, $this->logger );
         $this->mailingList = new MailingList( $this->config, $this->database );
     }
+    
+    /**
+     * Helper method to check all correct list properties exist
+     * @Note Values / typing is not checked
+     * @param MailingListEntity $list Populated object
+     */
+    public function checkListAttributesExist( MailingListEntity $list )
+    {
+        // Set list of attributes to check
+        $keys = array(
+            'id'
+            , 'name'
+            , 'description'
+            , 'entered'
+            , 'listorder'
+            , 'prefix'
+            , 'rssfeed'
+            , 'modified'
+            , 'active'
+            , 'owner'
+            , 'category'
+        );
+        // Check each attribute exists
+        foreach ( $keys as $key ) {
+            $this->assertTrue( array_key_exists( $key, $list ) );
+        }
+    }
 
+    /**
+     * Test creation of a new mailing list
+     */
     public function testCreateList()
     {
         $list = new MailingListEntity(
@@ -38,12 +71,14 @@ class MailingListTest extends \PHPUnit_Framework_TestCase {
         // Check that the ID still correct
         // NOTE: Is this a useful test?
         $this->assertFalse( ( $list->id == 0 ) );
-
+        // Check all the attributes exist
+        $this->checkListAttributesExist( $list );
         // Pass the list onto the next test to avoid repetition
         return $list;
     }
 
     /**
+     * Test updating an existing mailinglist
      * @depends testCreateList
      */
     public function testUpdateList( $list )
@@ -59,8 +94,18 @@ class MailingListTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue( ( $refetchedList->name === $updated_list_name ) );
     }
 
+    /**
+     * Test getching all mailinglists
+     */
     public function testGetAllLists()
     {
+        // Fetch all lists
         $result = $this->mailingList->getAllLists();
+        // Check that some lists were found
+        $this->assertTrue( count( $result ) >= 2 );
+        // Check each returned list
+        foreach ( $result as $list ) {
+            $this->checkListAttributesExist( $list );
+        }
     }
 }
