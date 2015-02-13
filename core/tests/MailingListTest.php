@@ -23,25 +23,40 @@ class MailingListTest extends \PHPUnit_Framework_TestCase {
 
     public function testCreateList()
     {
-        //first need to create an admin
-        /*try{
-            $admin = new Admin("UnitTester");
-            $admin->save();
-        }
-        catch(\Exception $e){
-            $admin = Admin::getAdmins("UnitTester")[0];
-        }*/
+        $list = new MailingListEntity(
+            'DevList'
+            , 'List for unit testing'
+            , 1
+            , 1 // NOTE: Admin ID is hardcoded to 1 for now
+            , 1
+            , 'Unit test category'
+            , ''
+        );
 
-        $list = new MailingListEntity('DevList', 'List for unit testing', 1, /*$admin->id*/1, 1, 'Unit test category', '');
-        $this->mailingList->save($list);
-        $this->assertFalse(($list->id == 0));
+        // Save ML to DB
+        $this->mailingList->save( $list );
+        // Check that the ID still correct
+        // NOTE: Is this a useful test?
+        $this->assertFalse( ( $list->id == 0 ) );
 
+        // Pass the list onto the next test to avoid repetition
+        return $list;
+    }
+
+    /**
+     * @depends testCreateList
+     */
+    public function testUpdateList( $list )
+    {
         $updated_list_name = 'UpdatedList';
+        // Set the new list name
         $list->name = $updated_list_name;
-        $this->mailingList->update($list);
-        $refetchedList = $this->mailingList->getListById($list->id);
-        $this->assertTrue(($refetchedList->name === $updated_list_name));
-
+        // Save the updated name
+        $this->mailingList->update( $list );
+        // Fetch the list again to check its attributes
+        $refetchedList = $this->mailingList->getListById( $list->id );
+        // Check that the name was updated
+        $this->assertTrue( ( $refetchedList->name === $updated_list_name ) );
     }
 
     public function testGetAllLists()
