@@ -253,10 +253,17 @@ class Config
      */
     private function initConfig()
     {
-        if (function_exists('iconv_set_encoding')) {
-            iconv_set_encoding('input_encoding', 'UTF-8');
+        // Set encoding type
+        // Check which method to use based on PHP Version
+        if ( function_exists( 'iconv' ) && PHP_VERSION_ID < 50600)
+        {
+            // Use older, depreciated iconv settings
             iconv_set_encoding('internal_encoding', 'UTF-8');
+            iconv_set_encoding('input_encoding', 'UTF-8');
             iconv_set_encoding('output_encoding', 'UTF-8');
+        } elseif ( PHP_VERSION_ID >= 50600 ) {
+            // Use newer settings
+            ini_set('default_charset', 'UTF-8' );
         }
 
         if (function_exists('mb_internal_encoding')) {
