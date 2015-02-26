@@ -13,7 +13,7 @@ services:
     class: phpList\helper\Logger
   Util:
     class: phpList\helper\Util
-    arguments: [@Config, @Logger]
+    arguments: [@Config, @Logger, @Database]
   EmailAddress:
     class:  phpList\EmailAddress
     arguments: [@Config, %emailaddress.address%]
@@ -52,6 +52,6 @@ services:
 # NOTE: the classname.parameter syntax is just a Symfony convention; parameter
 # names are handles as single simple strings
 parameters:
-  config.configfile: config_file
-  emailaddress.address: email_address
+  config.configfile: configfile
+  emailaddress.address: emailaddress
   password.password: password
