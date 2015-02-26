@@ -24,10 +24,11 @@ class Subscriber
      * @param Config $config
      * @param helper\Database $db
      */
-    public function __construct(Config $config, helper\Database $db)
+    public function __construct( Config $config, helper\Database $db, EmailAddress $emailAddress, Pass $pass )
     {
         $this->config = $config;
         $this->db = $db;
+        $this->pass = $pass;
     }
 
     /**
@@ -53,9 +54,9 @@ class Subscriber
      * @param string $email_address
      * @return SubscriberEntity
      */
-    public function getSubscriberByEmailAddress($email_address)
+    public function getSubscriberByEmailAddress( $emailAddress )
     {
-        return $this->getSubscriberBy('email', $email_address);
+        return $this->getSubscriberBy('email', $emailAddress);
     }
 
     /**
@@ -102,19 +103,25 @@ class Subscriber
 
     /**
      * Add new Subscriber to database
-     * @param $email_address
+     * @param $emailAddress
      * @param $password
      * @throws \InvalidArgumentException
      */
-    public function addSubscriber($email_address, $password = null)
+    public function addSubscriber( $emailAddress, $plainPass = null )
     {
-        if($password == null){
-            $subscriber_password = new Password($this->config, '');
-        }else{
-            $subscriber_password = new Password($this->config, $password);
+        if ( $plainPass == null ) {
+            $encPass = $this->pass->encrypt( '' );
+        } else {
+            $encPass = $this->pass->encrypt( $plainPass );
         }
-        $subscriber = new SubscriberEntity(new EmailAddress($this->config, $email_address), $subscriber_password);
-        $this->save($subscriber);
+
+        // TODO: Reintroduce the validation level and tlds from config file
+        // Check the address is valid
+        $this->emailAddress->isValid( $emailAddress );
+
+        $this->subEncPass = $encPass;
+        $subscriber = new SubscriberEntity( $emailAddress, $encPass );
+        $this->save( $subscriber );
     }
 
     /**
@@ -122,22 +129,23 @@ class Subscriber
      * @param SubscriberEntity $subscriber
      * @throws \Exception
      */
-    public function save(SubscriberEntity &$subscriber)
+    public function save( SubscriberEntity &$scrEntity )
     {
-        if ($subscriber->id != 0) {
-            $this->update($subscriber);
+        if ( $scrEntity->id != 0 ) {
+            $this->update( $scrEntity );
         } else {
             $query = sprintf(
                 'INSERT INTO %s
                 (email, entered, modified, password, passwordchanged, disabled, htmlemail)
-                VALUES("%s", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "%s", CURRENT_TIMESTAMP, 0, 1)',
-                $this->config->getTableName('user', true),
-                $subscriber->email_address->getAddress(),
-                $subscriber->password->getEncryptedPassword()
+                VALUES("%s", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "%s", CURRENT_TIMESTAMP, 0, 1)'
+                , $this->config->getTableName('user', true)
+                , $scrEntity->emailAddress
+                // FIXME: Password isn't encrypted yet - where shold this be done? $scrEntity->subEncPass
+                , $scrEntity->plainPass
             );
             if ($this->db->query($query)) {
-                $subscriber->id = $this->db->insertedId();
-                $subscriber->uniqid = $this->giveUniqueId($subscriber->id);
+                $scrEntity->id = $this->db->insertedId();
+                $scrEntity->uniqid = $this->giveUniqueId($scrEntity->id);
             }else{
                 throw new \Exception('There was an error inserting the subscriber: ' . $this->db->getErrorMessage());
             }
@@ -161,7 +169,7 @@ class Subscriber
                 htmlemail = "%s",
                 extradata = "%s"',
             $this->config->getTableName('user', true),
-            $subscriber->email_address->getAddress(),
+            $subscriber->emailAddress,
             $subscriber->confirmed,
             $subscriber->blacklisted,
             $subscriber->optedin,
@@ -244,11 +252,8 @@ class Subscriber
      */
     private function subscriberFromArray($array)
     {
-        if(!empty($array)){
-            $scrEntity = new SubscriberEntity(
-                new EmailAddress($this->config, $array['email'], EmailAddress::$SKIP_VALIDATION),
-                new Password($this->config, $array['password'])
-            );
+        if( ! empty( $array ) ) {
+            $scrEntity = new SubscriberEntity();
             $scrEntity->id = $array['id'];
             $scrEntity->confirmed = $array['confirmed'];
             $scrEntity->blacklisted = $array['blacklisted'];
@@ -260,12 +265,14 @@ class Subscriber
             $scrEntity->htmlemail = $array['htmlemail'];
             $scrEntity->subscribepage = $array['subscribepage'];
             $scrEntity->rssfrequency = $array['rssfrequency'];
+            $scrEntity->password = $array['password'];
+            $scrEntity->emailAddress = $array['email'];
             $scrEntity->passwordchanged = $array['passwordchanged'];
             $scrEntity->disabled = $array['disabled'];
             $scrEntity->extradata = $array['extradata'];
             $scrEntity->foreignkey = $array['foreignkey'];
             return $scrEntity;
-        }else{
+        } else {
             return false;
         }
     }
@@ -281,7 +288,7 @@ class Subscriber
             SET password = "%s", passwordchanged = CURRENT_TIMESTAMP
             WHERE id = %d',
             $this->config->getTableName('user'),
-            $subscriber->password->getEncryptedPassword(),
+            $subscriber->subEncPass,
             $subscriber->id
         );
         $this->db->query($query);

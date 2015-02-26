@@ -2,7 +2,7 @@
 namespace phpList\entities;
 
 use phpList\interfaces\EmailAddressInterface;
-use phpList\interfaces\PasswordInterface;
+use phpList\interfaces\plainPassInterface;
 
 class SubscriberEntity {
     public $id;
@@ -10,7 +10,7 @@ class SubscriberEntity {
     /**
      * @var EmailAddressInterface
      */
-    public $email_address;
+    public $emailAddress;
 
     public $confirmed;
     public $blacklisted;
@@ -32,11 +32,11 @@ class SubscriberEntity {
     public $subscribepage;
     public $rssfrequency;
     /**
-     * @var PasswordInterface
+     * @var plainPassInterface
      */
-    public $password;
+    public $plainPass;
 
-    public $passwordchanged;
+    public $plainPasschanged;
     public $disabled;
     public $extradata;
     public $foreignkey;
@@ -44,14 +44,10 @@ class SubscriberEntity {
     private $attributes;
     private $has_attributes = false;
 
-    /**
-     * @param \phpList\interfaces\EmailAddressInterface $email_address
-     * @param \phpList\interfaces\PasswordInterface $password (can be passed when reading from database)
-     */
-    public function __construct(EmailAddressInterface $email_address, PasswordInterface $password)
+    public function __construct( $emailAddress, $plainPass )
     {
-        $this->email_address = $email_address;
-        $this->password = $password;
+        $this->emailAddress = $emailAddress;
+        $this->plainPass = $plainPass;
     }
 
     /**
@@ -59,7 +55,7 @@ class SubscriberEntity {
      * @param $key
      * @param $value
      */
-    public function setAttribute($key, $value){
+    public function setAttribute( $key, $value ) {
         $this->attributes[$key] = $value;
         $this->has_attributes = true;
     }
@@ -105,4 +101,4 @@ class SubscriberEntity {
         $confirmed = $this->confirmed && !$this->disabled;
         return (!$this->blacklisted && $confirmed);
     }
-} 
+}

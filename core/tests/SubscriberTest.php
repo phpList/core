@@ -5,26 +5,49 @@ use phpList\Config;
 use phpList\EmailAddress;
 use phpList\entities\SubscriberEntity;
 use phpList\helper\Database;
-use phpList\Password;
+use phpList\Pass;
 use phpList\phpList;
 use phpList\Subscriber;
 use phpList\helper\Util;
+
+// Symfony namespaces
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class SubscriberTest extends \PHPUnit_Framework_TestCase {
 
     public function setUp()
     {
+        // Create a randomised email addy to register with
+        $this->plainEmail = $emailAddress = 'unittest-' . rand( 0, 999999 ) . '@example.com';
+
         $this->configFile = dirname( __FILE__ ) . '/../../config.ini';
         $this->config = new Config($this->configFile);
-        $this->db = new Database($this->config);
-        $this->subscriber = new Subscriber($this->config, $this->db);
 
-        $this->emailAddress = $emailAddress = 'unittest-' . rand( 0, 999999 ) . '@example.com';
+        $this->emailAddress = new EmailAddress( $this->plainEmail );
+
+        $this->pass = new Pass();
+
+        $this->db = new Database($this->config);
+        $this->subscriber = new Subscriber( $this->config, $this->db, $this->emailAddress, $this->pass );
+        $this->scrEntity = new SubscriberEntity( $this->emailAddress, 'IHAVEANEASYPASSWORD' );
+
+        // Optional: use DI to load the subscriber class instead:
+        // // Create Symfony DI service container object for use by other classes
+        // $this->container = new ContainerBuilder();
+        // // Create new Symfony file loader to handle the YAML service config file
+        // $loader = new YamlFileLoader( $this->container, new FileLocator(__DIR__) );
+        // // Load the service config file, which is in YAML format
+        // $loader->load( '../services.yml' );
+        // $this->container->setParameter( 'config.configfile', '/var/www/pl4/config.ini' );
+        // $this->subscriber = $this->container->get( 'Subscriber' );
     }
 
     /**
-     * @expectedException \InvalidArgumentException
-     */
+    * @expectedException \InvalidArgumentException
+    */
     public function testSubscriberAddInvalidArgument()
     {
         $this->subscriber->addSubscriber('tester@', 'testpass');
@@ -32,12 +55,8 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
 
     public function testSave()
     {
-        $emailCopy = $this->emailAddress;
-        $scrEntity = new SubscriberEntity(
-            new EmailAddress( $this->config, $this->emailAddress ),
-            new Password( $this->config, 'IHAVEANEASYPASSWORD' )
-        );
-        $this->subscriber->save( $scrEntity );
+        $emailCopy = $this->plainEmail;
+        $this->subscriber->save( $this->scrEntity );
 
         return array( 'id' => $scrEntity->id, 'email' => $emailCopy );
     }
@@ -57,7 +76,7 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
         // Check that retrieved email matches what was set
         $this->assertEquals(
             $vars['email']
-            , $scrEntity->email_address->getAddress()
+            , $scrEntity->emailAddress
         );
 
         // Delete the testing subscribers
