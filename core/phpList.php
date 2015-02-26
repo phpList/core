@@ -21,41 +21,70 @@ class phpList
      * @param Util $util
      * @throws \Exception
      */
-    public function __construct(Config $config, Database $db, Language $lan, Util $util)
+    public function __construct( Config $config, Database $db, Language $lan, Util $util )
     {
         $this->config = $config;
         $this->db = $db;
         $this->lan = $lan;
         $this->util = $util;
 
-        date_default_timezone_set($this->config->get('SYSTEM_TIMEZONE'));
+        $this->startStats();
 
+        $this->configMailer();
+        $this->configDebug();
+        $this->configPhpInternals();
+        $this->configCli();
+        $this->configTimezone();
+        $this->configPhpVer();
+        $this->configAttachments();
+        $this->configPageroot();
+
+        $this->endStats();
+    }
+
+    protected function startStats()
+    {
         Timer::start('pagestats');
+    }
 
-        //Using phpmailer?
-        if ($this->config->get('PHPMAILER_PATH') && is_file($this->config->get('PHPMAILER_PATH'))) {
-            #require_once '/usr/share/php/libphp-phpmailer/class.phpmailer.php';
-            require_once $this->config->get('PHPMAILER_PATH');
+    /**
+      * Function to end current round of statistics gathering and write to log if required
+      */
+    protected function endStats()
+    {
+        if ($this->config->get('statslog', false) !== false) {
+            if ($fp = @fopen($this->config->get('statslog'),'a')) {
+                @fwrite(
+                    $fp,
+                    $this->db->getQueryCount()."\t".
+                    Timer::get('pagestats')->elapsed()."\t".
+                    $_SERVER['REQUEST_URI']."\t".
+                    $this->config->get('installation_name')."\n"
+                );
+            }
+        }
+    }
+
+    protected function configDebug()
+    {
+        if( !DEBUG ) {
+            error_reporting( 0 );
         }
 
-        //Make sure some other inits have been executed
-        //Language::initialise();
-
-        if(!DEBUG){
-            error_reporting(0);
+        if( !DEBUG ) {
+            ini_set('error_append_string',
+            'phpList version '.PHPLIST_VERSION
+        );
+        ini_set(
+            'error_prepend_string',
+            '<p class="error">Sorry a software error occurred:<br/>
+            Please <a href="http://mantis.phplist.com">report a bug</a> when reporting the bug, please include URL and the entire content of this page.<br/>'
+            );
         }
-        //check for commandline and cli version
-        if (!isset($_SERVER['SERVER_NAME']) && PHP_SAPI != 'cli') {
-            throw new \Exception('Warning: commandline only works well with the cli version of PHP');
-        }
-        if (isset($_REQUEST['_SERVER'])) { return; }
+    }
 
-        //TODO: maybe move everything command line to separate class
-        $cline = null;
-
-        $this->util->unregister_GLOBALS();
-        $this->util->magicQuotes();
-
+    protected function configCli()
+    {
         # setup commandline
         if (php_sapi_name() == 'cli' && !strstr($GLOBALS['argv'][0], 'phpunit')) {
             for ($i=0; $i<$_SERVER['argc']; $i++) {
@@ -77,7 +106,33 @@ class phpList
         } else {
             $this->config->setRunningConfig('commandline', false);
         }
-        $this->config->setRunningConfig('ajax', isset($_GET['ajaxed']));
+        $this->config->setRunningConfig('ajax', isset( $_GET['ajaxed']) );
+
+        //TODO: maybe move everything command line to separate class
+        $cline = null;
+
+        //check for commandline and cli version
+        if (!isset($_SERVER['SERVER_NAME']) && PHP_SAPI != 'cli') {
+            throw new \Exception('Warning: commandline only works well with the cli version of PHP');
+        }
+        if (isset($_REQUEST['_SERVER'])) { return; }
+    }
+
+    protected function configMailer()
+    {
+        //Using phpmailer?
+        if (
+            $this->config->get('PHPMAILER_PATH')
+            && is_file($this->config->get('PHPMAILER_PATH'))
+        ) {
+            #require_once '/usr/share/php/libphp-phpmailer/class.phpmailer.php';
+            require_once $this->config->get('PHPMAILER_PATH');
+        }
+    }
+
+    protected function configTimezone()
+    {
+        date_default_timezone_set($this->config->get('SYSTEM_TIMEZONE'));
 
         ##todo: this needs more testing, and docs on how to set the Timezones in the DB
         if ($this->config->get('USE_CUSTOM_TIMEZONE')) {
@@ -100,29 +155,33 @@ class phpList
             }
             #  print "Time now: ".date('Y-m-d H:i:s').'<br/>';
         }
+    }
 
-        if( !DEBUG ) {
-            ini_set('error_append_string',
-                'phpList version '.PHPLIST_VERSION
-            );
-            ini_set(
-                'error_prepend_string',
-                '<p class="error">Sorry a software error occurred:<br/>
-                Please <a href="http://mantis.phplist.com">report a bug</a> when reporting the bug, please include URL and the entire content of this page.<br/>'
-            );
+    protected function configPageroot()
+    {        $this_doc = getenv('REQUEST_URI');
+        if (preg_match('#(.*?)/admin?$#i',$this_doc,$regs)) {
+            $check_pageroot = $this->config->get('PAGEROOT');
+            $check_pageroot = preg_replace('#/$#','',$check_pageroot);
+            if ($check_pageroot != $regs[1] && $this->config->get('WARN_ABOUT_PHP_SETTINGS'))
+            throw new \Exception($this->lan->get('The pageroot in your config does not match the current locationCheck your config file.'));
         }
+    }
 
-
+    protected function configPhpVer()
+    {
         //TODO: we probably will need >5.3
         if (version_compare(PHP_VERSION, '5.1.2', '<') && $this->config->get('WARN_ABOUT_PHP_SETTINGS')) {
             throw new \Exception($this->lan->get('phpList requires PHP version 5.1.2 or higher'));
         }
+    }
 
+    protected function configAttachments()
+    {
         if ($this->config->get('ALLOW_ATTACHMENTS')
-            && $this->config->get('WARN_ABOUT_PHP_SETTINGS')
-            && (!is_dir($this->config->get('ATTACHMENT_REPOSITORY'))
-                || !is_writable ($this->config->get('ATTACHMENT_REPOSITORY'))
-            )
+        && $this->config->get('WARN_ABOUT_PHP_SETTINGS')
+        && (!is_dir($this->config->get('ATTACHMENT_REPOSITORY'))
+        || !is_writable ($this->config->get('ATTACHMENT_REPOSITORY'))
+        )
         ) {
             $tmperror = '';
             if(ini_get('open_basedir')) {
@@ -131,46 +190,11 @@ class phpList
             $tmperror .= $this->lan->get('The attachment repository does not exist or is not writable');
             throw new \Exception($tmperror);
         }
-
-        $this_doc = getenv('REQUEST_URI');
-        if (preg_match('#(.*?)/admin?$#i',$this_doc,$regs)) {
-            $check_pageroot = $this->config->get('PAGEROOT');
-            $check_pageroot = preg_replace('#/$#','',$check_pageroot);
-            if ($check_pageroot != $regs[1] && $this->config->get('WARN_ABOUT_PHP_SETTINGS'))
-                throw new \Exception($this->lan->get('The pageroot in your config does not match the current locationCheck your config file.'));
-        }
     }
 
-    /**
-     * Function to end current round of statistics gathering and write to log if required
-     */
-    public function endStatistics()
+    protected function configPhpInternals()
     {
-        /*
-        print "\n\n".'<!--';
-        if (DEBUG) {
-            print '<br clear="all" />';
-            print $this->db->getQueryCount().' db queries in $elapsed seconds';
-            if (function_exists('memory_get_peak_usage')) {
-                $memory_usage = 'Peak: ' .memory_get_peak_usage();
-            } elseif (function_exists('memory_get_usage')) {
-                $memory_usage = memory_get_usage();
-            } else {
-                $memory_usage = 'Cannot determine with this PHP version';
-            }
-            print '<br/>Memory usage: '.$memory_usage;
-        }*/
-
-        if ($this->config->get('statslog', false) !== false) {
-            if ($fp = @fopen($this->config->get('statslog'),'a')) {
-                @fwrite(
-                    $fp,
-                    $this->db->getQueryCount()."\t".
-                    Timer::get('pagestats')->elapsed()."\t".
-                    $_SERVER['REQUEST_URI']."\t".
-                    $this->config->get('installation_name')."\n"
-                );
-            }
-        }
+        $this->util->unregister_GLOBALS();
+        $this->util->magicQuotes();
     }
 }
