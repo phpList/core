@@ -2,7 +2,7 @@
 namespace phpList\test;
 
 use phpList\Config;
-use phpList\EmailAddress;
+use phpList\EmailUtil;
 use phpList\entities\SubscriberEntity;
 use phpList\helper\Database;
 use phpList\Password;
