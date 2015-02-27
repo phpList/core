@@ -2,7 +2,7 @@
 namespace phpList\test;
 
 use phpList\Config;
-use phpList\EmailAddress;
+use phpList\EmailUtil;
 
 class ValidationTest extends \PHPUnit_Framework_TestCase {
     private  $emailAddresses = array(
