@@ -22,17 +22,19 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
     {
         // Create a randomised email addy to register with
         $this->emailAddress = 'unittest-' . rand( 0, 999999 ) . '@example.com';
-        $this->plainPass = 'IHAVEANEASYPASSWORD';
+        $this->plainPass = 'easypassword';
 
+        // Instantiate config object
         $this->configFile = dirname( __FILE__ ) . '/../../config.ini';
-        $this->config = new Config($this->configFile);
+        $this->config = new Config( $this->configFile );
 
+        // Instantiate util classes
         $this->emailUtil = new EmailUtil();
         $this->pass = new Pass();
 
-        $this->db = new Database($this->config);
+        // Instantiate remaning classes
+        $this->db = new Database( $this->config );
         $this->subscriber = new Subscriber( $this->config, $this->db, $this->emailUtil, $this->pass );
-        $this->scrEntity = new SubscriberEntity( $this->emailAddress, $this->plainPass );
 
         // Optional: use DI to load the subscriber class instead:
         // // Create Symfony DI service container object for use by other classes
@@ -45,41 +47,61 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
         // $this->subscriber = $this->container->get( 'Subscriber' );
     }
 
-    public function testSubscriberAddInvalidArgument()
+    /**
+    * @expectedException \Exception
+    */
+    public function testAddSubscriberInvalidEmail()
     {
-        $this->subscriber->addSubscriber( $this->emailAddress, 'testpass' );
+        // Test passes if this throws an exception
+        $this->subscriber->addSubscriber( 'deliberately-invalid-email-address', 'testpass' );
     }
 
-    public function testSave()
+    public function testAddSubscriber()
     {
-        $emailCopy = $this->emailAddress;
-        $this->subscriber->save( $this->scrEntity );
+        $plainPass = 'testpass';
 
-        return array( 'id' => $this->scrEntity->id, 'email' => $emailCopy, 'pass' => $this->plainPass );
+        // Save subscriber to DB
+        $newScrId = $this->subscriber->addSubscriber( $this->emailAddress, $plainPass );
+
+        // Check that something looking like an ID was returned
+        $this->assertTrue( is_numeric( $newScrId ) ) ;
+
+        // Pass on to the next test
+        return array( 'id' => $newScrId, 'email' => $this->emailAddress, 'plainPass' => $plainPass );
     }
 
     /**
-     * @depends testSave
+     * @note This belongs in a test class for SubscriberEntity, not here
+     */
+    public function testSave()
+    {
+        $encPass = $this->pass->encrypt( $this->plainPass );
+        // Add new subscriber properties to the entity
+        $this->scrEntity = new SubscriberEntity( $this->emailAddress, $encPass );
+        // Copy the email address to test it later
+        $emailCopy = $this->emailAddress;
+        // Save the subscriber
+        $this->subscriber->save( $this->scrEntity );
+        // Pass on to the next test
+        return array( 'id' => $this->scrEntity->id, 'email' => $emailCopy, 'encPass' => $encPass );
+    }
+
+    /**
+     * @depends testAddSubscriber
      * @param SubscriberEntity $scrEntity [description]
      */
     public function testGetSubscriber( array $vars )
     {
         $scrEntity = $this->subscriber->getSubscriber( $vars['id'] );
-        // Check that the saved passwords can be retrieved and are equal
-        $this->assertEquals(
-            $scrEntity->plainPass
-            , $vars['pass']
-        );
+        // Check that the saved password isn't in plain text
+        $this->assertNotEquals( $scrEntity->plainPass , $vars['plainPass'] );
         // Check that retrieved email matches what was set
-        $this->assertEquals(
-            $vars['email']
-            , $scrEntity->emailAddress
-        );
+        $this->assertEquals( $vars['email'] , $scrEntity->emailAddress );
 
         // Delete the testing subscribers
         // NOTE: These entities are used in other tests and must be deleted in
         // whatever method users them last
-        $this->subscriber->delete( $vars['id'] );
+        // $this->subscriber->delete( $vars['id'] );
 
         return $scrEntity;
     }
