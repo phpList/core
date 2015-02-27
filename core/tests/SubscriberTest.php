@@ -2,7 +2,7 @@
 namespace phpList\test;
 
 use phpList\Config;
-use phpList\EmailAddress;
+use phpList\EmailUtil;
 use phpList\entities\SubscriberEntity;
 use phpList\helper\Database;
 use phpList\Pass;
@@ -21,18 +21,18 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
     public function setUp()
     {
         // Create a randomised email addy to register with
-        $this->plainEmail = $emailAddress = 'unittest-' . rand( 0, 999999 ) . '@example.com';
+        $this->emailAddress = 'unittest-' . rand( 0, 999999 ) . '@example.com';
+        $this->plainPass = 'IHAVEANEASYPASSWORD';
 
         $this->configFile = dirname( __FILE__ ) . '/../../config.ini';
         $this->config = new Config($this->configFile);
 
-        $this->emailAddress = new EmailAddress( $this->plainEmail );
-
+        $this->emailUtil = new EmailUtil();
         $this->pass = new Pass();
 
         $this->db = new Database($this->config);
-        $this->subscriber = new Subscriber( $this->config, $this->db, $this->emailAddress, $this->pass );
-        $this->scrEntity = new SubscriberEntity( $this->emailAddress, 'IHAVEANEASYPASSWORD' );
+        $this->subscriber = new Subscriber( $this->config, $this->db, $this->emailUtil, $this->pass );
+        $this->scrEntity = new SubscriberEntity( $this->emailAddress, $this->plainPass );
 
         // Optional: use DI to load the subscriber class instead:
         // // Create Symfony DI service container object for use by other classes
@@ -45,20 +45,17 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
         // $this->subscriber = $this->container->get( 'Subscriber' );
     }
 
-    /**
-    * @expectedException \InvalidArgumentException
-    */
     public function testSubscriberAddInvalidArgument()
     {
-        $this->subscriber->addSubscriber('tester@', 'testpass');
+        $this->subscriber->addSubscriber( $this->emailAddress, 'testpass' );
     }
 
     public function testSave()
     {
-        $emailCopy = $this->plainEmail;
+        $emailCopy = $this->emailAddress;
         $this->subscriber->save( $this->scrEntity );
 
-        return array( 'id' => $scrEntity->id, 'email' => $emailCopy );
+        return array( 'id' => $this->scrEntity->id, 'email' => $emailCopy, 'pass' => $this->plainPass );
     }
 
     /**
@@ -70,8 +67,8 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
         $scrEntity = $this->subscriber->getSubscriber( $vars['id'] );
         // Check that the saved passwords can be retrieved and are equal
         $this->assertEquals(
-            $scrEntity->password->getEncryptedPassword()
-            , $scrEntity->password->getEncryptedPassword()
+            $scrEntity->plainPass
+            , $vars['pass']
         );
         // Check that retrieved email matches what was set
         $this->assertEquals(

@@ -24,10 +24,11 @@ class Subscriber
      * @param Config $config
      * @param helper\Database $db
      */
-    public function __construct( Config $config, helper\Database $db, EmailAddress $emailAddress, Pass $pass )
+    public function __construct( Config $config, helper\Database $db, EmailUtil $emailUtil, Pass $pass )
     {
         $this->config = $config;
         $this->db = $db;
+        $this->emailUtil = $emailUtil;
         $this->pass = $pass;
     }
 
@@ -117,7 +118,7 @@ class Subscriber
 
         // TODO: Reintroduce the validation level and tlds from config file
         // Check the address is valid
-        $this->emailAddress->isValid( $emailAddress );
+        $this->emailUtil->isValid( $emailAddress );
 
         $this->subEncPass = $encPass;
         $subscriber = new SubscriberEntity( $emailAddress, $encPass );
@@ -250,10 +251,14 @@ class Subscriber
      * @param $array
      * @return SubscriberEntity
      */
-    private function subscriberFromArray($array)
+    private function subscriberFromArray( array $array )
     {
-        if( ! empty( $array ) ) {
-            $scrEntity = new SubscriberEntity();
+        if ( ! empty( $array ) ) {
+            // FIXME: Move this object instantiation to DI. Rework
+            // SubscriberEntity{} to allow reuse of the object (clear, reload)
+            // so a single SubscriberEntity can be a dependency of Subscriber{}
+            // and be used for multiple purposes
+            $scrEntity = new SubscriberEntity( $array['email'], $array['password'] );
             $scrEntity->id = $array['id'];
             $scrEntity->confirmed = $array['confirmed'];
             $scrEntity->blacklisted = $array['blacklisted'];
@@ -281,15 +286,15 @@ class Subscriber
      * Update password in db
      * @param SubscriberEntity $subscriber
      */
-    public function updatePassword(SubscriberEntity $subscriber)
+    public function updatePassword( SubscriberEntity $scrEntity )
     {
         $query = sprintf(
             'UPDATE %s
             SET password = "%s", passwordchanged = CURRENT_TIMESTAMP
             WHERE id = %d',
             $this->config->getTableName('user'),
-            $subscriber->subEncPass,
-            $subscriber->id
+            $scrEntity->subEncPass,
+            $scrEntity->id
         );
         $this->db->query($query);
     }
@@ -325,14 +330,14 @@ class Subscriber
      * @param SubscriberEntity $subscriber
      * @return array
      */
-    public function getCleanAttributes(SubscriberEntity $subscriber)
+    public function getCleanAttributes(SubscriberEntity $scrEntity)
     {
-        if (!$subscriber->hasAttributes()) {
-            $this->loadAttributes($subscriber);
+        if (!$scrEntity->hasAttributes()) {
+            $this->loadAttributes($scrEntity);
         }
 
         $clean_attributes = array();
-        foreach ($subscriber->getAttributes() as $key => $val) {
+        foreach ($scrEntity->getAttributes() as $key => $val) {
             ## in the help, we only list attributes with "strlen < 20"
             if (strlen($key) < 20) {
                 $clean_attributes[String::cleanAttributeName($key)] = $val;
@@ -348,7 +353,7 @@ class Subscriber
      * @param string $value
      * @internal param int $id
      */
-    public function addAttribute(SubscriberEntity $subscriber, $attribute_id, $value)
+    public function addAttribute(SubscriberEntity $scrEntity, $attribute_id, $value)
     {
         $this->db->query(
             sprintf(
@@ -356,7 +361,7 @@ class Subscriber
                 (userid,attributeid,value)
                 VALUES(%d,%d,"%s")',
                 $this->config->getTableName('user_attribute'),
-                $subscriber->id,
+                $scrEntity->id,
                 $attribute_id,
                 $this->db->sqlEscape($value)
             )

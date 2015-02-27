@@ -2,12 +2,10 @@
 namespace phpList;
 
 
-class EmailAddress {
+class EmailUtil {
 
-    private function isValid( $emailAddress, $tldWhitelist = null, $validationLevel = 3 )
+    public function isValid( $emailAddress, $tldWhitelist = null, $validationLevel = 3 )
     {
-        $validationLevel = $this->config->get( 'emailAddress_validationLevel' );
-
         if ( $validationLevel == 0 ) {
             return true;
         }
