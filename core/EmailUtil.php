@@ -4,6 +4,12 @@ namespace phpList;
 
 class EmailUtil {
 
+    /**
+     * Check if string is valid email address
+     * @param string  $emailAddress    String to test
+     * @param array?  $tldWhitelist    whitelisted top level domains
+     * @param integer $validationLevel level of valudation to enforce
+     */
     public function isValid( $emailAddress, $tldWhitelist = null, $validationLevel = 3 )
     {
         if ( $validationLevel == 0 ) {
