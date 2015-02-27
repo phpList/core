@@ -106,23 +106,33 @@ class Subscriber
      * Add new Subscriber to database
      * @param $emailAddress
      * @param $password
+     * @return int $newScrId DB ID of the newly inserted subscriber
      * @throws \InvalidArgumentException
      */
     public function addSubscriber( $emailAddress, $plainPass = null )
     {
-        if ( $plainPass == null ) {
-            $encPass = $this->pass->encrypt( '' );
-        } else {
+        // Initialise var
+        $encPass = $plainPass;
+
+        // If plainPass is set, encrypt it
+        if ( $plainPass != null ) {
             $encPass = $this->pass->encrypt( $plainPass );
         }
 
-        // TODO: Reintroduce the validation level and tlds from config file
         // Check the address is valid
-        $this->emailUtil->isValid( $emailAddress );
+        // TODO: Reintroduce the validation level and tlds from config file
+        // TODO: Move this validation out of here and into client code
+        if ( ! $this->emailUtil->isValid( $emailAddress ) ) {
+            throw new \Exception( 'Cannot insert subscriber with invalid email address: "' . $emailAddress . '"' );
+        }
 
         $this->subEncPass = $encPass;
+
+        // TODO: Move this object instantiation out of here
         $subscriber = new SubscriberEntity( $emailAddress, $encPass );
-        $this->save( $subscriber );
+
+        $newScrId = $this->save( $subscriber );
+        return $newScrId;
     }
 
     /**
@@ -147,7 +157,8 @@ class Subscriber
             if ($this->db->query($query)) {
                 $scrEntity->id = $this->db->insertedId();
                 $scrEntity->uniqid = $this->giveUniqueId($scrEntity->id);
-            }else{
+                return $scrEntity->id;
+            } else {
                 throw new \Exception('There was an error inserting the subscriber: ' . $this->db->getErrorMessage());
             }
         }
