@@ -100,7 +100,7 @@ class Database
     public function getErrorMessage()
     {
         $error_info = $this->db->errorInfo();
-        return 'Database error ' . $this->db->errorCode() . ' while doing query ' . $this->getLastQuery() . ' ' . $error_info[2];
+        return 'Database error ' . $this->db->errorCode() . ' ("' . $error_info[2] . '") while doing query: ' . $this->getLastQuery();
     }
 
     /**
@@ -258,7 +258,12 @@ class Database
      */
     public function getLastQuery()
     {
-        return $this->query_log[count($this->query_log)];
+        // Count the number of queries in the log
+        $count = count( $this->query_log );
+        // Account for the fact array indexes start counting at 0, not 1
+        $number = $count - 1;
+        // Return the last query string that was executed
+        return $this->query_log[$number]['query'];
     }
 
     /**
