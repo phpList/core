@@ -253,8 +253,6 @@ class Database
     /**
      * Get last executed query
      * @return mixed
-     * @note Duplicate key errors can be hidden by this method; commenting out
-     * the return statement can reveal useful error messages
      */
     public function getLastQuery()
     {
