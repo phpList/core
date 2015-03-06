@@ -1,5 +1,5 @@
 <?php
-namespace phpList\entities;
+namespace phpList\Entity;
 
 use phpList\interfaces\EmailAddressInterface;
 use phpList\interfaces\plainPassInterface;

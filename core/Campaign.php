@@ -2,8 +2,8 @@
 namespace phpList;
 
 use Exception;
-use phpList\entities\CampaignEntity;
-use phpList\entities\MailingListEntity;
+use phpList\Entity\CampaignEntity;
+use phpList\Entity\MailingListEntity;
 use phpList\helper\String;
 use phpList\helper\Util;
 

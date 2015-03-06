@@ -1,7 +1,7 @@
 <?php
 namespace phpList;
 
-use phpList\entities\SubscriberEntity;
+use phpList\Entity\SubscriberEntity;
 use phpList\helper\String;
 
 class Subscriber

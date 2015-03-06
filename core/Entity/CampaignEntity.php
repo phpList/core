@@ -4,7 +4,7 @@
  * Date: 6/02/15
  */
 
-namespace phpList\entities;
+namespace phpList\Entity;
 
 
 class CampaignEntity {

@@ -1,7 +1,7 @@
 <?php
 namespace phpList;
 
-use phpList\entities\TemplateImageEntity;
+use phpList\Entity\TemplateImageEntity;
 
 /**
  * Class TemplateImage

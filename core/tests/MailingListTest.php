@@ -8,7 +8,7 @@ use phpList\Admin;
 use phpList\Config;
 use phpList\helper;
 use phpList\MailingList;
-use phpList\entities\MailingListEntity;
+use phpList\Entity\MailingListEntity;
 
 /**
  * @Note: Assumes that the database contains an admin and multiple mailing lists

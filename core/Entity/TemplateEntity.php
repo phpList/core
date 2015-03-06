@@ -1,5 +1,5 @@
 <?php
-namespace phpList\entities;
+namespace phpList\Entity;
 
 
 class TemplateEntity {

@@ -3,7 +3,7 @@ namespace phpList\test;
 
 use phpList\Config;
 use phpList\EmailUtil;
-use phpList\entities\SubscriberEntity;
+use phpList\Entity\SubscriberEntity;
 use phpList\helper\Database;
 use phpList\Pass;
 use phpList\phpList;
@@ -74,6 +74,19 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
      * @note This belongs in a test class for SubscriberEntity, not here
      */
     public function testSave()
+    {
+        $encPass = $this->pass->encrypt( $this->plainPass );
+        // Add new subscriber properties to the entity
+        $this->scrEntity = new SubscriberEntity( $this->emailAddress, $encPass );
+        // Copy the email address to test it later
+        $emailCopy = $this->emailAddress;
+        // Save the subscriber
+        $this->subscriber->save( $this->scrEntity );
+        // Pass on to the next test
+        return array( 'id' => $this->scrEntity->id, 'email' => $emailCopy, 'encPass' => $encPass );
+    }
+
+    public function testSaveNew()
     {
         $encPass = $this->pass->encrypt( $this->plainPass );
         // Add new subscriber properties to the entity

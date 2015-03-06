@@ -1,7 +1,7 @@
 <?php
 namespace phpList;
 
-use phpList\entities\MailingListEntity;
+use phpList\Entity\MailingListEntity;
 
 /**
  * Class MailingList
