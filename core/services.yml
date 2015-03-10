@@ -1,14 +1,5 @@
 services:
-  CampaignEntity:
-    class: phpList\helper\CampaignEntity
-  MailingListEntity:
-    class: phpList\helper\MailingListEntity
-  SubscriberEntity:
-    class: phpList\helper\SubscriberEntity
-  TemplateEntity:
-    class: phpList\helper\TemplateEntity
-  TemplateImageEntity:
-    class: phpList\helper\TemplateImageEntity
+
   Logger:
     class: phpList\helper\Logger
   Util:
@@ -43,6 +34,23 @@ services:
     arguments: [@Config, @Database, @TemplateImage]
   TemplateImage:
     class: phpList\TemplateImage
+    arguments: [@Config, @Database]
+
+# Entities
+  CampaignEntity:
+    class: phpList\Entity\CampaignEntity
+  MailingListEntity:
+    class: phpList\Entity\MailingListEntity
+  SubscriberEntity:
+    class: phpList\Entity\SubscriberEntity
+  TemplateEntity:
+    class: phpList\Entity\TemplateEntity
+  TemplateImageEntity:
+    class: phpList\Entity\TemplateImageEntity
+
+# Models
+  SubscriberModel:
+    class: phpList\Model\SubscriberModel
     arguments: [@Config, @Database]
 
 # Define parameters, to be set in app logic
