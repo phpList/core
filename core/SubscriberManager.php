@@ -1,13 +1,16 @@
 <?php
 namespace phpList;
 
+use phpList\Subscriber;
 use phpList\Entity\SubscriberEntity;
 use phpList\helper\String;
 
-class Subscriber
+class SubscriberManager
 {
     protected $config;
-    protected $db;
+    protected $emailUtil;
+    protected $pass;
+    protected $subscriberModel;
 
     /**
      * Used for looping over all usable subscriber attributes
@@ -24,12 +27,12 @@ class Subscriber
      * @param Config $config
      * @param helper\Database $db
      */
-    public function __construct( Config $config, helper\Database $db, EmailUtil $emailUtil, Pass $pass )
+    public function __construct( Config $config, EmailUtil $emailUtil, Pass $pass, model\SubscriberModel $subscriberModel )
     {
         $this->config = $config;
-        $this->db = $db;
         $this->emailUtil = $emailUtil;
         $this->pass = $pass;
+        $this->subscriberModel = $subscriberModel;
     }
 
     /**
@@ -39,15 +42,9 @@ class Subscriber
      */
     public function getSubscriber($id)
     {
-        $result = $this->db->query(
-            sprintf(
-                'SELECT * FROM %s
-                WHERE id = %d',
-                $this->config->getTableName('user', true),
-                $id
-            )
-        );
-        return $this->subscriberFromArray($result->fetch(\PDO::FETCH_ASSOC));
+        $result = $this->subscriberModel->getSubscriberById( $id );
+        
+        return $this->subscriberEntityFromArray( $result );
     }
 
     /**
@@ -77,7 +74,8 @@ class Subscriber
      */
     public function getSubscriberByUniqueId($unique_id)
     {
-        return $this->getSubscriberBy('uniqueid', $unique_id);
+        $result = $this->getSubscriberBy('uniqueid', $unique_id);
+        return $this->subscriberEntityFromArray( $result );
     }
 
     /**
@@ -109,59 +107,25 @@ class Subscriber
      * @return int $newScrId DB ID of the newly inserted subscriber
      * @throws \InvalidArgumentException
      */
-    public function addSubscriber( $emailAddress, $plainPass = null )
+    public function add( \phpList\Entity\SubscriberEntity $scrEntity )
     {
-        // Initialise var
-        $encPass = $plainPass;
-
-        // If plainPass is set, encrypt it
-        if ( $plainPass != null ) {
-            $encPass = $this->pass->encrypt( $plainPass );
-        }
+        // Hash the password before saving
+        $scrEntity->encPass = $this->pass->encrypt( $scrEntity->plainPass );
 
         // Check the address is valid
         // TODO: Reintroduce the validation level and tlds from config file
-        // TODO: Move this validation out of here and into client code
-        if ( ! $this->emailUtil->isValid( $emailAddress ) ) {
+        // TODO: Move validation out of here and into client code
+        if ( ! $this->emailUtil->isValid( $scrEntity->emailAddress ) ) {
             throw new \Exception( 'Cannot insert subscriber with invalid email address: "' . $emailAddress . '"' );
         }
 
-        $this->subEncPass = $encPass;
+        // Save subscriber to db
+        $newSubscriberId = $this->subscriberModel->save(
+            $scrEntity->emailAddress
+            , $scrEntity->encPass
+        );
 
-        // TODO: Move this object instantiation out of here
-        $subscriber = new SubscriberEntity( $emailAddress, $encPass );
-
-        $newScrId = $this->save( $subscriber );
-        return $newScrId;
-    }
-
-    /**
-     * Write Subscriber info to database
-     * @param SubscriberEntity $subscriber
-     * @throws \Exception
-     */
-    public function save( SubscriberEntity &$scrEntity )
-    {
-        if ( $scrEntity->id != 0 ) {
-            $this->update( $scrEntity );
-        } else {
-            $query = sprintf(
-                'INSERT INTO %s
-                (email, entered, modified, password, passwordchanged, disabled, htmlemail)
-                VALUES("%s", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "%s", CURRENT_TIMESTAMP, 0, 1)'
-                , $this->config->getTableName('user', true)
-                , $scrEntity->emailAddress
-                // FIXME: Password isn't encrypted yet - where shold this be done? $scrEntity->subEncPass
-                , $scrEntity->plainPass
-            );
-            if ($this->db->query($query)) {
-                $scrEntity->id = $this->db->insertedId();
-                $scrEntity->uniqid = $this->giveUniqueId($scrEntity->id);
-                return $scrEntity->id;
-            } else {
-                throw new \Exception('There was an error inserting the subscriber: ' . $this->db->getErrorMessage());
-            }
-        }
+        return $newSubscriberId;
     }
 
     /**
@@ -169,7 +133,7 @@ class Subscriber
      * when the password has to be updates, use @updatePassword
      * @param SubscriberEntity $subscriber
      */
-    public function update(SubscriberEntity $subscriber)
+    public function update( SubscriberEntity $subscriber )
     {
         $query = sprintf(
             'UPDATE %s SET
@@ -195,42 +159,13 @@ class Subscriber
     /**
      * Remove subscriber from database
      */
-    public function delete($id)
+    public function delete( $id )
     {
-        $tables = array(
-            $this->config->getTableName('listuser') => 'userid',
-            $this->config->getTableName('user_attribute', true) => 'userid',
-            $this->config->getTableName('usermessage') => 'userid',
-            $this->config->getTableName('user_history', true) => 'userid',
-            $this->config->getTableName('user_message_bounce', true) => 'user',
-            $this->config->getTableName('user', true) => 'id'
-        );
-        if ($this->db->tableExists($this->config->getTableName('user_group'))) {
-            $tables[$this->config->getTableName('user_group')] = 'userid';
-        }
-        $this->db->deleteFromArray($tables, $id);
-    }
+        $results = $this->subscriberModel->delete( $id );
 
-    /**
-     * Assign a unique id to a Subscriber
-     * @param int $subscriber_id
-     * @return string unique id
-     */
-    private function giveUniqueId($subscriber_id)
-    {
-        //TODO: make uniqueid a unique field in database
-        do {
-            $unique_id = md5(uniqid(mt_rand()));
-        } while (!$this->db->query(
-            sprintf(
-                'UPDATE %s SET uniqid = "%s"
-                WHERE id = %d',
-                $this->config->getTableName('user', true),
-                $unique_id,
-                $subscriber_id
-            )
-        ));
-        return $unique_id;
+        // TODO: Add a check of $results to ensure delete was successful before
+        // returning (bool) true
+        return true;
     }
 
     /**
@@ -262,7 +197,7 @@ class Subscriber
      * @param $array
      * @return SubscriberEntity
      */
-    private function subscriberFromArray( array $array )
+    private function subscriberEntityFromArray( array $array )
     {
         if ( ! empty( $array ) ) {
             // FIXME: Move this object instantiation to DI. Rework
@@ -281,7 +216,7 @@ class Subscriber
             $scrEntity->htmlemail = $array['htmlemail'];
             $scrEntity->subscribepage = $array['subscribepage'];
             $scrEntity->rssfrequency = $array['rssfrequency'];
-            $scrEntity->password = $array['password'];
+            $scrEntity->encPass = $array['password'];
             $scrEntity->emailAddress = $array['email'];
             $scrEntity->passwordchanged = $array['passwordchanged'];
             $scrEntity->disabled = $array['disabled'];
@@ -293,21 +228,12 @@ class Subscriber
         }
     }
 
-    /**
-     * Update password in db
-     * @param SubscriberEntity $subscriber
-     */
-    public function updatePassword( SubscriberEntity $scrEntity )
+    public function updatePass( $plainPass, Entity\SubscriberEntity $scrEntity )
     {
-        $query = sprintf(
-            'UPDATE %s
-            SET password = "%s", passwordchanged = CURRENT_TIMESTAMP
-            WHERE id = %d',
-            $this->config->getTableName('user'),
-            $scrEntity->subEncPass,
-            $scrEntity->id
-        );
-        $this->db->query($query);
+        // Hash password
+        $encPass = $this->pass->encrypt( $plainPass );
+        // Update the password
+        $this->subscriberModel->updatePass( $scrEntity->id, $encPass );
     }
 
     /**

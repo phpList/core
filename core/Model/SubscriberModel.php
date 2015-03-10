@@ -68,7 +68,7 @@ class SubscriberModel {
 
     /**
     * Update a subscriber's details
-    * @Note To update just the user password, use @updatePassword
+    * @Note To update just the user password, use @updatePass
     */
     public function update( $blacklisted, $confirmed, $emailAddress, $extradata, $htmlemail, $id, $optedin )
     {
@@ -102,27 +102,83 @@ class SubscriberModel {
         }
     }
 
+    public function getSubscriberById( $id )
+    {
+        $result = $this->db->query(
+            sprintf(
+                'SELECT * FROM %s
+                WHERE id = %d',
+                $this->config->getTableName( 'user', true ),
+                $id
+            )
+        );
+        return $result->fetch( \PDO::FETCH_ASSOC );
+    }
+
+    /**
+     * Cleanly delete all records of a subscriber from DB
+     * @param  int $id ID of subscriber to delete
+     * @return mixed Result of db->deleteFromArray()
+     */
+    public function delete( $id )
+    {
+        // Get the correct table mappings from Config{} class
+        $tables = array(
+            $this->config->getTableName('listuser') => 'userid',
+            $this->config->getTableName('user_attribute', true) => 'userid',
+            $this->config->getTableName('usermessage') => 'userid',
+            $this->config->getTableName('user_history', true) => 'userid',
+            $this->config->getTableName('user_message_bounce', true) => 'user',
+            $this->config->getTableName('user', true) => 'id'
+        );
+
+        // If user_group table exists, tag it for deletion
+        // NOTE: Why is this check necessary? backwards compatibility?
+        if ( $this->db->tableExists( $this->config->getTableName( 'user_group') ) ) {
+            $tables[$this->config->getTableName('user_group')] = 'userid';
+        }
+
+        // Delete all entries from DB & return result
+        return $this->db->deleteFromArray( $tables, $id );
+    }
+
     /**
     * Assign a unique id to a Subscriber
     * @param int $subscriber_id
     * @return string unique id
     */
-    private function giveUniqueId( $subscriber_id )
+    private function giveUniqueId( $subscriberId )
     {
-        //TODO: make uniqueid a unique field in database
+        //TODO: make uniqueId a unique field in database
         do {
-            $unique_id = md5( uniqid( mt_rand() ) );
+            $uniqueId = md5(uniqid(mt_rand()));
         } while (
             !$this->db->query(
                 sprintf(
-                'UPDATE %s SET uniqid = "%s"
-                WHERE id = %d',
-                $this->config->getTableName('user', true),
-                $unique_id,
-                $subscriber_id
+                    'UPDATE %s SET uniqid = "%s"
+                    WHERE id = %d',
+                    $this->config->getTableName('user', true),
+                    $uniqueId,
+                    $subscriberId
                 )
             )
         );
-        return $unique_id;
+        return $uniqueId;
+    }
+
+    public function updatePass( $id, $encPass )
+    {
+        $query = sprintf(
+            'UPDATE
+                %s
+            SET
+                password = "%s", passwordchanged = CURRENT_TIMESTAMP
+            WHERE
+                id = %d'
+            , $this->config->getTableName( 'user', true )
+            , $encPass
+            , $id
+        );
+        $this->db->query( $query );
     }
 }
