@@ -61,10 +61,13 @@ class Config
      * @param $table_name
      * @param bool $is_user_table
      * @return string
+     * @FIXME: Why is user_table a special case? Find a nicer way to handle this
      */
     public function getTableName($table_name, $is_user_table = false)
     {
-        return ($is_user_table ? $this->running_config['USERTABLE_PREFIX'] : $this->running_config['TABLE_PREFIX']) . $table_name;
+        return
+            ( $is_user_table ? $this->running_config['USERTABLE_PREFIX'] : $this->running_config['TABLE_PREFIX'] )
+            . $table_name;
     }
 
     /**
