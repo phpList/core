@@ -283,8 +283,12 @@ class Database
     public function deleteFromArray($tables, $id)
     {
         $query = 'DELETE FROM %s WHERE %s = ' . ((is_string($id)) ? '"%s"' : '%d');
+        // Instantiate results var for collecting query outcomes
+        $results = array();
         foreach($tables as $table => $column){
-            $this->db->query(sprintf($query, $table, $column, $id));
+            $results [] = $this->db->query(sprintf($query, $table, $column, $id));
         }
+        
+        return $results;
     }
 }
