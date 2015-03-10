@@ -35,8 +35,8 @@ services:
   MailingList:
     class: phpList\MailingList
     arguments: [@Config, @Database]
-  Subscriber:
-    class: phpList\Subscriber
+  SubscriberManager:
+    class: phpList\SubscriberManager
     arguments: [@Config, @Database]
   Template:
     class: phpList\Template
