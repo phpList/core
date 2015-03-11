@@ -5,11 +5,11 @@ http://www.phplist.com
 
 ###############
 
-Copyright (C) 2000-2013 Michiel Dethmers, phpList ltd
+Copyright (C) 2000-2015 Michiel Dethmers, phpList ltd
 
 This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
+modify it under the terms of the GNU Affero General Public License
+as published by the Free Software Foundation; either version 3
 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
