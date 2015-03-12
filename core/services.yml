@@ -1,5 +1,8 @@
 services:
 
+  Admin:
+    class: phpList\Admin
+    arguments: [@AdminModel, @Pass]
   Logger:
     class: phpList\helper\Logger
   Util:
@@ -17,6 +20,8 @@ services:
   Language:
     class: phpList\helper\Language
     arguments: [@Database, @Config]
+  Pass:
+    class: phpList\Pass
   phpList:
     class: phpList\phpList
     arguments: [@Config, @Database, @Language, @Util]
@@ -49,6 +54,9 @@ services:
     class: phpList\Entity\TemplateImageEntity
 
 # Models
+  AdminModel:
+    class: phpList\Model\AdminModel
+    arguments: [@Config, @Database]
   SubscriberModel:
     class: phpList\Model\SubscriberModel
     arguments: [@Config, @Database]
