@@ -3,11 +3,18 @@ namespace phpList;
 
 use phpList\helper\String;
 use phpList\helper\Util;
+use phpList\Entity\AdminEntity;
 
 class Admin
 {
     public $id = 0;
     private $loginname;
+
+    public function __construct( $adminModel, $pass )
+    {
+        $this->adminModel = $adminModel;
+        $this->pass = $pass;
+    }
 
     /**
      * Set the login name and return false if it alreay is in use
@@ -67,16 +74,6 @@ class Admin
      * @var array ('subscribers' => true/false, 'campaigns' => true/false,'statistics' => true/false, 'settings' => true/false);
      */
     public $privileges;
-
-
-    /**
-     * Default constructor
-     * @param string $loginname
-     */
-    function __construct($loginname)
-    {
-        $this->setLoginname($loginname);
-    }
 
     /**
      * Get an admin by id
@@ -264,27 +261,20 @@ class Admin
      * @param $password string
      * @return array
      */
-    function validateLogin($login, $password)
+    function validateLogin( $plainPass, $username )
     {
         $return = array(
             'result' => false,
-            'error' => s('Login failed'),
+            // FIXME: Re-add translation / formatting logic to message
+            'error' => 'Login failed',
             'admin' => null
         );
 
-        $sql = sprintf(
-            'SELECT * FROM %s
-            WHERE loginname = "%s"',
-            Config::getTableName('admin'),
-            String::sqlEscape($login)
-        );
+        $result = $this->adminModel->getAdminByUsername( $username );
 
-        $result = phpList::DB()->query($sql);
-        if ($result->rowCount() < 1) {
-            return $return;
-        }
-        $admin = Admin::adminFromArray($result);
-        $encryptedPass = Util::encryptPass($password);
+        $adminEntity = $this->adminEntityFromArray( $result );
+
+        $encPass = $this->pass->encrypt( $plainPass );
 
         /*
          * TODO: this should not happen imo, can this be removed
@@ -297,40 +287,39 @@ class Admin
             $passwordDB = $encryptedPassDB;
             $result = Sql_Query_Params($query, array($login));
         }*/
-        if ($admin->disabled) {
-            $return['error'] = s('Your account has been disabled');
-            #Password validation.
-        } elseif ($encryptedPass == $admin->password) {
+
+        if ( $adminEntity->disabled ) {
+            // FIXME: translation / formatting via s() removed
+            $return['error'] = 'Your account has been disabled';
+        } elseif ($encPass == $adminEntity->encPass) {
             $return['result'] = true;
             $return['error'] = '';
-            $return['admin'] = $admin;
+            $return['admin'] = $adminEntity;
         } else {
-            $return['error'] = s('Incorrect password');
+            // FIXME: translation / formatting via s() removed
+            $return['error'] = 'Incorrect password';
         }
         return $return;
     }
 
-    /**
-     *
-     * @param $array
-     * @return Admin
-     */
-    private static function adminFromArray($array)
+    private static function adminEntityFromArray( array $array )
     {
-        $admin = new Admin('');
-        $admin->id = $array['id'];
-        $admin->loginname = $array['loginname'];
-        $admin->namelc = $array['namelc'];
-        $admin->email = $array['email'];
-        $admin->created = $array['created'];
-        $admin->modified = $array['modified'];
-        $admin->modifiedby = $array['modifiedby'];
-        $admin->password = $array['password'];
-        $admin->passwordchanged = $array['passwordchanged'];
-        $admin->superuser = $array['superuser'];
-        $admin->disabled = $array['disabled'];
-        $admin->privileges = unserialize($array['privileges']);
-        return $admin;
+        // FIXME: Move this object instantiation to DI.
+        $adminEntity = new AdminEntity( $array['loginname'] );
+
+        $adminEntity->id = $array['id'];
+        $adminEntity->namelc = $array['namelc'];
+        $adminEntity->email = $array['email'];
+        $adminEntity->created = $array['created'];
+        $adminEntity->modified = $array['modified'];
+        $adminEntity->modifiedby = $array['modifiedby'];
+        $adminEntity->encPass = $array['password'];
+        $adminEntity->passwordchanged = $array['passwordchanged'];
+        $adminEntity->superuser = $array['superuser'];
+        $adminEntity->disabled = $array['disabled'];
+        $adminEntity->privileges = unserialize( $array['privileges'] );
+
+        return $adminEntity;
     }
 
     /**
@@ -413,26 +402,5 @@ class Admin
         );
         $result->execute(array(':token' => $token));
         return ($result->rowCount() > 0);
-    }
-}
-
-class adminAttribute
-{
-    public $id;
-    public $name;
-    public $type;
-    public $listorder;
-    public $default_value;
-    public $required;
-    public $tablename;
-
-    function __construct($name, $type, $listorder, $default_value, $required, $tablename)
-    {
-        $this->name = $name;
-        $this->type = $type;
-        $this->listorder = $listorder;
-        $this->default_value = $default_value;
-        $this->required = $required;
-        $this->tablename = $tablename;
     }
 }
