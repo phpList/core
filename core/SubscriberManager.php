@@ -43,7 +43,7 @@ class SubscriberManager
     public function getSubscriber($id)
     {
         $result = $this->subscriberModel->getSubscriberById( $id );
-        
+
         return $this->subscriberEntityFromArray( $result );
     }
 
@@ -199,33 +199,28 @@ class SubscriberManager
      */
     private function subscriberEntityFromArray( array $array )
     {
-        if ( ! empty( $array ) ) {
-            // FIXME: Move this object instantiation to DI. Rework
-            // SubscriberEntity{} to allow reuse of the object (clear, reload)
-            // so a single SubscriberEntity can be a dependency of Subscriber{}
-            // and be used for multiple purposes
-            $scrEntity = new SubscriberEntity( $array['email'], $array['password'] );
-            $scrEntity->id = $array['id'];
-            $scrEntity->confirmed = $array['confirmed'];
-            $scrEntity->blacklisted = $array['blacklisted'];
-            $scrEntity->optedin = $array['optedin'];
-            $scrEntity->bouncecount = $array['bouncecount'];
-            $scrEntity->entered = $array['entered'];
-            $scrEntity->modified = $array['modified'];
-            $scrEntity->uniqid = $array['uniqid'];
-            $scrEntity->htmlemail = $array['htmlemail'];
-            $scrEntity->subscribepage = $array['subscribepage'];
-            $scrEntity->rssfrequency = $array['rssfrequency'];
-            $scrEntity->encPass = $array['password'];
-            $scrEntity->emailAddress = $array['email'];
-            $scrEntity->passwordchanged = $array['passwordchanged'];
-            $scrEntity->disabled = $array['disabled'];
-            $scrEntity->extradata = $array['extradata'];
-            $scrEntity->foreignkey = $array['foreignkey'];
-            return $scrEntity;
-        } else {
-            return false;
-        }
+        // FIXME: Move this object instantiation to DI.
+        $scrEntity = new SubscriberEntity( $array['email'], $array['password'] );
+        
+        $scrEntity->id = $array['id'];
+        $scrEntity->confirmed = $array['confirmed'];
+        $scrEntity->blacklisted = $array['blacklisted'];
+        $scrEntity->optedin = $array['optedin'];
+        $scrEntity->bouncecount = $array['bouncecount'];
+        $scrEntity->entered = $array['entered'];
+        $scrEntity->modified = $array['modified'];
+        $scrEntity->uniqid = $array['uniqid'];
+        $scrEntity->htmlemail = $array['htmlemail'];
+        $scrEntity->subscribepage = $array['subscribepage'];
+        $scrEntity->rssfrequency = $array['rssfrequency'];
+        $scrEntity->encPass = $array['password'];
+        $scrEntity->emailAddress = $array['email'];
+        $scrEntity->passwordchanged = $array['passwordchanged'];
+        $scrEntity->disabled = $array['disabled'];
+        $scrEntity->extradata = $array['extradata'];
+        $scrEntity->foreignkey = $array['foreignkey'];
+
+        return $scrEntity;
     }
 
     public function updatePass( $plainPass, Entity\SubscriberEntity $scrEntity )
