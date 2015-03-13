@@ -19,9 +19,17 @@
         <var name="DB_HOST" value="localhost" />
         <var name="DB_PORT" value="3306" />
         // !! Change these vars to fit your local config !!
+
+        // Database configuration
         <var name="DB_NAME" value="pl" />
         <var name="DB_USER" value="pl" />
         <var name="DB_PASSWD" value="pl" />
+
+        // Admin user credentials
+        <var name="admin_username" value="admin" />
+        <var name="admin_password" value="phplist" />
+
+        // Other configuration parameters
         <const name='API_URL_BASE_PATH' value='http://path-to-phplist.local'/>
     </php>
 </phpunit>
