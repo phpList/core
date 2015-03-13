@@ -86,9 +86,9 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
     /**
      * @depends testAdd
      */
-    public function testGetSubscriber( array $vars )
+    public function testGetSubscriberById( array $vars )
     {
-        $scrEntity = $this->subscriberManager->getSubscriber( $vars['id'] );
+        $scrEntity = $this->subscriberManager->getSubscriberById( $vars['id'] );
 
         // Check that the correct entity was returned
         $this->assertInstanceOf( '\phpList\Entity\SubscriberEntity', $scrEntity );
@@ -101,7 +101,7 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
     }
 
     /**
-    * @depends testGetSubscriber
+    * @depends testGetSubscriberById
     */
     public function testUpdatePass( $scrEntity )
     {
@@ -110,14 +110,14 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
         // Update the password
         $this->subscriberManager->updatePass( $newPlainPass, $scrEntity );
         // Get a fresh copy of the subscriber from db to check updated details
-        $updatedScrEntity = $this->subscriberManager->getSubscriber( $scrEntity->id );
+        $updatedScrEntity = $this->subscriberManager->getSubscriberById( $scrEntity->id );
 
         // Check that the passwords are not the same; that it was updated
         $this->assertNotEquals( $scrEntity->encPass, $updatedScrEntity->encPass );
     }
 
     /**
-    * @depends testGetSubscriber
+    * @depends testGetSubscriberById
     */
     public function testDelete( $scrEntity )
     {

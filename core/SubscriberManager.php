@@ -40,9 +40,21 @@ class SubscriberManager
      * @param int $id
      * @return SubscriberEntity
      */
-    public function getSubscriber($id)
+    public function getSubscriberById( $id )
     {
         $result = $this->subscriberModel->getSubscriberById( $id );
+
+        return $this->subscriberEntityFromArray( $result );
+    }
+
+    /**
+    * Get subscriber by username
+    * @param int $id
+    * @return SubscriberEntity
+    */
+    public function getSubscriberByUsername( $username )
+    {
+        $result = $this->subscriberModel->getSubscriberByUsername( $username );
 
         return $this->subscriberEntityFromArray( $result );
     }
@@ -201,7 +213,7 @@ class SubscriberManager
     {
         // FIXME: Move this object instantiation to DI.
         $scrEntity = new SubscriberEntity( $array['email'], $array['password'] );
-        
+
         $scrEntity->id = $array['id'];
         $scrEntity->confirmed = $array['confirmed'];
         $scrEntity->blacklisted = $array['blacklisted'];
