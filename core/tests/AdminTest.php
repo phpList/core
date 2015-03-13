@@ -37,11 +37,18 @@ class AdminTest extends \PHPUnit_Framework_TestCase {
 
     public function testValidateLogin()
     {
-        $username = 'admin';
-        $plainPass = 'phplist';
+        // Set correct login vars for this installation, from phpunit.xml
+        $username = $GLOBALS['admin_username'];
+        $plainPass = $GLOBALS['admin_password'];
 
+        // Perform the validation
         $result = $this->admin->validateLogin( $plainPass, $username );
 
-        var_dump( $result );
+        // Test valiation was successful
+        $this->assertTrue( $result['result'] );
+        // Check details are accurate
+        $this->assertEquals( $username, $result['admin']->username );
+        // Check that retrieved pass is hashed
+        $this->assertNotEquals( $plainPass, $result['admin']->encPass );
     }
 }
