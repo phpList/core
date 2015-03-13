@@ -259,7 +259,7 @@ class Admin
      * Will check login credentials and return result array
      * @param $login string
      * @param $password string
-     * @return array
+     * @return array $result Keys: admin [object], error [string], result [bool]
      */
     function validateLogin( $plainPass, $username )
     {
