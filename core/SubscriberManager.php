@@ -36,13 +36,17 @@ class SubscriberManager
     }
 
     /**
-     * Get subscriber by id
-     * @param int $id
-     * @return SubscriberEntity
-     */
+    * Get subscriber by id
+    * @param int $id
+    * @return SubscriberEntity
+    */
     public function getSubscriberById( $id )
     {
         $result = $this->subscriberModel->getSubscriberById( $id );
+
+        if ( ! $result ) {
+            throw new \Exception( 'No subscriber found with ID: ' . $id );
+        }
 
         return $this->subscriberEntityFromArray( $result );
     }
