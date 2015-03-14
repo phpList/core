@@ -33,11 +33,13 @@ Managers provide a high-level interface to client code for interacting with a pa
 
 Example (names may be outdated):
 
-```// Instantiate new Manager object
+```php
+// Instantiate new Manager object
 $subscriberManager = new SubscriberManager();
 // Retrieve a subscriber by their ID from the data storage layer
 $subscriberEntity = $this->subscriberManager->getById( 1 );
 // Change a property of the Subscriber
 $subscriberEntity->disabled == 0;
 // Save the changed Subscriber details to data storage layer
-$subscriberManager->save->( $subscriberEntity );```
+$subscriberManager->save->( $subscriberEntity );
+```
