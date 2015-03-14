@@ -5,13 +5,13 @@
 
 ### Database
 
-All direct database interaction is handled by class \helper\Database.
+All direct database interaction is handled by class ```\helper\Database```.
 
 ### 'Model' layer
 
 All database queries are handled by 'Model' classes, following the [Model View Controller](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) application architecture.
 
-Each database table has a corresponding class to store SQL queries which are executed via class \helper\Database.
+Each database table has a corresponding class to store SQL queries which are executed via class ```\helper\Database```.
 
 Example: ```\Model\SubscriberModel```
 
