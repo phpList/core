@@ -132,7 +132,7 @@ class SubscriberManager
         // TODO: Reintroduce the validation level and tlds from config file
         // TODO: Move validation out of here and into client code
         if ( ! $this->emailUtil->isValid( $scrEntity->emailAddress ) ) {
-            throw new \Exception( 'Cannot insert subscriber with invalid email address: "' . $emailAddress . '"' );
+            throw new \Exception( 'Cannot insert subscriber with invalid email address: "' . $scrEntity->emailAddress . '"' );
         }
 
         // Save subscriber to db
