@@ -14,8 +14,8 @@ class SubscriberEntity {
 
     public $confirmed;
     public $blacklisted;
-    public $optedin;
-    public $bouncecount;
+    public $optedIn;
+    public $bounceCount;
 
     /**
      * @var \DateTime
@@ -27,10 +27,10 @@ class SubscriberEntity {
      */
     public $modified;
 
-    public $uniqid;
-    public $htmlemail;
-    public $subscribepage;
-    public $rssfrequency;
+    public $uniqId;
+    public $htmlEmail;
+    public $subscribePage;
+    public $rssFrequency;
     /**
      * @var plainPassInterface
      */
@@ -38,11 +38,11 @@ class SubscriberEntity {
 
     public $plainPasschanged;
     public $disabled;
-    public $extradata;
-    public $foreignkey;
+    public $extraData;
+    public $foreignKey;
 
     private $attributes;
-    private $has_attributes = false;
+    private $hasAttributes = false;
 
     public function __construct( $emailAddress, $plainPass )
     {
@@ -57,7 +57,7 @@ class SubscriberEntity {
      */
     public function setAttribute( $key, $value ) {
         $this->attributes[$key] = $value;
-        $this->has_attributes = true;
+        $this->hasAttributes = true;
     }
 
     /**
@@ -88,7 +88,7 @@ class SubscriberEntity {
      * @return bool
      */
     public function hasAttributes(){
-        return $this->has_attributes;
+        return $this->hasAttributes;
     }
 
 
