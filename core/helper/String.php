@@ -11,16 +11,6 @@ use phpList\phpList;
 class String
 {
     /**
-     * Wrapper function for phpList::DB()->Sql_Escape();
-     * @param string $var
-     * @return string sqlEscaped string
-     */
-    public static function sqlEscape($var)
-    {
-        return phpList::DB()->sqlEscape($var);
-    }
-
-    /**
      * Normalize text
      * @param string $var
      * @return string normalized var

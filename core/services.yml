@@ -1,0 +1,70 @@
+services:
+
+  Admin:
+    class: phpList\Admin
+    arguments: [@AdminModel, @Pass]
+  Logger:
+    class: phpList\helper\Logger
+  Util:
+    class: phpList\helper\Util
+    arguments: [@Config, @Logger, @Database]
+  EmailAddress:
+    class:  phpList\EmailAddress
+    arguments: [@Config, %emailaddress.address%]
+  Config:
+    class: phpList\Config
+    arguments: [%config.configfile%]
+  Database:
+    class:  phpList\helper\Database
+    arguments: [@Config]
+  Language:
+    class: phpList\helper\Language
+    arguments: [@Database, @Config]
+  Pass:
+    class: phpList\Pass
+  phpList:
+    class: phpList\phpList
+    arguments: [@Config, @Database, @Language, @Util]
+  Campaign:
+    class: phpList\Campaign
+    arguments: [@Config, @Database, @MailingList, @Template]
+  MailingList:
+    class: phpList\MailingList
+    arguments: [@Config, @Database]
+  SubscriberManager:
+    class: phpList\SubscriberManager
+    arguments: [@Config, @Database]
+  Template:
+    class: phpList\Template
+    arguments: [@Config, @Database, @TemplateImage]
+  TemplateImage:
+    class: phpList\TemplateImage
+    arguments: [@Config, @Database]
+
+# Entities
+  CampaignEntity:
+    class: phpList\Entity\CampaignEntity
+  MailingListEntity:
+    class: phpList\Entity\MailingListEntity
+  SubscriberEntity:
+    class: phpList\Entity\SubscriberEntity
+  TemplateEntity:
+    class: phpList\Entity\TemplateEntity
+  TemplateImageEntity:
+    class: phpList\Entity\TemplateImageEntity
+
+# Models
+  AdminModel:
+    class: phpList\Model\AdminModel
+    arguments: [@Config, @Database]
+  SubscriberModel:
+    class: phpList\Model\SubscriberModel
+    arguments: [@Config, @Database]
+
+# Define parameters, to be set in app logic
+# NOTE: the classname.parameter syntax is just a Symfony convention; parameter
+# names are handles as single simple strings
+parameters:
+  config.configfile: configfile
+  emailaddress.address: emailaddress
+  password.password: password

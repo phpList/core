@@ -1,33 +1,22 @@
 <?php
 namespace phpList\helper;
 
-use phpList\phpList;
 use phpList\Config;
 
 class Database
 {
-    private static $_instance;
-
     /* @var $db \PDO */
     private $db;
-    private $last_query;
     private $query_count = 0;
+    private $query_log = [];
 
-    private function __construct()
+    protected $config;
+
+
+    public function __construct(Config $config)
     {
+        $this->config = $config;
         $this->connect();
-    }
-
-    /**
-     * Get an instance of this class
-     * @return Database
-     */
-    public static function instance()
-    {
-        if (!Database::$_instance instanceof self) {
-            Database::$_instance = new self();
-        }
-        return Database::$_instance;
     }
 
     /**
@@ -36,15 +25,15 @@ class Database
      */
     private function connect()
     {
-        if(!class_exists('PDO')){
+        if (!class_exists('PDO')) {
             throw new \Exception('Fatal Error: PDO is not supported in your PHP, recompile and try again.');
         }
 
         try {
             $this->db = new \PDO(
-                Config::DATABASE_DSN,
-                Config::DATABASE_USER,
-                Config::DATABASE_PASSWORD
+                $this->config->get('DATABASE_DSN'),
+                $this->config->get('DATABASE_USER'),
+                $this->config->get('DATABASE_PASSWORD')
             );
         } catch (\PDOException $e) {
             throw new \Exception('Cannot connect to Database, please check your configuration. ' . $e->getMessage());
@@ -52,16 +41,7 @@ class Database
         //TODO: check compatibility with other db engines
         $this->db->query('SET NAMES \'utf8\'');
 
-        $this->last_query = null;
-    }
-
-    /**
-     * Generate an error message and write it to screen or console and log
-     */
-    public function error()
-    {
-        $error = 'Database error ' . $this->db->errorCode() . ' while doing query ' . $this->last_query . ' ' . $this->db->errorInfo()[2];
-        phpList::log()->error($error);
+        $this->config->runAfterDBInitialised($this);
     }
 
     /**
@@ -82,16 +62,10 @@ class Database
      */
     public function query($query, $ignore = false)
     {
-        $this->last_query = $result = null;
-
-        if (Config::DEBUG) {
-            phpList::log()->debug('(' . $this->query_count . ") $query \n", ['page' => 'database']);
-
+        if (DEBUG) {
             # time queries to see how slow they are, so they can
             # be optimized
-            //$now = gettimeofday();
-            //$start = $now['sec'] * 1000000 + $now['usec'];
-            $this->last_query = $query;
+            Timer::start('query_timer');
             /*
             # keep track of queries to see which ones to optimize
             if (function_exists('stripos')) {
@@ -106,33 +80,27 @@ class Database
                  }
              }*/
         }
-
-        try{
-            $result = $this->db->query($query);
-        }catch (\PDOException $e){
-            if (!$ignore) {
-                phpList::log()->notice("Sql error in $query");
-            }
-        }
-
-        # dbg($query);
+        $result = $this->db->query($query);
         $this->query_count++;
 
-        //TODO: make usable
-        /*
-        if (Config::DEBUG) {
+        if (DEBUG) {
             # log time queries take
-            $now = gettimeofday();
-            $end = $now['sec'] * 1000000 + $now['usec'];
-            $elapsed = $end - $start;
-            if ($elapsed > 300000) {
-                $query = substr($query, 0, 200);
-                phpList::log()->debug('(' . $this->query_count . ") ' [' . $elapsed . '] ' . $query \n", ['page' => 'database']);
-            } else {
-                #      phpList::log()->debug('(' . $this->query_count . ") ' [' . $elapsed . '] ' . $query \n", ['page' => 'database']);
-            }
-        }*/
+            $this->query_log[] = [
+                'query' => $query,
+                'time'  => Timer::get('query_timer')->elapsed()
+            ];
+        }
         return $result;
+    }
+
+    /**
+     * Get an error message
+     * @return array
+     */
+    public function getErrorMessage()
+    {
+        $error_info = $this->db->errorInfo();
+        return 'Database error ' . $this->db->errorCode() . ' ("' . $error_info[2] . '") while doing query: ' . $this->getLastQuery();
     }
 
     /**
@@ -141,20 +109,6 @@ class Database
     public function close()
     {
         $this->db = null;
-    }
-
-    /**
-     * Execute query and print statement
-     * @param $query
-     * @param int $ignore
-     * @return null|\PDOStatement
-     */
-    public function verboseQuery($query, $ignore = 0)
-    {
-        if (Config::DEBUG) {
-            phpList::log()->debug($query, ['page' => 'database']);
-        }
-        return $this->query($query, $ignore);
     }
 
     /**
@@ -185,7 +139,7 @@ class Database
                 sprintf(
                     'SELECT table_name FROM information_schema.tables WHERE table_schema = "%s"',
                     //TODO: change this so it can be used with PDO dsn
-                    Config::DATABASE_NAME
+                    $this->config->get('DATABASE_NAME')
                 )
             );
             while ($col = $result->fetchColumn(0)) {
@@ -222,7 +176,7 @@ class Database
      */
     public function checkForTable($table)
     {
-        return $this->tableExists($table) || $this->tableExists(Config::getTableName($table));
+        return $this->tableExists($table) || $this->tableExists($this->config->getTableName($table));
     }
 
     /**
@@ -299,25 +253,42 @@ class Database
     /**
      * Get last executed query
      * @return mixed
+     * @note Duplicate key errors can be hidden by this method; commenting out
+     * the return statement can reveal useful error messages
      */
     public function getLastQuery()
     {
-        return $this->last_query;
+        // Count the number of queries in the log
+        $count = count( $this->query_log );
+        // Account for the fact array indexes start counting at 0, not 1
+        $number = $count - 1;
+        // Return the last query string that was executed
+        return $this->query_log[$number]['query'];
+    }
+
+    /**
+     * Get a list of executed queries
+     * Will be empty when DEBUG is disabled
+     * @return array
+     */
+    public function getQueryLog()
+    {
+        return $this->query_log;
     }
 
     /**
      * @param array (tablename => columnname)
      * @param int|string $id
-     * @return int
      */
     public function deleteFromArray($tables, $id)
     {
         $query = 'DELETE FROM %s WHERE %s = ' . ((is_string($id)) ? '"%s"' : '%d');
-        $count = 0;
+        // Instantiate results var for collecting query outcomes
+        $results = array();
         foreach($tables as $table => $column){
-            $result = $this->db->query(sprintf($query, $table, $column, $id));
-            $count += $result->rowCount();
+            $results [] = $this->db->query(sprintf($query, $table, $column, $id));
         }
-        return $count;
+        
+        return $results;
     }
 }

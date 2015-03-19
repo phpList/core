@@ -100,7 +100,7 @@ class Cache {
 
     public static function setPageCache($url, $lastmodified, $content)
     {
-        #  if (Config::DEBUG) return;
+        #  if (DEBUG) return;
         phpList::DB()->query(sprintf(
                 'DELETE FROM %s
                 WHERE url = "%s"',

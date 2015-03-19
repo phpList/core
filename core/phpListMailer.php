@@ -36,7 +36,7 @@ class phpListMailer extends \PHPMailer
     {
         parent::__construct($exceptions);
         parent::SetLanguage('en', dirname(__FILE__) . '/phpmailer/language/');
-        $this->addCustomHeader('X-phpList-version: ' . Config::VERSION);
+        $this->addCustomHeader('X-phpList-version: ' . PHPLIST_VERSION);
         $this->addCustomHeader('X-MessageID: $message_id');
         $this->addCustomHeader('X-ListMember: $email');
 
@@ -209,11 +209,11 @@ class phpListMailer extends \PHPMailer
             $this->From = $from_addr;
             $this->FromName = $from_name;
         }
-        if (Config::DEBUG) {
+        if (DEBUG) {
             # make sure we are not sending out emails to real subscribers
             # when developing
-            $this->AddAddress(Config::DEVELOPER_EMAIL);
-            if (Config::DEVELOPER_EMAIL != $to_addr) {
+            $this->AddAddress(PHPLIST_DEVELOPER_EMAIL);
+            if (PHPLIST_DEVELOPER_EMAIL != $to_addr) {
                 $this->Body = 'X-Originally to: ' . $to_addr . "\n\n" . $this->Body;
             }
         } else {
@@ -578,7 +578,7 @@ class phpListMailer extends \PHPMailer
         curl_setopt(
             $curl,
             CURLOPT_USERAGENT,
-            Config::get('NAME') . " (phpList version " . Config::VERSION . ", http://www.phplist.com/)"
+            Config::get('NAME') . " (phpList version " . PHPLIST_VERSION . ", http://www.phplist.com/)"
         );
         curl_setopt($curl, CURLOPT_POST, 1);
 
@@ -757,8 +757,8 @@ class phpListMailer extends \PHPMailer
         #  print "Sending $to from $fromemail<br/>";
         if (Config::get('DEVVERSION')) {
             $message = "To: $to\n$message";
-            if (Config::DEBUG && Config::DEVELOPER_EMAIL != '') {
-                $destinationemail = Config::DEVELOPER_EMAIL;
+            if (DEBUG && PHPLIST_DEVELOPER_EMAIL != '') {
+                $destinationemail = PHPLIST_DEVELOPER_EMAIL;
             } else {
                 phpList::log()->critical('Error: Running DEV version, but DEVELOPER_EMAIL not set', ['page' => 'phpListMailer']);
             }
@@ -791,7 +791,7 @@ class phpListMailer extends \PHPMailer
         $GLOBALS['smtpError'] = '';
         ## try to deliver directly, so that any error (eg subscriber not found) can be sent back to the
         ## subscriber, so they can fix it
-        //TODO: fix this, now using Config::DEVELOPER_EMAIL
+        //TODO: fix this, now using PHPLIST_DEVELOPER_EMAIL
         //unset($GLOBALS['developer_email']);
 
         list($htmlmessage, $textmessage) = phpListMailer::constructSystemMail($message, $subject);
@@ -874,7 +874,7 @@ class phpListMailer extends \PHPMailer
             $additional_headers .= "Reply-To: $message_replyto_address\n";
         else
             $additional_headers .= "Reply-To: $from_address\n";
-        $v = Config::VERSION;
+        $v = PHPLIST_VERSION;
         $additional_headers .= "X-Mailer: phplist version $v (www.phplist.com)\n";
         $additional_headers .= "X-MessageID: systemmessage\n";
         if ($subscriberemail)

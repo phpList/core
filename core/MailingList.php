@@ -1,53 +1,34 @@
 <?php
 namespace phpList;
 
+use phpList\Entity\MailingListEntity;
+
 /**
  * Class MailingList
  * @package PHPList\Core
  */
 class MailingList
 {
-    public $id = 0;
-    public $name;
-    public $description;
-    public $entered;
-    public $listorder;
-    public $prefix;
-    public $rssfeed;
-    public $modified;
-    public $active;
-    public $owner;
-    public $category;
+    protected $config;
+    protected $db;
 
     /**
      * Default constructor
-     * @param string $name
-     * @param string $description
-     * @param int $listorder
-     * @param int $owner
-     * @param bool $active
-     * @param int $category
-     * @param string $prefix
      */
-    public function __construct($name, $description, $listorder, $owner, $active, $category, $prefix)
+    public function __construct(Config $config, helper\Database $db)
     {
-        $this->name = $name;
-        $this->description = $description;
-        $this->listorder = $listorder;
-        $this->owner = $owner;
-        $this->active = $active;
-        $this->category = $category;
-        $this->prefix = $prefix;
+        $this->config = $config;
+        $this->db = $db;
     }
 
     /**
      * Create a MailingList object from database values
      * @param $array
-     * @return MailingList
+     * @return MailingListEntity
      */
-    private static function listFromArray($array)
+    private function listFromArray($array)
     {
-        $list = new MailingList($array['name'], $array['description'], $array['listorder'], $array['owner'], $array['active'], $array['category'], $array['prefix']);
+        $list = new MailingListEntity($array['name'], $array['description'], $array['listorder'], $array['owner'], $array['active'], $array['category'], $array['prefix']);
         $list->id = $array['id'];
         $list->entered = $array['entered'];
         $list->rssfeed = $array['rssfeed'];
@@ -59,13 +40,13 @@ class MailingList
      * Get an array of all lists in the database
      * @return array
      */
-    public static function getAllLists()
+    public function getAllLists()
     {
         //TODO: probably best to replace the subselect with a function parameter
-        $result = phpList::DB()->query(
-            sprintf('SELECT * FROM %s %s', Config::getTableName('list'), Config::get('subselect', ''))
+        $result = $this->db->query(
+            sprintf('SELECT * FROM %s %s', $this->config->getTableName('list'), $this->config->get('subselect', ''))
         );
-        return MailingList::makeLists($result->fetch(\PDO::FETCH_ASSOC));
+        return $this->makeLists($result);
     }
 
     /**
@@ -74,36 +55,36 @@ class MailingList
      * @param int $id
      * @return array
      */
-    public static function getListsByOwner($owner_id, $id = 0)
+    public function getListsByOwner($owner_id, $id = 0)
     {
-        $result = phpList::DB()->query(
+        $result = $this->db->query(
             sprintf(
                 'SELECT * FROM %s
                 WHERE owner = %d %s',
-                Config::getTableName('list'),
+                $this->config->getTableName('list'),
                 $owner_id,
                 (($id == 0) ? '' : " AND id = $id")
             )
         );
-        return MailingList::makeLists($result->fetch(\PDO::FETCH_ASSOC));
+        return $this->makeLists($result);
     }
 
     /**
      * Get list with given id
      * @param $id
-     * @return MailingList
+     * @return MailingListEntity
      */
-    public static function getListById($id)
+    public function getListById($id)
     {
-        $result = phpList::DB()->query(
+        $result = $this->db->query(
             sprintf(
                 'SELECT * FROM %s
                 WHERE id = %d',
-                Config::getTableName('list'),
+                $this->config->getTableName('list'),
                 $id
             )
         );
-        return MailingList::listFromArray($result->fetch(\PDO::FETCH_ASSOC));
+        return $this->listFromArray($result->fetch(\PDO::FETCH_ASSOC));
     }
 
     /**
@@ -111,21 +92,21 @@ class MailingList
      * @param $subscriber_id
      * @return array
      */
-    public static function getListsForSubscriber($subscriber_id)
+    public function getListsForSubscriber($subscriber_id)
     {
-        $result = phpList::DB()->query(
+        $result = $this->db->query(
             sprintf(
                 'SELECT l.*
                 FROM %s AS lu
                     INNER JOIN %s AS l
                     ON lu.listid = l.id
                 WHERE lu.userid = %d',
-                Config::getTableName('listuser'),
-                Config::getTableName('list'),
+                $this->config->getTableName('listuser'),
+                $this->config->getTableName('list'),
                 $subscriber_id
             )
         );
-        return MailingList::makeLists($result->fetch(\PDO::FETCH_ASSOC));
+        return $this->makeLists($result);
     }
 
     /**
@@ -133,17 +114,17 @@ class MailingList
      * @param $list
      * @return array
      */
-    public static function getListSubscribers($list)
+    public function getListSubscribers($list)
     {
         if(is_array($list)){
             $where = ' WHERE listid IN (' . join(',', $list) .')';
         }else{
             $where = sprintf(' WHERE listid = %d', $list);
         }
-        $result = phpList::DB()->query(
+        $result = $this->db->query(
             sprintf(
                 'SELECT userid FROM %s %s',
-                Config::getTableName('listuser'),
+                $this->config->getTableName('listuser'),
                 $where
             )
         );
@@ -156,12 +137,12 @@ class MailingList
      * @param null|\PDOStatement $db_result
      * @return array
      */
-    private static function makeLists($db_result)
+    private function makeLists($db_result)
     {
         $list = array();
         if (!empty($db_result)) {
             while ($row = $db_result->fetch(\PDO::FETCH_ASSOC)) {
-                $list[] = MailingList::listFromArray($row);
+                $list[] = $this->listFromArray($row);
             }
         }
         return $list;
@@ -170,34 +151,35 @@ class MailingList
     /**
      * Save a list to the database, will update if it already exists
      */
-    public function save()
+    public function save(MailingListEntity $mailing_list)
     {
-        if ($this->id != 0) {
-            $this->update();
+        if ($mailing_list->id != 0) {
+            $this->update($mailing_list);
         } else {
             $query = sprintf(
                 'INSERT INTO %s
                 (name, description, entered, listorder, owner, prefix, active, category)
                 VALUES("%s", "%s", CURRENT_TIMESTAMP, %d, %d, "%s", %d, "%s")',
-                Config::getTableName('list'),
-                $this->name,
-                $this->description,
-                $this->listorder,
-                $this->owner,
-                $this->prefix,
-                $this->active,
-                $this->category
+                $this->config->getTableName('list'),
+                $mailing_list->name,
+                $mailing_list->description,
+                $mailing_list->listorder,
+                $mailing_list->owner,
+                $mailing_list->prefix,
+                $mailing_list->active,
+                $mailing_list->category
             );
 
-            phpList::DB()->query($query);
-            $this->id = phpList::DB()->insertedId();
+            $this->db->query($query);
+            $mailing_list->id = $this->db->insertedId();
         }
+        return $mailing_list;
     }
 
     /**
      * Update this lists details in the database
      */
-    public function update()
+    public function update(MailingListEntity $mailing_list)
     {
         $query
             = 'UPDATE %s SET name = "%s", description = "%s", active = %d, listorder = %d, prefix = "%s", owner = %d
@@ -205,41 +187,16 @@ class MailingList
 
         $query = sprintf(
             $query,
-            Config::getTableName('list'),
-            $this->name,
-            $this->description,
-            $this->active,
-            $this->listorder,
-            $this->prefix,
-            $this->owner,
-            $this->id
+            $this->config->getTableName('list'),
+            $mailing_list->name,
+            $mailing_list->description,
+            $mailing_list->active,
+            $mailing_list->listorder,
+            $mailing_list->prefix,
+            $mailing_list->owner,
+            $mailing_list->id
         );
-        phpList::DB()->query($query);
-    }
-
-    /**
-     * Check if this list is used in a subscribe page
-     * TODO: move out of core functionality
-     * @return bool
-     */
-    public function usedInSubscribePage()
-    {
-        if ($this->id == 0) {
-            return false;
-        }
-
-        $result = phpList::DB()->query(
-            sprintf(
-                'SELECT data
-                FROM %s
-                WHERE name = "lists"',
-                Config::getTableName('subscribepage_data')
-            )
-        );
-        $row = $result->fetch(\PDO::FETCH_ASSOC);
-        $lists = explode(',', $row['data']);
-
-        return in_array($this->id, $lists);
+        $this->db->query($query);
     }
 
     /**
@@ -247,14 +204,14 @@ class MailingList
      * @param $subscriber_id
      * @param $list_id
      */
-    public static function addSubscriber($subscriber_id, $list_id)
+    public function addSubscriber($subscriber_id, $list_id)
     {
-        phpList::DB()->query(
+        $this->db->query(
             sprintf(
                 'INSERT INTO %s
                 (userid, listid)
                 VALUES(%d, %d)',
-                Config::getTableName('listuser'),
+                $this->config->getTableName('listuser'),
                 $subscriber_id,
                 $list_id
             )
@@ -266,21 +223,21 @@ class MailingList
      * @param $subscriber_ids
      * @param $list_id
      */
-    public static function addSubscribers($subscriber_ids, $list_id)
+    public function addSubscribers($subscriber_ids, $list_id)
     {
         if (!empty($subscriber_ids)) {
             $query = sprintf(
                 'INSERT INTO %s
                 (userid, listid, entered, modified)
                 VALUES',
-                Config::getTableName('listuser')
+                $this->config->getTableName('listuser')
             );
 
             foreach ($subscriber_ids as $uid) {
                 $query .= sprintf('(%d, %d, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),', $uid, $list_id);
             }
             $query = rtrim($query, ',') . ';';
-            phpList::DB()->query($query);
+            $this->db->query($query);
         }
     }
 
@@ -289,14 +246,14 @@ class MailingList
      * @param $subscriber_id
      * @param $list_id
      */
-    public static function removeSubscriber($subscriber_id, $list_id)
+    public function removeSubscriber($subscriber_id, $list_id)
     {
-        phpList::DB()->query(
+        $this->db->query(
             sprintf(
                 'DELETE FROM %s
                 WHERE userid = %d
                 AND listid = %d',
-                Config::getTableName('listuser'),
+                $this->config->getTableName('listuser'),
                 $subscriber_id,
                 $list_id
             )
@@ -308,15 +265,15 @@ class MailingList
      * @param $subscriber_ids
      * @param $list_id
      */
-    public static function removeSubscribers($subscriber_ids, $list_id)
+    public function removeSubscribers($subscriber_ids, $list_id)
     {
         if (!empty($subscriber_ids)) {
-            phpList::DB()->query(
+            $this->db->query(
                 sprintf(
                     'DELETE FROM %s
                     WHERE userid IN (%s)
                     AND listid = %d',
-                    Config::getTableName('listuser'),
+                    $this->config->getTableName('listuser'),
                     implode(',', $subscriber_ids),
                     $list_id
                 )
@@ -328,25 +285,25 @@ class MailingList
      * Get available list categories
      * @return array
      */
-    public static function getAllCategories()
+    public function getAllCategories()
     {
-        $listCategories = Config::get('list_categories');
+        $listCategories = $this->config->get('list_categories');
         $categories = explode(',', $listCategories);
         if (!$categories) {
             $categories = array();
             ## try to fetch them from existing lists
-            $result = phpList::DB()->query(
+            $result = $this->db->query(
                 sprintf(
                     'SELECT DISTINCT category FROM %s
                     WHERE category != "%s" ',
-                    Config::getTableName('list')
+                    $this->config->getTableName('list')
                 )
             );
             while ($row = $result->fetch()) {
                 $categories[] = $row[0];
             }
             if (!empty($categories)) {
-                Config::setDBConfig('list_categories', join(',', $categories));
+                $this->config->setDBConfig($this->db, 'list_categories', join(',', $categories));
             }
         } else {
             foreach ($categories as $key => $val) {

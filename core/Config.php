@@ -1,81 +1,59 @@
 <?php
 namespace phpList;
 
-use phpList\helper\DefaultConfig;
+use phpList\helper\Database;
+use phpList\helper\Language;
 use phpList\helper\Validation;
 
-//TODO: lots of configuration not related to core needs to be filtered out
-class Config extends UserConfig
+class Config
 {
-    /**
-     * Constants used for debugging and developping
-     */
-    const DEBUG = true;
-    const DEVELOPER_EMAIL = 'dev@localhost.local';
-    const DEV_VERSION = true;
-
-    const VERSION = '4.0.0 dev';
-
-
-    /**
-     * @var Config $_instance
-     */
-    private static $_instance;
-    private $config_ready = false;
-    public $running_config = array();
+    private $running_config = array();
+    private $default_config = array();
 
     /**
      * Default constructor
      * load configuration from database each new session
      * TODO: probably not a good idea when using an installation with multiple subscribers
      */
-    private function __construct(){}
-
-    /**
-     * Get an instance of the configuration object
-     * @return Config
-     */
-    private static function instance()
+    public function __construct($config_file)
     {
-        if (!Config::$_instance instanceof self) {
-            Config::$_instance = new self();
+        /**
+         * Constants used for debugging and developping
+         */
+        defined('DEBUG') ? null : define('DEBUG', true);
+        defined('PHPLIST_DEVELOPER_EMAIL') ? null : define('PHPLIST_DEVELOPER_EMAIL', 'dev@localhost.local');
+        defined('PHPLIST_DEV_VERSION') ? null : define('PHPLIST_DEV_VERSION', true);
+        defined('PHPLIST_VERSION') ? null : define('PHPLIST_VERSION', '4.0.0 dev');
 
-            //do we have a configuration saved in session?
-            if (isset($_SESSION['running_config'])) {
-                Config::$_instance->running_config = $_SESSION['running_config'];
-            } else {
-                Config::$_instance->initConfig();
-                Config::$_instance->loadAllFromDB();
-                Config::$_instance->afterInit();
+        //do we have a configuration saved in session?
+        if (isset($_SESSION['running_config'])) {
+            $this->running_config = $_SESSION['running_config'];
+        } else {
+            if (is_file($config_file) && filesize($config_file) > 20) {
+                //load from config file
+                $this->running_config = parse_ini_file($config_file);
+                //Initialise further config
+                $this->initConfig();
+            } else{
+                throw new \Exception('Cannot find config file: ' . $config_file);
             }
         }
-        return Config::$_instance;
     }
 
     /**
-     * Initialise configuration
+     * Run this after db has been initialized, so we get the config from inside the database as well.
+     * @param Database $db
      */
-    public static function initialise(){
-        Config::instance();
-        Config::$_instance->config_ready = true;
+    public function runAfterDBInitialised(Database $db){
+        $this->loadDBConfig($db);
     }
 
     /**
-     * Load the entire configuration from the database
-     * and put it in the session, so we don't need to reload it from db
+     * Run this after language has been initialized.
+     * @param Language $lan
      */
-    private function loadAllFromDB()
-    {
-        //try to load additional configuration from db
-        //$has_db_config = phpList::DB()->tableExists(Config::getTableName('config'), 1);
-        Config::setRunningConfig('has_db_config', true);
-
-        $result = phpList::DB()->query(sprintf('SELECT item, value FROM %s', Config::getTableName('config')));
-        while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
-            $this->running_config[$row['item']] = $row['value'];
-        }
-
-        $_SESSION['running_config'] = $this->running_config;
+    public function runAfterLanguageInitialised(Language $lan){
+        $this->loadDefaultConfig($lan);
     }
 
     /**
@@ -83,51 +61,13 @@ class Config extends UserConfig
      * @param $table_name
      * @param bool $is_user_table
      * @return string
+     * @FIXME: Why is user_table a special case? Find a nicer way to handle this
      */
-    public static function getTableName($table_name, $is_user_table = false)
+    public function getTableName($table_name, $is_user_table = false)
     {
-        return ($is_user_table ? Config::USERTABLE_PREFIX : Config::TABLE_PREFIX) . $table_name;
-    }
-
-    /**
-     * Get a config item from the database
-     * @param string $item
-     * @param null $default
-     * @return null|mixed
-     */
-    private function fromDB($item, $default = null)
-    {
-        if(!$this->config_ready) return $default;
-        if (Config::get('has_db_config')) {
-            $query = sprintf(
-                'SELECT value, editable
-                FROM %s
-                WHERE item = "%s"',
-                Config::getTableName('config'),
-                $item
-            );
-            $result = phpList::DB()->query($query);
-            if ($result->rowCount() == 0) {
-                if ($default == null) {
-                    //try to get from default config
-                    $dc = DefaultConfig::get($item);
-                    if ($dc != false) {
-                        //TODO: Old version would save default cfg to db, is this needed?
-                        # save the default value to the database, so we can obtain
-                        # the information when running from commandline
-                        //if (Sql_Table_Exists($tables['config']))
-                        //    saveConfig($item, $value);
-                        #    print "$item => $value<br/>";
-                        return $dc['value'];
-                    }
-                } else {
-                    return $default;
-                }
-            } else {
-                return $result->fetch();
-            }
-        }
-        return $default;
+        return
+            ( $is_user_table ? $this->running_config['USERTABLE_PREFIX'] : $this->running_config['TABLE_PREFIX'] )
+            . $table_name;
     }
 
     /**
@@ -136,37 +76,57 @@ class Config extends UserConfig
      * @param string $item
      * @param mixed $value
      */
-    public static function setRunningConfig($item, $value)
+    public function setRunningConfig($item, $value)
     {
-        Config::instance()->running_config[$item] = $value;
+        $this->running_config[$item] = $value;
         $_SESSION['running_config'][$item] = $value;
     }
 
     /**
+     * Load the entire configuration from the database
+     * and put it in the session, so we don't need to reload it from db
+     */
+    private function loadDBConfig(Database $db)
+    {
+        //try to load additional configuration from db
+        //$has_db_config = $this->db->tableExists($this->getTableName('config'), 1);
+        $this->running_config['has_db_config'] =  true;
+
+        $result = $db->query(sprintf('SELECT item, value FROM %s', $this->getTableName('config')));
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
+            $this->running_config[$row['item']] = $row['value'];
+        }
+
+        $_SESSION['running_config'] = $this->running_config;
+    }
+
+    /**
      * Write a configuration value to the database
+     * @param helper\Database $db
      * @param string $item
      * @param mixed $value
      * @param int $editable
      * @return bool|string
      */
-    public static function setDBConfig($item, $value, $editable = 1)
+    public function setDBConfig(Database $db, $item, $value, $editable = 1)
     {
         ## in case DB hasn't been initialised
-        if (!Config::get('has_db_config')) {
+        if (!$this->get('has_db_config')) {
             return false;
         }
 
-        $configInfo = DefaultConfig::get($item);
-        if (!$configInfo) {
+        if (!isset($this->default_config[$item])) {
             $configInfo = array(
                 'type' => 'unknown',
                 'allowempty' => true,
                 'value' => '',
             );
+        }else{
+            $configInfo = $this->default_config[$item];
         }
         ## to validate we need the actual values
-        $value = str_ireplace('[domain]', Config::get('domain'), $value);
-        $value = str_ireplace('[website]', Config::get('website'), $value);
+        $value = str_ireplace('[domain]', $this->get('domain'), $value);
+        $value = str_ireplace('[website]', $this->get('website'), $value);
 
         switch ($configInfo['type']) {
             case 'boolean':
@@ -182,18 +142,18 @@ class Config extends UserConfig
                 if ($value > $configInfo['max']) $value = $configInfo['max'];
                 break;
             case 'email':
-                if (!Validation::isEmail($value)) {
-                    return $configInfo['description'] . ': ' . s('Invalid value for email address');
+                if (!Validation::validateEmail($value, $this->get('EMAIL_ADDRESS_VALIDATION_LEVEL'), $this->get('internet_tlds'))) {
+                    return $configInfo['description'] . ': ' . 'Invalid value for email address';
                 }
                 break;
             case 'emaillist':
                 $valid = array();
                 $emails = explode(',', $value);
                 foreach ($emails as $email) {
-                    if (Validation::isEmail($email)) {
+                    if (Validation::validateEmail($email, $this->get('EMAIL_ADDRESS_VALIDATION_LEVEL'), $this->get('internet_tlds'))) {
                         $valid[] = $email;
                     } else {
-                        return $configInfo['description'] . ': ' . s('Invalid value for email address');
+                        return $configInfo['description'] . ': ' . 'Invalid value for email address';
                     }
                 }
                 $value = join(',', $valid);
@@ -207,14 +167,14 @@ class Config extends UserConfig
             $editable = false;
         }
 
-        phpList::DB()->replaceQuery(
-            Config::getTableName('config'),
+        $db->replaceQuery(
+            $this->getTableName('config'),
             array('item' => $item, 'value' => $value, 'editable' => $editable),
             'item'
         );
 
         //add to running config
-        Config::setRunningConfig($item, $value);
+        $this->setRunningConfig($item, $value);
 
         return true;
     }
@@ -225,45 +185,25 @@ class Config extends UserConfig
      * @param mixed $default
      * @return mixed|null|string
      */
-    public static function get($item, $default = null)
+    public function get($item, $default = null)
     {
-        $config = Config::instance();
-        if($config->config_ready){
-            if (isset($config->running_config[$item])) {
-                $value = $config->running_config[$item];
-            } else {
-                //try to find it in db
-                //$value = $cofig->fromDB($item, $default);
-                $dc = DefaultConfig::get($item);
-                if ($dc !== false) {
-                    //TODO: Old version would save default cfg to db, is this needed?
-                    # save the default value to the database, so we can obtain
-                    # the information when running from commandline
-                    //if (Sql_Table_Exists($tables['config']))
-                    //    saveConfig($item, $value);
-                    #    print "$item => $value<br/>";
-                    $value = $dc['value'];
-                }else{
-                    $value = $default;
-                }
-            }
-
-            if(is_string($value)){
-                //TODO: should probably move this somewhere else
-                $find = array('[WEBSITE]', '[DOMAIN]', '<?=VERSION?>');
-                $replace = array(
-                    $config->running_config['website'],
-                    $config->running_config['domain'],
-                    Config::VERSION
-                );
-                $value = str_replace($find, $replace, $value);
-            }
+        if (isset($this->running_config[$item])) {
+            $value = $this->running_config[$item];
+        } else if(isset($this->default_config[$item])) {
+            $value = $this->default_config[$item];
         }else{
-            if (isset($config->running_config[$item])) {
-                $value = $config->running_config[$item];
-            }else{
-                $value = $default;
-            }
+            $value = $default;
+        }
+
+        if(is_string($value)){
+            //TODO: should probably move this somewhere else
+            $find = array('[WEBSITE]', '[DOMAIN]', '<?=VERSION?>');
+            $replace = array(
+                $this->running_config['website'],
+                $this->running_config['domain'],
+                PHPLIST_VERSION
+            );
+            $value = str_replace($find, $replace, $value);
         }
 
         return $value;
@@ -275,14 +215,14 @@ class Config extends UserConfig
      * @param int $subscriber_id
      * @return mixed|null|string
      */
-    public static function getUserConfig($item, $subscriber_id = 0)
+    public function getUserConfig($item, $subscriber_id = 0)
     {
-        $value = Config::get($item, false);
+        $value = $this->get($item, false);
 
         # if this is a subpage item, and no value was found get the global one
         if (!$value && strpos($item, ":") !== false) {
             list ($a, $b) = explode(":", $item);
-            $value = Config::getUserConfig($a, $subscriber_id);
+            $value = $this->getUserConfig($a, $subscriber_id);
         }
         if ($subscriber_id != 0) {
             $uniq_id = Subscriber::getUniqueId($subscriber_id);
@@ -290,17 +230,17 @@ class Config extends UserConfig
             # do some backwards compatibility:
             # hmm, reverted back to old system
 
-            $url = Config::get('unsubscribeurl');
+            $url = $this->get('unsubscribeurl');
             $sep = strpos($url, '?') !== false ? '&' : '?';
             $value = str_ireplace('[UNSUBSCRIBEURL]', $url . $sep . 'uid=' . $uniq_id, $value);
-            $url = Config::get('confirmationurl');
+            $url = $this->get('confirmationurl');
             $sep = strpos($url, '?') !== false ? '&' : '?';
             $value = str_ireplace('[CONFIRMATIONURL]', $url . $sep . 'uid=' . $uniq_id, $value);
-            $url = Config::get('preferencesurl');
+            $url = $this->get('preferencesurl');
             $sep = strpos($url, '?') !== false ? '&' : '?';
             $value = str_ireplace('[PREFERENCESURL]', $url . $sep . 'uid=' . $uniq_id, $value);
         }
-        $value = str_ireplace('[SUBSCRIBEURL]', Config::get('subscribeurl'), $value);
+        $value = str_ireplace('[SUBSCRIBEURL]', $this->get('subscribeurl'), $value);
         if ($value == '0') {
             $value = 'false';
         } elseif ($value == '1') {
@@ -309,28 +249,24 @@ class Config extends UserConfig
         return $value;
     }
 
-    /**
-     * Wrapper for <u>DefaultConfig::get()</u>
-     * @param string $item
-     * @return mixed
-     * @see DefaultConfig::get()
-     */
-    public static function defaultConfig($item)
-    {
-        return DefaultConfig::get($item);
-    }
-
 
     /**
      * Try to initialize some configuration values
      * @throws \Exception
      */
-    private static function initConfig()
+    private function initConfig()
     {
-        if (function_exists('iconv_set_encoding')) {
-            iconv_set_encoding('input_encoding', 'UTF-8');
+        // Set encoding type
+        // Check which method to use based on PHP Version
+        if ( function_exists( 'iconv' ) && PHP_VERSION_ID < 50600)
+        {
+            // Use older, depreciated iconv settings
             iconv_set_encoding('internal_encoding', 'UTF-8');
+            iconv_set_encoding('input_encoding', 'UTF-8');
             iconv_set_encoding('output_encoding', 'UTF-8');
+        } elseif ( PHP_VERSION_ID >= 50600 ) {
+            // Use newer settings
+            ini_set('default_charset', 'UTF-8' );
         }
 
         if (function_exists('mb_internal_encoding')) {
@@ -345,82 +281,69 @@ class Config extends UserConfig
             $gzhandler = $gzhandler || $handler == 'ob_gzhandler';
         }
         # @@@ needs more work
-        Config::setRunningConfig('compression_used', ($zlib_compression || $gzhandler));
+        $this->running_config['compression_used'] = ($zlib_compression || $gzhandler);
 
         ## @@ would be nice to move this to the config file at some point
         # http://mantis.phplist.com/view.php?id=15521
         ## set it on the fly, although that will probably only work with Apache
         ## we need to save this in the DB, so that it'll work on commandline
         $public_scheme = (isset($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) == 'on')) ? 'https' : 'http';
-        Config::setRunningConfig('scheme', $public_scheme);
+        $this->running_config['scheme'] =  $public_scheme;
 
-        if (Config::USE_CUSTOM_PUBLIC_PROTOCOL) {
-            Config::setRunningConfig('public_scheme', Config::PUBLIC_PROTOCOL);
+        if ($this->running_config['USE_CUSTOM_PUBLIC_PROTOCOL']) {
+           $this->running_config['public_scheme'] = $this->running_config['PUBLIC_PROTOCOL'];
         } else {
-            Config::setRunningConfig('public_scheme', $public_scheme);
+           $this->running_config['public_scheme'] = $public_scheme;
         }
 
         # set some defaults if they are not specified
-        Config::setRunningConfig('DEVSITE', false);
-        Config::setRunningConfig('TRANSLATIONS_XML', 'http://translate.phplist.com/translations.xml');
+        $this->running_config['DEVSITE'] = false;
+        $this->running_config['TRANSLATIONS_XML'] = 'http://translate.phplist.com/translations.xml';
 
-        //define('TLD_AUTH_LIST','http://data.iana.org/TLD/tlds-alpha-by-domain.txt');
-        //define('TLD_AUTH_MD5','http://data.iana.org/TLD/tlds-alpha-by-domain.txt.md5');
-        Config::setRunningConfig('TLD_AUTH_LIST','http://www.phplist.com/files/tlds-alpha-by-domain.txt');
-        Config::setRunningConfig('TLD_AUTH_MD5','http://www.phplist.com/files/tlds-alpha-by-domain.txt.md5');
-        Config::setRunningConfig('TLD_REFETCH_TIMEOUT',15552000); ## 180 days, about 6 months
-        Config::setRunningConfig('USEFCK', true);
-        Config::setRunningConfig('USECK', false); ## ckeditor integration, not finished yet
-        Config::setRunningConfig('SHOW_UNSUBSCRIBELINK',true);
+        $this->running_config['TLD_AUTH_LIST'] = 'http://www.phplist.com/files/tlds-alpha-by-domain.txt';
+        $this->running_config['TLD_AUTH_MD5'] = 'http://www.phplist.com/files/tlds-alpha-by-domain.txt.md5';
+        $this->running_config['TLD_REFETCH_TIMEOUT'] = 15552000; ## 180 days, about 6 months
+        $this->running_config['SHOW_UNSUBSCRIBELINK'] = true;
 
-        if (function_exists('hash_algos') && !in_array(Config::ENCRYPTION_ALGO, hash_algos())) {
-            throw new \Exception('Encryption algorithm "' . Config::ENCRYPTION_ALGO . '" not supported, change your configuration');
+        if (function_exists('hash_algos') && !in_array($this->running_config['ENCRYPTION_ALGO'], hash_algos())) {
+            throw new \Exception('Encryption algorithm "' . $this->running_config['ENCRYPTION_ALGO'] . '" not supported, change your configuration');
         }
         ## remember the length of a hashed string
-        Config::setRunningConfig('hash_length', strlen(hash(Config::ENCRYPTION_ALGO,'some text')));
+        $this->running_config['hash_length'] = strlen(hash($this->running_config['ENCRYPTION_ALGO'],'some text'));
 
 
-        Config::setRunningConfig('NUMATTACHMENTS',1);
-        Config::setRunningConfig('USE_EDITMESSAGE',0);
-        Config::setRunningConfig('FCKIMAGES_DIR','uploadimages');
-        Config::setRunningConfig('NAME','phpList');
-        Config::setRunningConfig('USE_OUTLOOK_OPTIMIZED_HTML',0);
-        Config::setRunningConfig('USE_PREPARE',0);
-        Config::setRunningConfig('HTMLEMAIL_ENCODING','quoted-printable');
-        Config::setRunningConfig('TEXTEMAIL_ENCODING','7bit');
-        Config::setRunningConfig('WARN_SAVECHANGES',1);
-        Config::setRunningConfig('USETINYMCEMESG',0);
-        Config::setRunningConfig('USETINYMCETEMPL',0);
-        Config::setRunningConfig('TINYMCEPATH','');
-        Config::setRunningConfig('STATS_INTERVAL','weekly');
-        Config::setRunningConfig('ALLOW_IMPORT',1);
-        Config::setRunningConfig('CLICKTRACK_LINKMAP',0);
-        Config::setRunningConfig('MERGE_DUPLICATES_DELETE_DUPLICATE',1);
-        Config::setRunningConfig('USE_PERSONALISED_REMOTEURLS',1);
-        Config::setRunningConfig('USE_LOCAL_SPOOL',0);
-        Config::setRunningConfig('SEND_LISTADMIN_COPY',true);
-        Config::setRunningConfig('BLACKLIST_EMAIL_ON_BOUNCE',5);
-        Config::setRunningConfig('UNBLACKLIST_IN_PROFILE',false);
-        Config::setRunningConfig('ENCRYPT_ADMIN_PASSWORDS',1);
-        Config::setRunningConfig('PASSWORD_CHANGE_TIMEFRAME','1 day');
-        Config::setRunningConfig('MAX_SENDPROCESSES',1);
-        Config::setRunningConfig('SENDPROCESS_SERVERNAME','localhost');
-        Config::setRunningConfig('DB_TRANSLATION',0);
-        Config::setRunningConfig('ALLOW_DELETEBOUNCE',1);
-        Config::setRunningConfig('MESSAGE_SENDSTATUS_INACTIVETHRESHOLD',120);
-        Config::setRunningConfig('MESSAGE_SENDSTATUS_SAMPLETIME',600);
-        Config::setRunningConfig('SEND_QUEUE_PROCESSING_REPORT',true);
-        Config::setRunningConfig('MAX_AVATAR_SIZE',2000);
-        Config::setRunningConfig('ADD_EMAIL_THROTTLE',1); ## seconds between addemail ajax requests
-        Config::setRunningConfig('SENDTEST_THROTTLE',1); ## seconds between send test
-        Config::setRunningConfig('SENDTEST_MAX',999); ## max number of emails in a send test
-        Config::setRunningConfig('installation_name', 'phpList');
+        $this->running_config['NUMATTACHMENTS'] = 1;
+        $this->running_config['FCKIMAGES_DIR'] = 'uploadimages';
+        $this->running_config['USE_OUTLOOK_OPTIMIZED_HTML'] = 0;
+        $this->running_config['USE_PREPARE'] = 0;
+        $this->running_config['HTMLEMAIL_ENCODING'] = 'quoted-printable';
+        $this->running_config['TEXTEMAIL_ENCODING'] = '7bit';
+        $this->running_config['STATS_INTERVAL'] = 'weekly';
+        $this->running_config['CLICKTRACK_LINKMAP'] = 0;
+        $this->running_config['MERGE_DUPLICATES_DELETE_DUPLICATE'] = 1;
+        $this->running_config['USE_PERSONALISED_REMOTEURLS'] = 1;
+        $this->running_config['USE_LOCAL_SPOOL'] = 0;
+        $this->running_config['SEND_LISTADMIN_COPY'] = true;
+        $this->running_config['BLACKLIST_EMAIL_ON_BOUNCE'] = 5;
+        $this->running_config['ENCRYPT_ADMIN_PASSWORDS'] = 1;
+        $this->running_config['PASSWORD_CHANGE_TIMEFRAME'] = '1 day';
+        $this->running_config['MAX_SENDPROCESSES'] = 1;
+        $this->running_config['SENDPROCESS_SERVERNAME'] = 'localhost';
+        $this->running_config['DB_TRANSLATION'] = 0;
+        $this->running_config['ALLOW_DELETEBOUNCE'] = 1;
+        $this->running_config['MESSAGE_SENDSTATUS_INACTIVETHRESHOLD'] = 120;
+        $this->running_config['MESSAGE_SENDSTATUS_SAMPLETIME'] = 600;
+        $this->running_config['SEND_QUEUE_PROCESSING_REPORT'] = true;
+        $this->running_config['MAX_AVATAR_SIZE'] = 2000;
+        $this->running_config['ADD_EMAIL_THROTTLE'] = 1; ## seconds between addemail ajax requests
+        $this->running_config['SENDTEST_THROTTLE'] = 1; ## seconds between send test
+        $this->running_config['SENDTEST_MAX'] = 999; ## max number of emails in a send test
+        $this->running_config['NAME'] = 'phpList';
+        $this->running_config['installation_name'] = 'phpList';
 
-        ## this doesn't yet work with the FCKEditor
-        #ini_set('session.name',str_replace(' ','',SESSIONNAME));
 
-        if (Config::USE_AMAZONSES){
-            if(Config::AWS_ACCESSKEYID  == ''){
+        if ($this->running_config['USE_AMAZONSES']){
+            if($this->running_config['AWS_ACCESSKEYID']  == ''){
                 throw new \Exception('Invalid Amazon SES configuration: AWS_ACCESSKEYID not set');
             }else if(!function_exists('curl_init')){
                 throw new \Exception('Invalid Amazon SES configuration: CURL not enabled');
@@ -428,178 +351,93 @@ class Config extends UserConfig
         }
 
         if(isset($_SERVER['HTTP_HOST'])){
-            Config::setRunningConfig('ACCESS_CONTROL_ALLOW_ORIGIN','http://'.$_SERVER['HTTP_HOST']);
+           $this->running_config['ACCESS_CONTROL_ALLOW_ORIGIN'] = 'http://'.$_SERVER['HTTP_HOST'];
         }
 
-        Config::setRunningConfig('RFC_DIRECT_DELIVERY',false);  ## Request for Confirmation, delivery with SMTP
+        $this->running_config['RFC_DIRECT_DELIVERY'] = false;  ## Request for Confirmation, delivery with SMTP
         # check whether Pear HTTP/Request is available, and which version
         # try 2 first
 
         # @@TODO finish this, as it is more involved than just renaming the class
         #@include_once 'HTTP/Request2.php';
         if (0 && class_exists('HTTP_Request2')) {
-            Config::setRunningConfig('has_pear_http_request', 2);
+           $this->running_config['has_pear_http_request'] = 2;
         } else {
             @include_once 'HTTP/Request.php';
-            Config::setRunningConfig('has_pear_http_request', class_exists('HTTP_Request'));
+           $this->running_config['has_pear_http_request'] = class_exists('HTTP_Request');
         }
-        Config::setRunningConfig('has_curl', function_exists('curl_init'));
-        Config::setRunningConfig('can_fetch_url', class_exists('HTTP_Request') || function_exists('curl_init'));
-        Config::setRunningConfig('jQuery', 'jquery-1.7.1.min.js');
+        $this->running_config['has_curl'] = function_exists('curl_init');
+        $this->running_config['can_fetch_url'] = class_exists('HTTP_Request') || function_exists('curl_init');
 
         $system_tmpdir = ini_get('upload_tmp_dir');
-        if (Config::TMPDIR && !empty($system_tmpdir)) {
-            Config::setRunningConfig('tmpdir', $system_tmpdir);
-        }else if (Config::TMPDIR) {
-            Config::setRunningConfig('tmpdir', '/tmp');
+        if ($this->running_config['TMPDIR'] && !empty($system_tmpdir)) {
+           $this->running_config['tmpdir'] = $system_tmpdir;
+        }else if ($this->running_config['TMPDIR']) {
+           $this->running_config['tmpdir'] = '/tmp';
         }
-        if (!is_dir(Config::TMPDIR) || !is_writable(Config::TMPDIR) && !empty($system_tmpdir)) {
-            Config::setRunningConfig('tmpdir', $system_tmpdir);
+        if (!is_dir($this->running_config['TMPDIR']) || !is_writable($this->running_config['TMPDIR']) && !empty($system_tmpdir)) {
+           $this->running_config['tmpdir'] = $system_tmpdir;
         }
 
         ## as the 'admin' in adminpages is hardcoded, don't put it in the config file
         ## remove possibly duplicated // at the beginning
-        Config::setRunningConfig(
-            'adminpages',
-            preg_replace('~^//~', '/', Config::PAGEROOT.'/admin')
-        );
+        $this->running_config['adminpages'] = preg_replace('~^//~', '/', $this->running_config['PAGEROOT'].'/admin');
 
-        Config::setRunningConfig('systemroot', dirname(__FILE__));
+        $this->running_config['systemroot'] = dirname(__FILE__);
 
         ## when click track links are detected, block sending
         ## if false, will only show warning. For now defaulting to false, but may change that later
-        Config::setRunningConfig('BLOCK_PASTED_CLICKTRACKLINKS',false);
+        $this->running_config['BLOCK_PASTED_CLICKTRACKLINKS'] = false;
 
-        if (Config::FORWARD_EMAIL_COUNT < 1) {
+        if ($this->running_config['FORWARD_EMAIL_COUNT'] < 1) {
             throw new \Exception('Config Error: FORWARD_EMAIL_COUNT must be > (int) 0');
         }
 
         # allows FORWARD_EMAIL_COUNT forwards per subscriber per period in mysql interval terms default one day
-        Config::setRunningConfig('FORWARD_EMAIL_PERIOD', '1 day');
-        Config::setRunningConfig('EMBEDUPLOADIMAGES',0);
-        Config::setRunningConfig('IMPORT_FILESIZE',5);
-        Config::setRunningConfig('SMTP_TIMEOUT',5);
+        $this->running_config['FORWARD_EMAIL_PERIOD'] = '1 day';
+        $this->running_config['EMBEDUPLOADIMAGES'] = 0;
+        $this->running_config['IMPORT_FILESIZE'] = 5;
+        $this->running_config['SMTP_TIMEOUT'] = 5;
 
-        Config::setRunningConfig('noteditableconfig', array());
-
-        ## experimental, use minified JS and CSS
-        Config::setRunningConfig('USE_MINIFIED_ASSETS',false);
+        $this->running_config['noteditableconfig'] = array();
 
         ## global counters array to keep track of things
-        Config::setRunningConfig(
-            'counters',
-            array(
+        $this->running_config['counters'] = array(
                 'campaign' => 0,
                 'num_subscribers_for_message' => 0,
                 'batch_count' => 0,
                 'batch_total' => 0,
                 'sendemail returned false' => 0,
                 'send blocked by domain throttle' => 0
-            ));
+            );
 
-        Config::setRunningConfig('disallowpages', array());
-        # list of pages and categorisation in the system
-        ## old version
-        Config::setRunningConfig(
-            'system_pages',
-            array (
-                'system' => array (
-                    'adminattributes' => 'none',
-                    'attributes' => 'none',
-                    'upgrade' => 'none',
-                    'configure' => 'none',
-                    'spage' => 'owner',
-                    'spageedit' => 'owner',
-                    'defaultconfig' => 'none',
-                    'defaults' => 'none',
-                    'initialise' => 'none',
-                    'bounces' => 'none',
-                    'bounce' => 'none',
-                    'processbounces' => 'none',
-                    'eventlog' => 'none',
-                    'reconcilesubscribers' => 'none',
-                    'getrss' => 'owner',
-                    'viewrss' => 'owner',
-                    'purgerss' => 'none',
-                    'setup' => 'none',
-                    'dbcheck' => 'none',
-
-                ),
-                'list' => array (
-                    'list' => 'owner',
-                    'editlist' => 'owner',
-                    'members' => 'owner'
-                ),
-                'subscriber' => array (
-                    'subscriber' => 'none',
-                    'subscribers' => 'none',
-                    'dlsubscribers' => 'none',
-                    'editattributes' => 'none',
-                    'subscribercheck' => 'none',
-                    'import1' => 'none',
-                    'import2' => 'none',
-                    'import3' => 'none',
-                    'import4' => 'none',
-                    'import' => 'none',
-                    'export' => 'none',
-                    'massunconfirm' => 'none',
-
-                ),
-                'message' => array (
-                    'message' => 'owner',
-                    'messages' => 'owner',
-                    'processqueue' => 'none',
-                    'send' => 'owner',
-                    'preparesend' => 'none',
-                    'sendprepared' => 'all',
-                    'template' => 'none',
-                    'templates' => 'none'
-                ),
-                'clickstats' => array (
-                    'statsmgt' => 'owner',
-                    'mclicks' => 'owner',
-                    'uclicks' => 'owner',
-                    'subscriberclicks' => 'owner',
-                    'mviews' => 'owner',
-                    'statsoverview' => 'owner',
-
-                ),
-                'admin' => array (
-                    'admins' => 'none',
-                    'admin' => 'owner'
-                )
-            ));
+       $this->running_config['disallowpages'] = array();
 
         # Set revision
-        Config::setRunningConfig('CODEREVISION', '$Rev$');
+       $this->running_config['CODEREVISION'] = '$Rev$';
         if (preg_match('/Rev: (\d+)/','$Rev$',$match)) {
-            Config::setRunningConfig('REVISION',$match[1]);
+           $this->running_config['REVISION'] = $match[1];
         }
 
         $server_name = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'cmd_line';
 
-        Config::setRunningConfig('organisation_name', $server_name);
-        Config::setRunningConfig('domain', $server_name);
-        Config::setRunningConfig('website', $server_name);
+        $this->running_config['organisation_name'] = $server_name;
+        $this->running_config['domain'] = $server_name;
+        $this->running_config['website'] = $server_name;
 
         $xormask = md5(uniqid(rand(), true));
-        Config::setRunningConfig('xormask',$xormask);
-        Config::setRunningConfig('XORmask',$xormask);
-
-        # if keys need expanding with 0-s
-        Config::setRunningConfig('checkboxgroup_storesize', 1); # this will allow 10000 options for checkboxes
+        $this->running_config['xormask'] = $xormask;
+        $this->running_config['XORmask'] = $xormask;
 
         # identify pages that can be run on commandline
-        Config::setRunningConfig(
-            'commandline_pages',
-            array(
+        $this->running_config['commandline_pages'] = array(
                 'dbcheck','send','processqueueforked','processqueue',
                 'processbounces','import','upgrade','convertstats','reindex',
                 'blacklistemail','systemstats','converttoutf8','initlanguages'
-            ));
+        );
 
-        Config::setRunningConfig('envelope', '-f' . Config::MESSAGE_ENVELOPE);
-        Config::setRunningConfig('coderoot', dirname(__FILE__).'/');
+        $this->running_config['envelope'] = '-f' . $this->running_config['MESSAGE_ENVELOPE'];
+        $this->running_config['coderoot'] = dirname(__FILE__).'/';
 
         /*
           We request you retain the $PoweredBy variable including the links.
@@ -609,35 +447,19 @@ class Config extends UserConfig
 
           You can configure your PoweredBy options in your config file
 
-          Michiel Dethmers, phpList Ltd 2001-2013
+          Michiel Dethmers, phpList Ltd 2001-2015
         */
-        $v = Config::DEV_VERSION ? 'dev' : Config::VERSION;
+        $v = PHPLIST_DEV_VERSION ? 'dev' : PHPLIST_VERSION;
 
-        if (Config::REGISTER) {
+        if ($this->running_config['REGISTER']) {
             $PoweredByImage = '<p class="poweredby"><a href="http://www.phplist.com/poweredby?utm_source=pl'.$v.'&amp;utm_medium=poweredhostedimg&amp;utm_campaign=phpList" title="visit the phpList website" ><img src="http://powered.phplist.com/images/'.$v.'/power-phplist.png" width="70" height="30" title="powered by phpList version '.$v.', &copy; phpList ltd" alt="powered by phpList '.$v.', &copy; phpList ltd" border="0" /></a></p>';
         } else {
             $PoweredByImage = '<p class="poweredby"><a href="http://www.phplist.com/poweredby?utm_source=pl'.$v.'&amp;utm_medium=poweredlocalimg&amp;utm_campaign=phpList" title="visit the phpList website"><img src="images/power-phplist.png" width="70" height="30" title="powered by phpList version '.$v.', &copy; phpList ltd" alt="powered by phpList '.$v.', &copy; phpList ltd" border="0"/></a></p>';
         }
         $PoweredByText = '<div style="clear: both; font-family: arial, verdana, sans-serif; font-size: 8px; font-variant: small-caps; font-weight: normal; padding: 2px; padding-left:10px;padding-top:20px;">powered by <a href="http://www.phplist.com/poweredby?utm_source=download'.$v.'&amp;utm_medium=poweredtxt&amp;utm_campaign=phpList" target="_blank" title="powered by phpList version '.$v.', &copy; phpList ltd">phpList</a></div>';
-        Config::setRunningConfig('PoweredBy', Config::PAGETEXTCREDITS ? $PoweredByText : $PoweredByImage);
+        $this->running_config['PoweredBy'] = $this->running_config['PAGETEXTCREDITS'] ? $PoweredByText : $PoweredByImage;
 
-
-        # some other configuration variables, which need less tweaking
-        # number of subscribers to show per page if there are more
-        Config::setRunningConfig('MAX_USER_PP',50);
-        Config::setRunningConfig('MAX_MSG_PP',5);
-
-        Config::setRunningConfig('homepage', 'home');
-    }
-
-    /**
-     * Some more initialisation that can only be done after basic init is done
-     */
-    private function afterInit(){
-        //TODO: move this somewhere else
-        if (Config::DEBUG
-            && @($_SERVER['HTTP_HOST'] != 'dev.phplist.com')
-        ) {
+        if (DEBUG && @($_SERVER['HTTP_HOST'] != 'dev.phplist.com')){
             error_reporting(E_ALL);
             ini_set('display_errors',1);
             foreach ($_REQUEST as $key => $val) {
@@ -646,70 +468,599 @@ class Config extends UserConfig
         } else {
             error_reporting(0);
         }
-        if (Config::get('ui', false) === false || !is_dir(dirname(__FILE__).'/ui/'.Config::get('ui', false))) {
-            ## prefer dressprow over orange
-            if (is_dir(dirname(__FILE__).'/ui/dressprow')) {
-                Config::setRunningConfig('ui', 'dressprow');
-            } else {
-                Config::setRunningConfig('ui', 'default');
-            }
-        }
-
-        Config::setRunningConfig(
-            'SESSIONNAME',
-            Config::get('SESSIONNAME', 'phpList'.Config::get('installation_name').'session'
-            ));
 
         ## experimental, mark mails 'todo' in the DB and process the 'todo' list, to avoid the subscriber query being run every queue run
-        if (Config::MESSAGEQUEUE_PREPARE) {
+        if ($this->running_config['MESSAGEQUEUE_PREPARE']) {
             ## with a multi-process config, we need the queue prepare mechanism and memcache
-            if (Config::get('MAX_SENDPROCESSES', 1) > 1) {
-                Config::setRunningConfig('MESSAGEQUEUE_PREPARE',true);
+            if ($this->get('MAX_SENDPROCESSES', 1) > 1) {
+                $this->running_config['MESSAGEQUEUE_PREPARE'] = true;
             } else {
-                Config::setRunningConfig('MESSAGEQUEUE_PREPARE',false);
+                $this->running_config['MESSAGEQUEUE_PREPARE'] = false;
             }
         }
 
-        ## set up a memcached global object, and test it
-        if (Config::get('MEMCACHED', false) !== false) {
-            include_once dirname(__FILE__).'/class.memcached.php';
-            if (class_exists('phpListMC')) {
-                $MC = new phpListMC();
-                list($mc_server,$mc_port) = explode(':',Config::get('MEMCACHED'));
-                $MC->addServer($mc_server,$mc_port);
-
-                /* check that the MC connection is ok
-                $MC->add('Hello','World');
-                $test = $MC->get('Hello');
-                if ($test != 'World') {
-                  unset($MC);
-                }
-                */
-                Config::setRunningConfig('MC', $MC);
-            }
-        }
-
-        if (Config::MESSAGE_ENVELOPE == '') {
+        if ($this->running_config['MESSAGE_ENVELOPE'] == '') {
             # why not try set it to "person in charge of this system". Will help get rid of a lot of bounces to nobody@server :-)
-            Config::setRunningConfig('message_envelope', Config::get('admin_address'));
+            $this->running_config['message_envelope'] = $this->get('admin_address');
         }
 
-        /*
-        if (defined("IN_WEBBLER") && is_object($GLOBALS['config']['plugins']['phplist'])) {
-            $GLOBALS['tables'] = $GLOBALS['config']['plugins']['phplist']->tables;
-        }
-        */
-        Config::setRunningConfig(
-            'bounceruleactions',
-            array(
-                'deletesubscriber' => s('delete subscriber'),
-                'unconfirmsubscriber' => s('unconfirm subscriber'),
-                'blacklistsubscriber' => s('blacklist subscriber'),
-                'deletesubscriberandbounce' => s('delete subscriber and bounce'),
-                'unconfirmsubscriberanddeletebounce' => s('unconfirm subscriber and delete bounce'),
-                'blacklistsubscriberanddeletebounce' => s('blacklist subscriber and delete bounce'),
-                'deletebounce' => s('delete bounce'),
-            ));
+        //$this->loadDefaultConfig();
+    }
+
+    /**
+     * Load default configuration
+     * @param Language $lan
+     */
+    private function loadDefaultConfig(Language $lan){
+            $defaultheader = '</head><body>';
+            $defaultfooter = '</body></html>';
+
+            if (isset ($_SERVER['HTTP_HOST'])) {
+                $D_website = $_SERVER['HTTP_HOST'];
+            } else {
+                $D_website = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost';
+            }
+            $D_domain = $D_website;
+            if (preg_match('#^www\.(.*)#i', $D_domain, $regs)) {
+                $D_domain = $regs[1];
+            }
+
+            $this->default_config = array(
+
+                /* any next line has the format
+                  'name' => array(
+                    'value',     // default value
+                    'description',
+                    'type',      // text, textarea, boolean
+                    'allow empty', // 0 or 1 (or false/true)
+                    'category'   // general
+                  ),
+                */
+
+                # what is your website location (url)
+                'website' => array(
+                    'value' => $D_website,
+                    'description' => $lan->get('Website address (without http://)'),
+                    'type' => 'text',
+                    'allowempty' => false, ## indication this value cannot be empty (1 being it can be empty)
+                    'category' => 'general'
+                ),
+                # what is your domain (for sending emails)
+                'domain' => array(
+                    'value' => $D_domain,
+                    'description' => $lan->get('Domain Name of your server (for email)'),
+                    'type' => 'text',
+                    'allowempty' => false,
+                    'category' => 'general',
+                ),
+                # admin address is the person who is in charge of this system
+                'admin_address' => array(
+                    'value' => 'webmaster@[DOMAIN]',
+                    'description' => $lan->get('Person in charge of this system (one email address)'),
+                    'type' => 'email',
+                    'allowempty' => false,
+                    'category' => 'general',
+                ),
+                # name of the organisation
+                'organisation_name' => array(
+                    'value' => '',
+                    'description' => $lan->get('Name of the organisation'),
+                    'type' => 'text',
+                    'allowempty' => true,
+                    'category' => 'general',
+                ),
+                # how often to check for new versions of PHPlist
+                'check_new_version' => array(
+                    'value' => '7',
+                    'description' => $lan->get('How often do you want to check for a new version of phplist (days)'),
+                    'type' => 'integer',
+                    'min' => 1,
+                    'max' => 180,
+                    'category' => 'security',
+                ),
+                # admin addresses are other people who receive copies of subscriptions
+                'admin_addresses' => array(
+                    'value' => '',
+                    'description' => $lan->get('List of email addresses to CC in system messages (separate by commas)'),
+                    'type' => 'emaillist',
+                    'allowempty' => true,
+                    'category' => 'reporting',
+                ),
+                'campaignfrom_default' => array(
+                    'value' => '',
+                    'description' => $lan->get('Default for \'From:\' in a campaign'),
+                    'type' => 'text',
+                    'allowempty' => true,
+                    'category' => 'campaign',
+                ),
+                'notifystart_default' => array(
+                    'value' => '',
+                    'description' => $lan->get('Default for \'address to alert when sending starts\''),
+                    'type' => 'email',
+                    'allowempty' => true,
+                    'category' => 'campaign',
+                ),
+                'notifyend_default' => array(
+                    'value' => '',
+                    'description' => $lan->get('Default for \'address to alert when sending finishes\''),
+                    'type' => 'email',
+                    'allowempty' => true,
+                    'category' => 'campaign',
+                ),
+                'always_add_googletracking' => array(
+                    'value' => '0',
+                    'description' => $lan->get('Always add Google tracking code to campaigns'),
+                    'type' => 'boolean',
+                    'allowempty' => true,
+                    'category' => 'campaign',
+                ),
+                # report address is the person who gets the reports
+                'report_address' => array(
+                    'value' => 'listreports@[DOMAIN]',
+                    'description' => $lan->get('Who gets the reports (email address, separate multiple emails with a comma)'),
+                    'type' => 'emaillist',
+                    'allowempty' => true,
+                    'category' => 'reporting',
+                ),
+                # where will messages appear to come from
+                'message_from_address' => array(
+                    'value' => 'noreply@[DOMAIN]',
+                    'description' => $lan->get('From email address for system messages'),
+                    'type' => 'email',
+                    'allowempty' => 0,
+                    'category' => 'transactional',
+                ),
+                'message_from_name' => array(
+                    'value' => $lan->get('Webmaster'),
+                    'description' => $lan->get('Name for system messages'),
+                    'type' => 'text',
+                    'allowempty' => 0,
+                    'category' => 'transactional',
+                ),
+                # what is the reply-to on messages?
+                'message_replyto_address' => array(
+                    'value' => 'noreply@[DOMAIN]',
+                    'description' => $lan->get('Reply-to email address for system messages'),
+                    'type' => 'email',
+                    'allowempty' => 0,
+                    'category' => 'transactional',
+                ),
+                # if there is only one visible list, do we hide it and automatically
+                # subscribe subscribers who sign up
+                ## not sure why you would not want this :-) maybe it should not be an option at all
+                'hide_single_list' => array(
+                    'value' => '1',
+                    'description' => $lan->get(
+                        'If there is only one visible list, should it be hidden in the page and automatically subscribe subscribers who sign up'
+                    ),
+                    'type' => 'boolean',
+                    'allowempty' => true,
+                    'category' => 'subscription-ui',
+                ),
+                # categories for lists, to organise them a little bit
+                # comma separated list of words
+                'list_categories' => array(
+                    'value' => '',
+                    'description' => $lan->get('Categories for lists. Separate with commas.'),
+                    'type' => 'text',
+                    'allowempty' => true,
+                    'category' => 'segmentation',
+                ),
+                # width of a textline field
+                'textline_width' => array(
+                    'value' => '40',
+                    'description' => $lan->get('Width of a textline field (numerical)'),
+                    'type' => 'integer',
+                    'min' => 20,
+                    'max' => 150,
+                    'category' => 'subscription-ui',
+                ),
+                # dimensions of a textarea field
+                'textarea_dimensions' => array(
+                    'value' => '10,40',
+                    'description' => $lan->get('Dimensions of a textarea field (rows,columns)'),
+                    'type' => 'text',
+                    'allowempty' => 0,
+                    'category' => 'subscription-ui',
+                ),
+                # send copies of subscribe, update unsubscribe messages to the administrator
+                'send_admin_copies' => array(
+                    'value' => '0',
+                    'description' => $lan->get('Send notifications about subscribe, update and unsubscribe'),
+                    'type' => 'boolean',
+                    'allowempty' => true,
+                    'category' => 'reporting',
+                ),
+                # the main subscribe page, when there are multiple
+                'defaultsubscribepage' => array(
+                    'value' => 1,
+                    'description' => $lan->get('The default subscribe page when there are multiple'),
+                    'type' => 'integer',
+                    'min' => 1,
+                    'max' => 999, // max(id) from subscribepage
+                    'allowempty' => true,
+                    'category' => 'subscription',
+                ),
+                # the default template for sending an html campaign
+                'defaultcampaigntemplate' => array(
+                    'value' => 0,
+                    'description' => $lan->get('The default HTML template to use when sending a campaign'),
+                    'type' => 'text',
+                    'allowempty' => true,
+                    'category' => 'campaign',
+                ),
+                # the template for system messages (welcome confirm subscribe etc)
+                'systemmessagetemplate' => array(
+                    'value' => 0,
+                    'description' => $lan->get('The HTML wrapper template for system messages'),
+                    'type' => 'integer',
+                    'min' => 0,
+                    'max' => 999, // or max(id) from template
+                    'allowempty' => true,
+                    'category' => 'transactional',
+                ),
+                ## the location of your subscribe script
+                #'public_baseurl' => array("http://[WEBSITE]$this->get('PAGEROOT')/",
+                #  'Base URL for public pages',"text"),
+
+                # the location of your subscribe script
+                'subscribeurl' => array(
+                    'value' => $this->get('scheme') . '://[WEBSITE]'.$this->get('PAGEROOT').'/?p=subscribe',
+                    'description' => $lan->get('URL where subscribers can sign up'),
+                    'type' => 'url',
+                    'allowempty' => 0,
+                    'category' => 'subscription',
+                ),
+                # the location of your unsubscribe script:
+                'unsubscribeurl' => array(
+                    'value' => $this->get('scheme') . '://[WEBSITE]'.$this->get('PAGEROOT').'/?p=unsubscribe',
+                    'description' => $lan->get('URL where subscribers can unsubscribe'),
+                    'type' => 'url',
+                    'allowempty' => 0,
+                    'category' => 'subscription',
+                ),
+                #0013076: Blacklisting posibility for unknown subscribers
+                # the location of your blacklist script:
+                'blacklisturl' => array(
+                    'value' => $this->get('scheme') . '://[WEBSITE]'.$this->get('PAGEROOT').'/?p=donotsend',
+                    'description' => $lan->get('URL where unknown subscriber can unsubscribe (do-not-send-list)'),
+                    'type' => 'url',
+                    'allowempty' => 0,
+                    'category' => 'subscription',
+                ),
+                # the location of your confirm script:
+                'confirmationurl' => array(
+                    'value' => $this->get('scheme') . '://[WEBSITE]'.$this->get('PAGEROOT').'/?p=confirm',
+                    'description' => $lan->get('URL where subscribers have to confirm their subscription'),
+                    'type' => 'text',
+                    'allowempty' => 0,
+                    'category' => 'subscription',
+                ),
+                # url to change their preferences
+                'preferencesurl' => array(
+                    'value' => $this->get('scheme') . '://[WEBSITE]'.$this->get('PAGEROOT').'/?p=preferences',
+                    'description' => $lan->get('URL where subscribers can update their details'),
+                    'type' => 'text',
+                    'allowempty' => 0,
+                    'category' => 'subscription',
+                ),
+                # url to change their preferences
+                'forwardurl' => array(
+                    'value' => $this->get('scheme') . '://[WEBSITE]'.$this->get('PAGEROOT').'/?p=forward',
+                    'description' => $lan->get('URL for forwarding campaigns'),
+                    'type' => 'text',
+                    'allowempty' => 0,
+                    'category' => 'subscription',
+                ),
+                'ajax_subscribeconfirmation' => array(
+                    'value' => $lan->get(
+                        '<h3>Thanks, you have been added to our newsletter</h3><p>You will receive an email to confirm your subscription. Please click the link in the email to confirm</p>'
+                    ),
+                    'description' => $lan->get('Text to display when subscription with an AJAX request was successful'),
+                    'type' => 'textarea',
+                    'allowempty' => true,
+                    'category' => 'subscription',
+                ),
+                # the location of your subscribe script
+                #'subscribe_baseurl' => array("http://[WEBSITE]".$this->get('PAGEROOT')."/",
+                #  'Base URL for public pages',"text"),
+
+                # the subject of the message
+                'subscribesubject' => array(
+                    'value' => $lan->get('Request for confirmation'),
+                    'description' => $lan->get('Subject of the message subscribers receive when they sign up'),
+                    'type' => 'text',
+                    'allowempty' => 0,
+                    'category' => 'transactional',
+                ),
+                # message that is sent when people sign up to a list
+                # [LISTS] will be replaced with the list of lists they have signed up to
+                # [CONFIRMATIONURL] will be replaced with the URL where a subscriber has to confirm
+                # their subscription
+                'subscribemessage' => array(
+                    'value' => '
+
+  Almost welcome to our newsletter(s) ...
+
+  Someone, hopefully you, has subscribed your email address to the following newsletters:
+
+  [LISTS]
+
+  If this is correct, please click the following link to confirm your subscription.
+  Without this confirmation, you will not receive any newsletters.
+
+  [CONFIRMATIONURL]
+
+  If this is not correct, you do not need to do anything, simply delete this message.
+
+  Thank you
+
+    ',
+                    'description' => $lan->get('Campaign subscribers receive when they sign up'),
+                    'type' => 'textarea',
+                    'allowempty' => 0,
+                    'category' => 'transactional',
+                ),
+                # subject of the message when they unsubscribe
+                'unsubscribesubject' => array(
+                    'value' => $lan->get('Goodbye from our Newsletter'),
+                    'description' => $lan->get('Subject of the message subscribers receive when they unsubscribe'),
+                    'type' => 'text',
+                    'allowempty' => 0,
+                    'category' => 'transactional',
+                ),
+                # message that is sent when they unsubscribe
+                'unsubscribemessage' => array(
+                    'value' => '
+
+  Goodbye from our Newsletter, sorry to see you go.
+
+  You have been unsubscribed from our newsletters.
+
+  This is the last email you will receive from us. Our newsletter system, phpList,
+  will refuse to send you any further messages, without manual intervention by our administrator.
+
+  If there is an error in this information, you can re-subscribe:
+  please go to [SUBSCRIBEURL] and follow the steps.
+
+  Thank you
+
+  ',
+                    'description' => $lan->get('Campaign subscribers receive when they unsubscribe'),
+                    'type' => 'textarea',
+                    'allowempty' => 0,
+                    'category' => 'transactional',
+                ),
+                # confirmation of subscription
+                'confirmationsubject' => array(
+                    'value' => $lan->get('Welcome to our Newsletter'),
+                    'description' => $lan->get('Subject of the message subscribers receive after confirming their email address'),
+                    'type' => 'text',
+                    'allowempty' => 0,
+                    'category' => 'transactional',
+                ),
+                # message that is sent to confirm subscription
+                'confirmationmessage' => array(
+                    'value' => '
+
+  Welcome to our Newsletter
+
+  Please keep this message for later reference.
+
+  Your email address has been added to the following newsletter(s):
+  [LISTS]
+
+  To update your details and preferences please go to [PREFERENCESURL].
+  If you do not want to receive any more messages, please go to [UNSUBSCRIBEURL].
+
+  Thank you
+
+  ',
+                    'description' => $lan->get('Campaign subscribers receive after confirming their email address'),
+                    'type' => 'textarea',
+                    'allowempty' => 0,
+                    'category' => 'transactional',
+                ),
+                # the subject of the message sent when changing the subscriber details
+                'updatesubject' => array(
+                    'value' => $lan->get('[notify] Change of List-Membership details'),
+                    'description' => $lan->get('Subject of the message subscribers receive when they have changed their details'),
+                    'type' => 'text',
+                    'allowempty' => 0,
+                    'category' => 'transactional',
+                ),
+                # the message that is sent when a subscriber updates their information.
+                # just to make sure they approve of it.
+                # confirmationinfo is replaced by one of the options below
+                # userdata is replaced by the information in the database
+                'updatemessage' => array(
+                    'value' => '
+
+  This message is to inform you of a change of your details on our newsletter database
+
+  You are currently member of the following newsletters:
+
+  [LISTS]
+
+  [CONFIRMATIONINFO]
+
+  The information on our system for you is as follows:
+
+  [USERDATA]
+
+  If this is not correct, please update your information at the following location:
+
+  [PREFERENCESURL]
+
+  Thank you
+
+    ',
+                    'description' => $lan->get('Campaign subscribers receive when they have changed their details'),
+                    'type' => 'textarea',
+                    'allowempty' => 0,
+                    'category' => 'transactional',
+                ),
+                # this is the text that is placed in the [!-- confirmation --] location of the above
+                # message, in case the email is sent to their new email address and they have changed
+                # their email address
+                'emailchanged_text' => array(
+                    'value' => '
+  When updating your details, your email address has changed.
+  Please confirm your new email address by visiting this webpage:
+
+  [CONFIRMATIONURL]
+
+  ',
+                    'description' => $lan->get(
+                        'Part of the message that is sent to their new email address when subscribers change their information, and the email address has changed'
+                    ),
+                    'type' => 'textarea',
+                    'allowempty' => 0,
+                    'category' => 'transactional',
+                ),
+                # this is the text that is placed in the [!-- confirmation --] location of the above
+                # message, in case the email is sent to their old email address and they have changed
+                # their email address
+                'emailchanged_text_oldaddress' => array(
+                    'value' => '
+  Please Note: when updating your details, your email address has changed.
+
+  A message has been sent to your new email address with a URL
+  to confirm this change. Please visit this website to activate
+  your membership.
+  ',
+                    'description' => $lan->get(
+                        'Part of the message that is sent to their old email address when subscribers change their information, and the email address has changed'
+                    ),
+                    'type' => 'textarea',
+                    'allowempty' => 0,
+                    'category' => 'transactional',
+                ),
+                'personallocation_subject' => array(
+                    'value' => $lan->get('Your personal location'),
+                    'description' => $lan->get('Subject of message when subscribers request their personal location'),
+                    'type' => 'text',
+                    'allowempty' => 0,
+                    'category' => 'transactional',
+                ),
+                'campaignfooter' => array(
+                    'value' => '--
+
+    <div class="footer" style="text-align:left; font-size: 75%;">
+      <p>This campaign was sent to [EMAIL] by [FROMEMAIL]</p>
+      <p>To forward this campaign, please do not use the forward button of your email application, because this campaign was made specifically for you only. Instead use the <a href="[FORWARDURL]">forward page</a> in our newsletter system.<br/>
+      To change your details and to choose which lists to be subscribed to, visit your personal <a href="[PREFERENCESURL]">preferences page</a><br/>
+      Or you can <a href="[UNSUBSCRIBEURL]">opt-out completely</a> from all future mailings.</p>
+    </div>
+
+  ',
+                    'description' => $lan->get('Default footer for sending a campaign'),
+                    'type' => 'textarea',
+                    'allowempty' => 0,
+                    'category' => 'campaign',
+                ),
+                'forwardfooter' => array(
+                    'value' => '
+     <div class="footer" style="text-align:left; font-size: 75%;">
+      <p>This campaign has been forwarded to you by [FORWARDEDBY].</p>
+      <p>You have not been automatically subscribed to this newsletter.</p>
+      <p>If you think this newsletter may interest you, you can <a href="[SUBSCRIBEURL]">Subscribe</a> and you will receive our next newsletter directly to your inbox.</p>
+      <p>You can also <a href="[BLACKLISTURL]">opt out completely</a> from receiving any further email from our newsletter application, phpList.</p>
+    </div>
+  ',
+                    'description' => $lan->get('Footer used when a campaign has been forwarded'),
+                    'type' => 'textarea',
+                    'allowempty' => 0,
+                    'category' => 'campaign',
+                ),
+                'pageheader' => array(
+                    'value' => $defaultheader,
+                    'description' => $lan->get('Header of public pages.'),
+                    'type' => 'textarea',
+                    'allowempty' => 0,
+                    'category' => 'subscription-ui',
+                ),
+                'pagefooter' => array(
+                    'value' => $defaultfooter,
+                    'description' => $lan->get('Footer of public pages'),
+                    'type' => 'textarea',
+                    'allowempty' => 0,
+                    'category' => 'subscription-ui',
+                ),
+//'html_charset' => array (
+                //'UTF-8',
+                //'Charset for HTML messages',
+                //"text"
+//),
+//'text_charset' => array (
+                //'UTF-8',
+                //'Charset for Text messages',
+                //"text"
+//),
+
+                'personallocation_message' => array(
+                    'value' => '
+
+You have requested your personal location to update your details from our website.
+The location is below. Please make sure that you use the full line as mentioned below.
+Sometimes email programmes can wrap the line into multiple lines.
+
+Your personal location is:
+[PREFERENCESURL]
+
+Thank you.
+',
+                    'description' => $lan->get('Campaign to send when they request their personal location'),
+                    'type' => 'textarea',
+                    'allowempty' => 0,
+                    'category' => 'transactional',
+                ),
+                'remoteurl_append' => array(
+                    'value' => '',
+                    'description' => $lan->get('String to always append to remote URL when using send-a-webpage'),
+                    'type' => 'text',
+                    'allowempty' => true,
+                    'category' => 'campaign',
+                ),
+                'wordwrap' => array(
+                    'value' => '75',
+                    'description' => $lan->get('Width for Wordwrap of Text messages'),
+                    'type' => 'text',
+                    'allowempty' => true,
+                    'category' => 'campaign',
+                ),
+                'html_email_style' => array(
+                    'value' => '',
+                    'description' => $lan->get('CSS for HTML messages without a template'),
+                    'type' => 'textarea',
+                    'allowempty' => true,
+                    'category' => 'campaign',
+                ),
+                'alwayssendtextto' => array(
+                    'value' => '',
+                    'description' => $lan->get('Domains that only accept text emails, one per line'),
+                    'type' => 'textarea',
+                    'allowempty' => true,
+                    'category' => 'campaign',
+                ),
+                'tld_last_sync' => array(
+                    'value' => '0',
+                    'description' => $lan->get('last time TLDs were fetched'),
+                    'type' => 'text',
+                    'allowempty' => true,
+                    'category' => 'system',
+                    'hidden' => true,
+                ),
+                'internet_tlds' => array(
+                    'value' => '',
+                    'description' => $lan->get('Top level domains'),
+                    'type' => 'textarea',
+                    'allowempty' => true,
+                    'category' => 'system',
+                    'hidden' => true,
+                ),
+
+            );
     }
 
 }

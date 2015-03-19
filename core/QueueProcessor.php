@@ -1260,7 +1260,7 @@ class QueueProcessor
             return;
         }
 
-        $msg .= "phpList version ".Config::VERSION . "\n";
+        $msg .= "phpList version ".PHPLIST_VERSION . "\n";
         $diff = Util::timeDiff($campaign->sendstart, $campaign->sent);
 
         if ($campaign->processed > 10 && $diff != 'very little time') {

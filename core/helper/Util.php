@@ -7,7 +7,18 @@ use phpList\Subscriber;
 
 class Util
 {
-    public static function secs2time($secs)
+    protected  $config;
+    protected  $logger;
+    protected  $db;
+
+    public function __construct(Config $config, Logger $logger, Database $db)
+    {
+        $this->config = $config;
+        $this->logger = $logger;
+        $this->db = $db;
+    }
+    
+    public function secs2time($secs)
     {
         $years = $days = $hours = $mins = 0;
         $hours = (int)($secs / 3600);
@@ -47,7 +58,7 @@ class Util
      * @param string $url
      * @return int
      */
-    public static function isValidRedirect($url)
+    public function isValidRedirect($url)
     {
         ## we might want to add some more checks here
         return strpos($url, $_SERVER['HTTP_HOST']);
@@ -58,9 +69,9 @@ class Util
      * @param $url
      * @return string
      */
-    public static function expandURL($url)
+    public function expandURL($url)
     {
-        $url_append = Config::get('remoteurl_append');
+        $url_append = $this->config->get('remoteurl_append');
         $url_append = strip_tags($url_append);
         $url_append = preg_replace('/\W/', '', $url_append);
         if ($url_append) {
@@ -78,14 +89,14 @@ class Util
      * @param string $url
      * @return int|mixed
      */
-    public static function testUrl($url)
+    public function testUrl($url)
     {
-        if (Config::VERBOSE) {
-            phpList::log()->notice('Checking ' . $url);
+        if ($this->config->get('VERBOSE')) {
+            $this->logger->notice('Checking ' . $url);
         }
         $code = 500;
-        if (Config::get('has_curl')) {
-            if (Config::VERBOSE) phpList::log()->notice('Checking curl ');
+        if ($this->config->get('has_curl')) {
+            if ($this->config->get('VERBOSE')) $this->logger->notice('Checking curl ');
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $url);
             curl_setopt($curl, CURLOPT_TIMEOUT, 10);
@@ -95,19 +106,19 @@ class Util
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
             curl_setopt($curl, CURLOPT_HEADER, 0);
             curl_setopt($curl, CURLOPT_DNS_USE_GLOBAL_CACHE, true);
-            curl_setopt($curl, CURLOPT_USERAGENT, 'phplist v' . Config::VERSION . ' (http://www.phplist.com)');
+            curl_setopt($curl, CURLOPT_USERAGENT, 'phplist v' . PHPLIST_VERSION . ' (http://www.phplist.com)');
             curl_exec($curl);
             $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        } elseif (Config::get('has_pear_http_request')) {
-            if (Config::VERBOSE) phpList::log()->notice('Checking PEAR ');
+        } elseif ($this->config->get('has_pear_http_request')) {
+            if ($this->config->get('VERBOSE')) $this->logger->notice('Checking PEAR ');
             @require_once "HTTP/Request.php";
             $headreq = new HTTP_Request($url, '' /*$request_parameters*/);
-            $headreq->addHeader('User-Agent', 'phplist v' . Config::VERSION . ' (http://www.phplist.com)');
+            $headreq->addHeader('User-Agent', 'phplist v' . PHPLIST_VERSION . ' (http://www.phplist.com)');
             if (!PEAR::isError($headreq->sendRequest(false))) {
                 $code = $headreq->getResponseCode();
             }
         }
-        if (Config::VERBOSE) phpList::log()->notice('Checking ' . $url . ' => ' . $code);
+        if ($this->config->get('VERBOSE')) $this->logger->notice('Checking ' . $url . ' => ' . $code);
         return $code;
     }
 
@@ -117,13 +128,13 @@ class Util
      * @param Subscriber $subscriber
      * @return bool|int|mixed|string
      */
-    public static function fetchUrl($url, $subscriber = null)
+    public function fetchUrl($url, $subscriber = null)
     {
         $content = '';
         ## fix the Editor replacing & with &amp;
         $url = str_ireplace('&amp;', '&', $url);
 
-        # phpList::log()->notice("Fetching $url");
+        # $this->logger->notice("Fetching $url");
         //subscriber items to replace:
         if ($subscriber != null) {
             foreach (Subscriber::$DB_ATTRIBUTES as $key) {
@@ -133,31 +144,31 @@ class Util
             }
         }
 
-        $url = Util::expandUrl($url);
+        $url = $this->expandUrl($url);
         #  print "<h1>Fetching ".$url."</h1>";
 
         # keep in memory cache in case we send a page to many emails
 
         $cache = Cache::instance();
         if (isset($cache->url_cache[$url]) && is_array($cache->url_cache[$url])
-            && (time() - $cache->url_cache[$url]['fetched'] < Config::REMOTE_URL_REFETCH_TIMEOUT)
+            && (time() - $cache->url_cache[$url]['fetched'] < $this->config->get('REMOTE_URL_REFETCH_TIMEOUT'))
         ) {
-        #phpList::log()->notice($url . " is cached in memory");
-            if (Config::VERBOSE && function_exists('output')) {
+        #$this->logger->notice($url . " is cached in memory");
+            if ($this->config->get('VERBOSE') && function_exists('output')) {
                 output('From memory cache: ' . $url);
             }
             return $cache->url_cache[$url]['content'];
         }
 
         $timeout = time() - Cache::getPageCacheLastModified($url);
-        if ($timeout < Config::REMOTE_URL_REFETCH_TIMEOUT) {
-        #phpList::log()->notice($url.' was cached in database');
-            if (Config::VERBOSE && function_exists('output')) {
+        if ($timeout < $this->config->get('REMOTE_URL_REFETCH_TIMEOUT')) {
+        #$this->logger->notice($url.' was cached in database');
+            if ($this->config->get('VERBOSE') && function_exists('output')) {
                 output('From database cache: ' . $url);
             }
             return Cache::getPageCache($url);
         } else {
-        #phpList::log()->notice($url.' is not cached in database '.$timeout.' '. $dbcache_lastmodified." ".time());
+        #$this->logger->notice($url.' is not cached in database '.$timeout.' '. $dbcache_lastmodified." ".time());
         }
 
         $request_parameters = array(
@@ -176,23 +187,23 @@ class Util
         if (!$cache) {
             ## @#TODO, make it work with Request2
             if (function_exists('curl_init')) {
-                $content = Util::fetchUrlCurl($url, $request_parameters);
-            } elseif (0 && Config::get('has_pear_http_request') == 2) {
+                $content = $this->fetchUrlCurl($url, $request_parameters);
+            } elseif (0 && $this->config->get('has_pear_http_request') == 2) {
                 @require_once "HTTP/Request2.php";
-            } elseif (Config::get('has_pear_http_request')) {
+            } elseif ($this->config->get('has_pear_http_request')) {
                 @require_once "HTTP/Request.php";
-                $content = Util::fetchUrlPear($url, $request_parameters);
+                $content = $this->fetchUrlPear($url, $request_parameters);
             } else {
                 return false;
             }
         } else {
-            if (Config::VERBOSE) phpList::log()->notice($url . ' was cached in database');
+            if ($this->config->get('VERBOSE')) $this->logger->notice($url . ' was cached in database');
             $content = $cache;
         }
 
         if (!empty($content)) {
-            $content = Util::addAbsoluteResources($content, $url);
-            phpList::log()->notice('Fetching ' . $url . ' success');
+            $content = $this->addAbsoluteResources($content, $url);
+            $this->logger->notice('Fetching ' . $url . ' success');
             Cache::setPageCache($url, $lastmodified, $content);
 
             Cache::instance()->url_cache[$url] = array(
@@ -205,9 +216,9 @@ class Util
         return $content;
     }
 
-    public static function fetchUrlCurl($url, $request_parameters)
+    public function fetchUrlCurl($url, $request_parameters)
     {
-        if (Config::VERBOSE) phpList::log()->notice($url . ' fetching with curl ');
+        if ($this->config->get('VERBOSE')) $this->logger->notice($url . ' fetching with curl ');
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_TIMEOUT, $request_parameters['timeout']);
@@ -217,31 +228,31 @@ class Util
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($curl, CURLOPT_HEADER, 0);
         curl_setopt($curl, CURLOPT_DNS_USE_GLOBAL_CACHE, true);
-        curl_setopt($curl, CURLOPT_USERAGENT, 'phplist v' . Config::get('VERSION') . 'c (http://www.phplist.com)');
+        curl_setopt($curl, CURLOPT_USERAGENT, 'phplist v' . $this->config->get('VERSION') . 'c (http://www.phplist.com)');
         $raw_result = curl_exec($curl);
         $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
-        if (Config::VERBOSE) phpList::log()->notice('fetched ' . $url . ' status ' . $status);
+        if ($this->config->get('VERBOSE')) $this->logger->notice('fetched ' . $url . ' status ' . $status);
         #var_dump($status); exit;
         return $raw_result;
     }
 
     //TODO: convert to using namespaces
-    public static function fetchUrlPear($url, $request_parameters)
+    public function fetchUrlPear($url, $request_parameters)
     {
-        if (Config::VERBOSE) phpList::log()->notice($url . ' fetching with PEAR');
+        if ($this->config->get('VERBOSE')) $this->logger->notice($url . ' fetching with PEAR');
 
-        if (0 && Config::get('has_pear_http_request')== 2) {
+        if (0 && $this->config->get('has_pear_http_request')== 2) {
             $headreq = new HTTP_Request2($url, $request_parameters);
-            $headreq->setHeader('User-Agent', 'phplist v' . Config::get('VERSION') . 'p (http://www.phplist.com)');
+            $headreq->setHeader('User-Agent', 'phplist v' . $this->config->get('VERSION') . 'p (http://www.phplist.com)');
         } else {
             $headreq = new HTTP_Request($url, $request_parameters);
-            $headreq->addHeader('User-Agent', 'phplist v' . Config::get('VERSION') . 'p (http://www.phplist.com)');
+            $headreq->addHeader('User-Agent', 'phplist v' . $this->config->get('VERSION') . 'p (http://www.phplist.com)');
         }
         if (!PEAR::isError($headreq->sendRequest(false))) {
             $code = $headreq->getResponseCode();
             if ($code != 200) {
-                phpList::log()->notice('Fetching ' . $url . ' failed, error code ' . $code);
+                $this->logger->notice('Fetching ' . $url . ' failed, error code ' . $code);
                 return 0;
             }
             $header = $headreq->getResponseHeader();
@@ -251,15 +262,15 @@ class Util
             }
 
             $request_parameters['method'] = 'GET';
-            if (0 && Config::get('has_pear_http_request') == 2) {
+            if (0 && $this->config->get('has_pear_http_request') == 2) {
                 $request = new HTTP_Request2($url, $request_parameters);
-                $request->setHeader('User-Agent', 'phplist v' . Config::get('VERSION') . 'p (http://www.phplist.com)');
+                $request->setHeader('User-Agent', 'phplist v' . $this->config->get('VERSION') . 'p (http://www.phplist.com)');
             } else {
                 $request = new HTTP_Request($url, $request_parameters);
-                $request->addHeader('User-Agent', 'phplist v' . Config::get('VERSION') . 'p (http://www.phplist.com)');
+                $request->addHeader('User-Agent', 'phplist v' . $this->config->get('VERSION') . 'p (http://www.phplist.com)');
             }
-            phpList::log()->notice('Fetching ' . $url);
-            if (Config::VERBOSE && function_exists('output')) {
+            $this->logger->notice('Fetching ' . $url);
+            if ($this->config->get('VERBOSE') && function_exists('output')) {
                 output('Fetching remote: ' . $url);
             }
             if (!PEAR::isError($request->sendRequest(true))) {
@@ -270,18 +281,18 @@ class Util
                 }
 
             } else {
-                phpList::log()->notice('Fetching ' . $url . ' failed on GET ' . $request->getResponseCode());
+                $this->logger->notice('Fetching ' . $url . ' failed on GET ' . $request->getResponseCode());
                 return 0;
             }
         } else {
-            phpList::log()->notice('Fetching ' . $url . ' failed on HEAD');
+            $this->logger->notice('Fetching ' . $url . ' failed on HEAD');
             return 0;
         }
 
         return $content;
     }
 
-    public static function cleanUrl($url,$disallowed_params = array('PHPSESSID')) {
+    public function cleanUrl($url,$disallowed_params = array('PHPSESSID')) {
         $parsed = @parse_url($url);
         $params = array();
         if (empty($parsed['query'])) {
@@ -301,7 +312,7 @@ class Util
         } else {
             ## parse_str turns . into _ which is wrong
         #    parse_str($parsed['query'],$params);
-            $params= Util::parseQueryString($parsed['query']);
+            $params= $this->parseQueryString($parsed['query']);
         }
         $uri = !empty($parsed['scheme']) ? $parsed['scheme'].':'.((strtolower($parsed['scheme']) == 'mailto') ? '':'//'): '';
         $uri .= !empty($parsed['user']) ? $parsed['user'].(!empty($parsed['pass'])? ':'.$parsed['pass']:'').'@':'';
@@ -325,7 +336,7 @@ class Util
         return $uri;
     }
 
-    public static function parseQueryString($str) {
+    public function parseQueryString($str) {
         if (empty($str)) return array();
         $op = array();
         $pairs = explode('&', $str);
@@ -340,7 +351,7 @@ class Util
         return $op;
     }
 
-    public static function addAbsoluteResources($text,$url)
+    public function addAbsoluteResources($text,$url)
     {
         $parts = parse_url($url);
         $tags = array('src\s*=\s*','href\s*=\s*','action\s*=\s*','background\s*=\s*','@import\s+','@import\s+url\(');
@@ -381,7 +392,7 @@ class Util
         return $text;
     }
 
-    public static function timeDiff($time1,$time2) {
+    public function timeDiff($time1,$time2) {
         if (!$time1 || !$time2) {
             return s('Unknown');
         }
@@ -395,27 +406,7 @@ class Util
         }
         if ($diff == 0)
             return s('very little time');
-        return Util::secs2time($diff);
-    }
-
-    //todo: check php5.5 password api
-    public static function encryptPass($pass)
-    {
-        if (empty($pass)) {
-            return '';
-        }
-
-        if (function_exists('hash')) {
-            if (!in_array(Config::ENCRYPTION_ALGO, hash_algos(), true)) {
-                ## fallback, not that secure, but better than none at all
-                $algo = 'md5';
-            } else {
-                $algo = Config::ENCRYPTION_ALGO;
-            }
-            return hash($algo, $pass);
-        } else {
-            return md5($pass);
-        }
+        return $this->secs2time($diff);
     }
 
     /**
@@ -426,7 +417,7 @@ class Util
      * @since 2.2.10
      * @return null Will return null if register_globals PHP directive was disabled
      */
-    public static function unregister_GLOBALS()
+    public function unregister_GLOBALS()
     {
         if ( !ini_get('register_globals') )
             return;
@@ -453,26 +444,26 @@ class Util
     }
 
     //TODO: should be removed
-    public static function magicQuotes()
+    public function magicQuotes()
     {
         if (!ini_get('magic_quotes_gpc') || ini_get('magic_quotes_gpc') == 'off') {
-            $_POST = Util::addSlashesArray($_POST);
-            $_GET = Util::addSlashesArray($_GET);
-            $_REQUEST = Util::addSlashesArray($_REQUEST);
-            $_COOKIE = Util::addSlashesArray($_COOKIE);
-            Config::setRunningConfig('NO_MAGIC_QUOTES', true);
+            $_POST = $this->addSlashesArray($_POST);
+            $_GET = $this->addSlashesArray($_GET);
+            $_REQUEST = $this->addSlashesArray($_REQUEST);
+            $_COOKIE = $this->addSlashesArray($_COOKIE);
+            $this->config->setRunningConfig('NO_MAGIC_QUOTES', true);
         }else{
             #magic quotes are deprecated, so try to switch off if possible
             ini_set('magic_quotes_gpc','off');
-            Config::setRunningConfig('NO_MAGIC_QUOTES', false);
+            $this->config->setRunningConfig('NO_MAGIC_QUOTES', false);
         }
     }
 
-    public static function addSlashesArray($array)
+    public function addSlashesArray($array)
     {
         foreach ($array as $key => $val) {
             if (is_array($val)) {
-                $array[$key] = Util::addSlashesArray($val);
+                $array[$key] = $this->addSlashesArray($val);
             } else {
                 $array[$key] = addslashes($val);
             }
@@ -480,12 +471,12 @@ class Util
         return $array;
     }
 
-    public static function removeXss($string)
+    public function removeXss($string)
     {
         if (is_array($string)) {
             $return = array();
             foreach ($string as $key => $val) {
-                $return[Util::removeXss($key)] = Util::removeXss($val);
+                $return[$this->removeXss($key)] = $this->removeXss($val);
             }
             return $return;
         }
@@ -494,7 +485,7 @@ class Util
         return $string;
     }
 
-    public static function parseCline() {
+    public function parseCline() {
         $res = array();
         $cur = "";
         foreach ($GLOBALS['argv'] as $clinearg) {
@@ -520,7 +511,7 @@ class Util
     }
 
 
-    public static function clean2 ($value) {
+    public function clean2 ($value) {
         $value = trim($value);
         $value = preg_replace("/\r/","",$value);
         $value = preg_replace("/\n/","",$value);
@@ -531,7 +522,7 @@ class Util
         return $value;
     }
 
-    public static function cleanEmail ($value) {
+    public function cleanEmail ($value) {
         $value = trim($value);
         $value = preg_replace("/\r/","",$value);
         $value = preg_replace("/\n/","",$value);
@@ -555,26 +546,26 @@ class Util
      * @param bool $immediate
      * @return bool
      */
-    public static function isEmailBlacklisted($email, $immediate = true)
+    public function isEmailBlacklisted($email, $immediate = true)
     {
         //TODO: @Michiel why is there a check on the blacklist table?
-        if (!phpList::DB()->tableExists(Config::getTableName('user_blacklist'))) return false;
+        if (!$this->db->tableExists($this->config->getTableName('user_blacklist'))) return false;
         if (!$immediate) {
             # allow 5 minutes to send the last message acknowledging unsubscription
-            $gracetime = sprintf('%d', Config::BLACKLIST_GRACETIME);
+            $gracetime = sprintf('%d', $this->config->get('BLACKLIST_GRACETIME'));
             if (!$gracetime || $gracetime > 15 || $gracetime < 0) {
                 $gracetime = 5;
             }
         } else {
             $gracetime = 0;
         }
-        $result = phpList::DB()->query(
+        $result = $this->db->query(
             sprintf(
                 'SELECT COUNT(email) FROM %s
                 WHERE email = "%s"
                 AND date_add(added, interval %d minute) < CURRENT_TIMESTAMP)',
-                Config::getTableName('user_blacklist'),
-                String::sqlEscape($email),
+                $this->config->getTableName('user_blacklist'),
+                $this->db->sqlEscape($email),
                 $gracetime
             )
         );
@@ -586,7 +577,7 @@ class Util
      * @param int $subscriber_id
      * @return bool
      */
-    public static function isSubscriberIDBlacklisted($subscriber_id = 0)
+    public function isSubscriberIDBlacklisted($subscriber_id = 0)
     {
         $subscriber = Subscriber::getSubscriber($subscriber_id);
         return ($subscriber == null || $subscriber->blacklisted == 0) ? false : true;
@@ -597,7 +588,7 @@ class Util
      * @param string $email_address
      * @param string $reason
      */
-    public static function blacklistSubscriberByEmail($email_address, $reason = '')
+    public function blacklistSubscriberByEmail($email_address, $reason = '')
     {
         #0012262: blacklist only email when email bounces. (not subscribers): Function split so email can be blacklisted without blacklisting subscriber
         $subscriber = Subscriber::getSubscriberByEmailAddress($email_address);
@@ -612,7 +603,7 @@ class Util
      * @param string $reason
      * @param string $date
      */
-    public static function blacklistEmail($email_address, $reason = '', $date = '')
+    public function blacklistEmail($email_address, $reason = '', $date = '')
     {
         if (empty($date)) {
             $sqldate = 'CURRENT_TIMESTAMP';
@@ -622,23 +613,23 @@ class Util
         $email_address = String::sqlEscape($email_address);
 
         #0012262: blacklist only email when email bounces. (not subscribers): Function split so email can be blacklisted without blacklisting subscriber
-        phpList::DB()->query(
+        $this->db->query(
             sprintf(
                 'INSERT IGNORE INTO %s (email,added)
                 VALUES("%s",%s)',
-                Config::getTableName('user_blacklist'),
+                $this->config->getTableName('user_blacklist'),
                 String::sqlEscape($email_address),
                 $sqldate
             )
         );
 
         # save the reason, and other data
-        phpList::DB()->query(
+        $this->db->query(
             sprintf(
                 'INSERT IGNORE INTO %s (email, name, data)
                 VALUES("%s","%s","%s"),
                 ("%s","%s","%s")',
-                Config::getTableName('user_blacklist_data'),
+                $this->config->getTableName('user_blacklist_data'),
                 $email_address,
                 'reason',
                 addslashes($reason),
@@ -650,10 +641,10 @@ class Util
 
         /*foreach (array("REMOTE_ADDR") as $item ) { # @@@do we want to know more?
             if (isset($_SERVER['REMOTE_ADDR'])) {
-                phpList::DB()->Sql_Query(sprintf(
+                $this->db->Sql_Query(sprintf(
                     'INSERT IGNORE INTO %s (email, name, data)
                     VALUES("%s","%s","%s")',
-                    Config::getTableName('user_blacklist_data'),addslashes($email_address),
+                    $this->config->getTableName('user_blacklist_data'),addslashes($email_address),
                     $item,addslashes($_SERVER['REMOTE_ADDR'])));
             }
         }*/
@@ -666,16 +657,16 @@ class Util
      * @param int $subscriber_id
      * @param string $admin_name
      */
-    public static function unBlackList($subscriber_id = 0, $admin_name = '')
+    public function unBlackList($subscriber_id = 0, $admin_name = '')
     {
         if (!$subscriber_id) return;
         $subscriber = Subscriber::getSubscriber($subscriber_id);
 
         $tables = array(
-            Config::getTableName('user_blacklist') => 'email',
-            Config::getTableName('user_blacklist_data') => 'email'
+            $this->config->getTableName('user_blacklist') => 'email',
+            $this->config->getTableName('user_blacklist_data') => 'email'
         );
-        phpList::DB()->deleteFromArray($tables, $subscriber->getEmailAddress());
+        $this->db->deleteFromArray($tables, $subscriber->getEmailAddress());
 
         $subscriber->blacklisted = 0;
         $subscriber->update();
@@ -694,13 +685,13 @@ class Util
      * @param $email_address
      * @return bool
      */
-    public static function emailExists($email_address)
+    public function emailExists($email_address)
     {
-        $prep_statement = phpList::DB()->prepare(
+        $prep_statement = $this->db->prepare(
             sprintf(
                 'SELECT id FROM %s
                 WHERE email = :email_address',
-                Config::getTableName('user', true)
+                $this->config->getTableName('user', true)
             )
         );
         $prep_statement->execute(array(':email_address' => $email_address));
@@ -713,7 +704,7 @@ class Util
      * @param $default_address
      * @return array with fields 'email' and 'name'
      */
-    public static function parseEmailAndName($string, $default_address)
+    public function parseEmailAndName($string, $default_address)
     {
         if (preg_match("/([^ ]+@[^ ]+)/", $string, $regs)) {
             # if there is an email in the from, rewrite it as "name <email>"
@@ -740,8 +731,8 @@ class Util
     }
 
 
-    public static function addSubscriberStatistics($item = '', $amount, $list = 0) {
-        switch (Config::get('STATS_INTERVAL')) {
+    public function addSubscriberStatistics($item = '', $amount, $list = 0) {
+        switch ($this->config->get('STATS_INTERVAL')) {
             case 'monthly':
                 # mark everything as the first day of the month
                 $time = mktime(0,0,0,date('m'),1,date('Y'));
@@ -755,13 +746,13 @@ class Util
                 $time = mktime(0,0,0,date('m'),date('d'),date('Y'));
                 break;
         }
-        $result = phpList::DB()->query(sprintf(
+        $result = $this->db->query(sprintf(
                 'UPDATE %s
                 SET value = value + %d
                 WHERE unixdate = "%s"
                 AND item = "%s"
                 AND listid = %d',
-                Config::getTableName('userstats'),
+                $this->config->getTableName('userstats'),
                 $amount,
                 $time,
                 $item,
@@ -769,10 +760,10 @@ class Util
             ));
         if ($result->rowCount() <= 0) {
             //TODO: why not use REPLACE INTO?
-            phpList::DB()->query(sprintf(
+            $this->db->query(sprintf(
                     'INSERT INTO %s (value, unixdate, item, listid)
                     VALUES("%s", "%s", "%s", %d)',
-                    Config::getTableName('userstats'),
+                    $this->config->getTableName('userstats'),
                     $amount,
                     $time,
                     $item,

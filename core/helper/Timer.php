@@ -67,7 +67,13 @@ class Timer
             Timer::$_instance = new self();
         }
         if(!isset(Timer::$_instance->timers[$timer])){
+            //create new timer instance with specified name
             Timer::$_instance->timers[$timer] = new Timer();
+        }else{
+            //reset timer if it already exists
+            $now = gettimeofday();
+            $t = Timer::$_instance->timers[$timer];
+            $t->start = $now['sec'] * 1000000 + $now['usec'];
         }
     }
 } 
