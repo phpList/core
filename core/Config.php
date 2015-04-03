@@ -180,30 +180,47 @@ class Config
     }
 
     /**
+     * Override a configuration setting with a new one
+     */
+    public function set( $item, $value )
+    {
+        // If a custom config has been loaded
+        if ( isset( $this->running_config[ $item ] ) ) {
+            $this->running_config[ $item ] = $value;
+            // If the default config has been loaded
+        } else if ( isset( $this->default_config[ $item ] ) ) {
+            $this->default_config[ $item ] = $value;
+        }
+    }
+
+    /**
      * Get an item from the config, provide a default value if needed
      * @param string $item
      * @param mixed $default
      * @return mixed|null|string
      */
-    public function get($item, $default = null)
+    public function get( $item, $default = null )
     {
-        if (isset($this->running_config[$item])) {
-            $value = $this->running_config[$item];
-        } else if(isset($this->default_config[$item])) {
-            $value = $this->default_config[$item];
-        }else{
+        // If a custom config has been loaded
+        if ( isset( $this->running_config[ $item ] ) ) {
+            $value = $this->running_config[ $item ];
+        // If the default config has been loaded
+        } else if ( isset( $this->default_config[ $item ] ) ) {
+            $value = $this->default_config[ $item ];
+        // If no configuration has been loaded yet
+        } else {
             $value = $default;
         }
 
-        if(is_string($value)){
+        if ( is_string( $value ) ) {
             //TODO: should probably move this somewhere else
-            $find = array('[WEBSITE]', '[DOMAIN]', '<?=VERSION?>');
+            $find = array( '[WEBSITE]', '[DOMAIN]', '<?=VERSION?>' );
             $replace = array(
                 $this->running_config['website'],
                 $this->running_config['domain'],
                 PHPLIST_VERSION
             );
-            $value = str_replace($find, $replace, $value);
+            $value = str_replace( $find, $replace, $value );
         }
 
         return $value;
