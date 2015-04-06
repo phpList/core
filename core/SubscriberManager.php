@@ -126,7 +126,7 @@ class SubscriberManager
     public function add( \phpList\Entity\SubscriberEntity $scrEntity )
     {
         // Hash the password before saving
-        $scrEntity->encPass = $this->pass->encrypt( $scrEntity->plainPass );
+        $scrEntity->encPass = $this->pass->encrypt( $scrEntity->plainPass, $this->config->get( 'ENCRYPTION_ALGO' ) );
 
         // Check the address is valid
         // TODO: Reintroduce the validation level and tlds from config file
@@ -242,7 +242,7 @@ class SubscriberManager
     public function updatePass( $plainPass, Entity\SubscriberEntity $scrEntity )
     {
         // Hash password
-        $encPass = $this->pass->encrypt( $plainPass );
+        $encPass = $this->pass->encrypt( $plainPass, $this->config->get( 'ENCRYPTION_ALGO' ) );
         // Update the password
         $this->subscriberModel->updatePass( $scrEntity->id, $encPass );
     }
