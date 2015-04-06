@@ -32,6 +32,8 @@ class Pass {
                 ## fallback, not that secure, but better than none at all
                 # NOTE: Suggest using PHPass lib
                 $algo = 'md5';
+
+                throw new \Exception( "Hashing algorithm '$desiredAlgo' is not available on this server" );
             } else {
                 $algo = $desiredAlgo;
             }
