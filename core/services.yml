@@ -57,6 +57,9 @@ services:
   AdminModel:
     class: phpList\Model\AdminModel
     arguments: [@Config, @Database]
+  ListModel:
+    class: phpList\Model\ListModel
+    arguments: [@Config, @Database]
   SubscriberModel:
     class: phpList\Model\SubscriberModel
     arguments: [@Config, @Database]
