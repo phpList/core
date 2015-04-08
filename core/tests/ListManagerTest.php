@@ -13,7 +13,7 @@ use phpList\Entity\MailingListEntity;
 /**
  * @Note: Assumes that the database contains an admin and multiple mailing lists
  */
-class ListTest extends \PHPUnit_Framework_TestCase {
+class ListManagerTest extends \PHPUnit_Framework_TestCase {
 
     public function setUp()
     {
