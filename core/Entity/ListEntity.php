@@ -1,38 +1,47 @@
 <?php
+
 namespace phpList\Entity;
 
+class ListEntity {
 
-class MailingListEntity {
-    public $id = 0;
     public $name;
     public $description;
-    public $entered;
+    public $active;
     public $listorder;
     public $prefix;
-    public $rssfeed;
-    public $modified;
-    public $active;
     public $owner;
+    public $id;
+    public $rssfeed;
     public $category;
 
     /**
-     * Default constructor
-     * @param string $name
-     * @param string $description
-     * @param int $listorder
-     * @param int $owner
-     * @param bool $active
-     * @param int $category
-     * @param string $prefix
-     */
-    public function __construct($name, $description, $listorder, $owner, $active, $category, $prefix)
+    * Get a list attribute
+    * @param string $attribute
+    * @return string|null
+    */
+    public function getAttribute($attribute)
     {
-        $this->name = $name;
-        $this->description = $description;
-        $this->listorder = $listorder;
-        $this->owner = $owner;
-        $this->active = $active;
-        $this->category = $category;
-        $this->prefix = $prefix;
+        if (empty($this->attributes) ||!isset($this->attributes[$attribute])) {
+            return null;
+        } else {
+            return $this->attributes[$attribute];
+        }
     }
-} 
+
+    /**
+    * Get a list attribute
+    * @return array
+    */
+    public function getAttributes()
+    {
+        return $this->attributes;
+    }
+
+    /**
+    * Check if attributes have been loaded already
+    * @return bool
+    */
+    public function hasAttributes(){
+        return $this->hasAttributes;
+    }
+}
