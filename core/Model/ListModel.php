@@ -21,7 +21,7 @@ class ListModel {
     */
     public function addSubscriber( $subscriberId, $listId )
     {
-        $this->db->query(
+        $result = $this->db->query(
             sprintf(
                 'INSERT INTO
                     %s
@@ -33,6 +33,8 @@ class ListModel {
                 , $listId
             )
         );
+
+        return $result;
     }
 
     /**
@@ -60,6 +62,54 @@ class ListModel {
             }
             $query = rtrim( $query, ',' ) . ';';
             $this->db->query( $query );
+        }
+    }
+
+    /**
+    * Unsubscribe given subscriber from given list
+    * @param int $scrId The ID of the subscriber to remove from list
+    * @param int $listId The ID of the list to remove them from
+    */
+    public function removeSubscriber( $listId, $scrId )
+    {
+        $result = $this->db->query(
+            sprintf(
+                'DELETE FROM
+                    %s
+                WHERE
+                    userid = %d
+                AND
+                    listid = %d'
+                , $this->config->getTableName( 'listuser' )
+                , $scrId
+                , $listId
+            )
+        );
+
+        return $result;
+    }
+
+    /**
+    * Unsubscribe an array of subscriber ids from given list
+    * @param $subscriber_ids
+    * @param $list_id
+    */
+    public function removeSubscribers( $subscriber_ids, $list_id )
+    {
+        if ( !empty( $subscriber_ids ) ) {
+            $this->db->query(
+            sprintf(
+                'DELETE FROM
+                    %s
+                WHERE
+                    userid IN (%s)
+                AND
+                    listid = %d'
+                , $this->config->getTableName( 'listuser' )
+                , implode( ',', $subscriber_ids )
+                , $list_id
+                )
+            );
         }
     }
 
@@ -109,7 +159,7 @@ class ListModel {
     /**
     * Get list with given id
     * @param $id
-    * @return MailingListEntity
+    * @return ListEntity
     */
     public function getListById( $id )
     {

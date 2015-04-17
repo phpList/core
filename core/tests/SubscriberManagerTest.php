@@ -69,7 +69,10 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
     public function testAdd()
     {
         // Add new subscriber properties to the entity
-        $scrEntity = new SubscriberEntity( $this->emailAddress, $this->plainPass );
+        $scrEntity = new SubscriberEntity;
+        $scrEntity->emailAddress = $this->emailAddress;
+        $scrEntity->plainPass = $this->plainPass;
+        
         // Copy the email address to test it later
         $emailCopy = $this->emailAddress;
         // Save the subscriber

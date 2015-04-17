@@ -28,9 +28,9 @@ services:
   Campaign:
     class: phpList\Campaign
     arguments: [@Config, @Database, @MailingList, @Template]
-  MailingList:
-    class: phpList\MailingList
-    arguments: [@Config, @Database]
+  ListManager:
+    class: phpList\ListManager
+    arguments: [@Config, @Database, @ListModel]
   SubscriberManager:
     class: phpList\SubscriberManager
     arguments: [@Config, @Database]
@@ -44,8 +44,8 @@ services:
 # Entities
   CampaignEntity:
     class: phpList\Entity\CampaignEntity
-  MailingListEntity:
-    class: phpList\Entity\MailingListEntity
+  ListEntity:
+    class: phpList\Entity\ListEntity
   SubscriberEntity:
     class: phpList\Entity\SubscriberEntity
   TemplateEntity:

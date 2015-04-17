@@ -1,13 +1,13 @@
 <?php
 namespace phpList;
 
-use phpList\Entity\MailingListEntity;
+use phpList\Entity\ListEntity;
 
 /**
  * Class MailingList
  * @package PHPList\Core
  */
-class MailingList
+class ListManager
 {
     protected $config;
     protected $db;
@@ -15,20 +15,21 @@ class MailingList
     /**
      * Default constructor
      */
-    public function __construct(Config $config, helper\Database $db)
+    public function __construct( Config $config, helper\Database $db, \phpList\Model\ListModel $listModel )
     {
         $this->config = $config;
         $this->db = $db;
+        $this->listModel = $listModel;
     }
 
     /**
      * Create a MailingList object from database values
      * @param $array
-     * @return MailingListEntity
+     * @return ListEntity
      */
     private function listFromArray($array)
     {
-        $list = new MailingListEntity($array['name'], $array['description'], $array['listorder'], $array['owner'], $array['active'], $array['category'], $array['prefix']);
+        $list = new ListEntity($array['name'], $array['description'], $array['listorder'], $array['owner'], $array['active'], $array['category'], $array['prefix']);
         $list->id = $array['id'];
         $list->entered = $array['entered'];
         $list->rssfeed = $array['rssfeed'];
@@ -55,7 +56,7 @@ class MailingList
     /**
      * Save a list to the database, will update if it already exists
      */
-    public function save(MailingListEntity $mailing_list)
+    public function save(ListEntity $mailing_list)
     {
         if ($mailing_list->id != 0) {
             $this->update($mailing_list);
@@ -83,7 +84,7 @@ class MailingList
     /**
      * Update this lists details in the database
      */
-    public function update(MailingListEntity $mailing_list)
+    public function update(ListEntity $mailing_list)
     {
         $query
             = 'UPDATE %s SET name = "%s", description = "%s", active = %d, listorder = %d, prefix = "%s", owner = %d
@@ -104,42 +105,72 @@ class MailingList
     }
 
     /**
-     * Unsubscribe given subscriber from given list
-     * @param $subscriber_id
-     * @param $list_id
+     * Add a subscriber to a list
+     * @param SubscriberEntity $scrEntity
+     * @param int $listId ID of the list to add the subscriber to
      */
-    public function removeSubscriber($subscriber_id, $list_id)
+    public function addSubscriber( \phpList\Entity\SubscriberEntity $scrEntity, $listId )
     {
-        $this->db->query(
-            sprintf(
-                'DELETE FROM %s
-                WHERE userid = %d
-                AND listid = %d',
-                $this->config->getTableName('listuser'),
-                $subscriber_id,
-                $list_id
-            )
-        );
+        // Add the subscriber to the list
+        return $this->listModel->addSubscriber( $scrEntity->id, $listId );
     }
 
     /**
-     * Unsubscribe an array of subscriber ids from given list
-     * @param $subscriber_ids
-     * @param $list_id
-     */
-    public function removeSubscribers($subscriber_ids, $list_id)
+    * Add a subscriber to a list
+    * @param phpListEntityListEntity $listEntity
+    * @param int $listId ID of the list to add the subscriber to
+    */
+    public function addSubscribers( array $scrEntities, $listId )
     {
-        if (!empty($subscriber_ids)) {
-            $this->db->query(
-                sprintf(
-                    'DELETE FROM %s
-                    WHERE userid IN (%s)
-                    AND listid = %d',
-                    $this->config->getTableName('listuser'),
-                    implode(',', $subscriber_ids),
-                    $list_id
-                )
-            );
+        // Initialise array for collecting outcomes
+        $results = array();
+
+        // Loop through each subecriber entity object
+        foreach ( $scrEntities as $scrEntity ) {
+            // Add the subscriber to the list
+            $results = $this->listModel->addSubscriber( $scrEntity->id, $listId );
+        }
+
+        // Return true unless one or more queries failed
+        if ( false === array_search( false, $results ) ) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+    * Add a subscriber to a list
+    * @param SubscriberEntity $scrEntity
+    * @param int $listId ID of the list to add the subscriber to
+    */
+    public function removeSubscriber( $listId, \phpList\Entity\SubscriberEntity $scrEntity )
+    {
+        // Add the subscriber to the list
+        return $this->listModel->removeSubscriber( $listId, $scrEntity->id );
+    }
+
+    /**
+    * Add a subscriber to a list
+    * @param phpListEntityListEntity $listEntity
+    * @param int $listId ID of the list to add the subscriber to
+    */
+    public function removeSubscribers( array $scrEntities, $listId )
+    {
+        // Initialise array for collecting outcomes
+        $results = array();
+
+        // Loop through each subecriber entity object
+        foreach ( $scrEntities as $scrEntity ) {
+            // Add the subscriber to the list
+            $results = $this->listModel->removeSubscriber( $scrEntity->id, $listId );
+        }
+
+        // Return true unless one or more queries failed
+        if ( false === array_search( false, $results ) ) {
+            return false;
+        } else {
+            return true;
         }
     }
 

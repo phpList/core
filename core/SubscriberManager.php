@@ -70,7 +70,7 @@ class SubscriberManager
      */
     public function getSubscriberByEmailAddress( $emailAddress )
     {
-        return $this->getSubscriberBy('email', $emailAddress);
+        return $this->getSubscriberBy( 'email', $emailAddress );
     }
 
     /**
@@ -78,9 +78,9 @@ class SubscriberManager
      * @param string $fk
      * @return SubscriberEntity
      */
-    public function getSubscriberByForeignKey($fk)
+    public function getSubscriberByForeignKey( $fk )
     {
-        return $this->getSubscriberBy('foreignkey', $fk);
+        return $this->getSubscriberBy( 'foreignkey', $fk );
     }
 
     /**
@@ -88,9 +88,9 @@ class SubscriberManager
      * @param string $unique_id
      * @return SubscriberEntity
      */
-    public function getSubscriberByUniqueId($unique_id)
+    public function getSubscriberByUniqueId( $unique_id )
     {
-        $result = $this->getSubscriberBy('uniqueid', $unique_id);
+        $result = $this->getSubscriberBy( 'uniqueid', $unique_id );
         return $this->subscriberEntityFromArray( $result );
     }
 
@@ -100,20 +100,20 @@ class SubscriberManager
      * @param string $value
      * @return SubscriberEntity
      */
-    private function getSubscriberBy($column, $value)
+    private function getSubscriberBy( $column, $value )
     {
         $result = $this->db->prepare(
             sprintf(
                 'SELECT * FROM %s
                 WHERE :key = :value',
-                $this->config->getTableName('Subscriber', true)
+                $this->config->getTableName( 'Subscriber', true )
             )
         );
-        $result->bindValue(':key',$column);
-        $result->bindValue(':value',$value);
+        $result->bindValue( ':key',$column );
+        $result->bindValue( ':value',$value );
         $result->execute();
 
-        return $this->subscriberFromArray($result->fetch(\PDO::FETCH_ASSOC));
+        return $this->subscriberFromArray( $result->fetch( \PDO::FETCH_ASSOC ) );
     }
 
     /**
@@ -216,8 +216,10 @@ class SubscriberManager
     private function subscriberEntityFromArray( array $array )
     {
         // FIXME: Move this object instantiation to DI.
-        $scrEntity = new SubscriberEntity( $array['email'], $array['password'] );
-
+        $scrEntity = new SubscriberEntity();
+        
+        $scrEntity->emailAddress = $array['email'];
+        $scrEntity->plainPass = $array['password'];
         $scrEntity->id = $array['id'];
         $scrEntity->confirmed = $array['confirmed'];
         $scrEntity->blacklisted = $array['blacklisted'];

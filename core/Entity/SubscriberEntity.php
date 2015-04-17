@@ -5,7 +5,7 @@ use phpList\interfaces\EmailAddressInterface;
 use phpList\interfaces\plainPassInterface;
 
 class SubscriberEntity {
-    
+
     public $id;
 
     /**
@@ -40,12 +40,6 @@ class SubscriberEntity {
     public $foreignKey;
     private $attributes;
     private $hasAttributes = false;
-
-    public function __construct( $emailAddress, $plainPass )
-    {
-        $this->emailAddress = $emailAddress;
-        $this->plainPass = $plainPass;
-    }
 
     /**
      * Set attributes for this subscriber
