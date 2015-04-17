@@ -28,12 +28,6 @@ services:
   Campaign:
     class: phpList\Campaign
     arguments: [@Config, @Database, @MailingList, @Template]
-  ListManager:
-    class: phpList\ListManager
-    arguments: [@Config, @Database, @ListModel]
-  SubscriberManager:
-    class: phpList\SubscriberManager
-    arguments: [@Config, @Database]
   Template:
     class: phpList\Template
     arguments: [@Config, @Database, @TemplateImage]
@@ -52,6 +46,14 @@ services:
     class: phpList\Entity\TemplateEntity
   TemplateImageEntity:
     class: phpList\Entity\TemplateImageEntity
+
+# Managers
+  ListManager:
+    class: phpList\ListManager
+    arguments: [@Config, @Database, @ListModel]
+  SubscriberManager:
+    class: phpList\SubscriberManager
+    arguments: [@Config, @EmailUtil, @Pass, @SubscriberModel]
 
 # Models
   AdminModel:
