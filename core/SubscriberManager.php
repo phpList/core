@@ -217,7 +217,7 @@ class SubscriberManager
     {
         // FIXME: Move this object instantiation to DI.
         $scrEntity = new SubscriberEntity();
-        
+
         $scrEntity->emailAddress = $array['email'];
         $scrEntity->plainPass = $array['password'];
         $scrEntity->id = $array['id'];
