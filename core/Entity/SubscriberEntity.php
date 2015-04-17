@@ -5,13 +5,13 @@ use phpList\interfaces\EmailAddressInterface;
 use phpList\interfaces\plainPassInterface;
 
 class SubscriberEntity {
+    
     public $id;
 
     /**
      * @var EmailAddressInterface
      */
     public $emailAddress;
-
     public $confirmed;
     public $blacklisted;
     public $optedIn;
@@ -26,7 +26,6 @@ class SubscriberEntity {
      * @var \DateTime
      */
     public $modified;
-
     public $uniqId;
     public $htmlEmail;
     public $subscribePage;
@@ -35,12 +34,10 @@ class SubscriberEntity {
      * @var plainPassInterface
      */
     public $plainPass;
-
     public $plainPasschanged;
     public $disabled;
     public $extraData;
     public $foreignKey;
-
     private $attributes;
     private $hasAttributes = false;
 
