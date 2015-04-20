@@ -21,6 +21,12 @@ Data objects called 'Entities' are used to pass data around internal application
 
 Example: ```\Entity\SubscriberEntity```
 
+Entites are the default data format used by internal classes. It's important to use these instead of basic data types, in order to maintain consistent and predictable interfaces between classes.
+
+Properties are defined in the Entity Class, which is used as a reference for client coders investigating what data is accessible.
+
+The only exception to this is Model classes, which accept and return basic data types to controller classes, which in turn convert it into Entities before further processing.
+
 ### Managers: manipulating data
 
 Manager objects perform high-level manipulation of data, including passing data between Model and Entity objects. Manager classes perform the role of Controllers from MVC architecture. This is important for maintaining a consistent interface to data between application components via data objects, and providing flexibility, separately, for database queries in Model classes.
