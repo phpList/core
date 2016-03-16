@@ -7,7 +7,7 @@
     <php>
         <!-- Constants -->
         <const name='API_LOGIN_USERNAME' value='admin'/>
-        <const name='API_LOGIN_PASSWORD' value='phplist'/>
+        <const name='API_LOGIN_PASSWORD' value='admin'/>
         <!-- Absolute path to system's temporary directory -->
         <const name='TMP_PATH' value='/tmp'/>
         <!-- Name of the folder housing phpList -->
@@ -20,6 +20,9 @@
         <var name="DB_PORT" value="3306" />
         // !! Change these vars to fit your local config !!
 
+        // Path to phpList 4 configuration file
+        <var name="phplist4-ini-config-file-path" value="/var/www/rapinew/plugins/restapi2/vendor/phplist/phplist4-core/config.ini" />
+
         // Database configuration
         <var name="DB_NAME" value="pl" />
         <var name="DB_USER" value="pl" />
@@ -27,7 +30,7 @@
 
         // Admin user credentials
         <var name="admin_username" value="admin" />
-        <var name="admin_password" value="phplist" />
+        <var name="admin_password" value="admin" />
 
         // Other configuration parameters
         <const name='API_URL_BASE_PATH' value='http://path-to-phplist.local'/>
