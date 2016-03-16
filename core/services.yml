@@ -11,6 +11,8 @@ services:
   EmailAddress:
     class:  phpList\EmailAddress
     arguments: [@Config, %emailaddress.address%]
+  EmailUtil:
+    class:  phpList\EmailUtil
   Config:
     class: phpList\Config
     arguments: [%config.configfile%]
@@ -22,6 +24,7 @@ services:
     arguments: [@Database, @Config]
   Pass:
     class: phpList\Pass
+    arguments: [@Config]
   phpList:
     class: phpList\phpList
     arguments: [@Config, @Database, @Language, @Util]
@@ -70,6 +73,6 @@ services:
 # NOTE: the classname.parameter syntax is just a Symfony convention; parameter
 # names are handles as single simple strings
 parameters:
-  config.configfile: configfile
+  config.configfile: null
   emailaddress.address: emailaddress
   password.password: password
