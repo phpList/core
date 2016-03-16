@@ -7,38 +7,92 @@ use phpList\helper\Validation;
 
 class Config
 {
+    public $configFileOrigin;
     private $running_config = array();
     private $default_config = array();
+
+    public function parseIniFile( $configFile )
+    {
+        // Load the config file
+        $parsed = parse_ini_file( $configFile );
+        if( ! is_array( $parsed ) ) {
+            throw new \Exception( 'Could not parse specified ini config file: ' . $configFile );
+        }
+        return $parsed;
+    }
 
     /**
      * Default constructor
      * load configuration from database each new session
      * TODO: probably not a good idea when using an installation with multiple subscribers
      */
-    public function __construct($config_file)
-    {
-        /**
+     public function __construct( $configFile = NULL )
+     {
+         /**
          * Constants used for debugging and developping
          */
-        defined('DEBUG') ? null : define('DEBUG', true);
-        defined('PHPLIST_DEVELOPER_EMAIL') ? null : define('PHPLIST_DEVELOPER_EMAIL', 'dev@localhost.local');
-        defined('PHPLIST_DEV_VERSION') ? null : define('PHPLIST_DEV_VERSION', true);
-        defined('PHPLIST_VERSION') ? null : define('PHPLIST_VERSION', '4.0.0 dev');
+         defined('DEBUG') ? null : define('DEBUG', true);
+         defined('PHPLIST_DEVELOPER_EMAIL') ? null : define('PHPLIST_DEVELOPER_EMAIL', 'dev@localhost.local');
+         defined('PHPLIST_DEV_VERSION') ? null : define('PHPLIST_DEV_VERSION', true);
+         defined('PHPLIST_VERSION') ? null : define('PHPLIST_VERSION', '4.0.0 dev');
 
-        //do we have a configuration saved in session?
-        if (isset($_SESSION['running_config'])) {
-            $this->running_config = $_SESSION['running_config'];
-        } else {
-            if (is_file($config_file) && filesize($config_file) > 20) {
-                //load from config file
-                $this->running_config = parse_ini_file($config_file);
-                //Initialise further config
-                $this->initConfig();
-            } else{
-                throw new \Exception('Cannot find config file: ' . $config_file);
-            }
-        }
-    }
+         // Find the config file to use
+         $foundConfigFile = $this->findConfigFile( $configFile );
+         // Check config file is valid
+         $this->validateConfigFile( $foundConfigFile );
+         // Load the config file path as an ini file
+         $this->running_config = $this->parseIniFile( $this->configFilePath );
+         //Initialise further config
+         $this->initConfig();
+     }
+
+     /**
+      * Find the right config file to use
+      */
+     public function findConfigFile( $configFile )
+     {
+         // If no config file path provided
+         if( $configFile !== NULL ) {
+                 $this->configFileOrigin = "supplied file path";
+                 $this->configFilePath = $configFile;
+         } else { // If no config file specified, look for one
+             // determine which config file to use
+             if ( isset( $_SESSION['running_config'] ) ) { // do we have a configuration saved in session?
+                 // If phpList is being used as a library, the config file may be set in session
+                 $this->configFileOrigin = "session";
+                 $this->configFilePath = $_SESSION['running_config'];
+
+             } elseif( isset( $GLOBALS['phplist4-ini-config-file-path'] ) ) { // Is a phpList 4 config file stored in globals?
+                 $this->configFileOrigin = "globals: phpList4 ini file path";
+                 $this->configFilePath = $GLOBALS['phplist4-ini-config-file-path'];
+
+             } elseif( isset( $GLOBALS['configfile'] ) ) { // Is a phpList 3 config file stored in globals?
+
+                 $this->configFileOrigin = "globals: phpList3 ini file path";
+                 $this->configFilePath = $GLOBALS['configfile'];
+
+             } else {
+                 throw new \Exception( 'Could not find config file, none specified' );
+             }
+         }
+         return $this->configFilePath;
+     }
+
+     /**
+      * Check that config file is valid
+      * @param string $configFilePath Path to check
+      */
+     public function validateConfigFile( $configFilePath )
+     {
+         if (
+             is_file( $configFilePath )
+             && filesize( $configFilePath ) > 20
+         ) {
+             return true;
+         } else {
+             throw new \Exception( 'Could not load specified config file: ' . $configFile );
+         }
+     }
 
     /**
      * Run this after db has been initialized, so we get the config from inside the database as well.
@@ -53,7 +107,7 @@ class Config
      * @param Language $lan
      */
     public function runAfterLanguageInitialised(Language $lan){
-        $this->loadDefaultConfig($lan);
+        // $this->loadDefaultConfig($lan);
     }
 
     /**
@@ -322,12 +376,16 @@ class Config
         $this->running_config['TLD_REFETCH_TIMEOUT'] = 15552000; ## 180 days, about 6 months
         $this->running_config['SHOW_UNSUBSCRIBELINK'] = true;
 
-        if (function_exists('hash_algos') && !in_array($this->running_config['ENCRYPTION_ALGO'], hash_algos())) {
-            throw new \Exception('Encryption algorithm "' . $this->running_config['ENCRYPTION_ALGO'] . '" not supported, change your configuration');
+        // Check if desired hashing algo is supported by server
+        if (
+            function_exists( 'hash_algos' )
+            && !in_array( $this->running_config['ENCRYPTION_ALGO'], hash_algos() )
+        ) {
+            throw new \Exception( 'Encryption algorithm "' . $this->running_config['ENCRYPTION_ALGO'] . '" not supported, change your configuration' );
         }
-        ## remember the length of a hashed string
-        $this->running_config['hash_length'] = strlen(hash($this->running_config['ENCRYPTION_ALGO'],'some text'));
 
+        // check and store the length of a hash using the desired algo
+        $this->running_config['hash_length'] = strlen( hash( $this->running_config['ENCRYPTION_ALGO'], 'some text' ) );
 
         $this->running_config['NUMATTACHMENTS'] = 1;
         $this->running_config['FCKIMAGES_DIR'] = 'uploadimages';
@@ -1079,5 +1137,4 @@ Thank you.
 
             );
     }
-
 }
