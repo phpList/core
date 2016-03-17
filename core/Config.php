@@ -57,19 +57,22 @@ class Config
                  $this->configFilePath = $configFile;
          } else { // If no config file specified, look for one
              // determine which config file to use
-             if ( isset( $_SESSION['running_config'] ) ) { // do we have a configuration saved in session?
+             if (
+                isset( $_SESSION['running_config'] )
+                && count( $_SESSION['running_config'] ) > 15
+            ) { // do we have a configuration saved in session?
                  // If phpList is being used as a library, the config file may be set in session
                  $this->configFileOrigin = "session";
                  $this->configFilePath = $_SESSION['running_config'];
-
-             } elseif( isset( $GLOBALS['phplist4-ini-config-file-path'] ) ) { // Is a phpList 4 config file stored in globals?
-                 $this->configFileOrigin = "globals: phpList4 ini file path";
-                 $this->configFilePath = $GLOBALS['phplist4-ini-config-file-path'];
 
              } elseif( isset( $GLOBALS['configfile'] ) ) { // Is a phpList 3 config file stored in globals?
 
                  $this->configFileOrigin = "globals: phpList3 ini file path";
                  $this->configFilePath = $GLOBALS['configfile'];
+
+             } elseif( isset( $GLOBALS['phplist4-ini-config-file-path'] ) ) { // Is a phpList 4 config file stored in globals?
+                 $this->configFileOrigin = "globals: phpList4 ini file path";
+                 $this->configFilePath = $GLOBALS['phplist4-ini-config-file-path'];
 
              } else {
                  throw new \Exception( 'Could not find config file, none specified' );
@@ -84,14 +87,17 @@ class Config
       */
      public function validateConfigFile( $configFilePath )
      {
-         if (
-             is_file( $configFilePath )
-             && filesize( $configFilePath ) > 20
-         ) {
-             return true;
-         } else {
-             throw new \Exception( 'Could not load specified config file: ' . $configFile );
-         }
+        if ( ! is_string( $configFilePath ) ) {
+            throw new \Exception( 'Config file path is not a string (' . gettype( $configFilePath ) . ')' );
+        } elseif ( ! is_file( $configFilePath ) ) {
+            throw new \Exception( 'Config file is not a file: ' . $configFilePath );
+        } elseif( ! filesize( $configFilePath ) > 20 ) {
+            throw new \Exception( 'Config file too small: ' . $configFilePath );
+        } elseif(  ! parse_ini_file( $configFilePath ) ) {
+            throw new \Exception( 'Config file not an INI file: ' . $configFilePath );
+        } else {
+            return true;
+        }
      }
 
     /**
