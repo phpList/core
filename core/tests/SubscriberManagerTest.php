@@ -25,33 +25,26 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
         $this->emailAddress = 'unittest-' . rand( 0, 999999 ) . '@example.com';
         $this->plainPass = 'easypassword';
 
-        // Instantiate config object
-        $this->configFile = dirname( __FILE__ ) . '/../../config.ini';
-        $this->config = new Config( $this->configFile );
-
-        // Instantiate util classes
-        $this->emailUtil = new EmailUtil();
-        $this->pass = new Pass();
-
-        // Instantiate remaining classes
-        $this->db = new Database( $this->config );
-        $this->subscriberModel = new SubscriberModel( $this->config, $this->db );
-        $this->subscriberManager = new SubscriberManager(
-            $this->config
-            , $this->emailUtil
-            , $this->pass
-            , $this->subscriberModel
-        );
-
-        // Optional: use DI to load the subscriber class instead:
         // // Create Symfony DI service container object for use by other classes
         // $this->container = new ContainerBuilder();
         // // Create new Symfony file loader to handle the YAML service config file
         // $loader = new YamlFileLoader( $this->container, new FileLocator(__DIR__) );
         // // Load the service config file, which is in YAML format
         // $loader->load( '../services.yml' );
-        // $this->container->setParameter( 'config.configfile', '/var/www/pl4/config.ini' );
-        // $this->subscriber = $this->container->get( 'Subscriber' );
+        // // Get objects from container
+        // $this->config = $this->container->get( 'Config' );
+        // $this->config = $this->container->get( 'EmailUtil' );
+        // $this->config = $this->container->get( 'Pass' );
+        // $this->config = $this->container->get( 'SubscriberManager' );
+
+        // Optional: use DI to load the subscriber class instead:
+        // Create Symfony DI service container object for use by other classes
+        $this->container = new ContainerBuilder();
+        // Create new Symfony file loader to handle the YAML service config file
+        $loader = new YamlFileLoader( $this->container, new FileLocator(__DIR__) );
+        // Load the service config file, which is in YAML format
+        $loader->load( '../services.yml' );
+        $this->subscriberManager = $this->container->get( 'SubscriberManager' );
     }
 
     /**
@@ -72,7 +65,7 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
         $scrEntity = new SubscriberEntity;
         $scrEntity->emailAddress = $this->emailAddress;
         $scrEntity->plainPass = $this->plainPass;
-        
+
         // Copy the email address to test it later
         $emailCopy = $this->emailAddress;
         // Save the subscriber

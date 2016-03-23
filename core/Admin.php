@@ -270,11 +270,16 @@ class Admin
             'admin' => null
         );
 
+        // Hash the supplied password for comparison
+        $encPass = $this->pass->encrypt( $plainPass );
+
         $result = $this->adminModel->getAdminByUsername( $username );
 
-        $adminEntity = $this->adminEntityFromArray( $result );
+        // If an admin was found with that username
+        if( $result ) {
 
-        $encPass = $this->pass->encrypt( $plainPass );
+            $adminEntity = $this->adminEntityFromArray( $result );
+        }
 
         /*
          * TODO: this should not happen imo, can this be removed
@@ -288,16 +293,21 @@ class Admin
             $result = Sql_Query_Params($query, array($login));
         }*/
 
-        if ( $adminEntity->disabled ) {
+        if ( ! $result ) {
+            $return['error'] = 'Admin not found'; // If admin not found
+        } elseif( $adminEntity->disabled ) {
             // FIXME: translation / formatting via s() removed
             $return['error'] = 'Your account has been disabled';
-        } elseif ($encPass == $adminEntity->encPass) {
+        } elseif ( $encPass == $adminEntity->encPass ) {
             $return['result'] = true;
             $return['error'] = '';
             $return['admin'] = $adminEntity;
-        } else {
+        } elseif ( $encPass != $adminEntity->encPass ) {
             // FIXME: translation / formatting via s() removed
             $return['error'] = 'Incorrect password';
+        } else {
+            // FIXME: translation / formatting via s() removed
+            $return['error'] = 'Unknown error';
         }
         return $return;
     }

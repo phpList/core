@@ -27,15 +27,16 @@ class AdminTest extends \PHPUnit_Framework_TestCase {
         $loader = new YamlFileLoader( $this->container, new FileLocator(__DIR__) );
         // Load the service config file, which is in YAML format
         $loader->load( '../services.yml' );
-        // Set necessary config class parameter
-        $this->container->setParameter( 'config.configfile', '/var/www/pl4/config.ini' );
         // Get objects from container
         $this->config = $this->container->get( 'Config' );
 
         $this->admin = $this->container->get( 'Admin' );
     }
 
-    public function testValidateLogin()
+    /**
+     * Check that we our credentials are validated, as they should be
+     */
+    public function testValidLogin()
     {
         // Set correct login vars for this installation, from phpunit.xml
         $username = $GLOBALS['admin_username'];
@@ -46,9 +47,50 @@ class AdminTest extends \PHPUnit_Framework_TestCase {
 
         // Test valiation was successful
         $this->assertTrue( $result['result'] );
-        // Check details are accurate
-        $this->assertEquals( $username, $result['admin']->username );
+
+        // Return vars for dependent tests
+        return array(
+            'plainPass' => $plainPass
+            , 'encPass' => $result['admin']->encPass
+            , 'username' => $username
+            , 'retrievedUsername' => $result['admin']->username
+        );
+    }
+
+    /**
+    * Check that incorrect credentials do not validate
+    */
+    public function testInvalidLogin()
+    {
+        // Set correct login vars for this installation, from phpunit.xml
+        $username = 'foo';
+        $plainPass = 'bar';
+
+        // Perform the validation
+        $result = $this->admin->validateLogin( $plainPass, $username );
+
+        // Test valiation failed
+        $this->assertFalse( $result['result'] );
+    }
+
+    /**
+     * Test that the username we provided is the username actually used to
+     * validate the login
+     * @depends testValidLogin
+     */
+    public function testAdminUsernameValidation( $vars )
+    {
+        // Check the retreived details match those submitted
+        $this->assertEquals( $vars['username'], $vars['retrievedUsername'] );
+    }
+
+    /**
+     * Test that the password retreived was not in plantext
+     * @depends testValidLogin
+     */
+    public function testAdminPasswordHashed( $vars )
+    {
         // Check that retrieved pass is hashed
-        $this->assertNotEquals( $plainPass, $result['admin']->encPass );
+        $this->assertNotEquals( $vars['plainPass'], $vars['encPass'] );
     }
 }

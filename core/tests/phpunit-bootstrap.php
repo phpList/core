@@ -3,13 +3,9 @@
 // Include Symfony autoloader
 require_once( '../vendor/autoload.php' );
 
-// TODO: Include setup file for dummy globals etc.
-$GLOBALS['usertable_prefix'] = 'phplist_';
-$GLOBALS['database_host'] = 'localhost';
-$GLOBALS['database_user'] = 'pl';
-$GLOBALS['database_password'] = 'pl';
-$GLOBALS['database_name'] = 'pl';
-
+// Set timezone to avoid warnings
+// FIXME: Remove this and handle elsewhere, reflecting the server's locale
+date_default_timezone_set( 'UTC' );
 
 // Include config file as it includes necessary config vars
 if (

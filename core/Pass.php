@@ -4,6 +4,17 @@ namespace phpList;
 
 class Pass {
 
+    protected $config;
+
+    /**
+    * @param Config $config
+    * @param helper\Database $db
+    */
+    public function __construct( Config $config )
+    {
+        $this->config = $config;
+    }
+
     /**
      * Encrypt a plaintext password using the best available algorithm
      * @todo: check php5.5 password api
@@ -12,13 +23,19 @@ class Pass {
      * @param string $desiredAlgo Name of desiresd algo
      * @return string $encPass Encrypted password
      */
-    public function encrypt( $plainPass, $desiredAlgo = 'md5' )
+    public function encrypt( $plainPass, $desiredAlgo = NULL )
     {
         // If no password was supplied, return empty
         // FIXME: Either log this event, or throw an exception, so client code
         // does not wrongly assume a secure password was generated
         if ( empty( $plainPass ) ) {
             return '';
+        }
+
+        // If no hashing algo was specified
+        if( $desiredAlgo == NULL ) {
+            // Fetch default hashing algo from config file
+            $desiredAlgo = $this->config->get( 'ENCRYPTION_ALGO' );
         }
 
         if ( function_exists( 'hash' ) ) {
@@ -37,8 +54,10 @@ class Pass {
             } else {
                 $algo = $desiredAlgo;
             }
+            // Hash the password using desired algo
             $encPass = hash( $algo, $plainPass );
         } else {
+            //. Hash the password using a fallback default
             $encPass = md5( $plainPass );
         }
         return $encPass;

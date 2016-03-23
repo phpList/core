@@ -25,6 +25,10 @@ class AdminModel {
         $this->db = $db;
     }
 
+    /**
+     * Fetch all details of an Admin with a given username
+     * @param strong $username username of admin to fetch
+     */
     public function getAdminByUsername( $username )
     {
         $result = $this->db->query(
@@ -40,7 +44,7 @@ class AdminModel {
                 , $username
             )
         );
-        
+
         return $result->fetch( \PDO::FETCH_ASSOC );
     }
 }
