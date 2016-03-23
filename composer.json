@@ -4,7 +4,7 @@
 	"keywords": ["phplist", "email", "newsletter", "manager"],
 	"homepage": "http://www.phpList.com/",
 	"type": "project",
-	"license": "GNU General Public License version 2.0 (GPLv2)",
+	"license": "GNU Affero General Public License version 3.0 or later (AGPLv3+)",
 	"support": {
 		"issues": "https://github.com/phpList/phpList/issues",
 		"forum": "http://forums.phplist.com/",
