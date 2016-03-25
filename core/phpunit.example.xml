@@ -26,7 +26,7 @@
         // Database configuration
         <var name="DB_NAME" value="" />
         <var name="DB_USER" value="" />
-
+        <var name="DB_PASSWD" value="" />
 
         // Admin user credentials
         <var name="admin_username" value="admin" />
