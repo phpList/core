@@ -26,7 +26,7 @@
         // Database configuration
         <var name="DB_NAME" value="" />
         <var name="DB_USER" value="" />
-        <var name="DB_PASSWD" value="" />
+
 
         // Admin user credentials
         <var name="admin_username" value="admin" />
@@ -34,5 +34,7 @@
 
         // Other configuration parameters
         <const name='API_URL_BASE_PATH' value='http://path-to-phplist.local'/>
+        // Directory where dummy config files for unit tests are located
+        <var name="DUMMY_CONFIG_DIR" value="./tests/dummyconfigs" />
     </php>
 </phpunit>

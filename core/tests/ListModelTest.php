@@ -24,8 +24,6 @@ class ListModelTest extends \PHPUnit_Framework_TestCase {
         $loader = new YamlFileLoader( $this->container, new FileLocator(__DIR__) );
         // Load the service config file, which is in YAML format
         $loader->load( '../services.yml' );
-        // Set necessary config class parameter
-        $this->container->setParameter( 'config.configfile', '/var/www/pl4/config.ini' );
         // Get objects from container
         $this->listModel = $this->container->get( 'ListModel' );
     }

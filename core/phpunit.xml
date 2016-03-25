@@ -34,5 +34,6 @@
 
         // Other configuration parameters
         <const name='API_URL_BASE_PATH' value='http://path-to-phplist.local'/>
+        <var name="DUMMY_CONFIG_DIR" value="/dummyconfigs" />
     </php>
 </phpunit>
