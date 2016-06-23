@@ -1,0 +1,11 @@
+parameters:
+    git_dir: .
+    bin_dir: vendor/bin
+    tasks:
+      phpcs:
+        standard: 'PSR2'
+        show_warnings: false
+        tab_width: ~
+        ignore_patterns: ['vendor/*']
+        sniffs: []
+        triggered_by: [php]
