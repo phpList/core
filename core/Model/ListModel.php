@@ -2,7 +2,7 @@
 namespace phpList\Model;
 
 use phpList\Entity\SubscriberEntity;
-use phpList\helper\String;
+use phpList\helper\StringClass;
 
 class ListModel {
 

@@ -1,7 +1,7 @@
 <?php
 namespace phpList;
 
-use phpList\helper\String;
+use phpList\helper\StringClass;
 use phpList\helper\Util;
 use PHPMailer;
 
@@ -685,7 +685,7 @@ class phpListMailer extends \PHPMailer
 
         if ($hasHTML) {
             $message = stripslashes($message);
-            $textmessage = String::HTML2Text($message);
+            $textmessage = StringClass::HTML2Text($message);
             $htmlmessage = $message;
         } else {
             $textmessage = $message;

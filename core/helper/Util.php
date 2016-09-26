@@ -610,7 +610,7 @@ class Util
         } else {
             $sqldate = '"' . $date . '"';
         }
-        $email_address = String::sqlEscape($email_address);
+        $email_address = StringClass::sqlEscape($email_address);
 
         #0012262: blacklist only email when email bounces. (not subscribers): Function split so email can be blacklisted without blacklisting subscriber
         $this->db->query(
@@ -618,7 +618,7 @@ class Util
                 'INSERT IGNORE INTO %s (email,added)
                 VALUES("%s",%s)',
                 $this->config->getTableName('user_blacklist'),
-                String::sqlEscape($email_address),
+                StringClass::sqlEscape($email_address),
                 $sqldate
             )
         );
@@ -726,7 +726,7 @@ class Util
 
         return [
             'email' =>  $email_address,
-            'name'  =>  String::removeDoubleSpaces(trim($name))
+            'name'  =>  StringClass::removeDoubleSpaces(trim($name))
         ];
     }
 

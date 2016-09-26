@@ -4,7 +4,7 @@ namespace phpList;
 use Exception;
 use phpList\Entity\CampaignEntity;
 use phpList\Entity\MailingListEntity;
-use phpList\helper\String;
+use phpList\helper\StringClass;
 use phpList\helper\Util;
 
 class Campaign
@@ -123,7 +123,7 @@ class Campaign
         $condition .= ') ';
 
         if ($subject != '') {
-            $condition .= ' AND subject LIKE "%' . String::sqlEscape($subject) . '%" ';
+            $condition .= ' AND subject LIKE "%' . StringClass::sqlEscape($subject) . '%" ';
         }
         if ($owner != 0) {
             $condition .= sprintf(' AND owner = %d', $owner);

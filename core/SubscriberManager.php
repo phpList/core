@@ -3,7 +3,7 @@ namespace phpList;
 
 use phpList\Subscriber;
 use phpList\Entity\SubscriberEntity;
-use phpList\helper\String;
+use phpList\helper\StringClass;
 
 class SubscriberManager
 {
@@ -290,7 +290,7 @@ class SubscriberManager
         foreach ($scrEntity->getAttributes() as $key => $val) {
             ## in the help, we only list attributes with "strlen < 20"
             if (strlen($key) < 20) {
-                $clean_attributes[String::cleanAttributeName($key)] = $val;
+                $clean_attributes[StringClass::cleanAttributeName($key)] = $val;
             }
         }
         return $clean_attributes;
