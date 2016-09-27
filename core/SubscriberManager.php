@@ -135,6 +135,10 @@ class SubscriberManager
             throw new \Exception( 'Cannot insert subscriber with invalid email address: "' . $scrEntity->emailAddress . '"' );
         }
 
+        $entity = $this->subscriberModel->getSubscriberByEmail($scrEntity->emailAddress);
+        if($entity["email"] !== null)
+            throw new \Exception("Subscriber with that email already exists");
+
         // Save subscriber to db
         $newSubscriberId = $this->subscriberModel->save(
             $scrEntity->emailAddress

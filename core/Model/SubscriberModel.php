@@ -115,6 +115,19 @@ class SubscriberModel {
         return $result->fetch( \PDO::FETCH_ASSOC );
     }
 
+    public function getSubscriberByEmail( $emailAddress )
+    {
+        $result = $this->db->query(
+            sprintf(
+                "SELECT * FROM %s
+                WHERE email = '%s'",
+                $this->config->getTableName( 'user', true ),
+                $emailAddress
+            )
+        );
+        return $result->fetch( \PDO::FETCH_ASSOC );
+    }
+
     /**
      * Cleanly delete all records of a subscriber from DB
      * @param  int $id ID of subscriber to delete
