@@ -21,6 +21,14 @@ class ListModel {
     */
     public function addSubscriber( $subscriberId, $listId )
     {
+
+        $lists = $this->getListsForSubscriber((int) $subscriberId);
+        foreach ($lists as $list){
+            if((int) $list["id"] === (int) $listId){
+                throw new \Exception("Subscriber is already subscribed on that list");
+            }
+        }
+
         $result = $this->db->query(
             sprintf(
                 'INSERT INTO
@@ -202,7 +210,7 @@ class ListModel {
                 , $subscriber_id
             )
         );
-        return $this->makeLists( $result );
+        return $result->fetchAll( \PDO::FETCH_ASSOC );
     }
 
     /**
