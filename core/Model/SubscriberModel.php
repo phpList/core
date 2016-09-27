@@ -2,7 +2,7 @@
 namespace phpList\Model;
 
 use phpList\Entity\SubscriberEntity;
-use phpList\helper\String;
+use phpList\helper\StringClass;
 
 class SubscriberModel {
 
@@ -110,6 +110,19 @@ class SubscriberModel {
                 WHERE id = %d',
                 $this->config->getTableName( 'user', true ),
                 $id
+            )
+        );
+        return $result->fetch( \PDO::FETCH_ASSOC );
+    }
+
+    public function getSubscriberByEmail( $emailAddress )
+    {
+        $result = $this->db->query(
+            sprintf(
+                "SELECT * FROM %s
+                WHERE email = '%s'",
+                $this->config->getTableName( 'user', true ),
+                $emailAddress
             )
         );
         return $result->fetch( \PDO::FETCH_ASSOC );

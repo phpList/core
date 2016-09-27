@@ -276,7 +276,7 @@ class PrepareCampaign
 
         if ($cached_campaign->htmlformatted) {
             if (empty($cached_campaign->textcontent)) {
-                $textcontent = String::HTML2Text($content);
+                $textcontent = StringClass::HTML2Text($content);
             } else {
                 $textcontent = $cached_campaign->textcontent;
             }
@@ -1584,7 +1584,7 @@ class PrepareCampaign
         $cached_campaign->footer = $forwardContent ? stripslashes($campaign->forwardfooter) : $campaign->footer;
 
         if (strip_tags($cached_campaign->footer) != $cached_campaign->footer) {
-            $cached_campaign->textfooter = String::HTML2Text($cached_campaign->footer);
+            $cached_campaign->textfooter = StringClass::HTML2Text($cached_campaign->footer);
             $cached_campaign->htmlfooter = $cached_campaign->footer;
         } else {
             $cached_campaign->textfooter = $cached_campaign->footer;
@@ -1644,7 +1644,7 @@ class PrepareCampaign
 
 
         /*if ($cached_campaign->htmlformatted) {
-            #   $cached->content = String::compressContent($cached->content);
+            #   $cached->content = StringClass::compressContent($cached->content);
         }*/
 
         //$cached_campaign->google_track = $campaign->google_track;

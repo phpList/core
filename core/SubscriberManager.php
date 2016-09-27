@@ -3,7 +3,7 @@ namespace phpList;
 
 use phpList\Subscriber;
 use phpList\Entity\SubscriberEntity;
-use phpList\helper\String;
+use phpList\helper\StringClass;
 
 class SubscriberManager
 {
@@ -135,6 +135,10 @@ class SubscriberManager
             throw new \Exception( 'Cannot insert subscriber with invalid email address: "' . $scrEntity->emailAddress . '"' );
         }
 
+        $entity = $this->subscriberModel->getSubscriberByEmail($scrEntity->emailAddress);
+        if($entity["email"] !== null)
+            throw new \Exception("Subscriber with that email already exists");
+
         // Save subscriber to db
         $newSubscriberId = $this->subscriberModel->save(
             $scrEntity->emailAddress
@@ -177,6 +181,11 @@ class SubscriberManager
      */
     public function delete( $id )
     {
+
+        $subscriber = $this->subscriberModel->getSubscriberById($id);
+        if(!$subscriber)
+            throw new \Exception("Subscriber doesn't exists");
+
         $results = $this->subscriberModel->delete( $id );
 
         // TODO: Add a check of $results to ensure delete was successful before
@@ -290,7 +299,7 @@ class SubscriberManager
         foreach ($scrEntity->getAttributes() as $key => $val) {
             ## in the help, we only list attributes with "strlen < 20"
             if (strlen($key) < 20) {
-                $clean_attributes[String::cleanAttributeName($key)] = $val;
+                $clean_attributes[StringClass::cleanAttributeName($key)] = $val;
             }
         }
         return $clean_attributes;

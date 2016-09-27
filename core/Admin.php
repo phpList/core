@@ -1,7 +1,7 @@
 <?php
 namespace phpList;
 
-use phpList\helper\String;
+use phpList\helper\StringClass;
 use phpList\helper\Util;
 use phpList\Entity\AdminEntity;
 
@@ -23,7 +23,7 @@ class Admin
      */
     public function setLoginname($loginname)
     {
-        $this->loginname = strtolower(String::normalize($loginname));
+        $this->loginname = strtolower(StringClass::normalize($loginname));
         return $this->isLoginUnique();
     }
 
@@ -34,7 +34,7 @@ class Admin
      */
     public function setNamelc($namelc)
     {
-        $this->namelc = strtolower(String::normalize($namelc));
+        $this->namelc = strtolower(StringClass::normalize($namelc));
     }
 
     public $email;
@@ -105,7 +105,7 @@ class Admin
         $admins = array();
         $condition = '';
         if ($search != '') {
-            $search = String::sqlEscape($search);
+            $search = StringClass::sqlEscape($search);
             $condition = sprintf(' WHERE loginname LIKE "%%%s%%" OR email LIKE "%%%s%%"', $search, $search);
         }
 
@@ -159,7 +159,7 @@ class Admin
      */
     public function update($modifiedby)
     {
-        $privileges = String::sqlEscape(serialize($this->privileges));
+        $privileges = StringClass::sqlEscape(serialize($this->privileges));
         phpList::DB()->query(
             sprintf(
                 'UPDATE %s SET

@@ -8,7 +8,7 @@ use phpList\phpList;
  * Class containing string helper functions
  * @package phpList
  */
-class String
+class StringClass
 {
     /**
      * Normalize text
@@ -121,7 +121,7 @@ class String
             500
         );
 
-        $text = String::replaceChars($text);
+        $text = StringClass::replaceChars($text);
 
         $text = preg_replace("/###NL###/", "\n", $text);
         $text = preg_replace("/\n /", "\n", $text);
