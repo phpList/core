@@ -181,6 +181,11 @@ class SubscriberManager
      */
     public function delete( $id )
     {
+
+        $subscriber = $this->subscriberModel->getSubscriberById($id);
+        if(!$subscriber)
+            throw new \Exception("Subscriber doesn't exists");
+
         $results = $this->subscriberModel->delete( $id );
 
         // TODO: Add a check of $results to ensure delete was successful before
