@@ -98,6 +98,15 @@ class AdminModel {
         return false;
     }
 
+    public function getLoginToken($id){
+        $result = $this->db->query(sprintf("select * from %s WHERE adminid = '%s'", $this->config->getTableName('admintoken'), $id));
+        $result = $result->fetch();
+        if(count($result) > 0){
+            return $result['value'];
+        }
+
+    }
+
     public function validateLogin($plainPass, $username){
         $admin = new Admin($this, $plainPass);
         return $admin->validateLogin($plainPass, $username);

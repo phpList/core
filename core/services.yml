@@ -3,8 +3,12 @@ services:
   Admin:
     class: phpList\Admin
     arguments: [@AdminModel, @Pass]
+  LoggerWriterAbstractFactory:
+    class: phpList\helper\Logger\LoggerWriterAbstractFactory
+    arguments: [@Config]
   Logger:
     class: phpList\helper\Logger
+    arguments: [@LoggerWriterAbstractFactory]
   Util:
     class: phpList\helper\Util
     arguments: [@Config, @Logger, @Database]

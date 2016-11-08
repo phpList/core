@@ -1,50 +1,23 @@
 <?php
 namespace phpList\helper;
 
+use phpList\helper\Logger\LoggerWriterAbstractFactory;
+use phpList\helper\Logger\NotSuchWriterException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
 class Logger implements LoggerInterface
 {
-    private $report;
 
-    public function __construct(){}
+    private $logger;
 
-    private function logToDatabase($message, $page = 'unknown page')
+    public function __construct(LoggerWriterAbstractFactory $factory)
     {
-        $this->logToFile($message, $page);
-        /* TODO: logger can't depend on database which depends on logger
-        @$this->db->query(
-            sprintf(
-                'INSERT INTO %s (entered,page,entry)
-                VALUES(CURRENT_TIMESTAMP, "%s", "%s")',
-                $this->config->getTableName('eventlog', $page, $message)
-            ),
-            1
-        );*/
-    }
+        try{
+            $this->logger = $factory->getLoggerWriter();
+        }catch (NotSuchWriterException $e){}
 
-    private function logToFile($message, $page = 'unknown page')
-    {
-        //todo: change to config var?
-        $logfile = './debug.log';
-        $fp = @fopen($logfile, 'a');
-        $line = '[' . date('d M Y, H:i:s') . '] ' . $page . ' - ' . $message . "\n";
-        @fwrite($fp, $line);
-        @fclose($fp);
     }
-
-    //todo: remove below functions
-    public function addToReport($text)
-    {
-        $this->report .= "\n$text";
-    }
-
-    public function getReport()
-    {
-        return $this->report;
-    }
-
 
     /**
      * System is unusable.
@@ -55,7 +28,7 @@ class Logger implements LoggerInterface
      */
     public function emergency($message, array $context = array())
     {
-        $this->log(LogLevel::EMERGENCY, $context);
+        $this->log(LogLevel::EMERGENCY, $message, $context);
     }
 
     /**
@@ -70,7 +43,7 @@ class Logger implements LoggerInterface
      */
     public function alert($message, array $context = array())
     {
-        $this->log(LogLevel::ALERT, $context);
+        $this->log(LogLevel::ALERT, $message, $context);
     }
 
     /**
@@ -84,7 +57,7 @@ class Logger implements LoggerInterface
      */
     public function critical($message, array $context = array())
     {
-        $this->log(LogLevel::CRITICAL, $context);
+        $this->log(LogLevel::CRITICAL, $message, $context);
     }
 
     /**
@@ -97,7 +70,7 @@ class Logger implements LoggerInterface
      */
     public function error($message, array $context = array())
     {
-        $this->log(LogLevel::ERROR, $context);
+        $this->log(LogLevel::ERROR, $message, $context);
     }
 
     /**
@@ -112,7 +85,7 @@ class Logger implements LoggerInterface
      */
     public function warning($message, array $context = array())
     {
-        $this->log(LogLevel::WARNING, $context);
+        $this->log(LogLevel::WARNING, $message, $context);
     }
 
     /**
@@ -124,13 +97,7 @@ class Logger implements LoggerInterface
      */
     public function notice($message, array $context = array())
     {
-        if(isset($context['page'])){
-            $this->logToDatabase($message, $context['page']);
-        }else{
-            $this->logToDatabase($message);
-        }
-
-        //$this->log(LogLevel::NOTICE, $context);
+        $this->log(LogLevel::NOTICE, $message, $context);
     }
 
     /**
@@ -144,7 +111,7 @@ class Logger implements LoggerInterface
      */
     public function info($message, array $context = array())
     {
-        $this->log(LogLevel::INFO, $context);
+        $this->log(LogLevel::INFO, $message, $context);
     }
 
     /**
@@ -156,12 +123,7 @@ class Logger implements LoggerInterface
      */
     public function debug($message, array $context = array())
     {
-        if(isset($context['page'])){
-            $this->logToFile($message, $context['page']);
-        }else{
-            $this->logToFile($message);
-        }
-        //$this->log(LogLevel::DEBUG, $context);
+        $this->log(LogLevel::DEBUG, $message, $context);
     }
 
     /**
@@ -174,10 +136,6 @@ class Logger implements LoggerInterface
      */
     public function log($level, $message, array $context = array())
     {
-        if(isset($context['page'])){
-            $this->logToFile($message, $context['page']);
-        }else{
-            $this->logToFile($message);
-        }
+        $this->logger->log($level, $message, $context);
     }
 }

@@ -422,5 +422,9 @@ class Admin
     public function setLoginToken($id){
         $this->adminModel->setLoginToken($id);
     }
+
+    public function getLoginToken($id){
+        return $this->adminModel->getLoginToken($id);
+    }
     
 }
