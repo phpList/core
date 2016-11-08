@@ -5,6 +5,7 @@ use phpList\helper\StringClass;
 use phpList\helper\Util;
 use phpList\Entity\AdminEntity;
 
+
 class Admin
 {
     public $id = 0;
@@ -277,12 +278,12 @@ class Admin
 
         // If an admin was found with that username
         if( $result ) {
-
             $adminEntity = $this->adminEntityFromArray( $result );
         }
 
         /*
          * TODO: this should not happen imo, can this be removed
+         * TODO: Aleksander Koko: I this should be removed
         #Password encryption verification.
         if(strlen($passwordDB)<$GLOBALS['hash_length']) { // Passwords are encrypted but the actual is not.
             #Encrypt the actual DB password before performing the validation below.
@@ -413,4 +414,17 @@ class Admin
         $result->execute(array(':token' => $token));
         return ($result->rowCount() > 0);
     }
+    
+    public function checkIfTheTokenIsValid($token){
+        return $this->adminModel->checkIfTheTokenIsValid($token);
+    }
+
+    public function setLoginToken($id){
+        $this->adminModel->setLoginToken($id);
+    }
+
+    public function getLoginToken($id){
+        return $this->adminModel->getLoginToken($id);
+    }
+    
 }

@@ -23,7 +23,7 @@ class Pass {
      * @param string $desiredAlgo Name of desiresd algo
      * @return string $encPass Encrypted password
      */
-    public function encrypt( $plainPass, $desiredAlgo = NULL )
+    public function encrypt( $plainPass, $desiredAlgo = "sha256" )
     {
         // If no password was supplied, return empty
         // FIXME: Either log this event, or throw an exception, so client code
@@ -56,6 +56,8 @@ class Pass {
             }
             // Hash the password using desired algo
             $encPass = hash( $algo, $plainPass );
+            //var_dump($encPass);
+            //die;
         } else {
             //. Hash the password using a fallback default
             $encPass = md5( $plainPass );
