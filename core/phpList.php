@@ -169,9 +169,8 @@ class phpList
 
     protected function configPhpVer()
     {
-        //TODO: we probably will need >5.3
-        if (version_compare(PHP_VERSION, '5.1.2', '<') && $this->config->get('WARN_ABOUT_PHP_SETTINGS')) {
-            throw new \Exception($this->lan->get('phpList requires PHP version 5.1.2 or higher'));
+        if (version_compare(PHP_VERSION, '5.6.0', '<') && $this->config->get('WARN_ABOUT_PHP_SETTINGS')) {
+            throw new \Exception($this->lan->get('phpList requires PHP version 5.6.0 or higher'));
         }
     }
 
