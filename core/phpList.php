@@ -169,8 +169,8 @@ class phpList
 
     protected function configPhpVer()
     {
-        if (version_compare(PHP_VERSION, '5.6.0', '<') && $this->config->get('WARN_ABOUT_PHP_SETTINGS')) {
-            throw new \Exception($this->lan->get('phpList requires PHP version 5.6.0 or higher'));
+        if (version_compare(PHP_VERSION, '7.0.0', '<') && $this->config->get('WARN_ABOUT_PHP_SETTINGS')) {
+            throw new \Exception($this->lan->get('phpList requires PHP version 7.0.0 or higher'));
         }
     }
 
