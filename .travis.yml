@@ -1,0 +1,24 @@
+sudo: false
+
+language: php
+
+cache:
+  directories:
+  - vendor
+
+matrix:
+  include:
+  - php: 5.6
+  - php: 7.0
+  - php: 7.1
+  - php: hhvm
+
+install:
+  - composer install
+
+script:
+  # Run PHP lint on all PHP files.
+  - find core/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l
+  - php -l index.php
+  # Run the unit tests.
+  - vendor/bin/phpunit core/tests/
