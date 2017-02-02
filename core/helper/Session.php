@@ -45,11 +45,9 @@ class Session
     }
 }
 
-//PHP >= 5.4.0 can use a SessionHandlerInerface implementation
-class MySQLSessionHandler /*implements \SessionHandlerInterface*/
+class MySQLSessionHandler implements \SessionHandlerInterface
 {
     /**
-     * PHP >= 5.4.0<br/>
      * Close the session
      * @link http://php.net/manual/en/sessionhandlerinterafce.close.php
      * @return bool <p>
@@ -63,7 +61,6 @@ class MySQLSessionHandler /*implements \SessionHandlerInterface*/
     }
 
     /**
-     * PHP >= 5.4.0<br/>
      * Destroy a session
      * @link http://php.net/manual/en/sessionhandlerinterafce.destroy.php
      * @param int $session_id The session ID being destroyed.
@@ -86,7 +83,6 @@ class MySQLSessionHandler /*implements \SessionHandlerInterface*/
     }
 
     /**
-     * PHP >= 5.4.0<br/>
      * Cleanup old sessions
      * @link http://php.net/manual/en/sessionhandlerinterafce.gc.php
      * @param int $maxlifetime <p>
@@ -113,7 +109,6 @@ class MySQLSessionHandler /*implements \SessionHandlerInterface*/
     }
 
     /**
-     * PHP >= 5.4.0<br/>
      * Initialize session
      * @link http://php.net/manual/en/sessionhandlerinterafce.open.php
      * @param string $save_path The path where to store/retrieve the session.
@@ -129,7 +124,6 @@ class MySQLSessionHandler /*implements \SessionHandlerInterface*/
     }
 
     /**
-     * PHP >= 5.4.0<br/>
      * Read session data
      * @link http://php.net/manual/en/sessionhandlerinterafce.read.php
      * @param string $session_id The session id to read data for.
@@ -153,7 +147,6 @@ class MySQLSessionHandler /*implements \SessionHandlerInterface*/
     }
 
     /**
-     * PHP >= 5.4.0<br/>
      * Write session data
      * @link http://php.net/manual/en/sessionhandlerinterafce.write.php
      * @param string $session_id The session id.
