@@ -68,14 +68,8 @@ class StringClass
         # strip HTML, and turn links into the full URL
         $text = preg_replace("/\r/", "", $text);
 
-        #$text = preg_replace("/\n/","###NL###",$text);
         $text = preg_replace("/<script[^>]*>(.*?)<\/script\s*>/is", "", $text);
         $text = preg_replace("/<style[^>]*>(.*?)<\/style\s*>/is", "", $text);
-
-        # would prefer to use < and > but the strip tags below would erase that.
-        #  $text = preg_replace("/<a href=\"(.*?)\"[^>]*>(.*?)<\/a>/is","\\2\n{\\1}",$text,100);
-
-        #  $text = preg_replace("/<a href=\"(.*?)\"[^>]*>(.*?)<\/a>/is","[URLTEXT]\\2[/URLTEXT][LINK]\\1[/LINK]",$text,100);
 
         $text = preg_replace(
             "/<a[^>]*href=[\"\'](.*)[\"\'][^>]*>(.*)<\/a>/Umis",
@@ -84,7 +78,6 @@ class StringClass
         );
         $text = preg_replace("/<b>(.*?)<\/b\s*>/is", "*\\1*", $text);
         $text = preg_replace("/<h[\d]>(.*?)<\/h[\d]\s*>/is", "**\\1**\n", $text);
-        #  $text = preg_replace("/\s+/"," ",$text);
         $text = preg_replace("/<i>(.*?)<\/i\s*>/is", "/\\1/", $text);
         $text = preg_replace("/<\/tr\s*?>/i", "<\/tr>\n\n", $text);
         $text = preg_replace("/<\/p\s*?>/i", "<\/p>\n\n", $text);
@@ -111,7 +104,6 @@ class StringClass
                     $linkreplace = $linktext . ' <' . $linkurl . '>';
                 }
             }
-            #  $text = preg_replace('~'.preg_quote($fullmatch).'~',$linkreplace,$text);
             $text = str_replace($fullmatch, $linkreplace, $text);
         }
         $text = preg_replace(
@@ -178,9 +170,6 @@ class StringClass
 
         $text = preg_replace($search, $replace, $text);
 
-
-        # eze
-        # $text = html_entity_decode ( $text , ENT_QUOTES , $GLOBALS['strCharSet'] );
         $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
 
         return $text;
@@ -198,14 +187,12 @@ class StringClass
             '@import\s+url\('
         );
         foreach ($tags as $tag) {
-#   preg_match_all('/'.preg_quote($tag).'"([^"|\#]*)"/Uim', $text, $foundtags);
 # we're only handling nicely formatted src="something" and not src=something, ie quotes are required
 # bit of a nightmare to not handle it with quotes.
             preg_match_all('/(' . $tag . ')"([^"|\#]*)"/Uim', $text, $foundtags);
             for ($i = 0; $i < count($foundtags[0]); $i++) {
                 $match = $foundtags[2][$i];
                 $tagmatch = $foundtags[1][$i];
-#      print "$match<br/>";
                 if (preg_match("#^(http|javascript|https|ftp|mailto):#i", $match)) {
                     # scheme exists, leave it alone
                 } elseif (preg_match("#\[.*\]#U", $match)) {
@@ -239,7 +226,6 @@ class StringClass
             }
         }
 
-        # $text = preg_replace('#PHPSESSID=[^\s]+
         return $text;
     }
 
@@ -260,19 +246,5 @@ class StringClass
 
         ## this needs loads more testing across systems to be sure
         return $content;
-
-        /*
-        $content = preg_replace("/\n/",' ',$content);
-        $content = preg_replace("/\r/",'',$content);
-        $content = removeJavascript($content);
-        $content = stripComments($content);
-
-        ## find some clean way to remove double spacing
-        $content = preg_replace("/\t/",' ',$content);
-        while (preg_match("/  /",$content)) {
-            $content = preg_replace("/  /",' ',$content);
-        }
-        return $content;
-         */
     }
 }

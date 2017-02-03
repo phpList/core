@@ -56,8 +56,6 @@ class Pass
             }
             // Hash the password using desired algo
             $encPass = hash($algo, $plainPass);
-            //var_dump($encPass);
-            //die;
         } else {
             //. Hash the password using a fallback default
             $encPass = md5($plainPass);

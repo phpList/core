@@ -37,11 +37,8 @@ class Process
 
         phpList::log()->info($running_processes['count'] . ' out of ' . $max . ' active processes', ['page' => 'process']);
         $waited = 0;
-        # while ($running_res['age'] && $count >= $max) { # a process is already running
         while ($running_processes['count'] >= $max) { # don't check age, as it may be 0
-            #   cl_output('running process: '.$running_res['age'].' '.$max);
             if ($running_processes['result']['age'] > 600) { # some sql queries can take quite a while
-                #cl_output($running_res['id'].' is old '.$running_res['age']);
                 # process has been inactive for too long, kill it
                 phpList::DB()->query(
                     sprintf(
@@ -94,7 +91,6 @@ class Process
 
         $send_process_id = phpList::DB()->insertedId();
         ignore_user_abort(1);
-        #  cl_output('Got pagelock '.$send_process_id );
         return $send_process_id;
     }
 

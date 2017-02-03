@@ -100,13 +100,7 @@ class BounceProcessor
             $bouncerules = BounceRule::getAllBounceRules();
             $matched = 0;
             $notmatched = 0;
-            //$limit =  ' limit 10';
-            //$limit =  ' limit 10000';
             $limit = '';
-            # @@ not sure whether this one would make sense
-            #  $result = Sql_Query(sprintf('select * from %s as bounce, %s as umb,%s as user where bounce.id = umb.bounce
-            #    and user.id = umb.user and !user.confirmed and !user.blacklisted %s',
-            #    $GLOBALS['tables']['bounce'],$GLOBALS['tables']['user_message_bounce'],$GLOBALS['tables']['user'],$limit));
             $result = phpList::DB()->query(sprintf(
                 'SELECT * FROM %s AS bounce, %s AS umb
                     WHERE bounce.id = umb.bounce %s',
@@ -121,10 +115,7 @@ class BounceProcessor
                 } else {
                     $this->bounceProcessError(s('Process Killed by other process'));
                 }
-                #    output('Subscriber '.$row['user']);
                 $rule = BounceRule::matchedBounceRules($row['data'], $bouncerules);
-                #    output('Action '.$rule['action']);
-                #    output('Rule'.$rule['id']);
                 if ($rule && is_array($rule)) {
                     if ($row['user']) {
                         $subscriber = Subscriber::getSubscriber($row['user']);
@@ -246,37 +237,9 @@ class BounceProcessor
                 Config::getTableName('user_message_bounce'),
                 $subscriber[0]
             ));
-            /*  $cnt = 0;
-              $alive = 1;$removed = 0;
-              while ($alive && !$removed && $bounce = Sql_Fetch_Array($msg_req)) {
-                $alive = checkLock($process_id);
-                if ($alive)
-                  keepLock($process_id);
-                else
-                  ProcessError(s("Process Killed by other process"));
-                if (sprintf('%d',$bounce['bounce']) == $bounce['bounce']) {
-                  $cnt++;
-                  if ($cnt >= $bounce_unsubscribe_threshold) {
-                    $removed = 1;
-                    output(sprintf('unsubscribing %d -> %d bounces',$subscriber[0],$cnt));
-                    $subscriberurl = PageLink2("user&amp;id=$subscriber[0]",$subscriber[0]);
-                    logEvent(s("Subscriber")." $subscriberurl ".s("has consecutive bounces")." ($cnt) ".s("over threshold, user marked unconfirmed"));
-                    $emailreq = Sql_Fetch_Row_Query("select email from {$tables['user']} where id = $subscriber[0]");
-                    addSubscriberHistory($emailreq[0],s("Auto Unsubscribed"),s("Subscriber auto unsubscribed for")." $cnt ".s("consecutive bounces"));
-                    Sql_Query(sprintf('update %s set confirmed = 0 where id = %d',$tables['user'],$subscriber[0]));
-                    addSubscriberStatistics('auto unsubscribe',1);
-                    $email_req = Sql_Fetch_Row_Query(sprintf('select email from %s where id = %d',$tables['user'],$subscriber[0]));
-                    $unsubscribed_users .= $email_req[0] . " [$subscriber[0]] ($cnt)\n";
-                  }
-                } elseif ($bounce['bounce'] == "") {
-                  $cnt = 0;
-                }
-              }*/
-            #$alive = 1;$removed = 0; DT 051105
             $cnt=0;
             $alive = 1;
             $removed = $msgokay = $unconfirmed = $unsubscribed = 0;
-            #while ($alive && !$removed && $bounce = Sql_Fetch_Array($msg_req)) { DT 051105
             while ($alive && !$removed && !$msgokay && $bounce = $msg_req->fetch(\PDO::FETCH_ASSOC)) {
                 $alive = Process::checkLock($this->process_id);
                 if ($alive) {
@@ -318,43 +281,17 @@ class BounceProcessor
                         }
                     }
                 } elseif ($bounce['bounce'] == '') {
-                    #$cnt = 0; DT 051105
                     $cnt = 0;
                     $msgokay = 1; #DT 051105 - escaping loop if message received okay
                 }
             }
             if ($subscribercnt % 5 == 0) {
-                #    output(s("Identifying consecutive bounces"));
                 phpList::log()->info(s('processed %d out of %d subscribers', $subscribercnt, $total), ['page' => 'procesbounces']);
             }
             $subscribercnt++;
         }
 
-        #output(s("Identifying consecutive bounces"));
         $this->output("\n".s('total of %d subscribers processed', $total). '                            ');
-
-        /*
-        $report = '';
-
-        if (phpList::log()->getReport()) {
-            $report .= s('Report:')."\n" . phpList::log()->getReport() . "\n";
-        }
-
-        if ($advanced_report) {
-            $report .= s('Report of advanced bounce processing:')."\n$advanced_report\n";
-        }
-        if ($unsubscribed_subscribers) {
-            $report .= "\n".s('Below are subscribers who have been marked unconfirmed. The in () is the number of consecutive bounces.')."\n";
-            $report .= "\n$unsubscribed_subscribers";
-        } else {
-            # don't send a report email, if only some bounces were downloaded, but no subscribers unsubscribed.
-            $report = '';
-        }
-        # shutdown will take care of reporting
-        #finish("info",$report);
-        */
-        # IMAP errors following when Notices are on are a PHP bug
-        # http://bugs.php.net/bug.php?id=7207
     }
 
     /**
@@ -407,15 +344,12 @@ class BounceProcessor
 
     private function output($message, $reset = false)
     {
-        #$infostring = "[". date("D j M Y H:i",time()) . "] [" . getenv("REMOTE_HOST") ."] [" . getenv("REMOTE_ADDR") ."]";
-        #print "$infostring $campaign<br/>\n";
         $message = preg_replace('/\n/', '', $message);
         ## contribution from http://forums.phplist.com/viewtopic.php?p=14648
         ## in languages with accented characters replace the HTML back
         //Replace the "&rsquo;" which is not replaced by html_decode
         $message = preg_replace('/&rsquo;/', "'", $message);
         //Decode HTML chars
-        #$campaign = html_entity_decode($campaign,ENT_QUOTES,$_SESSION['adminlanguage']['charset']);
         $message = html_entity_decode($message, ENT_QUOTES, 'UTF-8');
         phpList::log()->info($message, ['page' => 'bounceprocessor']);
     }
@@ -673,12 +607,10 @@ class BounceProcessor
             phpList::log()->info(s('Processed messages will be deleted from mailbox'), ['page' => 'processbounces']);
         }
 
-        #  for ($x=1;$x<150;$x++) {
         for ($x=1; $x <= $num; $x++) {
             set_time_limit(60);
             $header = imap_fetchheader($link, $x);
             if ($x % 25 == 0) {
-                #    $this->output( $x . " ". nl2br($header));
                 $this->output($x . ' done', 1);
             }
             $processed = $this->processImapBounce($link, $x, $header);
@@ -705,8 +637,6 @@ class BounceProcessor
         $this->output(s('Closing mailbox, and purging messages'));
         set_time_limit(60 * $num);
         imap_close($link);
-        /*if ($num)
-            return $report;*/
         return ($num>0);
     }
 }

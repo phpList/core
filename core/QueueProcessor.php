@@ -62,14 +62,8 @@ class QueueProcessor
             $this->status = s('Error processing');
             return false;
         }
-        #Output::cl_output('page locked on '.$this->send_process_id);
 
         $this->reload = $reload;
-
-        //TODO: enable plugins
-        /*foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-            $plugin->processQueueStart();
-        }*/
 
         ## let's make sure all subscribers have a uniqid
         ## only when on CL
@@ -103,8 +97,6 @@ class QueueProcessor
                 phpList::log()->debug(s('Time now ') . date('Y-m-d H:i'), ['page' => 'porcessqueue']);
             }
         }
-
-        #output('Will process for a maximum of '.$restrictions['max_process_queue_time'].' seconds ');
 
         if (!$this->reload) { ## only show on first load
             if (!empty($restrictions['rules'])) {
@@ -197,7 +189,6 @@ class QueueProcessor
         }
 
         $this->script_stage = 2; # we know the campaigns to process
-        #include_once "footer.inc";
         if (!isset($this->num_per_batch)) {
             $this->num_per_batch = 1000000;
         }
@@ -220,12 +211,6 @@ class QueueProcessor
                 phpList::log()->debug('start send ' . $campaign->id, ['page' => 'porcessqueue']);
             }
 
-            /*
-             * TODO: enable plugins
-            foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                $plugin->campaignStarted($msgdata);
-            }*/
-
             if ($campaign->resetstats == 1) {
                 $campaign->resetCampaignStatistics();
                 ## make sure to reset the resetstats flag, so it doesn't clear it every run
@@ -233,7 +218,6 @@ class QueueProcessor
             }
 
             ## check the end date of the campaign
-            //if (!empty($campaign->'finishsending')) {
             $finish_sending_before = $campaign->finishsending->getTimestamp();
             $seconds_to_go = $finish_sending_before - time();
             $stop_sending = ($seconds_to_go < 0);
@@ -248,7 +232,6 @@ class QueueProcessor
                     );
                 }
             }
-            //}
 
             $subscriberselection = $campaign->subscriberselection; ## @@ needs more work
             ## load campaign in cache
@@ -274,9 +257,6 @@ class QueueProcessor
             if ($output_speed_stats) {
                 phpList::log()->debug('campaign data loaded ', ['page' => 'porcessqueue']);
             }
-            //if (Config::VERBOSE) {
-                //   phpList::log()->debug($msgdata, ['page' => 'porcessqueue']);
-            //}
             if (!empty($campaign->notify_start) && !isset($campaign->start_notified)) {
                 $notifications = explode(',', $campaign->notify_start);
                 foreach ($notifications as $notification) {
@@ -347,7 +327,6 @@ class QueueProcessor
                         phpList::log()->debug(s('No subscribers apply for attributes'), ['page' => 'porcessqueue']);
                     }
                     $campaign->setStatus('sent');
-                    //finish("info", "Campaign $campaignid: \nNo subscribers apply for attributes, ie nothing to do");
                     $subject = s("Maillist Processing info");
                     if (!$this->nothingtodo) {
                         phpList::log()->debug(s('Finished this run'), ['page' => 'porcessqueue']);
@@ -360,14 +339,6 @@ class QueueProcessor
                             ['page' => 'progress']
                         );
                     }
-                    //TODO:enable plugins
-                    /*
-                    if (!Config::TEST && !$this->nothingtodo && Config::get(('END_QUEUE_PROCESSING_REPORT'))) {
-                        foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                            $plugin->sendReport($subject,"Campaign $campaign->id: \nNo subscribers apply for attributes, ie nothing to do");
-                        }
-                    }
-                    */
                     $this->script_stage = 6;
                     # we should actually continue with the next campaign
                     return true;
@@ -382,38 +353,6 @@ class QueueProcessor
             # we don't do this otherwise because it slows down the process, possibly
             # causing us to not find anything at all
             $exclusion = '';
-
-            /*$donesubscribers = array();
-            $skipsubscribers = array();
-
-            # 8478, avoid building large array in memory, when sending large amounts of subscribers.
-
-
-              $result = Sql_Query("select userid from {$tables['usermessage']} where messageid = $campaignid");
-              $skipped = Sql_Affected_Rows();
-              if ($skipped < 10000) {
-                while ($row = Sql_Fetch_Row($result)) {
-                  $alive = checkLock($this->send_process_id);
-                  if ($alive)
-                    keepLock($this->send_process_id);
-                  else
-                    ProcessError(s('Process Killed by other process'));
-                  array_push($donesubscribers,$row[0]);
-                }
-              } else {
-                phpList::log()->debug(s('Warning, disabling exclusion of done subscribers, too many found'), ['page' => 'porcessqueue']);
-                logEvent(s('Warning, disabling exclusion of done subscribers, too many found'));
-              }
-
-              # also exclude unconfirmed subscribers, otherwise they'll block the process
-              # will give quite different statistics than when used web based
-            #  $result = Sql_Query("select id from {$tables['user']} where !confirmed");
-            #  while ($row = Sql_Fetch_Row($result)) {
-            #    array_push($donesubscribers,$row[0]);
-            #  }
-              if (sizeof($donesubscribers))
-                $exclusion = " and listuser.userid not in (".join(",",$donesubscribers).")";
-            */
 
             if (Config::USE_LIST_EXCLUDE) {
                 if (Config::VERBOSE) {
@@ -509,9 +448,6 @@ class QueueProcessor
 
             # now we have all our subscribers to send the campaign to
             $this->counters['total_subscribers_for_campaign ' . $campaign->id] = $subscriberids_result->rowCount();
-            /*if ($skipped >= 10000) {
-                $this->counters['total_subscribers_for_campaign ' . $campaign->id] -= $skipped;
-            }*/
 
             $find_subscriber_end = Timer::get('process_queue')->elapsed(true);
 
@@ -599,7 +535,6 @@ class QueueProcessor
                 $stop_sending = $seconds_to_go < 0;
 
                 # check if we have been "killed"
-                #   phpList::log()->debug('Process ID '.$this->send_process_id, ['page' => 'porcessqueue']);
                 $alive = Process::checkLock($this->send_process_id);
 
                 ## check for max-process-queue-time
@@ -625,9 +560,6 @@ class QueueProcessor
                 }
                 flush();
 
-                ##
-                #Sql_Query_Params(sprintf('delete from %s where userid = ? and messageid = ? and status = "active"',$tables['usermessage']), array($subscriberid,$campaign->id));
-
                 # check whether the subscriber has already received the campaign
                 if ($output_speed_stats) {
                     phpList::log()->debug('verify campaign can go out to ' . $subscriber->id, ['page' => 'porcessqueue']);
@@ -646,10 +578,6 @@ class QueueProcessor
                     ## mark this campaign that we're working on it, so that no other process will take it
                     ## between two lines ago and here, should hopefully be quick enough
                     $campaign->updateSubscriberCampaignStatus($subscriber->id, 'active');
-                    //TODO: could this work to make sure no other process is already sending this email?
-                    /*if(phpList::DB()->affectedRows() == 0){
-                        break;
-                    }*/
 
                     if ($this->script_stage < 4) {
                         $this->script_stage = 4; # we know a subscriber to send to
@@ -660,35 +588,6 @@ class QueueProcessor
                     //TODO: since we don't allow invalid email addresses to be set, can we omit this check
                     // or is there a reason to keep it here?
                     if ($subscriber->confirmed && Validation::isEmail($subscriber->getEmailAddress())) {
-                        /*
-                        ## Ask plugins if they are ok with sending this campaign to this subscriber
-                        */
-                        /*TODO: enable plugins
-                        if ($output_speed_stats){
-                            phpList::log()->debug('start check plugins ', ['page' => 'porcessqueue']);
-                        }
-
-
-                        reset($GLOBALS['plugins']);
-                        while ($cansend && $plugin = current($GLOBALS['plugins'])) {
-                            if (Config::VERBOSE) {
-                                cl_output('Checking plugin ' . $plugin->name());
-                            }
-                            $cansend = $plugin->canSend($campaign, $subscriber);
-                            if (!$cansend) {
-                                $failure_reason .= 'Sending blocked by plugin ' . $plugin->name;
-                                $this->counters['send blocked by ' . $plugin->name]++;
-                                if (Config::VERBOSE) {
-                                    cl_output('Sending blocked by plugin ' . $plugin->name);
-                                }
-                            }
-
-                            next($GLOBALS['plugins']);
-                        }
-                        if ($output_speed_stats){
-                            phpList::log()->debug('end check plugins ', ['page' => 'porcessqueue']);
-                        }*/
-
                         ####################################
                         # Throttling
 
@@ -733,7 +632,6 @@ class QueueProcessor
                                         } else {
                                             $running_throttle_delay += (int)(Config::DOMAIN_BATCH_PERIOD / (Config::DOMAIN_BATCH_SIZE * 4));
                                         }
-                                        #phpList::log()->debug("Running throttle delay: ".$running_throttle_delay, ['page' => 'porcessqueue']);
                                     } elseif (Config::VERBOSE) {
                                         phpList::log()->info(
                                             sprintf(
@@ -754,20 +652,6 @@ class QueueProcessor
                             if (Config::TEST) {
                                 $success = $this->sendEmailTest($campaign->id, $subscriber->getEmailAddress());
                             } else {
-                                /*TODO: enable plugins
-                                reset($GLOBALS['plugins']);
-                                while (!$throttled && $plugin = current($GLOBALS['plugins'])) {
-                                    $throttled = $plugin->throttleSend($msgdata, $subscriber);
-                                    if ($throttled) {
-                                        if (!isset($this->counters['send throttled by plugin ' . $plugin->name])) {
-                                            $this->counters['send throttled by plugin ' . $plugin->name] = 0;
-                                        }
-                                        $this->counters['send throttled by plugin ' . $plugin->name]++;
-                                        $failure_reason .= 'Sending throttled by plugin ' . $plugin->name;
-                                    }
-                                    next($GLOBALS['plugins']);
-                                }
-                                */
                                 if (!$throttled) {
                                     if (Config::VERBOSE) {
                                         phpList::log()->info(
@@ -845,13 +729,6 @@ class QueueProcessor
                                     phpList::log()->notice(sprintf('invalid email address %s subscriber marked unconfirmed', $subscriber->getEmailAddress()));
                                     $subscriber->confirmed  = false;
                                     $subscriber->save();
-                                    /*Sql_Query(
-                                        sprintf(
-                                            'update %s set confirmed = 0 where email = "%s"',
-                                            $GLOBALS['tables']['user'],
-                                            $subscriberemail
-                                        )
-                                    );*/
                                 }
                             }
 
@@ -868,20 +745,12 @@ class QueueProcessor
                                 usleep(Config::MAILQUEUE_THROTTLE * 1000000);
                             } elseif (Config::MAILQUEUE_BATCH_SIZE && Config::MAILQUEUE_AUTOTHROTTLE) {
                                 $totaltime = Timer::get('process_queue')->elapsed(true);
-                                //$msgperhour = (3600 / $totaltime) * $this->sent;
-                                //$msgpersec = $msgperhour / 3600;
 
-                                ##11336 - this may cause "division by 0", but 'secpermsg' isn't used at all
-                                #  $secpermsg = $totaltime / $this->sent;
                                 $target = (Config::MAILQUEUE_BATCH_PERIOD / Config::MAILQUEUE_BATCH_SIZE) * $this->sent;
                                 $delay = $target - $totaltime;
-                                #phpList::log()->debug("Sent: $this->sent mph $msgperhour mps $msgpersec secpm $secpermsg target $target actual $actual d $delay", ['page' => 'porcessqueue']);
 
                                 if ($delay > 0) {
                                     if (Config::VERBOSE) {
-                                        /* phpList::log()->info(s('waiting for').' '.$delay.' '.s('seconds').' '.
-                                                           s('to make sure we don\'t exceed our limit of ').MAILQUEUE_BATCH_SIZE.' '.
-                                                           s('campaigns in ').' '.MAILQUEUE_BATCH_PERIOD.s('seconds')); */
                                         phpList::log()->info(
                                             sprintf(
                                                 s('waiting for %.1f seconds to meet target of %s seconds per campaign'),
@@ -901,13 +770,6 @@ class QueueProcessor
                             }
                             $campaign->updateSubscriberCampaignStatus($subscriber->id, 'not sent');
                         }
-
-                        # update possible other subscribers matching this email as well,
-                        # to avoid duplicate sending when people have subscribed multiple times
-                        # bit of legacy code after making email unique in the database
-                        #$emails = Sql_query("select * from {$tables['user']} where email =\"$subscriberemail\"");
-                        #while ($email = Sql_fetch_row($emails))
-                        #Sql_query("replace into {$tables['usermessage']} (userid,messageid) values($email[0],$campaign->id)");
                     } else {
                         # some "invalid emails" are entirely empty, ah, that is because they are unconfirmed
 
@@ -923,9 +785,7 @@ class QueueProcessor
                             $this->unconfirmed++;
                             # when running from commandline we mark it as sent, otherwise we might get
                             # stuck when using batch processing
-                            # if ($GLOBALS['commandline']) {
                             $campaign->updateSubscriberCampaignStatus($subscriber->id, 'unconfirmed subscriber');
-                            # }
                             //TODO: can probably remove below check
                         } elseif ($subscriber->getEmailAddress() || $subscriber->id) {
                             if (Config::VERBOSE) {
@@ -1007,7 +867,6 @@ class QueueProcessor
                     $this->counters['total_subscribers_for_campaign ' . $campaign->id] - $this->sent
                 );
                 $campaign->setDataItem('last msg sent', time());
-                #$campaign->setDataItem('totaltime', $this->timer->elapsed(true));
                 if ($output_speed_stats) {
                     phpList::log()->info(
                         'end process subscriber ' . "\n" . '-----------------------------------' . "\n" . $subscriber->id
@@ -1052,13 +911,6 @@ class QueueProcessor
                         }
                         $campaign->setDataItem('end_notified', 'CURRENT_TIMESTAMP');
                     }
-                    /*TODO: Do we need to refetch these values from db?
-                     * $query
-                        = " select sent, sendstart"
-                        . " from ${tables['message']}"
-                        . " where id = ?";
-                    $rs = Sql_Query_Params($query, array($campaign->id));
-                    $timetaken = Sql_Fetch_Row($rs);*/
                     phpList::log()->debug(
                         s('It took') . ' ' . Util::timeDiff($campaign->sent, $campaign->sendstart) . ' ' . s('to send this campaign')
                     );
@@ -1142,23 +994,6 @@ class QueueProcessor
             }
         }
 
-        ## force batch processing in small batches when called from the web interface
-        /*
-         * bad idea, we shouldn't touch the batch settings, in case they are very specific for
-         * ISP restrictions, instead limit webpage processing by time (below)
-         *
-        if (empty($GLOBALS['commandline'])) {
-          $this->num_per_batch = min($this->num_per_batch,100);
-          $this->batch_period = max($this->batch_period,1);
-        } elseif (isset($cline['m'])) {
-          $cl_num_per_batch = sprintf('%d',$cline['m']);
-          ## don't block when the param is not a number
-          if (!empty($cl_num_per_batch)) {
-            $this->num_per_batch = $cl_num_per_batch;
-          }
-          Output::cl_output("Batch set with commandline to $this->num_per_batch");
-        }
-        */
         $max_process_queue_time = 0;
         if (Config::MAX_PROCESSQUEUE_TIME > 0) {
             $max_process_queue_time = (int)Config::MAX_PROCESSQUEUE_TIME;
@@ -1202,10 +1037,6 @@ class QueueProcessor
         if ($this->num_per_batch && $this->batch_period) {
             # check how many were sent in the last batch period and subtract that
             # amount from this batch
-            /*
-              phpList::log()->debug(sprintf('select count(*) from %s where entered > date_sub(current_timestamp,interval %d second) and status = "sent"',
-                $tables['usermessage'],$this->batch_period));
-            */
             $result = phpList::DB()->query(
                 sprintf(
                     'SELECT COUNT(*) FROM %s
@@ -1303,7 +1134,6 @@ class QueueProcessor
      */
     public function shutdown()
     {
-        #  phpList::log()->debug( "Script status: ".connection_status(), ['page' => 'porcessqueue']); # with PHP 4.2.1 buggy. http://bugs.php.net/bug.php?id=17774
         phpList::log()->debug(s('Script stage') . ': ' . $this->script_stage, ['page' => 'porcessqueue']);
 
         $some = $this->processed; #$this->sent;# || $this->invalid || $this->notsent;
@@ -1338,7 +1168,6 @@ class QueueProcessor
         if ($this->failed_sent > 0) {
             phpList::log()->debug(s('%d failed (will retry later)', $this->failed_sent), ['page' => 'porcessqueue']);
             foreach ($this->counters as $label => $value) {
-                #  phpList::log()->debug(sprintf('%d %s',$value,s($label)),1,'progress', ['page' => 'porcessqueue']);
                 phpList::log()->info(sprintf('%d %s', $value, s($label)), ['page' => 'processqueue']);
             }
         }
@@ -1346,18 +1175,9 @@ class QueueProcessor
             phpList::log()->debug(sprintf(s('%d emails unconfirmed (not sent)'), $this->unconfirmed), ['page' => 'porcessqueue']);
         }
 
-        /*
-         * TODO: enable plugins
-        foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-            $plugin->processSendStats($this->sent,$this->invalid,$this->failed_sent,$this->unconfirmed,$this->counters);
-        }
-        */
-
         Cache::flushClickTrackCache();
         Process::releaseLock($this->send_process_id);
 
-        //finish("info",$report,$this->script_stage);
-        //function finish ($flag,$campaign,$this->script_stage) {
         $subject = s('Maillist Processing info');
         if (!$this->nothingtodo) {
             phpList::log()->info(s('Finished this run'), ['page' => 'progress']);
@@ -1370,14 +1190,6 @@ class QueueProcessor
                 ['page' => 'progress']
             );
         }
-        //TODO:enable plugins
-        /*
-        if (!Config::TEST && !$this->nothingtodo && Config::get(('END_QUEUE_PROCESSING_REPORT'))) {
-            foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                $plugin->sendReport($subject,$campaign);
-            }
-        }
-        */
 
         if ($this->script_stage < 5 && !$this->nothingtodo) {
             phpList::log()->info(
@@ -1403,30 +1215,8 @@ class QueueProcessor
                     $delaytime = $this->batch_period;
                 }
                 sleep($delaytime);
-                /*Output::customPrintf(
-                    '<script type="text/javascript">
-                       document.location = "./?page=pageaction&action=processqueue&ajaxed=true&reload=%d&lastsent=%d&lastskipped=%d";
-                    </script>',
-                    $this->reload,
-                    $this->sent,
-                    $this->notsent
-                );*/
-            } else {
-                /*Output::customPrintf(
-                    '<script type="text/javascript">
-                       document.location = "./?page=pageaction&action=processqueue&ajaxed=true&reload=%d&lastsent=%d&lastskipped=%d";
-                    </script>',
-                    $this->reload,
-                    $this->sent,
-                    $this->notsent
-                );*/
             }
         } elseif ($this->script_stage == 6 || $this->nothingtodo) {
-            /*
-             * TODO: enable plugins
-            foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                $plugin->campaignQueueFinished();
-            }*/
             phpList::log()->debug(s('Finished, All done'), 0, ['page' => 'porcessqueue']);
         } else {
             phpList::log()->debug(s('Script finished, but not all campaigns have been sent yet.'), ['page' => 'porcessqueue']);

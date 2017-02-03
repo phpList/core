@@ -280,19 +280,6 @@ class Admin
             $adminEntity = $this->adminEntityFromArray($result);
         }
 
-        /*
-         * TODO: this should not happen imo, can this be removed
-         * TODO: Aleksander Koko: I this should be removed
-        #Password encryption verification.
-        if(strlen($passwordDB)<$GLOBALS['hash_length']) { // Passwords are encrypted but the actual is not.
-            #Encrypt the actual DB password before performing the validation below.
-            $encryptedPassDB =  phpList::encryptPass($passwordDB);
-            $query = "update %s set password = '%s' where loginname = ?";
-            $query = sprintf($query, $GLOBALS['tables']['admin'], $encryptedPassDB);
-            $passwordDB = $encryptedPassDB;
-            $result = Sql_Query_Params($query, array($login));
-        }*/
-
         if (! $result) {
             $return['error'] = 'Admin not found'; // If admin not found
         } elseif ($adminEntity->disabled) {
@@ -413,7 +400,7 @@ class Admin
         $result->execute(array(':token' => $token));
         return ($result->rowCount() > 0);
     }
-    
+
     public function checkIfTheTokenIsValid($token)
     {
         return $this->adminModel->checkIfTheTokenIsValid($token);
