@@ -357,7 +357,7 @@ class PrepareCampaign
         if (strpos($htmlcampaign, '[SIGNATURE]') !== false) {
             $htmlcampaign = str_ireplace('[SIGNATURE]', $html['signature'], $htmlcampaign);
         } else {
-        # BUGFIX 0015303, 2/2
+            # BUGFIX 0015303, 2/2
         //    $htmlcampaign .= '<br />'.$html['signature'];
             $htmlcampaign = PrepareCampaign::addHTMLFooter(
                 $htmlcampaign,
@@ -485,7 +485,7 @@ class PrepareCampaign
 
         $destinationemail = '';
         if (is_array($subscriber_att_values)) {
-        // CUT 3
+            // CUT 3
             $htmlcampaign = PrepareCampaign::parsePlaceHolders($htmlcampaign, $subscriber_att_values);
             $textcampaign = PrepareCampaign::parsePlaceHolders($textcampaign, $subscriber_att_values);
         }
@@ -1093,7 +1093,7 @@ class PrepareCampaign
             }
 
             if (!$mail->compatSend('', $destinationemail, $fromname, $fromemail, $subject)) {
-            #if (!$mail->send(array($destinationemail),'spool')) {
+                #if (!$mail->send(array($destinationemail),'spool')) {
                 /*TODO: enable plugins
                 foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
                     $plugin->processSendFailed($campaign->id, $subscriberdata, $isTestMail);

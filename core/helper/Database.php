@@ -192,7 +192,6 @@ class Database
      */
     public function createTableInDB($table, $structure)
     {
-
         $query = "CREATE TABLE $table (\n";
         while (list($column, $val) = each($structure)) {
             if (preg_match('/index_\d+/', $column)) {
@@ -228,7 +227,6 @@ class Database
 
     public function replaceQuery($table, $values, $pk)
     {
-
         $query = ' REPLACE INTO ' . $table . ' SET ';
         foreach ($values as $key => $val) {
             if (is_numeric($val) || $val == 'CURRENT_TIMESTAMP') {

@@ -324,7 +324,7 @@ class BounceProcessor
                 }
             }
             if ($subscribercnt % 5 == 0) {
-            #    output(s("Identifying consecutive bounces"));
+                #    output(s("Identifying consecutive bounces"));
                 phpList::log()->info(s('processed %d out of %d subscribers', $subscribercnt, $total), ['page' => 'procesbounces']);
             }
             $subscribercnt++;
@@ -551,7 +551,6 @@ class BounceProcessor
      */
     private function processBounceData($bounce, $campaign_id, $subscriber)
     {
-
         if ($campaign_id === 'systemmessage' && $subscriber !== false) {
             $bounce->status = 'bounced system message';
             $bounce->comment = sprintf('%s marked unconfirmed', $subscriber->id);

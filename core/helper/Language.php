@@ -132,7 +132,7 @@ class Language
         return $this->_languages;
     }
 
-    function gettext($text)
+    public function gettext($text)
     {
         bindtextdomain('phplist', './locale');
         textdomain('phplist');
@@ -182,7 +182,7 @@ class Language
         return ($gt && $gt != $text) ? $gt : '';
     }
 
-    function databaseTranslation($text)
+    public function databaseTranslation($text)
     {
         if (!$this->hasDB) {
             return '';
@@ -198,7 +198,7 @@ class Language
         return stripslashes($st->fetch());
     }
 
-    function pageTitle($page)
+    public function pageTitle($page)
     {
         ## try gettext and otherwise continue
         if ($this->hasGettext) {
@@ -232,7 +232,7 @@ class Language
         return $title;
     }
 
-    function pageTitleHover($page)
+    public function pageTitleHover($page)
     {
         $dbTitle = $this->databaseTranslation('pagetitlehover:' . $page);
         if ($dbTitle) {
@@ -250,7 +250,7 @@ class Language
         return '';
     }
 
-    function formatText($text)
+    public function formatText($text)
     {
         # we've decided to spell phplist with uc L
         #todo: check if this is needed, maybe just correct all static text
@@ -267,7 +267,7 @@ class Language
      * obsolete
      */
 
-    function missingText($text)
+    public function missingText($text)
     {
         if (DEBUG) {
             if (isset($_GET['page'])) {
@@ -295,7 +295,7 @@ class Language
         return $text;
     }
 
-    function appendText($file, $text)
+    public function appendText($file, $text)
     {
         return;
         /*
@@ -327,7 +327,7 @@ $lan = array(
         */
     }
 
-    function initFSTranslations($language = '')
+    public function initFSTranslations($language = '')
     {
         if (empty($language)) {
             $language = $this->language;
@@ -337,7 +337,7 @@ $lan = array(
         $this->updateDBtranslations($translations, $time, $language);
     }
 
-    function updateDBtranslations($translations, $time, $language = '')
+    public function updateDBtranslations($translations, $time, $language = '')
     {
         if (empty($language)) {
             $language = $this->language;
@@ -354,7 +354,7 @@ $lan = array(
         $this->config->setDBConfig($this->db, 'lastlanguageupdate-' . $language, $time, 0);
     }
 
-    function getTranslation($text, $page, $basedir)
+    public function getTranslation($text, $page, $basedir)
     {
         ## try DB, as it will be the latest
         if ($this->hasDB) {
@@ -409,7 +409,7 @@ $lan = array(
      * @param $text
      * @return mixed|string
      */
-    function get($text)
+    public function get($text)
     {
         if (trim($text) == "") {
             return "";

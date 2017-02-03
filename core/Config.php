@@ -53,8 +53,8 @@ class Config
     {
         // If no config file path provided
         if ($configFile !== null) {
-                $this->configFileOrigin = "supplied file path";
-                $this->configFilePath = $configFile;
+            $this->configFileOrigin = "supplied file path";
+            $this->configFilePath = $configFile;
         } else { // If no config file specified, look for one
             // determine which config file to use
             if (isset($_SESSION['running_config'])
@@ -124,7 +124,7 @@ class Config
     public function getTableName($table_name, $is_user_table = false)
     {
         return
-            ( $is_user_table ? $this->running_config['USERTABLE_PREFIX'] : $this->running_config['TABLE_PREFIX'] )
+            ($is_user_table ? $this->running_config['USERTABLE_PREFIX'] : $this->running_config['TABLE_PREFIX'])
             . $table_name;
     }
 
@@ -300,7 +300,7 @@ class Config
 
         # if this is a subpage item, and no value was found get the global one
         if (!$value && strpos($item, ":") !== false) {
-            list ($a, $b) = explode(":", $item);
+            list($a, $b) = explode(":", $item);
             $value = $this->getUserConfig($a, $subscriber_id);
         }
         if ($subscriber_id != 0) {
@@ -574,20 +574,20 @@ class Config
      */
     private function loadDefaultConfig(Language $lan)
     {
-            $defaultheader = '</head><body>';
-            $defaultfooter = '</body></html>';
+        $defaultheader = '</head><body>';
+        $defaultfooter = '</body></html>';
 
         if (isset($_SERVER['HTTP_HOST'])) {
             $D_website = $_SERVER['HTTP_HOST'];
         } else {
             $D_website = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost';
         }
-            $D_domain = $D_website;
+        $D_domain = $D_website;
         if (preg_match('#^www\.(.*)#i', $D_domain, $regs)) {
             $D_domain = $regs[1];
         }
 
-            $this->default_config = array(
+        $this->default_config = array(
 
                 /* any next line has the format
                   'name' => array(

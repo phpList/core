@@ -34,7 +34,7 @@ class QueueProcessor
     private $counters = array();
     private $original_num_per_batch;
 
-    function __construct()
+    public function __construct()
     {
     }
 
@@ -1276,7 +1276,7 @@ class QueueProcessor
 
         if ($campaign->processed > 10 && $diff != 'very little time') {
             $msg .= "\n".'Time taken: '.$diff;
-            foreach (array (
+            foreach (array(
                          'entered',
                          'processed',
                          'sendstart',
