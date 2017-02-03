@@ -96,7 +96,7 @@ class Process
 
     private static function getRunningProcesses($page)
     {
-        $running_processes = array();
+        $running_processes = [];
         $result = phpList::DB()->query(
             sprintf(
                 ' SELECT CURRENT_TIMESTAMP - MODIFIED AS age, id FROM %s

@@ -6,13 +6,12 @@ use phpList\Config;
 
 class DatabaseWriter
 {
-
     public function __construct(Config $config)
     {
         //
     }
 
-    public function log($level, $message, array $context = array())
+    public function log($level, $message, array $context = [])
     {
         @$fp = fopen($this->logfile, 'a');
 

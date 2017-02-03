@@ -1,12 +1,8 @@
 <?php
 namespace phpList\Entity;
 
-use phpList\interfaces\EmailAddressInterface;
-use phpList\interfaces\plainPassInterface;
-
 class AdminEntity
 {
-
     // Required attributes
     public $username;
 
@@ -31,6 +27,7 @@ class AdminEntity
 
     /**
      * Set attributes
+     *
      * @param $key
      * @param $value
      */
@@ -42,12 +39,14 @@ class AdminEntity
 
     /**
      * Get a subscriber attribute
+     *
      * @param string $attribute
+     *
      * @return string|null
      */
     public function getAttribute($attribute)
     {
-        if (empty($this->attributes) ||!isset($this->attributes[$attribute])) {
+        if (empty($this->attributes) || !isset($this->attributes[$attribute])) {
             return null;
         } else {
             return $this->attributes[$attribute];
@@ -56,6 +55,7 @@ class AdminEntity
 
     /**
      * Get a subscriber attribute
+     *
      * @return array
      */
     public function getAttributes()
@@ -65,6 +65,7 @@ class AdminEntity
 
     /**
      * Check if attributes have been loaded already
+     *
      * @return bool
      */
     public function hasAttributes()

@@ -11,11 +11,11 @@ class Cache
      * @var Cache $_instance
      */
     private static $_instance;
-    public $page_cache = array();
-    public $url_cache = array();
-    private $campaign_cache = array();
-    public $linktrack_sent_cache = array();
-    public $linktrack_cache = array();
+    public $page_cache = [];
+    public $url_cache = [];
+    private $campaign_cache = [];
+    public $linktrack_sent_cache = [];
+    public $linktrack_cache = [];
 
     private function __construct()
     {
@@ -46,7 +46,9 @@ class Cache
 
     /**
      * Get a campaign from cache, will set it when not available yet
+     *
      * @param Campaign $campaign
+     *
      * @return Campaign
      */
     public static function &getCachedCampaign($campaign)
@@ -59,7 +61,9 @@ class Cache
 
     /**
      * Check if a campaign has been cached already
+     *
      * @param Campaign $campaign
+     *
      * @return bool
      */
     public static function isCampaignCached($campaign)
@@ -69,14 +73,13 @@ class Cache
 
     /**
      * Put a campaign in the cache
+     *
      * @param Campaign $campaign
      */
     private static function setCachedCampaign($campaign)
     {
         Cache::$_instance->campaign_cache[$campaign->id] = $campaign;
     }
-
-
 
     public static function getPageCache($url, $lastmodified = 0)
     {

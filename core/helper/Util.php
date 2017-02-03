@@ -1,8 +1,8 @@
 <?php
 namespace phpList\helper;
 
-use phpList\phpList;
 use phpList\Config;
+use phpList\phpList;
 use phpList\Subscriber;
 
 class Util
@@ -45,17 +45,19 @@ class Util
             $res .= ' ' . $hours . ' ' . s('hours');
         }
         if ($mins) {
-            $res .= " " . $mins . ' ' . s('mins');
+            $res .= ' ' . $mins . ' ' . s('mins');
         }
         if ($secs) {
-            $res .= " " . sprintf('%02d', $secs) . ' ' . s('secs');
+            $res .= ' ' . sprintf('%02d', $secs) . ' ' . s('secs');
         }
         return $res;
     }
 
     /**
      * Verify that a redirection is to ourselves
+     *
      * @param string $url
+     *
      * @return int
      */
     public function isValidRedirect($url)
@@ -66,7 +68,9 @@ class Util
 
     /**
      * Check the url_append config and expand the url with it
+     *
      * @param $url
+     *
      * @return string
      */
     public function expandURL($url)
@@ -86,7 +90,9 @@ class Util
 
     /**
      * Test a URL
+     *
      * @param string $url
+     *
      * @return int|mixed
      */
     public function testUrl($url)
@@ -115,7 +121,7 @@ class Util
             if ($this->config->get('VERBOSE')) {
                 $this->logger->notice('Checking PEAR ');
             }
-            @require_once "HTTP/Request.php";
+            @require_once 'HTTP/Request.php';
             $headreq = new HTTP_Request($url, '' /*$request_parameters*/);
             $headreq->addHeader('User-Agent', 'phplist v' . PHPLIST_VERSION . ' (http://www.phplist.com)');
             if (!PEAR::isError($headreq->sendRequest(false))) {
@@ -130,8 +136,10 @@ class Util
 
     /**
      * Fetch a URL
+     *
      * @param string $url
      * @param Subscriber $subscriber
+     *
      * @return bool|int|mixed|string
      */
     public function fetchUrl($url, $subscriber = null)
@@ -171,11 +179,11 @@ class Util
             return Cache::getPageCache($url);
         }
 
-        $request_parameters = array(
+        $request_parameters = [
             'timeout' => 600,
             'allowRedirects' => 1,
             'method' => 'HEAD',
-        );
+        ];
 
         ## relying on the last modified header doesn't work for many pages
         ## use current time instead
@@ -187,9 +195,9 @@ class Util
             if (function_exists('curl_init')) {
                 $content = $this->fetchUrlCurl($url, $request_parameters);
             } elseif (0 && $this->config->get('has_pear_http_request') == 2) {
-                @require_once "HTTP/Request2.php";
+                @require_once 'HTTP/Request2.php';
             } elseif ($this->config->get('has_pear_http_request')) {
-                @require_once "HTTP/Request.php";
+                @require_once 'HTTP/Request.php';
                 $content = $this->fetchUrlPear($url, $request_parameters);
             } else {
                 return false;
@@ -206,10 +214,10 @@ class Util
             $this->logger->notice('Fetching ' . $url . ' success');
             Cache::setPageCache($url, $lastmodified, $content);
 
-            Cache::instance()->url_cache[$url] = array(
+            Cache::instance()->url_cache[$url] = [
                 'fetched' => time(),
                 'content' => $content,
-            );
+            ];
         }
 
         return $content;
@@ -247,7 +255,7 @@ class Util
             $this->logger->notice($url . ' fetching with PEAR');
         }
 
-        if (0 && $this->config->get('has_pear_http_request')== 2) {
+        if (0 && $this->config->get('has_pear_http_request') == 2) {
             $headreq = new HTTP_Request2($url, $request_parameters);
             $headreq->setHeader('User-Agent', 'phplist v' . $this->config->get('VERSION') . 'p (http://www.phplist.com)');
         } else {
@@ -296,10 +304,10 @@ class Util
         return $content;
     }
 
-    public function cleanUrl($url, $disallowed_params = array('PHPSESSID'))
+    public function cleanUrl($url, $disallowed_params = ['PHPSESSID'])
     {
         $parsed = @parse_url($url);
-        $params = array();
+        $params = [];
         if (empty($parsed['query'])) {
             $parsed['query'] = '';
         }
@@ -315,32 +323,32 @@ class Util
                 }
             }
         } else {
-            $params= $this->parseQueryString($parsed['query']);
+            $params = $this->parseQueryString($parsed['query']);
         }
-        $uri = !empty($parsed['scheme']) ? $parsed['scheme'].':'.((strtolower($parsed['scheme']) == 'mailto') ? '':'//'): '';
-        $uri .= !empty($parsed['user']) ? $parsed['user'].(!empty($parsed['pass'])? ':'.$parsed['pass']:'').'@':'';
+        $uri = !empty($parsed['scheme']) ? $parsed['scheme'] . ':' . ((strtolower($parsed['scheme']) == 'mailto') ? '':'//'): '';
+        $uri .= !empty($parsed['user']) ? $parsed['user'] . (!empty($parsed['pass'])? ':' . $parsed['pass']:'') . '@':'';
         $uri .= !empty($parsed['host']) ? $parsed['host'] : '';
-        $uri .= !empty($parsed['port']) ? ':'.$parsed['port'] : '';
+        $uri .= !empty($parsed['port']) ? ':' . $parsed['port'] : '';
         $uri .= !empty($parsed['path']) ? $parsed['path'] : '';
         $query = '';
         foreach ($params as $key => $val) {
             if (!in_array($key, $disallowed_params)) {
                 //0008980: Link Conversion for Click Tracking. no = will be added if key is empty.
-                $query .= $key . ($val != "" ? '=' . $val . '&' : '&');
+                $query .= $key . ($val != '' ? '=' . $val . '&' : '&');
             }
         }
         $query = substr($query, 0, -1);
-        $uri .= $query ? '?'.$query : '';
-        $uri .= !empty($parsed['fragment']) ? '#'.$parsed['fragment'] : '';
+        $uri .= $query ? '?' . $query : '';
+        $uri .= !empty($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
         return $uri;
     }
 
     public function parseQueryString($str)
     {
         if (empty($str)) {
-            return array();
+            return [];
         }
-        $op = array();
+        $op = [];
         $pairs = explode('&', $str);
         foreach ($pairs as $pair) {
             if (strpos($pair, '=') !== false) {
@@ -356,22 +364,22 @@ class Util
     public function addAbsoluteResources($text, $url)
     {
         $parts = parse_url($url);
-        $tags = array('src\s*=\s*','href\s*=\s*','action\s*=\s*','background\s*=\s*','@import\s+','@import\s+url\(');
+        $tags = ['src\s*=\s*','href\s*=\s*','action\s*=\s*','background\s*=\s*','@import\s+','@import\s+url\('];
         foreach ($tags as $tag) {
-        # we're only handling nicely formatted src="something" and not src=something, ie quotes are required
+            # we're only handling nicely formatted src="something" and not src=something, ie quotes are required
         # bit of a nightmare to not handle it with quotes.
-            preg_match_all('/('.$tag.')"([^"|\#]*)"/Uim', $text, $foundtags);
-            for ($i=0; $i< count($foundtags[0]); $i++) {
+            preg_match_all('/(' . $tag . ')"([^"|\#]*)"/Uim', $text, $foundtags);
+            for ($i = 0; $i < count($foundtags[0]); $i++) {
                 $match = $foundtags[2][$i];
                 $tagmatch = $foundtags[1][$i];
                 #      print "$match<br/>";
-                if (preg_match("#^(http|javascript|https|ftp|mailto):#i", $match)) {
+                if (preg_match('#^(http|javascript|https|ftp|mailto):#i', $match)) {
                     # scheme exists, leave it alone
                 } elseif (preg_match("#\[.*\]#U", $match)) {
                     # placeholders used, leave alone as well
                 } elseif (preg_match("/^\//", $match)) {
                     # starts with /
-                    $text = preg_replace('#'.preg_quote($foundtags[0][$i]).'#im', $tagmatch.'"'.$parts['scheme'].'://'.$parts['host'].$match.'"', $text, 1);
+                    $text = preg_replace('#' . preg_quote($foundtags[0][$i]) . '#im', $tagmatch . '"' . $parts['scheme'] . '://' . $parts['host'] . $match . '"', $text, 1);
                 } else {
                     $path = '';
                     if (isset($parts['path'])) {
@@ -384,8 +392,8 @@ class Util
                         $path .= '/';
                     }
                     $text = preg_replace(
-                        '#'.preg_quote($foundtags[0][$i]).'#im',
-                        $tagmatch.'"'.$parts['scheme'].'://'.$parts['host'].$path.$match.'"',
+                        '#' . preg_quote($foundtags[0][$i]) . '#im',
+                        $tagmatch . '"' . $parts['scheme'] . '://' . $parts['host'] . $path . $match . '"',
                         $text,
                         1
                     );
@@ -420,7 +428,9 @@ class Util
      * taken from Wordpress
      *
      * @access public
+     *
      * @since 2.2.10
+     *
      * @return null Will return null if register_globals PHP directive was disabled
      */
     public function unregister_GLOBALS()
@@ -431,7 +441,7 @@ class Util
 
         ## https://mantis.phplist.com/view.php?id=16882
         ## no need to do this on commandline
-        if (php_sapi_name() == "cli") {
+        if (php_sapi_name() == 'cli') {
             return;
         }
 
@@ -440,9 +450,9 @@ class Util
         }
 
         // Variables that shouldn't be unset
-        $noUnset = array('GLOBALS', '_GET', '_POST', '_COOKIE', '_REQUEST', '_SERVER', '_ENV', '_FILES');
+        $noUnset = ['GLOBALS', '_GET', '_POST', '_COOKIE', '_REQUEST', '_SERVER', '_ENV', '_FILES'];
 
-        $input = array_merge($_GET, $_POST, $_COOKIE, $_SERVER, $_ENV, $_FILES, isset($_SESSION) && is_array($_SESSION) ? $_SESSION : array());
+        $input = array_merge($_GET, $_POST, $_COOKIE, $_SERVER, $_ENV, $_FILES, isset($_SESSION) && is_array($_SESSION) ? $_SESSION : []);
         foreach ($input as $k => $v) {
             if (!in_array($k, $noUnset) && isset($GLOBALS[$k])) {
                 $GLOBALS[$k] = null;
@@ -482,7 +492,7 @@ class Util
     public function removeXss($string)
     {
         if (is_array($string)) {
-            $return = array();
+            $return = [];
             foreach ($string as $key => $val) {
                 $return[$this->removeXss($key)] = $this->removeXss($val);
             }
@@ -494,8 +504,8 @@ class Util
 
     public function parseCline()
     {
-        $res = array();
-        $cur = "";
+        $res = [];
+        $cur = '';
         foreach ($GLOBALS['argv'] as $clinearg) {
             if (substr($clinearg, 0, 1) == '-') {
                 $par = substr($clinearg, 1, 1);
@@ -505,7 +515,7 @@ class Util
                 $res[$cur] .= $clinearg;
             } elseif ($cur) {
                 if ($res[$cur]) {
-                    $res[$cur] .= ' '.$clinearg;
+                    $res[$cur] .= ' ' . $clinearg;
                 } else {
                     $res[$cur] .= $clinearg;
                 }
@@ -514,15 +524,14 @@ class Util
         return $res;
     }
 
-
     public function clean2($value)
     {
         $value = trim($value);
-        $value = preg_replace("/\r/", "", $value);
-        $value = preg_replace("/\n/", "", $value);
-        $value = str_replace('"', "&quot;", $value);
-        $value = str_replace("'", "&rsquo;", $value);
-        $value = str_replace("`", "&lsquo;", $value);
+        $value = preg_replace("/\r/", '', $value);
+        $value = preg_replace("/\n/", '', $value);
+        $value = str_replace('"', '&quot;', $value);
+        $value = str_replace("'", '&rsquo;', $value);
+        $value = str_replace('`', '&lsquo;', $value);
         $value = stripslashes($value);
         return $value;
     }
@@ -530,15 +539,15 @@ class Util
     public function cleanEmail($value)
     {
         $value = trim($value);
-        $value = preg_replace("/\r/", "", $value);
-        $value = preg_replace("/\n/", "", $value);
-        $value = preg_replace('/"/', "&quot;", $value);
+        $value = preg_replace("/\r/", '', $value);
+        $value = preg_replace("/\n/", '', $value);
+        $value = preg_replace('/"/', '&quot;', $value);
         $value = preg_replace('/^mailto:/i', '', $value);
         $value = str_replace('(', '', $value);
         $value = str_replace(')', '', $value);
         $value = preg_replace('/\.$/', '', $value);
 
-        $value = preg_replace("/`/", "&lsquo;", $value);
+        $value = preg_replace('/`/', '&lsquo;', $value);
         $value = stripslashes($value);
         return $value;
     }
@@ -546,8 +555,10 @@ class Util
     /**
      * Check if an email addres is blacklisted
      * $immediate specifies if a gracetime is allowed for a last message
+     *
      * @param string $email
      * @param bool $immediate
+     *
      * @return bool
      */
     public function isEmailBlacklisted($email, $immediate = true)
@@ -580,7 +591,9 @@ class Util
 
     /**
      * Check if the subscriber with given id is blacklisted
+     *
      * @param int $subscriber_id
+     *
      * @return bool
      */
     public function isSubscriberIDBlacklisted($subscriber_id = 0)
@@ -591,6 +604,7 @@ class Util
 
     /**
      * Blacklist a subscriber by his email address
+     *
      * @param string $email_address
      * @param string $reason
      */
@@ -605,6 +619,7 @@ class Util
 
     /**
      * Blacklist an email address, not a subscriber specifically
+     *
      * @param string $email_address
      * @param string $reason
      * @param string $date
@@ -648,6 +663,7 @@ class Util
 
     /**
      * Remove subscriber from blacklist
+     *
      * @param int $subscriber_id
      * @param string $admin_name
      */
@@ -658,27 +674,28 @@ class Util
         }
         $subscriber = Subscriber::getSubscriber($subscriber_id);
 
-        $tables = array(
+        $tables = [
             $this->config->getTableName('user_blacklist') => 'email',
-            $this->config->getTableName('user_blacklist_data') => 'email'
-        );
+            $this->config->getTableName('user_blacklist_data') => 'email',
+        ];
         $this->db->deleteFromArray($tables, $subscriber->getEmailAddress());
 
         $subscriber->blacklisted = 0;
         $subscriber->update();
 
         if ($admin_name != '') {
-            $msg = s("Removed from blacklist by %s", $admin_name);
+            $msg = s('Removed from blacklist by %s', $admin_name);
         } else {
             $msg = s('Removed from blacklist');
         }
         Subscriber::addHistory($msg, '', $subscriber->id);
     }
 
-
     /**
      * Check if email address exists in database
+     *
      * @param $email_address
+     *
      * @return bool
      */
     public function emailExists($email_address)
@@ -690,21 +707,23 @@ class Util
                 $this->config->getTableName('user', true)
             )
         );
-        $prep_statement->execute(array(':email_address' => $email_address));
+        $prep_statement->execute([':email_address' => $email_address]);
         return ($prep_statement->rowCount() > 0);
     }
 
     /**
      * Parse the from field into it's components - email and name
+     *
      * @param $string
      * @param $default_address
+     *
      * @return array with fields 'email' and 'name'
      */
     public function parseEmailAndName($string, $default_address)
     {
-        if (preg_match("/([^ ]+@[^ ]+)/", $string, $regs)) {
+        if (preg_match('/([^ ]+@[^ ]+)/', $string, $regs)) {
             # if there is an email in the from, rewrite it as "name <email>"
-            $name = str_replace($regs[0], "", $string);
+            $name = str_replace($regs[0], '', $string);
             $email_address = $regs[0];
             # if the email has < and > take them out here
             $email_address = str_replace('<', '', $email_address);
@@ -722,10 +741,9 @@ class Util
 
         return [
             'email' =>  $email_address,
-            'name'  =>  StringClass::removeDoubleSpaces(trim($name))
+            'name'  =>  StringClass::removeDoubleSpaces(trim($name)),
         ];
     }
-
 
     public function addSubscriberStatistics($item = '', $amount, $list = 0)
     {

@@ -1,40 +1,41 @@
 <?php
 namespace phpList\helper;
 
-use phpList\phpList;
-
 /**
  * Class StringFunctions
  * Class containing string helper functions
- * @package phpList
  */
 class StringClass
 {
     /**
      * Normalize text
+     *
      * @param string $var
+     *
      * @return string normalized var
      */
     public static function normalize($var)
     {
-        $var = str_replace(" ", "_", $var);
-        $var = str_replace(";", "", $var);
+        $var = str_replace(' ', '_', $var);
+        $var = str_replace(';', '', $var);
         return $var;
     }
 
     /**
      * Clean the input string
+     *
      * @param string $value
+     *
      * @return string
      */
     public static function clean($value)
     {
         $value = trim($value);
-        $value = preg_replace("/\r/", "", $value);
-        $value = preg_replace("/\n/", "", $value);
-        $value = str_replace('"', "&quot;", $value);
-        $value = str_replace("'", "&rsquo;", $value);
-        $value = str_replace("`", "&lsquo;", $value);
+        $value = preg_replace("/\r/", '', $value);
+        $value = preg_replace("/\n/", '', $value);
+        $value = str_replace('"', '&quot;', $value);
+        $value = str_replace("'", '&rsquo;', $value);
+        $value = str_replace('`', '&lsquo;', $value);
         $value = stripslashes($value);
         return $value;
     }
@@ -42,17 +43,21 @@ class StringClass
     /**
      * Clean out chars that make preg choke
      * primarily used for parsing the placeholders in emails.
+     *
      * @param string $name
+     *
      * @return string
      */
     public static function cleanAttributeName($name)
     {
-        return str_replace(array('(', ')', '/', '\\', '*', '.'), '', $name);
+        return str_replace(['(', ')', '/', '\\', '*', '.'], '', $name);
     }
 
     /**
      *  Remove extra spaces
+     *
      * @param string $string
+     *
      * @return string
      */
     public static function removeDoubleSpaces($string)
@@ -66,24 +71,24 @@ class StringClass
     public static function HTML2Text($text)
     {
         # strip HTML, and turn links into the full URL
-        $text = preg_replace("/\r/", "", $text);
+        $text = preg_replace("/\r/", '', $text);
 
-        $text = preg_replace("/<script[^>]*>(.*?)<\/script\s*>/is", "", $text);
-        $text = preg_replace("/<style[^>]*>(.*?)<\/style\s*>/is", "", $text);
+        $text = preg_replace("/<script[^>]*>(.*?)<\/script\s*>/is", '', $text);
+        $text = preg_replace("/<style[^>]*>(.*?)<\/style\s*>/is", '', $text);
 
         $text = preg_replace(
             "/<a[^>]*href=[\"\'](.*)[\"\'][^>]*>(.*)<\/a>/Umis",
             "[URLTEXT]\\2[ENDURLTEXT][LINK]\\1[ENDLINK]\n",
             $text
         );
-        $text = preg_replace("/<b>(.*?)<\/b\s*>/is", "*\\1*", $text);
+        $text = preg_replace("/<b>(.*?)<\/b\s*>/is", '*\\1*', $text);
         $text = preg_replace("/<h[\d]>(.*?)<\/h[\d]\s*>/is", "**\\1**\n", $text);
-        $text = preg_replace("/<i>(.*?)<\/i\s*>/is", "/\\1/", $text);
+        $text = preg_replace("/<i>(.*?)<\/i\s*>/is", '/\\1/', $text);
         $text = preg_replace("/<\/tr\s*?>/i", "<\/tr>\n\n", $text);
         $text = preg_replace("/<\/p\s*?>/i", "<\/p>\n\n", $text);
-        $text = preg_replace("/<br[^>]*?>/i", "<br>\n", $text);
+        $text = preg_replace('/<br[^>]*?>/i', "<br>\n", $text);
         $text = preg_replace("/<br[^>]*?\/>/i", "<br\/>\n", $text);
-        $text = preg_replace("/<table/i", "\n\n<table", $text);
+        $text = preg_replace('/<table/i', "\n\n<table", $text);
         $text = strip_tags($text);
 
         # find all URLs and replace them back
@@ -108,20 +113,20 @@ class StringClass
         }
         $text = preg_replace(
             "/<a href=[\"\'](.*?)[\"\'][^>]*>(.*?)<\/a>/is",
-            "[URLTEXT]\\2[ENDURLTEXT][LINK]\\1[ENDLINK]",
+            '[URLTEXT]\\2[ENDURLTEXT][LINK]\\1[ENDLINK]',
             $text,
             500
         );
 
         $text = StringClass::replaceChars($text);
 
-        $text = preg_replace("/###NL###/", "\n", $text);
+        $text = preg_replace('/###NL###/', "\n", $text);
         $text = preg_replace("/\n /", "\n", $text);
-        $text = preg_replace("/\t/", " ", $text);
+        $text = preg_replace("/\t/", ' ', $text);
 
         # reduce whitespace
-        while (preg_match("/  /", $text)) {
-            $text = preg_replace("/  /", " ", $text);
+        while (preg_match('/  /', $text)) {
+            $text = preg_replace('/  /', ' ', $text);
         }
         while (preg_match("/\n\s*\n\s*\n/", $text)) {
             $text = preg_replace("/\n\s*\n\s*\n/", "\n\n", $text);
@@ -138,7 +143,7 @@ class StringClass
         // and white space. It will also convert some
         // common HTML entities to their text equivalent.
 
-        $search = array(
+        $search = [
             "'&(quot|#34);'i", // Replace html entities
             "'&(amp|#38);'i",
             "'&(lt|#60);'i",
@@ -150,23 +155,23 @@ class StringClass
             "'&(copy|#169);'i",
             "'&rsquo;'i",
             "'&ndash;'i",
-            "'&#(\d+);'e"
-        ); // evaluate as php
+            "'&#(\d+);'e",
+        ]; // evaluate as php
 
-        $replace = array(
-            "\"",
-            "&",
-            "<",
-            ">",
-            " ",
+        $replace = [
+            '"',
+            '&',
+            '<',
+            '>',
+            ' ',
             chr(161),
             chr(162),
             chr(163),
             chr(169),
             "'",
-            "-",
-            "chr(\\1)"
-        );
+            '-',
+            'chr(\\1)',
+        ];
 
         $text = preg_replace($search, $replace, $text);
 
@@ -178,22 +183,22 @@ class StringClass
     public static function addAbsoluteResources($text, $url)
     {
         $parts = parse_url($url);
-        $tags = array(
+        $tags = [
             'src\s*=\s*',
             'href\s*=\s*',
             'action\s*=\s*',
             'background\s*=\s*',
             '@import\s+',
-            '@import\s+url\('
-        );
+            '@import\s+url\(',
+        ];
         foreach ($tags as $tag) {
-# we're only handling nicely formatted src="something" and not src=something, ie quotes are required
+            # we're only handling nicely formatted src="something" and not src=something, ie quotes are required
 # bit of a nightmare to not handle it with quotes.
             preg_match_all('/(' . $tag . ')"([^"|\#]*)"/Uim', $text, $foundtags);
             for ($i = 0; $i < count($foundtags[0]); $i++) {
                 $match = $foundtags[2][$i];
                 $tagmatch = $foundtags[1][$i];
-                if (preg_match("#^(http|javascript|https|ftp|mailto):#i", $match)) {
+                if (preg_match('#^(http|javascript|https|ftp|mailto):#i', $match)) {
                     # scheme exists, leave it alone
                 } elseif (preg_match("#\[.*\]#U", $match)) {
                     # placeholders used, leave alone as well

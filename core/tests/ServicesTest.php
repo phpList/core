@@ -2,23 +2,15 @@
 namespace phpList\test;
 
 use phpList\Config;
-use phpList\EmailUtil;
-use phpList\Entity\SubscriberEntity;
-use phpList\helper\Database;
-use phpList\Password;
 use phpList\phpList;
-use phpList\Subscriber;
-use phpList\helper\Util;
 
 // Symfony namespaces
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class ServicesTest extends \PHPUnit_Framework_TestCase
 {
-
     public function setUp()
     {
         // Create Symfony DI service container object for use by other classes

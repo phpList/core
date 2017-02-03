@@ -30,7 +30,9 @@ class Campaign
 
     /**
      * Create a campaign object from an array from the database
+     *
      * @param $array
+     *
      * @return CampaignEntity
      */
     private function campaignFromArray($array)
@@ -80,8 +82,10 @@ class Campaign
 
     /**
      * Get a campaign by id (for an owner if provided)
+     *
      * @param int $id
      * @param int $owner
+     *
      * @return CampaignEntity
      */
     public function getCampaign($id, $owner = 0)
@@ -105,17 +109,19 @@ class Campaign
     /**
      * Get an array of Campaigns by searching its status and subject
      * When $owner is provided, only returns the campaigns for the given owner
+     *
      * @param string|array $status
      * @param string $subject
      * @param int $owner
      * @param string $order
      * @param int $offset
      * @param int $limit
+     *
      * @return array CampaignEntity
      */
     public function getCampaignsBy($status, $subject = '', $owner = 0, $order = '', $offset = 0, $limit = 0)
     {
-        $return = array();
+        $return = [];
 
         $condition = 'status IN (';
         $condition .= is_array($status) ? implode(',', $status) : $status;
@@ -191,6 +197,7 @@ class Campaign
 
     /**
      * Get the campaigns that need to be processed
+     *
      * @return array Campaign
      */
     public function getCampaignsToQueue()
@@ -200,7 +207,7 @@ class Campaign
         if (is_numeric($this->config->get('MAX_PROCESS_MESSAGE'))) {
             $campaignlimit = sprintf(' limit %d ', $this->config->get('MAX_PROCESS_MESSAGE'));
         }
-        $campaigns = array();
+        $campaigns = [];
         $result = $this->db->query(
             sprintf(
                 'SELECT id FROM %s
@@ -219,7 +226,9 @@ class Campaign
 
     /**
      * Get the number of views for this campaign
+     *
      * @param entities\CampaignEntity $campaign
+     *
      * @return int
      */
     public function getUniqueViews(CampaignEntity $campaign)
@@ -239,7 +248,9 @@ class Campaign
 
     /**
      * Get the number of clicks for this campaign
+     *
      * @param entities\CampaignEntity $campaign
+     *
      * @return int
      */
     public function getClicks(CampaignEntity $campaign)
@@ -257,7 +268,9 @@ class Campaign
 
     /**
      * Get attachments from this campaign
+     *
      * @param entities\CampaignEntity $campaign
+     *
      * @return array Attachment
      */
     public function getAttachments(CampaignEntity $campaign)
@@ -273,7 +286,7 @@ class Campaign
             )
         );
 
-        $attachments = array();
+        $attachments = [];
         while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
             $attachment = new Attachment($row['filename'], $row['remotefile'], $row['mimetype'], $row['description'], $row['size']);
             $attachment->id = $row['id'];
@@ -285,7 +298,9 @@ class Campaign
 
     /**
      * Get the template for this campaign if set
+     *
      * @param entities\CampaignEntity $campaign
+     *
      * @return Template
      */
     public function getTemplateObject(CampaignEntity &$campaign)
@@ -298,7 +313,9 @@ class Campaign
 
     /**
      * Get lists which have this campaign
+     *
      * @param entities\CampaignEntity $campaign
+     *
      * @return array
      */
     public function listsDone(CampaignEntity $campaign)
@@ -314,7 +331,7 @@ class Campaign
             )
         );
 
-        $lists_done = array();
+        $lists_done = [];
         while ($lst = $result->fetch(\PDO::FETCH_ASSOC)) {
             $lists_done[] = $lst;
         }
@@ -324,12 +341,14 @@ class Campaign
 
     /**
      * Get lists which are excluded to send this campaign to
+     *
      * @param entities\CampaignEntity $campaign
+     *
      * @return array
      */
     public function listsExcluded(CampaignEntity $campaign)
     {
-        $lists_excluded = array();
+        $lists_excluded = [];
         if ($campaign->excludelist) {
             $result = $this->db->query(
                 sprintf(
@@ -349,7 +368,9 @@ class Campaign
 
     /**
      * Does the campaign contain Clicktrack links
+     *
      * @param entities\CampaignEntity $campaign
+     *
      * @return bool
      */
     public function hasClickTrackLinks(CampaignEntity $campaign)
@@ -363,6 +384,7 @@ class Campaign
 
     /**
      * Purge the drafts (from given owner if provided)
+     *
      * @param int $owner
      */
     public function purgeDrafts($owner)
@@ -382,6 +404,7 @@ class Campaign
     /**
      * Save this campaign to the database, calls update() when it already exists
      * Will be filled with default values
+     *
      * @param CampaignEntity $campaign
      * @param $owner
      */
@@ -407,6 +430,7 @@ class Campaign
 
     /**
      * Update this campaign's info in the database
+     *
      * @param CampaignEntity $campaign
      */
     public function update(CampaignEntity $campaign)
@@ -441,22 +465,25 @@ class Campaign
 
     /**
      * Delete this campaign from the database
+     *
      * @param entities\CampaignEntity $campaign
      */
     public function delete(CampaignEntity $campaign)
     {
-        $tables = array(
+        $tables = [
             $this->config->getTableName('message') => 'id',
             $this->config->getTableName('usermessage') => 'id',
-            $this->config->getTableName('listmessage') => 'id'
-        );
+            $this->config->getTableName('listmessage') => 'id',
+        ];
         $this->db->deleteFromArray($tables, $campaign->id);
     }
 
     /**
      * Add an attachment to this campaign
+     *
      * @param CampaignEntity $campaign
      * @param Attachment $attachment
+     *
      * @return int
      */
     public function addAttachment(CampaignEntity $campaign, Attachment $attachment)
@@ -474,6 +501,7 @@ class Campaign
 
     /**
      * Remove an attachment from this campaign
+     *
      * @param CampaignEntity $campaign
      * @param Attachment $attachment
      */
@@ -495,7 +523,9 @@ class Campaign
 
     /**
      * Put the campaign back on the queue
+     *
      * @param CampaignEntity $campaign
+     *
      * @throws \Exception
      */
     public function requeue(CampaignEntity $campaign)
@@ -571,9 +601,9 @@ class Campaign
         }
     }
 
-
     /**
      * Add campaign to a mailing list
+     *
      * @param CampaignEntity $campaign
      * @param $list_id
      */
@@ -592,6 +622,7 @@ class Campaign
 
     /**
      * Remove campaign from a mailing list
+     *
      * @param CampaignEntity $campaign
      * @param $list_id
      */
@@ -610,6 +641,7 @@ class Campaign
 
     /**
      * Update the status of a campaign
+     *
      * @param CampaignEntity $campaign
      * @param string $status
      */
@@ -653,8 +685,10 @@ class Campaign
 
     /**
      * Suspend a campaign from sending
+     *
      * @param CampaignEntity $campaign
      * @param int $owner_id
+     *
      * @return int
      */
     public function suspend(CampaignEntity $campaign, $owner_id)
@@ -676,7 +710,9 @@ class Campaign
 
     /**
      * Suspend all campaigns from sending
+     *
      * @param int $owner
+     *
      * @return int
      */
     public function suspendAll($owner)
@@ -697,8 +733,10 @@ class Campaign
 
     /**
      * Mark campaign from provided owner as sent
+     *
      * @param entities\CampaignEntity $campaign
      * @param int $owner_id
+     *
      * @return int
      */
     public function markSent(CampaignEntity $campaign, $owner_id)
@@ -720,7 +758,9 @@ class Campaign
 
     /**
      * Mark all campaigns from provided owner as sent
+     *
      * @param int $owner_id
+     *
      * @return int
      */
     public function markAllSent($owner_id)
@@ -740,6 +780,7 @@ class Campaign
 
     /**
      * Set a data item for this campaign
+     *
      * @param entities\CampaignEntity $campaign
      * @param string $name
      * @param string $value
@@ -788,19 +829,20 @@ class Campaign
 
         $this->db->replaceQuery(
             $this->config->getTableName('messagedata'),
-            array('id' => $campaign->id, 'name' => $name, 'data' => $value),
-            array('name', 'id')
+            ['id' => $campaign->id, 'name' => $name, 'data' => $value],
+            ['name', 'id']
         );
     }
 
     /**
      * Reset this campaign's statistics
+     *
      * @param CampaignEntity $campaign
      */
     public function resetCampaignStatistics(CampaignEntity $campaign)
     {
         ## remove the "forward" entries, but only if they are for one (this) campaign
-        $delete = array();
+        $delete = [];
         $result = $this->db->query(
             sprintf(
                 'SELECT forwardid FROM %s
@@ -833,22 +875,23 @@ class Campaign
             );
         }
 
-        $tables = array(
+        $tables = [
             $this->config->getTableName('linktrack_uml_click') => 'messageid',
-            $this->config->getTableName('usermessage') => 'messageid'
-        );
+            $this->config->getTableName('usermessage') => 'messageid',
+        ];
         $this->db->deleteFromArray($tables, $campaign->id);
     }
 
     /**
      * Exclude subscribers from given list(s) to receive this mailing
+     *
      * @param entities\CampaignEntity $campaign
      * @param string|array $list
      */
     public function excludeSubscribersOnList(CampaignEntity $campaign, $list)
     {
         if (is_array($list)) {
-            $where = ' WHERE listid IN (' . join(',', $list) .')';
+            $where = ' WHERE listid IN (' . join(',', $list) . ')';
         } else {
             $where = sprintf(' WHERE listid = %d', $list);
         }
@@ -875,6 +918,7 @@ class Campaign
 
     /**
      * Update the status of a campaign going out to a subscriber
+     *
      * @param entities\CampaignEntity $campaign
      * @param int $subscriber_id
      * @param string $status
@@ -893,6 +937,7 @@ class Campaign
 
     /**
      * Increment the processed counter
+     *
      * @param CampaignEntity $campaign
      */
     public function incrementProcessedAmount(CampaignEntity $campaign)
@@ -907,6 +952,7 @@ class Campaign
 
     /**
      * Duplicate a campaign and reschedule
+     *
      * @param CampaignEntity $campaign
      */
     public function repeatCampaign(CampaignEntity $campaign)
@@ -967,12 +1013,10 @@ class Campaign
         $new_campaign->embargo = $new_embargo;
         $new_campaign->status = 'submitted';
         $new_campaign->sent = '';
-        foreach (array("processed", "astext", "ashtml", "astextandhtml", "aspdf", "astextandpdf", "viewed", "bouncecount") as $item) {
+        foreach (['processed', 'astext', 'ashtml', 'astextandhtml', 'aspdf', 'astextandpdf', 'viewed', 'bouncecount'] as $item) {
             $new_campaign->$item = 0;
         }
         $this->update($new_campaign);
-
-
 
         # lists
         $this->db->query(sprintf(
@@ -985,7 +1029,6 @@ class Campaign
             $this->config->getTableName('listmessage'),
             $campaign->id
         ));
-
 
         # attachments
         $attachments = $this->getAttachments($campaign);
@@ -1004,6 +1047,7 @@ class Campaign
 
     /**
      * @param $date
+     *
      * @return bool
      */
     private function excludedDateForRepetition($date)
@@ -1028,14 +1072,15 @@ class Campaign
 
     /**
      * Load additional data for this campaign
+     *
      * @param CampaignEntity $campaign
      */
     private function loadCampaignData(CampaignEntity &$campaign)
     {
-        $default = array(
+        $default = [
             ## can add some more from below
-            'google_track' => $this->config->get('always_add_googletracking')
-        );
+            'google_track' => $this->config->get('always_add_googletracking'),
+        ];
 
         ## when loading an old campaign that hasn't got data stored in campaign data, load it from the campaign table
         $prevMsgData = $this->db->query(
@@ -1047,8 +1092,7 @@ class Campaign
             )
         )->fetch(\PDO::FETCH_ASSOC);
 
-
-        $campaigndata = array(
+        $campaigndata = [
             'template' => $this->config->get('defaultmessagetemplate'),
             'sendformat' => 'HTML',
             'message' => '',
@@ -1077,8 +1121,8 @@ class Campaign
             'notify_start' => $this->config->get('notifystart_default'),
             'notify_end' => $this->config->get('notifyend_default'),
             'google_track' => $default['google_track'] == 'true' || $default['google_track'] === true || $default['google_track'] == '1',
-            'excludelist' => array(),
-        );
+            'excludelist' => [],
+        ];
         if (is_array($prevMsgData)) {
             foreach ($prevMsgData as $key => $val) {
                 $campaigndata[$key] = $val;
@@ -1103,7 +1147,7 @@ class Campaign
             }
             if (!in_array(
                 $row['name'],
-                array('astext', 'ashtml', 'astextandhtml', 'aspdf', 'astextandpdf')
+                ['astext', 'ashtml', 'astextandhtml', 'aspdf', 'astextandpdf']
             )
             ) { ## don't overwrite counters in the campaign table from the data table
                 $campaigndata[stripslashes($row['name'])] = $data;

@@ -2,24 +2,22 @@
 namespace phpList\Model;
 
 use phpList\Admin;
-use phpList\Entity\SubscriberEntity;
-use phpList\helper\StringClass;
 
 class AdminModel
 {
-
     protected $db;
 
     /**
      * Used for looping over all usable subscriber attributes
      * for replacing in messages, urls etc. (@see fetchUrl)
+     *
      * @var array
      */
-    public static $DB_ATTRIBUTES = array(
+    public static $DB_ATTRIBUTES = [
         'id', 'email', 'confirmed', 'blacklisted', 'optedin', 'bouncecount',
         'entered', 'modified', 'uniqid', 'htmlemail', 'subscribepage', 'rssfrequency',
-        'extradata', 'foreignkey'
-    );
+        'extradata', 'foreignkey',
+    ];
 
     public function __construct(\phplist\Config $config, \phplist\helper\Database $db)
     {
@@ -29,6 +27,7 @@ class AdminModel
 
     /**
      * Fetch all details of an Admin with a given username
+     *
      * @param strong $username username of admin to fetch
      */
     public function getAdminByUsername($username)
@@ -49,11 +48,11 @@ class AdminModel
         return $result->fetch(\PDO::FETCH_ASSOC);
     }
 
-
     /**
      * Check if the given token is valid
      *
      * @param $token
+     *
      * @return bool
      */
     public function checkIfTheTokenIsValid($token)

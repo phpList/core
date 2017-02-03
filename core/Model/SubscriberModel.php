@@ -1,24 +1,21 @@
 <?php
 namespace phpList\Model;
 
-use phpList\Entity\SubscriberEntity;
-use phpList\helper\StringClass;
-
 class SubscriberModel
 {
-
     protected $db;
 
     /**
      * Used for looping over all usable subscriber attributes
      * for replacing in messages, urls etc. (@see fetchUrl)
+     *
      * @var array
      */
-    public static $DB_ATTRIBUTES = array(
+    public static $DB_ATTRIBUTES = [
         'id', 'email', 'confirmed', 'blacklisted', 'optedin', 'bouncecount',
         'entered', 'modified', 'uniqid', 'htmlemail', 'subscribepage', 'rssfrequency',
-        'extradata', 'foreignkey'
-    );
+        'extradata', 'foreignkey',
+    ];
 
     public function __construct(\phplist\Config $config, \phplist\helper\Database $db)
     {
@@ -27,9 +24,10 @@ class SubscriberModel
     }
 
     /**
-    * @brief Save a subscriber to the database
-    * @throws \Exception
-    */
+     * @brief Save a subscriber to the database
+     *
+     * @throws \Exception
+     */
     public function save($emailAddress, $encPass)
     {
         $query = sprintf(
@@ -68,9 +66,10 @@ class SubscriberModel
     }
 
     /**
-    * Update a subscriber's details
-    * @Note To update just the user password, use @updatePass
-    */
+     * Update a subscriber's details
+     *
+     * @Note To update just the user password, use @updatePass
+     */
     public function update($blacklisted, $confirmed, $emailAddress, $extradata, $htmlemail, $id, $optedin)
     {
         $query = sprintf(
@@ -131,20 +130,22 @@ class SubscriberModel
 
     /**
      * Cleanly delete all records of a subscriber from DB
+     *
      * @param  int $id ID of subscriber to delete
+     *
      * @return mixed Result of db->deleteFromArray()
      */
     public function delete($id)
     {
         // Get the correct table mappings from Config{} class
-        $tables = array(
+        $tables = [
             $this->config->getTableName('listuser') => 'userid',
             $this->config->getTableName('user_attribute', true) => 'userid',
             $this->config->getTableName('usermessage') => 'userid',
             $this->config->getTableName('user_history', true) => 'userid',
             $this->config->getTableName('user_message_bounce', true) => 'user',
-            $this->config->getTableName('user', true) => 'id'
-        );
+            $this->config->getTableName('user', true) => 'id',
+        ];
 
         // If user_group table exists, tag it for deletion
         // NOTE: Why is this check necessary? backwards compatibility?
@@ -157,10 +158,12 @@ class SubscriberModel
     }
 
     /**
-    * Assign a unique id to a Subscriber
-    * @param int $subscriber_id
-    * @return string unique id
-    */
+     * Assign a unique id to a Subscriber
+     *
+     * @param int $subscriber_id
+     *
+     * @return string unique id
+     */
     private function giveUniqueId($subscriberId)
     {
         //TODO: make uniqueId a unique field in database

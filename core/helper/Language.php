@@ -6,23 +6,20 @@ use phpList\Config;
 
 class Language
 {
-
     public $defaultlanguage = 'en';
     public $language = 'en';
     public $basedir = '';
     private $hasGettext = false;
     private $hasDB = false;
-    private $_languages = array();
+    private $_languages = [];
 
     protected $config;
     protected $db;
-
 
     public function __construct(Database $db, Config $config)
     {
         $this->config = $config;
         $this->db = $db;
-
 
         $this->basedir = dirname(__FILE__) . '/locale/';
         $this->defaultlanguage = $this->config->get('DEFAULT_SYSTEM_LANGUAGE');
@@ -63,7 +60,7 @@ class Language
                 ) {
                     $lan_info = file_get_contents($landir . '/' . $lancode . '/language_info');
                     $lines = explode("\n", $lan_info);
-                    $lan = array();
+                    $lan = [];
                     foreach ($lines as $line) {
                         // use utf8 matching
                         if (preg_match('/(\w+)=([\p{L}\p{N}&; \-\(\)]+)/u', $line, $regs)) {
@@ -74,12 +71,12 @@ class Language
                         $lan['gettext'] = $lancode;
                     }
                     if (!empty($lan['name']) && !empty($lan['charset'])) {
-                        $this->_languages[$lancode] = array(
+                        $this->_languages[$lancode] = [
                             $lan['name'],
                             $lan['charset'],
                             $lan['charset'],
-                            $lan['gettext']
-                        );
+                            $lan['gettext'],
+                        ];
                     }
                 }
             }
@@ -95,10 +92,10 @@ class Language
                 );
                 $result = $this->db->query($query);
                 while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
-                    $this->_languages[$row['lan']] = array($row['translation'], 'UTF-8', 'UTF-8', $row['lan']);
+                    $this->_languages[$row['lan']] = [$row['translation'], 'UTF-8', 'UTF-8', $row['lan']];
                 }
             }
-            uasort($this->_languages, "lanSort");
+            uasort($this->_languages, 'lanSort');
         }
         return $this->_languages;
     }
@@ -146,7 +143,7 @@ class Language
             $lan_map = $this->language . '_' . strtoupper($this->language);
         }
 
-        putenv("LANGUAGE=" . $lan_map . '.utf-8');
+        putenv('LANGUAGE=' . $lan_map . '.utf-8');
         setlocale(LC_ALL, $lan_map . '.utf-8');
         bind_textdomain_codeset('phplist', 'UTF-8');
         $gt = gettext($text);
@@ -221,7 +218,7 @@ class Language
         # we've decided to spell phplist with uc L
         #todo: check if this is needed, maybe just correct all static text
         $text = str_ireplace('phplist', 'phpList', $text);
-        $text = str_replace("\n", "", $text);
+        $text = str_replace("\n", '', $text);
 
         if (DEBUG) {
             $text = '<span style="color:#A704FF">' . $text . '</span>';
@@ -232,7 +229,6 @@ class Language
     /**
      * obsolete
      */
-
     public function missingText($text)
     {
         if (DEBUG) {
@@ -279,7 +275,7 @@ class Language
             foreach ($translations as $orig => $trans) {
                 $this->db->replaceQuery(
                     $this->config->getTableName('i18n'),
-                    array('lan' => $language, 'original' => $orig, 'translation' => $trans),
+                    ['lan' => $language, 'original' => $orig, 'translation' => $trans],
                     ''
                 );
             }
@@ -318,10 +314,10 @@ class Language
 
         $lan = $this->language;
 
-        if (trim($text) == "") {
-            return "";
+        if (trim($text) == '') {
+            return '';
         }
-        if (strip_tags($text) == "") {
+        if (strip_tags($text) == '') {
             return $text;
         }
         if (isset($lan[$text])) {
@@ -339,15 +335,17 @@ class Language
 
     /**
      * Get the translated text
+     *
      * @param $text
+     *
      * @return mixed|string
      */
     public function get($text)
     {
-        if (trim($text) == "") {
-            return "";
+        if (trim($text) == '') {
+            return '';
         }
-        if (strip_tags($text) == "") {
+        if (strip_tags($text) == '') {
             return $text;
         }
         $translation = '';
@@ -358,7 +356,7 @@ class Language
         } elseif (isset($_GET['page'])) {
             $page = basename($_GET['page']);
         } else {
-            $page = "home";
+            $page = 'home';
         }
         $page = preg_replace('/\W/', '', $page);
 

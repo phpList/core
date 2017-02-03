@@ -6,15 +6,12 @@ use phpList\Entity\TemplateImageEntity;
 
 /**
  * Class Template
- * @package phpList
  */
 class Template
 {
-
     protected $db;
     protected $config;
     protected $template_image;
-
 
     public function __construct(Config $config, helper\Database $db, TemplateImage $template_image)
     {
@@ -25,7 +22,9 @@ class Template
 
     /**
      * Get template with given id from database, returns false when it does not exist
+     *
      * @param $id
+     *
      * @return bool|TemplateEntity
      */
     public function getTemplate($id)
@@ -47,7 +46,9 @@ class Template
 
     /**
      * Create a Template object from database values
+     *
      * @param $array
+     *
      * @return TemplateEntity
      */
     public function templateFromArray($array)
@@ -59,6 +60,7 @@ class Template
 
     /**
      * Save template to databse, update when it already exists
+     *
      * @param TemplateEntity $template
      */
     public function save(TemplateEntity &$template)
@@ -83,6 +85,7 @@ class Template
 
     /**
      * Update the template in the database
+     *
      * @param TemplateEntity $template
      */
     public function update(TemplateEntity $template)
@@ -105,6 +108,7 @@ class Template
 
     /**
      * Add an image to this template
+     *
      * @param entities\TemplateEntity $template
      * @param $mime
      * @param $filename
@@ -120,12 +124,14 @@ class Template
 
     /**
      * Get images used in this template
+     *
      * @param entities\TemplateEntity $template
+     *
      * @return array
      */
     public function getImages(TemplateEntity $template)
     {
-        $images = array();
+        $images = [];
         $result = $this->db->query(
             sprintf(
                 'SELECT * FROM %s

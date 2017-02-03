@@ -5,7 +5,6 @@ use phpList\Entity\ListEntity;
 
 /**
  * Class MailingList
- * @package PHPList\Core
  */
 class ListManager
 {
@@ -24,7 +23,9 @@ class ListManager
 
     /**
      * Create a MailingList object from database values
+     *
      * @param $array
+     *
      * @return ListEntity
      */
     private function listFromArray($array)
@@ -39,12 +40,14 @@ class ListManager
 
     /**
      * Make an array of MailingList objects from a db result
+     *
      * @param null|\PDOStatement $db_result
+     *
      * @return array
      */
     private function makeLists($db_result)
     {
-        $list = array();
+        $list = [];
         if (!empty($db_result)) {
             while ($row = $db_result->fetch(\PDO::FETCH_ASSOC)) {
                 $list[] = $this->listFromArray($row);
@@ -106,6 +109,7 @@ class ListManager
 
     /**
      * Add a subscriber to a list
+     *
      * @param SubscriberEntity $scrEntity
      * @param int $listId ID of the list to add the subscriber to
      */
@@ -116,14 +120,15 @@ class ListManager
     }
 
     /**
-    * Add a subscriber to a list
-    * @param phpListEntityListEntity $listEntity
-    * @param int $listId ID of the list to add the subscriber to
-    */
+     * Add a subscriber to a list
+     *
+     * @param phpListEntityListEntity $listEntity
+     * @param int $listId ID of the list to add the subscriber to
+     */
     public function addSubscribers(array $scrEntities, $listId)
     {
         // Initialise array for collecting outcomes
-        $results = array();
+        $results = [];
 
         // Loop through each subecriber entity object
         foreach ($scrEntities as $scrEntity) {
@@ -140,10 +145,11 @@ class ListManager
     }
 
     /**
-    * Add a subscriber to a list
-    * @param SubscriberEntity $scrEntity
-    * @param int $listId ID of the list to add the subscriber to
-    */
+     * Add a subscriber to a list
+     *
+     * @param SubscriberEntity $scrEntity
+     * @param int $listId ID of the list to add the subscriber to
+     */
     public function removeSubscriber($listId, \phpList\Entity\SubscriberEntity $scrEntity)
     {
         // Add the subscriber to the list
@@ -151,14 +157,15 @@ class ListManager
     }
 
     /**
-    * Add a subscriber to a list
-    * @param phpListEntityListEntity $listEntity
-    * @param int $listId ID of the list to add the subscriber to
-    */
+     * Add a subscriber to a list
+     *
+     * @param phpListEntityListEntity $listEntity
+     * @param int $listId ID of the list to add the subscriber to
+     */
     public function removeSubscribers(array $scrEntities, $listId)
     {
         // Initialise array for collecting outcomes
-        $results = array();
+        $results = [];
 
         // Loop through each subecriber entity object
         foreach ($scrEntities as $scrEntity) {
@@ -176,6 +183,7 @@ class ListManager
 
     /**
      * Get available list categories
+     *
      * @return array
      */
     public function getAllCategories()
@@ -183,7 +191,7 @@ class ListManager
         $listCategories = $this->config->get('list_categories');
         $categories = explode(',', $listCategories);
         if (!$categories) {
-            $categories = array();
+            $categories = [];
             ## try to fetch them from existing lists
             $result = $this->db->query(
                 sprintf(

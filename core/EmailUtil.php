@@ -3,12 +3,12 @@ namespace phpList;
 
 class EmailUtil
 {
-
     /**
      * Check if string is valid email address
+     *
      * @param string  $emailAddress    String to test
      * @param array?  $tldWhitelist    whitelisted top level domains
-     * @param integer $validationLevel level of valudation to enforce
+     * @param int $validationLevel level of valudation to enforce
      */
     public function isValid($emailAddress, $tldWhitelist = null, $validationLevel = 3)
     {
@@ -56,7 +56,7 @@ class EmailUtil
                 #   Not accepted is comments (eg. (this is a comment)@example.com)
                 # Extra:
                 #   topLevelDomain can only be one of the defined ones
-                $escapedChar = "\\\\[\\x01-\\x09\\x0B-\\x0C\\x0E-\\x7F]"; # CR and LF excluded for safety reasons
+                $escapedChar = '\\\\[\\x01-\\x09\\x0B-\\x0C\\x0E-\\x7F]'; # CR and LF excluded for safety reasons
                 $unescapedChar = "[a-zA-Z0-9!#$%&'*\+\-\/=?^_`{|}~]";
                 if ($validationLevel == 2) {
                     $char = "$unescapedChar";
@@ -65,7 +65,7 @@ class EmailUtil
                 };
                 $dotString = "$char((\.)?$char){0,63}";
 
-                $qtext = "[\\x01-\\x09\\x0B-\\x0C\\x0E-\\x21\\x23-\\x5B\\x5D-\\x7F]"; # All but <LF> x0A, <CR> x0D, quote (") x22 and backslash (\) x5c
+                $qtext = '[\\x01-\\x09\\x0B-\\x0C\\x0E-\\x21\\x23-\\x5B\\x5D-\\x7F]'; # All but <LF> x0A, <CR> x0D, quote (") x22 and backslash (\) x5c
                 $qchar = "$qtext|$escapedChar";
                 $quotedString = "\"($qchar){1,62}\"";
                 if ($validationLevel == 2) {
@@ -73,7 +73,7 @@ class EmailUtil
                 } else {
                     $localPart = "($dotString|$quotedString)";
                 };
-                $topLevelDomain = "(" . $tldWhitelist . ")";
+                $topLevelDomain = '(' . $tldWhitelist . ')';
                 $domainLiteral = "((([0-9][0-9]?|[0-1][0-9][0-9]|[2][0-4][0-9]|[2][5][0-5])\.){3}([0-9][0-9]?|[0-1][0-9][0-9]|[2][0-4][0-9]|[2][5][0-5]))";
 
                 $domainPart = "([a-zA-Z0-9](-?[a-zA-Z0-9])*(\.[a-zA-Z](-?[a-zA-Z0-9])*)*\.$topLevelDomain|$domainLiteral)";
@@ -87,7 +87,7 @@ class EmailUtil
 
                 $pattern = "/^[\&\'-_.[:alnum:]]+@((([[:alnum:]]|[[:alnum:]][[:alnum:]-]*[[:alnum:]])\.)+('.$tldWhitelist.')|(([0-9][0-9]?|[0-1][0-9][0-9]|[2][0-4][0-9]|[2][5][0-5])\.){3}([0-9][0-9]?|[0-1][0-9][0-9]|[2][0-4][0-9]|[2][5][0-5]))$/i";
 
-                return (preg_match($pattern, $emailAddress) > 0) ;
+                return (preg_match($pattern, $emailAddress) > 0);
                 break;
         }
     }

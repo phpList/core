@@ -7,7 +7,7 @@ class Timer
      * @var Timer
      */
     private static $_instance;
-    private $timers = array();
+    private $timers = [];
     private $start;
     private $previous = 0;
 
@@ -49,7 +49,9 @@ class Timer
 
     /**
      * Purpously not checking initialisation to save some time
+     *
      * @param string $timer the name of the timer to get
+     *
      * @return Timer
      */
     public static function get($timer)
@@ -59,6 +61,7 @@ class Timer
 
     /**
      * Start a timer
+     *
      * @param string $timer
      */
     public static function start($timer)

@@ -12,7 +12,6 @@ class Database
 
     protected $config;
 
-
     public function __construct(Config $config)
     {
         $this->config = $config;
@@ -21,6 +20,7 @@ class Database
 
     /**
      * Connect to the database
+     *
      * @throws \Exception
      */
     private function connect()
@@ -46,7 +46,9 @@ class Database
 
     /**
      * Create prepared statement
+     *
      * @param $query
+     *
      * @return \PDOStatement
      */
     public function prepare($query)
@@ -57,8 +59,10 @@ class Database
     /**
      * Query the database
      * if ignore is true, possible failure will not be notified.
+     *
      * @param $query
      * @param bool $ignore
+     *
      * @return null|\PDOStatement
      */
     public function query($query, $ignore = false)
@@ -75,7 +79,7 @@ class Database
             # log time queries take
             $this->query_log[] = [
                 'query' => $query,
-                'time'  => Timer::get('query_timer')->elapsed()
+                'time'  => Timer::get('query_timer')->elapsed(),
             ];
         }
         return $result;
@@ -83,6 +87,7 @@ class Database
 
     /**
      * Get an error message
+     *
      * @return array
      */
     public function getErrorMessage()
@@ -109,8 +114,10 @@ class Database
 
     /**
      * Check if a table exists in the database
+     *
      * @param string $table
      * @param int $refresh
+     *
      * @return bool
      */
     public function tableExists($table, $refresh = 0)
@@ -120,7 +127,7 @@ class Database
             $_SESSION['dbtables']
         )
         ) {
-            $_SESSION['dbtables'] = array();
+            $_SESSION['dbtables'] = [];
 
             # need to improve this. http://bugs.mysql.com/bug.php?id=19588
             $result = $this->query(
@@ -139,8 +146,10 @@ class Database
 
     /**
      * Check if a column exists in the database
+     *
      * @param string $table
      * @param string $column
+     *
      * @return bool
      */
     public function tableColumnExists($table, $column)
@@ -160,6 +169,7 @@ class Database
 
     /**
      * @param string $table The full table name including the prefix, or the abbreviated one without prefix
+     *
      * @return bool
      */
     public function checkForTable($table)
@@ -182,11 +192,11 @@ class Database
         $query = "CREATE TABLE $table (\n";
         while (list($column, $val) = each($structure)) {
             if (preg_match('/index_\d+/', $column)) {
-                $query .= 'index ' . $structure[$column][0] . ",";
+                $query .= 'index ' . $structure[$column][0] . ',';
             } elseif (preg_match('/unique_\d+/', $column)) {
-                $query .= 'unique ' . $structure[$column][0] . ",";
+                $query .= 'unique ' . $structure[$column][0] . ',';
             } else {
-                $query .= "$column " . $structure[$column][0] . ",";
+                $query .= "$column " . $structure[$column][0] . ',';
             }
         }
         # get rid of the last ,
@@ -203,7 +213,9 @@ class Database
 
     /**
      * escape a string - should be depricated in favour of prepared statements
+     *
      * @param $text
+     *
      * @return string
      */
     public function sqlEscape($text)
@@ -227,6 +239,7 @@ class Database
 
     /**
      * Get the number of queries run until now
+     *
      * @return int
      */
     public function getQueryCount()
@@ -236,6 +249,7 @@ class Database
 
     /**
      * Get last executed query
+     *
      * @return mixed
      * @note Duplicate key errors can be hidden by this method; commenting out
      * the return statement can reveal useful error messages
@@ -253,6 +267,7 @@ class Database
     /**
      * Get a list of executed queries
      * Will be empty when DEBUG is disabled
+     *
      * @return array
      */
     public function getQueryLog()
@@ -268,7 +283,7 @@ class Database
     {
         $query = 'DELETE FROM %s WHERE %s = ' . ((is_string($id)) ? '"%s"' : '%d');
         // Instantiate results var for collecting query outcomes
-        $results = array();
+        $results = [];
         foreach ($tables as $table => $column) {
             $results [] = $this->db->query(sprintf($query, $table, $column, $id));
         }

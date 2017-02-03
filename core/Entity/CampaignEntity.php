@@ -3,7 +3,6 @@
  * User: SaWey
  * Date: 6/02/15
  */
-
 namespace phpList\Entity;
 
 class CampaignEntity
@@ -64,15 +63,15 @@ class CampaignEntity
     public $embargo_in_past;
     public $template_object;
 
-    public $lists = array();
+    public $lists = [];
 
     public function __construct()
     {
     }
 
-
     /**
      * Does the campaign contain HTML formatting
+     *
      * @return bool
      */
     public function isHTMLFormatted()
@@ -82,8 +81,11 @@ class CampaignEntity
 
     /**
      * Get a campaigndata item
+     *
      * @param string $item
+     *
      * @return mixed
+     *
      * @throws \Exception
      */
     public function __get($item)
@@ -97,7 +99,9 @@ class CampaignEntity
 
     /**
      * Check if a data item has been set
+     *
      * @param string $item
+     *
      * @return bool
      */
     public function __isset($item)
@@ -108,6 +112,7 @@ class CampaignEntity
     /**
      * Set a temporary campaign data item
      * Only used in current object context
+     *
      * @param string $name
      * @param mixed $value
      */

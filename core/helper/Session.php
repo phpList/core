@@ -18,12 +18,12 @@ class Session
              * and give the handler object to session_set_save_handler?
              */
             session_set_save_handler(
-                array(&$mysql_handler, 'open'),
-                array(&$mysql_handler, 'close'),
-                array(&$mysql_handler, 'read'),
-                array(&$mysql_handler, 'write'),
-                array(&$mysql_handler, 'destroy'),
-                array(&$mysql_handler, 'gc')
+                [&$mysql_handler, 'open'],
+                [&$mysql_handler, 'close'],
+                [&$mysql_handler, 'read'],
+                [&$mysql_handler, 'write'],
+                [&$mysql_handler, 'destroy'],
+                [&$mysql_handler, 'gc']
             );
         }
 
@@ -35,11 +35,11 @@ class Session
         if (!phpList::DB()->tableExists(Config::SESSION_TABLENAME)) {
             phpList::DB()->createTableInDB(
                 Config::SESSION_TABLENAME,
-                array(
-                    'sessionid' => array('CHAR(32) NOT NULL PRIMARY KEY', ''),
-                    'lastactive' => array('INTEGER NOT NULL', ''),
-                    'data' => array('LONGTEXT', ''),
-                )
+                [
+                    'sessionid' => ['CHAR(32) NOT NULL PRIMARY KEY', ''],
+                    'lastactive' => ['INTEGER NOT NULL', ''],
+                    'data' => ['LONGTEXT', ''],
+                ]
             );
         }
     }
@@ -49,7 +49,9 @@ class MySQLSessionHandler implements \SessionHandlerInterface
 {
     /**
      * Close the session
+     *
      * @link http://php.net/manual/en/sessionhandlerinterafce.close.php
+     *
      * @return bool <p>
      * The return value (usually TRUE on success, FALSE on failure).
      * Note this value is returned internally to PHP for processing.
@@ -62,8 +64,11 @@ class MySQLSessionHandler implements \SessionHandlerInterface
 
     /**
      * Destroy a session
+     *
      * @link http://php.net/manual/en/sessionhandlerinterafce.destroy.php
+     *
      * @param int $session_id The session ID being destroyed.
+     *
      * @return bool <p>
      * The return value (usually TRUE on success, FALSE on failure).
      * Note this value is returned internally to PHP for processing.
@@ -84,11 +89,14 @@ class MySQLSessionHandler implements \SessionHandlerInterface
 
     /**
      * Cleanup old sessions
+     *
      * @link http://php.net/manual/en/sessionhandlerinterafce.gc.php
+     *
      * @param int $maxlifetime <p>
      * Sessions that have not updated for
      * the last maxlifetime seconds will be removed.
      * </p>
+     *
      * @return bool <p>
      * The return value (usually TRUE on success, FALSE on failure).
      * Note this value is returned internally to PHP for processing.
@@ -110,9 +118,12 @@ class MySQLSessionHandler implements \SessionHandlerInterface
 
     /**
      * Initialize session
+     *
      * @link http://php.net/manual/en/sessionhandlerinterafce.open.php
+     *
      * @param string $save_path The path where to store/retrieve the session.
      * @param string $session_id The session id.
+     *
      * @return bool <p>
      * The return value (usually TRUE on success, FALSE on failure).
      * Note this value is returned internally to PHP for processing.
@@ -125,8 +136,11 @@ class MySQLSessionHandler implements \SessionHandlerInterface
 
     /**
      * Read session data
+     *
      * @link http://php.net/manual/en/sessionhandlerinterafce.read.php
+     *
      * @param string $session_id The session id to read data for.
+     *
      * @return string <p>
      * Returns an encoded string of the read data.
      * If nothing was read, it must return an empty string.
@@ -148,7 +162,9 @@ class MySQLSessionHandler implements \SessionHandlerInterface
 
     /**
      * Write session data
+     *
      * @link http://php.net/manual/en/sessionhandlerinterafce.write.php
+     *
      * @param string $session_id The session id.
      * @param string $session_data <p>
      * The encoded session data. This data is the
@@ -157,6 +173,7 @@ class MySQLSessionHandler implements \SessionHandlerInterface
      * string and passing it as this parameter.
      * Please note sessions use an alternative serialization method.
      * </p>
+     *
      * @return bool <p>
      * The return value (usually TRUE on success, FALSE on failure).
      * Note this value is returned internally to PHP for processing.

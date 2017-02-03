@@ -14,7 +14,7 @@ class phpListMailer extends \PHPMailer
     public $estimatedsize = 0;
     public $mailsize = 0;
     private $inBlast = false;
-    public $image_types = array(
+    public $image_types = [
         'gif' => 'image/gif',
         'jpg' => 'image/jpeg',
         'jpeg' => 'image/jpeg',
@@ -23,14 +23,13 @@ class phpListMailer extends \PHPMailer
         'png' => 'image/png',
         'tif' => 'image/tiff',
         'tiff' => 'image/tiff',
-        'swf' => 'application/x-shockwave-flash'
-    );
+        'swf' => 'application/x-shockwave-flash',
+    ];
 
     public $LE = "\n";
     public $Hello = '';
     public $timeStamp = '';
     public $TextEncoding = '7bit';
-
 
     public function __construct($message_id, $email, $inBlast = true, $exceptions = false)
     {
@@ -184,7 +183,7 @@ class phpListMailer extends \PHPMailer
         return $body;
     }
 
-    public function compatSend($to_name = "", $to_addr, $from_name, $from_addr, $subject = '', $headers = '', $envelope = '')
+    public function compatSend($to_name = '', $to_addr, $from_name, $from_addr, $subject = '', $headers = '', $envelope = '')
     {
         if (!empty($from_addr) && method_exists($this, 'SetFrom')) {
             $this->SetFrom($from_addr, $from_name);
@@ -219,7 +218,7 @@ class phpListMailer extends \PHPMailer
     public function Send()
     {
         if (!parent::Send()) {
-            phpList::log()->notice("Error sending email to " /*.$to_addr*/);
+            phpList::log()->notice('Error sending email to ' /*.$to_addr*/);
             return 0;
         }
         return 1;
@@ -251,12 +250,12 @@ class phpListMailer extends \PHPMailer
         $templateid = sprintf('%d', $templateid);
 
         // Build the list of image extensions
-        $extensions = array();
-        while (list($key, ) = each($this->image_types)) {
+        $extensions = [];
+        while (list($key) = each($this->image_types)) {
             $extensions[] = $key;
         }
-        $html_images = array();
-        $filesystem_images = array();
+        $html_images = [];
+        $filesystem_images = [];
 
         preg_match_all('/"([^"]+\.(' . implode('|', $extensions) . '))"/Ui', $this->Body, $images);
 
@@ -360,10 +359,10 @@ class phpListMailer extends \PHPMailer
             $this->attachment[$cur][3] = 'base64';
             $this->attachment[$cur][4] = $content_type;
             $this->attachment[$cur][5] = true; // isStringAttachment
-            $this->attachment[$cur][6] = "inline";
+            $this->attachment[$cur][6] = 'inline';
             $this->attachment[$cur][7] = $cid;
         } else {
-            phpList::log()->notice("phpMailer needs patching to be able to use inline images from templates");
+            phpList::log()->notice('phpMailer needs patching to be able to use inline images from templates');
             return false;
         }
         return $cid;
@@ -485,7 +484,7 @@ class phpListMailer extends \PHPMailer
         return $result->fetchColumn(0);
     }
 
-    public function EncodeFile($path, $encoding = "base64")
+    public function EncodeFile($path, $encoding = 'base64')
     {
         # as we already encoded the contents in $path, return $path
         return chunk_split($path, 76, $this->LE);
@@ -495,27 +494,27 @@ class phpListMailer extends \PHPMailer
     {
         //TODO: put environment vars in config
         $message_header = preg_replace('/' . $this->LE . '$/', '', $message_header);
-        $message_header .= $this->LE . "Subject: " . $this->EncodeHeader($this->Subject) . $this->LE;
+        $message_header .= $this->LE . 'Subject: ' . $this->EncodeHeader($this->Subject) . $this->LE;
 
         #print nl2br(htmlspecialchars($message_header));      exit;
 
         $date = date('r');
         $aws_signature = base64_encode(hash_hmac('sha256', $date, Config::get('AWS_SECRETKEY'), true));
 
-        $requestheader = array(
+        $requestheader = [
             'Host: email.us-east-1.amazonaws.com',
             'Content-Type: application/x-www-form-urlencoded',
             'Date: ' . $date,
             'X-Amzn-Authorization: AWS3-HTTPS AWSAccessKeyId=' . Config::AWS_ACCESSKEYID . ',Algorithm=HMACSHA256,Signature=' . $aws_signature,
-        );
+        ];
 
         $rawmessage = base64_encode($message_header . $this->LE . $this->LE . $message_body);
 
-        $requestdata = array(
+        $requestdata = [
             'Action' => 'SendRawEmail',
             'Destinations.member.1' => $this->destinationemail,
             'RawMessage.Data' => $rawmessage,
-        );
+        ];
 
         $header = '';
         foreach ($requestheader as $param) {
@@ -536,7 +535,7 @@ class phpListMailer extends \PHPMailer
         curl_setopt(
             $curl,
             CURLOPT_USERAGENT,
-            Config::get('NAME') . " (phpList version " . PHPLIST_VERSION . ", http://www.phplist.com/)"
+            Config::get('NAME') . ' (phpList version ' . PHPLIST_VERSION . ', http://www.phplist.com/)'
         );
         curl_setopt($curl, CURLOPT_POST, 1);
 
@@ -565,7 +564,7 @@ class phpListMailer extends \PHPMailer
         ## https://github.com/PHPMailer/PHPMailer/commit/57b183bf6a203cb69231bc3a235a00905feff75b
 
         if (Config::USE_AMAZONSES) {
-            $header .= "To: " . $this->destinationemail . $this->LE;
+            $header .= 'To: ' . $this->destinationemail . $this->LE;
             return $this->AmazonSESSend($header, $body);
         }
 
@@ -582,7 +581,6 @@ class phpListMailer extends \PHPMailer
         file_put_contents($fname . '.S', $this->Sender);
         return true;
     }
-
 
     public static function getTopSmtpServer($domain)
     {
@@ -629,7 +627,6 @@ class phpListMailer extends \PHPMailer
         }
         return phpListMailer::sendMailPhpMailer($to, $subject, $message);
     }
-
 
     public static function constructSystemMail($message, $subject = '')
     {
@@ -690,7 +687,7 @@ class phpListMailer extends \PHPMailer
                 $htmlcontent .= $phpListPowered;
             }
         }
-        return array($htmlcontent, $textmessage);
+        return [$htmlcontent, $textmessage];
     }
 
     public static function sendMailPhpMailer($to, $subject, $message)
@@ -730,7 +727,7 @@ class phpListMailer extends \PHPMailer
         $sep = strpos($removeurl, '?') === false ? '?' : '&';
         $mail->addCustomHeader('List-Unsubscribe: <' . $removeurl . $sep . 'email=' . $to . '&jo=1>');
 
-        return $mail->compatSend("", $destinationemail, $fromname, $fromemail, $subject);
+        return $mail->compatSend('', $destinationemail, $fromname, $fromemail, $subject);
     }
 
     public static function sendMailDirect($destinationemail, $subject, $message)
@@ -767,11 +764,11 @@ class phpListMailer extends \PHPMailer
         return true;
     }
 
-    public static function sendAdminCopy($subject, $message, $lists = array())
+    public static function sendAdminCopy($subject, $message, $lists = [])
     {
         $sendcopy = Config::get('send_admin_copies');
         if ($sendcopy) {
-            $mails = array();
+            $mails = [];
             if (sizeof($lists) && Config::get('SEND_LISTADMIN_COPY')) {
                 foreach ($lists as $list) {
                     $tmp_list = MailingList::getListById($list);
@@ -788,7 +785,7 @@ class phpListMailer extends \PHPMailer
                 }
                 $mails[] = $admin_mail;
             }
-            $sent = array();
+            $sent = [];
             foreach ($mails as $admin_mail) {
                 $admin_mail = trim($admin_mail);
                 if (!isset($sent[$admin_mail]) && !empty($admin_mail)) {
@@ -805,7 +802,7 @@ class phpListMailer extends \PHPMailer
         }
     }
 
-    private function systemMessageHeaders($subscriberemail = "")
+    private function systemMessageHeaders($subscriberemail = '')
     {
         $from_address = Config::get('message_from_address');
         $from_name = Config::get('message_from_name');
@@ -833,7 +830,7 @@ class phpListMailer extends \PHPMailer
     {
         $report_addresses = explode(',', Config::get('report_address'));
         foreach ($report_addresses as $address) {
-            phpListMailer::sendMail($address, Config::get('installation_name').' '.$subject, $message);
+            phpListMailer::sendMail($address, Config::get('installation_name') . ' ' . $subject, $message);
         }
     }
 
