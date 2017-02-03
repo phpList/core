@@ -962,14 +962,6 @@ class PrepareCampaign
             }
 
             if (!$mail->compatSend('', $destinationemail, $fromname, $fromemail, $subject)) {
-<<<<<<< 1231399686352d6e330e138c3124856b15d06226
-                #if (!$mail->send(array($destinationemail),'spool')) {
-                /*TODO: enable plugins
-                foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                    $plugin->processSendFailed($campaign->id, $subscriberdata, $isTestMail);
-                }*/
-=======
->>>>>>> [CLEANUP] Delete commented-out code
                 phpList::log()->debug(
                     sprintf(
                         s('Error sending campaign %d (%d/%d) to %s (%s) '),
