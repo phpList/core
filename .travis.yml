@@ -2,6 +2,9 @@ sudo: false
 
 language: php
 
+services:
+  - mysql
+
 notifications:
   slack: phplist:wDLojEEoZ0Sw0iTqpRzw6wsd
 
@@ -14,6 +17,9 @@ matrix:
   - php: 7.0
   - php: 7.1
   - php: hhvm
+
+before_install:
+  - mysql -e 'CREATE DATABASE phplist;'
 
 install:
   - composer install

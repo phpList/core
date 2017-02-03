@@ -16,10 +16,10 @@ DATABASE_DSN = "mysql:host=localhost;port=3306;dbname=phplist"
 ; DATABASE_DSN = "sqlite:/opt/databases/mydb.sq3"
 
 ; who do we log in as?
-DATABASE_USER = "phplist"
+DATABASE_USER = "travis"
 
 ; and what password do we use
-DATABASE_PASSWORD = "phplist"
+DATABASE_PASSWORD = ""
 
 ; if you use multiple installations of phpList you can set this to
 ; something to identify this one. it will be prepended to email report
