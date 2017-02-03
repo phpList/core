@@ -15,7 +15,8 @@ namespace phpList\helper;
  * will look for the translation of the string and substitute the parameters
  *
  **/
- class Shortcuts {
+class Shortcuts
+{
 
     public function s($text)
     {
@@ -23,7 +24,7 @@ namespace phpList\helper;
         /**
          * @var \phpList\helper\Language $lan
          */
-        $lan = $container->get( 'Language' );
+        $lan = $container->get('Language');
         $translation = $lan->getDirect($text);
 
         ## allow overloading with sprintf paramaters

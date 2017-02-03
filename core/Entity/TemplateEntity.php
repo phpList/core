@@ -1,8 +1,8 @@
 <?php
 namespace phpList\Entity;
 
-
-class TemplateEntity {
+class TemplateEntity
+{
     public $id = 0;
     public $title;
     public $template;
@@ -19,4 +19,4 @@ class TemplateEntity {
         $this->template = stripslashes($template);
         $this->listorder = $listorder;
     }
-} 
+}

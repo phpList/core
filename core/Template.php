@@ -9,7 +9,8 @@ use phpList\Entity\TemplateImageEntity;
  * @package phpList
  */
 class Template
-{   
+{
+
     protected $db;
     protected $config;
     protected $template_image;
@@ -37,9 +38,9 @@ class Template
                 $id
             )
         );
-        if($result->rowCount() > 0){
+        if ($result->rowCount() > 0) {
             return $this->templateFromArray($result->fetch(\PDO::FETCH_ASSOC));
-        }else{
+        } else {
             return false;
         }
     }

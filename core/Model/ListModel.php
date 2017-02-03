@@ -4,11 +4,12 @@ namespace phpList\Model;
 use phpList\Entity\SubscriberEntity;
 use phpList\helper\StringClass;
 
-class ListModel {
+class ListModel
+{
 
     protected $db;
 
-    public function __construct( \phplist\Config $config, \phplist\helper\Database $db )
+    public function __construct(\phplist\Config $config, \phplist\helper\Database $db)
     {
         $this->config = $config;
         $this->db = $db;
@@ -19,12 +20,12 @@ class ListModel {
     * @param $subscriber_id
     * @param $list_id
     */
-    public function addSubscriber( $subscriberId, $listId )
+    public function addSubscriber($subscriberId, $listId)
     {
 
         $lists = $this->getListsForSubscriber((int) $subscriberId);
-        foreach ($lists as $list){
-            if((int) $list["id"] === (int) $listId){
+        foreach ($lists as $list) {
+            if ((int) $list["id"] === (int) $listId) {
                 throw new \Exception("Subscriber is already subscribed on that list");
             }
         }
@@ -35,10 +36,10 @@ class ListModel {
                     %s
                         (userid, listid)
                 VALUES
-                    (%d, %d)'
-                , $this->config->getTableName( 'listuser' )
-                , $subscriberId
-                , $listId
+                    (%d, %d)',
+                $this->config->getTableName('listuser'),
+                $subscriberId,
+                $listId
             )
         );
 
@@ -50,26 +51,21 @@ class ListModel {
     * @param $subscriber_ids
     * @param $list_id
     */
-    public function addSubscribers( $subscriberIdArray, $listId )
+    public function addSubscribers($subscriberIdArray, $listId)
     {
-        if ( !empty( $subscriberIdArray ) ) {
-            $query = sprintf( '
+        if (!empty($subscriberIdArray)) {
+            $query = sprintf('
                 INSERT INTO
                     %s
                         (userid, listid, entered, modified)
-                VALUES'
-                , $this->config->getTableName( 'listuser' )
-            );
+                VALUES', $this->config->getTableName('listuser'));
 
-            foreach ( $subscriberIdArray as $uid ) {
-                $query .= sprintf( '
-                    (%d, %d, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),'
-                    , $uid
-                    , $listId
-                );
+            foreach ($subscriberIdArray as $uid) {
+                $query .= sprintf('
+                    (%d, %d, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),', $uid, $listId);
             }
-            $query = rtrim( $query, ',' ) . ';';
-            $this->db->query( $query );
+            $query = rtrim($query, ',') . ';';
+            $this->db->query($query);
         }
     }
 
@@ -78,7 +74,7 @@ class ListModel {
     * @param int $scrId The ID of the subscriber to remove from list
     * @param int $listId The ID of the list to remove them from
     */
-    public function removeSubscriber( $listId, $scrId )
+    public function removeSubscriber($listId, $scrId)
     {
         $result = $this->db->query(
             sprintf(
@@ -87,10 +83,10 @@ class ListModel {
                 WHERE
                     userid = %d
                 AND
-                    listid = %d'
-                , $this->config->getTableName( 'listuser' )
-                , $scrId
-                , $listId
+                    listid = %d',
+                $this->config->getTableName('listuser'),
+                $scrId,
+                $listId
             )
         );
 
@@ -102,20 +98,20 @@ class ListModel {
     * @param $subscriber_ids
     * @param $list_id
     */
-    public function removeSubscribers( $subscriber_ids, $list_id )
+    public function removeSubscribers($subscriber_ids, $list_id)
     {
-        if ( !empty( $subscriber_ids ) ) {
+        if (!empty($subscriber_ids)) {
             $this->db->query(
-            sprintf(
-                'DELETE FROM
+                sprintf(
+                    'DELETE FROM
                     %s
                 WHERE
                     userid IN (%s)
                 AND
-                    listid = %d'
-                , $this->config->getTableName( 'listuser' )
-                , implode( ',', $subscriber_ids )
-                , $list_id
+                    listid = %d',
+                    $this->config->getTableName('listuser'),
+                    implode(',', $subscriber_ids),
+                    $list_id
                 )
             );
         }
@@ -129,15 +125,13 @@ class ListModel {
     {
         //TODO: probably best to replace the subselect with a function parameter
         $result = $this->db->query(
-        sprintf( '
+            sprintf('
             SELECT
                 *
             FROM
-                %s %s'
-            , $this->config->getTableName( 'list' )
-            , $this->config->get( 'subselect', '' ) )
+                %s %s', $this->config->getTableName('list'), $this->config->get('subselect', ''))
         );
-        return $this->makeLists( $result );
+        return $this->makeLists($result);
     }
 
     /**
@@ -146,20 +140,16 @@ class ListModel {
     * @param int $id
     * @return array
     */
-    public function getListsByOwner( $owner_id, $id = 0 )
+    public function getListsByOwner($owner_id, $id = 0)
     {
         $result = $this->db->query(
-            sprintf( '
+            sprintf('
                 SELECT
                     *
                 FROM
                     %s
                 WHERE
-                    owner = %d %s'
-                , $this->config->getTableName( 'list' )
-                , $owner_id
-                , ( ($id == 0) ? '' : " AND id = $id" )
-            )
+                    owner = %d %s', $this->config->getTableName('list'), $owner_id, ( ($id == 0) ? '' : " AND id = $id" ))
         );
         return $this->makeLists($result);
     }
@@ -169,19 +159,16 @@ class ListModel {
     * @param $id
     * @return ListEntity
     */
-    public function getListById( $id )
+    public function getListById($id)
     {
         $result = $this->db->query(
-            sprintf( '
+            sprintf('
                 SELECT
                     *
                 FROM
                     %s
                 WHERE
-                    id = %d'
-                , $this->config->getTableName( 'list' )
-                , $id
-            )
+                    id = %d', $this->config->getTableName('list'), $id)
         );
         return $this->listFromArray($result->fetch(\PDO::FETCH_ASSOC));
     }
@@ -191,10 +178,10 @@ class ListModel {
     * @param $subscriber_id
     * @return array
     */
-    public function getListsForSubscriber( $subscriber_id )
+    public function getListsForSubscriber($subscriber_id)
     {
         $result = $this->db->query(
-            sprintf( '
+            sprintf('
                 SELECT
                     l.*
                 FROM
@@ -204,13 +191,9 @@ class ListModel {
                 ON
                     lu.listid = l.id
                 WHERE
-                    lu.userid = %d'
-                , $this->config->getTableName( 'listuser' )
-                , $this->config->getTableName( 'list' )
-                , $subscriber_id
-            )
+                    lu.userid = %d', $this->config->getTableName('listuser'), $this->config->getTableName('list'), $subscriber_id)
         );
-        return $result->fetchAll( \PDO::FETCH_ASSOC );
+        return $result->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
@@ -218,24 +201,21 @@ class ListModel {
     * @param $list
     * @return array
     */
-    public function getListSubscribers( $list )
+    public function getListSubscribers($list)
     {
-        if( is_array( $list ) ) {
-            $where = ' WHERE listid IN (' . join( ',', $list ) .')';
+        if (is_array($list)) {
+            $where = ' WHERE listid IN (' . join(',', $list) .')';
         } else {
-            $where = sprintf( ' WHERE listid = %d', $list );
+            $where = sprintf(' WHERE listid = %d', $list);
         }
         $result = $this->db->query(
-            sprintf( '
+            sprintf('
                 SELECT
                     userid
                 FROM
-                    %s %s'
-                , $this->config->getTableName( 'listuser' )
-                , $where
-            )
+                    %s %s', $this->config->getTableName('listuser'), $where)
         );
 
-        return $result->fetchAll( \PDO::FETCH_ASSOC );
+        return $result->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

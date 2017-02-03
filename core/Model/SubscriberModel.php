@@ -4,7 +4,8 @@ namespace phpList\Model;
 use phpList\Entity\SubscriberEntity;
 use phpList\helper\StringClass;
 
-class SubscriberModel {
+class SubscriberModel
+{
 
     protected $db;
 
@@ -19,7 +20,7 @@ class SubscriberModel {
         'extradata', 'foreignkey'
     );
 
-    public function __construct( \phplist\Config $config, \phplist\helper\Database $db )
+    public function __construct(\phplist\Config $config, \phplist\helper\Database $db)
     {
         $this->config = $config;
         $this->db = $db;
@@ -29,7 +30,7 @@ class SubscriberModel {
     * @brief Save a subscriber to the database
     * @throws \Exception
     */
-    public function save( $emailAddress, $encPass )
+    public function save($emailAddress, $encPass)
     {
         $query = sprintf(
             'INSERT INTO %s (
@@ -49,20 +50,20 @@ class SubscriberModel {
                 , CURRENT_TIMESTAMP
                 , 0
                 , 1
-            )'
-            , $this->config->getTableName( 'user', true )
-            , $emailAddress
-            , $encPass
+            )',
+            $this->config->getTableName('user', true),
+            $emailAddress,
+            $encPass
         );
 
         // If query is successful, retrieve IDs
-        if ( $this->db->query( $query ) ) {
+        if ($this->db->query($query)) {
             $id = $this->db->insertedId();
-            $uniqeId = $this->giveUniqueId( $id );
+            $uniqeId = $this->giveUniqueId($id);
             return $id;
         } else {
             // Query unsuccessful, throw error
-            throw new \Exception( 'There was an error inserting the subscriber: ' . $this->db->getErrorMessage() );
+            throw new \Exception('There was an error inserting the subscriber: ' . $this->db->getErrorMessage());
         }
     }
 
@@ -70,7 +71,7 @@ class SubscriberModel {
     * Update a subscriber's details
     * @Note To update just the user password, use @updatePass
     */
-    public function update( $blacklisted, $confirmed, $emailAddress, $extradata, $htmlemail, $id, $optedin )
+    public function update($blacklisted, $confirmed, $emailAddress, $extradata, $htmlemail, $id, $optedin)
     {
         $query = sprintf(
             'UPDATE
@@ -84,48 +85,48 @@ class SubscriberModel {
                 htmlemail = "%s",
                 extradata = "%s"
             WHERE
-                id = %d'
-            , $this->config->getTableName( 'user', true )
-            , $emailAddress
-            , $confirmed
-            , $blacklisted
-            , $optedin
-            , $htmlemail
-            , $extradata
-            , $id
+                id = %d',
+            $this->config->getTableName('user', true),
+            $emailAddress,
+            $confirmed,
+            $blacklisted,
+            $optedin,
+            $htmlemail,
+            $extradata,
+            $id
         );
 
-        if ( $this->db->query( $query ) ) {
+        if ($this->db->query($query)) {
             return true;
         } else {
-            throw new \Exception( 'Updating subscriber failed: ' . $this->db->getErrorMessage() );
+            throw new \Exception('Updating subscriber failed: ' . $this->db->getErrorMessage());
         }
     }
 
-    public function getSubscriberById( $id )
+    public function getSubscriberById($id)
     {
         $result = $this->db->query(
             sprintf(
                 'SELECT * FROM %s
                 WHERE id = %d',
-                $this->config->getTableName( 'user', true ),
+                $this->config->getTableName('user', true),
                 $id
             )
         );
-        return $result->fetch( \PDO::FETCH_ASSOC );
+        return $result->fetch(\PDO::FETCH_ASSOC);
     }
 
-    public function getSubscriberByEmail( $emailAddress )
+    public function getSubscriberByEmail($emailAddress)
     {
         $result = $this->db->query(
             sprintf(
                 "SELECT * FROM %s
                 WHERE email = '%s'",
-                $this->config->getTableName( 'user', true ),
+                $this->config->getTableName('user', true),
                 $emailAddress
             )
         );
-        return $result->fetch( \PDO::FETCH_ASSOC );
+        return $result->fetch(\PDO::FETCH_ASSOC);
     }
 
     /**
@@ -133,7 +134,7 @@ class SubscriberModel {
      * @param  int $id ID of subscriber to delete
      * @return mixed Result of db->deleteFromArray()
      */
-    public function delete( $id )
+    public function delete($id)
     {
         // Get the correct table mappings from Config{} class
         $tables = array(
@@ -147,12 +148,12 @@ class SubscriberModel {
 
         // If user_group table exists, tag it for deletion
         // NOTE: Why is this check necessary? backwards compatibility?
-        if ( $this->db->tableExists( $this->config->getTableName( 'user_group') ) ) {
+        if ($this->db->tableExists($this->config->getTableName('user_group'))) {
             $tables[$this->config->getTableName('user_group')] = 'userid';
         }
 
         // Delete all entries from DB & return result
-        return $this->db->deleteFromArray( $tables, $id );
+        return $this->db->deleteFromArray($tables, $id);
     }
 
     /**
@@ -160,26 +161,25 @@ class SubscriberModel {
     * @param int $subscriber_id
     * @return string unique id
     */
-    private function giveUniqueId( $subscriberId )
+    private function giveUniqueId($subscriberId)
     {
         //TODO: make uniqueId a unique field in database
         do {
             $uniqueId = md5(uniqid(mt_rand()));
-        } while (
-            !$this->db->query(
-                sprintf(
-                    'UPDATE %s SET uniqid = "%s"
+        } while (!$this->db->query(
+            sprintf(
+                'UPDATE %s SET uniqid = "%s"
                     WHERE id = %d',
-                    $this->config->getTableName('user', true),
-                    $uniqueId,
-                    $subscriberId
-                )
+                $this->config->getTableName('user', true),
+                $uniqueId,
+                $subscriberId
             )
+        )
         );
         return $uniqueId;
     }
 
-    public function updatePass( $id, $encPass )
+    public function updatePass($id, $encPass)
     {
         $query = sprintf(
             'UPDATE
@@ -187,11 +187,11 @@ class SubscriberModel {
             SET
                 password = "%s", passwordchanged = CURRENT_TIMESTAMP
             WHERE
-                id = %d'
-            , $this->config->getTableName( 'user', true )
-            , $encPass
-            , $id
+                id = %d',
+            $this->config->getTableName('user', true),
+            $encPass,
+            $id
         );
-        $this->db->query( $query );
+        $this->db->query($query);
     }
 }

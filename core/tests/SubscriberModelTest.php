@@ -19,26 +19,27 @@ use phpList\Config;
 use phpList\helper\Database;
 use phpList\phpList;
 
-class SubscriberModelTest extends \PHPUnit_Framework_TestCase {
+class SubscriberModelTest extends \PHPUnit_Framework_TestCase
+{
 
     public function setUp()
     {
         // Create a randomised email addy to register with
-        $this->emailAddress = 'unittest-' . rand( 0, 999999 ) . '@example.com';
+        $this->emailAddress = 'unittest-' . rand(0, 999999) . '@example.com';
         $this->plainPass = 'easypassword';
 
         // Instantiate config object
-        $this->configFile = dirname( __FILE__ ) . '/../../config.ini';
-        $this->config = new Config( $this->configFile );
+        $this->configFile = dirname(__FILE__) . '/../../config.ini';
+        $this->config = new Config($this->configFile);
 
         // Instantiate remaining classes
-        $this->db = new Database( $this->config );
-        $this->subscriberModel = new SubscriberModel( $this->config, $this->db );
+        $this->db = new Database($this->config);
+        $this->subscriberModel = new SubscriberModel($this->config, $this->db);
     }
 
     public function testSave()
     {
-        $subscriberId = $this->subscriberModel->save( $this->emailAddress, $this->plainPass );
+        $subscriberId = $this->subscriberModel->save($this->emailAddress, $this->plainPass);
 
         return $subscriberId;
     }
@@ -46,9 +47,9 @@ class SubscriberModelTest extends \PHPUnit_Framework_TestCase {
     /**
      * @depends testSave
      */
-    public function testUpdate( $subscriberId )
+    public function testUpdate($subscriberId)
     {
-        $this->updatedEmailAddress = 'updated-' . rand( 0, 999999 ) . '@example.com';
-        $result = $this->subscriberModel->update( 1, 1, $this->updatedEmailAddress, 1, 1, $subscriberId, 1 );
+        $this->updatedEmailAddress = 'updated-' . rand(0, 999999) . '@example.com';
+        $result = $this->subscriberModel->update(1, 1, $this->updatedEmailAddress, 1, 1, $subscriberId, 1);
     }
 }

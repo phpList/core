@@ -11,12 +11,12 @@ class Config
     private $running_config = array();
     private $default_config = array();
 
-    public function parseIniFile( $configFile )
+    public function parseIniFile($configFile)
     {
         // Load the config file
-        $parsed = parse_ini_file( $configFile );
-        if( ! is_array( $parsed ) ) {
-            throw new \Exception( 'Could not parse specified ini config file: ' . $configFile );
+        $parsed = parse_ini_file($configFile);
+        if (! is_array($parsed)) {
+            throw new \Exception('Could not parse specified ini config file: ' . $configFile);
         }
         return $parsed;
     }
@@ -26,85 +26,82 @@ class Config
      * load configuration from database each new session
      * TODO: probably not a good idea when using an installation with multiple subscribers
      */
-     public function __construct( $configFile = NULL )
-     {
-         /**
+    public function __construct($configFile = null)
+    {
+        /**
          * Constants used for debugging and developping
          */
-         defined('DEBUG') ? null : define('DEBUG', true);
-         defined('PHPLIST_DEVELOPER_EMAIL') ? null : define('PHPLIST_DEVELOPER_EMAIL', 'dev@localhost.local');
-         defined('PHPLIST_DEV_VERSION') ? null : define('PHPLIST_DEV_VERSION', true);
-         defined('PHPLIST_VERSION') ? null : define('PHPLIST_VERSION', '4.0.0 dev');
+        defined('DEBUG') ? null : define('DEBUG', true);
+        defined('PHPLIST_DEVELOPER_EMAIL') ? null : define('PHPLIST_DEVELOPER_EMAIL', 'dev@localhost.local');
+        defined('PHPLIST_DEV_VERSION') ? null : define('PHPLIST_DEV_VERSION', true);
+        defined('PHPLIST_VERSION') ? null : define('PHPLIST_VERSION', '4.0.0 dev');
 
-         // Find the config file to use
-         $foundConfigFile = $this->findConfigFile( $configFile );
-         // Check config file is valid
-         $this->validateConfigFile( $foundConfigFile );
-         // Load the config file path as an ini file
-         $this->running_config = $this->parseIniFile( $this->configFilePath );
-         //Initialise further config
-         $this->initConfig();
-     }
+        // Find the config file to use
+        $foundConfigFile = $this->findConfigFile($configFile);
+        // Check config file is valid
+        $this->validateConfigFile($foundConfigFile);
+        // Load the config file path as an ini file
+        $this->running_config = $this->parseIniFile($this->configFilePath);
+        //Initialise further config
+        $this->initConfig();
+    }
 
      /**
       * Find the right config file to use
       */
-     public function findConfigFile( $configFile )
-     {
-         // If no config file path provided
-         if( $configFile !== NULL ) {
-                 $this->configFileOrigin = "supplied file path";
-                 $this->configFilePath = $configFile;
-         } else { // If no config file specified, look for one
-             // determine which config file to use
-             if (
-                isset( $_SESSION['running_config'] )
-                && count( $_SESSION['running_config'] ) > 15
+    public function findConfigFile($configFile)
+    {
+        // If no config file path provided
+        if ($configFile !== null) {
+                $this->configFileOrigin = "supplied file path";
+                $this->configFilePath = $configFile;
+        } else { // If no config file specified, look for one
+            // determine which config file to use
+            if (isset($_SESSION['running_config'])
+              && count($_SESSION['running_config']) > 15
             ) { // do we have a configuration saved in session?
-                 // If phpList is being used as a library, the config file may be set in session
-                 $this->configFileOrigin = "session";
-                 $this->configFilePath = $_SESSION['running_config'];
+                // If phpList is being used as a library, the config file may be set in session
+                $this->configFileOrigin = "session";
+                $this->configFilePath = $_SESSION['running_config'];
+            } elseif (isset($GLOBALS['configfile'])) { // Is a phpList 3 config file stored in globals?
 
-             } elseif( isset( $GLOBALS['configfile'] ) ) { // Is a phpList 3 config file stored in globals?
-
-                 $this->configFileOrigin = "globals: phpList3 ini file path";
-                 $this->configFilePath = $GLOBALS['configfile'];
-
-             } elseif( isset( $GLOBALS['phplist4-ini-config-file-path'] ) ) { // Is a phpList 4 config file stored in globals?
-                 $this->configFileOrigin = "globals: phpList4 ini file path";
-                 $this->configFilePath = $GLOBALS['phplist4-ini-config-file-path'];
-
-             } else {
-                 throw new \Exception( 'Could not find config file, none specified' );
-             }
-         }
-         return $this->configFilePath;
-     }
+                $this->configFileOrigin = "globals: phpList3 ini file path";
+                $this->configFilePath = $GLOBALS['configfile'];
+            } elseif (isset($GLOBALS['phplist4-ini-config-file-path'])) { // Is a phpList 4 config file stored in globals?
+                $this->configFileOrigin = "globals: phpList4 ini file path";
+                $this->configFilePath = $GLOBALS['phplist4-ini-config-file-path'];
+            } else {
+                throw new \Exception('Could not find config file, none specified');
+            }
+        }
+        return $this->configFilePath;
+    }
 
      /**
       * Check that config file is valid
       * @param string $configFilePath Path to check
       */
-     public function validateConfigFile( $configFilePath )
-     {
-        if ( ! is_string( $configFilePath ) ) {
-            throw new \Exception( 'Config file path is not a string (' . gettype( $configFilePath ) . ')' );
-        } elseif ( ! is_file( $configFilePath ) ) {
-            throw new \Exception( 'Config file is not a file: ' . $configFilePath );
-        } elseif( ! filesize( $configFilePath ) > 20 ) {
-            throw new \Exception( 'Config file too small: ' . $configFilePath );
-        } elseif(  ! parse_ini_file( $configFilePath ) ) {
-            throw new \Exception( 'Config file not an INI file: ' . $configFilePath );
+    public function validateConfigFile($configFilePath)
+    {
+        if (! is_string($configFilePath)) {
+            throw new \Exception('Config file path is not a string (' . gettype($configFilePath) . ')');
+        } elseif (! is_file($configFilePath)) {
+            throw new \Exception('Config file is not a file: ' . $configFilePath);
+        } elseif (! filesize($configFilePath) > 20) {
+            throw new \Exception('Config file too small: ' . $configFilePath);
+        } elseif (! parse_ini_file($configFilePath)) {
+            throw new \Exception('Config file not an INI file: ' . $configFilePath);
         } else {
             return true;
         }
-     }
+    }
 
     /**
      * Run this after db has been initialized, so we get the config from inside the database as well.
      * @param Database $db
      */
-    public function runAfterDBInitialised(Database $db){
+    public function runAfterDBInitialised(Database $db)
+    {
         $this->loadDBConfig($db);
     }
 
@@ -112,7 +109,8 @@ class Config
      * Run this after language has been initialized.
      * @param Language $lan
      */
-    public function runAfterLanguageInitialised(Language $lan){
+    public function runAfterLanguageInitialised(Language $lan)
+    {
         // $this->loadDefaultConfig($lan);
     }
 
@@ -181,7 +179,7 @@ class Config
                 'allowempty' => true,
                 'value' => '',
             );
-        }else{
+        } else {
             $configInfo = $this->default_config[$item];
         }
         ## to validate we need the actual values
@@ -198,8 +196,12 @@ class Config
                 break;
             case 'integer':
                 $value = sprintf('%d', $value);
-                if ($value < $configInfo['min']) $value = $configInfo['min'];
-                if ($value > $configInfo['max']) $value = $configInfo['max'];
+                if ($value < $configInfo['min']) {
+                    $value = $configInfo['min'];
+                }
+                if ($value > $configInfo['max']) {
+                    $value = $configInfo['max'];
+                }
                 break;
             case 'email':
                 if (!Validation::validateEmail($value, $this->get('EMAIL_ADDRESS_VALIDATION_LEVEL'), $this->get('internet_tlds'))) {
@@ -242,13 +244,13 @@ class Config
     /**
      * Override a configuration setting with a new one
      */
-    public function set( $item, $value )
+    public function set($item, $value)
     {
         // If a custom config has been loaded
-        if ( isset( $this->running_config[ $item ] ) ) {
+        if (isset($this->running_config[ $item ])) {
             $this->running_config[ $item ] = $value;
             // If the default config has been loaded
-        } else if ( isset( $this->default_config[ $item ] ) ) {
+        } elseif (isset($this->default_config[ $item ])) {
             $this->default_config[ $item ] = $value;
         }
     }
@@ -259,20 +261,20 @@ class Config
      * @param mixed $default
      * @return mixed|null|string
      */
-    public function get( $item, $default = null )
+    public function get($item, $default = null)
     {
         // If a custom config has been loaded
-        if ( isset( $this->running_config[ $item ] ) ) {
+        if (isset($this->running_config[ $item ])) {
             $value = $this->running_config[ $item ];
         // If the default config has been loaded
-        } else if ( isset( $this->default_config[ $item ] ) ) {
+        } elseif (isset($this->default_config[ $item ])) {
             $value = $this->default_config[ $item ];
         // If no configuration has been loaded yet
         } else {
             $value = $default;
         }
 
-        if ( is_string( $value ) ) {
+        if (is_string($value)) {
             //TODO: should probably move this somewhere else
             $find = array( '[WEBSITE]', '[DOMAIN]', '<?=VERSION?>' );
             $replace = array(
@@ -280,7 +282,7 @@ class Config
                 $this->running_config['domain'],
                 PHPLIST_VERSION
             );
-            $value = str_replace( $find, $replace, $value );
+            $value = str_replace($find, $replace, $value);
         }
 
         return $value;
@@ -335,15 +337,14 @@ class Config
     {
         // Set encoding type
         // Check which method to use based on PHP Version
-        if ( function_exists( 'iconv' ) && PHP_VERSION_ID < 50600)
-        {
+        if (function_exists('iconv') && PHP_VERSION_ID < 50600) {
             // Use older, depreciated iconv settings
             iconv_set_encoding('internal_encoding', 'UTF-8');
             iconv_set_encoding('input_encoding', 'UTF-8');
             iconv_set_encoding('output_encoding', 'UTF-8');
-        } elseif ( PHP_VERSION_ID >= 50600 ) {
+        } elseif (PHP_VERSION_ID >= 50600) {
             // Use newer settings
-            ini_set('default_charset', 'UTF-8' );
+            ini_set('default_charset', 'UTF-8');
         }
 
         if (function_exists('mb_internal_encoding')) {
@@ -368,9 +369,9 @@ class Config
         $this->running_config['scheme'] =  $public_scheme;
 
         if ($this->running_config['USE_CUSTOM_PUBLIC_PROTOCOL']) {
-           $this->running_config['public_scheme'] = $this->running_config['PUBLIC_PROTOCOL'];
+            $this->running_config['public_scheme'] = $this->running_config['PUBLIC_PROTOCOL'];
         } else {
-           $this->running_config['public_scheme'] = $public_scheme;
+            $this->running_config['public_scheme'] = $public_scheme;
         }
 
         # set some defaults if they are not specified
@@ -383,15 +384,14 @@ class Config
         $this->running_config['SHOW_UNSUBSCRIBELINK'] = true;
 
         // Check if desired hashing algo is supported by server
-        if (
-            function_exists( 'hash_algos' )
-            && !in_array( $this->running_config['ENCRYPTION_ALGO'], hash_algos() )
+        if (function_exists('hash_algos')
+            && !in_array($this->running_config['ENCRYPTION_ALGO'], hash_algos())
         ) {
-            throw new \Exception( 'Encryption algorithm "' . $this->running_config['ENCRYPTION_ALGO'] . '" not supported, change your configuration' );
+            throw new \Exception('Encryption algorithm "' . $this->running_config['ENCRYPTION_ALGO'] . '" not supported, change your configuration');
         }
 
         // check and store the length of a hash using the desired algo
-        $this->running_config['hash_length'] = strlen( hash( $this->running_config['ENCRYPTION_ALGO'], 'some text' ) );
+        $this->running_config['hash_length'] = strlen(hash($this->running_config['ENCRYPTION_ALGO'], 'some text'));
 
         $this->running_config['NUMATTACHMENTS'] = 1;
         $this->running_config['FCKIMAGES_DIR'] = 'uploadimages';
@@ -423,16 +423,16 @@ class Config
         $this->running_config['installation_name'] = 'phpList';
 
 
-        if ($this->running_config['USE_AMAZONSES']){
-            if($this->running_config['AWS_ACCESSKEYID']  == ''){
+        if ($this->running_config['USE_AMAZONSES']) {
+            if ($this->running_config['AWS_ACCESSKEYID']  == '') {
                 throw new \Exception('Invalid Amazon SES configuration: AWS_ACCESSKEYID not set');
-            }else if(!function_exists('curl_init')){
+            } elseif (!function_exists('curl_init')) {
                 throw new \Exception('Invalid Amazon SES configuration: CURL not enabled');
             }
         }
 
-        if(isset($_SERVER['HTTP_HOST'])){
-           $this->running_config['ACCESS_CONTROL_ALLOW_ORIGIN'] = 'http://'.$_SERVER['HTTP_HOST'];
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $this->running_config['ACCESS_CONTROL_ALLOW_ORIGIN'] = 'http://'.$_SERVER['HTTP_HOST'];
         }
 
         $this->running_config['RFC_DIRECT_DELIVERY'] = false;  ## Request for Confirmation, delivery with SMTP
@@ -442,22 +442,22 @@ class Config
         # @@TODO finish this, as it is more involved than just renaming the class
         #@include_once 'HTTP/Request2.php';
         if (0 && class_exists('HTTP_Request2')) {
-           $this->running_config['has_pear_http_request'] = 2;
+            $this->running_config['has_pear_http_request'] = 2;
         } else {
             @include_once 'HTTP/Request.php';
-           $this->running_config['has_pear_http_request'] = class_exists('HTTP_Request');
+            $this->running_config['has_pear_http_request'] = class_exists('HTTP_Request');
         }
         $this->running_config['has_curl'] = function_exists('curl_init');
         $this->running_config['can_fetch_url'] = class_exists('HTTP_Request') || function_exists('curl_init');
 
         $system_tmpdir = ini_get('upload_tmp_dir');
         if ($this->running_config['TMPDIR'] && !empty($system_tmpdir)) {
-           $this->running_config['tmpdir'] = $system_tmpdir;
-        }else if ($this->running_config['TMPDIR']) {
-           $this->running_config['tmpdir'] = '/tmp';
+            $this->running_config['tmpdir'] = $system_tmpdir;
+        } elseif ($this->running_config['TMPDIR']) {
+            $this->running_config['tmpdir'] = '/tmp';
         }
         if (!is_dir($this->running_config['TMPDIR']) || !is_writable($this->running_config['TMPDIR']) && !empty($system_tmpdir)) {
-           $this->running_config['tmpdir'] = $system_tmpdir;
+            $this->running_config['tmpdir'] = $system_tmpdir;
         }
 
         ## as the 'admin' in adminpages is hardcoded, don't put it in the config file
@@ -492,12 +492,12 @@ class Config
                 'send blocked by domain throttle' => 0
             );
 
-       $this->running_config['disallowpages'] = array();
+        $this->running_config['disallowpages'] = array();
 
         # Set revision
-       $this->running_config['CODEREVISION'] = '$Rev$';
-        if (preg_match('/Rev: (\d+)/','$Rev$',$match)) {
-           $this->running_config['REVISION'] = $match[1];
+        $this->running_config['CODEREVISION'] = '$Rev$';
+        if (preg_match('/Rev: (\d+)/', '$Rev$', $match)) {
+            $this->running_config['REVISION'] = $match[1];
         }
 
         $server_name = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'cmd_line';
@@ -540,9 +540,9 @@ class Config
         $PoweredByText = '<div style="clear: both; font-family: arial, verdana, sans-serif; font-size: 8px; font-variant: small-caps; font-weight: normal; padding: 2px; padding-left:10px;padding-top:20px;">powered by <a href="http://www.phplist.com/poweredby?utm_source=download'.$v.'&amp;utm_medium=poweredtxt&amp;utm_campaign=phpList" target="_blank" title="powered by phpList version '.$v.', &copy; phpList ltd">phpList</a></div>';
         $this->running_config['PoweredBy'] = $this->running_config['PAGETEXTCREDITS'] ? $PoweredByText : $PoweredByImage;
 
-        if (DEBUG && @($_SERVER['HTTP_HOST'] != 'dev.phplist.com')){
+        if (DEBUG && @($_SERVER['HTTP_HOST'] != 'dev.phplist.com')) {
             error_reporting(E_ALL);
-            ini_set('display_errors',1);
+            ini_set('display_errors', 1);
             foreach ($_REQUEST as $key => $val) {
                 unset($$key);
             }
@@ -572,19 +572,20 @@ class Config
      * Load default configuration
      * @param Language $lan
      */
-    private function loadDefaultConfig(Language $lan){
+    private function loadDefaultConfig(Language $lan)
+    {
             $defaultheader = '</head><body>';
             $defaultfooter = '</body></html>';
 
-            if (isset ($_SERVER['HTTP_HOST'])) {
-                $D_website = $_SERVER['HTTP_HOST'];
-            } else {
-                $D_website = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost';
-            }
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $D_website = $_SERVER['HTTP_HOST'];
+        } else {
+            $D_website = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost';
+        }
             $D_domain = $D_website;
-            if (preg_match('#^www\.(.*)#i', $D_domain, $regs)) {
-                $D_domain = $regs[1];
-            }
+        if (preg_match('#^www\.(.*)#i', $D_domain, $regs)) {
+            $D_domain = $regs[1];
+        }
 
             $this->default_config = array(
 

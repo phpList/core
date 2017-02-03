@@ -2,7 +2,8 @@
 
 namespace phpList;
 
-class Pass {
+class Pass
+{
 
     protected $config;
 
@@ -10,7 +11,7 @@ class Pass {
     * @param Config $config
     * @param helper\Database $db
     */
-    public function __construct( Config $config )
+    public function __construct(Config $config)
     {
         $this->config = $config;
     }
@@ -23,44 +24,43 @@ class Pass {
      * @param string $desiredAlgo Name of desiresd algo
      * @return string $encPass Encrypted password
      */
-    public function encrypt( $plainPass, $desiredAlgo = "sha256" )
+    public function encrypt($plainPass, $desiredAlgo = "sha256")
     {
         // If no password was supplied, return empty
         // FIXME: Either log this event, or throw an exception, so client code
         // does not wrongly assume a secure password was generated
-        if ( empty( $plainPass ) ) {
+        if (empty($plainPass)) {
             return '';
         }
 
         // If no hashing algo was specified
-        if( $desiredAlgo == NULL ) {
+        if ($desiredAlgo == null) {
             // Fetch default hashing algo from config file
-            $desiredAlgo = $this->config->get( 'ENCRYPTION_ALGO' );
+            $desiredAlgo = $this->config->get('ENCRYPTION_ALGO');
         }
 
-        if ( function_exists( 'hash' ) ) {
-            if (
-                ! in_array(
-                    $desiredAlgo
-                    , hash_algos()
-                    , true
-                )
+        if (function_exists('hash')) {
+            if (! in_array(
+                $desiredAlgo,
+                hash_algos(),
+                true
+            )
             ) {
                 ## fallback, not that secure, but better than none at all
                 # NOTE: Suggest using PHPass lib
                 $algo = 'md5';
 
-                throw new \Exception( "Hashing algorithm '$desiredAlgo' is not available on this server" );
+                throw new \Exception("Hashing algorithm '$desiredAlgo' is not available on this server");
             } else {
                 $algo = $desiredAlgo;
             }
             // Hash the password using desired algo
-            $encPass = hash( $algo, $plainPass );
+            $encPass = hash($algo, $plainPass);
             //var_dump($encPass);
             //die;
         } else {
             //. Hash the password using a fallback default
-            $encPass = md5( $plainPass );
+            $encPass = md5($plainPass);
         }
         return $encPass;
     }

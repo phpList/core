@@ -26,7 +26,6 @@ class Campaign
         $this->db = $db;
         $this->mailing_list = $mailing_list;
         $this->template = $template;
-
     }
 
     /**
@@ -37,7 +36,7 @@ class Campaign
     private function campaignFromArray($array)
     {
         $campaign = null;
-        if(is_array($array)){
+        if (is_array($array)) {
             $campaign = new CampaignEntity();
             $campaign->id = $array['id'];
             $campaign->subject = $array['subject'];
@@ -289,8 +288,9 @@ class Campaign
      * @param entities\CampaignEntity $campaign
      * @return Template
      */
-    public function getTemplateObject(CampaignEntity &$campaign){
-        if($campaign->template_object == null){
+    public function getTemplateObject(CampaignEntity &$campaign)
+    {
+        if ($campaign->template_object == null) {
             $campaign->template_object = $this->template->getTemplate($campaign->template);
         }
         return $campaign->template_object;
@@ -615,25 +615,27 @@ class Campaign
      */
     public function setStatus(CampaignEntity $campaign, $status)
     {
-        switch($status){
+        switch ($status) {
             case 'inprocess':
                 $this->db->query(
-                sprintf(
-                    'UPDATE %s SET status = "inprocess", sendstart = CURRENT_TIMESTAMP
+                    sprintf(
+                        'UPDATE %s SET status = "inprocess", sendstart = CURRENT_TIMESTAMP
                     WHERE sendstart IS null
                     AND id = %d',
-                    $this->config->getTableName('message'),
-                    $campaign->id
-                ));
+                        $this->config->getTableName('message'),
+                        $campaign->id
+                    )
+                );
                 break;
             case 'sent':
                 $this->db->query(
-                sprintf(
-                    'UPDATE %s set status = "sent", sent = CURRENT_TIMESTAMP
+                    sprintf(
+                        'UPDATE %s set status = "sent", sent = CURRENT_TIMESTAMP
                     WHERE id = %d',
-                    $this->config->getTableName('message'),
-                    $campaign->id
-                ));
+                        $this->config->getTableName('message'),
+                        $campaign->id
+                    )
+                );
                 break;
             default:
                 $this->db->query(
@@ -744,8 +746,12 @@ class Campaign
      */
     public function setDataItem(CampaignEntity $campaign, $name, $value)
     {
-        if ($name == 'PHPSESSID') return;
-        if ($name == session_name()) return;
+        if ($name == 'PHPSESSID') {
+            return;
+        }
+        if ($name == session_name()) {
+            return;
+        }
 
         //TODO: setMessagData should probably not be used to add the campaign to a list
         if ($name == 'targetlist' && is_array($value)) {
@@ -842,9 +848,9 @@ class Campaign
      */
     public function excludeSubscribersOnList(CampaignEntity $campaign, $list)
     {
-        if(is_array($list)){
+        if (is_array($list)) {
             $where = ' WHERE listid IN (' . join(',', $list) .')';
-        }else{
+        } else {
             $where = sprintf(' WHERE listid = %d', $list);
         }
         $result = $this->db->query(
@@ -856,15 +862,15 @@ class Campaign
         );
         while ($subscriber_id = $result->fetch()) {
             $this->db->query(sprintf(
-                    'REPLACE INTO %s SET
+                'REPLACE INTO %s SET
                     entered = CURRENT_TIMESTAMP,
                     userid = %d,
                     messageid = %d,
                     status = "excluded"',
-                    $this->config->getTableName('usermessage'),
-                    $subscriber_id,
-                    $campaign->id
-                ));
+                $this->config->getTableName('usermessage'),
+                $subscriber_id,
+                $campaign->id
+            ));
         }
     }
 
@@ -874,15 +880,16 @@ class Campaign
      * @param int $subscriber_id
      * @param string $status
      */
-    public function updateSubscriberCampaignStatus(CampaignEntity $campaign, $subscriber_id, $status){
+    public function updateSubscriberCampaignStatus(CampaignEntity $campaign, $subscriber_id, $status)
+    {
         $this->db->query(sprintf(
-                'REPLACE INTO %s (entered, useris, messageid, status)
+            'REPLACE INTO %s (entered, useris, messageid, status)
                 VALUES(CURRENT_TIMESTAMP, %d, %d, "%s")',
-                $this->config->getTableName('usermessage'),
-                $subscriber_id,
-                $campaign->id,
-                $status
-            ));
+            $this->config->getTableName('usermessage'),
+            $subscriber_id,
+            $campaign->id,
+            $status
+        ));
     }
 
     /**
@@ -892,11 +899,11 @@ class Campaign
     public function incrementProcessedAmount(CampaignEntity $campaign)
     {
         $this->db->query(sprintf(
-                'UPDATE %s SET processed = processed + 1
+            'UPDATE %s SET processed = processed + 1
                 WHERE id = %d',
-                $this->config->getTableName('message'),
-                $campaign->id
-            ));
+            $this->config->getTableName('message'),
+            $campaign->id
+        ));
     }
 
     /**
@@ -908,7 +915,9 @@ class Campaign
         #  if (!USE_REPETITION && !USE_rss) return;
 
         ## do not repeat when it has already been done
-        if ($campaign->repeatuntil->getTimestamp() < time() && (!empty($campaign->repeatedid) || $campaign->repeatinterval == 0)) return;
+        if ($campaign->repeatuntil->getTimestamp() < time() && (!empty($campaign->repeatedid) || $campaign->repeatinterval == 0)) {
+            return;
+        }
 
         # get the future embargo, either "repeat" minutes after the old embargo
         # or "repeat" after this very moment to make sure that we're not sending the
@@ -924,15 +933,15 @@ class Campaign
         $this->update($new_campaign);
         //also need to copy the campaign data for this one
         $this->db->query(sprintf(
-                'INSERT INTO %s(name, id, data)
+            'INSERT INTO %s(name, id, data)
                     SELECT name, %d, data
                     FROM %s
                     WHERE id = %d',
-                $this->config->getTableName('messagedata'),
-                $new_campaign->id, /*New campaign id to copy to*/
-                $this->config->getTableName('messagedata'),
-                $campaign->id
-            ));
+            $this->config->getTableName('messagedata'),
+            $new_campaign->id, /*New campaign id to copy to*/
+            $this->config->getTableName('messagedata'),
+            $campaign->id
+        ));
 
         # check whether the new embargo is not on an exclusion
         if ($this->config->get('repeat_exclude', false) !== false) {
@@ -970,22 +979,22 @@ class Campaign
 
         # lists
         $this->db->query(sprintf(
-                'INSERT INTO %s(messageid,listid,entered)
+            'INSERT INTO %s(messageid,listid,entered)
                     SELECT %d, listid, CURRENT_TIMESTAMP
                     FROM %s
                     WHERE messageid = %d',
-                $this->config->getTableName('listmessage'),
-                $new_campaign->id, /*New campaign id to copy to*/
-                $this->config->getTableName('listmessage'),
-                $campaign->id
-            ));
+            $this->config->getTableName('listmessage'),
+            $new_campaign->id, /*New campaign id to copy to*/
+            $this->config->getTableName('listmessage'),
+            $campaign->id
+        ));
 
 
         # attachments
         $attachments = $this->getAttachments($campaign);
-        foreach($attachments as $attachment){
+        foreach ($attachments as $attachment) {
             $attachment->id = 0;
-            if(is_file($attachment->remotefile)){
+            if (is_file($attachment->remotefile)) {
                 $attachment->file = '';
             }
             $this->addAttachment($new_campaign, $attachment);
@@ -1000,16 +1009,17 @@ class Campaign
      * @param $date
      * @return bool
      */
-    private function excludedDateForRepetition($date) {
-        if ($this->config->get('repeat_exclude', false) !== false){
+    private function excludedDateForRepetition($date)
+    {
+        if ($this->config->get('repeat_exclude', false) !== false) {
             return false;
         }
         foreach ($this->config->get('repeat_exclude') as $exclusion) {
             $formatted_value = $this->db->query(sprintf(
-                    'SELECT date_format("%s","%s")',
-                    $date,
-                    $exclusion['format']
-                ))->fetch();
+                'SELECT date_format("%s","%s")',
+                $date,
+                $exclusion['format']
+            ))->fetch();
             foreach ($exclusion['values'] as $disallowed) {
                 if ($formatted_value[0] == $disallowed) {
                     return true;
@@ -1130,7 +1140,6 @@ class Campaign
 
         ## backwards, check that the content has a url and use it to fill the sendurl
         if (empty($campaigndata['sendurl'])) {
-
             ## can't do "ungreedy matching, in case the URL has placeholders, but this can potentially
             ## throw problems
             if (preg_match('/\[URL:(.*)\]/i', $campaigndata['message'], $regs)) {
@@ -1165,5 +1174,4 @@ class Campaign
 
         $campaign->campaigndata = $campaigndata;
     }
-
-} 
+}

@@ -1,8 +1,8 @@
 <?php
 namespace phpList\Entity;
 
-
-class TemplateImageEntity {
+class TemplateImageEntity
+{
     public $id;
     public $template;
     public $mimetype;
@@ -29,4 +29,4 @@ class TemplateImageEntity {
         $this->width = $width;
         $this->height = $height;
     }
-} 
+}

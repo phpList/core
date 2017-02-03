@@ -4,7 +4,8 @@ namespace phpList\Entity;
 use phpList\interfaces\EmailAddressInterface;
 use phpList\interfaces\plainPassInterface;
 
-class SubscriberEntity {
+class SubscriberEntity
+{
 
     public $id;
 
@@ -46,7 +47,8 @@ class SubscriberEntity {
      * @param $key
      * @param $value
      */
-    public function setAttribute( $key, $value ) {
+    public function setAttribute($key, $value)
+    {
         $this->attributes[$key] = $value;
         $this->hasAttributes = true;
     }
@@ -78,7 +80,8 @@ class SubscriberEntity {
      * Check if attributes have been loaded already
      * @return bool
      */
-    public function hasAttributes(){
+    public function hasAttributes()
+    {
         return $this->hasAttributes;
     }
 

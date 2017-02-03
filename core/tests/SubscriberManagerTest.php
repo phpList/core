@@ -17,12 +17,13 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
-class SubscriberTest extends \PHPUnit_Framework_TestCase {
+class SubscriberTest extends \PHPUnit_Framework_TestCase
+{
 
     public function setUp()
     {
         // Create a randomised email addy to register with
-        $this->emailAddress = 'unittest-' . rand( 0, 999999 ) . '@example.com';
+        $this->emailAddress = 'unittest-' . rand(0, 999999) . '@example.com';
         $this->plainPass = 'easypassword';
 
         // // Create Symfony DI service container object for use by other classes
@@ -41,10 +42,10 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
         // Create Symfony DI service container object for use by other classes
         $this->container = new ContainerBuilder();
         // Create new Symfony file loader to handle the YAML service config file
-        $loader = new YamlFileLoader( $this->container, new FileLocator(__DIR__) );
+        $loader = new YamlFileLoader($this->container, new FileLocator(__DIR__));
         // Load the service config file, which is in YAML format
-        $loader->load( '../services.yml' );
-        $this->subscriberManager = $this->container->get( 'SubscriberManager' );
+        $loader->load('../services.yml');
+        $this->subscriberManager = $this->container->get('SubscriberManager');
     }
 
     /**
@@ -53,7 +54,7 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
     public function testAddInvalidEmail()
     {
         // Test passes if this throws an exception
-        $this->subscriberManager->add( 'deliberately-invalid-email-address', 'testpass' );
+        $this->subscriberManager->add('deliberately-invalid-email-address', 'testpass');
     }
 
     /**
@@ -69,11 +70,11 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
         // Copy the email address to test it later
         $emailCopy = $this->emailAddress;
         // Save the subscriber
-        $newSubscriberId = $this->subscriberManager->add( $scrEntity );
+        $newSubscriberId = $this->subscriberManager->add($scrEntity);
 
         // Test that an ID was returned
-        $this->assertNotEmpty( $newSubscriberId );
-        $this->assertTrue( is_numeric( $newSubscriberId ) );
+        $this->assertNotEmpty($newSubscriberId);
+        $this->assertTrue(is_numeric($newSubscriberId));
 
         // Pass on to the next test
         return array( 'id' => $newSubscriberId, 'email' => $emailCopy, 'encPass' => $scrEntity->encPass );
@@ -82,16 +83,16 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
     /**
      * @depends testAdd
      */
-    public function testGetSubscriberById( array $vars )
+    public function testGetSubscriberById(array $vars)
     {
-        $scrEntity = $this->subscriberManager->getSubscriberById( $vars['id'] );
+        $scrEntity = $this->subscriberManager->getSubscriberById($vars['id']);
 
         // Check that the correct entity was returned
-        $this->assertInstanceOf( '\phpList\Entity\SubscriberEntity', $scrEntity );
+        $this->assertInstanceOf('\phpList\Entity\SubscriberEntity', $scrEntity);
         // Check that the saved password isn't in plain text
-        $this->assertNotEquals( $this->plainPass, $scrEntity->encPass );
+        $this->assertNotEquals($this->plainPass, $scrEntity->encPass);
         // Check that retrieved email matches what was set
-        $this->assertEquals( $vars['email'] , $scrEntity->emailAddress );
+        $this->assertEquals($vars['email'], $scrEntity->emailAddress);
 
         return $scrEntity;
     }
@@ -99,30 +100,30 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase {
     /**
     * @depends testGetSubscriberById
     */
-    public function testUpdatePass( $scrEntity )
+    public function testUpdatePass($scrEntity)
     {
         // Set a new password for testing
         $newPlainPass = 'newEasyPassword';
         // Update the password
-        $this->subscriberManager->updatePass( $newPlainPass, $scrEntity );
+        $this->subscriberManager->updatePass($newPlainPass, $scrEntity);
         // Get a fresh copy of the subscriber from db to check updated details
-        $updatedScrEntity = $this->subscriberManager->getSubscriberById( $scrEntity->id );
+        $updatedScrEntity = $this->subscriberManager->getSubscriberById($scrEntity->id);
 
         // Check that the passwords are not the same; that it was updated
-        $this->assertNotEquals( $scrEntity->encPass, $updatedScrEntity->encPass );
+        $this->assertNotEquals($scrEntity->encPass, $updatedScrEntity->encPass);
     }
 
     /**
     * @depends testGetSubscriberById
     */
-    public function testDelete( $scrEntity )
+    public function testDelete($scrEntity)
     {
         // Delete the testing subscribers
         // NOTE: These entities are used in other tests and must be deleted in
         // whatever method users them last
-        $result = $this->subscriberManager->delete( $scrEntity->id );
+        $result = $this->subscriberManager->delete($scrEntity->id);
 
         // Check that delete was successful
-        $this->assertTrue( $result );
+        $this->assertTrue($result);
     }
 }

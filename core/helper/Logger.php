@@ -13,10 +13,10 @@ class Logger implements LoggerInterface
 
     public function __construct(LoggerWriterAbstractFactory $factory)
     {
-        try{
+        try {
             $this->logger = $factory->getLoggerWriter();
-        }catch (NotSuchWriterException $e){}
-
+        } catch (NotSuchWriterException $e) {
+        }
     }
 
     /**

@@ -1,8 +1,8 @@
 <?php
 namespace phpList\interfaces;
 
-
-interface PasswordInterface {
+interface PasswordInterface
+{
     /**
      * Set and encrypt the password
      * @param string $password

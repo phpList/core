@@ -17,20 +17,21 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
-class AdminTest extends \PHPUnit_Framework_TestCase {
+class AdminTest extends \PHPUnit_Framework_TestCase
+{
 
     public function setUp()
     {
         // Create Symfony DI service container object for use by other classes
         $this->container = new ContainerBuilder();
         // Create new Symfony file loader to handle the YAML service config file
-        $loader = new YamlFileLoader( $this->container, new FileLocator(__DIR__) );
+        $loader = new YamlFileLoader($this->container, new FileLocator(__DIR__));
         // Load the service config file, which is in YAML format
-        $loader->load( '../services.yml' );
+        $loader->load('../services.yml');
         // Get objects from container
-        $this->config = $this->container->get( 'Config' );
+        $this->config = $this->container->get('Config');
 
-        $this->admin = $this->container->get( 'Admin' );
+        $this->admin = $this->container->get('Admin');
     }
 
     /**
@@ -43,10 +44,10 @@ class AdminTest extends \PHPUnit_Framework_TestCase {
         $plainPass = $GLOBALS['admin_password'];
 
         // Perform the validation
-        $result = $this->admin->validateLogin( $plainPass, $username );
+        $result = $this->admin->validateLogin($plainPass, $username);
 
         // Test valiation was successful
-        $this->assertTrue( $result['result'] );
+        $this->assertTrue($result['result']);
 
         // Return vars for dependent tests
         return array(
@@ -67,10 +68,10 @@ class AdminTest extends \PHPUnit_Framework_TestCase {
         $plainPass = 'bar';
 
         // Perform the validation
-        $result = $this->admin->validateLogin( $plainPass, $username );
+        $result = $this->admin->validateLogin($plainPass, $username);
 
         // Test valiation failed
-        $this->assertFalse( $result['result'] );
+        $this->assertFalse($result['result']);
     }
 
     /**
@@ -78,19 +79,19 @@ class AdminTest extends \PHPUnit_Framework_TestCase {
      * validate the login
      * @depends testValidLogin
      */
-    public function testAdminUsernameValidation( $vars )
+    public function testAdminUsernameValidation($vars)
     {
         // Check the retreived details match those submitted
-        $this->assertEquals( $vars['username'], $vars['retrievedUsername'] );
+        $this->assertEquals($vars['username'], $vars['retrievedUsername']);
     }
 
     /**
      * Test that the password retreived was not in plantext
      * @depends testValidLogin
      */
-    public function testAdminPasswordHashed( $vars )
+    public function testAdminPasswordHashed($vars)
     {
         // Check that retrieved pass is hashed
-        $this->assertNotEquals( $vars['plainPass'], $vars['encPass'] );
+        $this->assertNotEquals($vars['plainPass'], $vars['encPass']);
     }
 }

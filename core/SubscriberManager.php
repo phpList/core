@@ -27,7 +27,7 @@ class SubscriberManager
      * @param Config $config
      * @param helper\Database $db
      */
-    public function __construct( Config $config, EmailUtil $emailUtil, Pass $pass, model\SubscriberModel $subscriberModel )
+    public function __construct(Config $config, EmailUtil $emailUtil, Pass $pass, model\SubscriberModel $subscriberModel)
     {
         $this->config = $config;
         $this->emailUtil = $emailUtil;
@@ -40,15 +40,15 @@ class SubscriberManager
     * @param int $id
     * @return SubscriberEntity
     */
-    public function getSubscriberById( $id )
+    public function getSubscriberById($id)
     {
-        $result = $this->subscriberModel->getSubscriberById( $id );
+        $result = $this->subscriberModel->getSubscriberById($id);
 
-        if ( ! $result ) {
-            throw new \Exception( 'No subscriber found with ID: ' . $id );
+        if (! $result) {
+            throw new \Exception('No subscriber found with ID: ' . $id);
         }
 
-        return $this->subscriberEntityFromArray( $result );
+        return $this->subscriberEntityFromArray($result);
     }
 
     /**
@@ -56,11 +56,11 @@ class SubscriberManager
     * @param int $id
     * @return SubscriberEntity
     */
-    public function getSubscriberByUsername( $username )
+    public function getSubscriberByUsername($username)
     {
-        $result = $this->subscriberModel->getSubscriberByUsername( $username );
+        $result = $this->subscriberModel->getSubscriberByUsername($username);
 
-        return $this->subscriberEntityFromArray( $result );
+        return $this->subscriberEntityFromArray($result);
     }
 
     /**
@@ -68,9 +68,9 @@ class SubscriberManager
      * @param string $email_address
      * @return SubscriberEntity
      */
-    public function getSubscriberByEmailAddress( $emailAddress )
+    public function getSubscriberByEmailAddress($emailAddress)
     {
-        return $this->getSubscriberBy( 'email', $emailAddress );
+        return $this->getSubscriberBy('email', $emailAddress);
     }
 
     /**
@@ -78,9 +78,9 @@ class SubscriberManager
      * @param string $fk
      * @return SubscriberEntity
      */
-    public function getSubscriberByForeignKey( $fk )
+    public function getSubscriberByForeignKey($fk)
     {
-        return $this->getSubscriberBy( 'foreignkey', $fk );
+        return $this->getSubscriberBy('foreignkey', $fk);
     }
 
     /**
@@ -88,10 +88,10 @@ class SubscriberManager
      * @param string $unique_id
      * @return SubscriberEntity
      */
-    public function getSubscriberByUniqueId( $unique_id )
+    public function getSubscriberByUniqueId($unique_id)
     {
-        $result = $this->getSubscriberBy( 'uniqueid', $unique_id );
-        return $this->subscriberEntityFromArray( $result );
+        $result = $this->getSubscriberBy('uniqueid', $unique_id);
+        return $this->subscriberEntityFromArray($result);
     }
 
     /**
@@ -100,20 +100,20 @@ class SubscriberManager
      * @param string $value
      * @return SubscriberEntity
      */
-    private function getSubscriberBy( $column, $value )
+    private function getSubscriberBy($column, $value)
     {
         $result = $this->db->prepare(
             sprintf(
                 'SELECT * FROM %s
                 WHERE :key = :value',
-                $this->config->getTableName( 'Subscriber', true )
+                $this->config->getTableName('Subscriber', true)
             )
         );
-        $result->bindValue( ':key',$column );
-        $result->bindValue( ':value',$value );
+        $result->bindValue(':key', $column);
+        $result->bindValue(':value', $value);
         $result->execute();
 
-        return $this->subscriberFromArray( $result->fetch( \PDO::FETCH_ASSOC ) );
+        return $this->subscriberFromArray($result->fetch(\PDO::FETCH_ASSOC));
     }
 
     /**
@@ -123,26 +123,27 @@ class SubscriberManager
      * @return int $newScrId DB ID of the newly inserted subscriber
      * @throws \InvalidArgumentException
      */
-    public function add( \phpList\Entity\SubscriberEntity $scrEntity )
+    public function add(\phpList\Entity\SubscriberEntity $scrEntity)
     {
         // Hash the password before saving
-        $scrEntity->encPass = $this->pass->encrypt( $scrEntity->plainPass, $this->config->get( 'ENCRYPTION_ALGO' ) );
+        $scrEntity->encPass = $this->pass->encrypt($scrEntity->plainPass, $this->config->get('ENCRYPTION_ALGO'));
 
         // Check the address is valid
         // TODO: Reintroduce the validation level and tlds from config file
         // TODO: Move validation out of here and into client code
-        if ( ! $this->emailUtil->isValid( $scrEntity->emailAddress ) ) {
-            throw new \Exception( 'Cannot insert subscriber with invalid email address: "' . $scrEntity->emailAddress . '"' );
+        if (! $this->emailUtil->isValid($scrEntity->emailAddress)) {
+            throw new \Exception('Cannot insert subscriber with invalid email address: "' . $scrEntity->emailAddress . '"');
         }
 
         $entity = $this->subscriberModel->getSubscriberByEmail($scrEntity->emailAddress);
-        if($entity["email"] !== null)
+        if ($entity["email"] !== null) {
             throw new \Exception("Subscriber with that email already exists");
+        }
 
         // Save subscriber to db
         $newSubscriberId = $this->subscriberModel->save(
-            $scrEntity->emailAddress
-            , $scrEntity->encPass
+            $scrEntity->emailAddress,
+            $scrEntity->encPass
         );
 
         return $newSubscriberId;
@@ -153,7 +154,7 @@ class SubscriberManager
      * when the password has to be updates, use @updatePassword
      * @param SubscriberEntity $subscriber
      */
-    public function update( SubscriberEntity $subscriber )
+    public function update(SubscriberEntity $subscriber)
     {
         $query = sprintf(
             'UPDATE %s SET
@@ -179,14 +180,15 @@ class SubscriberManager
     /**
      * Remove subscriber from database
      */
-    public function delete( $id )
+    public function delete($id)
     {
 
         $subscriber = $this->subscriberModel->getSubscriberById($id);
-        if(!$subscriber)
+        if (!$subscriber) {
             throw new \Exception("Subscriber doesn't exists");
+        }
 
-        $results = $this->subscriberModel->delete( $id );
+        $results = $this->subscriberModel->delete($id);
 
         // TODO: Add a check of $results to ensure delete was successful before
         // returning (bool) true
@@ -222,7 +224,7 @@ class SubscriberManager
      * @param $array
      * @return SubscriberEntity
      */
-    private function subscriberEntityFromArray( array $array )
+    private function subscriberEntityFromArray(array $array)
     {
         // FIXME: Move this object instantiation to DI.
         $scrEntity = new SubscriberEntity();
@@ -250,19 +252,19 @@ class SubscriberManager
         return $scrEntity;
     }
 
-    public function updatePass( $plainPass, Entity\SubscriberEntity $scrEntity )
+    public function updatePass($plainPass, Entity\SubscriberEntity $scrEntity)
     {
         // Hash password
-        $encPass = $this->pass->encrypt( $plainPass, $this->config->get( 'ENCRYPTION_ALGO' ) );
+        $encPass = $this->pass->encrypt($plainPass, $this->config->get('ENCRYPTION_ALGO'));
         // Update the password
-        $this->subscriberModel->updatePass( $scrEntity->id, $encPass );
+        $this->subscriberModel->updatePass($scrEntity->id, $encPass);
     }
 
     /**
      * Load this subscribers attributes from the database
      * @param SubscriberEntity $subscriber
      */
-    public function loadAttributes( SubscriberEntity &$scrEntity )
+    public function loadAttributes(SubscriberEntity &$scrEntity)
     {
         $result = $this->db->query(
             sprintf(
@@ -350,8 +352,9 @@ class SubscriberManager
         } else {
             $default = array('HTTP_USER_AGENT', 'HTTP_REFERER', 'REMOTE_ADDR', 'REQUEST_URI');
             foreach ($sysarrays as $key => $val) {
-                if (in_array($key, $default))
+                if (in_array($key, $default)) {
                     $sysinfo .= "\n" . strip_tags($key) . ' = ' . htmlspecialchars($val);
+                }
             }
         }
         if (isset($_SERVER['REMOTE_ADDR'])) {
