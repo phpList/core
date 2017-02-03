@@ -182,7 +182,6 @@ class SubscriberManager
      */
     public function delete($id)
     {
-
         $subscriber = $this->subscriberModel->getSubscriberById($id);
         if (!$subscriber) {
             throw new \Exception("Subscriber doesn't exists");

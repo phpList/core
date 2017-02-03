@@ -10,5 +10,4 @@ namespace phpList\helper\Logger;
 
 class NotSuchWriterException extends \Exception
 {
-
 }

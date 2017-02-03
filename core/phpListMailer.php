@@ -32,7 +32,7 @@ class phpListMailer extends \PHPMailer
     public $TextEncoding = '7bit';
 
 
-    function __construct($message_id, $email, $inBlast = true, $exceptions = false)
+    public function __construct($message_id, $email, $inBlast = true, $exceptions = false)
     {
         parent::__construct($exceptions);
         parent::SetLanguage('en', dirname(__FILE__) . '/phpmailer/language/');
@@ -180,7 +180,7 @@ class phpListMailer extends \PHPMailer
         return $header;
     }
 
-    function CreateBody()
+    public function CreateBody()
     {
         $body = parent::CreateBody();
         /*
@@ -278,7 +278,7 @@ class phpListMailer extends \PHPMailer
 
         // Build the list of image extensions
         $extensions = array();
-        while (list($key,) = each($this->image_types)) {
+        while (list($key, ) = each($this->image_types)) {
             $extensions[] = $key;
         }
         $html_images = array();

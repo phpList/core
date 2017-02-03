@@ -169,7 +169,8 @@ class Bounce
                     }
 
                     $rule = trim($rule);
-                    if (!in_array($rule, $rules) && strlen($rule) > 25) {# && $code != 554 && $code != 552) {
+                    if (!in_array($rule, $rules) && strlen($rule) > 25) {
+                        # && $code != 554 && $code != 552) {
                         if (Config::VERBOSE) {
                             Output::output('Rule:'.htmlspecialchars($rule));
                         }
@@ -314,7 +315,7 @@ class BounceRule
     public $status;
     public $count;
 
-    function __construct()
+    public function __construct()
     {
     }
 

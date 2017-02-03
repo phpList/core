@@ -6,7 +6,7 @@ use phpList\phpList;
 
 class Session
 {
-    function __construct()
+    public function __construct()
     {
         if (Config::SESSION_STORE == 'mysql') {
             //TODO: maybe better to only use this function once, when installing?

@@ -5,7 +5,8 @@ use phpList\Admin;
 use phpList\Entity\SubscriberEntity;
 use phpList\helper\StringClass;
 
-class AdminModel {
+class AdminModel
+{
 
     protected $db;
 
@@ -20,7 +21,7 @@ class AdminModel {
         'extradata', 'foreignkey'
     );
 
-    public function __construct( \phplist\Config $config, \phplist\helper\Database $db )
+    public function __construct(\phplist\Config $config, \phplist\helper\Database $db)
     {
         $this->config = $config;
         $this->db = $db;
@@ -30,7 +31,7 @@ class AdminModel {
      * Fetch all details of an Admin with a given username
      * @param strong $username username of admin to fetch
      */
-    public function getAdminByUsername( $username )
+    public function getAdminByUsername($username)
     {
         $result = $this->db->query(
             sprintf(
@@ -39,14 +40,13 @@ class AdminModel {
                 FROM
                     %s
                 WHERE
-                    loginname = '%s'"
-                , $this->config->getTableName( 'admin' )
+                    loginname = '%s'", $this->config->getTableName('admin')
                 // FIXME: string->sqlEscape removed from here
-                , $username
+, $username
             )
         );
 
-        return $result->fetch( \PDO::FETCH_ASSOC );
+        return $result->fetch(\PDO::FETCH_ASSOC);
     }
 
 
@@ -56,9 +56,8 @@ class AdminModel {
      * @param $token
      * @return bool
      */
-    public function checkIfTheTokenIsValid( $token )
+    public function checkIfTheTokenIsValid($token)
     {
-
         if (empty($token)) {
             return false;
         }
@@ -74,14 +73,15 @@ class AdminModel {
             )
         );
 
-        if($result->fetch( \PDO::FETCH_ASSOC ) !== false)
+        if ($result->fetch(\PDO::FETCH_ASSOC) !== false) {
             return true;
+        }
 
         return false;
     }
 
-    public function setLoginToken($id){
-
+    public function setLoginToken($id)
+    {
         $this->db->query(sprintf("delete from %s WHERE adminid = '%s'", $this->config->getTableName('admintoken'), $id));
 
         $key = md5(time() . mt_rand(0, 10000));
@@ -92,25 +92,25 @@ class AdminModel {
         ## keep the token table empty
         $result = $this->db->query(sprintf('delete from %s where expires < now()', $this->config->getTableName('admintoken')));
 
-        if(count($result->fetch( \PDO::FETCH_ASSOC )) > 0)
+        if (count($result->fetch(\PDO::FETCH_ASSOC)) > 0) {
             return true;
+        }
 
         return false;
     }
 
-    public function getLoginToken($id){
+    public function getLoginToken($id)
+    {
         $result = $this->db->query(sprintf("select * from %s WHERE adminid = '%s'", $this->config->getTableName('admintoken'), $id));
         $result = $result->fetch();
-        if(count($result) > 0){
+        if (count($result) > 0) {
             return $result['value'];
         }
-
     }
 
-    public function validateLogin($plainPass, $username){
+    public function validateLogin($plainPass, $username)
+    {
         $admin = new Admin($this, $plainPass);
         return $admin->validateLogin($plainPass, $username);
     }
-
-
 }

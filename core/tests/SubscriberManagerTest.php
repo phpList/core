@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
-class SubscriberTest extends \PHPUnit_Framework_TestCase
+class SubscriberManagerTest extends \PHPUnit_Framework_TestCase
 {
 
     public function setUp()

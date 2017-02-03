@@ -159,7 +159,7 @@ class Util
         if (isset($cache->url_cache[$url]) && is_array($cache->url_cache[$url])
             && (time() - $cache->url_cache[$url]['fetched'] < $this->config->get('REMOTE_URL_REFETCH_TIMEOUT'))
         ) {
-        #$this->logger->notice($url . " is cached in memory");
+            #$this->logger->notice($url . " is cached in memory");
             if ($this->config->get('VERBOSE') && function_exists('output')) {
                 output('From memory cache: ' . $url);
             }
@@ -168,13 +168,13 @@ class Util
 
         $timeout = time() - Cache::getPageCacheLastModified($url);
         if ($timeout < $this->config->get('REMOTE_URL_REFETCH_TIMEOUT')) {
-        #$this->logger->notice($url.' was cached in database');
+            #$this->logger->notice($url.' was cached in database');
             if ($this->config->get('VERBOSE') && function_exists('output')) {
                 output('From database cache: ' . $url);
             }
             return Cache::getPageCache($url);
         } else {
-        #$this->logger->notice($url.' is not cached in database '.$timeout.' '. $dbcache_lastmodified." ".time());
+            #$this->logger->notice($url.' is not cached in database '.$timeout.' '. $dbcache_lastmodified." ".time());
         }
 
         $request_parameters = array(
@@ -316,7 +316,7 @@ class Util
             $pairs = explode('&amp;', $parsed['query']);
             foreach ($pairs as $pair) {
                 if (strpos($pair, '=') !== false) {
-                    list($key,$val) = explode('=', $pair);
+                    list($key, $val) = explode('=', $pair);
                     $params[$key] = $val;
                 } else {
                     $params[$pair] = '';
@@ -337,7 +337,7 @@ class Util
         foreach ($params as $key => $val) {
             if (!in_array($key, $disallowed_params)) {
                 //0008980: Link Conversion for Click Tracking. no = will be added if key is empty.
-                $query .= $key . ( $val != "" ? '=' . $val . '&' : '&' );
+                $query .= $key . ($val != "" ? '=' . $val . '&' : '&');
             }
         }
         $query = substr($query, 0, -1);
@@ -372,7 +372,7 @@ class Util
         $parts = parse_url($url);
         $tags = array('src\s*=\s*','href\s*=\s*','action\s*=\s*','background\s*=\s*','@import\s+','@import\s+url\(');
         foreach ($tags as $tag) {
-        #   preg_match_all('/'.preg_quote($tag).'"([^"|\#]*)"/Uim', $text, $foundtags);
+            #   preg_match_all('/'.preg_quote($tag).'"([^"|\#]*)"/Uim', $text, $foundtags);
         # we're only handling nicely formatted src="something" and not src=something, ie quotes are required
         # bit of a nightmare to not handle it with quotes.
             preg_match_all('/('.$tag.')"([^"|\#]*)"/Uim', $text, $foundtags);

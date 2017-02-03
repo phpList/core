@@ -22,7 +22,6 @@ class ListModel
     */
     public function addSubscriber($subscriberId, $listId)
     {
-
         $lists = $this->getListsForSubscriber((int) $subscriberId);
         foreach ($lists as $list) {
             if ((int) $list["id"] === (int) $listId) {
@@ -149,7 +148,7 @@ class ListModel
                 FROM
                     %s
                 WHERE
-                    owner = %d %s', $this->config->getTableName('list'), $owner_id, ( ($id == 0) ? '' : " AND id = $id" ))
+                    owner = %d %s', $this->config->getTableName('list'), $owner_id, (($id == 0) ? '' : " AND id = $id"))
         );
         return $this->makeLists($result);
     }

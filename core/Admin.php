@@ -261,7 +261,7 @@ class Admin
      * @param $password string
      * @return array $result Keys: admin [object], error [string], result [bool]
      */
-    function validateLogin($plainPass, $username)
+    public function validateLogin($plainPass, $username)
     {
         $return = array(
             'result' => false,

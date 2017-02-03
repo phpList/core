@@ -970,7 +970,7 @@ class Campaign
         $new_campaign->embargo = $new_embargo;
         $new_campaign->status = 'submitted';
         $new_campaign->sent = '';
-        foreach (array("processed","astext","ashtml","astextandhtml","aspdf","astextandpdf","viewed", "bouncecount") as $item) {
+        foreach (array("processed", "astext", "ashtml", "astextandhtml", "aspdf", "astextandpdf", "viewed", "bouncecount") as $item) {
             $new_campaign->$item = 0;
         }
         $this->update($new_campaign);
