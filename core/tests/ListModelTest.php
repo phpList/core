@@ -57,20 +57,4 @@ class ListModelTest extends \PHPUnit_Framework_TestCase
         // Check that the subscriber was deleted without error
         $this->assertTrue(false !== $result);
     }
-
-    // public function testAdd()
-    // {
-    //     $ListId = $this->ListModel->save( $this->emailAddress, $this->plainPass );
-    //
-    //     return $ListId;
-    // }
-
-    // /**
-    //  * @depends testSave
-    //  */
-    // public function testUpdate( $ListId )
-    // {
-    //     $this->updatedEmailAddress = 'updated-' . rand( 0, 999999 ) . '@example.com';
-    //     $result = $this->ListModel->update( 1, 1, $this->updatedEmailAddress, 1, 1, $ListId, 1 );
-    // }
 }

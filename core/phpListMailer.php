@@ -94,8 +94,6 @@ class phpListMailer extends \PHPMailer
         if (Config::MESSAGE_ENVELOPE != '') {
             $this->Sender = Config::MESSAGE_ENVELOPE;
             $this->addCustomHeader('Bounces-To: ' . Config::MESSAGE_ENVELOPE);
-            ## one to work on at a later stage
-            #$this->addCustomHeader('Return-Receipt-To: '.Config::MESSAGE_ENVELOPE);
         }
         ## when the email is generated from a webpage (quite possible :-) add a "received line" to identify the origin
         if (!empty($_SERVER['REMOTE_ADDR'])) {
@@ -183,18 +181,6 @@ class phpListMailer extends \PHPMailer
     public function CreateBody()
     {
         $body = parent::CreateBody();
-        /*
-              if ($this->ContentType != 'text/plain') {
-                foreach ($GLOBALS['plugins'] as $plugin) {
-                  $plreturn =  $plugin->mimeWrap($this->messageid,$body,$this->header,$this->ContentTypeHeader,$this->destinationemail);
-                  if (is_array($plreturn) && sizeof($plreturn) == 3) {
-                    $this->header = $plreturn[0];
-                    $body = $plreturn[1];
-                    $this->ContentTypeHeader = $plreturn[2];
-                  }
-                }
-              }
-        */
         return $body;
     }
 
@@ -218,17 +204,6 @@ class phpListMailer extends \PHPMailer
         }
         $this->Subject = $subject;
         if ($this->Body) {
-            ## allow plugins to add header lines
-            /*foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                #    print "Checking Destination for ".$plugin->name."<br/>";
-                $pluginHeaders = $plugin->messageHeaders($this);
-                if ($pluginHeaders && sizeof($pluginHeaders)) {
-                    foreach ($pluginHeaders as $headerItem => $headerValue) {
-                        ## @@TODO, do we need to sanitise them?
-                        $this->addCustomHeader($headerItem.': '.$headerValue);
-                    }
-                }
-            }*/
             if (!parent::Send()) {
                 phpList::log()->notice(s('Error sending email to %s', $to_addr) . ' ' . $this->ErrorInfo);
                 return 0;
@@ -272,7 +247,6 @@ class phpListMailer extends \PHPMailer
 
     private function findHtmlImages($templateid)
     {
-        #if (!$templateid) return;
         ## no template can be templateid 0, find the powered by image
         $templateid = sprintf('%d', $templateid);
 
@@ -400,7 +374,6 @@ class phpListMailer extends \PHPMailer
     {
         ##  find the image referenced and see if it's on the server
         $imageroot = Config::get('uploadimageroot');
-#      cl_output('filesystem_image_exists '.$docroot.' '.$filename);
 
         $elements = parse_url($filename);
         $localfile = basename($elements['path']);
@@ -424,7 +397,6 @@ class phpListMailer extends \PHPMailer
     {
         ## get the image contents
         $localfile = basename(urldecode($filename));
-#      cl_output('get file system image'.$filename.' '.$localfile);
         if (Config::UPLOADIMAGES_DIR != '') {
             #       print 'UPLOAD';
             $imageroot = Config::get('uploadimageroot');
@@ -537,20 +509,7 @@ class phpListMailer extends \PHPMailer
             'X-Amzn-Authorization: AWS3-HTTPS AWSAccessKeyId=' . Config::AWS_ACCESSKEYID . ',Algorithm=HMACSHA256,Signature=' . $aws_signature,
         );
 
-        /*
-         *    using the SendEmail call
-              $requestdata = array(
-                'Action' => 'SendEmail',
-                'Source' => $this->Sender,
-                'Destination.ToAddresses.member.1' => $this->destinationemail,
-                'Campaign.Subject.Data' => $this->Subject,
-                'Campaign.Body.Text.Data' => $message_body,
-              );
-        */
-        #     print '<hr/>Rawmessage '.nl2br(htmlspecialchars($message_header. $this->LE. $this->LE.$message_body));
-
         $rawmessage = base64_encode($message_header . $this->LE . $this->LE . $message_body);
-        #   $rawmessage = str_replace('=','',$rawmessage);
 
         $requestdata = array(
             'Action' => 'SendRawEmail',
@@ -581,26 +540,20 @@ class phpListMailer extends \PHPMailer
         );
         curl_setopt($curl, CURLOPT_POST, 1);
 
-        ## this generates multipart/form-data, and that crashes the API, so don't use
-        #      curl_setopt($curl, CURLOPT_POSTFIELDS, $parameters);
-
         $data = '';
         foreach ($requestdata as $param => $value) {
             $data .= $param . '=' . urlencode($value) . '&';
         }
         $data = substr($data, 0, -1);
-        #    print('Sending data '.htmlspecialchars($data).'<hr/>');
         curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
 
         $res = curl_exec($curl);
         $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        #    print('Curl status '.$status);
         if ($status != 200) {
             $error = curl_error($curl);
             phpList::log()->notice('Amazon SES status ' . $status . ' ' . strip_tags($res) . ' ' . $error);
         }
         curl_close($curl);
-        #     print('Got remote admin response '.htmlspecialchars($res).'<br/>');
         return $status == 200;
     }
 
@@ -690,7 +643,6 @@ class phpListMailer extends \PHPMailer
         } else {
             $textmessage = $message;
             $htmlmessage = $message;
-            #  $htmlmessage = str_replace("\n\n","\n",$htmlmessage);
             $htmlmessage = nl2br($htmlmessage);
             ## make links clickable:
             preg_match_all('~https?://[^\s<]+~i', $htmlmessage, $matches);
@@ -747,11 +699,6 @@ class phpListMailer extends \PHPMailer
         # older (and newer!) php versions
         $fromemail = Config::get('message_from_address');
         $fromname = Config::get('message_from_name');
-        /*$message_replyto_address = Config::get('message_replyto_address');
-        if ($message_replyto_address)
-            $reply_to = $message_replyto_address;
-        else
-            $reply_to = $from_address;*/
         $destinationemail = '';
 
         #  print "Sending $to from $fromemail<br/>";
@@ -792,14 +739,12 @@ class phpListMailer extends \PHPMailer
         ## try to deliver directly, so that any error (eg subscriber not found) can be sent back to the
         ## subscriber, so they can fix it
         //TODO: fix this, now using PHPLIST_DEVELOPER_EMAIL
-        //unset($GLOBALS['developer_email']);
 
         list($htmlmessage, $textmessage) = phpListMailer::constructSystemMail($message, $subject);
         $mail = new phpListMailer('systemmessage', $destinationemail, false, true);
 
         list($dummy, $domain) = explode('@', $destinationemail);
 
-        #print_r ($mxhosts);exit;
         $smtpServer = phpListMailer::getTopSmtpServer($domain);
         $fromemail = Config::get('message_from_address');
         $fromname = Config::get('message_from_name');
@@ -826,7 +771,6 @@ class phpListMailer extends \PHPMailer
     {
         $sendcopy = Config::get('send_admin_copies');
         if ($sendcopy) {
-            //$lists = cleanArray($lists);
             $mails = array();
             if (sizeof($lists) && Config::get('SEND_LISTADMIN_COPY')) {
                 foreach ($lists as $list) {
@@ -891,18 +835,9 @@ class phpListMailer extends \PHPMailer
         foreach ($report_addresses as $address) {
             phpListMailer::sendMail($address, Config::get('installation_name').' '.$subject, $message);
         }
-        /*TODO: enable plugins
-        foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-            $plugin->sendReport(Config::get('installation_name').' '.$subject,$message);
-        }*/
     }
 
     public static function sendError($message, $to, $subject)
     {
-        /*TODO: enable plugins
-        foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-            $plugin->sendReport(Config::get('installation_name').'Error: '.$subject,$message);
-        }*/
-        //  Error($msg);
     }
 }

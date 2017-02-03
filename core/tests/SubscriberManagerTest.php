@@ -26,18 +26,6 @@ class SubscriberManagerTest extends \PHPUnit_Framework_TestCase
         $this->emailAddress = 'unittest-' . rand(0, 999999) . '@example.com';
         $this->plainPass = 'easypassword';
 
-        // // Create Symfony DI service container object for use by other classes
-        // $this->container = new ContainerBuilder();
-        // // Create new Symfony file loader to handle the YAML service config file
-        // $loader = new YamlFileLoader( $this->container, new FileLocator(__DIR__) );
-        // // Load the service config file, which is in YAML format
-        // $loader->load( '../services.yml' );
-        // // Get objects from container
-        // $this->config = $this->container->get( 'Config' );
-        // $this->config = $this->container->get( 'EmailUtil' );
-        // $this->config = $this->container->get( 'Pass' );
-        // $this->config = $this->container->get( 'SubscriberManager' );
-
         // Optional: use DI to load the subscriber class instead:
         // Create Symfony DI service container object for use by other classes
         $this->container = new ContainerBuilder();

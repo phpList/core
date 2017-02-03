@@ -17,7 +17,7 @@ class Util
         $this->logger = $logger;
         $this->db = $db;
     }
-    
+
     public function secs2time($secs)
     {
         $years = $days = $hours = $mins = 0;
@@ -140,7 +140,6 @@ class Util
         ## fix the Editor replacing & with &amp;
         $url = str_ireplace('&amp;', '&', $url);
 
-        # $this->logger->notice("Fetching $url");
         //subscriber items to replace:
         if ($subscriber != null) {
             foreach (Subscriber::$DB_ATTRIBUTES as $key) {
@@ -151,7 +150,6 @@ class Util
         }
 
         $url = $this->expandUrl($url);
-        #  print "<h1>Fetching ".$url."</h1>";
 
         # keep in memory cache in case we send a page to many emails
 
@@ -159,7 +157,6 @@ class Util
         if (isset($cache->url_cache[$url]) && is_array($cache->url_cache[$url])
             && (time() - $cache->url_cache[$url]['fetched'] < $this->config->get('REMOTE_URL_REFETCH_TIMEOUT'))
         ) {
-            #$this->logger->notice($url . " is cached in memory");
             if ($this->config->get('VERBOSE') && function_exists('output')) {
                 output('From memory cache: ' . $url);
             }
@@ -168,13 +165,10 @@ class Util
 
         $timeout = time() - Cache::getPageCacheLastModified($url);
         if ($timeout < $this->config->get('REMOTE_URL_REFETCH_TIMEOUT')) {
-            #$this->logger->notice($url.' was cached in database');
             if ($this->config->get('VERBOSE') && function_exists('output')) {
                 output('From database cache: ' . $url);
             }
             return Cache::getPageCache($url);
-        } else {
-            #$this->logger->notice($url.' is not cached in database '.$timeout.' '. $dbcache_lastmodified." ".time());
         }
 
         $request_parameters = array(
@@ -183,11 +177,9 @@ class Util
             'method' => 'HEAD',
         );
 
-        //$remote_charset = 'UTF-8';
         ## relying on the last modified header doesn't work for many pages
         ## use current time instead
         ## see http://mantis.phplist.com/view.php?id=7684
-        #$lastmodified = strtotime($header["last-modified"]);
         $lastmodified = time();
         $cache = Cache::getPageCache($url, $lastmodified);
         if (!$cache) {
@@ -323,8 +315,6 @@ class Util
                 }
             }
         } else {
-            ## parse_str turns . into _ which is wrong
-        #    parse_str($parsed['query'],$params);
             $params= $this->parseQueryString($parsed['query']);
         }
         $uri = !empty($parsed['scheme']) ? $parsed['scheme'].':'.((strtolower($parsed['scheme']) == 'mailto') ? '':'//'): '';
@@ -332,7 +322,6 @@ class Util
         $uri .= !empty($parsed['host']) ? $parsed['host'] : '';
         $uri .= !empty($parsed['port']) ? ':'.$parsed['port'] : '';
         $uri .= !empty($parsed['path']) ? $parsed['path'] : '';
-        #  $uri .= $parsed['query'] ? '?'.$parsed['query'] : '';
         $query = '';
         foreach ($params as $key => $val) {
             if (!in_array($key, $disallowed_params)) {
@@ -342,9 +331,6 @@ class Util
         }
         $query = substr($query, 0, -1);
         $uri .= $query ? '?'.$query : '';
-        #  if (!empty($params['p'])) {
-        #    $uri .= '?p='.$params['p'];
-        #  }
         $uri .= !empty($parsed['fragment']) ? '#'.$parsed['fragment'] : '';
         return $uri;
     }
@@ -372,7 +358,6 @@ class Util
         $parts = parse_url($url);
         $tags = array('src\s*=\s*','href\s*=\s*','action\s*=\s*','background\s*=\s*','@import\s+','@import\s+url\(');
         foreach ($tags as $tag) {
-            #   preg_match_all('/'.preg_quote($tag).'"([^"|\#]*)"/Uim', $text, $foundtags);
         # we're only handling nicely formatted src="something" and not src=something, ie quotes are required
         # bit of a nightmare to not handle it with quotes.
             preg_match_all('/('.$tag.')"([^"|\#]*)"/Uim', $text, $foundtags);
@@ -408,7 +393,6 @@ class Util
             }
         }
 
-        # $text = preg_replace('#PHPSESSID=[^\s]+
         return $text;
     }
 
@@ -504,7 +488,6 @@ class Util
             }
             return $return;
         }
-        #$string = preg_replace('/<script/im','&lt;script',$string);
         $string = htmlspecialchars($string);
         return $string;
     }
@@ -528,11 +511,6 @@ class Util
                 }
             }
         }
-        /*  ob_end_clean();
-          foreach ($res as $key => $val) {
-            print "$key = $val\n";
-          }
-          ob_start();*/
         return $res;
     }
 
@@ -560,8 +538,6 @@ class Util
         $value = str_replace(')', '', $value);
         $value = preg_replace('/\.$/', '', $value);
 
-        ## these are allowed in emails
-        //  $value = preg_replace("/'/","&rsquo;",$value);
         $value = preg_replace("/`/", "&lsquo;", $value);
         $value = stripslashes($value);
         return $value;
@@ -668,18 +644,6 @@ class Util
                 addslashes($_SERVER['REMOTE_ADDR'])
             )
         );
-
-        /*foreach (array("REMOTE_ADDR") as $item ) { # @@@do we want to know more?
-            if (isset($_SERVER['REMOTE_ADDR'])) {
-                $this->db->Sql_Query(sprintf(
-                    'INSERT IGNORE INTO %s (email, name, data)
-                    VALUES("%s","%s","%s")',
-                    $this->config->getTableName('user_blacklist_data'),addslashes($email_address),
-                    $item,addslashes($_SERVER['REMOTE_ADDR'])));
-            }
-        }*/
-        //when blacklisting only an email address, don't add this to the history, only do this when blacklisting a subscriber
-        //addSubscriberHistory($email_address,s('Added to blacklist'),s('Added to blacklist for reason %s',$reason));
     }
 
     /**

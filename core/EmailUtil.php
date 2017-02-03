@@ -16,23 +16,6 @@ class EmailUtil
             return true;
         }
 
-        //$this->config->setRunningConfig('check_for_host', false);
-        //TODO: Michiel: original phplist would never execute this because check_for_host is set to false, why?
-        //$validhost = false;
-        //if (!empty($email) && $this->config->get('check_for_host', false) !== false) {
-        //    if (strpos($email, '@')) {
-        //        list($subscribername, $domaincheck) = explode('@', $email);
-        //        # checking for an MX is not sufficient
-        //        #    $mxhosts = array();
-        //        #    $validhost = getmxrr ($domaincheck,$mxhosts);
-        //        $validhost = checkdnsrr($domaincheck, "MX") || checkdnsrr($domaincheck, "A");
-        //    }
-        //    if(!$valid_host){
-        //        return false;
-        //    }
-        //}
-
-
         $emailAddress = trim($emailAddress);
 
         ## do some basic validation first

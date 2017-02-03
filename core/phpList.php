@@ -137,24 +137,18 @@ class phpList
 
         ##todo: this needs more testing, and docs on how to set the Timezones in the DB
         if ($this->config->get('USE_CUSTOM_TIMEZONE')) {
-            #  print('set time_zone = "'.SYSTEM_TIMEZONE.'"<br/>');
             $this->db->query('SET time_zone = "'.$this->config->get('SYSTEM_TIMEZONE').'"');
             ## verify that it applied correctly
             $tz = $this->db->query('SELECT @@session.time_zone')->fetch();
             if ($tz[0] != $this->config->get('SYSTEM_TIMEZONE')) {
                 throw new \Exception('Error setting timezone in Sql Database');
-            } else {
-                #    print "Mysql timezone set to $tz[0]<br/>";
             }
             $phptz_set = date_default_timezone_set($this->config->get('SYSTEM_TIMEZONE'));
             $phptz = date_default_timezone_get();
             if (!$phptz_set || $phptz != $this->config->get('SYSTEM_TIMEZONE')) {
                 ## I18N doesn't exist yet, @@TODO need better error catching here
                 throw new \Exception('Error setting timezone in PHP');
-            } else {
-                #    print "PHP system timezone set to $phptz<br/>";
             }
-            #  print "Time now: ".date('Y-m-d H:i:s').'<br/>';
         }
     }
 

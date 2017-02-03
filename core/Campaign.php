@@ -768,7 +768,6 @@ class Campaign
                 //TODO: configure subselect to be used?
                 //TODO: remove static call
                 $lists = $this->mailing_list->getAllLists();
-                //$res = $this->db->Sql_query('select * from '. $GLOBALS['tables']['list']. ' '.$GLOBALS['subselect']);
                 /**
                  * @var $list MailingListEntity
                  */
@@ -912,8 +911,6 @@ class Campaign
      */
     public function repeatCampaign(CampaignEntity $campaign)
     {
-        #  if (!USE_REPETITION && !USE_rss) return;
-
         ## do not repeat when it has already been done
         if ($campaign->repeatuntil->getTimestamp() < time() && (!empty($campaign->repeatedid) || $campaign->repeatinterval == 0)) {
             return;
@@ -1112,13 +1109,6 @@ class Campaign
                 $campaigndata[stripslashes($row['name'])] = $data;
             }
         }
-
-        /*Is a DateTime object now
-         * foreach (array('embargo','repeatuntil','requeueuntil') as $datefield) {
-            if (!is_array($campaigndata[$datefield])) {
-                $campaigndata[$datefield] = array('year' => date('Y'),'month' => date('m'),'day' => date('d'),'hour' => date('H'),'minute' => date('i'));
-            }
-        }*/
 
         // Load lists that were targetted with campaign...
 

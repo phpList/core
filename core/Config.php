@@ -111,7 +111,6 @@ class Config
      */
     public function runAfterLanguageInitialised(Language $lan)
     {
-        // $this->loadDefaultConfig($lan);
     }
 
     /**
@@ -147,7 +146,6 @@ class Config
     private function loadDBConfig(Database $db)
     {
         //try to load additional configuration from db
-        //$has_db_config = $this->db->tableExists($this->getTableName('config'), 1);
         $this->running_config['has_db_config'] =  true;
 
         $result = $db->query(sprintf('SELECT item, value FROM %s', $this->getTableName('config')));
@@ -440,7 +438,6 @@ class Config
         # try 2 first
 
         # @@TODO finish this, as it is more involved than just renaming the class
-        #@include_once 'HTTP/Request2.php';
         if (0 && class_exists('HTTP_Request2')) {
             $this->running_config['has_pear_http_request'] = 2;
         } else {
@@ -564,8 +561,6 @@ class Config
             # why not try set it to "person in charge of this system". Will help get rid of a lot of bounces to nobody@server :-)
             $this->running_config['message_envelope'] = $this->get('admin_address');
         }
-
-        //$this->loadDefaultConfig();
     }
 
     /**
@@ -588,17 +583,6 @@ class Config
         }
 
         $this->default_config = array(
-
-                /* any next line has the format
-                  'name' => array(
-                    'value',     // default value
-                    'description',
-                    'type',      // text, textarea, boolean
-                    'allow empty', // 0 or 1 (or false/true)
-                    'category'   // general
-                  ),
-                */
-
                 # what is your website location (url)
                 'website' => array(
                     'value' => $D_website,
@@ -781,10 +765,6 @@ class Config
                     'allowempty' => true,
                     'category' => 'transactional',
                 ),
-                ## the location of your subscribe script
-                #'public_baseurl' => array("http://[WEBSITE]$this->get('PAGEROOT')/",
-                #  'Base URL for public pages',"text"),
-
                 # the location of your subscribe script
                 'subscribeurl' => array(
                     'value' => $this->get('scheme') . '://[WEBSITE]'.$this->get('PAGEROOT').'/?p=subscribe',
@@ -843,10 +823,6 @@ class Config
                     'allowempty' => true,
                     'category' => 'subscription',
                 ),
-                # the location of your subscribe script
-                #'subscribe_baseurl' => array("http://[WEBSITE]".$this->get('PAGEROOT')."/",
-                #  'Base URL for public pages',"text"),
-
                 # the subject of the message
                 'subscribesubject' => array(
                     'value' => $lan->get('Request for confirmation'),
@@ -1069,17 +1045,6 @@ class Config
                     'allowempty' => 0,
                     'category' => 'subscription-ui',
                 ),
-//'html_charset' => array (
-                //'UTF-8',
-                //'Charset for HTML messages',
-                //"text"
-//),
-//'text_charset' => array (
-                //'UTF-8',
-                //'Charset for Text messages',
-                //"text"
-//),
-
                 'personallocation_message' => array(
                     'value' => '
 

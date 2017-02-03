@@ -45,33 +45,6 @@ class Language
         }
 
         $this->config->runAfterLanguageInitialised($this);
-
-        /*
-        $lan = array();
-
-        if (is_file($this->basedir . $this->language . '/' . $page . '.php')) {
-            @include $this->basedir . $this->language . '/' . $page . '.php';
-        } elseif (!$this->config->get('DEBUG')) {
-            @include $this->basedir . $this->defaultlanguage . '/' . $page . '.php';
-        }
-        $this->lan = $lan;
-        $lan = array();
-
-        if (is_file($this->basedir . $this->language . '/common.php')) {
-            @include $this->basedir . $this->language . '/common.php';
-        } elseif (!DEBUG) {
-            @include $this->basedir . $this->defaultlanguage . '/common.php';
-        }
-        $this->lan += $lan;
-        $lan = array();
-
-        if (is_file($this->basedir . $this->language . '/frontend.php')) {
-            @include $this->basedir . $this->language . '/frontend.php';
-        } elseif (!DEBUG) {
-            @include $this->basedir . $this->defaultlanguage . '/frontend.php';
-        }
-        $this->lan += $lan;
-        */
     }
 
     /**
@@ -94,8 +67,6 @@ class Language
                     foreach ($lines as $line) {
                         // use utf8 matching
                         if (preg_match('/(\w+)=([\p{L}\p{N}&; \-\(\)]+)/u', $line, $regs)) {
-                            #      if (preg_match('/(\w+)=([\w&; \-\(\)]+)/',$line,$regs)) {
-                            #      if (preg_match('/(\w+)=(.+)/',$line,$regs)) {
                             $lan[$regs[1]] = $regs[2];
                         }
                     }
@@ -218,12 +189,7 @@ class Language
         }
         if (preg_match('/pi=([\w]+)/', $page, $regs)) {
             ## @@TODO call plugin to ask for title
-            /*
-            if (isset($GLOBALS['plugins'][$regs[1]])) {
-                $title = $GLOBALS['plugins'][$regs[1]]->pageTitle($page);
-            } else*/ {
-                $title = $regs[1] . ' - ' . $page;
-            }
+            $title = $regs[1] . ' - ' . $page;
         } elseif (!empty($page_title)) {
             $title = $page_title;
         } else {
@@ -284,12 +250,6 @@ class Language
 
             $line = "'" . str_replace("'", "\'", $text) . "' => '" . str_replace("'", "\'", $text) . "',";
 
-            /*if (empty($prefix) && $this->language == 'en') {
-                $this->appendText($this->basedir . '/en/' . $page . '.php', $line);
-            } else {
-                $this->appendText('/tmp/' . $prefix . $page . '.php', $line);
-            }*/
-
             $text = '<span style="color: #FF1717">' . $text . '</span>'; #MISSING TEXT
         }
         return $text;
@@ -298,33 +258,6 @@ class Language
     public function appendText($file, $text)
     {
         return;
-        /*
-        $filecontents = '';
-        if (is_file($file)) {
-            $filecontents = file_get_contents($file);
-        } else {
-            $filecontents = '<?php
-
-$lan = array(
-
-);
-
-      ?>';
-        }
-
-#    print "<br/>Writing $text to $file";
-        $filecontents = preg_replace("/\n/", "@@NL@@", $filecontents);
-        $filecontents = str_replace(');', '  ' . $text . "\n);", $filecontents);
-        $filecontents = str_replace("@@NL@@", "\n", $filecontents);
-
-        $dir = dirname($file);
-        if (!is_writable($dir) || (is_file($file) && !is_writable($file))) {
-            $newfile = basename($file);
-            $file = '/tmp/' . $newfile;
-        }
-
-        file_put_contents($file, $filecontents);
-        */
     }
 
     public function initFSTranslations($language = '')
@@ -428,20 +361,11 @@ $lan = array(
             $page = "home";
         }
         $page = preg_replace('/\W/', '', $page);
-/*
-        if (!empty($_GET['pi'])) {
-            $plugin_languagedir = $this->getPluginBasedir();
-            if (is_dir($plugin_languagedir)) {
-                $translation = $this->getTranslation($text, $page, $plugin_languagedir);
-            }
-        }*/
 
         ## if a plugin did not return the translation, find it in core
         if (empty($translation)) {
             $translation = $this->getTranslation($text, $page, $this->basedir);
         }
-
-        #   print $this->language.' '.$text.' '.$translation. '<br/>';
 
         # spelling mistake, retry with old spelling
         if ($text == 'over threshold, subscriber marked unconfirmed' && empty($translation)) {

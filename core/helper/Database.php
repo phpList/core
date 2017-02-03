@@ -67,19 +67,6 @@ class Database
             # time queries to see how slow they are, so they can
             # be optimized
             Timer::start('query_timer');
-            /*
-            # keep track of queries to see which ones to optimize
-            if (function_exists('stripos')) {
-                 if (!stripos($query, 'cache')) {
-                     $store = $query;
-                     $store = preg_replace('/\d+/', 'X', $store);
-                     $store = trim($store);
-                     $this->_db->query(sprintf('UPDATE querycount SET count = count + 1 WHERE query = "%s" and frontend = %d', $store));
-                     if ($this->_db->affected_rows != 2) {
-                         $this->_db->query(sprintf('INSERT INTO querycount SET count = count + 1 , query = "%s",phplist = 1', $store));
-                     }
-                 }
-             }*/
         }
         $result = $this->db->query($query);
         $this->query_count++;
@@ -211,7 +198,6 @@ class Database
 
     public function dropTable($table)
     {
-        #  print '<br/>DROP '.$table;
         return $this->db->query('DROP TABLE IF EXISTS ' . $table);
     }
 
@@ -236,7 +222,6 @@ class Database
             }
         }
         $query = substr($query, 0, -1);
-        # output($query);
         return $this->query($query);
     }
 
@@ -287,7 +272,7 @@ class Database
         foreach ($tables as $table => $column) {
             $results [] = $this->db->query(sprintf($query, $table, $column, $id));
         }
-        
+
         return $results;
     }
 }
