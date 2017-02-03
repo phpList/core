@@ -2,14 +2,11 @@
 
 use phpList\Admin;
 use phpList\Config;
-use phpList\helper;
 use phpList\ListManager;
-use phpList\Entity\ListEntity;
 
 // Symfony namespaces
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 /**
@@ -17,7 +14,6 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
  */
 class ListManagerTest extends \PHPUnit_Framework_TestCase
 {
-
     public function setUp()
     {
         // Create Symfony DI service container object for use by other classes
@@ -47,7 +43,7 @@ class ListManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(false !== $result);
 
         // Return the IDs used for the next test to clean up
-        return array( 'listId' => $listId, 'scrId' => $scrId );
+        return [ 'listId' => $listId, 'scrId' => $scrId ];
     }
 
     /**

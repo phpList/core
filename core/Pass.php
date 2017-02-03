@@ -4,13 +4,12 @@ namespace phpList;
 
 class Pass
 {
-
     protected $config;
 
     /**
-    * @param Config $config
-    * @param helper\Database $db
-    */
+     * @param Config $config
+     * @param helper\Database $db
+     */
     public function __construct(Config $config)
     {
         $this->config = $config;
@@ -18,13 +17,16 @@ class Pass
 
     /**
      * Encrypt a plaintext password using the best available algorithm
+     *
      * @todo: check php5.5 password api
      * @todo: upgrade default md5 hashing to something more secure
+     *
      * @param string $plainPass Plain text password to encrypt
      * @param string $desiredAlgo Name of desiresd algo
+     *
      * @return string $encPass Encrypted password
      */
-    public function encrypt($plainPass, $desiredAlgo = "sha256")
+    public function encrypt($plainPass, $desiredAlgo = 'sha256')
     {
         // If no password was supplied, return empty
         // FIXME: Either log this event, or throw an exception, so client code

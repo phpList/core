@@ -3,7 +3,6 @@ namespace phpList;
 
 /**
  * Class Bounce
- * @package phpList
  */
 class Bounce
 {
@@ -33,12 +32,12 @@ class Bounce
                 $this->date->format('Y-m-d H:i')
             ));
 
-            $prep_statement->execute(array(
-                    ":header"   =>  $this->header,
-                    ":data"     =>  $this->data,
-                    ":status"   =>  $this->status,
-                    ":comment"  =>  $this->comment,
-                ));
+            $prep_statement->execute([
+                    ':header'   =>  $this->header,
+                    ':data'     =>  $this->data,
+                    ':status'   =>  $this->status,
+                    ':comment'  =>  $this->comment,
+                ]);
             $this->id = phpList::DB()->insertedId();
         }
     }
@@ -57,12 +56,12 @@ class Bounce
             $this->id
         ));
 
-        $prep_statement->execute(array(
-                ":header"   =>  $this->header,
-                ":data"     =>  $this->data,
-                ":status"   =>  $this->status,
-                ":comment"  =>  $this->comment,
-            ));
+        $prep_statement->execute([
+                ':header'   =>  $this->header,
+                ':data'     =>  $this->data,
+                ':status'   =>  $this->status,
+                ':comment'  =>  $this->comment,
+            ]);
     }
 
     /**
@@ -124,17 +123,19 @@ class Bounce
                 Config::getTableName('user', true),
                 Config::getTableName('message')
             ));
-            $tables = array(
+            $tables = [
                 Config::getTableName('bounce') => '1',
-                Config::getTableName('user_message_bounce') => '1'
-            );
+                Config::getTableName('user_message_bounce') => '1',
+            ];
             phpList::DB()->deleteFromArray($tables, 1);
         }
     }
 
     /**
      * Check if the bounce matches a rule
+     *
      * @param array $rules
+     *
      * @return bool
      */
     public function matchesBounceRule(&$rules)
@@ -163,7 +164,7 @@ class Bounce
                     if (stripos($rule, 'Unknown local subscriber') !== false) {
                         $rule = 'Unknown local subscriber';
                     } elseif (preg_match('/Unknown local part (.*) in/iU', $rule, $regs)) {
-                        $rule = preg_replace('/'.preg_quote($regs[1]).'/', '.*', $rule);
+                        $rule = preg_replace('/' . preg_quote($regs[1]) . '/', '.*', $rule);
                     } elseif (preg_match('/mta(.*)\.mail\.yahoo\.com/iU', $rule)) {
                         $rule = preg_replace('/mta[\d]+/i', 'mta[\\d]+', $rule);
                     }
@@ -172,7 +173,7 @@ class Bounce
                     if (!in_array($rule, $rules) && strlen($rule) > 25) {
                         # && $code != 554 && $code != 552) {
                         if (Config::VERBOSE) {
-                            Output::output('Rule:'.htmlspecialchars($rule));
+                            Output::output('Rule:' . htmlspecialchars($rule));
                         }
                         array_push($rules, $rule);
 
@@ -215,16 +216,16 @@ class Bounce
             Config::getTableName('bounce'),
             $bounce_id
         ));
-        $tables = array(
+        $tables = [
             Config::getTableName('user_message_bounce') => 'bounce',
-            Config::getTableName('bounceregex_bounce') => 'bounce'
-        );
+            Config::getTableName('bounceregex_bounce') => 'bounce',
+        ];
         phpList::DB()->deleteFromArray($tables, $bounce_id);
     }
 
-
     /**
      * Add this bounce to a user and message
+     *
      * @param Subscriber $subscriber
      * @param int $campaign_id
      */
@@ -269,6 +270,7 @@ class Bounce
 
     /**
      * Add a BounceRule to this bounce
+     *
      * @param BounceRule $rule
      */
     private function addToRule($rule)
@@ -284,7 +286,9 @@ class Bounce
 
     /**
      * Create a Bounce from an array
+     *
      * @param array $array
+     *
      * @return Bounce
      */
     private static function bounceFromArray($array)
@@ -302,7 +306,6 @@ class Bounce
 
 /**
  * Class BounceRule
- * @package phpList
  */
 class BounceRule
 {
@@ -321,7 +324,9 @@ class BounceRule
 
     /**
      * Get bounce rule by id
+     *
      * @param int $bounce_rule_id
+     *
      * @return BounceRule
      */
     public static function getBounceRule($bounce_rule_id)
@@ -337,11 +342,12 @@ class BounceRule
 
     /**
      * Get available bounce rules
+     *
      * @return array
      */
     public static function getAllBounceRules()
     {
-        $rules = array();
+        $rules = [];
         $result = phpList::DB()->query(sprintf(
             'SELECT * FROM %s
                 ORDER BY listorder',
@@ -355,12 +361,14 @@ class BounceRule
 
     /**
      * Get bounce by status
+     *
      * @param string $status
+     *
      * @return array
      */
     public static function getBounceRulesByStatus($status)
     {
-        $rules = array();
+        $rules = [];
         $result = phpList::DB()->query(sprintf(
             'SELECT * FROM %s
                 WHERE status = "%s"
@@ -376,7 +384,9 @@ class BounceRule
 
     /**
      * Create a BounceRule from an array
+     *
      * @param array $array
+     *
      * @return BounceRule
      */
     private static function bounceRuleFromArray($array)
@@ -395,6 +405,7 @@ class BounceRule
 
     /**
      * Remove a bouncerule from the database
+     *
      * @param int $bounce_rule_id
      */
     public static function delete($bounce_rule_id)
@@ -424,11 +435,11 @@ class BounceRule
                 $this->listorder,
                 $this->admin
             ));
-            $prep_statement->execute(array(
-                    ":regex"    =>  $this->regex,
-                    ":status"    =>  $this->status,
-                    ":comment"    =>  $this->comment
-                ));
+            $prep_statement->execute([
+                    ':regex'    =>  $this->regex,
+                    ':status'    =>  $this->status,
+                    ':comment'    =>  $this->comment,
+                ]);
             $this->id = phpList::DB()->insertedId();
         }
     }
@@ -449,18 +460,20 @@ class BounceRule
             $this->id
         ));
 
-        $prep_statement->execute(array(
-                ":regex"    =>  $this->regex,
-                ":status"    =>  $this->status,
-                ":comment"    =>  $this->comment
-            ));
+        $prep_statement->execute([
+                ':regex'    =>  $this->regex,
+                ':status'    =>  $this->status,
+                ':comment'    =>  $this->comment,
+            ]);
     }
 
     /**
      * Find a matching bounce rule from database
      * returns false if none found
+     *
      * @param string $text
      * @param bool $activeonly
+     *
      * @return bool|BounceRule
      */
     public static function matchedDBBounceRule($text, $activeonly = false)
@@ -480,11 +493,13 @@ class BounceRule
     /**
      * Find a matching bounce rule from given set of rules
      * returns false if none found
+     *
      * @param string $text
      * @param array $rules
+     *
      * @return bool|BounceRule
      */
-    public static function matchedBounceRules($text, $rules = array())
+    public static function matchedBounceRules($text, $rules = [])
     {
         if (empty($rules)) {
             $rules = BounceRule::getAllBounceRules();
@@ -495,8 +510,8 @@ class BounceRule
          */
         foreach ($rules as $rule) {
             $pattern = str_replace(' ', '\s+', $rule->regex);
-            if (@preg_match('/'.preg_quote($pattern).'/iUm', $text)
-                || @preg_match('/'.$pattern.'/iUm', $text)
+            if (@preg_match('/' . preg_quote($pattern) . '/iUm', $text)
+                || @preg_match('/' . $pattern . '/iUm', $text)
             ) {
                 return $rule;
             }

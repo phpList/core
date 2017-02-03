@@ -13,6 +13,7 @@ class TemplateImageEntity
 
     /**
      * Create new image
+     *
      * @param $template_id
      * @param $mime
      * @param $filename

@@ -12,16 +12,13 @@ namespace phpList\test;
 // use Symfony\Component\Config\FileLocator;
 // use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
-use phpList\Model\SubscriberModel;
-use phpList\Entity\SubscriberEntity;
-use phpList\Subscriber;
 use phpList\Config;
 use phpList\helper\Database;
+use phpList\Model\SubscriberModel;
 use phpList\phpList;
 
 class SubscriberModelTest extends \PHPUnit_Framework_TestCase
 {
-
     public function setUp()
     {
         // Create a randomised email addy to register with

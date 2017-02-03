@@ -2,24 +2,15 @@
 namespace phpList\test;
 
 use phpList\Config;
-use phpList\EmailUtil;
-use phpList\helper\Database;
 use phpList\Pass;
-use phpList\phpList;
-use phpList\SubscriberManager;
-use phpList\helper\Util;
-use phpList\Model\SubscriberModel;
-use phpList\Entity\SubscriberEntity;
 
 // Symfony namespaces
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class AdminTest extends \PHPUnit_Framework_TestCase
 {
-
     public function setUp()
     {
         // Create Symfony DI service container object for use by other classes
@@ -51,17 +42,14 @@ class AdminTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($result['result']);
 
         // Return vars for dependent tests
-        return array(
-            'plainPass' => $plainPass
-            , 'encPass' => $result['admin']->encPass
-            , 'username' => $username
-            , 'retrievedUsername' => $result['admin']->username
-        );
+        return [
+            'plainPass' => $plainPass, 'encPass' => $result['admin']->encPass, 'username' => $username, 'retrievedUsername' => $result['admin']->username,
+        ];
     }
 
     /**
-    * Check that incorrect credentials do not validate
-    */
+     * Check that incorrect credentials do not validate
+     */
     public function testInvalidLogin()
     {
         // Set correct login vars for this installation, from phpunit.xml
@@ -78,6 +66,7 @@ class AdminTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that the username we provided is the username actually used to
      * validate the login
+     *
      * @depends testValidLogin
      */
     public function testAdminUsernameValidation($vars)
@@ -88,6 +77,7 @@ class AdminTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Test that the password retreived was not in plantext
+     *
      * @depends testValidLogin
      */
     public function testAdminPasswordHashed($vars)

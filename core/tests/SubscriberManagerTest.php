@@ -2,24 +2,17 @@
 namespace phpList\test;
 
 use phpList\Config;
-use phpList\EmailUtil;
-use phpList\helper\Database;
-use phpList\Pass;
-use phpList\phpList;
-use phpList\SubscriberManager;
-use phpList\helper\Util;
-use phpList\Model\SubscriberModel;
 use phpList\Entity\SubscriberEntity;
+use phpList\Pass;
+use phpList\SubscriberManager;
 
 // Symfony namespaces
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class SubscriberManagerTest extends \PHPUnit_Framework_TestCase
 {
-
     public function setUp()
     {
         // Create a randomised email addy to register with
@@ -38,8 +31,8 @@ class SubscriberManagerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-    * @expectedException \Exception
-    */
+     * @expectedException \Exception
+     */
     public function testAddInvalidEmail()
     {
         // Test passes if this throws an exception
@@ -52,7 +45,7 @@ class SubscriberManagerTest extends \PHPUnit_Framework_TestCase
     public function testAdd()
     {
         // Add new subscriber properties to the entity
-        $scrEntity = new SubscriberEntity;
+        $scrEntity = new SubscriberEntity();
         $scrEntity->emailAddress = $this->emailAddress;
         $scrEntity->plainPass = $this->plainPass;
 
@@ -66,7 +59,7 @@ class SubscriberManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(is_numeric($newSubscriberId));
 
         // Pass on to the next test
-        return array( 'id' => $newSubscriberId, 'email' => $emailCopy, 'encPass' => $scrEntity->encPass );
+        return [ 'id' => $newSubscriberId, 'email' => $emailCopy, 'encPass' => $scrEntity->encPass ];
     }
 
     /**
@@ -87,8 +80,8 @@ class SubscriberManagerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-    * @depends testGetSubscriberById
-    */
+     * @depends testGetSubscriberById
+     */
     public function testUpdatePass($scrEntity)
     {
         // Set a new password for testing
@@ -103,8 +96,8 @@ class SubscriberManagerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-    * @depends testGetSubscriberById
-    */
+     * @depends testGetSubscriberById
+     */
     public function testDelete($scrEntity)
     {
         // Delete the testing subscribers

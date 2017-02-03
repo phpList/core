@@ -5,8 +5,10 @@ namespace phpList\helper;
 /**
  * Add a shortcut that seems common in other apps
  * function s($text)
+ *
  * @param $text string the text to find
  * @params 2-n variable - parameters to pass on to the sprintf of the text
+ *
  * @return string translated text with parameters filled in
  *
  *
@@ -17,7 +19,6 @@ namespace phpList\helper;
  **/
 class Shortcuts
 {
-
     public function s($text)
     {
         global $container;

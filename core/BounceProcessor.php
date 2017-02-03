@@ -12,7 +12,6 @@ class BounceProcessor
     private static $_instance;
     private $process_id;
 
-
     private function __construct()
     {
     }
@@ -32,7 +31,7 @@ class BounceProcessor
     {
         $this->preflightCheck();
         # lets not do this unless we do some locking first
-        register_shutdown_function(array(&$this, 'processBouncesShutdown'));
+        register_shutdown_function([&$this, 'processBouncesShutdown']);
         ignore_user_abort(1);
         if (Config::get('commandline', false) !== false && Config::get('commandline_force', false) !== false) {
             # force set, so kill other processes
@@ -120,7 +119,7 @@ class BounceProcessor
                     if ($row['user']) {
                         $subscriber = Subscriber::getSubscriber($row['user']);
                     }
-                    $report_linkroot = Config::get('admin_scheme').'://'.Config::get('website').Config::get('adminpages');
+                    $report_linkroot = Config::get('admin_scheme') . '://' . Config::get('website') . Config::get('adminpages');
                     phpList::DB()->query(sprintf(
                         'UPDATE %s SET count = count + 1
                             WHERE id = %d',
@@ -138,57 +137,57 @@ class BounceProcessor
 
                     switch ($rule['action']) {
                         case 'deletesubscriber':
-                            phpList::log()->notice('Subscriber '.$subscriber->getEmailAddress().' deleted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'], $rule['id']));
-                            $advanced_report .= 'Subscriber '.$subscriber->getEmailAddress().' deleted by bounce rule '.$rule['id']."\n";
-                            $advanced_report .= 'Subscriber: '.$report_linkroot.'/?page=subscriber&amp;id='.$subscriber->id."\n";
-                            $advanced_report .= 'Rule: '.$report_linkroot.'/?page=bouncerule&amp;id='.$rule['id']."\n";
+                            phpList::log()->notice('Subscriber ' . $subscriber->getEmailAddress() . ' deleted by bounce rule ' . PageLink2('bouncerule&amp;id=' . $rule['id'], $rule['id']));
+                            $advanced_report .= 'Subscriber ' . $subscriber->getEmailAddress() . ' deleted by bounce rule ' . $rule['id'] . "\n";
+                            $advanced_report .= 'Subscriber: ' . $report_linkroot . '/?page=subscriber&amp;id=' . $subscriber->id . "\n";
+                            $advanced_report .= 'Rule: ' . $report_linkroot . '/?page=bouncerule&amp;id=' . $rule['id'] . "\n";
                             $subscriber->delete();
                             break;
                         case 'unconfirmsubscriber':
-                            phpList::log()->notice('Subscriber '.$subscriber->getEmailAddress().' unconfirmed by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'], $rule['id']));
+                            phpList::log()->notice('Subscriber ' . $subscriber->getEmailAddress() . ' unconfirmed by bounce rule ' . PageLink2('bouncerule&amp;id=' . $rule['id'], $rule['id']));
                             $subscriber->confirmed = 0;
                             $subscriber->update();
-                            $advanced_report .= 'Subscriber '.$subscriber->getEmailAddress().' made unconfirmed by bounce rule '.$rule['id']."\n";
-                            $advanced_report .= 'Subscriber: '.$report_linkroot.'/?page=subscriber&amp;id='.$subscriber->id."\n";
-                            $advanced_report .= 'Rule: '.$report_linkroot.'/?page=bouncerule&amp;id='.$rule['id']."\n";
-                            $subscriber->addHistory(s('Auto Unconfirmed'), s('Subscriber auto unconfirmed for')." ".s('bounce rule').' '.$rule['id'], $subscriber->id);
+                            $advanced_report .= 'Subscriber ' . $subscriber->getEmailAddress() . ' made unconfirmed by bounce rule ' . $rule['id'] . "\n";
+                            $advanced_report .= 'Subscriber: ' . $report_linkroot . '/?page=subscriber&amp;id=' . $subscriber->id . "\n";
+                            $advanced_report .= 'Rule: ' . $report_linkroot . '/?page=bouncerule&amp;id=' . $rule['id'] . "\n";
+                            $subscriber->addHistory(s('Auto Unconfirmed'), s('Subscriber auto unconfirmed for') . ' ' . s('bounce rule') . ' ' . $rule['id'], $subscriber->id);
                             Util::addSubscriberStatistics('auto unsubscribe', 1);
                             break;
                         case 'deletesubscriberandbounce':
-                            phpList::log()->notice('Subscriber '.$row['user'].' deleted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'], $rule['id']));
-                            $advanced_report .= 'Subscriber '.$subscriber->getEmailAddress().' deleted by bounce rule '.$rule['id']."\n";
-                            $advanced_report .= 'Subscriber: '.$report_linkroot.'/?page=subscriber&amp;id='.$subscriber->id."\n";
-                            $advanced_report .= 'Rule: '.$report_linkroot.'/?page=bouncerule&amp;id='.$rule['id']."\n";
+                            phpList::log()->notice('Subscriber ' . $row['user'] . ' deleted by bounce rule ' . PageLink2('bouncerule&amp;id=' . $rule['id'], $rule['id']));
+                            $advanced_report .= 'Subscriber ' . $subscriber->getEmailAddress() . ' deleted by bounce rule ' . $rule['id'] . "\n";
+                            $advanced_report .= 'Subscriber: ' . $report_linkroot . '/?page=subscriber&amp;id=' . $subscriber->id . "\n";
+                            $advanced_report .= 'Rule: ' . $report_linkroot . '/?page=bouncerule&amp;id=' . $rule['id'] . "\n";
                             $subscriber->delete();
                             Bounce::deleteBounce($row['bounce']);
                             break;
                         case 'unconfirmsubscriberanddeletebounce':
-                            phpList::log()->notice('Subscriber '.$subscriber->getEmailAddress().' unconfirmed by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'], $rule['id']));
+                            phpList::log()->notice('Subscriber ' . $subscriber->getEmailAddress() . ' unconfirmed by bounce rule ' . PageLink2('bouncerule&amp;id=' . $rule['id'], $rule['id']));
                             $subscriber->confirmed = 0;
                             $subscriber->update();
-                            $advanced_report .= 'Subscriber '.$subscriber->getEmailAddress().' made unconfirmed by bounce rule '.$rule['id']."\n";
-                            $advanced_report .= 'Subscriber: '.$report_linkroot.'/?page=subscriber&amp;id='.$subscriber->id."\n";
-                            $advanced_report .= 'Rule: '.$report_linkroot.'/?page=bouncerule&amp;id='.$rule['id']."\n";
-                            $subscriber->addHistory(s('Auto unconfirmed'), s('Subscriber auto unconfirmed for')." ".s("bounce rule").' '.$rule['id'], $subscriber->id);
+                            $advanced_report .= 'Subscriber ' . $subscriber->getEmailAddress() . ' made unconfirmed by bounce rule ' . $rule['id'] . "\n";
+                            $advanced_report .= 'Subscriber: ' . $report_linkroot . '/?page=subscriber&amp;id=' . $subscriber->id . "\n";
+                            $advanced_report .= 'Rule: ' . $report_linkroot . '/?page=bouncerule&amp;id=' . $rule['id'] . "\n";
+                            $subscriber->addHistory(s('Auto unconfirmed'), s('Subscriber auto unconfirmed for') . ' ' . s('bounce rule') . ' ' . $rule['id'], $subscriber->id);
                             Util::addSubscriberStatistics('auto unsubscribe', 1);
                             Bounce::deleteBounce($row['bounce']);
                             break;
                         case 'blacklistsubscriber':
-                            phpList::log()->notice('Subscriber '.$subscriber->getEmailAddress().' blacklisted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'], $rule['id']));
-                            $subscriber->blacklistSubscriber($subscriber->getEmailAddress(), s("Auto Blacklisted"), s("Subscriber auto blacklisted for")." ".s("bounce rule").' '.$rule['id']);
-                            $advanced_report .= 'Subscriber '.$subscriber->getEmailAddress().' blacklisted by bounce rule '.$rule['id']."\n";
-                            $advanced_report .= 'Subscriber: '.$report_linkroot.'/?page=subscriber&amp;id='.$subscriber->id."\n";
-                            $advanced_report .= 'Rule: '.$report_linkroot.'/?page=bouncerule&amp;id='.$rule['id']."\n";
-                            $subscriber->addHistory(s("Auto Unsubscribed"), s("Subscriber auto unsubscribed for")." ".s("bounce rule").' '.$rule['id'], $subscriber->id);
+                            phpList::log()->notice('Subscriber ' . $subscriber->getEmailAddress() . ' blacklisted by bounce rule ' . PageLink2('bouncerule&amp;id=' . $rule['id'], $rule['id']));
+                            $subscriber->blacklistSubscriber($subscriber->getEmailAddress(), s('Auto Blacklisted'), s('Subscriber auto blacklisted for') . ' ' . s('bounce rule') . ' ' . $rule['id']);
+                            $advanced_report .= 'Subscriber ' . $subscriber->getEmailAddress() . ' blacklisted by bounce rule ' . $rule['id'] . "\n";
+                            $advanced_report .= 'Subscriber: ' . $report_linkroot . '/?page=subscriber&amp;id=' . $subscriber->id . "\n";
+                            $advanced_report .= 'Rule: ' . $report_linkroot . '/?page=bouncerule&amp;id=' . $rule['id'] . "\n";
+                            $subscriber->addHistory(s('Auto Unsubscribed'), s('Subscriber auto unsubscribed for') . ' ' . s('bounce rule') . ' ' . $rule['id'], $subscriber->id);
                             Util::addSubscriberStatistics('auto blacklist', 1);
                             break;
                         case 'blacklistsubscriberanddeletebounce':
-                            phpList::log()->notice('Subscriber '.$subscriber->getEmailAddress().' blacklisted by bounce rule '.PageLink2('bouncerule&amp;id='.$rule['id'], $rule['id']));
-                            $subscriber->blacklistSubscriber($subscriber->getEmailAddress(), s("Auto Blacklisted"), s("Subscriber auto blacklisted for")." ".s("bounce rule").' '.$rule['id']);
-                            $advanced_report .= 'Subscriber '.$subscriber->getEmailAddress().' blacklisted by bounce rule '.$rule['id']."\n";
-                            $advanced_report .= 'Subscriber: '.$report_linkroot.'/?page=subscriber&amp;id='.$subscriber->id."\n";
-                            $advanced_report .= 'Rule: '.$report_linkroot.'/?page=bouncerule&amp;id='.$rule['id']."\n";
-                            $subscriber->addHistory(s("Auto Unsubscribed"), s("Subscriber auto unsubscribed for")." ".s("bounce rule").' '.$rule['id'], $subscriber->id);
+                            phpList::log()->notice('Subscriber ' . $subscriber->getEmailAddress() . ' blacklisted by bounce rule ' . PageLink2('bouncerule&amp;id=' . $rule['id'], $rule['id']));
+                            $subscriber->blacklistSubscriber($subscriber->getEmailAddress(), s('Auto Blacklisted'), s('Subscriber auto blacklisted for') . ' ' . s('bounce rule') . ' ' . $rule['id']);
+                            $advanced_report .= 'Subscriber ' . $subscriber->getEmailAddress() . ' blacklisted by bounce rule ' . $rule['id'] . "\n";
+                            $advanced_report .= 'Subscriber: ' . $report_linkroot . '/?page=subscriber&amp;id=' . $subscriber->id . "\n";
+                            $advanced_report .= 'Rule: ' . $report_linkroot . '/?page=bouncerule&amp;id=' . $rule['id'] . "\n";
+                            $subscriber->addHistory(s('Auto Unsubscribed'), s('Subscriber auto unsubscribed for') . ' ' . s('bounce rule') . ' ' . $rule['id'], $subscriber->id);
                             Util::addSubscriberStatistics('auto blacklist', 1);
                             Bounce::deleteBounce($row['bounce']);
                             break;
@@ -201,12 +200,12 @@ class BounceProcessor
                     $notmatched++;
                 }
             }
-            $this->output($matched.' '.s('bounces processed by advanced processing'));
-            $this->output($notmatched.' '.s('bounces were not matched by advanced processing rules'));
+            $this->output($matched . ' ' . s('bounces processed by advanced processing'));
+            $this->output($notmatched . ' ' . s('bounces were not matched by advanced processing rules'));
         }
 
         # have a look who should be flagged as unconfirmed
-        $this->output(s("Identifying consecutive bounces"));
+        $this->output(s('Identifying consecutive bounces'));
 
         # we only need subscriber who are confirmed at the moment
         $subscriberid_result = phpList::DB()->query(sprintf(
@@ -218,11 +217,11 @@ class BounceProcessor
         ));
 
         if ($subscriberid_result->rowCount() <= 0) {
-            $this->output(s("Nothing to do"));
+            $this->output(s('Nothing to do'));
         }
 
         $subscribercnt = 0;
-        $unsubscribed_subscribers = "";
+        $unsubscribed_subscribers = '';
         while ($subscriber = $subscriberid_result->fetch(\PDO::FETCH_ASSOC)) {
             Process::keepLock($this->process_id);
             set_time_limit(600);
@@ -237,7 +236,7 @@ class BounceProcessor
                 Config::getTableName('user_message_bounce'),
                 $subscriber[0]
             ));
-            $cnt=0;
+            $cnt = 0;
             $alive = 1;
             $removed = $msgokay = $unconfirmed = $unsubscribed = 0;
             while ($alive && !$removed && !$msgokay && $bounce = $msg_req->fetch(\PDO::FETCH_ASSOC)) {
@@ -270,7 +269,7 @@ class BounceProcessor
                                 $subscriber[0]
                             ));
                             $email_req = phpList::DB()->query(sprintf('SELECT email FROM %s WHERE id = %d', Config::getTableName('user', true), $subscriber[0]));
-                            $unsubscribed_subscribers .= $email_req[0]."\t\t($cnt)\t\t". Config::get('scheme').'://'.Config::get('website').Config::get('adminpages').'/?page=user&amp;id='.$subscriber[0]. "\n";
+                            $unsubscribed_subscribers .= $email_req[0] . "\t\t($cnt)\t\t" . Config::get('scheme') . '://' . Config::get('website') . Config::get('adminpages') . '/?page=user&amp;id=' . $subscriber[0] . "\n";
                             $unsubscribed = 1;
                         }
                         if (Config::get('BLACKLIST_EMAIL_ON_BOUNCE') && $cnt >= Config::get('BLACKLIST_EMAIL_ON_BOUNCE')) {
@@ -291,7 +290,7 @@ class BounceProcessor
             $subscribercnt++;
         }
 
-        $this->output("\n".s('total of %d subscribers processed', $total). '                            ');
+        $this->output("\n" . s('total of %d subscribers processed', $total) . '                            ');
     }
 
     /**
@@ -301,8 +300,8 @@ class BounceProcessor
     {
         if (!function_exists('imap_open')) {
             throw new \Exception(
-                "IMAP is not included in your PHP installation, cannot continue\n".
-                s('Check out').
+                "IMAP is not included in your PHP installation, cannot continue\n" .
+                s('Check out') .
                 "\n <a href=\"http://www.php.net/manual/en/ref.imap.php\">http://www.php.net/manual/en/ref.imap.php</a>"
             );
         }
@@ -356,7 +355,9 @@ class BounceProcessor
 
     /**
      * Try to find the message id in the header
+     *
      * @param string $text
+     *
      * @return int|string
      */
     private function findCampaignId($text)
@@ -378,7 +379,9 @@ class BounceProcessor
 
     /**
      * Find which subscriber this message was sent to
+     *
      * @param string $text
+     *
      * @return bool|Subscriber
      */
     private function findSubscriber($text)
@@ -458,7 +461,7 @@ class BounceProcessor
         $campaign_id = $this->findMessageId($body);
         $subscriber = $this->findSubscriber($body);
         if (Config::VERBOSE) {
-            phpList::log()->debug('UID'.$subscriber->id.' MSGID'.$campaign_id, ['page' => 'procesbounces']);
+            phpList::log()->debug('UID' . $subscriber->id . ' MSGID' . $campaign_id, ['page' => 'procesbounces']);
         }
 
         ## @TODO add call to plugins to determine what to do.
@@ -478,9 +481,11 @@ class BounceProcessor
 
     /**
      * Porcess the bounce data and update the database
+     *
      * @param Bounce $bounce
      * @param int $campaign_id
      * @param Subscriber $subscriber
+     *
      * @return bool
      */
     private function processBounceData($bounce, $campaign_id, $subscriber)
@@ -489,7 +494,7 @@ class BounceProcessor
             $bounce->status = 'bounced system message';
             $bounce->comment = sprintf('%s marked unconfirmed', $subscriber->id);
             $bounce->update();
-            phpList::log()->notice($subscriber->id . ' '.s('system message bounced, subscriber marked unconfirmed'));
+            phpList::log()->notice($subscriber->id . ' ' . s('system message bounced, subscriber marked unconfirmed'));
             $subscriber->addHistory(
                 s('Bounced system message'),
                 sprintf(
@@ -541,7 +546,9 @@ class BounceProcessor
      * @param string $server
      * @param string $subscriber
      * @param string $password
+     *
      * @return bool
+     *
      * @throws \Exception
      */
     private function processPop($server, $subscriber, $password)
@@ -553,13 +560,13 @@ class BounceProcessor
         set_time_limit(6000);
 
         if (!Config::TEST) {
-            $link= imap_open('{'.$server.':'.$port.'}INBOX', $subscriber, $password, CL_EXPUNGE);
+            $link = imap_open('{' . $server . ':' . $port . '}INBOX', $subscriber, $password, CL_EXPUNGE);
         } else {
-            $link= imap_open('{'.$server.':'.$port.'}INBOX', $subscriber, $password);
+            $link = imap_open('{' . $server . ':' . $port . '}INBOX', $subscriber, $password);
         }
 
         if (!$link) {
-            throw new \Exception(s("Cannot create POP3 connection to")." $server: ".imap_last_error());
+            throw new \Exception(s('Cannot create POP3 connection to') . " $server: " . imap_last_error());
         }
         return $this->processMessages($link, 100000);
     }
@@ -567,7 +574,9 @@ class BounceProcessor
     //TODO: move to separate class
     /**
      * @param string $file
+     *
      * @return bool
+     *
      * @throws \Exception
      */
     private function processMbox($file)
@@ -575,12 +584,12 @@ class BounceProcessor
         set_time_limit(6000);
 
         if (!Config::TEST) {
-            $link= imap_open($file, '', '', CL_EXPUNGE);
+            $link = imap_open($file, '', '', CL_EXPUNGE);
         } else {
-            $link= imap_open($file, '', '');
+            $link = imap_open($file, '', '');
         }
         if (!$link) {
-            throw new \Exception(s('Cannot open mailbox file').' '.imap_last_error());
+            throw new \Exception(s('Cannot open mailbox file') . ' ' . imap_last_error());
         }
         return $this->processMessages($link, 100000);
     }
@@ -588,16 +597,17 @@ class BounceProcessor
     /**
      * @param resource $link IMAP stream
      * @param int $max
+     *
      * @return bool
      */
     private function processMessages($link, $max = 3000)
     {
         $num = imap_num_msg($link);
-        $this->output($num . ' '.s('bounces to fetch from the mailbox')."\n");
-        $this->output(s('Please do not interrupt this process')."\n");
-        phpList::log()->addToReport($num . ' '.s('bounces to process')."\n");
+        $this->output($num . ' ' . s('bounces to fetch from the mailbox') . "\n");
+        $this->output(s('Please do not interrupt this process') . "\n");
+        phpList::log()->addToReport($num . ' ' . s('bounces to process') . "\n");
         if ($num > $max) {
-            phpList::log()->addToReport($num . ' '.s('processing first')." $max ".s('bounces')."\n");
+            phpList::log()->addToReport($num . ' ' . s('processing first') . " $max " . s('bounces') . "\n");
             $num = $max;
         }
 
@@ -607,7 +617,7 @@ class BounceProcessor
             phpList::log()->info(s('Processed messages will be deleted from mailbox'), ['page' => 'processbounces']);
         }
 
-        for ($x=1; $x <= $num; $x++) {
+        for ($x = 1; $x <= $num; $x++) {
             set_time_limit(60);
             $header = imap_fetchheader($link, $x);
             if ($x % 25 == 0) {
@@ -617,26 +627,26 @@ class BounceProcessor
             if ($processed) {
                 if (!Config::TEST && Config::BOUNCE_MAILBOX_PURGE) {
                     if (Config::VERBOSE) {
-                        $this->output(s('Deleting message').' '.$x);
+                        $this->output(s('Deleting message') . ' ' . $x);
                     }
                     imap_delete($link, $x);
                 } elseif (Config::VERBOSE) {
-                    $this->output(s('Not deleting processed message').' '.$x.' '.Config::BOUNCE_MAILBOX_PURGE);
+                    $this->output(s('Not deleting processed message') . ' ' . $x . ' ' . Config::BOUNCE_MAILBOX_PURGE);
                 }
             } else {
                 if (!Config::TEST && Config::BOUNCE_MAILBOX_PURGE_UNPROCESSED) {
                     if (Config::VERBOSE) {
-                        $this->output(s('Deleting message').' '.$x);
+                        $this->output(s('Deleting message') . ' ' . $x);
                     }
                     imap_delete($link, $x);
                 } elseif (Config::VERBOSE) {
-                    $this->output(s('Not deleting unprocessed message').' '.$x);
+                    $this->output(s('Not deleting unprocessed message') . ' ' . $x);
                 }
             }
         }
         $this->output(s('Closing mailbox, and purging messages'));
         set_time_limit(60 * $num);
         imap_close($link);
-        return ($num>0);
+        return ($num > 0);
     }
 }

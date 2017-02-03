@@ -6,14 +6,14 @@ use phpList\Config;
 
 class LoggerWriterAbstractFactory
 {
-
     private $config;
 
-    private $fileLogger = "file";
-    private $databaseLogger = "database";
+    private $fileLogger = 'file';
+    private $databaseLogger = 'database';
 
     /**
      * LoggerWriterAbstractFactory constructor.
+     *
      * @param Config $config
      */
     public function __construct(Config $config)
@@ -23,7 +23,7 @@ class LoggerWriterAbstractFactory
 
     public function getLoggerWriter()
     {
-        switch ($this->config->get("LOG_WRITER")) {
+        switch ($this->config->get('LOG_WRITER')) {
             case $this->fileLogger:
                 return $this->makeFileLoggerWriter();
                 break;

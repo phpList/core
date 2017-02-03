@@ -11,7 +11,7 @@ use phpList\helper\Validation;
 class QueueProcessor
 {
     private $status = 'OK';
-    private $domainthrottle = array();
+    private $domainthrottle = [];
     /**
      * @var Campaign
      */
@@ -31,7 +31,7 @@ class QueueProcessor
     private $cannotsend;
     private $num_per_batch;
     private $batch_period;
-    private $counters = array();
+    private $counters = [];
     private $original_num_per_batch;
 
     public function __construct()
@@ -40,9 +40,11 @@ class QueueProcessor
 
     /**
      * Process campaign queue
+     *
      * @param bool $force set true if this one has to cancel running send processes
      * @param bool $reload
      * @param int $cmd_max
+     *
      * @return bool
      */
     public function startProcessing($force = false, $reload = false, $cmd_max = 0)
@@ -84,7 +86,7 @@ class QueueProcessor
         # report keeps track of what is going on
         $this->nothingtodo = false;
 
-        register_shutdown_function(array(&$this, 'shutdown'));
+        register_shutdown_function([&$this, 'shutdown']);
 
         # we do not want to timeout or abort
         ignore_user_abort(1);
@@ -206,7 +208,6 @@ class QueueProcessor
             $this->counters['total_subscribers_for_campaign ' . $campaign->id] = 0;
             $this->counters['processed_subscribers_for_campaign ' . $campaign->id] = 0;
 
-
             if ($output_speed_stats) {
                 phpList::log()->debug('start send ' . $campaign->id, ['page' => 'porcessqueue']);
             }
@@ -317,7 +318,7 @@ class QueueProcessor
                 }
                 $subscriber_list = '';
                 while ($fetched_subscriber = $result->fetchColumn(0)) {
-                    $subscriber_list .= $fetched_subscriber . ",";
+                    $subscriber_list .= $fetched_subscriber . ',';
                 }
                 $subscriber_list = substr($subscriber_list, 0, -1);
                 if ($subscriber_list) {
@@ -327,7 +328,7 @@ class QueueProcessor
                         phpList::log()->debug(s('No subscribers apply for attributes'), ['page' => 'porcessqueue']);
                     }
                     $campaign->setStatus('sent');
-                    $subject = s("Maillist Processing info");
+                    $subject = s('Maillist Processing info');
                     if (!$this->nothingtodo) {
                         phpList::log()->debug(s('Finished this run'), ['page' => 'porcessqueue']);
                         phpList::log()->info(
@@ -599,11 +600,11 @@ class QueueProcessor
                             $now = time();
                             $interval = $now - ($now % Config::DOMAIN_BATCH_PERIOD);
                             if (!isset($this->domainthrottle[$domainname]) || !is_array($this->domainthrottle[$domainname])) {
-                                $this->domainthrottle[$domainname] = array(
+                                $this->domainthrottle[$domainname] = [
                                     'interval' => '',
                                     'sent' => 0,
                                     'attempted' => 0,
-                                );
+                                ];
                             } elseif (isset($this->domainthrottle[$domainname]['interval']) && $this->domainthrottle[$domainname]['interval'] == $interval) {
                                 $throttled = $this->domainthrottle[$domainname]['sent'] >= Config::DOMAIN_BATCH_SIZE;
                                 if ($throttled) {
@@ -821,7 +822,7 @@ class QueueProcessor
                     $this->notsent++;
                     if (Config::VERBOSE) {
                         phpList::log()->info(
-                            s('Not sending to').' '.$subscriber->id.', '.s('already sent').' '.$um[0]
+                            s('Not sending to') . ' ' . $subscriber->id . ', ' . s('already sent') . ' ' . $um[0]
                         );
                     }
                 }
@@ -843,7 +844,6 @@ class QueueProcessor
                  *
                  * re-added for commandline outputting
                  */
-
 
                 $totaltime = Timer::get('process_queue')->elapsed(true);
                 if ($this->sent > 0) {
@@ -939,7 +939,9 @@ class QueueProcessor
 
     /**
      * Check if restrictions have been set
+     *
      * @param int $max
+     *
      * @return array
      */
     private function checkRestrictions($max = 0)
@@ -947,7 +949,7 @@ class QueueProcessor
         $maxbatch = -1;
         $minbatchperiod = -1;
         # check for batch limits
-        $restrictions = array();
+        $restrictions = [];
         $restrictions['rules'] = '';
         $restrictions['locked'] = false;
 
@@ -957,7 +959,7 @@ class QueueProcessor
             $lines = explode("\n", $contents);
             $restrictions['rules'] = s('The following restrictions have been set by your ISP:') . "\n";
             foreach ($lines as $line) {
-                list($key, $val) = explode("=", $line);
+                list($key, $val) = explode('=', $line);
 
                 switch ($key) {
                     case 'maxbatch':
@@ -1029,7 +1031,7 @@ class QueueProcessor
             # keep an eye on timeouts
             $this->safemode = true;
             $this->num_per_batch = min(100, $this->num_per_batch);
-            phpList::log()->notice(s('Running in safe mode') . "\n" . s('In safe mode, batches are set to a maximum of 100'), ['page'=>'processqueue']);
+            phpList::log()->notice(s('Running in safe mode') . "\n" . s('In safe mode, batches are set to a maximum of 100'), ['page' => 'processqueue']);
         }
 
         $recently_sent = 0;
@@ -1047,7 +1049,7 @@ class QueueProcessor
                 )
             );
             $recently_sent = $result->fetchColumn(0);
-            phpList::log()->info('Recently sent : ' . $recently_sent, ['page'=>'processqueue']);
+            phpList::log()->info('Recently sent : ' . $recently_sent, ['page' => 'processqueue']);
             $this->num_per_batch -= $recently_sent;
 
             # if this ends up being 0 or less, don't send anything at all
@@ -1073,8 +1075,10 @@ class QueueProcessor
 
     /**
      * Fake sending a campaign for testing purposes
+     *
      * @param int $campaign_id
      * @param string $email
+     *
      * @return bool
      */
     private function sendEmailTest($campaign_id, $email)
@@ -1093,6 +1097,7 @@ class QueueProcessor
 
     /**
      * Send statistics to phplist server
+     *
      * @param Campaign $campaign
      */
     private function sendCampaignStats($campaign)
@@ -1102,12 +1107,12 @@ class QueueProcessor
             return;
         }
 
-        $msg .= "phpList version ".PHPLIST_VERSION . "\n";
+        $msg .= 'phpList version ' . PHPLIST_VERSION . "\n";
         $diff = Util::timeDiff($campaign->sendstart, $campaign->sent);
 
         if ($campaign->processed > 10 && $diff != 'very little time') {
-            $msg .= "\n".'Time taken: '.$diff;
-            foreach (array(
+            $msg .= "\n" . 'Time taken: ' . $diff;
+            foreach ([
                          'entered',
                          'processed',
                          'sendstart',
@@ -1119,9 +1124,9 @@ class QueueProcessor
                          'ashtml',
                          'astextandhtml',
                          'aspdf',
-                         'astextandpdf'
-                     ) as $item) {
-                $msg .= "\n".$item.' => '.$campaign->$item;
+                         'astextandpdf',
+                     ] as $item) {
+                $msg .= "\n" . $item . ' => ' . $campaign->$item;
             }
             $mailto = Config::get('stats_collection_address', 'phplist-stats@phplist.com');
             mail($mailto, 'PHPlist stats', $msg);
@@ -1130,6 +1135,7 @@ class QueueProcessor
 
     /**
      * Shutdown function for execution on shutdown
+     *
      * @link http://php.net/manual/en/function.register-shutdown-function.php
      */
     public function shutdown()
@@ -1222,7 +1228,7 @@ class QueueProcessor
             phpList::log()->debug(s('Script finished, but not all campaigns have been sent yet.'), ['page' => 'porcessqueue']);
         }
         if (!Config::get('commandline') && empty($_GET['ajaxed'])) {
-            include_once "footer.inc";
+            include_once 'footer.inc';
         } elseif (Config::get('commandline')) {
             @ob_end_clean();
         }

@@ -4,14 +4,12 @@ namespace phpList\test;
 use phpList\Pass;
 
 // Symfony namespaces
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class PassTest extends \PHPUnit_Framework_TestCase
 {
-
     public function setUp()
     {
         // Create Symfony DI service container object for use by other classes

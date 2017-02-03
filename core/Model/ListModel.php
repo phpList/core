@@ -1,12 +1,8 @@
 <?php
 namespace phpList\Model;
 
-use phpList\Entity\SubscriberEntity;
-use phpList\helper\StringClass;
-
 class ListModel
 {
-
     protected $db;
 
     public function __construct(\phplist\Config $config, \phplist\helper\Database $db)
@@ -16,16 +12,17 @@ class ListModel
     }
 
     /**
-    * Add subscriber to given list
-    * @param $subscriber_id
-    * @param $list_id
-    */
+     * Add subscriber to given list
+     *
+     * @param $subscriber_id
+     * @param $list_id
+     */
     public function addSubscriber($subscriberId, $listId)
     {
         $lists = $this->getListsForSubscriber((int) $subscriberId);
         foreach ($lists as $list) {
-            if ((int) $list["id"] === (int) $listId) {
-                throw new \Exception("Subscriber is already subscribed on that list");
+            if ((int) $list['id'] === (int) $listId) {
+                throw new \Exception('Subscriber is already subscribed on that list');
             }
         }
 
@@ -46,10 +43,11 @@ class ListModel
     }
 
     /**
-    * Subscribe an array of subscriber ids to given list
-    * @param $subscriber_ids
-    * @param $list_id
-    */
+     * Subscribe an array of subscriber ids to given list
+     *
+     * @param $subscriber_ids
+     * @param $list_id
+     */
     public function addSubscribers($subscriberIdArray, $listId)
     {
         if (!empty($subscriberIdArray)) {
@@ -69,10 +67,11 @@ class ListModel
     }
 
     /**
-    * Unsubscribe given subscriber from given list
-    * @param int $scrId The ID of the subscriber to remove from list
-    * @param int $listId The ID of the list to remove them from
-    */
+     * Unsubscribe given subscriber from given list
+     *
+     * @param int $scrId The ID of the subscriber to remove from list
+     * @param int $listId The ID of the list to remove them from
+     */
     public function removeSubscriber($listId, $scrId)
     {
         $result = $this->db->query(
@@ -93,10 +92,11 @@ class ListModel
     }
 
     /**
-    * Unsubscribe an array of subscriber ids from given list
-    * @param $subscriber_ids
-    * @param $list_id
-    */
+     * Unsubscribe an array of subscriber ids from given list
+     *
+     * @param $subscriber_ids
+     * @param $list_id
+     */
     public function removeSubscribers($subscriber_ids, $list_id)
     {
         if (!empty($subscriber_ids)) {
@@ -117,9 +117,10 @@ class ListModel
     }
 
     /**
-    * Get an array of all lists in the database
-    * @return array
-    */
+     * Get an array of all lists in the database
+     *
+     * @return array
+     */
     public function getAllLists()
     {
         //TODO: probably best to replace the subselect with a function parameter
@@ -134,11 +135,13 @@ class ListModel
     }
 
     /**
-    * Get all lists of a given owner, can also be used to check if the user is the owner of given list
-    * @param $owner_id
-    * @param int $id
-    * @return array
-    */
+     * Get all lists of a given owner, can also be used to check if the user is the owner of given list
+     *
+     * @param $owner_id
+     * @param int $id
+     *
+     * @return array
+     */
     public function getListsByOwner($owner_id, $id = 0)
     {
         $result = $this->db->query(
@@ -154,10 +157,12 @@ class ListModel
     }
 
     /**
-    * Get list with given id
-    * @param $id
-    * @return ListEntity
-    */
+     * Get list with given id
+     *
+     * @param $id
+     *
+     * @return ListEntity
+     */
     public function getListById($id)
     {
         $result = $this->db->query(
@@ -173,10 +178,12 @@ class ListModel
     }
 
     /**
-    * Get lists a given user is subscribed to
-    * @param $subscriber_id
-    * @return array
-    */
+     * Get lists a given user is subscribed to
+     *
+     * @param $subscriber_id
+     *
+     * @return array
+     */
     public function getListsForSubscriber($subscriber_id)
     {
         $result = $this->db->query(
@@ -196,14 +203,16 @@ class ListModel
     }
 
     /**
-    * Get subscribers subscribed to a given list
-    * @param $list
-    * @return array
-    */
+     * Get subscribers subscribed to a given list
+     *
+     * @param $list
+     *
+     * @return array
+     */
     public function getListSubscribers($list)
     {
         if (is_array($list)) {
-            $where = ' WHERE listid IN (' . join(',', $list) .')';
+            $where = ' WHERE listid IN (' . join(',', $list) . ')';
         } else {
             $where = sprintf(' WHERE listid = %d', $list);
         }

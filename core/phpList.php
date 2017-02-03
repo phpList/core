@@ -3,8 +3,8 @@ namespace phpList;
 
 use phpList\helper\Database;
 use phpList\helper\Language;
-use phpList\helper\Util;
 use phpList\helper\Timer;
+use phpList\helper\Util;
 
 class phpList
 {
@@ -15,10 +15,12 @@ class phpList
 
     /**
      * Default constructor
+     *
      * @param Config $config
      * @param Database $db
      * @param Language $lan
      * @param Util $util
+     *
      * @throws \Exception
      */
     public function __construct(Config $config, Database $db, Language $lan, Util $util)
@@ -48,18 +50,18 @@ class phpList
     }
 
     /**
-      * Function to end current round of statistics gathering and write to log if required
-      */
+     * Function to end current round of statistics gathering and write to log if required
+     */
     protected function endStats()
     {
         if ($this->config->get('statslog', false) !== false) {
             if ($fp = @fopen($this->config->get('statslog'), 'a')) {
                 @fwrite(
                     $fp,
-                    $this->db->getQueryCount()."\t".
-                    Timer::get('pagestats')->elapsed()."\t".
-                    $_SERVER['REQUEST_URI']."\t".
-                    $this->config->get('installation_name')."\n"
+                    $this->db->getQueryCount() . "\t" .
+                    Timer::get('pagestats')->elapsed() . "\t" .
+                    $_SERVER['REQUEST_URI'] . "\t" .
+                    $this->config->get('installation_name') . "\n"
                 );
             }
         }
@@ -74,7 +76,7 @@ class phpList
         if (!DEBUG) {
             ini_set(
                 'error_append_string',
-                'phpList version '.PHPLIST_VERSION
+                'phpList version ' . PHPLIST_VERSION
             );
             ini_set(
                 'error_prepend_string',
@@ -88,8 +90,8 @@ class phpList
     {
         # setup commandline
         if (php_sapi_name() == 'cli' && !strstr($GLOBALS['argv'][0], 'phpunit')) {
-            for ($i=0; $i<$_SERVER['argc']; $i++) {
-                $my_args = array();
+            for ($i = 0; $i < $_SERVER['argc']; $i++) {
+                $my_args = [];
                 if (preg_match('/(.*)=(.*)/', $_SERVER['argv'][$i], $my_args)) {
                     $_GET[$my_args[1]] = $my_args[2];
                     $_REQUEST[$my_args[1]] = $my_args[2];
@@ -137,7 +139,7 @@ class phpList
 
         ##todo: this needs more testing, and docs on how to set the Timezones in the DB
         if ($this->config->get('USE_CUSTOM_TIMEZONE')) {
-            $this->db->query('SET time_zone = "'.$this->config->get('SYSTEM_TIMEZONE').'"');
+            $this->db->query('SET time_zone = "' . $this->config->get('SYSTEM_TIMEZONE') . '"');
             ## verify that it applied correctly
             $tz = $this->db->query('SELECT @@session.time_zone')->fetch();
             if ($tz[0] != $this->config->get('SYSTEM_TIMEZONE')) {

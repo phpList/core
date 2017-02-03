@@ -1,7 +1,6 @@
 <?php
 namespace phpList;
 
-use phpList\Subscriber;
 use phpList\Entity\SubscriberEntity;
 use phpList\helper\StringClass;
 
@@ -15,13 +14,14 @@ class SubscriberManager
     /**
      * Used for looping over all usable subscriber attributes
      * for replacing in messages, urls etc. (@see fetchUrl)
+     *
      * @var array
      */
-    public static $DB_ATTRIBUTES = array(
+    public static $DB_ATTRIBUTES = [
         'id', 'email', 'confirmed', 'blacklisted', 'optedin', 'bouncecount',
         'entered', 'modified', 'uniqid', 'htmlemail', 'subscribepage', 'rssfrequency',
-        'extradata', 'foreignkey'
-    );
+        'extradata', 'foreignkey',
+    ];
 
     /**
      * @param Config $config
@@ -36,10 +36,12 @@ class SubscriberManager
     }
 
     /**
-    * Get subscriber by id
-    * @param int $id
-    * @return SubscriberEntity
-    */
+     * Get subscriber by id
+     *
+     * @param int $id
+     *
+     * @return SubscriberEntity
+     */
     public function getSubscriberById($id)
     {
         $result = $this->subscriberModel->getSubscriberById($id);
@@ -52,10 +54,12 @@ class SubscriberManager
     }
 
     /**
-    * Get subscriber by username
-    * @param int $id
-    * @return SubscriberEntity
-    */
+     * Get subscriber by username
+     *
+     * @param int $id
+     *
+     * @return SubscriberEntity
+     */
     public function getSubscriberByUsername($username)
     {
         $result = $this->subscriberModel->getSubscriberByUsername($username);
@@ -65,7 +69,9 @@ class SubscriberManager
 
     /**
      * Get subscriber by email address
+     *
      * @param string $email_address
+     *
      * @return SubscriberEntity
      */
     public function getSubscriberByEmailAddress($emailAddress)
@@ -75,7 +81,9 @@ class SubscriberManager
 
     /**
      * Get Subscriber object from foreign key value
+     *
      * @param string $fk
+     *
      * @return SubscriberEntity
      */
     public function getSubscriberByForeignKey($fk)
@@ -85,7 +93,9 @@ class SubscriberManager
 
     /**
      * Get Subscriber object from unique id value
+     *
      * @param string $unique_id
+     *
      * @return SubscriberEntity
      */
     public function getSubscriberByUniqueId($unique_id)
@@ -96,8 +106,10 @@ class SubscriberManager
 
     /**
      * Get a Subscriber by searching for a value in a given column
+     *
      * @param string $column
      * @param string $value
+     *
      * @return SubscriberEntity
      */
     private function getSubscriberBy($column, $value)
@@ -118,9 +130,12 @@ class SubscriberManager
 
     /**
      * Add new Subscriber to database
+     *
      * @param $emailAddress
      * @param $password
+     *
      * @return int $newScrId DB ID of the newly inserted subscriber
+     *
      * @throws \InvalidArgumentException
      */
     public function add(\phpList\Entity\SubscriberEntity $scrEntity)
@@ -136,8 +151,8 @@ class SubscriberManager
         }
 
         $entity = $this->subscriberModel->getSubscriberByEmail($scrEntity->emailAddress);
-        if ($entity["email"] !== null) {
-            throw new \Exception("Subscriber with that email already exists");
+        if ($entity['email'] !== null) {
+            throw new \Exception('Subscriber with that email already exists');
         }
 
         // Save subscriber to db
@@ -152,6 +167,7 @@ class SubscriberManager
     /**
      * Save Subscriber info to database
      * when the password has to be updates, use @updatePassword
+     *
      * @param SubscriberEntity $subscriber
      */
     public function update(SubscriberEntity $subscriber)
@@ -196,6 +212,7 @@ class SubscriberManager
 
     /**
      * Get the number of subscribers who's unique id has not been set
+     *
      * @return int
      */
     public function checkUniqueIds()
@@ -217,10 +234,11 @@ class SubscriberManager
         return $to_do;
     }
 
-
     /**
      * Create a SubscriberEntity object from database values
+     *
      * @param $array
+     *
      * @return SubscriberEntity
      */
     private function subscriberEntityFromArray(array $array)
@@ -261,6 +279,7 @@ class SubscriberManager
 
     /**
      * Load this subscribers attributes from the database
+     *
      * @param SubscriberEntity $subscriber
      */
     public function loadAttributes(SubscriberEntity &$scrEntity)
@@ -287,7 +306,9 @@ class SubscriberManager
 
     /**
      * Get all subscriber attributes
+     *
      * @param SubscriberEntity $subscriber
+     *
      * @return array
      */
     public function getCleanAttributes(SubscriberEntity $scrEntity)
@@ -296,7 +317,7 @@ class SubscriberManager
             $this->loadAttributes($scrEntity);
         }
 
-        $clean_attributes = array();
+        $clean_attributes = [];
         foreach ($scrEntity->getAttributes() as $key => $val) {
             ## in the help, we only list attributes with "strlen < 20"
             if (strlen($key) < 20) {
@@ -308,9 +329,11 @@ class SubscriberManager
 
     /**
      * Add an attribute to the database for this subscriber
+     *
      * @param entities\SubscriberEntity $subscriber
      * @param $attribute_id
      * @param string $value
+     *
      * @internal param int $id
      */
     public function addAttribute(SubscriberEntity $scrEntity, $attribute_id, $value)
@@ -330,6 +353,7 @@ class SubscriberManager
 
     /**
      * Add a history item for this subscriber
+     *
      * @param string $msg
      * @param string $detail
      * @param string $subscriber_id
@@ -340,7 +364,7 @@ class SubscriberManager
             $detail = $msg;
         }
 
-        $sysinfo = "";
+        $sysinfo = '';
         $sysarrays = array_merge($_ENV, $_SERVER);
         if (is_array($this->config->get('SUBSCRIBER_HISTORY_SYSTEMINFO'))) {
             foreach ($this->config->get('SUBSCRIBER_HISTORY_SYSTEMINFO') as $key) {
@@ -349,7 +373,7 @@ class SubscriberManager
                 }
             }
         } else {
-            $default = array('HTTP_USER_AGENT', 'HTTP_REFERER', 'REMOTE_ADDR', 'REQUEST_URI');
+            $default = ['HTTP_USER_AGENT', 'HTTP_REFERER', 'REMOTE_ADDR', 'REQUEST_URI'];
             foreach ($sysarrays as $key => $val) {
                 if (in_array($key, $default)) {
                     $sysinfo .= "\n" . strip_tags($key) . ' = ' . htmlspecialchars($val);
@@ -378,7 +402,9 @@ class SubscriberManager
 
     /**
      * Get the unique id from a subscriber
+     *
      * @param int $subscriber_id
+     *
      * @return int unique_id
      */
     public function getUniqueId($subscriber_id)

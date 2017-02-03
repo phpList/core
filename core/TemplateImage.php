@@ -5,7 +5,6 @@ use phpList\Entity\TemplateImageEntity;
 
 /**
  * Class TemplateImage
- * @package phpList
  */
 class TemplateImage
 {
@@ -20,6 +19,7 @@ class TemplateImage
 
     /**
      * Save image to database
+     *
      * @param entities\TemplateImageEntity $image
      */
     public function save(TemplateImageEntity &$image)
@@ -43,6 +43,7 @@ class TemplateImage
 
     /**
      * Remove this image from database
+     *
      * @param entities\TemplateImageEntity $image
      */
     public function delete(TemplateImageEntity $image)

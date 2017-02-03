@@ -1,9 +1,9 @@
 <?php
 namespace phpList;
 
+use phpList\Entity\AdminEntity;
 use phpList\helper\StringClass;
 use phpList\helper\Util;
-use phpList\Entity\AdminEntity;
 
 class Admin
 {
@@ -18,7 +18,9 @@ class Admin
 
     /**
      * Set the login name and return false if it alreay is in use
+     *
      * @param string $loginname
+     *
      * @return bool
      */
     public function setLoginname($loginname)
@@ -77,7 +79,9 @@ class Admin
 
     /**
      * Get an admin by id
+     *
      * @param int $id
+     *
      * @return Admin
      */
     public static function getAdmin($id)
@@ -97,12 +101,14 @@ class Admin
     /**
      * Get all admins from the database
      * If a string is provided, it will try to search for the admins matching the string
+     *
      * @param string $search
+     *
      * @return array Admin
      */
     public static function getAdmins($search = '')
     {
-        $admins = array();
+        $admins = [];
         $condition = '';
         if ($search != '') {
             $search = StringClass::sqlEscape($search);
@@ -117,7 +123,6 @@ class Admin
                 $condition
             )
         );
-
 
         while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
             $admins[] = Admin::adminFromArray($row);
@@ -155,6 +160,7 @@ class Admin
     /**
      * Update back to db
      * $modifiedby can be any string to see who has changed the record
+     *
      * @param string $modifiedby
      */
     public function update($modifiedby)
@@ -176,18 +182,19 @@ class Admin
         );
     }
 
-    /**
-     * Remove an admin from the database
-     * @param int $id
-     */
+/**
+ * Remove an admin from the database
+ *
+ * @param int $id
+ */
     //TODO: not sure if this should be static
     public static function delete($id)
     {
-        $tables = array(
+        $tables = [
             Config::getTableName('admin') => 'id',
             Config::getTableName('admin_attribute') => 'adminid',
-            Config::getTableName('admin_task') => 'adminid'
-        );
+            Config::getTableName('admin_task') => 'adminid',
+        ];
         phpList::DB()->deleteFromArray($tables, $id);
     }
 
@@ -214,6 +221,7 @@ class Admin
 
     /**
      * Add admin attributes to the database
+     *
      * @param array $attributes
      */
     public function addAttributes($attributes)
@@ -236,7 +244,7 @@ class Admin
     //TODO: Should we still use admin attributes?
     public function getAttributes()
     {
-        $attributes = array();
+        $attributes = [];
         $result = phpList::DB()->query(
             sprintf(
                 'SELECT * FROM %s AS adm_att
@@ -257,18 +265,20 @@ class Admin
 
     /**
      * Will check login credentials and return result array
+     *
      * @param $login string
      * @param $password string
+     *
      * @return array $result Keys: admin [object], error [string], result [bool]
      */
     public function validateLogin($plainPass, $username)
     {
-        $return = array(
+        $return = [
             'result' => false,
             // FIXME: Re-add translation / formatting logic to message
             'error' => 'Login failed',
-            'admin' => null
-        );
+            'admin' => null,
+        ];
 
         // Hash the supplied password for comparison
         $encPass = $this->pass->encrypt($plainPass);
@@ -321,6 +331,7 @@ class Admin
 
     /**
      * Send email with a random encrypted token.
+     *
      * @return bool
      */
     public function sendPasswordToken()
@@ -377,7 +388,9 @@ class Admin
 
     /**
      * Check if a form token is valid
+     *
      * @param string $token
+     *
      * @return bool
      */
     public function verifyToken($token)
@@ -397,7 +410,7 @@ class Admin
                 $this->id
             )
         );
-        $result->execute(array(':token' => $token));
+        $result->execute([':token' => $token]);
         return ($result->rowCount() > 0);
     }
 

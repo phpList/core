@@ -3,7 +3,6 @@ namespace phpList;
 
 /**
  * Class Attachment
- * @package phpList
  */
 class Attachment
 {
@@ -81,7 +80,9 @@ class Attachment
 
     /**
      * Get attachment with given id
+     *
      * @param $id
+     *
      * @return Attachment
      */
     public static function getAttachment($id)
@@ -99,7 +100,9 @@ class Attachment
 
     /**
      * Create an attachment object from db array
+     *
      * @param $array
+     *
      * @return Attachment
      */
     private static function attachmentFromArray($array)

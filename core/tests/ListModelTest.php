@@ -3,20 +3,15 @@
 namespace phpList\test;
 
 use phpList\Config;
-use phpList\helper\Database;
-use phpList\phpList;
-use phpList\Entity\ListEntity;
 use phpList\Model\ListModel;
 
 // Symfony namespaces
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class ListModelTest extends \PHPUnit_Framework_TestCase
 {
-
     public function setUp()
     {
         // Create Symfony DI service container object for use by other classes
@@ -44,12 +39,12 @@ class ListModelTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(false !== $result);
 
         // Return the IDs used for the next test to clean up
-        return array( 'listId' => $listId, 'scrId' => $scrId );
+        return [ 'listId' => $listId, 'scrId' => $scrId ];
     }
 
     /**
-    * @depends testAddSubscriber
-    */
+     * @depends testAddSubscriber
+     */
     public function testRemoveSubscriber($vars)
     {
         $result = $this->listModel->removeSubscriber($vars['listId'], $vars['scrId']);
