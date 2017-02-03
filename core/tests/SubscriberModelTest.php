@@ -29,7 +29,7 @@ class SubscriberModelTest extends \PHPUnit_Framework_TestCase
         $this->plainPass = 'easypassword';
 
         // Instantiate config object
-        $this->configFile = dirname(__FILE__) . '/../../config.ini';
+        $this->configFile = __DIR__ . '/../../config.ini.dist';
         $this->config = new Config($this->configFile);
 
         // Instantiate remaining classes

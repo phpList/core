@@ -1,6 +1,6 @@
 <?php
 
-// Include Symfony autoloader
+// Include Composer autoloader
 require_once('../vendor/autoload.php');
 
 // Set timezone to avoid warnings
