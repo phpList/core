@@ -29,6 +29,7 @@ class AdminTest extends \PHPUnit_Framework_TestCase
         // Load the service config file, which is in YAML format
         $loader->load('../services.yml');
         // Get objects from container
+        $this->container->setParameter('config.configfile', __DIR__ . '/../../config.ini.dist');
         $this->config = $this->container->get('Config');
 
         $this->admin = $this->container->get('Admin');
