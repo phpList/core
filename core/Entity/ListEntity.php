@@ -2,7 +2,8 @@
 
 namespace phpList\Entity;
 
-class ListEntity {
+class ListEntity
+{
 
     public $name;
     public $description;
@@ -41,7 +42,8 @@ class ListEntity {
     * Check if attributes have been loaded already
     * @return bool
     */
-    public function hasAttributes(){
+    public function hasAttributes()
+    {
         return $this->hasAttributes;
     }
 }

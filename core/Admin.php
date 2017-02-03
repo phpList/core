@@ -5,13 +5,12 @@ use phpList\helper\StringClass;
 use phpList\helper\Util;
 use phpList\Entity\AdminEntity;
 
-
 class Admin
 {
     public $id = 0;
     private $loginname;
 
-    public function __construct( $adminModel, $pass )
+    public function __construct($adminModel, $pass)
     {
         $this->adminModel = $adminModel;
         $this->pass = $pass;
@@ -262,7 +261,7 @@ class Admin
      * @param $password string
      * @return array $result Keys: admin [object], error [string], result [bool]
      */
-    function validateLogin( $plainPass, $username )
+    function validateLogin($plainPass, $username)
     {
         $return = array(
             'result' => false,
@@ -272,13 +271,13 @@ class Admin
         );
 
         // Hash the supplied password for comparison
-        $encPass = $this->pass->encrypt( $plainPass );
+        $encPass = $this->pass->encrypt($plainPass);
 
-        $result = $this->adminModel->getAdminByUsername( $username );
+        $result = $this->adminModel->getAdminByUsername($username);
 
         // If an admin was found with that username
-        if( $result ) {
-            $adminEntity = $this->adminEntityFromArray( $result );
+        if ($result) {
+            $adminEntity = $this->adminEntityFromArray($result);
         }
 
         /*
@@ -294,16 +293,16 @@ class Admin
             $result = Sql_Query_Params($query, array($login));
         }*/
 
-        if ( ! $result ) {
+        if (! $result) {
             $return['error'] = 'Admin not found'; // If admin not found
-        } elseif( $adminEntity->disabled ) {
+        } elseif ($adminEntity->disabled) {
             // FIXME: translation / formatting via s() removed
             $return['error'] = 'Your account has been disabled';
-        } elseif ( $encPass == $adminEntity->encPass ) {
+        } elseif ($encPass == $adminEntity->encPass) {
             $return['result'] = true;
             $return['error'] = '';
             $return['admin'] = $adminEntity;
-        } elseif ( $encPass != $adminEntity->encPass ) {
+        } elseif ($encPass != $adminEntity->encPass) {
             // FIXME: translation / formatting via s() removed
             $return['error'] = 'Incorrect password';
         } else {
@@ -313,10 +312,10 @@ class Admin
         return $return;
     }
 
-    private static function adminEntityFromArray( array $array )
+    private static function adminEntityFromArray(array $array)
     {
         // FIXME: Move this object instantiation to DI.
-        $adminEntity = new AdminEntity( $array['loginname'] );
+        $adminEntity = new AdminEntity($array['loginname']);
 
         $adminEntity->id = $array['id'];
         $adminEntity->namelc = $array['namelc'];
@@ -328,7 +327,7 @@ class Admin
         $adminEntity->passwordchanged = $array['passwordchanged'];
         $adminEntity->superuser = $array['superuser'];
         $adminEntity->disabled = $array['disabled'];
-        $adminEntity->privileges = unserialize( $array['privileges'] );
+        $adminEntity->privileges = unserialize($array['privileges']);
 
         return $adminEntity;
     }
@@ -415,16 +414,18 @@ class Admin
         return ($result->rowCount() > 0);
     }
     
-    public function checkIfTheTokenIsValid($token){
+    public function checkIfTheTokenIsValid($token)
+    {
         return $this->adminModel->checkIfTheTokenIsValid($token);
     }
 
-    public function setLoginToken($id){
+    public function setLoginToken($id)
+    {
         $this->adminModel->setLoginToken($id);
     }
 
-    public function getLoginToken($id){
+    public function getLoginToken($id)
+    {
         return $this->adminModel->getLoginToken($id);
     }
-    
 }

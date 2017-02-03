@@ -7,9 +7,9 @@ use phpList\Subscriber;
 
 class Util
 {
-    protected  $config;
-    protected  $logger;
-    protected  $db;
+    protected $config;
+    protected $logger;
+    protected $db;
 
     public function __construct(Config $config, Logger $logger, Database $db)
     {
@@ -96,7 +96,9 @@ class Util
         }
         $code = 500;
         if ($this->config->get('has_curl')) {
-            if ($this->config->get('VERBOSE')) $this->logger->notice('Checking curl ');
+            if ($this->config->get('VERBOSE')) {
+                $this->logger->notice('Checking curl ');
+            }
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $url);
             curl_setopt($curl, CURLOPT_TIMEOUT, 10);
@@ -110,7 +112,9 @@ class Util
             curl_exec($curl);
             $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         } elseif ($this->config->get('has_pear_http_request')) {
-            if ($this->config->get('VERBOSE')) $this->logger->notice('Checking PEAR ');
+            if ($this->config->get('VERBOSE')) {
+                $this->logger->notice('Checking PEAR ');
+            }
             @require_once "HTTP/Request.php";
             $headreq = new HTTP_Request($url, '' /*$request_parameters*/);
             $headreq->addHeader('User-Agent', 'phplist v' . PHPLIST_VERSION . ' (http://www.phplist.com)');
@@ -118,7 +122,9 @@ class Util
                 $code = $headreq->getResponseCode();
             }
         }
-        if ($this->config->get('VERBOSE')) $this->logger->notice('Checking ' . $url . ' => ' . $code);
+        if ($this->config->get('VERBOSE')) {
+            $this->logger->notice('Checking ' . $url . ' => ' . $code);
+        }
         return $code;
     }
 
@@ -197,7 +203,9 @@ class Util
                 return false;
             }
         } else {
-            if ($this->config->get('VERBOSE')) $this->logger->notice($url . ' was cached in database');
+            if ($this->config->get('VERBOSE')) {
+                $this->logger->notice($url . ' was cached in database');
+            }
             $content = $cache;
         }
 
@@ -210,7 +218,6 @@ class Util
                 'fetched' => time(),
                 'content' => $content,
             );
-
         }
 
         return $content;
@@ -218,7 +225,9 @@ class Util
 
     public function fetchUrlCurl($url, $request_parameters)
     {
-        if ($this->config->get('VERBOSE')) $this->logger->notice($url . ' fetching with curl ');
+        if ($this->config->get('VERBOSE')) {
+            $this->logger->notice($url . ' fetching with curl ');
+        }
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_TIMEOUT, $request_parameters['timeout']);
@@ -232,7 +241,9 @@ class Util
         $raw_result = curl_exec($curl);
         $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
-        if ($this->config->get('VERBOSE')) $this->logger->notice('fetched ' . $url . ' status ' . $status);
+        if ($this->config->get('VERBOSE')) {
+            $this->logger->notice('fetched ' . $url . ' status ' . $status);
+        }
         #var_dump($status); exit;
         return $raw_result;
     }
@@ -240,7 +251,9 @@ class Util
     //TODO: convert to using namespaces
     public function fetchUrlPear($url, $request_parameters)
     {
-        if ($this->config->get('VERBOSE')) $this->logger->notice($url . ' fetching with PEAR');
+        if ($this->config->get('VERBOSE')) {
+            $this->logger->notice($url . ' fetching with PEAR');
+        }
 
         if (0 && $this->config->get('has_pear_http_request')== 2) {
             $headreq = new HTTP_Request2($url, $request_parameters);
@@ -279,7 +292,6 @@ class Util
                 if ($remote_charset != 'UTF-8' && function_exists('iconv')) {
                     $content = iconv($remote_charset, 'UTF-8//TRANSLIT', $content);
                 }
-
             } else {
                 $this->logger->notice('Fetching ' . $url . ' failed on GET ' . $request->getResponseCode());
                 return 0;
@@ -292,18 +304,19 @@ class Util
         return $content;
     }
 
-    public function cleanUrl($url,$disallowed_params = array('PHPSESSID')) {
+    public function cleanUrl($url, $disallowed_params = array('PHPSESSID'))
+    {
         $parsed = @parse_url($url);
         $params = array();
         if (empty($parsed['query'])) {
             $parsed['query'] = '';
         }
         # hmm parse_str should take the delimiters as a parameter
-        if (strpos($parsed['query'],'&amp;')) {
-            $pairs = explode('&amp;',$parsed['query']);
+        if (strpos($parsed['query'], '&amp;')) {
+            $pairs = explode('&amp;', $parsed['query']);
             foreach ($pairs as $pair) {
-                if (strpos($pair,'=') !== false) {
-                    list($key,$val) = explode('=',$pair);
+                if (strpos($pair, '=') !== false) {
+                    list($key,$val) = explode('=', $pair);
                     $params[$key] = $val;
                 } else {
                     $params[$pair] = '';
@@ -322,12 +335,12 @@ class Util
         #  $uri .= $parsed['query'] ? '?'.$parsed['query'] : '';
         $query = '';
         foreach ($params as $key => $val) {
-            if (!in_array($key,$disallowed_params)) {
+            if (!in_array($key, $disallowed_params)) {
                 //0008980: Link Conversion for Click Tracking. no = will be added if key is empty.
                 $query .= $key . ( $val != "" ? '=' . $val . '&' : '&' );
             }
         }
-        $query = substr($query,0,-1);
+        $query = substr($query, 0, -1);
         $uri .= $query ? '?'.$query : '';
         #  if (!empty($params['p'])) {
         #    $uri .= '?p='.$params['p'];
@@ -336,12 +349,15 @@ class Util
         return $uri;
     }
 
-    public function parseQueryString($str) {
-        if (empty($str)) return array();
+    public function parseQueryString($str)
+    {
+        if (empty($str)) {
+            return array();
+        }
         $op = array();
         $pairs = explode('&', $str);
         foreach ($pairs as $pair) {
-            if (strpos($pair,'=') !== false) {
+            if (strpos($pair, '=') !== false) {
                 list($k, $v) = array_map('urldecode', explode('=', $pair));
                 $op[$k] = $v;
             } else {
@@ -351,7 +367,7 @@ class Util
         return $op;
     }
 
-    public function addAbsoluteResources($text,$url)
+    public function addAbsoluteResources($text, $url)
     {
         $parts = parse_url($url);
         $tags = array('src\s*=\s*','href\s*=\s*','action\s*=\s*','background\s*=\s*','@import\s+','@import\s+url\(');
@@ -364,26 +380,30 @@ class Util
                 $match = $foundtags[2][$i];
                 $tagmatch = $foundtags[1][$i];
                 #      print "$match<br/>";
-                if (preg_match("#^(http|javascript|https|ftp|mailto):#i",$match)) {
+                if (preg_match("#^(http|javascript|https|ftp|mailto):#i", $match)) {
                     # scheme exists, leave it alone
-                } elseif (preg_match("#\[.*\]#U",$match)) {
+                } elseif (preg_match("#\[.*\]#U", $match)) {
                     # placeholders used, leave alone as well
-                } elseif (preg_match("/^\//",$match)) {
+                } elseif (preg_match("/^\//", $match)) {
                     # starts with /
-                    $text = preg_replace('#'.preg_quote($foundtags[0][$i]).'#im',$tagmatch.'"'.$parts['scheme'].'://'.$parts['host'].$match.'"',$text,1);
+                    $text = preg_replace('#'.preg_quote($foundtags[0][$i]).'#im', $tagmatch.'"'.$parts['scheme'].'://'.$parts['host'].$match.'"', $text, 1);
                 } else {
                     $path = '';
                     if (isset($parts['path'])) {
                         $path = $parts['path'];
                     }
-                    if (!preg_match('#/$#',$path)) {
-                        $pathparts = explode('/',$path);
+                    if (!preg_match('#/$#', $path)) {
+                        $pathparts = explode('/', $path);
                         array_pop($pathparts);
-                        $path = join('/',$pathparts);
+                        $path = join('/', $pathparts);
                         $path .= '/';
                     }
-                    $text = preg_replace('#'.preg_quote($foundtags[0][$i]).'#im',
-                        $tagmatch.'"'.$parts['scheme'].'://'.$parts['host'].$path.$match.'"',$text,1);
+                    $text = preg_replace(
+                        '#'.preg_quote($foundtags[0][$i]).'#im',
+                        $tagmatch.'"'.$parts['scheme'].'://'.$parts['host'].$path.$match.'"',
+                        $text,
+                        1
+                    );
                 }
             }
         }
@@ -392,7 +412,8 @@ class Util
         return $text;
     }
 
-    public function timeDiff($time1,$time2) {
+    public function timeDiff($time1, $time2)
+    {
         if (!$time1 || !$time2) {
             return s('Unknown');
         }
@@ -404,8 +425,9 @@ class Util
         } else {
             $diff = $t1 - $t2;
         }
-        if ($diff == 0)
+        if ($diff == 0) {
             return s('very little time');
+        }
         return $this->secs2time($diff);
     }
 
@@ -419,28 +441,30 @@ class Util
      */
     public function unregister_GLOBALS()
     {
-        if ( !ini_get('register_globals') )
+        if (!ini_get('register_globals')) {
             return;
+        }
 
         ## https://mantis.phplist.com/view.php?id=16882
         ## no need to do this on commandline
-        if (php_sapi_name() == "cli")
+        if (php_sapi_name() == "cli") {
             return;
+        }
 
-        if ( isset($_REQUEST['GLOBALS']) )
+        if (isset($_REQUEST['GLOBALS'])) {
             die('GLOBALS overwrite attempt detected');
+        }
 
         // Variables that shouldn't be unset
         $noUnset = array('GLOBALS', '_GET', '_POST', '_COOKIE', '_REQUEST', '_SERVER', '_ENV', '_FILES');
 
         $input = array_merge($_GET, $_POST, $_COOKIE, $_SERVER, $_ENV, $_FILES, isset($_SESSION) && is_array($_SESSION) ? $_SESSION : array());
-        foreach ( $input as $k => $v ){
-            if ( !in_array($k, $noUnset) && isset($GLOBALS[$k]) ) {
-                $GLOBALS[$k] = NULL;
+        foreach ($input as $k => $v) {
+            if (!in_array($k, $noUnset) && isset($GLOBALS[$k])) {
+                $GLOBALS[$k] = null;
                 unset($GLOBALS[$k]);
             }
         }
-
     }
 
     //TODO: should be removed
@@ -452,9 +476,9 @@ class Util
             $_REQUEST = $this->addSlashesArray($_REQUEST);
             $_COOKIE = $this->addSlashesArray($_COOKIE);
             $this->config->setRunningConfig('NO_MAGIC_QUOTES', true);
-        }else{
+        } else {
             #magic quotes are deprecated, so try to switch off if possible
-            ini_set('magic_quotes_gpc','off');
+            ini_set('magic_quotes_gpc', 'off');
             $this->config->setRunningConfig('NO_MAGIC_QUOTES', false);
         }
     }
@@ -485,21 +509,23 @@ class Util
         return $string;
     }
 
-    public function parseCline() {
+    public function parseCline()
+    {
         $res = array();
         $cur = "";
         foreach ($GLOBALS['argv'] as $clinearg) {
-            if (substr($clinearg,0,1) == '-') {
-                $par = substr($clinearg,1,1);
-                $clinearg = substr($clinearg,2,strlen($clinearg));
+            if (substr($clinearg, 0, 1) == '-') {
+                $par = substr($clinearg, 1, 1);
+                $clinearg = substr($clinearg, 2, strlen($clinearg));
                 # $res[$par] = "";
                 $cur = strtolower($par);
                 $res[$cur] .= $clinearg;
             } elseif ($cur) {
-                if ($res[$cur])
+                if ($res[$cur]) {
                     $res[$cur] .= ' '.$clinearg;
-                else
+                } else {
                     $res[$cur] .= $clinearg;
+                }
             }
         }
         /*  ob_end_clean();
@@ -511,30 +537,32 @@ class Util
     }
 
 
-    public function clean2 ($value) {
+    public function clean2($value)
+    {
         $value = trim($value);
-        $value = preg_replace("/\r/","",$value);
-        $value = preg_replace("/\n/","",$value);
-        $value = str_replace('"',"&quot;",$value);
-        $value = str_replace("'","&rsquo;",$value);
-        $value = str_replace("`","&lsquo;",$value);
+        $value = preg_replace("/\r/", "", $value);
+        $value = preg_replace("/\n/", "", $value);
+        $value = str_replace('"', "&quot;", $value);
+        $value = str_replace("'", "&rsquo;", $value);
+        $value = str_replace("`", "&lsquo;", $value);
         $value = stripslashes($value);
         return $value;
     }
 
-    public function cleanEmail ($value) {
+    public function cleanEmail($value)
+    {
         $value = trim($value);
-        $value = preg_replace("/\r/","",$value);
-        $value = preg_replace("/\n/","",$value);
-        $value = preg_replace('/"/',"&quot;",$value);
-        $value = preg_replace('/^mailto:/i','',$value);
-        $value = str_replace('(','',$value);
-        $value = str_replace(')','',$value);
-        $value = preg_replace('/\.$/','',$value);
+        $value = preg_replace("/\r/", "", $value);
+        $value = preg_replace("/\n/", "", $value);
+        $value = preg_replace('/"/', "&quot;", $value);
+        $value = preg_replace('/^mailto:/i', '', $value);
+        $value = str_replace('(', '', $value);
+        $value = str_replace(')', '', $value);
+        $value = preg_replace('/\.$/', '', $value);
 
         ## these are allowed in emails
         //  $value = preg_replace("/'/","&rsquo;",$value);
-        $value = preg_replace("/`/","&lsquo;",$value);
+        $value = preg_replace("/`/", "&lsquo;", $value);
         $value = stripslashes($value);
         return $value;
     }
@@ -549,7 +577,9 @@ class Util
     public function isEmailBlacklisted($email, $immediate = true)
     {
         //TODO: @Michiel why is there a check on the blacklist table?
-        if (!$this->db->tableExists($this->config->getTableName('user_blacklist'))) return false;
+        if (!$this->db->tableExists($this->config->getTableName('user_blacklist'))) {
+            return false;
+        }
         if (!$immediate) {
             # allow 5 minutes to send the last message acknowledging unsubscription
             $gracetime = sprintf('%d', $this->config->get('BLACKLIST_GRACETIME'));
@@ -659,7 +689,9 @@ class Util
      */
     public function unBlackList($subscriber_id = 0, $admin_name = '')
     {
-        if (!$subscriber_id) return;
+        if (!$subscriber_id) {
+            return;
+        }
         $subscriber = Subscriber::getSubscriber($subscriber_id);
 
         $tables = array(
@@ -731,44 +763,45 @@ class Util
     }
 
 
-    public function addSubscriberStatistics($item = '', $amount, $list = 0) {
+    public function addSubscriberStatistics($item = '', $amount, $list = 0)
+    {
         switch ($this->config->get('STATS_INTERVAL')) {
             case 'monthly':
                 # mark everything as the first day of the month
-                $time = mktime(0,0,0,date('m'),1,date('Y'));
+                $time = mktime(0, 0, 0, date('m'), 1, date('Y'));
                 break;
             case 'weekly':
                 # mark everything for the first sunday of the week
-                $time = mktime(0,0,0,date('m'),date('d') - date('w'),date('Y'));
+                $time = mktime(0, 0, 0, date('m'), date('d') - date('w'), date('Y'));
                 break;
             case 'daily':
             default:
-                $time = mktime(0,0,0,date('m'),date('d'),date('Y'));
+                $time = mktime(0, 0, 0, date('m'), date('d'), date('Y'));
                 break;
         }
         $result = $this->db->query(sprintf(
-                'UPDATE %s
+            'UPDATE %s
                 SET value = value + %d
                 WHERE unixdate = "%s"
                 AND item = "%s"
                 AND listid = %d',
+            $this->config->getTableName('userstats'),
+            $amount,
+            $time,
+            $item,
+            $list
+        ));
+        if ($result->rowCount() <= 0) {
+            //TODO: why not use REPLACE INTO?
+            $this->db->query(sprintf(
+                'INSERT INTO %s (value, unixdate, item, listid)
+                    VALUES("%s", "%s", "%s", %d)',
                 $this->config->getTableName('userstats'),
                 $amount,
                 $time,
                 $item,
                 $list
             ));
-        if ($result->rowCount() <= 0) {
-            //TODO: why not use REPLACE INTO?
-            $this->db->query(sprintf(
-                    'INSERT INTO %s (value, unixdate, item, listid)
-                    VALUES("%s", "%s", "%s", %d)',
-                    $this->config->getTableName('userstats'),
-                    $amount,
-                    $time,
-                    $item,
-                    $list
-                ));
         }
     }
-} 
+}

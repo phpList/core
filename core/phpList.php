@@ -21,7 +21,7 @@ class phpList
      * @param Util $util
      * @throws \Exception
      */
-    public function __construct( Config $config, Database $db, Language $lan, Util $util )
+    public function __construct(Config $config, Database $db, Language $lan, Util $util)
     {
         $this->config = $config;
         $this->db = $db;
@@ -53,7 +53,7 @@ class phpList
     protected function endStats()
     {
         if ($this->config->get('statslog', false) !== false) {
-            if ($fp = @fopen($this->config->get('statslog'),'a')) {
+            if ($fp = @fopen($this->config->get('statslog'), 'a')) {
                 @fwrite(
                     $fp,
                     $this->db->getQueryCount()."\t".
@@ -67,17 +67,18 @@ class phpList
 
     protected function configDebug()
     {
-        if( !DEBUG ) {
-            error_reporting( 0 );
+        if (!DEBUG) {
+            error_reporting(0);
         }
 
-        if( !DEBUG ) {
-            ini_set('error_append_string',
-            'phpList version '.PHPLIST_VERSION
-        );
-        ini_set(
-            'error_prepend_string',
-            '<p class="error">Sorry a software error occurred:<br/>
+        if (!DEBUG) {
+            ini_set(
+                'error_append_string',
+                'phpList version '.PHPLIST_VERSION
+            );
+            ini_set(
+                'error_prepend_string',
+                '<p class="error">Sorry a software error occurred:<br/>
             Please <a href="http://mantis.phplist.com">report a bug</a> when reporting the bug, please include URL and the entire content of this page.<br/>'
             );
         }
@@ -89,7 +90,7 @@ class phpList
         if (php_sapi_name() == 'cli' && !strstr($GLOBALS['argv'][0], 'phpunit')) {
             for ($i=0; $i<$_SERVER['argc']; $i++) {
                 $my_args = array();
-                if (preg_match('/(.*)=(.*)/',$_SERVER['argv'][$i], $my_args)) {
+                if (preg_match('/(.*)=(.*)/', $_SERVER['argv'][$i], $my_args)) {
                     $_GET[$my_args[1]] = $my_args[2];
                     $_REQUEST[$my_args[1]] = $my_args[2];
                 }
@@ -102,11 +103,10 @@ class phpList
             if (!isset($cline['c']) || !is_file($cline['c'])) {
                 throw new \Exception('Cannot find config file');
             }
-
         } else {
             $this->config->setRunningConfig('commandline', false);
         }
-        $this->config->setRunningConfig('ajax', isset( $_GET['ajaxed']) );
+        $this->config->setRunningConfig('ajax', isset($_GET['ajaxed']));
 
         //TODO: maybe move everything command line to separate class
         $cline = null;
@@ -115,14 +115,15 @@ class phpList
         if (!isset($_SERVER['SERVER_NAME']) && PHP_SAPI != 'cli') {
             throw new \Exception('Warning: commandline only works well with the cli version of PHP');
         }
-        if (isset($_REQUEST['_SERVER'])) { return; }
+        if (isset($_REQUEST['_SERVER'])) {
+            return;
+        }
     }
 
     protected function configMailer()
     {
         //Using phpmailer?
-        if (
-            $this->config->get('PHPMAILER_PATH')
+        if ($this->config->get('PHPMAILER_PATH')
             && is_file($this->config->get('PHPMAILER_PATH'))
         ) {
             #require_once '/usr/share/php/libphp-phpmailer/class.phpmailer.php';
@@ -146,7 +147,7 @@ class phpList
                 #    print "Mysql timezone set to $tz[0]<br/>";
             }
             $phptz_set = date_default_timezone_set($this->config->get('SYSTEM_TIMEZONE'));
-            $phptz = date_default_timezone_get ();
+            $phptz = date_default_timezone_get();
             if (!$phptz_set || $phptz != $this->config->get('SYSTEM_TIMEZONE')) {
                 ## I18N doesn't exist yet, @@TODO need better error catching here
                 throw new \Exception('Error setting timezone in PHP');
@@ -158,12 +159,14 @@ class phpList
     }
 
     protected function configPageroot()
-    {        $this_doc = getenv('REQUEST_URI');
-        if (preg_match('#(.*?)/admin?$#i',$this_doc,$regs)) {
+    {
+        $this_doc = getenv('REQUEST_URI');
+        if (preg_match('#(.*?)/admin?$#i', $this_doc, $regs)) {
             $check_pageroot = $this->config->get('PAGEROOT');
-            $check_pageroot = preg_replace('#/$#','',$check_pageroot);
-            if ($check_pageroot != $regs[1] && $this->config->get('WARN_ABOUT_PHP_SETTINGS'))
-            throw new \Exception($this->lan->get('The pageroot in your config does not match the current locationCheck your config file.'));
+            $check_pageroot = preg_replace('#/$#', '', $check_pageroot);
+            if ($check_pageroot != $regs[1] && $this->config->get('WARN_ABOUT_PHP_SETTINGS')) {
+                throw new \Exception($this->lan->get('The pageroot in your config does not match the current locationCheck your config file.'));
+            }
         }
     }
 
@@ -179,11 +182,11 @@ class phpList
         if ($this->config->get('ALLOW_ATTACHMENTS')
         && $this->config->get('WARN_ABOUT_PHP_SETTINGS')
         && (!is_dir($this->config->get('ATTACHMENT_REPOSITORY'))
-        || !is_writable ($this->config->get('ATTACHMENT_REPOSITORY'))
+        || !is_writable($this->config->get('ATTACHMENT_REPOSITORY'))
         )
         ) {
             $tmperror = '';
-            if(ini_get('open_basedir')) {
+            if (ini_get('open_basedir')) {
                 $tmperror = $this->lan->get('open_basedir restrictions are in effect, which may be the cause of the next warning: ');
             }
             $tmperror .= $this->lan->get('The attachment repository does not exist or is not writable');

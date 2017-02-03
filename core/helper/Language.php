@@ -85,8 +85,8 @@ class Language
             $d = opendir($landir);
             while ($lancode = readdir($d)) {
                 if (!in_array($landir, array_keys($this->_languages)) && is_dir($landir . '/' . $lancode) && is_file(
-                        $landir . '/' . $lancode . '/language_info'
-                    )
+                    $landir . '/' . $lancode . '/language_info'
+                )
                 ) {
                     $lan_info = file_get_contents($landir . '/' . $lancode . '/language_info');
                     $lines = explode("\n", $lan_info);
@@ -188,9 +188,9 @@ class Language
             return '';
         }
         $st = $this->db->prepare(sprintf(
-                'select translation from %s where original = ? and lan = ?',
-                $this->config->getTableName('i18n')
-            ));
+            'select translation from %s where original = ? and lan = ?',
+            $this->config->getTableName('i18n')
+        ));
         $st->bindValue(1, $text);
         $st->bindValue(2, $this->language);
         $st->execute();
@@ -224,7 +224,6 @@ class Language
             } else*/ {
                 $title = $regs[1] . ' - ' . $page;
             }
-
         } elseif (!empty($page_title)) {
             $title = $page_title;
         } else {

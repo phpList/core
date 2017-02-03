@@ -34,7 +34,9 @@ class QueueProcessor
     private $counters = array();
     private $original_num_per_batch;
 
-    function __construct(){}
+    function __construct()
+    {
+    }
 
     /**
      * Process campaign queue
@@ -119,7 +121,9 @@ class QueueProcessor
                     phpList::log()->debug(s('Sending in batches of %d campaigns', $this->original_num_per_batch), 0, ['page' => 'porcessqueue']);
                 }
                 $diff = $this->original_num_per_batch - $this->num_per_batch;
-                if ($diff < 0) $diff = 0;
+                if ($diff < 0) {
+                    $diff = 0;
+                }
                 phpList::log()->info(
                     s(
                         'This batch will be %d emails, because in the last %d seconds %d emails were sent',
@@ -212,7 +216,7 @@ class QueueProcessor
             $this->counters['processed_subscribers_for_campaign ' . $campaign->id] = 0;
 
 
-            if ($output_speed_stats){
+            if ($output_speed_stats) {
                 phpList::log()->debug('start send ' . $campaign->id, ['page' => 'porcessqueue']);
             }
 
@@ -254,12 +258,11 @@ class QueueProcessor
 
                 # mark the campaign as suspended
                 phpList::DB()->query(sprintf(
-                        'UPDATE %s SET status = "suspended"
+                    'UPDATE %s SET status = "suspended"
                         WHERE id = %d',
-                        Config::getTableName('message'),
-                        $campaign->id
-                    )
-                );
+                    Config::getTableName('message'),
+                    $campaign->id
+                ));
                 phpList::log()->debug(s('Error loading campaign, please check the eventlog for details'), ['page' => 'porcessqueue']);
                 if (Config::MANUALLY_PROCESS_QUEUE) {
                     # wait a little, otherwise the campaign won't show
@@ -268,7 +271,7 @@ class QueueProcessor
                 continue;
             }
 
-            if ($output_speed_stats){
+            if ($output_speed_stats) {
                 phpList::log()->debug('campaign data loaded ', ['page' => 'porcessqueue']);
             }
             //if (Config::VERBOSE) {
@@ -316,9 +319,9 @@ class QueueProcessor
             $find_subscriber_start = Timer::get('process_queue')->elapsed(true);
 
             $attribute_count = phpList::DB()->query(sprintf(
-                    'SELECT COUNT(*) FROM %s',
-                    Config::getTableName('attribute')
-                ))->fetchColumn(0);
+                'SELECT COUNT(*) FROM %s',
+                Config::getTableName('attribute')
+            ))->fetchColumn(0);
 
             $subscriber_attribute_query = ''; #16552
             if ($subscriberselection && $attribute_count) {
@@ -337,9 +340,9 @@ class QueueProcessor
                     $subscriber_list .= $fetched_subscriber . ",";
                 }
                 $subscriber_list = substr($subscriber_list, 0, -1);
-                if ($subscriber_list){
+                if ($subscriber_list) {
                     $subscriber_attribute_query = " AND listuser.userid IN ($subscriber_list)";
-                }else {
+                } else {
                     if (!$this->reload) {
                         phpList::log()->debug(s('No subscribers apply for attributes'), ['page' => 'porcessqueue']);
                     }
@@ -349,7 +352,8 @@ class QueueProcessor
                     if (!$this->nothingtodo) {
                         phpList::log()->debug(s('Finished this run'), ['page' => 'porcessqueue']);
                         phpList::log()->info(
-                            s('%s of %s done',
+                            s(
+                                '%s of %s done',
                                 $this->sent,
                                 $this->counters['total_subscribers_for_campaign ' . $this->current_campaign->id]
                             ),
@@ -369,7 +373,7 @@ class QueueProcessor
                     return true;
                 }
             }
-            if ($this->script_stage < 3){
+            if ($this->script_stage < 3) {
                 $this->script_stage = 3; # we know the subscribers by attribute
             }
 
@@ -421,7 +425,6 @@ class QueueProcessor
                     /*if (Config::VERBOSE) {
                         phpList::log()->debug('Exclude query ' . phpList::DB()->getLastQuery(), ['page' => 'porcessqueue']);
                     }*/
-
                 }
             }
 
@@ -442,7 +445,6 @@ class QueueProcessor
                 $subscriber_attribute_query);*/
                 $queued = 0;
             if (Config::MESSAGEQUEUE_PREPARE) {
-
                 $subscriberids_query = sprintf(
                     'SELECT userid FROM %s
                     WHERE messageid = %d
@@ -460,12 +462,12 @@ class QueueProcessor
             if ($subscriberids_result <= 0) {
                 ## remove pre-queued campaigns, otherwise they wouldn't go out
                 $removed = phpList::DB()->query(sprintf(
-                        'DELETE FROM %s
+                    'DELETE FROM %s
                         WHERE messageid = %d
                         AND status = "todo"',
-                        Config::getTableName('usermessage'),
-                        $campaign->id
-                    ))->rowCount();
+                    Config::getTableName('usermessage'),
+                    $campaign->id
+                ))->rowCount();
 
                 if ($removed > 0) {
                     phpList::log()->info('removed pre-queued subscribers ' . $removed, ['page' => 'processqueue']);
@@ -561,9 +563,9 @@ class QueueProcessor
                     if (Config::VERBOSE) {
                         phpList::log()->debug($this->num_per_batch . '  query -> ' . $subscriberids_query, ['page' => 'porcessqueue']);
                     }
-                    try{
+                    try {
                         $subscriberids_result = phpList::DB()->query($subscriberids_query);
-                    }catch (\PDOException $e){
+                    } catch (\PDOException $e) {
                         $this->queueProcessError($e->getMessage());
                     }
                 } else {
@@ -585,9 +587,11 @@ class QueueProcessor
                 }
 
                 $subscriber = Subscriber::getSubscriber($subscriberdata[0]); # id of the subscriber
-                if ($output_speed_stats) phpList::log()->info(
-                    '-----------------------------------' . "\n" . 'start process subscriber ' . $subscriber->id
-                );
+                if ($output_speed_stats) {
+                    phpList::log()->info(
+                        '-----------------------------------' . "\n" . 'start process subscriber ' . $subscriber->id
+                    );
+                }
                 $some = 1;
                 set_time_limit(120);
 
@@ -625,19 +629,19 @@ class QueueProcessor
                 #Sql_Query_Params(sprintf('delete from %s where userid = ? and messageid = ? and status = "active"',$tables['usermessage']), array($subscriberid,$campaign->id));
 
                 # check whether the subscriber has already received the campaign
-                if ($output_speed_stats){
+                if ($output_speed_stats) {
                     phpList::log()->debug('verify campaign can go out to ' . $subscriber->id, ['page' => 'porcessqueue']);
                 }
 
                 $um = phpList::DB()->query(sprintf(
-                        'SELECT entered FROM %s
+                    'SELECT entered FROM %s
                         WHERE userid = %d
                         AND messageid = %d
                         AND status != "todo"',
-                        Config::getTableName('usermessage'),
-                        $subscriber->id,
-                        $campaign->id
-                    ));
+                    Config::getTableName('usermessage'),
+                    $subscriber->id,
+                    $campaign->id
+                ));
                 if ($um->rowCount() <= 0) {
                     ## mark this campaign that we're working on it, so that no other process will take it
                     ## between two lines ago and here, should hopefully be quick enough
@@ -647,7 +651,7 @@ class QueueProcessor
                         break;
                     }*/
 
-                    if ($this->script_stage < 4){
+                    if ($this->script_stage < 4) {
                         $this->script_stage = 4; # we know a subscriber to send to
                     }
                     $somesubscribers = 1;
@@ -765,10 +769,11 @@ class QueueProcessor
                                 }
                                 */
                                 if (!$throttled) {
-                                    if (Config::VERBOSE)
+                                    if (Config::VERBOSE) {
                                         phpList::log()->info(
                                             s('Sending') . ' ' . $campaign->id . ' ' . s('to') . ' ' . $subscriber->getEmailAddress()
                                         );
+                                    }
                                     Timer::start('email_sent_timer');
                                     $this->counters['batch_count']++;
                                     $success = PrepareCampaign::sendEmail($campaign, $subscriber);
@@ -807,24 +812,24 @@ class QueueProcessor
                                 ## might be a cause for duplicated emails
                                 if (Config::MESSAGEQUEUE_PREPARE) {
                                     phpList::DB()->query(sprintf(
-                                            'UPDATE %s SET status = "todo"
+                                        'UPDATE %s SET status = "todo"
                                             WHERE userid = %d
                                             AND messageid = %d
                                             AND status = "active"',
-                                            Config::getTableName('usermessage'),
-                                            $subscriber->id,
-                                            $campaign->id
-                                        ));
+                                        Config::getTableName('usermessage'),
+                                        $subscriber->id,
+                                        $campaign->id
+                                    ));
                                 } else {
                                     phpList::DB()->query(sprintf(
-                                            'DELETE FROM %s
+                                        'DELETE FROM %s
                                             WHERE userid = %d
                                             AND messageid = %d
                                             AND status = "active"',
-                                            Config::getTableName('usermessage'),
-                                            $subscriber->id,
-                                            $campaign->id
-                                        ));
+                                        Config::getTableName('usermessage'),
+                                        $subscriber->id,
+                                        $campaign->id
+                                    ));
                                 }
                                 if (Config::VERBOSE) {
                                     phpList::log()->debug(s('Failed sending to') . ' ' . $subscriber->getEmailAddress(), ['page' => 'porcessqueue']);
@@ -910,10 +915,11 @@ class QueueProcessor
                         # it is unlikely this is every processed.
 
                         if (!$subscriber->confirmed || $subscriber->disabled) {
-                            if (Config::VERBOSE)
+                            if (Config::VERBOSE) {
                                 phpList::log()->info(
                                     s('Unconfirmed subscriber') . ': ' . $subscriber->id . ' ' . $subscriber->getEmailAddress() . ' ' . $subscriber->id
                                 );
+                            }
                             $this->unconfirmed++;
                             # when running from commandline we mark it as sent, otherwise we might get
                             # stuck when using batch processing
@@ -1002,9 +1008,11 @@ class QueueProcessor
                 );
                 $campaign->setDataItem('last msg sent', time());
                 #$campaign->setDataItem('totaltime', $this->timer->elapsed(true));
-                if ($output_speed_stats) phpList::log()->info(
-                    'end process subscriber ' . "\n" . '-----------------------------------' . "\n" . $subscriber->id
-                );
+                if ($output_speed_stats) {
+                    phpList::log()->info(
+                        'end process subscriber ' . "\n" . '-----------------------------------' . "\n" . $subscriber->id
+                    );
+                }
             }
             $this->processed = $this->notsent + $this->sent + $this->invalid + $this->unconfirmed + $this->cannotsend + $this->failed_sent;
             phpList::log()->info(
@@ -1018,8 +1026,9 @@ class QueueProcessor
 
             if (($this->counters['total_subscribers_for_campaign ' . $campaign->id] - $this->sent) <= 0 || $stop_sending) {
                 # this campaign is done
-                if (!$somesubscribers)
+                if (!$somesubscribers) {
                     phpList::log()->debug(s('Hmmm, No subscribers found to send to'), ['page' => 'porcessqueue']);
+                }
                 if (!$this->failed_sent) {
                     $campaign->repeatCampaign();
                     $campaign->setStatus('sent');
@@ -1062,14 +1071,14 @@ class QueueProcessor
                     # we're done with $campaign->id, so get rid of the cache
                     unset($cache->linktrack_sent_cache[$campaign->id]);
                 }
-
             } else {
-                if ($this->script_stage < 5)
+                if ($this->script_stage < 5) {
                     $this->script_stage = 5;
+                }
             }
         }
 
-        if (!$num_campaigns){
+        if (!$num_campaigns) {
             $this->script_stage = 6; # we are done
         }
         # shutdown will take care of reporting
@@ -1237,11 +1246,12 @@ class QueueProcessor
      * @param string $email
      * @return bool
      */
-    private function sendEmailTest ($campaign_id, $email) {
+    private function sendEmailTest($campaign_id, $email)
+    {
         $campaign = s('(test)') . ' ' . s('Would have sent') . ' ' . $campaign_id . s('to') . ' ' . $email;
-        if (Config::VERBOSE){
+        if (Config::VERBOSE) {
             phpList::log()->debug($campaign, ['page' => 'porcessqueue']);
-        }else{
+        } else {
             phpList::log()->addToReport($campaign);
         }
         // fake a bit of a delay,
@@ -1254,7 +1264,8 @@ class QueueProcessor
      * Send statistics to phplist server
      * @param Campaign $campaign
      */
-    private function sendCampaignStats($campaign) {
+    private function sendCampaignStats($campaign)
+    {
         $msg = '';
         if (Config::NOSTATSCOLLECTION) {
             return;
@@ -1282,7 +1293,7 @@ class QueueProcessor
                 $msg .= "\n".$item.' => '.$campaign->$item;
             }
             $mailto = Config::get('stats_collection_address', 'phplist-stats@phplist.com');
-            mail($mailto,'PHPlist stats',$msg);
+            mail($mailto, 'PHPlist stats', $msg);
         }
     }
 
@@ -1307,7 +1318,7 @@ class QueueProcessor
         } else {
             $msgperhour = s('Calculating');
         }
-        if ($this->sent)
+        if ($this->sent) {
             phpList::log()->debug(
                 sprintf(
                     '%d %s %01.2f %s (%d %s)',
@@ -1320,6 +1331,7 @@ class QueueProcessor
                 ),
                 ['page' => 'processqueue']
             );
+        }
         if ($this->invalid > 0) {
             phpList::log()->debug(s('%d invalid email addresses', $this->invalid), ['page' => 'porcessqueue']);
         }
@@ -1350,7 +1362,8 @@ class QueueProcessor
         if (!$this->nothingtodo) {
             phpList::log()->info(s('Finished this run'), ['page' => 'progress']);
             phpList::log()->info(
-                s('%s of %s done',
+                s(
+                    '%s of %s done',
                     $this->sent,
                     $this->counters['total_subscribers_for_campaign ' . $this->current_campaign->id]
                 ),
@@ -1425,5 +1438,4 @@ class QueueProcessor
         }
         exit;
     }
-
-} 
+}

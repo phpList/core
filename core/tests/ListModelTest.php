@@ -14,20 +14,21 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
-class ListModelTest extends \PHPUnit_Framework_TestCase {
+class ListModelTest extends \PHPUnit_Framework_TestCase
+{
 
     public function setUp()
     {
         // Create Symfony DI service container object for use by other classes
         $this->container = new ContainerBuilder();
         // Create new Symfony file loader to handle the YAML service config file
-        $loader = new YamlFileLoader( $this->container, new FileLocator(__DIR__) );
+        $loader = new YamlFileLoader($this->container, new FileLocator(__DIR__));
         // Load the service config file, which is in YAML format
-        $loader->load( '../services.yml' );
+        $loader->load('../services.yml');
         // Set necessary config class parameter
-        $this->container->setParameter( 'config.configfile', '/var/www/pl4/config.ini' );
+        $this->container->setParameter('config.configfile', '/var/www/pl4/config.ini');
         // Get objects from container
-        $this->listModel = $this->container->get( 'ListModel' );
+        $this->listModel = $this->container->get('ListModel');
     }
 
     public function testAddSubscriber()
@@ -37,10 +38,10 @@ class ListModelTest extends \PHPUnit_Framework_TestCase {
         $listId = 1;
 
         // Add the subscriber
-        $result = $this->listModel->addSubscriber( $scrId, $listId );
+        $result = $this->listModel->addSubscriber($scrId, $listId);
 
         // Check that the subscriber was added without error
-        $this->assertTrue( false !== $result );
+        $this->assertTrue(false !== $result);
 
         // Return the IDs used for the next test to clean up
         return array( 'listId' => $listId, 'scrId' => $scrId );
@@ -49,12 +50,12 @@ class ListModelTest extends \PHPUnit_Framework_TestCase {
     /**
     * @depends testAddSubscriber
     */
-    public function testRemoveSubscriber( $vars )
+    public function testRemoveSubscriber($vars)
     {
-        $result = $this->listModel->removeSubscriber( $vars['listId'], $vars['scrId'] );
+        $result = $this->listModel->removeSubscriber($vars['listId'], $vars['scrId']);
 
         // Check that the subscriber was deleted without error
-        $this->assertTrue( false !== $result );
+        $this->assertTrue(false !== $result);
     }
 
     // public function testAdd()

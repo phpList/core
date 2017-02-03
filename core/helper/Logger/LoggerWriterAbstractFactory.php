@@ -2,7 +2,6 @@
 
 namespace phpList\helper\Logger;
 
-
 use phpList\Config;
 
 class LoggerWriterAbstractFactory
@@ -24,8 +23,7 @@ class LoggerWriterAbstractFactory
 
     public function getLoggerWriter()
     {
-        switch ($this->config->get("LOG_WRITER")){
-
+        switch ($this->config->get("LOG_WRITER")) {
             case $this->fileLogger:
                 return $this->makeFileLoggerWriter();
                 break;
@@ -37,7 +35,6 @@ class LoggerWriterAbstractFactory
             default:
                 throw new NotSuchWriterException();
                 break;
-
         }
     }
 
@@ -50,5 +47,4 @@ class LoggerWriterAbstractFactory
     {
         return new DatabaseWriter($this->config);
     }
-
 }

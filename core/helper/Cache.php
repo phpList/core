@@ -5,7 +5,8 @@ use phpList\Campaign;
 use phpList\Config;
 use phpList\phpList;
 
-class Cache {
+class Cache
+{
     /**
      * @var Cache $_instance
      */
@@ -16,7 +17,9 @@ class Cache {
     public $linktrack_sent_cache = array();
     public $linktrack_cache = array();
 
-    private function __construct(){}
+    private function __construct()
+    {
+    }
 
     public static function instance()
     {
@@ -48,7 +51,7 @@ class Cache {
      */
     public static function &getCachedCampaign($campaign)
     {
-        if(!isset(Cache::$_instance->campaign_cache[$campaign->id])){
+        if (!isset(Cache::$_instance->campaign_cache[$campaign->id])) {
             Cache::$_instance->campaign_cache[$campaign->id] = $campaign;
         }
         return Cache::$_instance->campaign_cache[$campaign->id];
@@ -59,7 +62,8 @@ class Cache {
      * @param Campaign $campaign
      * @return bool
      */
-    public static function isCampaignCached($campaign){
+    public static function isCampaignCached($campaign)
+    {
         return isset(Cache::$_instance->campaign_cache[$campaign->id]);
     }
 
@@ -77,24 +81,24 @@ class Cache {
     public static function getPageCache($url, $lastmodified = 0)
     {
         $result = phpList::DB()->query(sprintf(
-                'SELECT content FROM %s
+            'SELECT content FROM %s
                 WHERE url = "%s"
                 AND lastmodified >= %d',
-                Config::getTableName('urlcache'),
-                $url,
-                $lastmodified
-            ));
+            Config::getTableName('urlcache'),
+            $url,
+            $lastmodified
+        ));
         return $result->fetchColumn(0);
     }
 
     public static function getPageCacheLastModified($url)
     {
         $result = phpList::DB()->query(sprintf(
-                'SELECT lastmodified FROM %s
+            'SELECT lastmodified FROM %s
                 WHERE url = "%s"',
-                Config::getTableName('urlcache'),
-                $url
-            ));
+            Config::getTableName('urlcache'),
+            $url
+        ));
         return $result->fetchColumn(0);
     }
 
@@ -102,19 +106,19 @@ class Cache {
     {
         #  if (DEBUG) return;
         phpList::DB()->query(sprintf(
-                'DELETE FROM %s
+            'DELETE FROM %s
                 WHERE url = "%s"',
-                Config::getTableName('urlcache'),
-                $url
-            ));
+            Config::getTableName('urlcache'),
+            $url
+        ));
         phpList::DB()->query(sprintf(
-                'INSERT INTO %s (url,lastmodified,added,content)
+            'INSERT INTO %s (url,lastmodified,added,content)
                 VALUES("%s",%d,CURRENT_TIMESTAMP,"%s")',
-                Config::getTableName('urlcache'),
-                $url,
-                $lastmodified,
-                addslashes($content)
-            ));
+            Config::getTableName('urlcache'),
+            $url,
+            $lastmodified,
+            addslashes($content)
+        ));
     }
 
     public static function clearPageCache()
@@ -122,26 +126,29 @@ class Cache {
         phpList::DB()->query(sprintf(
             'DELETE FROM %s',
             Config::getTableName('urlcache')
-            ));
+        ));
     }
 
-    public static function flushClickTrackCache() {
-        if (count(Cache::$_instance->linktrack_sent_cache) == 0) return;
+    public static function flushClickTrackCache()
+    {
+        if (count(Cache::$_instance->linktrack_sent_cache) == 0) {
+            return;
+        }
         foreach (Cache::$_instance->linktrack_sent_cache as $mid => $numsent) {
             foreach ($numsent as $fwdid => $fwdtotal) {
-                if (Config::VERBOSE){
+                if (Config::VERBOSE) {
                     phpList::log()->debug("Flushing clicktrack stats for $mid: $fwdid => $fwdtotal", ['page' => 'cache']);
                 }
                 phpList::DB()->query(sprintf(
-                        'UPDATE %s SET total = %d
+                    'UPDATE %s SET total = %d
                         WHERE messageid = %d
                         AND forwardid = %d',
-                        Config::getTableName('linktrack_ml'),
-                        $fwdtotal,
-                        $mid,
-                        $fwdid
-                    ));
+                    Config::getTableName('linktrack_ml'),
+                    $fwdtotal,
+                    $mid,
+                    $fwdid
+                ));
             }
         }
     }
-} 
+}

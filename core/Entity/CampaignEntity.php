@@ -6,8 +6,8 @@
 
 namespace phpList\Entity;
 
-
-class CampaignEntity {
+class CampaignEntity
+{
     public $id = 0;
     public $subject;
     public $fromfield;
@@ -66,7 +66,9 @@ class CampaignEntity {
 
     public $lists = array();
 
-    public function __construct(){}
+    public function __construct()
+    {
+    }
 
 
     /**
@@ -88,7 +90,7 @@ class CampaignEntity {
     {
         if (isset($this->campaigndata[$item])) {
             return $this->campaigndata[$item];
-        }else{
+        } else {
             return null;
         }
     }
@@ -113,4 +115,4 @@ class CampaignEntity {
     {
         $this->campaigndata[$name] = $value;
     }
-} 
+}

@@ -9,9 +9,9 @@ require_once 'vendor/autoload.php';
 // Create Symfony DI service container object for use by other classes
 $container = new ContainerBuilder();
 // Create new Symfony file loader to handle the YAML service config file
-$loader = new YamlFileLoader( $container, new FileLocator(__DIR__) );
+$loader = new YamlFileLoader($container, new FileLocator(__DIR__));
 // Load the service config file, which is in YAML format
-$loader->load( 'core/services.yml' );
+$loader->load('core/services.yml');
 
 //Handle some dynamicly generated include files
 if (isset($_SERVER['ConfigFile']) && is_file($_SERVER['ConfigFile'])) {
@@ -24,7 +24,7 @@ if (isset($_SERVER['ConfigFile']) && is_file($_SERVER['ConfigFile'])) {
 
 // Set service parameters for the configuration file
 // These service parameters will be used as constructor arguments for config{}
-$container->setParameter( 'config.configfile', $configfile );
+$container->setParameter('config.configfile', $configfile);
 
 //load phpList core
-$phpList = $container->get( 'phpList' );
+$phpList = $container->get('phpList');

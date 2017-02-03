@@ -49,7 +49,8 @@ class Database
      * @param $query
      * @return \PDOStatement
      */
-    public function prepare($query){
+    public function prepare($query)
+    {
         return $this->db->prepare($query);
     }
 
@@ -129,8 +130,8 @@ class Database
     {
         ## table is the full table name including the prefix
         if (!empty($_GET['pi']) || $refresh || !isset($_SESSION) || !isset($_SESSION['dbtables']) || !is_array(
-                $_SESSION['dbtables']
-            )
+            $_SESSION['dbtables']
+        )
         ) {
             $_SESSION['dbtables'] = array();
 
@@ -259,7 +260,7 @@ class Database
     public function getLastQuery()
     {
         // Count the number of queries in the log
-        $count = count( $this->query_log );
+        $count = count($this->query_log);
         // Account for the fact array indexes start counting at 0, not 1
         $number = $count - 1;
         // Return the last query string that was executed
@@ -285,7 +286,7 @@ class Database
         $query = 'DELETE FROM %s WHERE %s = ' . ((is_string($id)) ? '"%s"' : '%d');
         // Instantiate results var for collecting query outcomes
         $results = array();
-        foreach($tables as $table => $column){
+        foreach ($tables as $table => $column) {
             $results [] = $this->db->query(sprintf($query, $table, $column, $id));
         }
         

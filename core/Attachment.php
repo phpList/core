@@ -127,5 +127,4 @@ class Attachment
             @unlink($this->remotefile);
         }
     }
-
-} 
+}

@@ -83,13 +83,10 @@ class phpListMailer extends \PHPMailer
 
         if ($this->inBlast && Config::PHPMAILER_BLASTHOST != '' && is_numeric(Config::PHPMAILER_BLASTPORT)) {
             $this->checkSMTP(Config::PHPMAILER_BLASTHOST, Config::PHPMAILER_BLASTPORT);
-
         } elseif (!$this->inBlast && Config::PHPMAILER_USE_TESTHOST) {
             $this->checkSMTP(Config::PHPMAILER_TESTHOST, Config::PHPMAILER_PORT);
-
         } elseif (Config::PHPMAILER_HOST != '') {
             $this->checkSMTP(Config::PHPMAILER_HOST, Config::PHPMAILER_PORT);
-
         } else {
             $this->isMail();
         }
@@ -500,7 +497,9 @@ class phpListMailer extends \PHPMailer
 
     private function getTemplateImages($templateid, $filename)
     {
-        if (basename($filename) == 'powerphplist.png') $templateid = 0;
+        if (basename($filename) == 'powerphplist.png') {
+            $templateid = 0;
+        }
         $result = phpList::DB()->query(sprintf(
             'SELECT data FROM %s
             WHERE template = %s
@@ -642,8 +641,9 @@ class phpListMailer extends \PHPMailer
 
     public static function sendMail($to, $subject, $message, $skipblacklistcheck = 0)
     {
-        if (Config::TEST)
+        if (Config::TEST) {
             return 1;
+        }
 
         # do a quick check on mail injection attempt, @@@ needs more work
         if (preg_match("/\n/", $to)) {
@@ -865,27 +865,31 @@ class phpListMailer extends \PHPMailer
     {
         $from_address = Config::get('message_from_address');
         $from_name = Config::get('message_from_name');
-        if ($from_name)
+        if ($from_name) {
             $additional_headers = "From: \"$from_name\" <$from_address>\n";
-        else
+        } else {
             $additional_headers = "From: $from_address\n";
+        }
         $message_replyto_address = Config::get('message_replyto_address');
-        if ($message_replyto_address)
+        if ($message_replyto_address) {
             $additional_headers .= "Reply-To: $message_replyto_address\n";
-        else
+        } else {
             $additional_headers .= "Reply-To: $from_address\n";
+        }
         $v = PHPLIST_VERSION;
         $additional_headers .= "X-Mailer: phplist version $v (www.phplist.com)\n";
         $additional_headers .= "X-MessageID: systemmessage\n";
-        if ($subscriberemail)
+        if ($subscriberemail) {
             $additional_headers .= "X-User: $subscriberemail\n";
+        }
         return $additional_headers;
     }
 
-    public static function sendReport($subject,$message) {
-        $report_addresses = explode(',',Config::get('report_address'));
+    public static function sendReport($subject, $message)
+    {
+        $report_addresses = explode(',', Config::get('report_address'));
         foreach ($report_addresses as $address) {
-            phpListMailer::sendMail($address, Config::get('installation_name').' '.$subject,$message);
+            phpListMailer::sendMail($address, Config::get('installation_name').' '.$subject, $message);
         }
         /*TODO: enable plugins
         foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
@@ -893,13 +897,12 @@ class phpListMailer extends \PHPMailer
         }*/
     }
 
-    public static function sendError($message,$to,$subject) {
+    public static function sendError($message, $to, $subject)
+    {
         /*TODO: enable plugins
         foreach ($GLOBALS['plugins'] as $pluginname => $plugin) {
             $plugin->sendReport(Config::get('installation_name').'Error: '.$subject,$message);
         }*/
         //  Error($msg);
     }
-
-
 }

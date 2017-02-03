@@ -243,17 +243,20 @@ class StringClass
         return $text;
     }
 
-    public static function removeJavascript($content) {
-        $content = preg_replace('/<script[^>]*>(.*?)<\/script\s*>/mis','',$content);
+    public static function removeJavascript($content)
+    {
+        $content = preg_replace('/<script[^>]*>(.*?)<\/script\s*>/mis', '', $content);
         return $content;
     }
 
-    public static function stripComments($content) {
-        $content = preg_replace('/<!--(.*?)-->/mis','',$content);
+    public static function stripComments($content)
+    {
+        $content = preg_replace('/<!--(.*?)-->/mis', '', $content);
         return $content;
     }
 
-    public static function compressContent($content) {
+    public static function compressContent($content)
+    {
 
         ## this needs loads more testing across systems to be sure
         return $content;
@@ -272,5 +275,4 @@ class StringClass
         return $content;
          */
     }
-
-} 
+}

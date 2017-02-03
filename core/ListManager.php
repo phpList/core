@@ -15,7 +15,7 @@ class ListManager
     /**
      * Default constructor
      */
-    public function __construct( Config $config, helper\Database $db, \phpList\Model\ListModel $listModel )
+    public function __construct(Config $config, helper\Database $db, \phpList\Model\ListModel $listModel)
     {
         $this->config = $config;
         $this->db = $db;
@@ -109,10 +109,10 @@ class ListManager
      * @param SubscriberEntity $scrEntity
      * @param int $listId ID of the list to add the subscriber to
      */
-    public function addSubscriber( \phpList\Entity\SubscriberEntity $scrEntity, $listId )
+    public function addSubscriber(\phpList\Entity\SubscriberEntity $scrEntity, $listId)
     {
         // Add the subscriber to the list
-        return $this->listModel->addSubscriber( $scrEntity->id, $listId );
+        return $this->listModel->addSubscriber($scrEntity->id, $listId);
     }
 
     /**
@@ -120,19 +120,19 @@ class ListManager
     * @param phpListEntityListEntity $listEntity
     * @param int $listId ID of the list to add the subscriber to
     */
-    public function addSubscribers( array $scrEntities, $listId )
+    public function addSubscribers(array $scrEntities, $listId)
     {
         // Initialise array for collecting outcomes
         $results = array();
 
         // Loop through each subecriber entity object
-        foreach ( $scrEntities as $scrEntity ) {
+        foreach ($scrEntities as $scrEntity) {
             // Add the subscriber to the list
-            $results = $this->listModel->addSubscriber( $scrEntity->id, $listId );
+            $results = $this->listModel->addSubscriber($scrEntity->id, $listId);
         }
 
         // Return true unless one or more queries failed
-        if ( false === array_search( false, $results ) ) {
+        if (false === array_search(false, $results)) {
             return false;
         } else {
             return true;
@@ -144,10 +144,10 @@ class ListManager
     * @param SubscriberEntity $scrEntity
     * @param int $listId ID of the list to add the subscriber to
     */
-    public function removeSubscriber( $listId, \phpList\Entity\SubscriberEntity $scrEntity )
+    public function removeSubscriber($listId, \phpList\Entity\SubscriberEntity $scrEntity)
     {
         // Add the subscriber to the list
-        return $this->listModel->removeSubscriber( $listId, $scrEntity->id );
+        return $this->listModel->removeSubscriber($listId, $scrEntity->id);
     }
 
     /**
@@ -155,19 +155,19 @@ class ListManager
     * @param phpListEntityListEntity $listEntity
     * @param int $listId ID of the list to add the subscriber to
     */
-    public function removeSubscribers( array $scrEntities, $listId )
+    public function removeSubscribers(array $scrEntities, $listId)
     {
         // Initialise array for collecting outcomes
         $results = array();
 
         // Loop through each subecriber entity object
-        foreach ( $scrEntities as $scrEntity ) {
+        foreach ($scrEntities as $scrEntity) {
             // Add the subscriber to the list
-            $results = $this->listModel->removeSubscriber( $scrEntity->id, $listId );
+            $results = $this->listModel->removeSubscriber($scrEntity->id, $listId);
         }
 
         // Return true unless one or more queries failed
-        if ( false === array_search( false, $results ) ) {
+        if (false === array_search(false, $results)) {
             return false;
         } else {
             return true;

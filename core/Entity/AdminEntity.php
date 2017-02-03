@@ -4,7 +4,8 @@ namespace phpList\Entity;
 use phpList\interfaces\EmailAddressInterface;
 use phpList\interfaces\plainPassInterface;
 
-class AdminEntity {
+class AdminEntity
+{
 
     // Required attributes
     public $username;
@@ -23,7 +24,7 @@ class AdminEntity {
     public $disabled;
     public $privileges;
 
-    public function __construct( $username )
+    public function __construct($username)
     {
         $this->username = $username;
     }
@@ -33,7 +34,8 @@ class AdminEntity {
      * @param $key
      * @param $value
      */
-    public function setAttribute( $key, $value ) {
+    public function setAttribute($key, $value)
+    {
         $this->attributes[$key] = $value;
         $this->has_attributes = true;
     }
@@ -65,7 +67,8 @@ class AdminEntity {
      * Check if attributes have been loaded already
      * @return bool
      */
-    public function hasAttributes(){
+    public function hasAttributes()
+    {
         return $this->has_attributes;
     }
 }

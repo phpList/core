@@ -2,7 +2,6 @@
 
 namespace phpList\helper\Logger;
 
-
 use phpList\Config;
 
 class DatabaseWriter
@@ -18,7 +17,7 @@ class DatabaseWriter
         @$fp = fopen($this->logfile, 'a');
 
         $line = '[' . date('d M Y, H:i:s') . '] ' . $message;
-        foreach ($context as $key => $item){
+        foreach ($context as $key => $item) {
             $line = $line . " | {$key} -  {$item} | ";
         }
         $line = $line . "\n";

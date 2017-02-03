@@ -1,7 +1,8 @@
 <?php
 namespace phpList\interfaces;
 
-interface EmailAddressInterface {
+interface EmailAddressInterface
+{
     /**
      * Set the email address and perform validation on it
      * @param string $email_address
