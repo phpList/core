@@ -31,5 +31,4 @@ This package should not be modified locally. It should be updated via Composer.
 
 ## Copyright
 
-PhpList is copyright (C) 2000-2017 Michiel Dethmers,
-[phpList Ltd](http://www.phplist.com/).
+phpList is copyright (C) 2000-2017 [phpList Ltd](http://www.phplist.com/).
