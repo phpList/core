@@ -17,7 +17,7 @@ PhpList is an open source newsletter manager. This project is a rewrite of the
 
 ## About this package
 
-This is the phpList 4 core. It will have the following responsibilities:
+This is the phpList 4 core module. It will have the following responsibilities:
 
 * provide access to the DB via Doctrine models and repositories (and raw SQL
   for performance-critical parts that do not need the models)
@@ -27,7 +27,20 @@ This is the phpList 4 core. It will have the following responsibilities:
 * a script for tasks to be called from the command line (or a cron job)
 * tasks to create and update the DB schema
 
-This package should not be modified locally. It should be updated via Composer.
+This module should not be modified locally. It should be updated via Composer.
+
+
+## Changing the database schema
+
+Any changes to the database schema must always be done both in phpList 3 and
+phpList 4 so that both versions always have the same schema.
+
+
+## phpList 4 plugins
+
+In phpList 4, plugins are called modules that are Composer packages.
+More documentation for this will follow.
+
 
 ## Copyright
 
