@@ -16,7 +16,6 @@ matrix:
   include:
   - php: 7.0
   - php: 7.1
-  - php: hhvm
 
 before_install:
   - mysql -e 'CREATE DATABASE phplist;'
