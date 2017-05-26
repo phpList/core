@@ -1,14 +1,12 @@
 <?php
 namespace phpList\test;
 
-use phpList\Pass;
-
-// Symfony namespaces
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
-class PassTest extends \PHPUnit_Framework_TestCase
+class PassTest extends TestCase
 {
     public function setUp()
     {

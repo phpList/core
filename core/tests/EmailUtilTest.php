@@ -2,8 +2,9 @@
 namespace phpList\test;
 
 use phpList\EmailUtil;
+use PHPUnit\Framework\TestCase;
 
-class EmailUtilTest extends \PHPUnit_Framework_TestCase
+class EmailUtilTest extends TestCase
 {
     public function setUp()
     {
