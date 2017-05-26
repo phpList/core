@@ -1,5 +1,8 @@
-composer.lock
-config.ini
-config.php
-.idea/
-core/phpunit.xml
+*~
+*.bak
+/.idea/
+/.project
+/.webprj
+/composer.lock
+/nbproject
+/vendor/
