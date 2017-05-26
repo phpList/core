@@ -87,16 +87,6 @@ class EmailUtilTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->emailUtil->isValid($address));
     }
 
-    /**
-     * Should pass according to RFC2822s, but fails
-     */
-    public function testValidEmail6()
-    {
-        $address = 'valid@[1.0.0.127]';
-
-        // $this->assertTrue( $this->emailUtil->isValid( $address ) );
-    }
-
     public function testTlds()
     {
         // Set restrictive tld list
