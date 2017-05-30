@@ -22,7 +22,7 @@
     "symfony/dependency-injection": "~2.6",
     "symfony/yaml": "~2.6",
     "symfony/config": "~2.6",
-    "phpmailer/phpmailer": "v5.2.7",
+    "phpmailer/phpmailer": "~v5.2.7",
     "psr/log": "1.0.0"
   },
   "require-dev": {
