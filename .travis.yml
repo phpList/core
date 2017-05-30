@@ -25,7 +25,6 @@ install:
 
 script:
   # Run PHP lint on all PHP files.
-  - find core/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l
-  - php -l index.php
+  - find core/ Public/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l
   # Run the unit tests.
   - vendor/bin/phpunit core/tests/
