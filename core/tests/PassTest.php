@@ -16,7 +16,7 @@ class PassTest extends TestCase
         $loader = new YamlFileLoader($this->container, new FileLocator(__DIR__));
         // Load the service config file, which is in YAML format
         $loader->load('../services.yml');
-        $this->container->setParameter('config.configfile', __DIR__ . '/../../config.ini.dist');
+        $this->container->setParameter('config.configfile', __DIR__ . '/../../Configuration/config.ini.dist');
         // Get objects from container
         $this->pass = $this->container->get('Pass');
         // Set default pwd for testing
