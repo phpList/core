@@ -18,9 +18,9 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/phpList/phpList/issues",
+        "issues": "https://github.com/phpList/phplist4-core/issues",
         "forum": "https://discuss.phplist.org/",
-        "wiki": "https://github.com/phpList/phpList/wiki",
+        "wiki": "https://github.com/phpList/phplist4-core/wiki",
         "source": "https://github.com/phpList/phplist4-core"
     },
     "require": {
