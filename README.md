@@ -1,5 +1,4 @@
-# phpList
-
+# phpList 4 core module
 
 [![Build Status](https://travis-ci.org/phpList/phpList.svg?branch=master)](https://travis-ci.org/phpList/phpList)
 [![Latest Stable Version](https://poser.pugx.org/phplist/phplist4-core/v/stable.svg)](https://packagist.org/packages/phpList/phpList)
@@ -10,8 +9,7 @@
 
 ## About phpList
 
-
-PhpList is an open source newsletter manager. This project is a rewrite of the
+phpList is an open source newsletter manager. This project is a rewrite of the
 [original phpList](https://github.com/phpList/phplist3).
 
 
@@ -26,6 +24,10 @@ This is the phpList 4 core module. It will have the following responsibilities:
 * logging
 * a script for tasks to be called from the command line (or a cron job)
 * tasks to create and update the DB schema
+
+Please note that this module does not provide a web frontend or a REST API.
+There are the separate modules `phpList/web-frontend` and `phpList/rest-api`
+for these tasks.
 
 This module should not be modified locally. It should be updated via Composer.
 
