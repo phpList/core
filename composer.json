@@ -1,24 +1,33 @@
 {
     "name": "phplist/phplist4-core",
-    "description": "The world's most popular open source newsletter manager",
+    "description": "The core module of phpList, the world's most popular open source newsletter manager",
+    "type": "phplist-module",
     "keywords": [
         "phplist",
         "email",
         "newsletter",
         "manager"
     ],
-    "homepage": "http://www.phpList.com/",
-    "type": "project",
-    "license": "GNU Affero General Public License version 3.0 or later (AGPLv3+)",
+    "homepage": "https://www.phplist.com/",
+    "license": "AGPL-3.0",
+    "authors": [
+        {
+            "name": "Oliver Klee",
+            "email": "oliver@phplist.com",
+            "role": "Developer"
+        }
+    ],
     "support": {
         "issues": "https://github.com/phpList/phpList/issues",
-        "forum": "http://forums.phplist.com/",
-        "wiki": "http://resources.phplist.com/",
-        "source": "https://github.com/phpList/phpList"
+        "forum": "https://discuss.phplist.org/",
+        "wiki": "https://github.com/phpList/phpList/wiki",
+        "source": "https://github.com/phpList/phplist4-core"
     },
-    "minimum-stability": "dev",
     "require": {
-        "php": ">= 7.0.0, <= 7.1.99",
+        "php": "~7.0.0 || ~7.1.0",
+
+        "roave/security-advisories": "dev-master",
+
         "symfony/dependency-injection": "~2.6",
         "symfony/yaml": "~2.6",
         "symfony/config": "~2.6",
@@ -37,5 +46,6 @@
         "files": [
             "core/helper/Shortcuts.php"
         ]
-    }
+    },
+    "minimum-stability": "dev"
 }

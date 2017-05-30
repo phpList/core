@@ -1,6 +1,6 @@
 # phpList 4 core module
 
-[![Build Status](https://travis-ci.org/phpList/phpList.svg?branch=master)](https://travis-ci.org/phpList/phpList)
+[![Build Status](https://travis-ci.org/phpList/phplist4-core.svg?branch=master)](https://travis-ci.org/phpList/phpList)
 [![Latest Stable Version](https://poser.pugx.org/phplist/phplist4-core/v/stable.svg)](https://packagist.org/packages/phpList/phpList)
 [![Total Downloads](https://poser.pugx.org/phplist/phplist4-core/downloads.svg)](https://packagist.org/packages/phpList/phpList)
 [![Latest Unstable Version](https://poser.pugx.org/phplist/phplist4-core/v/unstable.svg)](https://packagist.org/packages/phpList/phpList)
@@ -40,7 +40,9 @@ phpList 4 so that both versions always have the same schema.
 
 ## phpList 4 plugins
 
-In phpList 4, plugins are called modules that are Composer packages.
+In phpList 4, plugins are called modules that are Composer packages having the
+type `phplist-module`.
+
 More documentation for this will follow.
 
 
