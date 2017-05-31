@@ -38,6 +38,10 @@
         "phpunit/phpunit": "^6.1",
         "squizlabs/php_codesniffer": "^3.0"
     },
+    "suggest": {
+        "phplist/web-frontend": "^4.0.0-dev",
+        "phplist/rest-api": "^4.0.0-dev"
+    },
     "autoload": {
         "psr-4": {
             "phpList\\": "core/",
