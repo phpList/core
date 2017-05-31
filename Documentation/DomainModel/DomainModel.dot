@@ -1,0 +1,221 @@
+// How to generate the SVG file:
+// dot -Tsvg -oDocumentation/DomainModel/DomainModel.svg Documentation/DomainModel/DomainModel.dot
+digraph phpListDomainModel {
+
+  //
+  // Layout basics
+  //
+
+  fontname = "Bitstream Vera Sans, Arial"
+  fontsize = 8
+
+  node [
+    fontname = "Bitstream Vera Sans, Arial"
+    fontsize = 8
+    shape = "record"
+  ]
+
+  edge [
+    fontname = "Bitstream Vera Sans, Arial"
+    fontsize = 8
+  ]
+
+  //
+  // Entities
+  //
+
+  subgraph clusterIdentityContext {
+    label = "IdentityContext"
+
+    style = filled
+    fillcolor = grey95
+    color = green1
+
+    Administrator                [label = "Administrator"]
+    Attribute                    [label = "AdministratorAttribute"]
+    AdministratorPasswordRequest [label = "AdministratorPasswordRequest"]
+    AdministratorToken           [label = "AdministratorToken"]
+  }
+
+  subgraph clusterSubscriptionContext {
+    label = "SubscriptionContext"
+
+    style = filled
+    fillcolor = grey95
+    color = green1
+
+    SubscriberAttribute      [label = "Attribute"]
+    SubscriberAttributeValue [label = "AttributeValue"]
+    SubscribePage            [label = "SubscribePage"]
+    SubscribePageData        [label = "SubscribePageData"]
+    Subscriber               [label = "Subscriber"]
+    SubscriberHistory        [label = "SubscriberHistory"]
+    Subscription             [label = "Subscription"]
+    SuppressionList          [label = "SuppressionList"]
+    SuppressionListData      [label = "SuppressionListData"]
+  }
+
+  subgraph clusterMessagingContext {
+    label = "MessagingContext"
+
+    style = filled
+    fillcolor = grey95
+    color = green1
+
+    Attachment      [label = "Attachment"]
+    Bounce          [label = "Bounce"]
+    BounceRegEx     [label = "BounceRegEx"]
+    Campaign        [label = "Campaign"]
+    CampaignBounce  [label = "CampaignBounce"]
+    CampaignData    [label = "CampaignData"]
+    CampaignForward [label = "CampaignForward"]
+    List            [label = "List"]
+    Template        [label = "Template"]
+    TemplateImage   [label = "TemplateImage"]
+  }
+
+  subgraph clusterSystemContext {
+    label = "SystemContext"
+
+    style = filled
+    fillcolor = grey95
+    color = green1
+
+    Configuration        [label = "Configuration"]
+    Internationalization [label = "Internationalization"]
+    LogEntry             [label = "LogEntry"]
+    SendProcess          [label = "SendProcess"]
+    UrlCache             [label = "UrlCache"]
+  }
+
+
+  subgraph clusterTrackingContext {
+    label = "Tracking Context"
+
+    style = filled
+    fillcolor = grey95
+    color = green1
+
+    LinkTrackForward     [label = "LinkTrackForward"]
+    LinkTrackMessageLink [label = "LinkTrackMessageLink"]
+    LinkTrackUmlClick    [label = "LinkTrackUmlClick"]
+  }
+
+
+  //
+  // Associations without labels
+  //
+
+  edge [
+    label = ""
+    arrowtail = ""
+    dir = ""
+    arrowhead = "open"
+    arrowsize = .4
+  ]
+
+  AdministratorToken        -> Administrator            [taillabel="*"    headlabel="1"]
+  Bounce                    -> Subscriber               [taillabel="*"    headlabel="0..1"]
+  Campaign                  -> Attachment               [taillabel="1"    headlabel="*"] // constraint="false"
+  Campaign                  -> CampaignData             [taillabel="1"    headlabel="*"]
+  Campaign                  -> Subscriber               [taillabel="*"    headlabel="*"]
+  Campaign                  -> Template                 [taillabel="*"    headlabel="1"]
+  CampaignForward           -> Campaign                 [taillabel="*"    headlabel="1"]
+  LinkTrackMessageLink      -> Campaign                 [taillabel="*"    headlabel="1"]
+  LinkTrackMessageLink      -> LinkTrackForward         [taillabel="*"    headlabel="1"]
+  LinkTrackUmlClick         -> LinkTrackMessageLink     [taillabel="*"    headlabel="1"]
+  LinkTrackUmlClick         -> Subscriber               [taillabel="*"    headlabel="1"]
+  List                      -> Campaign                 [taillabel="*"    headlabel="*"]
+  List                      -> Subscription             [taillabel="1"    headlabel="*"]
+  SubscribePage             -> SubscribePageData        [taillabel="1"    headlabel="*"]
+  Subscriber                -> CampaignForward          [taillabel="1"    headlabel="*"]
+  Subscriber                -> SubscriberAttributeValue [taillabel="1"    headlabel="*"]
+  Subscriber                -> SubscriberHistory        [taillabel="1"    headlabel="*"]
+  SubscriberAttributeValue  -> SubscriberAttribute      [taillabel="*"    headlabel="1"]
+  Subscription              -> Subscriber               [taillabel="*"    headlabel="1"]
+  SuppressionList           -> SuppressionListData      [taillabel="1"    headlabel="*"]
+  Template                  -> TemplateImage            [taillabel="1"    headlabel="*"]
+
+
+  //
+  // Associations with labels
+  //
+
+  edge [
+    arrowtail = ""
+    dir = ""
+  ]
+
+  List -> Administrator [taillabel="*"    headlabel="1" label="owner"]
+
+
+  //
+  // Inheritance
+  //
+
+  edge [
+    taillabel = ""
+    headlabel = ""
+    arrowtail = "empty"
+    dir = "back"
+    label = ""
+    arrowsize = 1
+  ]
+
+
+  //
+  // Notes
+  //
+
+  node [
+    fontname = "Bitstream Vera Sans, Arial"
+    fontsize = 8
+    shape = "note"
+    style = filled
+    color = cornflowerblue
+    fillcolor = white
+ ]
+
+  edge [
+    style = dashed
+    arrowtail = "none"
+    arrowhead = "none"
+    label = ""
+    color = cornflowerblue
+  ]
+
+  //Note_Foo [label = "This,\nThat"]
+  //Note_Foo -> Foo
+
+
+  //
+  // Invisible edges to improve the layout
+  //
+
+  edge [
+    style = invis
+    label = ""
+  ]
+
+  TemplateImage -> LinkTrackMessageLink
+
+  //
+  // Questions
+  //
+
+  node [
+    fontname = "Bitstream Vera Sans, Arial"
+    fontsize = 8
+    shape = ellipse
+    style = filled
+    color = orange
+  ]
+
+  edge [
+    style = dashed
+    arrowtail = "none"
+    arrowhead = "none"
+    label = ""
+    color = orange
+  ]
+}
