@@ -1,6 +1,9 @@
-sudo: false
-
 language: php
+
+matrix:
+  include:
+  - php: 7.0
+  - php: 7.1
 
 services:
   - mysql
@@ -8,23 +11,26 @@ services:
 notifications:
   slack: phplist:wDLojEEoZ0Sw0iTqpRzw6wsd
 
+sudo: false
 cache:
   directories:
   - vendor
-
-matrix:
-  include:
-  - php: 7.0
-  - php: 7.1
+  - $HOME/.composer/cache
 
 before_install:
+  - phpenv config-rm xdebug.ini
   - mysql -e 'CREATE DATABASE phplist;'
 
 install:
   - composer install
 
 script:
-  # Run PHP lint on all PHP files.
-  - find core/ Public/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l
-  # Run the unit tests.
-  - vendor/bin/phpunit core/tests/
+  - >
+    echo;
+    echo "Linting all PHP files";
+    find core/ Public/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l
+
+  - >
+    echo;
+    echo "Running the unit tests";
+    vendor/bin/phpunit core/tests/
