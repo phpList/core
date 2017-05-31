@@ -1,10 +1,10 @@
 # phpList 4 core module
 
-[![Build Status](https://travis-ci.org/phpList/phplist4-core.svg?branch=master)](https://travis-ci.org/phpList/phpList)
-[![Latest Stable Version](https://poser.pugx.org/phplist/phplist4-core/v/stable.svg)](https://packagist.org/packages/phpList/phpList)
-[![Total Downloads](https://poser.pugx.org/phplist/phplist4-core/downloads.svg)](https://packagist.org/packages/phpList/phpList)
-[![Latest Unstable Version](https://poser.pugx.org/phplist/phplist4-core/v/unstable.svg)](https://packagist.org/packages/phpList/phpList)
-[![License](https://poser.pugx.org/phplist/phplist4-core/license.svg)](https://packagist.org/packages/phpList/phpList)
+[![Build Status](https://travis-ci.org/phpList/phplist4-core.svg?branch=master)](https://travis-ci.org/phpList/phplist4-core)
+[![Latest Stable Version](https://poser.pugx.org/phplist/phplist4-core/v/stable.svg)](https://packagist.org/packages/phpList/phplist4-core)
+[![Total Downloads](https://poser.pugx.org/phplist/phplist4-core/downloads.svg)](https://packagist.org/packages/phpList/phplist4-core)
+[![Latest Unstable Version](https://poser.pugx.org/phplist/phplist4-core/v/unstable.svg)](https://packagist.org/packages/phpList/phplist4-core)
+[![License](https://poser.pugx.org/phplist/phplist4-core/license.svg)](https://packagist.org/packages/phpList/phplist4-core)
 
 
 ## About phpList
