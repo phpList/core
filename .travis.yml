@@ -9,7 +9,15 @@ services:
   - mysql
 
 notifications:
-  slack: phplist:wDLojEEoZ0Sw0iTqpRzw6wsd
+#  slack: phplist:wDLojEEoZ0Sw0iTqpRzw6wsd
+  webhooks:
+    urls:
+      - https://chat.phplist.com/hooks/8o913yao6b8jpcfruds189aezw
+    on_success: change # default: always
+    on_failure: always # default: always
+    on_start: change   # default: never
+    on_cancel: always # default: always
+    on_error: always # default: always
 
 sudo: false
 cache:
