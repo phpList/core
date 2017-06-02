@@ -8,10 +8,12 @@ matrix:
 services:
   - mysql
 
+secure: "JgiohoGVWQqq4N9k0TUwd2K9EoTVbggQKeOwGwAP/rBVWm18d9O+YjD97PTl6NmxejxHD3B6gqQHHnujp1CB0p5jLdcDL1+a4oibuDz+18KkT51l5InF4MGV4cLPVx3NIhXhiXsCdxjiM5kYW5iHrMfhlfcTd21rFGZ0j5QjHHI="
+
 notifications:
   webhooks:
     urls:
-      - https://chat.phplist.com/hooks/8o913yao6b8jpcfruds189aezw
+      - $NOTIFICATIONURL
      on_start: always
 #    on_success: change # default: always
 #    on_failure: always # default: always
