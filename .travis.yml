@@ -8,16 +8,17 @@ matrix:
 services:
   - mysql
 
-secure: "JgiohoGVWQqq4N9k0TUwd2K9EoTVbggQKeOwGwAP/rBVWm18d9O+YjD97PTl6NmxejxHD3B6gqQHHnujp1CB0p5jLdcDL1+a4oibuDz+18KkT51l5InF4MGV4cLPVx3NIhXhiXsCdxjiM5kYW5iHrMfhlfcTd21rFGZ0j5QjHHI="
+env:
+  global:
+    secure: "GRmIZt08nxg5r3uREPfW2Gz49LIkFVmU/kzSzJ78VISmjuWMUdiZ9GJFmzzvKBxQ0tzUlpvibBu1dvSqOAA4HZ72+p2PvTvezgL8S6dyaJ7bHRlyQlE1SDkK/tctFrIjGdXLAP7vNwqC7ZXtX7iH9Fk3znxy9BnLp4xGZDW54YU="
 
 notifications:
   webhooks:
     urls:
       - $NOTIFICATIONURL
-     on_start: always
-#    on_success: change # default: always
-#    on_failure: always # default: always
-#    on_start: change   # default: never
+    on_success: change # default: always
+    on_failure: always # default: always
+    on_start: change   # default: never
 #    on_cancel: always # default: always
 #    on_error: always # default: always
 
