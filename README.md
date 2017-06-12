@@ -32,6 +32,13 @@ for these tasks.
 This module should not be modified locally. It should be updated via Composer.
 
 
+## Installation
+
+Please install this package via Composer from within the
+[phpList base distribution](https://github.com/phpList/base-distribution),
+which also has more detailed installation instructions in the README.
+
+
 ## Changing the database schema
 
 Any changes to the database schema must always be done both in phpList 3 and
