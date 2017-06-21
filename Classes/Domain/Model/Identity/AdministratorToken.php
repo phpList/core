@@ -6,6 +6,8 @@ namespace PhpList\PhpList4\Domain\Model\Identity;
 /**
  * This class represents an API authentication token for an administrator.
  *
+ * @Entity @Table(name="phplist_admintoken")
+ *
  * @author Oliver Klee <oliver@phplist.com>
  */
 class AdministratorToken
@@ -17,16 +19,20 @@ class AdministratorToken
 
     /**
      * @var int
+     * @Id @Column(type="integer")
+     * @GeneratedValue
      */
     private $id = 0;
 
     /**
      * @var \DateTime
+     * @Column(type="datetime", name="expires")
      */
     private $expiry = null;
 
     /**
      * @var string
+     * @Column(type="string", name="value")
      */
     private $key = '';
 
