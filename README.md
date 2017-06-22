@@ -44,6 +44,8 @@ which also has more detailed installation instructions in the README.
 Any changes to the database schema must always be done both in phpList 3 and
 phpList 4 so that both versions always have the same schema.
 
+For changing the database schema, please edit `Database/Schema.sql`.
+
 
 ## phpList 4 plugins
 

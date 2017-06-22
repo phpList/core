@@ -28,7 +28,12 @@ cache:
 
 before_install:
   - phpenv config-rm xdebug.ini
-  - mysql -e 'CREATE DATABASE phplist;'
+  - >
+    echo;
+    echo "Importing the database schema";
+    mysql -e 'CREATE DATABASE phplist;';
+    mysql phplist < Database/Schema.sql;
+
 
 install:
   - composer install
