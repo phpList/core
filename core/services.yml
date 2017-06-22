@@ -2,19 +2,19 @@ services:
 
   Admin:
     class: phpList\Admin
-    arguments: [@AdminModel, @Pass]
+    arguments: ["@AdminModel", "@Pass"]
   LoggerWriterAbstractFactory:
     class: phpList\helper\Logger\LoggerWriterAbstractFactory
-    arguments: [@Config]
+    arguments: ["@Config"]
   Logger:
     class: phpList\helper\Logger
-    arguments: [@LoggerWriterAbstractFactory]
+    arguments: ["@LoggerWriterAbstractFactory"]
   Util:
     class: phpList\helper\Util
-    arguments: [@Config, @Logger, @Database]
+    arguments: ["@Config", "@Logger", "@Database"]
   EmailAddress:
     class:  phpList\EmailAddress
-    arguments: [@Config, %emailaddress.address%]
+    arguments: ["@Config", %emailaddress.address%]
   EmailUtil:
     class:  phpList\EmailUtil
   Config:
@@ -22,25 +22,25 @@ services:
     arguments: [%config.configfile%]
   Database:
     class:  phpList\helper\Database
-    arguments: [@Config]
+    arguments: ["@Config"]
   Language:
     class: phpList\helper\Language
-    arguments: [@Database, @Config]
+    arguments: ["@Database", "@Config"]
   Pass:
     class: phpList\Pass
-    arguments: [@Config]
+    arguments: ["@Config"]
   phpList:
     class: phpList\phpList
-    arguments: [@Config, @Database, @Language, @Util]
+    arguments: ["@Config", "@Database", "@Language", "@Util"]
   Campaign:
     class: phpList\Campaign
-    arguments: [@Config, @Database, @MailingList, @Template]
+    arguments: ["@Config", "@Database", "@MailingList", "@Template"]
   Template:
     class: phpList\Template
-    arguments: [@Config, @Database, @TemplateImage]
+    arguments: ["@Config", "@Database", "@TemplateImage"]
   TemplateImage:
     class: phpList\TemplateImage
-    arguments: [@Config, @Database]
+    arguments: ["@Config", "@Database"]
 
 # Entities
   CampaignEntity:
@@ -57,21 +57,21 @@ services:
 # Managers
   ListManager:
     class: phpList\ListManager
-    arguments: [@Config, @Database, @ListModel]
+    arguments: ["@Config", "@Database", "@ListModel"]
   SubscriberManager:
     class: phpList\SubscriberManager
-    arguments: [@Config, @EmailUtil, @Pass, @SubscriberModel]
+    arguments: ["@Config", "@EmailUtil", "@Pass", "@SubscriberModel"]
 
 # Models
   AdminModel:
     class: phpList\Model\AdminModel
-    arguments: [@Config, @Database]
+    arguments: ["@Config", "@Database"]
   ListModel:
     class: phpList\Model\ListModel
-    arguments: [@Config, @Database]
+    arguments: ["@Config", "@Database"]
   SubscriberModel:
     class: phpList\Model\SubscriberModel
-    arguments: [@Config, @Database]
+    arguments: ["@Config", "@Database"]
 
 # Define parameters, to be set in app logic
 # NOTE: the classname.parameter syntax is just a Symfony convention; parameter
