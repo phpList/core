@@ -10,7 +10,10 @@ services:
 
 env:
   global:
-    secure: "GRmIZt08nxg5r3uREPfW2Gz49LIkFVmU/kzSzJ78VISmjuWMUdiZ9GJFmzzvKBxQ0tzUlpvibBu1dvSqOAA4HZ72+p2PvTvezgL8S6dyaJ7bHRlyQlE1SDkK/tctFrIjGdXLAP7vNwqC7ZXtX7iH9Fk3znxy9BnLp4xGZDW54YU="
+    - secure: "GRmIZt08nxg5r3uREPfW2Gz49LIkFVmU/kzSzJ78VISmjuWMUdiZ9GJFmzzvKBxQ0tzUlpvibBu1dvSqOAA4HZ72+p2PvTvezgL8S6dyaJ7bHRlyQlE1SDkK/tctFrIjGdXLAP7vNwqC7ZXtX7iH9Fk3znxy9BnLp4xGZDW54YU="
+    - PHPLIST_DATABASE_NAME=phplist
+    - PHPLIST_DATABASE_USER=travis
+    - PHPLIST_DATABASE_PASSWORD=''
 
 notifications:
   webhooks:
@@ -31,9 +34,8 @@ before_install:
   - >
     echo;
     echo "Importing the database schema";
-    mysql -e 'CREATE DATABASE phplist;';
-    mysql phplist < Database/Schema.sql;
-
+    mysql -e "CREATE DATABASE ${PHPLIST_DATABASE_NAME};";
+    mysql ${PHPLIST_DATABASE_NAME} < Database/Schema.sql;
 
 install:
   - composer install
