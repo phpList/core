@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Core;
 
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\Setup;
+
 /**
  * This class bootstraps the phpList core system.
  *
@@ -24,6 +28,11 @@ class Bootstrap
      * @var bool
      */
     private $developmentMode = false;
+
+    /**
+     * @var EntityManager
+     */
+    private $entityManager = null;
 
     /**
      * Disable direct cloning of this object.
@@ -86,6 +95,33 @@ class Bootstrap
      */
     public function configure(): Bootstrap
     {
+        $packageRootPath = dirname(__DIR__ . '/../../');
+        $domainModelPath = $packageRootPath . 'Classes/Domain/Model/';
+        $domainModelPaths = [$domainModelPath];
+
+        // The getenv calls will be replaced by YAML configuration later
+        // (with the option to use environment variables as overrides).
+        $databaseConfiguration = [
+            'driver' => 'pdo_mysql',
+            'user' => getenv('PHPLIST_DATABASE_USER'),
+            'password' => getenv('PHPLIST_DATABASE_PASSWORD'),
+            'dbname' => getenv('PHPLIST_DATABASE_NAME'),
+        ];
+
+        $ormConfiguration = Setup::createAnnotationMetadataConfiguration(
+            $domainModelPaths,
+            $this->isInDevelopmentMode()
+        );
+        $this->entityManager = EntityManager::create($databaseConfiguration, $ormConfiguration);
+
         return $this;
+    }
+
+    /**
+     * @return EntityManagerInterface
+     */
+    public function getEntityManager(): EntityManagerInterface
+    {
+        return $this->entityManager;
     }
 }

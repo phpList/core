@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Tests\Unit\Core;
 
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\PhpList4\Core\Bootstrap;
 use PHPUnit\Framework\TestCase;
 
@@ -93,5 +94,15 @@ class BootstrapTest extends TestCase
     public function configureHasFluentInterface()
     {
         self::assertSame($this->subject, $this->subject->configure());
+    }
+
+    /**
+     * @test
+     */
+    public function configureInitializesEntityManager()
+    {
+        $this->subject->configure();
+
+        self::assertInstanceOf(EntityManagerInterface::class, $this->subject->getEntityManager());
     }
 }
