@@ -65,6 +65,8 @@ class AdministratorTokenRepositoryTest extends TestCase
         // Destroy the tester after the test is run to keep DB connections
         // from piling up.
         $this->databaseTester = null;
+
+        Bootstrap::purgeInstance();
     }
 
     /**
