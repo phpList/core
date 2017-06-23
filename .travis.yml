@@ -59,5 +59,10 @@ script:
 
   - >
     echo;
+    echo "Running the integration tests";
+    vendor/bin/phpunit Tests/Integration/;
+
+  - >
+    echo;
     echo "Running PHPMD";
     vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml;
