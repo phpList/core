@@ -100,6 +100,8 @@ and access credentials on the command line (in the same line):
 
 ## Coding Style
 
+Please make your code clean, well-readable and easy to understand.
+
 Please use the same coding style ([PSR-2](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-2-coding-style-guide.md))
 as the rest of the code. Indentation for all files is four spaces.
 
@@ -117,4 +119,8 @@ And also please run the static code analysis:
 
     vendor/bin/phpstan analyse -l 5 Classes/ Tests/
 
-Please make your code clean, well-readable and easy to understand.
+You can also run all code style checks using one long line:
+    find Classes/ Tests/ Public/ core/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l && vendor/bin/phpstan analyse -l 5 Classes/ Tests/ && vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml && vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ Classes/ Tests/
+
+This will execute all tests except for the unit tests and the integration
+tests.
