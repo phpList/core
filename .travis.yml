@@ -48,14 +48,9 @@ script:
 
   - >
     echo;
-    echo "Running PHP_CodeSniffer";
-    vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ Classes/ Tests/;
-
-  - >
-    echo;
     echo "Running the unit tests";
-    vendor/bin/phpunit core/tests/;
     vendor/bin/phpunit Tests/Unit/;
+    vendor/bin/phpunit core/tests/;
 
   - >
     echo;
@@ -66,3 +61,8 @@ script:
     echo;
     echo "Running PHPMD";
     vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml;
+
+  - >
+    echo;
+    echo "Running PHP_CodeSniffer";
+    vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ Classes/ Tests/;
