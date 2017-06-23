@@ -45,6 +45,12 @@ Please read the [contribution guide](.github/CONTRIBUTING.md) on how to
 contribute and how to run the unit tests and style checks locally.
 
 
+### Code of Conduct
+
+This project adheres to a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project and its
+community, you are expected to uphold this code.
+
+
 ## Changing the database schema
 
 Any changes to the database schema must always be done both in phpList 3 and
