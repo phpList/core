@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Domain\Model\Identity;
 
+use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
+use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
+
 /**
  * This class represents an API authentication token for an administrator.
  *
@@ -10,19 +13,14 @@ namespace PhpList\PhpList4\Domain\Model\Identity;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class AdministratorToken
+class AdministratorToken implements Identity
 {
+    use IdentityTrait;
+
     /**
      * @var string
      */
     const DEFAULT_EXPIRY = '+1 hour';
-
-    /**
-     * @var int
-     * @Id @Column(type="integer")
-     * @GeneratedValue
-     */
-    private $id = 0;
 
     /**
      * @var \DateTime
@@ -42,14 +40,6 @@ class AdministratorToken
     public function __construct()
     {
         $this->setExpiry(new \DateTime());
-    }
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
     }
 
     /**
