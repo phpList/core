@@ -40,6 +40,7 @@
         "phpunit/phpunit": "^6.2.2",
         "phpunit/dbunit": "^3.0.0",
         "squizlabs/php_codesniffer": "^3.0.1",
+        "phpstan/phpstan": "^0.7.0",
         "phpmd/phpmd": "^2.6.0"
     },
     "suggest": {
@@ -56,6 +57,11 @@
         "files": [
             "core/helper/Shortcuts.php"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PhpList\\PhpList4\\Tests\\": "Tests/"
+        }
     },
     "extra": {
         "branch-alias": {
