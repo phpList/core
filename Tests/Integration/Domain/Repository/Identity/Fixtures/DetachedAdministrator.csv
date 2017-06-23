@@ -1,0 +1,2 @@
+id,loginname,namelc,email,created,modified,password,disabled
+1,"john.doe","john-doe","john@example.com","2017-06-22 15:01:17","2017-06-23 19:50:43","8d0c8f9d1a9539021fda006427b993b9",1
