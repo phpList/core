@@ -32,7 +32,7 @@ class AdministratorToken
 
     /**
      * @var string
-     * @Column(type="string", name="value")
+     * @Column(name="value")
      */
     private $key = '';
 
