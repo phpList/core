@@ -49,7 +49,7 @@ script:
   - >
     echo;
     echo "Running PHP_CodeSniffer";
-    vendor/bin/phpcs --standard=PSR2 Classes/ Tests/;
+    vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ Classes/ Tests/;
 
   - >
     echo;
