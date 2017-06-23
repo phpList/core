@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<ruleset name="phpList" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <description>
+        PHPMD rules for phpList
+    </description>
+
+    <!-- rules from the "clean code" rule set -->
+    <rule ref="rulesets/cleancode.xml/BooleanArgumentFlag"/>
+    <rule ref="rulesets/cleancode.xml/ElseExpression"/>
+    <rule ref="rulesets/cleancode.xml/StaticAccess">
+        <properties>
+            <property name="exceptions" value="\Doctrine\ORM\EntityManager,\Doctrine\ORM\Tools\Setup"/>
+        </properties>
+    </rule>
+
+    <rule ref="rulesets/codesize.xml"/>
+
+    <rule ref="rulesets/controversial.xml"/>
+
+    <rule ref="rulesets/design.xml"/>
+
+    <!-- rules from the "naming" rule set -->
+    <rule ref="rulesets/naming.xml/ShortVariable">
+        <properties>
+            <property name="exceptions" value="id"/>
+        </properties>
+    </rule>
+    <rule ref="rulesets/naming.xml/LongVariable">
+        <properties>
+            <property name="maximum" value="25"/>
+        </properties>
+    </rule>
+    <rule ref="rulesets/naming.xml/ShortMethodName"/>
+    <rule ref="rulesets/naming.xml/ConstructorWithNameAsEnclosingClass"/>
+    <rule ref="rulesets/naming.xml/ConstantNamingConventions"/>
+    <rule ref="rulesets/naming.xml/BooleanGetMethodName"/>
+
+    <rule ref="rulesets/unusedcode.xml"/>
+</ruleset>
