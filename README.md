@@ -39,6 +39,12 @@ Please install this package via Composer from within the
 which also has more detailed installation instructions in the README.
 
 
+## Contributing to this package
+
+Please read the [contribution guide](.github/CONTRIBUTING.md) on how to
+contribute and how to run the unit tests and style checks locally.
+
+
 ## Changing the database schema
 
 Any changes to the database schema must always be done both in phpList 3 and

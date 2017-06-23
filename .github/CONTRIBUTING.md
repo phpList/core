@@ -70,13 +70,32 @@ have a chance of keeping on top of things:
 
 ## Unit-test your changes
 
-Please cover all changes with unit tests and make sure that your code does not
-break any existing tests. We will only merge pull request that include full
+Please cover all changes with automatic tests and make sure that your code does
+not break any existing tests. We will only merge pull request that include full
 code coverage of the fixed bugs and the new features.
 
-To run the existing PHPUnit tests, run this command:
+### Running the unit tests
 
-    vendor/bin/phpunit Tests/
+To run the existing unit tests, run this command:
+
+    vendor/bin/phpunit Tests/Unit/
+
+### Running the integration tests
+
+For being able to run the integration tests, you will need a local MySQL
+database and a user with access permissions to that database.
+
+After you have created the database and the user, please import the database
+schema once. Assuming that your database is named `phplist_test`, the user is
+named `phplist`, and the password is `batterystaple`, the command looks like
+this:
+
+    mysql -u phplist_test --password=batterystaple phplist_test < Database/Schema.sql
+
+When running the integration tests, you will need to specifcy the database name
+and access credentials on the command line (in the same line):
+
+    PHPLIST_DATABASE_NAME=phplist_test PHPLIST_DATABASE_USER=phplist PHPLIST_DATABASE_PASSWORD=batterystaple vendor/bin/phpunit Tests/Integration/
 
 
 ## Coding Style
@@ -88,6 +107,11 @@ We will only merge pull requests that follow the project's coding style.
 
 Please check your code with the provided PHP_CodeSniffer standard:
 
-    vendor/bin/phpcs --standard=PSR2 Classes/ Tests/
+    vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ Classes/ Tests/
+
+Please also check the code structure using PHPMD:
+
+    vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml
+
 
 Please make your code clean, well-readable and easy to understand.
