@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace PhpList\PhpList4\Tests\Unit\Domain\Model\Identity;
 
 use PhpList\PhpList4\Domain\Model\Identity\AdministratorToken;
+use PhpList\PhpList4\Tests\Unit\Domain\Model\Traits\ModelTestTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -13,6 +14,8 @@ use PHPUnit\Framework\TestCase;
  */
 class AdministratorTokenTest extends TestCase
 {
+    use ModelTestTrait;
+
     /**
      * @var AdministratorToken
      */
@@ -40,21 +43,6 @@ class AdministratorTokenTest extends TestCase
         $this->setSubjectId($id);
 
         self::assertSame($id, $this->subject->getId());
-    }
-
-    /**
-     * Sets the (private) ID of $this->subject.
-     *
-     * @param int $id
-     * @return void
-     * @internal param AdministratorToken $subject
-     */
-    private function setSubjectId(int $id)
-    {
-        $reflectionObject = new \ReflectionObject($this->subject);
-        $reflectionProperty = $reflectionObject->getProperty('id');
-        $reflectionProperty->setAccessible(true);
-        $reflectionProperty->setValue($this->subject, $id);
     }
 
     /**

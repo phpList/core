@@ -57,6 +57,11 @@
             "core/helper/Shortcuts.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "PhpList\\PhpList4\\Tests\\": "Tests/"
+        }
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "4.0.0-dev"
