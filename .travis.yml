@@ -56,3 +56,8 @@ script:
     echo "Running the unit tests";
     vendor/bin/phpunit core/tests/;
     vendor/bin/phpunit Tests/Unit/;
+
+  - >
+    echo;
+    echo "Running PHPMD";
+    vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml;
