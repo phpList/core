@@ -113,5 +113,8 @@ Please also check the code structure using PHPMD:
 
     vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml
 
+And also please run the static code analysis:
+
+    vendor/bin/phpstan analyse -l 5 Classes/ Tests/
 
 Please make your code clean, well-readable and easy to understand.

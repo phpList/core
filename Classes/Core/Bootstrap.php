@@ -20,7 +20,7 @@ use Doctrine\ORM\Tools\Setup;
 class Bootstrap
 {
     /**
-     * @var Bootstrap
+     * @var Bootstrap|null
      */
     private static $instance = null;
 

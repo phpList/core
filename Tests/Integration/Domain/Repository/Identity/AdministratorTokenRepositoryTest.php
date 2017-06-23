@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Identity;
 
+use Doctrine\Common\Persistence\ObjectRepository;
 use PhpList\PhpList4\Core\Bootstrap;
 use PhpList\PhpList4\Domain\Model\Identity\AdministratorToken;
 use PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository;
@@ -41,7 +42,7 @@ class AdministratorTokenRepositoryTest extends TestCase
     private $dataSet = null;
 
     /**
-     * @var AdministratorTokenRepository
+     * @var AdministratorTokenRepository|ObjectRepository
      */
     private $subject = null;
 

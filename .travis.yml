@@ -59,6 +59,11 @@ script:
 
   - >
     echo;
+    echo "Running the static analysis";
+    vendor/bin/phpstan analyse -l 5 Classes/ Tests/;
+
+  - >
+    echo;
     echo "Running PHPMD";
     vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml;
 
