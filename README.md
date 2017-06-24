@@ -44,11 +44,11 @@ which also has more detailed installation instructions in the README.
 Please read the [contribution guide](.github/CONTRIBUTING.md) on how to
 contribute and how to run the unit tests and style checks locally.
 
-
 ### Code of Conduct
 
-This project adheres to a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project and its
-community, you are expected to uphold this code.
+This project adheres to a [Contributor Code of Conduct](CODE_OF_CONDUCT.md).
+By participating in this project and its community, you are expected to uphold
+this code.
 
 
 ## Changing the database schema
@@ -69,4 +69,4 @@ More documentation for this will follow.
 
 ## Copyright
 
-phpList is copyright (C) 2000-2017 [phpList Ltd](http://www.phplist.com/).
+phpList is copyright (C) 2000-2017 [phpList Ltd](https://www.phplist.com/).

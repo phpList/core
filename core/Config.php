@@ -388,8 +388,8 @@ class Config
         $this->running_config['DEVSITE'] = false;
         $this->running_config['TRANSLATIONS_XML'] = 'http://translate.phplist.com/translations.xml';
 
-        $this->running_config['TLD_AUTH_LIST'] = 'http://www.phplist.com/files/tlds-alpha-by-domain.txt';
-        $this->running_config['TLD_AUTH_MD5'] = 'http://www.phplist.com/files/tlds-alpha-by-domain.txt.md5';
+        $this->running_config['TLD_AUTH_LIST'] = 'https://www.phplist.com/files/tlds-alpha-by-domain.txt';
+        $this->running_config['TLD_AUTH_MD5'] = 'https://www.phplist.com/files/tlds-alpha-by-domain.txt.md5';
         $this->running_config['TLD_REFETCH_TIMEOUT'] = 15552000; ## 180 days, about 6 months
         $this->running_config['SHOW_UNSUBSCRIBELINK'] = true;
 
@@ -541,11 +541,11 @@ class Config
         $v = PHPLIST_DEV_VERSION ? 'dev' : PHPLIST_VERSION;
 
         if ($this->running_config['REGISTER']) {
-            $PoweredByImage = '<p class="poweredby"><a href="http://www.phplist.com/poweredby?utm_source=pl' . $v . '&amp;utm_medium=poweredhostedimg&amp;utm_campaign=phpList" title="visit the phpList website" ><img src="http://powered.phplist.com/images/' . $v . '/power-phplist.png" width="70" height="30" title="powered by phpList version ' . $v . ', &copy; phpList ltd" alt="powered by phpList ' . $v . ', &copy; phpList ltd" border="0" /></a></p>';
+            $PoweredByImage = '<p class="poweredby"><a href="https://www.phplist.com/poweredby?utm_source=pl' . $v . '&amp;utm_medium=poweredhostedimg&amp;utm_campaign=phpList" title="visit the phpList website" ><img src="http://powered.phplist.com/images/' . $v . '/power-phplist.png" width="70" height="30" title="powered by phpList version ' . $v . ', &copy; phpList ltd" alt="powered by phpList ' . $v . ', &copy; phpList ltd" border="0" /></a></p>';
         } else {
-            $PoweredByImage = '<p class="poweredby"><a href="http://www.phplist.com/poweredby?utm_source=pl' . $v . '&amp;utm_medium=poweredlocalimg&amp;utm_campaign=phpList" title="visit the phpList website"><img src="images/power-phplist.png" width="70" height="30" title="powered by phpList version ' . $v . ', &copy; phpList ltd" alt="powered by phpList ' . $v . ', &copy; phpList ltd" border="0"/></a></p>';
+            $PoweredByImage = '<p class="poweredby"><a href="https://www.phplist.com/poweredby?utm_source=pl' . $v . '&amp;utm_medium=poweredlocalimg&amp;utm_campaign=phpList" title="visit the phpList website"><img src="images/power-phplist.png" width="70" height="30" title="powered by phpList version ' . $v . ', &copy; phpList ltd" alt="powered by phpList ' . $v . ', &copy; phpList ltd" border="0"/></a></p>';
         }
-        $PoweredByText = '<div style="clear: both; font-family: arial, verdana, sans-serif; font-size: 8px; font-variant: small-caps; font-weight: normal; padding: 2px; padding-left:10px;padding-top:20px;">powered by <a href="http://www.phplist.com/poweredby?utm_source=download' . $v . '&amp;utm_medium=poweredtxt&amp;utm_campaign=phpList" target="_blank" title="powered by phpList version ' . $v . ', &copy; phpList ltd">phpList</a></div>';
+        $PoweredByText = '<div style="clear: both; font-family: arial, verdana, sans-serif; font-size: 8px; font-variant: small-caps; font-weight: normal; padding: 2px; padding-left:10px;padding-top:20px;">powered by <a href="https://www.phplist.com/poweredby?utm_source=download' . $v . '&amp;utm_medium=poweredtxt&amp;utm_campaign=phpList" target="_blank" title="powered by phpList version ' . $v . ', &copy; phpList ltd">phpList</a></div>';
         $this->running_config['PoweredBy'] = $this->running_config['PAGETEXTCREDITS'] ? $PoweredByText : $PoweredByImage;
 
         if (DEBUG && @($_SERVER['HTTP_HOST'] != 'dev.phplist.com')) {
