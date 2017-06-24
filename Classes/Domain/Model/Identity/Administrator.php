@@ -10,7 +10,8 @@ use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
  * This class represents an administrator who can log to the system, is allowed to administer
  * selected lists (as the owner), send campaigns to these lists and edit subscribers.
  *
- * @Entity @Table(name="phplist_admin")
+ * @Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository")
+ * @Table(name="phplist_admin")
  *
  * @author Oliver Klee <oliver@phplist.com>
  */

@@ -9,7 +9,8 @@ use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
 /**
  * This class represents an API authentication token for an administrator.
  *
- * @Entity @Table(name="phplist_admintoken")
+ * @Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository")
+ * @Table(name="phplist_admintoken")
  *
  * @author Oliver Klee <oliver@phplist.com>
  */

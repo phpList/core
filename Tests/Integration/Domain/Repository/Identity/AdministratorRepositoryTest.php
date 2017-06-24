@@ -35,6 +35,14 @@ class AdministratorRepositoryTest extends AbstractRepositoryTest
     /**
      * @test
      */
+    public function instanceFromEntityManagerIsAdministratorRepository()
+    {
+        self::assertInstanceOf(AdministratorRepository::class, $this->subject);
+    }
+
+    /**
+     * @test
+     */
     public function findReadsModelFromDatabase()
     {
         $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/DetachedAdministrator.csv');
