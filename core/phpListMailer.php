@@ -535,7 +535,7 @@ class phpListMailer extends \PHPMailer
         curl_setopt(
             $curl,
             CURLOPT_USERAGENT,
-            Config::get('NAME') . ' (phpList version ' . PHPLIST_VERSION . ', http://www.phplist.com/)'
+            Config::get('NAME') . ' (phpList version ' . PHPLIST_VERSION . ', https://www.phplist.com/)'
         );
         curl_setopt($curl, CURLOPT_POST, 1);
 
