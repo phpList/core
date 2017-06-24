@@ -35,6 +35,14 @@ class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
     /**
      * @test
      */
+    public function instanceFromEntityManagerIsAdministratorTokenRepository()
+    {
+        self::assertInstanceOf(AdministratorTokenRepository::class, $this->subject);
+    }
+
+    /**
+     * @test
+     */
     public function findReadsModelFromDatabase()
     {
         $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/DetachedAdministratorToken.csv');
