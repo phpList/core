@@ -5,6 +5,7 @@ namespace PhpList\PhpList4\Tests\Unit\Domain\Model\Identity;
 
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Tests\Support\Traits\ModelTestTrait;
+use PhpList\PhpList4\Tests\Support\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -15,6 +16,7 @@ use PHPUnit\Framework\TestCase;
 class AdministratorTest extends TestCase
 {
     use ModelTestTrait;
+    use SimilarDatesAssertionTrait;
 
     /**
      * @var Administrator
@@ -113,12 +115,11 @@ class AdministratorTest extends TestCase
     /**
      * @test
      */
-    public function setCreationDateSetsCreationDate()
+    public function updateCreationDateSetsCreationDateToNow()
     {
-        $date = new \DateTime();
-        $this->subject->setCreationDate($date);
+        $this->subject->updateCreationDate();
 
-        self::assertSame($date, $this->subject->getCreationDate());
+        self::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
     }
 
     /**
@@ -132,12 +133,11 @@ class AdministratorTest extends TestCase
     /**
      * @test
      */
-    public function setModificationDateSetsModificationDate()
+    public function updateModificationDateSetsModificationDateToNow()
     {
-        $date = new \DateTime();
-        $this->subject->setModificationDate($date);
+        $this->subject->updateModificationDate();
 
-        self::assertSame($date, $this->subject->getModificationDate());
+        self::assertSimilarDates(new \DateTime(), $this->subject->getModificationDate());
     }
 
     /**

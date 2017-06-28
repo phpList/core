@@ -12,6 +12,7 @@ use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
  *
  * @Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository")
  * @Table(name="phplist_admin")
+ * @HasLifecycleCallbacks
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
@@ -128,9 +129,21 @@ class Administrator implements Identity
      *
      * @return void
      */
-    public function setCreationDate(\DateTime $creationDate)
+    private function setCreationDate(\DateTime $creationDate)
     {
         $this->creationDate = $creationDate;
+    }
+
+    /**
+     * Updates the creation date to now.
+     *
+     * @PrePersist
+     *
+     * @return void
+     */
+    public function updateCreationDate()
+    {
+        $this->setCreationDate(new \DateTime());
     }
 
     /**
@@ -146,9 +159,22 @@ class Administrator implements Identity
      *
      * @return void
      */
-    public function setModificationDate(\DateTime $modificationDate)
+    private function setModificationDate(\DateTime $modificationDate)
     {
         $this->modificationDate = $modificationDate;
+    }
+
+    /**
+     * Updates the modification date to now.
+     *
+     * @PrePersist
+     * @PreUpdate
+     *
+     * @return void
+     */
+    public function updateModificationDate()
+    {
+        $this->setModificationDate(new \DateTime());
     }
 
     /**
