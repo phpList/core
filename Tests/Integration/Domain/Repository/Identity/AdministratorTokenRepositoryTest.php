@@ -29,7 +29,7 @@ class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
     {
         parent::setUp();
 
-        $this->subject = $this->bootstrap->getEntityManager()->getRepository(AdministratorToken::class);
+        $this->subject = $this->entityManager->getRepository(AdministratorToken::class);
     }
 
     /**

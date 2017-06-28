@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Tests\Integration\Domain\Repository;
 
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\PhpList4\Core\Bootstrap;
 use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
 use PHPUnit\DbUnit\Database\Connection;
@@ -41,10 +42,17 @@ abstract class AbstractRepositoryTest extends TestCase
      */
     protected $bootstrap = null;
 
+    /**
+     * @var EntityManagerInterface
+     */
+    protected $entityManager = null;
+
     protected function setUp()
     {
         $this->bootstrap = Bootstrap::getInstance()->activateDevelopmentMode()->configure();
         $this->initializeDatabaseTester();
+        $this->entityManager = $this->bootstrap->getEntityManager();
+        self::assertTrue($this->entityManager->isOpen());
     }
 
     /**
@@ -62,6 +70,7 @@ abstract class AbstractRepositoryTest extends TestCase
 
     protected function tearDown()
     {
+        $this->entityManager->close();
         $this->getDatabaseTester()->setTearDownOperation($this->getTearDownOperation());
         $this->getDatabaseTester()->setDataSet($this->getDataSet());
         $this->getDatabaseTester()->onTearDown();

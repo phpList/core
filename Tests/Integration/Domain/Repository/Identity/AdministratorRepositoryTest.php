@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Identity;
 
 use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\PhpList4\Tests\Integration\Domain\Repository\AbstractRepositoryTest;
@@ -25,11 +26,16 @@ class AdministratorRepositoryTest extends AbstractRepositoryTest
      */
     private $subject = null;
 
+    /**
+     * @var EntityManagerInterface
+     */
+    protected $entityManager = null;
+
     protected function setUp()
     {
         parent::setUp();
 
-        $this->subject = $this->bootstrap->getEntityManager()->getRepository(Administrator::class);
+        $this->subject = $this->entityManager->getRepository(Administrator::class);
     }
 
     /**
