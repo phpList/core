@@ -4,7 +4,8 @@ declare(strict_types=1);
 namespace PhpList\PhpList4\Tests\Unit\Domain\Model\Identity;
 
 use PhpList\PhpList4\Domain\Model\Identity\AdministratorToken;
-use PhpList\PhpList4\Tests\Unit\Domain\Model\Traits\ModelTestTrait;
+use PhpList\PhpList4\Tests\Support\Traits\ModelTestTrait;
+use PhpList\PhpList4\Tests\Support\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -15,6 +16,7 @@ use PHPUnit\Framework\TestCase;
 class AdministratorTokenTest extends TestCase
 {
     use ModelTestTrait;
+    use SimilarDatesAssertionTrait;
 
     /**
      * @var AdministratorToken
@@ -88,14 +90,9 @@ class AdministratorTokenTest extends TestCase
      */
     public function generateExpirySetsExpiryOneHourInTheFuture()
     {
-        $expectedExpiry = new \DateTime('+1 hour');
-
         $this->subject->generateExpiry();
 
-        $actualExpiry = $this->subject->getExpiry();
-        $difference = $actualExpiry->diff($expectedExpiry, true);
-        $differenceInSeconds = $difference->s + $difference->i * 60 + $difference->h * 3600;
-        self::assertLessThan(2, $differenceInSeconds);
+        self::assertSimilarDates(new \DateTime('+1 hour'), $this->subject->getExpiry());
     }
 
     /**

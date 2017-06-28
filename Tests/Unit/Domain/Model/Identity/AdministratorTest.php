@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace PhpList\PhpList4\Tests\Unit\Domain\Model\Identity;
 
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
-use PhpList\PhpList4\Tests\Unit\Domain\Model\Traits\ModelTestTrait;
+use PhpList\PhpList4\Tests\Support\Traits\ModelTestTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
