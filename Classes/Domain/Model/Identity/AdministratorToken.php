@@ -64,9 +64,19 @@ class AdministratorToken implements Identity
      *
      * @return void
      */
-    public function setExpiry(\DateTime $expiry)
+    private function setExpiry(\DateTime $expiry)
     {
         $this->expiry = $expiry;
+    }
+
+    /**
+     * Generates and sets an expiry one hour in the future.
+     *
+     * @return void
+     */
+    public function generateExpiry()
+    {
+        $this->setExpiry(new \DateTime(self::DEFAULT_EXPIRY));
     }
 
     /**
@@ -96,16 +106,6 @@ class AdministratorToken implements Identity
     {
         $key = md5(random_bytes(256));
         $this->setKey($key);
-    }
-
-    /**
-     * Generates and sets an expiry one hour in the future.
-     *
-     * @return void
-     */
-    public function generateExpiry()
-    {
-        $this->setExpiry(new \DateTime(self::DEFAULT_EXPIRY));
     }
 
     /**
