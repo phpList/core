@@ -1,2 +1,2 @@
-id,loginname,namelc,email,created,modified,password,passwordchanged,disabled
-1,"john.doe","john-doe","john@example.com","2017-06-22 15:01:17","2017-06-23 19:50:43","1491a3c7e7b23b9a6393323babbb095dee0d7d81b2199617b487bd0fb5236f3c","2017-06-28",1
+id,loginname,email,created,modified,password,passwordchanged,disabled
+1,"john.doe","john@example.com","2017-06-22 15:01:17","2017-06-23 19:50:43","1491a3c7e7b23b9a6393323babbb095dee0d7d81b2199617b487bd0fb5236f3c","2017-06-28",1

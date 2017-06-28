@@ -69,25 +69,6 @@ class AdministratorTest extends TestCase
     /**
      * @test
      */
-    public function getNormalizedLoginNameInitiallyReturnsEmptyString()
-    {
-        self::assertSame('', $this->subject->getNormalizedLoginName());
-    }
-
-    /**
-     * @test
-     */
-    public function setNormalizedLoginNameSetsNormalizedLoginName()
-    {
-        $value = 'jane-doe';
-        $this->subject->setNormalizedLoginName($value);
-
-        self::assertSame($value, $this->subject->getNormalizedLoginName());
-    }
-
-    /**
-     * @test
-     */
     public function getEmailAddressInitiallyReturnsEmptyString()
     {
         self::assertSame('', $this->subject->getEmailAddress());

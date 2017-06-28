@@ -66,7 +66,6 @@ class AdministratorRepositoryTest extends AbstractRepositoryTest
 
         self::assertSame($id, $actualModel->getId());
         self::assertSame($loginName, $actualModel->getLoginName());
-        self::assertSame($normalizedLoginName, $actualModel->getNormalizedLoginName());
         self::assertSame($emailAddress, $actualModel->getEmailAddress());
         self::assertEquals($creationDate, $actualModel->getCreationDate());
         self::assertEquals($modificationDate, $actualModel->getModificationDate());

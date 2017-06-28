@@ -28,12 +28,6 @@ class Administrator implements Identity
 
     /**
      * @var string
-     * @Column(name="namelc")
-     */
-    private $normalizedLoginName = '';
-
-    /**
-     * @var string
      * @Column(name="email")
      */
     private $emailAddress = '';
@@ -84,24 +78,6 @@ class Administrator implements Identity
     public function setLoginName(string $loginName)
     {
         $this->loginName = $loginName;
-    }
-
-    /**
-     * @return string
-     */
-    public function getNormalizedLoginName(): string
-    {
-        return $this->normalizedLoginName;
-    }
-
-    /**
-     * @param string $normalizedLoginName
-     *
-     * @return void
-     */
-    public function setNormalizedLoginName(string $normalizedLoginName)
-    {
-        $this->normalizedLoginName = $normalizedLoginName;
     }
 
     /**
