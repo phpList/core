@@ -78,17 +78,6 @@ class AdministratorTokenTest extends TestCase
     /**
      * @test
      */
-    public function setExpirySetsExpiry()
-    {
-        $expiry = new \DateTime();
-        $this->subject->setExpiry($expiry);
-
-        self::assertSame($expiry, $this->subject->getExpiry());
-    }
-
-    /**
-     * @test
-     */
     public function generateExpirySetsExpiryOneHourInTheFuture()
     {
         $this->subject->generateExpiry();
