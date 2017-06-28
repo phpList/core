@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Tests\Unit\Domain\Model\Identity;
 
+use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Model\Identity\AdministratorToken;
 use PhpList\PhpList4\Tests\Support\Traits\ModelTestTrait;
 use PhpList\PhpList4\Tests\Support\Traits\SimilarDatesAssertionTrait;
@@ -117,5 +118,24 @@ class AdministratorTokenTest extends TestCase
         $secondKey = $this->subject->getKey();
 
         self::assertNotSame($firstKey, $secondKey);
+    }
+
+    /**
+     * @test
+     */
+    public function getAdministratorInitiallyReturnsNull()
+    {
+        self::assertNull($this->subject->getAdministrator());
+    }
+
+    /**
+     * @test
+     */
+    public function setAdministratorSetsAdministrator()
+    {
+        $model = new Administrator();
+        $this->subject->setAdministrator($model);
+
+        self::assertSame($model, $this->subject->getAdministrator());
     }
 }

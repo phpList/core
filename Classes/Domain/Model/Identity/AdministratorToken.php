@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Domain\Model\Identity;
 
+use Doctrine\ORM\Proxy\Proxy;
 use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
 use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
 
@@ -34,6 +35,13 @@ class AdministratorToken implements Identity
      * @Column(name="value")
      */
     private $key = '';
+
+    /**
+     * @var Administrator|Proxy
+     * @ManyToOne(targetEntity="PhpList\PhpList4\Domain\Model\Identity\Administrator")
+     * @JoinColumn(name="adminid")
+     */
+    private $administrator = null;
 
     /**
      * The Constructor.
@@ -98,5 +106,23 @@ class AdministratorToken implements Identity
     public function generateExpiry()
     {
         $this->setExpiry(new \DateTime(self::DEFAULT_EXPIRY));
+    }
+
+    /**
+     * @return Administrator|Proxy|null
+     */
+    public function getAdministrator()
+    {
+        return $this->administrator;
+    }
+
+    /**
+     * @param Administrator $administrator
+     *
+     * @return void
+     */
+    public function setAdministrator(Administrator $administrator)
+    {
+        $this->administrator = $administrator;
     }
 }

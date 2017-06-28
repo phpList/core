@@ -51,7 +51,7 @@ class AdministratorRepositoryTest extends AbstractRepositoryTest
      */
     public function findReadsModelFromDatabase()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/DetachedAdministrator.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/Administrator.csv');
         $this->applyDatabaseChanges();
 
         $id = 1;
