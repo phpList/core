@@ -29,11 +29,6 @@ class AdministratorRepositoryTest extends AbstractRepositoryTest
      */
     private $subject = null;
 
-    /**
-     * @var EntityManagerInterface
-     */
-    protected $entityManager = null;
-
     protected function setUp()
     {
         parent::setUp();

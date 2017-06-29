@@ -49,8 +49,8 @@ abstract class AbstractRepositoryTest extends TestCase
 
     protected function setUp()
     {
-        $this->bootstrap = Bootstrap::getInstance()->activateDevelopmentMode()->configure();
         $this->initializeDatabaseTester();
+        $this->bootstrap = Bootstrap::getInstance()->activateDevelopmentMode()->configure();
         $this->entityManager = $this->bootstrap->getEntityManager();
         self::assertTrue($this->entityManager->isOpen());
     }
