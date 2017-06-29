@@ -57,6 +57,12 @@ class Administrator implements Identity
     private $passwordHash = '';
 
     /**
+     * @var \DateTime|null
+     * @Column(type="date", nullable=true, name="passwordchanged")
+     */
+    private $passwordChangeDate = null;
+
+    /**
      * @var bool
      * @Column(type="boolean")
      */
@@ -186,6 +192,8 @@ class Administrator implements Identity
     }
 
     /**
+     * Sets the password hash and updates the password change date to now.
+     *
      * @param string $passwordHash
      *
      * @return void
@@ -193,6 +201,25 @@ class Administrator implements Identity
     public function setPasswordHash(string $passwordHash)
     {
         $this->passwordHash = $passwordHash;
+        $this->setPasswordChangeDate(new \DateTime());
+    }
+
+    /**
+     * @return \DateTime|null
+     */
+    public function getPasswordChangeDate()
+    {
+        return $this->passwordChangeDate;
+    }
+
+    /**
+     * @param \DateTime $changeDate
+     *
+     * @return void
+     */
+    private function setPasswordChangeDate(\DateTime $changeDate)
+    {
+        $this->passwordChangeDate = $changeDate;
     }
 
     /**

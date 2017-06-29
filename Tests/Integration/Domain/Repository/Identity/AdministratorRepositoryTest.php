@@ -64,6 +64,7 @@ class AdministratorRepositoryTest extends AbstractRepositoryTest
         $creationDate = new \DateTime('2017-06-22 15:01:17');
         $modificationDate = new \DateTime('2017-06-23 19:50:43');
         $passwordHash = '8d0c8f9d1a9539021fda006427b993b9';
+        $passwordChangeDate = new \DateTime('2017-06-28');
         $disabled = true;
 
         /** @var Administrator $actualModel */
@@ -76,6 +77,7 @@ class AdministratorRepositoryTest extends AbstractRepositoryTest
         self::assertEquals($creationDate, $actualModel->getCreationDate());
         self::assertEquals($modificationDate, $actualModel->getModificationDate());
         self::assertSame($passwordHash, $actualModel->getPasswordHash());
+        self::assertEquals($passwordChangeDate, $actualModel->getPasswordChangeDate());
         self::assertSame($disabled, $actualModel->isDisabled());
     }
 

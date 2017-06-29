@@ -162,6 +162,25 @@ class AdministratorTest extends TestCase
     /**
      * @test
      */
+    public function getPasswordChangeDateInitiallyReturnsNull()
+    {
+        self::assertNull($this->subject->getPasswordChangeDate());
+    }
+
+    /**
+     * @test
+     */
+    public function setPasswordHashSetsPasswordChangeDateToNow()
+    {
+        $date = new \DateTime();
+        $this->subject->setPasswordHash('Zaphod Beeblebrox');
+
+        self::assertSimilarDates($date, $this->subject->getPasswordChangeDate());
+    }
+
+    /**
+     * @test
+     */
     public function isDisabledInitiallyReturnsFalse()
     {
         self::assertFalse($this->subject->isDisabled());
