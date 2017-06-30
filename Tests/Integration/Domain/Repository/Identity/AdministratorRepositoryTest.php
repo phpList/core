@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Identity;
 
 use Doctrine\Common\Persistence\ObjectRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\PhpList4\Tests\Integration\Domain\Repository\AbstractRepositoryTest;
@@ -58,7 +57,7 @@ class AdministratorRepositoryTest extends AbstractRepositoryTest
         $emailAddress = 'john@example.com';
         $creationDate = new \DateTime('2017-06-22 15:01:17');
         $modificationDate = new \DateTime('2017-06-23 19:50:43');
-        $passwordHash = '8d0c8f9d1a9539021fda006427b993b9';
+        $passwordHash = '1491a3c7e7b23b9a6393323babbb095dee0d7d81b2199617b487bd0fb5236f3c';
         $passwordChangeDate = new \DateTime('2017-06-28');
         $disabled = true;
 
@@ -144,5 +143,50 @@ class AdministratorRepositoryTest extends AbstractRepositoryTest
         $this->entityManager->persist($model);
 
         self::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
+    }
+
+    /**
+     * @test
+     */
+    public function findOneByLoginCredentialsForMatchingCredentialsReturnsModel()
+    {
+        $id = 1;
+        $loginName = 'john.doe';
+        $password = 'Bazinga!';
+
+        $result = $this->subject->findOneByLoginCredentials($loginName, $password);
+
+        self::assertInstanceOf(Administrator::class, $result);
+        self::assertSame($id, $result->getId());
+    }
+
+    /**
+     * @return string[][]
+     */
+    public function incorrectLoginCredentialsDataProvider(): array
+    {
+        $loginName = 'john.doe';
+        $password = 'Bazinga!';
+
+        return [
+            'all empty' => ['', ''],
+            'matching login name, empty password' => [$loginName, ''],
+            'matching login name, incorrect password' => [$loginName, 'The cake is a lie.'],
+            'empty login name, correct password' => ['', $password],
+            'incorrect name, correct password' => ['jane.doe', $password],
+        ];
+    }
+
+    /**
+     * @test
+     * @param string $loginName
+     * @param string $password
+     * @dataProvider incorrectLoginCredentialsDataProvider
+     */
+    public function findOneByLoginCredentialsForNonMatchingCredentialsReturnsNull(string $loginName, string $password)
+    {
+        $result = $this->subject->findOneByLoginCredentials($loginName, $password);
+
+        self::assertNull($result);
     }
 }
