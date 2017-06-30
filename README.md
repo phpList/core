@@ -51,6 +51,12 @@ By participating in this project and its community, you are expected to uphold
 this code.
 
 
+## Structure
+
+* [graphic domain model](Documentation/DomainModel/DomainModel.svg) and
+  a [description of the domain entities](Documentation/DomainModel/Entities.md)
+
+
 ## Changing the database schema
 
 Any changes to the database schema must always be done both in phpList 3 and
