@@ -53,6 +53,7 @@ this code.
 
 ## Structure
 
+* [class structure overview](Documentation/ClassStructure.md)
 * [graphic domain model](Documentation/DomainModel/DomainModel.svg) and
   a [description of the domain entities](Documentation/DomainModel/Entities.md)
 
@@ -62,7 +63,8 @@ this code.
 Any changes to the database schema must always be done both in phpList 3 and
 phpList 4 so that both versions always have the same schema.
 
-For changing the database schema, please edit `Database/Schema.sql`.
+For changing the database schema, please edit `Database/Schema.sql` and adapt
+the corresponding domain model classes and repository classes accordingly.
 
 
 ## phpList 4 plugins
