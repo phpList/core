@@ -52,20 +52,20 @@ class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
      */
     public function findReadsModelFromDatabase()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/DetachedAdministratorToken.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/DetachedAdministratorTokens.csv');
         $this->applyDatabaseChanges();
 
         $id = 1;
         $expiry = new \DateTime('2017-06-22 16:43:29');
         $key = 'cfdf64eecbbf336628b0f3071adba762';
 
-        /** @var AdministratorToken $actualModel */
-        $actualModel = $this->subject->find($id);
+        /** @var AdministratorToken $model */
+        $model = $this->subject->find($id);
 
-        self::assertInstanceOf(AdministratorToken::class, $actualModel);
-        self::assertSame($id, $actualModel->getId());
-        self::assertEquals($expiry, $actualModel->getExpiry());
-        self::assertSame($key, $actualModel->getKey());
+        self::assertInstanceOf(AdministratorToken::class, $model);
+        self::assertSame($id, $model->getId());
+        self::assertEquals($expiry, $model->getExpiry());
+        self::assertSame($key, $model->getKey());
     }
 
     /**
@@ -85,5 +85,53 @@ class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
         self::assertInstanceOf(Administrator::class, $administrator);
         self::assertInstanceOf(Proxy::class, $administrator);
         self::assertSame($administratorId, $administrator->getId());
+    }
+
+    /**
+     * @test
+     */
+    public function findOneUnexpiredByKeyFindsUnexpiredTokenWithMatchingKey()
+    {
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/DetachedAdministratorTokens.csv');
+        $this->applyDatabaseChanges();
+
+        $id = 2;
+        $key = '8321b19193d80ce5e1b7cd8742266a5f';
+
+        /** @var AdministratorToken $model */
+        $model = $this->subject->findOneUnexpiredByKey($key);
+
+        self::assertInstanceOf(AdministratorToken::class, $model);
+        self::assertSame($id, $model->getId());
+    }
+
+    /**
+     * @test
+     */
+    public function findOneUnexpiredByKeyNotFindsExpiredTokenWithMatchingKey()
+    {
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/DetachedAdministratorTokens.csv');
+        $this->applyDatabaseChanges();
+
+        $key = 'cfdf64eecbbf336628b0f3071adba762';
+
+        $model = $this->subject->findOneUnexpiredByKey($key);
+
+        self::assertNull($model);
+    }
+
+    /**
+     * @test
+     */
+    public function findOneUnexpiredByKeyNotFindsUnexpiredTokenWithNonMatchingKey()
+    {
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/DetachedAdministratorTokens.csv');
+        $this->applyDatabaseChanges();
+
+        $key = '03e7a64fb29115ba7581092c342299df';
+
+        $model = $this->subject->findOneUnexpiredByKey($key);
+
+        self::assertNull($model);
     }
 }
