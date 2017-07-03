@@ -34,4 +34,19 @@ class AdministratorTokenRepository extends EntityRepository
         // $firstMatch will be false if there is no match, not null.
         return $firstMatch ?: null;
     }
+
+    /**
+     * Removes all expired tokens.
+     *
+     * This method should be called regularly to clean up the tokens.
+     *
+     * @return int the number of removed tokens
+     */
+    public function removeExpired(): int
+    {
+        $queryBuilder = $this->getEntityManager()->createQueryBuilder();
+        $queryBuilder->delete(AdministratorToken::class, 'token')->where('token.expiry <= CURRENT_TIMESTAMP()');
+
+        return $queryBuilder->getQuery()->execute();
+    }
 }

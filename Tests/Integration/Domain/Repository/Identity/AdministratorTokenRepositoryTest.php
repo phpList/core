@@ -134,4 +134,71 @@ class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
 
         self::assertNull($model);
     }
+
+    /**
+     * @test
+     */
+    public function removeExpiredRemovesExpiredToken()
+    {
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/DetachedAdministratorTokens.csv');
+        $this->applyDatabaseChanges();
+
+        $idOfExpiredToken = 1;
+        $this->subject->removeExpired();
+
+        $token = $this->subject->find($idOfExpiredToken);
+        self::assertNull($token);
+    }
+
+    /**
+     * @test
+     */
+    public function removeExpiredKeepsUnexpiredToken()
+    {
+        $this->assertNotYear2037Yet();
+
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/DetachedAdministratorTokens.csv');
+        $this->applyDatabaseChanges();
+
+        $idOfUnexpiredToken = 2;
+        $this->subject->removeExpired();
+
+        $token = $this->subject->find($idOfUnexpiredToken);
+        self::assertNotNull($token);
+    }
+
+    /**
+     * Asserts that it's not year 2037 yet (which is the year the "not expired" token in the fixture
+     * data set expires).
+     *
+     * @return void
+     */
+    private function assertNotYear2037Yet()
+    {
+        $currentYear = (int)date('Y');
+        if ($currentYear >= 2037) {
+            self::markTestIncomplete('The tests token has an expiry in the year 2037. Please update this test.');
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function removeExpiredForNoExpiredTokensReturnsZero()
+    {
+        self::assertSame(0, $this->subject->removeExpired());
+    }
+
+    /**
+     * @test
+     */
+    public function removeExpiredForOneExpiredTokenReturnsOne()
+    {
+        $this->assertNotYear2037Yet();
+
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/DetachedAdministratorTokens.csv');
+        $this->applyDatabaseChanges();
+
+        self::assertSame(1, $this->subject->removeExpired());
+    }
 }
