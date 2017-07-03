@@ -6,6 +6,7 @@ namespace PhpList\PhpList4\Core;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Setup;
+use Symfony\Component\Debug\Debug;
 
 /**
  * This class bootstraps the phpList core system.
@@ -149,6 +150,14 @@ class Bootstrap
     }
 
     /**
+     * @return bool
+     */
+    private function isDebugEnabled(): bool
+    {
+        return $this->applicationContext !== self::APPLICATION_CONTEXT_PRODUCTION;
+    }
+
+    /**
      * Main entry point called at every request usually from global scope. Checks if everything is correct
      * and loads the configuration.
      *
@@ -156,7 +165,28 @@ class Bootstrap
      */
     public function configure(): Bootstrap
     {
-        $packageRootPath = dirname(__DIR__ . '/../../');
+        $this->configureDebugging();
+        $this->configureDoctrineOrm();
+
+        return $this;
+    }
+
+    /**
+     * @return void
+     */
+    private function configureDebugging()
+    {
+        if ($this->isDebugEnabled()) {
+            Debug::enable();
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function configureDoctrineOrm()
+    {
+        $packageRootPath = dirname(__DIR__, 2);
         $domainModelPath = $packageRootPath . 'Classes/Domain/Model/';
         $domainModelPaths = [$domainModelPath];
 
@@ -174,8 +204,6 @@ class Bootstrap
             $this->isDoctrineOrmDevelopmentModeEnabled()
         );
         $this->entityManager = EntityManager::create($databaseConfiguration, $ormConfiguration);
-
-        return $this;
     }
 
     /**
