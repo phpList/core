@@ -1,0 +1,3 @@
+application_homepage:
+    path:     /
+    defaults: { _controller: PhpListApplicationBundle:Default:index }

@@ -78,7 +78,7 @@ code coverage of the fixed bugs and the new features.
 
 To run the existing unit tests, run this command:
 
-    vendor/bin/phpunit Tests/Unit/
+    vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml Tests/Unit/
 
 ### Running the integration tests
 
@@ -92,10 +92,10 @@ this:
 
     mysql -u phplist_test --password=batterystaple phplist_test < Database/Schema.sql
 
-When running the integration tests, you will need to specifcy the database name
+When running the integration tests, you will need to specify the database name
 and access credentials on the command line (in the same line):
 
-    PHPLIST_DATABASE_NAME=phplist_test PHPLIST_DATABASE_USER=phplist PHPLIST_DATABASE_PASSWORD=batterystaple vendor/bin/phpunit Tests/Integration/
+    PHPLIST_DATABASE_NAME=phplist_test PHPLIST_DATABASE_USER=phplist PHPLIST_DATABASE_PASSWORD=batterystaple vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml Tests/Integration/
 
 
 ## Coding Style

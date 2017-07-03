@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Setup;
 use Symfony\Component\Debug\Debug;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * This class bootstraps the phpList core system.
@@ -74,6 +75,11 @@ class Bootstrap
      * @var EntityManager
      */
     private $entityManager = null;
+
+    /**
+     * @var ApplicationKernel
+     */
+    private $applicationKernel = null;
 
     /**
      * Protected constructor to avoid direct instantiation of this class.
@@ -157,6 +163,14 @@ class Bootstrap
     /**
      * @return bool
      */
+    private function isSymfonyDebugModeEnabled(): bool
+    {
+        return $this->applicationContext !== self::APPLICATION_CONTEXT_PRODUCTION;
+    }
+
+    /**
+     * @return bool
+     */
     private function isDebugEnabled(): bool
     {
         return $this->applicationContext !== self::APPLICATION_CONTEXT_PRODUCTION;
@@ -196,16 +210,26 @@ class Bootstrap
     public function configure(): Bootstrap
     {
         return $this->configureDebugging()
-            ->configureDoctrineOrm();
+            ->configureDoctrineOrm()
+            ->configureApplicationKernel();
     }
 
     /**
      * Dispatches the current HTTP request (if there is any).
      *
+     * @SuppressWarnings("PHPMD.StaticAccess")
+     *
      * @return null
+     *
+     * @throws \Exception
      */
     public function dispatch()
     {
+        $request = Request::createFromGlobals();
+        $response = $this->getApplicationKernel()->handle($request);
+        $response->send();
+        $this->getApplicationKernel()->terminate($request, $response);
+
         return null;
     }
 
@@ -249,10 +273,31 @@ class Bootstrap
     }
 
     /**
+     * @return Bootstrap fluent interface
+     */
+    private function configureApplicationKernel(): Bootstrap
+    {
+        $this->applicationKernel = new ApplicationKernel(
+            $this->getApplicationContext(),
+            $this->isSymfonyDebugModeEnabled()
+        );
+
+        return $this;
+    }
+
+    /**
      * @return EntityManagerInterface
      */
     public function getEntityManager(): EntityManagerInterface
     {
         return $this->entityManager;
+    }
+
+    /**
+     * @return ApplicationKernel
+     */
+    public function getApplicationKernel(): ApplicationKernel
+    {
+        return $this->applicationKernel;
     }
 }
