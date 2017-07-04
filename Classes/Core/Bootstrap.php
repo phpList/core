@@ -70,6 +70,15 @@ class Bootstrap
     private $entityManager = null;
 
     /**
+     * Protected constructor to avoid direct instantiation of this class.
+     *
+     * Please use getInstance instead.
+     */
+    protected function __construct()
+    {
+    }
+
+    /**
      * Disable direct cloning of this object.
      */
     protected function __clone()
