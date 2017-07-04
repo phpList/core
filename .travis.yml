@@ -60,7 +60,7 @@ script:
   - >
     echo;
     echo "Running the static analysis";
-    vendor/bin/phpstan analyse -l 5 Classes/ Tests/;
+    vendor/bin/phpstan analyse -l 5 Classes/ Tests/ Public/;
 
   - >
     echo;
@@ -70,4 +70,4 @@ script:
   - >
     echo;
     echo "Running PHP_CodeSniffer";
-    vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ Classes/ Tests/;
+    vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ Classes/ Tests/ Public/;

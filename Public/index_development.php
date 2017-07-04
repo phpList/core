@@ -7,5 +7,7 @@ use PhpList\PhpList4\Core\Bootstrap;
 $loader = require dirname(__DIR__) . '/vendor/autoload.php';
 
 Bootstrap::getInstance()
+    ->preventProductionEnvironment()
+    ->setApplicationContext(Bootstrap::APPLICATION_CONTEXT_DEVELOPMENT)
     ->configure()
     ->dispatch();

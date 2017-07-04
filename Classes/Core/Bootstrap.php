@@ -11,7 +11,12 @@ use Symfony\Component\Debug\Debug;
 /**
  * This class bootstraps the phpList core system.
  *
- * Include it in from the entry point and call Bootstrap::getInstance()->configure().
+ * Include it from the entry point and call Bootstrap::getInstance() to get an instance,
+ * and $bootstrap->setApplicationContext($context) if you would like to run the application in
+ * the development or testing context. (For the production context, the setApplicationContext call
+ * is not needed).
+ *
+ * After that, call $bootstrap->configure() and $bootstrap->dispatch().
  *
  * This class is the only "real" singleton in the system. All other singletons will use
  * Symfony dependency injection.
@@ -158,6 +163,31 @@ class Bootstrap
     }
 
     /**
+     * Checks that the application is not running on a production server, but on a local
+     * machine or via CLI.
+     *
+     * If a production server is detected, a 403 header is sent and execution is stopped.
+     *
+     * @SuppressWarnings("PHPMD.ExitExpression")
+     * @SuppressWarnings("PHPMD.Superglobals")
+     *
+     * @return Bootstrap fluent interface
+     */
+    public function preventProductionEnvironment(): Bootstrap
+    {
+        $usesProxy = isset($_SERVER['HTTP_CLIENT_IP']) || isset($_SERVER['HTTP_X_FORWARDED_FOR']);
+        $isOnCli = PHP_SAPI === 'cli' || PHP_SAPI === 'cli-server';
+        $isLocalRequest = isset($_SERVER['REMOTE_ADDR'])
+            && in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1'], true);
+        if ($usesProxy || (!$isOnCli && $isLocalRequest)) {
+            header('HTTP/1.0 403 Forbidden');
+            exit('You are not allowed to access this file.');
+        }
+
+        return $this;
+    }
+
+    /**
      * Main entry point called at every request usually from global scope. Checks if everything is correct
      * and loads the configuration.
      *
@@ -167,6 +197,16 @@ class Bootstrap
     {
         return $this->configureDebugging()
             ->configureDoctrineOrm();
+    }
+
+    /**
+     * Dispatches the current HTTP request (if there is any).
+     *
+     * @return null
+     */
+    public function dispatch()
+    {
+        return null;
     }
 
     /**
