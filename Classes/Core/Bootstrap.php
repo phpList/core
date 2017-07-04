@@ -103,7 +103,7 @@ class Bootstrap
     /**
      * Purges the singleton instance.
      *
-     * Note: This method is intended to be use for tests only.
+     * Note: This method is intended to be used for tests only.
      *
      * @return void
      */
