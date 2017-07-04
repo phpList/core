@@ -130,4 +130,14 @@ class BootstrapTest extends TestCase
 
         self::assertInstanceOf(EntityManagerInterface::class, $this->subject->getEntityManager());
     }
+
+    /**
+     * @test
+     *
+     * This test will be replaced by something else once the dispatch method actually does something.
+     */
+    public function dispatchCanBeCalledAndReturnsVoid()
+    {
+        self::assertNull($this->subject->dispatch());
+    }
 }
