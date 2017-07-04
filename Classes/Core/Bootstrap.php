@@ -20,14 +20,49 @@ use Doctrine\ORM\Tools\Setup;
 class Bootstrap
 {
     /**
+     * application context for running a live site
+     *
+     * @var string
+     */
+    const APPLICATION_CONTEXT_PRODUCTION = 'Production';
+
+    /**
+     * application context for developing locally
+     *
+     * @var string
+     */
+    const APPLICATION_CONTEXT_DEVELOPMENT = 'Development';
+
+    /**
+     * application context for running automated tests
+     *
+     * @var string
+     */
+    const APPLICATION_CONTEXT_TESTING = 'Testing';
+
+    /**
+     * @var string
+     */
+    const DEFAULT_APPLICATION_CONTEXT = self::APPLICATION_CONTEXT_PRODUCTION;
+
+    /**
+     * @var string[]
+     */
+    private static $validApplicationContexts = [
+        self::APPLICATION_CONTEXT_PRODUCTION,
+        self::APPLICATION_CONTEXT_DEVELOPMENT,
+        self::APPLICATION_CONTEXT_TESTING,
+    ];
+
+    /**
      * @var Bootstrap|null
      */
     private static $instance = null;
 
     /**
-     * @var bool
+     * @var string
      */
-    private $developmentMode = false;
+    private $applicationContext = self::DEFAULT_APPLICATION_CONTEXT;
 
     /**
      * @var EntityManager
@@ -68,23 +103,40 @@ class Bootstrap
     }
 
     /**
-     * Activates the development mode (which basically disables all caching).
+     * @param string $context must be one of the APPLICATION_CONTEXT_* constants
      *
      * @return Bootstrap fluent interface
+     *
+     * @throws \UnexpectedValueException
      */
-    public function activateDevelopmentMode(): Bootstrap
+    public function setApplicationContext(string $context): Bootstrap
     {
-        $this->developmentMode = true;
+        if (!in_array($context, self::$validApplicationContexts, true)) {
+            throw new \UnexpectedValueException(
+                '$context must be one of "Production", "Development", or "Testing", but actually is: ' . $context,
+                1499112172108
+            );
+        }
+
+        $this->applicationContext = $context;
 
         return $this;
     }
 
     /**
+     * @return string
+     */
+    public function getApplicationContext(): string
+    {
+        return $this->applicationContext;
+    }
+
+    /**
      * @return bool
      */
-    public function isInDevelopmentMode(): bool
+    private function isDoctrineOrmDevelopmentModeEnabled(): bool
     {
-        return $this->developmentMode;
+        return $this->applicationContext !== self::APPLICATION_CONTEXT_PRODUCTION;
     }
 
     /**
@@ -110,7 +162,7 @@ class Bootstrap
 
         $ormConfiguration = Setup::createAnnotationMetadataConfiguration(
             $domainModelPaths,
-            $this->isInDevelopmentMode()
+            $this->isDoctrineOrmDevelopmentModeEnabled()
         );
         $this->entityManager = EntityManager::create($databaseConfiguration, $ormConfiguration);
 

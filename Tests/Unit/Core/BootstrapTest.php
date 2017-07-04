@@ -22,7 +22,7 @@ class BootstrapTest extends TestCase
     protected function setUp()
     {
         $this->subject = Bootstrap::getInstance();
-        $this->subject->activateDevelopmentMode();
+        $this->subject->setApplicationContext(Bootstrap::APPLICATION_CONTEXT_TESTING);
     }
 
     protected function tearDown()
@@ -62,30 +62,55 @@ class BootstrapTest extends TestCase
     /**
      * @test
      */
-    public function developmentModeIsOffByDefault()
+    public function applicationContextIsProductionByDefault()
     {
         Bootstrap::purgeInstance();
-        $newInstance = Bootstrap::getInstance();
 
-        self::assertFalse($newInstance->isInDevelopmentMode());
+        $subject = Bootstrap::getInstance();
+
+        self::assertSame('Production', $subject->getApplicationContext());
     }
 
     /**
      * @test
      */
-    public function activateDevelopmentModeHasFluentInterface()
+    public function setApplicationContextHasFluentInterface()
     {
-        self::assertSame($this->subject, $this->subject->activateDevelopmentMode());
+        self::assertSame($this->subject, $this->subject->setApplicationContext(Bootstrap::APPLICATION_CONTEXT_TESTING));
+    }
+
+    /**
+     * @return string[][]
+     */
+    public function validApplicationContextDataProvider(): array
+    {
+        return [
+            'Production' => [Bootstrap::APPLICATION_CONTEXT_PRODUCTION],
+            'Development' => [Bootstrap::APPLICATION_CONTEXT_DEVELOPMENT],
+            'Testing' => [Bootstrap::APPLICATION_CONTEXT_TESTING],
+        ];
+    }
+
+    /**
+     * @test
+     * @param string $context
+     * @dataProvider validApplicationContextDataProvider
+     */
+    public function setApplicationContextWithValidContextSetsContext(string $context)
+    {
+        $this->subject->setApplicationContext($context);
+
+        self::assertSame($context, $this->subject->getApplicationContext());
     }
 
     /**
      * @test
      */
-    public function activateDevelopmentModeActivatesDevelopmentMode()
+    public function setApplicationContextWithInvalidContextThrowsException()
     {
-        $this->subject->activateDevelopmentMode();
+        $this->expectException(\UnexpectedValueException::class);
 
-        self::assertTrue($this->subject->isInDevelopmentMode());
+        $this->subject->setApplicationContext('Reckless');
     }
 
     /**
