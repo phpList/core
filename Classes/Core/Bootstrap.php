@@ -165,26 +165,26 @@ class Bootstrap
      */
     public function configure(): Bootstrap
     {
-        $this->configureDebugging();
-        $this->configureDoctrineOrm();
+        return $this->configureDebugging()
+            ->configureDoctrineOrm();
+    }
+
+    /**
+     * @return Bootstrap fluent interface
+     */
+    private function configureDebugging(): Bootstrap
+    {
+        if ($this->isDebugEnabled()) {
+            Debug::enable();
+        }
 
         return $this;
     }
 
     /**
-     * @return void
+     * @return Bootstrap fluent interface
      */
-    private function configureDebugging()
-    {
-        if ($this->isDebugEnabled()) {
-            Debug::enable();
-        }
-    }
-
-    /**
-     * @return void
-     */
-    private function configureDoctrineOrm()
+    private function configureDoctrineOrm(): Bootstrap
     {
         $packageRootPath = dirname(__DIR__, 2);
         $domainModelPath = $packageRootPath . 'Classes/Domain/Model/';
@@ -204,6 +204,8 @@ class Bootstrap
             $this->isDoctrineOrmDevelopmentModeEnabled()
         );
         $this->entityManager = EntityManager::create($databaseConfiguration, $ormConfiguration);
+
+        return $this;
     }
 
     /**
