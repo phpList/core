@@ -9,7 +9,7 @@
     <rule ref="rulesets/cleancode.xml/ElseExpression"/>
     <rule ref="rulesets/cleancode.xml/StaticAccess">
         <properties>
-            <property name="exceptions" value="\Doctrine\ORM\EntityManager,\Doctrine\ORM\Tools\Setup"/>
+            <property name="exceptions" value="\Doctrine\ORM\EntityManager,\Doctrine\ORM\Tools\Setup,\Symfony\Component\Debug\Debug"/>
         </properties>
     </rule>
 
