@@ -3,6 +3,11 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Domain\Model\Identity;
 
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use Doctrine\ORM\Mapping\PrePersist;
+use Doctrine\ORM\Mapping\PreUpdate;
+use Doctrine\ORM\Mapping\Table;
 use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
 use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
 
