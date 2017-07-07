@@ -26,8 +26,8 @@ class AdministratorTokenRepository extends EntityRepository
     public function findOneUnexpiredByKey(string $key)
     {
         $criteria = new Criteria();
-        $criteria->where($criteria->expr()->eq('key', $key))
-            ->andWhere($criteria->expr()->gt('expiry', new \DateTime()));
+        $criteria->where(Criteria::expr()->eq('key', $key))
+            ->andWhere(Criteria::expr()->gt('expiry', new \DateTime()));
 
         $firstMatch = $this->matching($criteria)->first();
 
