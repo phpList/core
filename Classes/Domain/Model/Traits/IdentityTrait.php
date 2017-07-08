@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Domain\Model\Traits;
 
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\Mapping\Id;
+
 /**
  * This class provides an ID property to domain models.
  *
