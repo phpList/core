@@ -2,6 +2,7 @@
 *.bak
 /.idea/
 /.project
+/.web-server-pid
 /.webprj
 /composer.lock
 /Configuration/bundles.yml
