@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace PhpList\PhpList4\Tests\Unit\Core;
 
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\PhpList4\Core\ApplicationKernel;
 use PhpList\PhpList4\Core\Bootstrap;
 use PHPUnit\Framework\TestCase;
 
@@ -133,11 +134,11 @@ class BootstrapTest extends TestCase
 
     /**
      * @test
-     *
-     * This test will be replaced by something else once the dispatch method actually does something.
      */
-    public function dispatchCanBeCalledAndReturnsVoid()
+    public function configureCreatesApplicationKernel()
     {
-        self::assertNull($this->subject->dispatch());
+        $this->subject->configure();
+
+        self::assertInstanceOf(ApplicationKernel::class, $this->subject->getApplicationKernel());
     }
 }

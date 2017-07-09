@@ -1,0 +1,10 @@
+framework:
+  test: ~
+  session:
+      storage_id: session.storage.mock_file
+  profiler:
+      collect: false
+  secret: a95c530a7af5f492a74499e70578d150d9c7e737
+  router:
+    resource: '%kernel.project_dir%/Configuration/Environments/DevelopmentRouting.yml'
+    strict_requirements: true

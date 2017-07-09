@@ -49,13 +49,13 @@ script:
   - >
     echo;
     echo "Running the unit tests";
-    vendor/bin/phpunit Tests/Unit/;
+    vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml Tests/Unit/;
     vendor/bin/phpunit core/tests/;
 
   - >
     echo;
     echo "Running the integration tests";
-    vendor/bin/phpunit Tests/Integration/;
+    vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml Tests/Integration/;
 
   - >
     echo;

@@ -1,0 +1,6 @@
+framework:
+  profiler: { only_exceptions: false }
+  secret: d9c7e737bdb920e1d10df3588a3941782b905361
+  router:
+    resource: '%kernel.project_dir%/Configuration/Environments/DevelopmentRouting.yml'
+    strict_requirements: true
