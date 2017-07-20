@@ -53,7 +53,6 @@ class AdministratorRepositoryTest extends AbstractRepositoryTest
 
         $id = 1;
         $loginName = 'john.doe';
-        $normalizedLoginName = 'john-doe';
         $emailAddress = 'john@example.com';
         $creationDate = new \DateTime('2017-06-22 15:01:17');
         $modificationDate = new \DateTime('2017-06-23 19:50:43');
