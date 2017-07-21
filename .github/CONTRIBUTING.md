@@ -119,7 +119,7 @@ And also please run the static code analysis:
 
     vendor/bin/phpstan analyse -l 5 Classes/ Tests/ Public/
 
-You can also run all code style checks using one long line:
+You can also run all code style checks using one long line from a bash shell:
     find Classes/ Tests/ Public/ core/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l && vendor/bin/phpstan analyse -l 5 Classes/ Tests/ Public/ && vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml && vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ Classes/ Tests/ Public/
 
 This will execute all tests except for the unit tests and the integration
