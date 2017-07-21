@@ -26,6 +26,12 @@ class ApplicationKernel extends Kernel
             new PhpListApplicationBundle(),
         ];
 
+        // This will later be changed so that the REST API package can register itself to the core.
+        if ($this->isRestBundleInstalled()) {
+            $className = $this->getRestBundleClassName();
+            $bundles[] = new $className();
+        }
+
         return $bundles;
     }
 
@@ -49,5 +55,21 @@ class ApplicationKernel extends Kernel
     public function registerContainerConfiguration(LoaderInterface $loader)
     {
         $loader->load($this->getRootDir() . '/Configuration/Environments/' . $this->getEnvironment() . '.yml');
+    }
+
+    /**
+     * @return bool
+     */
+    private function isRestBundleInstalled(): bool
+    {
+        return class_exists($this->getRestBundleClassName());
+    }
+
+    /**
+     * @return string
+     */
+    private function getRestBundleClassName(): string
+    {
+        return 'PhpList\\RestBundle\\PhpListRestBundle';
     }
 }

@@ -6,7 +6,6 @@
 
     <!-- rules from the "clean code" rule set -->
     <rule ref="rulesets/cleancode.xml/BooleanArgumentFlag"/>
-    <rule ref="rulesets/cleancode.xml/ElseExpression"/>
     <rule ref="rulesets/cleancode.xml/StaticAccess">
         <properties>
             <property name="exceptions"

@@ -1,3 +1,6 @@
 application:
     resource: "@PhpListApplicationBundle/Routing.yml"
     prefix:   /
+extra:
+    resource: .
+    type: extra
