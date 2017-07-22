@@ -1,7 +1,5 @@
 language: php
 
-dist: precise
-
 matrix:
   include:
   - php: 7.0
@@ -40,8 +38,9 @@ install:
 before_script:
   - >
     echo;
-    echo "Importing the database schema";
+    echo "Creating the database and importing the database schema";
     mysql -e "CREATE DATABASE ${PHPLIST_DATABASE_NAME};";
+    mysql -u root -e "GRANT ALL ON ${PHPLIST_DATABASE_NAME}.* TO ${PHPLIST_DATABASE_USER}@'%';";
     mysql ${PHPLIST_DATABASE_NAME} < Database/Schema.sql;
 
 script:
