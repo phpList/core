@@ -69,7 +69,7 @@ class BootstrapTest extends TestCase
 
         $subject = Bootstrap::getInstance();
 
-        self::assertSame('Production', $subject->getApplicationContext());
+        self::assertSame(Bootstrap::APPLICATION_CONTEXT_PRODUCTION, $subject->getApplicationContext());
     }
 
     /**
