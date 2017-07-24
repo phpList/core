@@ -9,5 +9,5 @@ framework:
     collect: false
   secret: a95c530a7af5f492a74499e70578d150d9c7e737
   router:
-    resource: '%kernel.project_dir%/Configuration/Environments/TestingRouting.yml'
+    resource: '%kernel.project_dir%/Configuration/Environments/routing_test.yml'
     strict_requirements: true

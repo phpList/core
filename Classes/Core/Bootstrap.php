@@ -31,21 +31,21 @@ class Bootstrap
      *
      * @var string
      */
-    const APPLICATION_CONTEXT_PRODUCTION = 'Production';
+    const APPLICATION_CONTEXT_PRODUCTION = 'prod';
 
     /**
      * application context for developing locally
      *
      * @var string
      */
-    const APPLICATION_CONTEXT_DEVELOPMENT = 'Development';
+    const APPLICATION_CONTEXT_DEVELOPMENT = 'dev';
 
     /**
      * application context for running automated tests
      *
      * @var string
      */
-    const APPLICATION_CONTEXT_TESTING = 'Testing';
+    const APPLICATION_CONTEXT_TESTING = 'test';
 
     /**
      * @var string
