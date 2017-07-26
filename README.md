@@ -69,8 +69,8 @@ the corresponding domain model classes and repository classes accordingly.
 
 ## phpList 4 plugins
 
-In phpList 4, plugins are called modules that are Composer packages having the
-type `phplist-module`.
+In phpList 4, plugins are called modules, and are Composer packages which have 
+the type `phplist-module`.
 
 More documentation for this will follow.
 
