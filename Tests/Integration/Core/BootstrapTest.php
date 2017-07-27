@@ -36,4 +36,12 @@ class BootstrapTest extends TestCase
     {
         self::assertSame($this->subject, $this->subject->preventProductionEnvironment());
     }
+
+    /**
+     * @test
+     */
+    public function getApplicationRootReturnsCoreApplicationRoot()
+    {
+        self::assertSame(dirname(__DIR__, 3), $this->subject->getApplicationRoot());
+    }
 }

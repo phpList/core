@@ -1,12 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\Core;
+namespace PhpList\PhpList4\Tests\Integration\Core;
 
 use PhpList\PhpList4\Core\ApplicationKernel;
 use PhpList\PhpList4\Core\Bootstrap;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpKernel\Kernel;
 
 /**
  * Testcase.
@@ -33,8 +32,16 @@ class ApplicationKernelTest extends TestCase
     /**
      * @test
      */
-    public function isKernelInstance()
+    public function getProjectDirReturnsApplicationRoot()
     {
-        self::assertInstanceOf(Kernel::class, $this->subject);
+        self::assertSame(dirname(__DIR__, 3), $this->subject->getProjectDir());
+    }
+
+    /**
+     * @test
+     */
+    public function getRootDirReturnsApplicationRoot()
+    {
+        self::assertSame(dirname(__DIR__, 3), $this->subject->getRootDir());
     }
 }

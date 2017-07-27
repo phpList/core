@@ -87,12 +87,18 @@ class Bootstrap
     private $applicationKernel = null;
 
     /**
+     * @var ApplicationStructure
+     */
+    private $applicationStructure = null;
+
+    /**
      * Protected constructor to avoid direct instantiation of this class.
      *
      * Please use getInstance instead.
      */
     protected function __construct()
     {
+        $this->applicationStructure = new ApplicationStructure();
     }
 
     /**
@@ -305,7 +311,6 @@ class Bootstrap
             $this->getApplicationContext(),
             $this->isSymfonyDebugModeEnabled()
         );
-        $this->applicationKernel->setProjectDir($this->getApplicationRoot());
 
         return $this;
     }
@@ -349,23 +354,6 @@ class Bootstrap
      */
     public function getApplicationRoot(): string
     {
-        $corePackagePath = dirname(__DIR__, 2);
-        $corePackageIsRootPackage = interface_exists('PhpList\\PhpList4\\Tests\\Support\\Interfaces\\TestMarker');
-        if ($corePackageIsRootPackage) {
-            $applicationRoot = $corePackagePath;
-        } else {
-            // remove 3 more path segments, i.e., "vendor/phplist/phplist4-core/"
-            $corePackagePath = dirname($corePackagePath, 3);
-            $applicationRoot = $corePackagePath;
-        }
-
-        if (!file_exists($applicationRoot . '/composer.json')) {
-            throw new \RuntimeException(
-                'There is no composer.json in the supposed application root "' . $applicationRoot . '".',
-                1501169001588
-            );
-        }
-
-        return $applicationRoot;
+        return $this->applicationStructure->getApplicationRoot();
     }
 }
