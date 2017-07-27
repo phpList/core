@@ -67,6 +67,11 @@ class Bootstrap
     private static $instance = null;
 
     /**
+     * @var bool
+     */
+    private $isConfigured = false;
+
+    /**
      * @var string
      */
     private $applicationContext = self::DEFAULT_APPLICATION_CONTEXT;
@@ -209,9 +214,25 @@ class Bootstrap
      */
     public function configure(): Bootstrap
     {
+        $this->isConfigured = true;
+
         return $this->configureDebugging()
             ->configureDoctrineOrm()
             ->configureApplicationKernel();
+    }
+
+    /**
+     * Makes sure that configure has been called before.
+     *
+     * @return void
+     *
+     * @throws \RuntimeException if configure has not been called before
+     */
+    private function assertConfigureHasBeenCalled()
+    {
+        if (!$this->isConfigured) {
+            throw new \RuntimeException('Please call configure() first.', 1501170550897);
+        }
     }
 
     /**
@@ -221,10 +242,13 @@ class Bootstrap
      *
      * @return null
      *
+     * @throws \RuntimeException if configure has not been called before
      * @throws \Exception
      */
     public function dispatch()
     {
+        $this->assertConfigureHasBeenCalled();
+
         $request = Request::createFromGlobals();
         $response = $this->getApplicationKernel()->handle($request);
         $response->send();
@@ -281,23 +305,67 @@ class Bootstrap
             $this->getApplicationContext(),
             $this->isSymfonyDebugModeEnabled()
         );
+        $this->applicationKernel->setProjectDir($this->getApplicationRoot());
 
         return $this;
     }
 
     /**
      * @return EntityManagerInterface
+     *
+     * @throws \RuntimeException if configure has not been called before
      */
     public function getEntityManager(): EntityManagerInterface
     {
+        $this->assertConfigureHasBeenCalled();
+
         return $this->entityManager;
     }
 
     /**
      * @return ApplicationKernel
+     *
+     * @throws \RuntimeException if configure has not been called before
      */
     public function getApplicationKernel(): ApplicationKernel
     {
+        $this->assertConfigureHasBeenCalled();
+
         return $this->applicationKernel;
+    }
+
+    /**
+     * Returns the absolute path to the application root.
+     *
+     * When phplist4-core is installed as a dependency (library) of an application, this method will return
+     * the application's package path.
+     *
+     * When phpList4-core is installed stand-alone (i.e., as an application - usually only for testing),
+     * this method will be the phpList4-core package path.
+     *
+     * @return string the absolute path without the trailing slash.
+     *
+     * @throws \RuntimeException if there is no composer.json in the application root
+     */
+    public function getApplicationRoot(): string
+    {
+        $corePackagePath = dirname(__DIR__, 2);
+        $corePackageIsRootPackage = interface_exists('PhpList\\PhpList4\\Tests\\Support\\Interfaces\\TestMarker');
+        if ($corePackageIsRootPackage) {
+            $applicationRoot = $corePackagePath;
+        } else {
+            // remove 3 more path segments, i.e., "vendor/phplist/phplist4-core/"
+            $corePackagePath = dirname($corePackagePath, 3);
+            $applicationRoot = $corePackagePath;
+        }
+
+        if (!file_exists($applicationRoot . '/composer.json')) {
+            throw new \RuntimeException(
+                'There is no composer.json in the supposed application root "' . $applicationRoot . '".',
+                1501169001588
+            );
+        }
+
+        return $applicationRoot;
     }
 }

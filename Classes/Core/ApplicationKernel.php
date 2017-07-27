@@ -17,6 +17,11 @@ use Symfony\Component\HttpKernel\Kernel;
 class ApplicationKernel extends Kernel
 {
     /**
+     * @var string
+     */
+    private $projectDir = '';
+
+    /**
      * @return BundleInterface[]
      */
     public function registerBundles(): array
@@ -33,6 +38,26 @@ class ApplicationKernel extends Kernel
         }
 
         return $bundles;
+    }
+
+    /**
+     * Returns the directory of the project/application.
+     *
+     * @return string absolute path without the trailing slash
+     */
+    public function getProjectDir(): string
+    {
+        return $this->projectDir;
+    }
+
+    /**
+     * @param string $directory
+     *
+     * @return void
+     */
+    public function setProjectDir(string $directory)
+    {
+        $this->projectDir = $directory;
     }
 
     /**
