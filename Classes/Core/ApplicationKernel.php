@@ -59,6 +59,30 @@ class ApplicationKernel extends Kernel
     }
 
     /**
+     * @return string
+     */
+    private function getApplicationDir(): string
+    {
+        return $this->getAndCreateApplicationStructure()->getApplicationRoot();
+    }
+
+    /**
+     * @return string
+     */
+    public function getCacheDir(): string
+    {
+        return $this->getApplicationDir() . '/var/cache/' . $this->getEnvironment();
+    }
+
+    /**
+     * @return string
+     */
+    public function getLogDir(): string
+    {
+        return $this->getApplicationDir() . '/var/logs';
+    }
+
+    /**
      * @return ApplicationStructure
      */
     private function getAndCreateApplicationStructure(): ApplicationStructure
