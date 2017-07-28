@@ -89,7 +89,6 @@ class ScriptHandler
                 1501240572934
             );
         }
-        echo 'packacge name: ' . $packageName . chr(10);
     }
 
     /**
