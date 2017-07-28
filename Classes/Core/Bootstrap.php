@@ -204,7 +204,7 @@ class Bootstrap
         $isOnCli = PHP_SAPI === 'cli' || PHP_SAPI === 'cli-server';
         $isLocalRequest = isset($_SERVER['REMOTE_ADDR'])
             && in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1'], true);
-        if ($usesProxy || (!$isOnCli && $isLocalRequest)) {
+        if ($usesProxy || (!$isOnCli && !$isLocalRequest)) {
             header('HTTP/1.0 403 Forbidden');
             exit('You are not allowed to access this file.');
         }
