@@ -11,6 +11,18 @@ namespace PhpList\PhpList4\Core;
 class ApplicationStructure
 {
     /**
+     * Returns the absolute path to the phplist4-core package root.
+     *
+     * @return string the absolute path without the trailing slash.
+     *
+     * @throws \RuntimeException if there is no composer.json in the application root
+     */
+    public function getCorePackageRoot(): string
+    {
+        return dirname(__DIR__, 2);
+    }
+
+    /**
      * Returns the absolute path to the application root.
      *
      * When phplist4-core is installed as a dependency (library) of an application, this method will return
@@ -25,7 +37,7 @@ class ApplicationStructure
      */
     public function getApplicationRoot(): string
     {
-        $corePackagePath = dirname(__DIR__, 2);
+        $corePackagePath = $this->getCorePackageRoot();
         $corePackageIsRootPackage = interface_exists('PhpList\\PhpList4\\Tests\\Support\\Interfaces\\TestMarker');
         if ($corePackageIsRootPackage) {
             $applicationRoot = $corePackagePath;
