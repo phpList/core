@@ -37,7 +37,8 @@
         "phpunit/dbunit": "^3.0.0",
         "squizlabs/php_codesniffer": "^3.0.1",
         "phpstan/phpstan": "^0.7.0",
-        "phpmd/phpmd": "^2.6.0"
+        "phpmd/phpmd": "^2.6.0",
+        "composer/composer": "1.4.0"
     },
     "suggest": {
         "phplist/web-frontend": "4.0.x-dev",
