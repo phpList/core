@@ -47,7 +47,7 @@ class ApplicationKernel extends Kernel
      */
     public function getProjectDir(): string
     {
-        return $this->getAndCreateApplicationStructure()->getApplicationRoot();
+        return $this->getAndCreateApplicationStructure()->getCorePackageRoot();
     }
 
     /**

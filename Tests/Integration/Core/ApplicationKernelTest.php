@@ -32,7 +32,7 @@ class ApplicationKernelTest extends TestCase
     /**
      * @test
      */
-    public function getProjectDirReturnsApplicationRoot()
+    public function getProjectDirReturnsCorePackacgeRoot()
     {
         self::assertSame(dirname(__DIR__, 3), $this->subject->getProjectDir());
     }
@@ -40,7 +40,7 @@ class ApplicationKernelTest extends TestCase
     /**
      * @test
      */
-    public function getRootDirReturnsApplicationRoot()
+    public function getRootDirReturnsCorePackacgeRoot()
     {
         self::assertSame(dirname(__DIR__, 3), $this->subject->getRootDir());
     }

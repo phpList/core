@@ -30,4 +30,12 @@ class ApplicationStructureTest extends TestCase
     {
         self::assertSame(dirname(__DIR__, 3), $this->subject->getApplicationRoot());
     }
+
+    /**
+     * @test
+     */
+    public function getCorePackageRootReturnsCorePackageRoot()
+    {
+        self::assertSame(dirname(__DIR__, 3), $this->subject->getCorePackageRoot());
+    }
 }
