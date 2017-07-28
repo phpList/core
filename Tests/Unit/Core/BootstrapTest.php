@@ -165,34 +165,6 @@ class BootstrapTest extends TestCase
     /**
      * @test
      */
-    public function getApplicationRootReturnsCoreApplicationRoot()
-    {
-        self::assertSame($this->getApplicationRoot(), $this->subject->getApplicationRoot());
-    }
-
-    /**
-     * @return string
-     */
-    private function getApplicationRoot(): string
-    {
-        return dirname(__DIR__, 3);
-    }
-
-    /**
-     * @test
-     */
-    public function configureSetsApplicationKernelProjectDirToApplicationRoot()
-    {
-        $this->subject->configure();
-
-        $applicationKernel = $this->subject->getApplicationKernel();
-
-        self::assertSame($this->getApplicationRoot(), $applicationKernel->getProjectDir());
-    }
-
-    /**
-     * @test
-     */
     public function dispatchWithoutConfigureThrowsException()
     {
         $this->expectException(\RuntimeException::class);

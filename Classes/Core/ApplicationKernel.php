@@ -17,9 +17,9 @@ use Symfony\Component\HttpKernel\Kernel;
 class ApplicationKernel extends Kernel
 {
     /**
-     * @var string
+     * @var ApplicationStructure
      */
-    private $projectDir = '';
+    private $applicationStructure = null;
 
     /**
      * @return BundleInterface[]
@@ -47,17 +47,7 @@ class ApplicationKernel extends Kernel
      */
     public function getProjectDir(): string
     {
-        return $this->projectDir;
-    }
-
-    /**
-     * @param string $directory
-     *
-     * @return void
-     */
-    public function setProjectDir(string $directory)
-    {
-        $this->projectDir = $directory;
+        return $this->getAndCreateApplicationStructure()->getApplicationRoot();
     }
 
     /**
@@ -65,7 +55,19 @@ class ApplicationKernel extends Kernel
      */
     public function getRootDir(): string
     {
-        return dirname(__DIR__, 2);
+        return $this->getProjectDir();
+    }
+
+    /**
+     * @return ApplicationStructure
+     */
+    private function getAndCreateApplicationStructure(): ApplicationStructure
+    {
+        if ($this->applicationStructure === null) {
+            $this->applicationStructure = new ApplicationStructure();
+        }
+
+        return $this->applicationStructure;
     }
 
     /**
