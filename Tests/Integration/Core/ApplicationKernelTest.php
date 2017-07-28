@@ -30,18 +30,53 @@ class ApplicationKernelTest extends TestCase
     }
 
     /**
-     * @test
+     * @return string
      */
-    public function getProjectDirReturnsCorePackacgeRoot()
+    private function getCorePackageRoot(): string
     {
-        self::assertSame(dirname(__DIR__, 3), $this->subject->getProjectDir());
+        return dirname(__DIR__, 3);
     }
 
     /**
      * @test
      */
-    public function getRootDirReturnsCorePackacgeRoot()
+    public function getProjectDirReturnsCorePackageRoot()
     {
-        self::assertSame(dirname(__DIR__, 3), $this->subject->getRootDir());
+        self::assertSame($this->getCorePackageRoot(), $this->subject->getProjectDir());
+    }
+
+    /**
+     * @test
+     */
+    public function getRootDirReturnsCorePackageRoot()
+    {
+        self::assertSame($this->getCorePackageRoot(), $this->subject->getRootDir());
+    }
+
+    /**
+     * @return string
+     */
+    private function getApplicationRoot(): string
+    {
+        return dirname(__DIR__, 3);
+    }
+
+    /**
+     * @test
+     */
+    public function getCacheDirReturnsEnvironmentSpecificVarCacheDirectoryInApplicationRoot()
+    {
+        self::assertSame(
+            $this->getApplicationRoot() . '/var/cache/' . Bootstrap::APPLICATION_CONTEXT_TESTING,
+            $this->subject->getCacheDir()
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function getLogDirReturnsVarLogsDirectoryInApplicationRoot()
+    {
+        self::assertSame($this->getApplicationRoot() . '/var/logs', $this->subject->getLogDir());
     }
 }

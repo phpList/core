@@ -5,4 +5,5 @@
 /.webprj
 /composer.lock
 /nbproject
+/var/
 /vendor/
