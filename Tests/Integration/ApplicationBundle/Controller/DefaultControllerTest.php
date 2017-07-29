@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace PhpList\PhpList4\Tests\Integration\ApplicationBundle\Controller;
 
 use PhpList\PhpList4\Core\Bootstrap;
+use PhpList\PhpList4\Core\Environment;
 use Symfony\Bundle\FrameworkBundle\Client;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -21,9 +22,9 @@ class DefaultControllerTest extends WebTestCase
 
     protected function setUp()
     {
-        Bootstrap::getInstance()->setApplicationContext(Bootstrap::APPLICATION_CONTEXT_TESTING)->configure();
+        Bootstrap::getInstance()->setEnvironment(Environment::TESTING)->configure();
 
-        $this->client = self::createClient(['environment' => Bootstrap::APPLICATION_CONTEXT_TESTING]);
+        $this->client = self::createClient(['environment' => Environment::TESTING]);
     }
 
     /**

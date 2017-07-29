@@ -6,6 +6,7 @@ namespace PhpList\PhpList4\Tests\Unit\Core;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\PhpList4\Core\ApplicationKernel;
 use PhpList\PhpList4\Core\Bootstrap;
+use PhpList\PhpList4\Core\Environment;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -23,7 +24,7 @@ class BootstrapTest extends TestCase
     protected function setUp()
     {
         $this->subject = Bootstrap::getInstance();
-        $this->subject->setApplicationContext(Bootstrap::APPLICATION_CONTEXT_TESTING);
+        $this->subject->setEnvironment(Environment::TESTING);
     }
 
     protected function tearDown()
@@ -63,55 +64,55 @@ class BootstrapTest extends TestCase
     /**
      * @test
      */
-    public function applicationContextIsProductionByDefault()
+    public function environmentIsProductionByDefault()
     {
         Bootstrap::purgeInstance();
 
         $subject = Bootstrap::getInstance();
 
-        self::assertSame(Bootstrap::APPLICATION_CONTEXT_PRODUCTION, $subject->getApplicationContext());
+        self::assertSame(Environment::PRODUCTION, $subject->getEnvironment());
     }
 
     /**
      * @test
      */
-    public function setApplicationContextHasFluentInterface()
+    public function setEnvironmentHasFluentInterface()
     {
-        self::assertSame($this->subject, $this->subject->setApplicationContext(Bootstrap::APPLICATION_CONTEXT_TESTING));
+        self::assertSame($this->subject, $this->subject->setEnvironment(Environment::TESTING));
     }
 
     /**
      * @return string[][]
      */
-    public function validApplicationContextDataProvider(): array
+    public function validEnvironmentDataProvider(): array
     {
         return [
-            'Production' => [Bootstrap::APPLICATION_CONTEXT_PRODUCTION],
-            'Development' => [Bootstrap::APPLICATION_CONTEXT_DEVELOPMENT],
-            'Testing' => [Bootstrap::APPLICATION_CONTEXT_TESTING],
+            'Production' => [Environment::PRODUCTION],
+            'Development' => [Environment::DEVELOPMENT],
+            'Testing' => [Environment::TESTING],
         ];
     }
 
     /**
      * @test
-     * @param string $context
-     * @dataProvider validApplicationContextDataProvider
+     * @param string $environment
+     * @dataProvider validEnvironmentDataProvider
      */
-    public function setApplicationContextWithValidContextSetsContext(string $context)
+    public function setEnvironmentWithValidEnvironmentSetsEnvironment(string $environment)
     {
-        $this->subject->setApplicationContext($context);
+        $this->subject->setEnvironment($environment);
 
-        self::assertSame($context, $this->subject->getApplicationContext());
+        self::assertSame($environment, $this->subject->getEnvironment());
     }
 
     /**
      * @test
      */
-    public function setApplicationContextWithInvalidContextThrowsException()
+    public function setEnvironmentWithInvalidEnvironmentThrowsException()
     {
         $this->expectException(\UnexpectedValueException::class);
 
-        $this->subject->setApplicationContext('Reckless');
+        $this->subject->setEnvironment('Reckless');
     }
 
     /**
