@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use PhpList\PhpList4\Core\ApplicationKernel;
 use PhpList\PhpList4\Core\Bootstrap;
+use PhpList\PhpList4\Core\Environment;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Debug\Debug;
@@ -13,14 +14,15 @@ set_time_limit(0);
 require __DIR__ . '/../vendor/autoload.php';
 
 $input = new ArgvInput();
-$context = $input->getParameterOption(['--env', '-e'], getenv('SYMFONY_ENV') ?: 'dev');
-$debug = getenv('SYMFONY_DEBUG') !== '0' && !$input->hasParameterOption(['--no-debug', '']) && $context !== 'prod';
+$environment = $input->getParameterOption(['--env', '-e'], getenv('SYMFONY_ENV') ?: Environment::DEVELOPMENT);
+$debug = getenv('SYMFONY_DEBUG') !== '0' && !$input->hasParameterOption(['--no-debug', ''])
+    && $environment !== Environment::PRODUCTION;
 
 if ($debug) {
     Debug::enable();
 }
 
-Bootstrap::getInstance()->setApplicationContext($context)->configure();
-$kernel = new ApplicationKernel($context, $debug);
+Bootstrap::getInstance()->setEnvironment($environment)->configure();
+$kernel = new ApplicationKernel($environment, $debug);
 $application = new Application($kernel);
 $application->run($input);

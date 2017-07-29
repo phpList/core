@@ -5,6 +5,7 @@ namespace PhpList\PhpList4\Tests\Integration\Domain\Repository;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\PhpList4\Core\Bootstrap;
+use PhpList\PhpList4\Core\Environment;
 use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
 use PHPUnit\DbUnit\Database\Connection;
 use PHPUnit\DbUnit\DataSet\CsvDataSet;
@@ -50,8 +51,7 @@ abstract class AbstractRepositoryTest extends TestCase
     protected function setUp()
     {
         $this->initializeDatabaseTester();
-        $this->bootstrap = Bootstrap::getInstance()->setApplicationContext(Bootstrap::APPLICATION_CONTEXT_TESTING)
-            ->configure();
+        $this->bootstrap = Bootstrap::getInstance()->setEnvironment(Environment::TESTING)->configure();
         $this->entityManager = $this->bootstrap->getEntityManager();
         self::assertTrue($this->entityManager->isOpen());
     }

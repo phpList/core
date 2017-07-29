@@ -13,9 +13,9 @@ use Symfony\Component\HttpFoundation\Request;
  * This class bootstraps the phpList core system.
  *
  * Include it from the entry point and call Bootstrap::getInstance() to get an instance,
- * and $bootstrap->setApplicationContext($context) if you would like to run the application in
- * the development or testing context. (For the production context, the setApplicationContext call
- * is not needed).
+ * and $bootstrap->setEnvironment($environment) if you would like to run the application in
+ * the development or testing environment. (For the production environment,
+ * the setEnvironment call is not needed).
  *
  * After that, call $bootstrap->configure() and $bootstrap->dispatch().
  *
@@ -26,41 +26,6 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class Bootstrap
 {
-    /**
-     * application context for running a live site
-     *
-     * @var string
-     */
-    const APPLICATION_CONTEXT_PRODUCTION = 'prod';
-
-    /**
-     * application context for developing locally
-     *
-     * @var string
-     */
-    const APPLICATION_CONTEXT_DEVELOPMENT = 'dev';
-
-    /**
-     * application context for running automated tests
-     *
-     * @var string
-     */
-    const APPLICATION_CONTEXT_TESTING = 'test';
-
-    /**
-     * @var string
-     */
-    const DEFAULT_APPLICATION_CONTEXT = self::APPLICATION_CONTEXT_PRODUCTION;
-
-    /**
-     * @var string[]
-     */
-    private static $validApplicationContexts = [
-        self::APPLICATION_CONTEXT_PRODUCTION,
-        self::APPLICATION_CONTEXT_DEVELOPMENT,
-        self::APPLICATION_CONTEXT_TESTING,
-    ];
-
     /**
      * @var Bootstrap|null
      */
@@ -74,7 +39,7 @@ class Bootstrap
     /**
      * @var string
      */
-    private $applicationContext = self::DEFAULT_APPLICATION_CONTEXT;
+    private $environment = Environment::DEFAULT_ENVIRONMENT;
 
     /**
      * @var EntityManager
@@ -135,22 +100,16 @@ class Bootstrap
     }
 
     /**
-     * @param string $context must be one of the APPLICATION_CONTEXT_* constants
+     * @param string $environment must be one of the Environment::* constants
      *
      * @return Bootstrap fluent interface
      *
      * @throws \UnexpectedValueException
      */
-    public function setApplicationContext(string $context): Bootstrap
+    public function setEnvironment(string $environment): Bootstrap
     {
-        if (!in_array($context, self::$validApplicationContexts, true)) {
-            throw new \UnexpectedValueException(
-                '$context must be one of "Production", "Development", or "Testing", but actually is: ' . $context,
-                1499112172108
-            );
-        }
-
-        $this->applicationContext = $context;
+        Environment::validateEnvironment($environment);
+        $this->environment = $environment;
 
         return $this;
     }
@@ -158,9 +117,9 @@ class Bootstrap
     /**
      * @return string
      */
-    public function getApplicationContext(): string
+    public function getEnvironment(): string
     {
-        return $this->applicationContext;
+        return $this->environment;
     }
 
     /**
@@ -168,7 +127,7 @@ class Bootstrap
      */
     private function isDoctrineOrmDevelopmentModeEnabled(): bool
     {
-        return $this->applicationContext !== self::APPLICATION_CONTEXT_PRODUCTION;
+        return $this->environment !== Environment::PRODUCTION;
     }
 
     /**
@@ -176,7 +135,7 @@ class Bootstrap
      */
     private function isSymfonyDebugModeEnabled(): bool
     {
-        return $this->applicationContext !== self::APPLICATION_CONTEXT_PRODUCTION;
+        return $this->environment !== Environment::PRODUCTION;
     }
 
     /**
@@ -184,7 +143,7 @@ class Bootstrap
      */
     private function isDebugEnabled(): bool
     {
-        return $this->applicationContext !== self::APPLICATION_CONTEXT_PRODUCTION;
+        return $this->environment !== Environment::PRODUCTION;
     }
 
     /**
@@ -308,7 +267,7 @@ class Bootstrap
     private function configureApplicationKernel(): Bootstrap
     {
         $this->applicationKernel = new ApplicationKernel(
-            $this->getApplicationContext(),
+            $this->getEnvironment(),
             $this->isSymfonyDebugModeEnabled()
         );
 

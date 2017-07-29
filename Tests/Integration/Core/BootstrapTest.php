@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace PhpList\PhpList4\Tests\Integration\Core;
 
 use PhpList\PhpList4\Core\Bootstrap;
+use PhpList\PhpList4\Core\Environment;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,7 +22,7 @@ class BootstrapTest extends TestCase
     protected function setUp()
     {
         $this->subject = Bootstrap::getInstance();
-        $this->subject->setApplicationContext(Bootstrap::APPLICATION_CONTEXT_TESTING);
+        $this->subject->setEnvironment(Environment::TESTING);
     }
 
     protected function tearDown()
