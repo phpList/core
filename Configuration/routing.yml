@@ -1,5 +1,5 @@
 application:
-    resource: "@PhpListApplicationBundle/Routing.yml"
+    resource: "@PhpListApplicationBundle/routing.yml"
     prefix:   /
 extra:
     resource: .
