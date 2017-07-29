@@ -58,6 +58,37 @@ this code.
   a [description of the domain entities](Documentation/DomainModel/Entities.md)
 
 
+## Running the web server
+
+The phpList application is configured so that the built-in PHP web server can
+run in development and testing mode, while Apache can run in production mode.
+
+### Development
+
+For running the application in development mode using the built-in PHP server,
+use this command:
+
+    bin/console server:run
+
+The server will then listen on `http://127.0.0.1:8000` (or, if port 8000 is
+already in use, on the next free port after 8000).
+
+You can stop the server with CTRL + C.
+
+### Testing
+
+To run the server in testing mode (which normally will only be needed for the
+automated tests, provide the `--env` option:
+
+    bin/console server:run --env=test
+
+### Production
+
+For documentation on running the application in production mode using Apache,
+please see the
+[phpList base distribution README](https://github.com/phpList/base-distribution).
+
+
 ## Changing the database schema
 
 Any changes to the database schema must always be done both in phpList 3 and

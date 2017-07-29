@@ -5,6 +5,7 @@ namespace PhpList\PhpList4\Core;
 
 use PhpList\PhpList4\ApplicationBundle\PhpListApplicationBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
+use Symfony\Bundle\WebServerBundle\WebServerBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\HttpKernel\Kernel;
@@ -30,6 +31,10 @@ class ApplicationKernel extends Kernel
             new FrameworkBundle(),
             new PhpListApplicationBundle(),
         ];
+
+        if ($this->shouldHaveDevelopmentBundles()) {
+            $bundles[] = new WebServerBundle();
+        }
 
         // This will later be changed so that the REST API package can register itself to the core.
         if ($this->isRestBundleInstalled()) {
@@ -122,5 +127,13 @@ class ApplicationKernel extends Kernel
     private function getRestBundleClassName(): string
     {
         return 'PhpList\\RestBundle\\PhpListRestBundle';
+    }
+
+    /**
+     * @return bool
+     */
+    private function shouldHaveDevelopmentBundles(): bool
+    {
+        return $this->environment !== Environment::PRODUCTION;
     }
 }

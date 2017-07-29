@@ -30,6 +30,7 @@
 
         "doctrine/orm": "^2.5.6",
         "symfony/symfony": "^3.3.2",
+        "symfony/monolog-bundle": "^3.1.0",
         "sensio/framework-extra-bundle": "^3.0.26"
     },
     "require-dev": {
