@@ -1,0 +1,3 @@
+# This file will later be moved out of the vendor package into the application folder.
+parameters:
+    secret: d9c7e737bdb920e1d10df3588a3941782b905361
