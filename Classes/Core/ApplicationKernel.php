@@ -50,7 +50,7 @@ class ApplicationKernel extends Kernel
      *
      * @return string absolute path without the trailing slash
      */
-    public function getProjectDir(): string
+    public function getProjectDir()
     {
         return $this->getAndCreateApplicationStructure()->getCorePackageRoot();
     }
@@ -58,7 +58,7 @@ class ApplicationKernel extends Kernel
     /**
      * @return string
      */
-    public function getRootDir(): string
+    public function getRootDir()
     {
         return $this->getProjectDir();
     }
