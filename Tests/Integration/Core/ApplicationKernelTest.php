@@ -23,6 +23,7 @@ class ApplicationKernelTest extends TestCase
     protected function setUp()
     {
         $this->subject = new ApplicationKernel(Environment::TESTING, true);
+        $this->subject->boot();
     }
 
     protected function tearDown()
@@ -79,5 +80,15 @@ class ApplicationKernelTest extends TestCase
     public function getLogDirReturnsVarLogsDirectoryInApplicationRoot()
     {
         self::assertSame($this->getApplicationRoot() . '/var/logs', $this->subject->getLogDir());
+    }
+
+    /**
+     * @test
+     */
+    public function applicationDirIsAvailableAsContainerParameter()
+    {
+        $container = $this->subject->getContainer();
+
+        self::assertSame($this->getApplicationRoot(), $container->getParameter('kernel.application_dir'));
     }
 }
