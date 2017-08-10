@@ -7,6 +7,7 @@ use PhpList\PhpList4\ApplicationBundle\PhpListApplicationBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\WebServerBundle\WebServerBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\HttpKernel\Kernel;
 
@@ -97,6 +98,18 @@ class ApplicationKernel extends Kernel
         }
 
         return $this->applicationStructure;
+    }
+
+    /**
+     * Adds the "kernel.application_dir" parameter to the container while it is being built.
+     *
+     * @param ContainerBuilder $container
+     *
+     * @return void
+     */
+    protected function build(ContainerBuilder $container)
+    {
+        $container->setParameter('kernel.application_dir', $this->getApplicationDir());
     }
 
     /**
