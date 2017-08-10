@@ -51,7 +51,7 @@ class ApplicationKernel extends Kernel
      *
      * @return string absolute path without the trailing slash
      */
-    public function getProjectDir(): string
+    public function getProjectDir()
     {
         return $this->getAndCreateApplicationStructure()->getCorePackageRoot();
     }
@@ -59,7 +59,7 @@ class ApplicationKernel extends Kernel
     /**
      * @return string
      */
-    public function getRootDir(): string
+    public function getRootDir()
     {
         return $this->getProjectDir();
     }
@@ -75,7 +75,7 @@ class ApplicationKernel extends Kernel
     /**
      * @return string
      */
-    public function getCacheDir(): string
+    public function getCacheDir()
     {
         return $this->getApplicationDir() . '/var/cache/' . $this->getEnvironment();
     }
@@ -83,7 +83,7 @@ class ApplicationKernel extends Kernel
     /**
      * @return string
      */
-    public function getLogDir(): string
+    public function getLogDir()
     {
         return $this->getApplicationDir() . '/var/logs';
     }
