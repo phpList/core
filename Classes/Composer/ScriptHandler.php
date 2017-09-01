@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Composer;
 
+use Composer\Package\PackageInterface;
 use Composer\Script\Event;
 use PhpList\PhpList4\Core\ApplicationStructure;
 use Symfony\Component\Filesystem\Filesystem;
@@ -113,5 +114,41 @@ class ScriptHandler
             null,
             ['override' => true, 'delete' => false]
         );
+    }
+
+    /**
+     * Echos the names and version numbers of all installed phpList modules.
+     *
+     * @param Event $event
+     *
+     * @return void
+     */
+    public static function listModules(Event $event)
+    {
+        $packageRepository = new PackageRepository();
+        $packageRepository->injectComposer($event->getComposer());
+
+        $modules = $packageRepository->findModules();
+        $maximumPackageNameLength = self::calculateMaximumPackageNameLength($modules);
+
+        foreach ($modules as $module) {
+            $paddedName = str_pad($module->getName(), $maximumPackageNameLength + 1);
+            echo $paddedName . ' ' . $module->getPrettyVersion() . PHP_EOL;
+        }
+    }
+
+    /**
+     * @param PackageInterface[] $modules
+     *
+     * @return int
+     */
+    private static function calculateMaximumPackageNameLength(array $modules): int
+    {
+        $maximumLength = 0;
+        foreach ($modules as $module) {
+            $maximumLength = max($maximumLength, strlen($module->getName()));
+        }
+
+        return $maximumLength;
     }
 }

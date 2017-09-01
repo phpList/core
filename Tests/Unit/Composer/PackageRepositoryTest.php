@@ -90,4 +90,99 @@ class PackageRepositoryTest extends TestCase
 
         self::assertContains($rootPackage, $this->subject->findAll());
     }
+
+    /**
+     * @test
+     */
+    public function findModulesForPhpListModuleRootPackageIncludesIt()
+    {
+        /** @var RootPackageInterface|ObjectProphecy $rootPackageProphecy */
+        $rootPackageProphecy = $this->prophesize(RootPackageInterface::class);
+        $rootPackageProphecy->getType()->willReturn('phplist-module');
+        /** @var RootPackageInterface|ObjectProphecy $rootPackage */
+        $rootPackage = $rootPackageProphecy->reveal();
+        $this->composerProphecy->getPackage()->willReturn($rootPackage);
+
+        $this->localRepositoryProphecy->getPackages()->willReturn([]);
+
+        self::assertContains($rootPackage, $this->subject->findModules());
+    }
+
+    /**
+     * @test
+     */
+    public function findModulesForPhpListModuleDependencyReturnsIt()
+    {
+        /** @var RootPackageInterface|ObjectProphecy $rootPackageProphecy */
+        $rootPackageProphecy = $this->prophesize(RootPackageInterface::class);
+        /** @var RootPackageInterface|ObjectProphecy $rootPackage */
+        $rootPackage = $rootPackageProphecy->reveal();
+        $this->composerProphecy->getPackage()->willReturn($rootPackage);
+
+        /** @var RootPackageInterface|ObjectProphecy $dependencyProphecy */
+        $dependencyProphecy = $this->prophesize(RootPackageInterface::class);
+        $dependencyProphecy->getType()->willReturn('phplist-module');
+        /** @var RootPackageInterface|ObjectProphecy $dependency */
+        $dependency = $dependencyProphecy->reveal();
+
+        $this->localRepositoryProphecy->getPackages()->willReturn([$dependency]);
+
+        self::assertContains($dependency, $this->subject->findModules());
+    }
+
+    /**
+     * @return string[][]
+     */
+    public function nonPhpListModuleTypeDataProvider(): array
+    {
+        return [
+            'empty type' => [''],
+            'library (default)' => ['library'],
+            'project' => ['project'],
+            'symfony-bundle' => ['symfony-bundle'],
+        ];
+    }
+
+    /**
+     * @test
+     * @param string $type
+     * @dataProvider nonPhpListModuleTypeDataProvider
+     */
+    public function findModulesForNonPhpListModuleRootPackageIgnoresIt(string $type)
+    {
+        /** @var RootPackageInterface|ObjectProphecy $rootPackageProphecy */
+        $rootPackageProphecy = $this->prophesize(RootPackageInterface::class);
+        $rootPackageProphecy->getType()->willReturn($type);
+        /** @var RootPackageInterface|ObjectProphecy $rootPackage */
+        $rootPackage = $rootPackageProphecy->reveal();
+        $this->composerProphecy->getPackage()->willReturn($rootPackage);
+
+        $this->localRepositoryProphecy->getPackages()->willReturn([]);
+
+        self::assertNotContains($rootPackage, $this->subject->findModules());
+    }
+
+    /**
+     * @test
+     * @param string $type
+     * @dataProvider nonPhpListModuleTypeDataProvider
+     */
+    public function findModulesForNonPhpListModuleDependencyIgnoresIt(string $type)
+    {
+        /** @var RootPackageInterface|ObjectProphecy $rootPackageProphecy */
+        $rootPackageProphecy = $this->prophesize(RootPackageInterface::class);
+        /** @var RootPackageInterface|ObjectProphecy $rootPackage */
+        $rootPackage = $rootPackageProphecy->reveal();
+        $this->composerProphecy->getPackage()->willReturn($rootPackage);
+
+        /** @var RootPackageInterface|ObjectProphecy $dependencyProphecy */
+        $dependencyProphecy = $this->prophesize(RootPackageInterface::class);
+        $dependencyProphecy->getType()->willReturn($type);
+        /** @var RootPackageInterface|ObjectProphecy $dependency */
+        $dependency = $dependencyProphecy->reveal();
+
+        $this->localRepositoryProphecy->getPackages()->willReturn([$dependency]);
+
+        self::assertNotContains($dependency, $this->subject->findModules());
+    }
 }

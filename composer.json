@@ -61,6 +61,11 @@
             "PhpList\\PhpList4\\Tests\\": "Tests/"
         }
     },
+    "scripts": {
+        "list-modules": [
+            "PhpList\\PhpList4\\Composer\\ScriptHandler::listModules"
+        ]
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "4.0.x-dev"

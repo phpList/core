@@ -4,7 +4,10 @@ declare(strict_types=1);
 namespace PhpList\PhpList4\Tests\Unit\Composer;
 
 use Composer\Composer;
+use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
+use Composer\Repository\RepositoryManager;
+use Composer\Repository\WritableRepositoryInterface;
 use Composer\Script\Event;
 use PhpList\PhpList4\Composer\ScriptHandler;
 use PHPUnit\Framework\TestCase;
@@ -18,6 +21,16 @@ use Prophecy\Prophecy\ProphecySubjectInterface;
  */
 class ScriptHandlerTest extends TestCase
 {
+    /**
+     * @var WritableRepositoryInterface|ProphecySubjectInterface
+     */
+    private $localRepositoryProphecy = null;
+
+    /**
+     * @var RootPackageInterface|ObjectProphecy
+     */
+    private $rootPackageProphecy = null;
+
     /**
      * @test
      */
@@ -58,5 +71,140 @@ class ScriptHandlerTest extends TestCase
         $eventProphecy->getComposer()->willReturn($composerProphecy->reveal());
 
         return $eventProphecy->reveal();
+    }
+
+    /**
+     * @test
+     */
+    public function listModulesForPhpListModuleRootPackageListsIt()
+    {
+        $rootPackageName = 'phplist/phplist4-core';
+        $rootPackageVersion = '1.2.3';
+
+        $event = $this->buildMockEvent();
+
+        $this->rootPackageProphecy->getName()->willReturn($rootPackageName);
+        $this->rootPackageProphecy->getType()->willReturn('phplist-module');
+        $this->rootPackageProphecy->getPrettyVersion()->willReturn($rootPackageVersion);
+
+        $this->localRepositoryProphecy->getPackages()->willReturn([]);
+
+        ScriptHandler::listModules($event);
+
+        $this->expectOutputRegex('#' . $rootPackageName . ' +' . $rootPackageVersion . '#');
+    }
+
+    /**
+     * @test
+     */
+    public function listModulesForNonPhpListModuleRootPackageExcludesIt()
+    {
+        $rootPackageName = 'phplist/phplist4-core';
+
+        $event = $this->buildMockEvent();
+
+        $this->rootPackageProphecy->getName()->willReturn($rootPackageName);
+        $this->rootPackageProphecy->getType()->willReturn('project');
+
+        $this->localRepositoryProphecy->getPackages()->willReturn([]);
+
+        ScriptHandler::listModules($event);
+
+        $output = $this->getActualOutput();
+        self::assertNotContains($rootPackageName, $output);
+    }
+
+    /**
+     * @test
+     */
+    public function listModulesForPhpListModuleDependencyListsIt()
+    {
+        $rootPackageName = 'phplist/base-distribution';
+        $dependencyPackageName = 'amazing/listview';
+        $dependencyPackageVersion = '2.3.6';
+
+        $event = $this->buildMockEvent();
+
+        $this->rootPackageProphecy->getName()->willReturn($rootPackageName);
+        $this->rootPackageProphecy->getType()->willReturn('project');
+
+        /** @var PackageInterface|ObjectProphecy $dependencyProphecy */
+        $dependencyProphecy = $this->prophesize(PackageInterface::class);
+        $dependencyProphecy->getName()->willReturn($dependencyPackageName);
+        $dependencyProphecy->getType()->willReturn('phplist-module');
+        $dependencyProphecy->getPrettyVersion()->willReturn($dependencyPackageVersion);
+
+        /** @var PackageInterface|ProphecySubjectInterface $dependency */
+        $dependency = $dependencyProphecy->reveal();
+        $this->localRepositoryProphecy->getPackages()->willReturn([$dependency]);
+
+        ScriptHandler::listModules($event);
+
+        $this->expectOutputRegex('#' . $dependencyPackageName . ' +' . $dependencyPackageVersion . '#');
+    }
+
+    /**
+     * @test
+     */
+    public function listModulesForNonPhpListModuleDependencyExcludesIt()
+    {
+        $rootPackageName = 'phplist/base-distribution';
+        $dependencyPackageName = 'symfony/symfony';
+
+        $event = $this->buildMockEvent();
+
+        $this->rootPackageProphecy->getName()->willReturn($rootPackageName);
+        $this->rootPackageProphecy->getType()->willReturn('project');
+
+        /** @var PackageInterface|ObjectProphecy $dependencyProphecy */
+        $dependencyProphecy = $this->prophesize(PackageInterface::class);
+        $dependencyProphecy->getName()->willReturn($dependencyPackageName);
+        $dependencyProphecy->getType()->willReturn('library');
+
+        /** @var PackageInterface|ProphecySubjectInterface $dependency */
+        $dependency = $dependencyProphecy->reveal();
+        $this->localRepositoryProphecy->getPackages()->willReturn([$dependency]);
+
+        ScriptHandler::listModules($event);
+
+        $output = $this->getActualOutput();
+        self::assertNotContains($dependencyPackageName, $output);
+    }
+
+    /**
+     * @return Event
+     */
+    private function buildMockEvent(): Event
+    {
+        /** @var Composer|ObjectProphecy $composerProphecy */
+        $composerProphecy = $this->prophesize(Composer::class);
+        /** @var Composer|ProphecySubjectInterface $composer */
+        $composer = $composerProphecy->reveal();
+
+        /** @var RepositoryManager|ObjectProphecy $repositoryManagerProphecy */
+        $repositoryManagerProphecy = $this->prophesize(RepositoryManager::class);
+        /** @var RepositoryManager|ProphecySubjectInterface $repositoryManager */
+        $repositoryManager = $repositoryManagerProphecy->reveal();
+        $composerProphecy->getRepositoryManager()->willReturn($repositoryManager);
+
+        $this->localRepositoryProphecy = $this->prophesize(WritableRepositoryInterface::class);
+        /** @var WritableRepositoryInterface|ProphecySubjectInterface $localRepository */
+        $localRepository = $this->localRepositoryProphecy->reveal();
+        $repositoryManagerProphecy->getLocalRepository()->willReturn($localRepository);
+
+        /** @var RootPackageInterface|ObjectProphecy $rootPackageProphecy */
+        $rootPackageProphecy = $this->prophesize(RootPackageInterface::class);
+        /** @var RootPackageInterface|ObjectProphecy $rootPackage */
+        $rootPackage = $rootPackageProphecy->reveal();
+        $composerProphecy->getPackage()->willReturn($rootPackage);
+        $this->rootPackageProphecy = $rootPackageProphecy;
+
+        /** @var Event|ObjectProphecy $eventProphecy */
+        $eventProphecy = $this->prophesize(Event::class);
+        $eventProphecy->getComposer()->willReturn($composer);
+        /** @var Event|ProphecySubjectInterface $eventProphecy */
+        $event = $eventProphecy->reveal();
+
+        return $event;
     }
 }
