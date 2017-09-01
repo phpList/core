@@ -3,13 +3,13 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Core;
 
-use PhpList\PhpList4\ApplicationBundle\PhpListApplicationBundle;
-use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\WebServerBundle\WebServerBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * This class takes care of processing HTTP requests using Symfony.
@@ -28,19 +28,9 @@ class ApplicationKernel extends Kernel
      */
     public function registerBundles(): array
     {
-        $bundles = [
-            new FrameworkBundle(),
-            new PhpListApplicationBundle(),
-        ];
-
+        $bundles = $this->bundlesFromConfiguration();
         if ($this->shouldHaveDevelopmentBundles()) {
             $bundles[] = new WebServerBundle();
-        }
-
-        // This will later be changed so that the REST API package can register itself to the core.
-        if ($this->isRestBundleInstalled()) {
-            $className = $this->getRestBundleClassName();
-            $bundles[] = new $className();
         }
 
         return $bundles;
@@ -65,7 +55,15 @@ class ApplicationKernel extends Kernel
     }
 
     /**
-     * @return string
+     * Returns the absolute path to the application root.
+     *
+     * When phplist4-core is installed as a dependency (library) of an application, this method will return
+     * the application's package path.
+     *
+     * When phpList4-core is installed stand-alone (i.e., as an application - usually only for testing),
+     * this method will be the phpList4-core package path.
+     *
+     * @return string the absolute path without the trailing slash
      */
     private function getApplicationDir(): string
     {
@@ -129,24 +127,48 @@ class ApplicationKernel extends Kernel
     /**
      * @return bool
      */
-    private function isRestBundleInstalled(): bool
-    {
-        return class_exists($this->getRestBundleClassName());
-    }
-
-    /**
-     * @return string
-     */
-    private function getRestBundleClassName(): string
-    {
-        return 'PhpList\\RestBundle\\PhpListRestBundle';
-    }
-
-    /**
-     * @return bool
-     */
     private function shouldHaveDevelopmentBundles(): bool
     {
         return $this->environment !== Environment::PRODUCTION;
+    }
+
+    /**
+     * Reads the bundles from the budnle configuration file and instantiates them.
+     *
+     * @return Bundle[]
+     */
+    private function bundlesFromConfiguration(): array
+    {
+        $bundles = [];
+
+        /** @var string[] $packageBundles */
+        foreach ($this->readBundleConfiguration() as $packageBundles) {
+            foreach ($packageBundles as $bundleClassName) {
+                if (class_exists($bundleClassName)) {
+                    $bundles[] = new $bundleClassName();
+                }
+            }
+        }
+
+        return $bundles;
+    }
+
+    /**
+     * Reads the bundle configuration file and returns two-dimensional array:
+     *
+     * 'package name' => [0 => 'bundle class name']
+     *
+     * @return string[][]
+     *
+     * @throws \RuntimeException if the configuration file cannot be read
+     */
+    private function readBundleConfiguration(): array
+    {
+        $configurationFilePath = $this->getApplicationDir() . '/Configuration/bundles.yml';
+        if (!is_readable($configurationFilePath)) {
+            throw new \RuntimeException('The file "' . $configurationFilePath . '" could not be read.', 1504272377302);
+        }
+
+        return Yaml::parse(file_get_contents($configurationFilePath));
     }
 }

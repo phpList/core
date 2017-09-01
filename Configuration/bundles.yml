@@ -1,0 +1,6 @@
+# This file will be removed and automatically generated later.
+"phplist/phplist4-core":
+    - "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle"
+    - "PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle"
+"phplist/rest-api":
+    - "PhpList\\RestBundle\\PhpListRestBundle"

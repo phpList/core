@@ -31,7 +31,7 @@ class ApplicationStructure
      * When phpList4-core is installed stand-alone (i.e., as an application - usually only for testing),
      * this method will be the phpList4-core package path.
      *
-     * @return string the absolute path without the trailing slash.
+     * @return string the absolute path without the trailing slash
      *
      * @throws \RuntimeException if there is no composer.json in the application root
      */
