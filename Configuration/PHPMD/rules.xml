@@ -9,7 +9,7 @@
     <rule ref="rulesets/cleancode.xml/StaticAccess">
         <properties>
             <property name="exceptions"
-                      value="\Doctrine\ORM\EntityManager,\Doctrine\ORM\Tools\Setup,\Symfony\Component\Debug\Debug,PhpList\PhpList4\Core\Environment"/>
+                      value="\Doctrine\ORM\EntityManager,\Doctrine\ORM\Tools\Setup,\Symfony\Component\Debug\Debug,PhpList\PhpList4\Core\Environment,Symfony\Component\Yaml\Yaml"/>
         </properties>
     </rule>
 
