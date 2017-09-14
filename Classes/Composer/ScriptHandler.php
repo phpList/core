@@ -21,6 +21,11 @@ class ScriptHandler
     const CORE_PACKAGE_NAME = 'phplist/phplist4-core';
 
     /**
+     * @var string
+     */
+    const BUNDLE_CONFIGURATION_FILE = 'Configuration/bundles.yml';
+
+    /**
      * @return string absolute application root directory without the trailing slash
      *
      * @throws \RuntimeException if there is no composer.json in the application root
@@ -150,5 +155,26 @@ class ScriptHandler
         }
 
         return $maximumLength;
+    }
+
+    /**
+     * Creates the configuration file for the Symfony bundles provided by the modules.
+     *
+     * @param Event $event
+     *
+     * @return void
+     */
+    public static function createBundleConfiguration(Event $event)
+    {
+        $packageRepository = new PackageRepository();
+        $packageRepository->injectComposer($event->getComposer());
+
+        $bundleFinder = new ModuleBundleFinder();
+        $bundleFinder->injectPackageRepository($packageRepository);
+
+        $configurationFilePath = __DIR__ . '/../../' . self::BUNDLE_CONFIGURATION_FILE;
+        $fileHandle = fopen($configurationFilePath, 'w');
+        fwrite($fileHandle, $bundleFinder->createBundleConfigurationYaml());
+        fclose($fileHandle);
     }
 }
