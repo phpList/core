@@ -24,7 +24,7 @@
         "source": "https://github.com/phpList/phplist4-core"
     },
     "require": {
-        "php": "~7.0.0 || ~7.1.0",
+        "php": "~7.0.0 || ~7.1.0 || ~7.2.0",
 
         "roave/security-advisories": "dev-master",
 
