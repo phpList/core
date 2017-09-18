@@ -1,77 +1,58 @@
 language: php
-
 matrix:
   include:
   - php: 7.0
   - php: 7.1
-
 services:
-  - mysql
-
+- mysql
 env:
   global:
-    - secure: "GRmIZt08nxg5r3uREPfW2Gz49LIkFVmU/kzSzJ78VISmjuWMUdiZ9GJFmzzvKBxQ0tzUlpvibBu1dvSqOAA4HZ72+p2PvTvezgL8S6dyaJ7bHRlyQlE1SDkK/tctFrIjGdXLAP7vNwqC7ZXtX7iH9Fk3znxy9BnLp4xGZDW54YU="
-    - PHPLIST_DATABASE_NAME=phplist
-    - PHPLIST_DATABASE_USER=travis
-    - PHPLIST_DATABASE_PASSWORD=''
-
+  - secure: GRmIZt08nxg5r3uREPfW2Gz49LIkFVmU/kzSzJ78VISmjuWMUdiZ9GJFmzzvKBxQ0tzUlpvibBu1dvSqOAA4HZ72+p2PvTvezgL8S6dyaJ7bHRlyQlE1SDkK/tctFrIjGdXLAP7vNwqC7ZXtX7iH9Fk3znxy9BnLp4xGZDW54YU=
+  - PHPLIST_DATABASE_NAME=phplist
+  - PHPLIST_DATABASE_USER=travis
+  - PHPLIST_DATABASE_PASSWORD=''
 notifications:
-  webhooks:
-    urls:
-      - $NOTIFICATIONURL
-    on_success: change # default: always
-    on_failure: always # default: always
-    on_start: change   # default: never
-
+  slack:
+    rooms:
+      secure: TtWruKo+t6cy1dzKguKyRL90KM0PM6LZXpWjxKfaVimJ8YpxUwkNbDm3VOUxfCCUEyauwj48jI8GeK2gnfIYTv7NA6GnqraKgRk16cwxogdEULwgoHVdZJAl4A+8hQRBUGQc02Nj8NIiKZNkTni8bf6o/ZKWLLzTi4ffU3U7Mp4=
+  on_success: change
+  on_failure: always
 sudo: false
 cache:
   directories:
   - vendor
-  - $HOME/.composer/cache
-
+  - "$HOME/.composer/cache"
 before_install:
-  - phpenv config-rm xdebug.ini
-
+- phpenv config-rm xdebug.ini
 install:
-  - composer install
-
+- composer install
 before_script:
-  - >
-    echo;
-    echo "Creating the database and importing the database schema";
-    mysql -e "CREATE DATABASE ${PHPLIST_DATABASE_NAME};";
-    mysql -u root -e "GRANT ALL ON ${PHPLIST_DATABASE_NAME}.* TO ${PHPLIST_DATABASE_USER}@'%';";
-    mysql ${PHPLIST_DATABASE_NAME} < Database/Schema.sql;
+- 'echo; echo "Creating the database and importing the database schema"; mysql -e
+  "CREATE DATABASE ${PHPLIST_DATABASE_NAME};"; mysql -u root -e "GRANT ALL ON ${PHPLIST_DATABASE_NAME}.*
+  TO ${PHPLIST_DATABASE_USER}@''%'';"; mysql ${PHPLIST_DATABASE_NAME} < Database/Schema.sql;
 
+'
 script:
-  - >
-    echo;
-    echo "Linting all PHP files";
-    find Classes/ Tests/ web/ core/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l;
-    php -l bin/*;
+- 'echo; echo "Linting all PHP files"; find Classes/ Tests/ web/ core/ -name ''*.php''
+  -print0 | xargs -0 -n 1 -P 4 php -l; php -l bin/*;
 
-  - >
-    echo;
-    echo "Running the unit tests";
-    vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml Tests/Unit/;
-    vendor/bin/phpunit core/tests/;
+'
+- 'echo; echo "Running the unit tests"; vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml
+  Tests/Unit/; vendor/bin/phpunit core/tests/;
 
-  - >
-    echo;
-    echo "Running the integration tests";
-    vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml Tests/Integration/;
+'
+- 'echo; echo "Running the integration tests"; vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml
+  Tests/Integration/;
 
-  - >
-    echo;
-    echo "Running the static analysis";
-    vendor/bin/phpstan analyse -l 5 bin/ Classes/ Tests/ web/;
+'
+- 'echo; echo "Running the static analysis"; vendor/bin/phpstan analyse -l 5 bin/
+  Classes/ Tests/ web/;
 
-  - >
-    echo;
-    echo "Running PHPMD";
-    vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml;
+'
+- 'echo; echo "Running PHPMD"; vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml;
 
-  - >
-    echo;
-    echo "Running PHP_CodeSniffer";
-    vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ Classes/ Tests/ web/;
+'
+- 'echo; echo "Running PHP_CodeSniffer"; vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/
+  bin/ Classes/ Tests/ web/;
+
+'
