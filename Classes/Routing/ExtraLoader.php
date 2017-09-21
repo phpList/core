@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Routing;
 
+use PhpList\PhpList4\Core\ApplicationStructure;
 use Symfony\Component\Config\Loader\Loader;
-use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -14,6 +14,11 @@ use Symfony\Component\Routing\RouteCollection;
  */
 class ExtraLoader extends Loader
 {
+    /**
+     * @var string
+     */
+    const MODULE_ROUTING_CONFIGURATION_FILE = '/Configuration/routing_modules.yml';
+
     /**
      * @var bool
      */
@@ -38,7 +43,7 @@ class ExtraLoader extends Loader
         }
 
         $routes = new RouteCollection();
-        $this->addRestBundleIfAvailable($routes);
+        $this->addModuleRoutes($routes);
 
         $this->loaded = true;
 
@@ -65,34 +70,13 @@ class ExtraLoader extends Loader
      *
      * @return void
      */
-    private function addRestBundleIfAvailable(RouteCollection $routes)
+    private function addModuleRoutes(RouteCollection $routes)
     {
-        // This will later be changed so that the REST API package can register itself to the core.
-        if (!$this->isRestBundleInstalled()) {
-            return;
-        }
+        // This will be solved via dependency injection later.
+        $applicationStructure = new ApplicationStructure();
+        $bundleRoutesFilePath = $applicationStructure->getApplicationRoot() . self::MODULE_ROUTING_CONFIGURATION_FILE;
 
-        $path = '/api/v2/sessions';
-        $defaults = ['_controller' => 'PhpListRestBundle:Session:create'];
-        $route = new Route($path, $defaults, [], [], '', [], ['POST']);
-
-        $routeName = 'create_session';
-        $routes->add($routeName, $route);
-    }
-
-    /**
-     * @return bool
-     */
-    private function isRestBundleInstalled(): bool
-    {
-        return class_exists($this->getRestBundleClassName());
-    }
-
-    /**
-     * @return string
-     */
-    private function getRestBundleClassName(): string
-    {
-        return 'PhpList\\RestBundle\\PhpListRestBundle';
+        $routesConfiguration = $this->import($bundleRoutesFilePath);
+        $routes->addCollection($routesConfiguration);
     }
 }
