@@ -133,7 +133,7 @@ class ApplicationKernel extends Kernel
     }
 
     /**
-     * Reads the bundles from the budnle configuration file and instantiates them.
+     * Reads the bundles from the bundle configuration file and instantiates them.
      *
      * @return Bundle[]
      */
