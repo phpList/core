@@ -173,7 +173,7 @@ class ScriptHandler
         $bundleFinder->injectPackageRepository($packageRepository);
 
         $configurationFilePath = self::getApplicationRoot() . self::BUNDLE_CONFIGURATION_FILE;
-        $fileHandle = fopen($configurationFilePath, 'w');
+        $fileHandle = fopen($configurationFilePath, 'wb');
         fwrite($fileHandle, $bundleFinder->createBundleConfigurationYaml());
         fclose($fileHandle);
     }
