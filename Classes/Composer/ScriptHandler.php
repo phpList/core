@@ -23,7 +23,7 @@ class ScriptHandler
     /**
      * @var string
      */
-    const BUNDLE_CONFIGURATION_FILE = 'Configuration/bundles.yml';
+    const BUNDLE_CONFIGURATION_FILE = '/Configuration/bundles.yml';
 
     /**
      * @return string absolute application root directory without the trailing slash
@@ -172,7 +172,7 @@ class ScriptHandler
         $bundleFinder = new ModuleBundleFinder();
         $bundleFinder->injectPackageRepository($packageRepository);
 
-        $configurationFilePath = __DIR__ . '/../../' . self::BUNDLE_CONFIGURATION_FILE;
+        $configurationFilePath = self::getApplicationRoot() . self::BUNDLE_CONFIGURATION_FILE;
         $fileHandle = fopen($configurationFilePath, 'w');
         fwrite($fileHandle, $bundleFinder->createBundleConfigurationYaml());
         fclose($fileHandle);
