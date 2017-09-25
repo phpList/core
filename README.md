@@ -103,7 +103,24 @@ the corresponding domain model classes and repository classes accordingly.
 In phpList 4, plugins are called modules, and are Composer packages which have 
 the type `phplist-module`.
 
-More documentation for this will follow.
+If your module provides any Symfony bundles, the bundle class names need to be
+listed in the `extra` section of the module's `composer.json` like this:
+
+````
+"extra": {
+    "phplist/phplist4-core": {
+        "bundles": [
+            "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
+            "PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle"
+        ]
+    }
+}
+````
+
+Please note that the key of the section with `extra` needs to always be
+`phplist/phplist4-core`, not the name of your module package.
+
+More documentation on the creation of modules will follow.
 
 
 ## Copyright
