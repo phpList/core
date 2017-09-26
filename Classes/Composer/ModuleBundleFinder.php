@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Composer;
 
+use Symfony\Component\Yaml\Yaml;
+
 /**
  * This class finds the Symfony bundles registered by phpList modules.
  *
@@ -108,23 +110,6 @@ class ModuleBundleFinder
      */
     public function createBundleConfigurationYaml(): string
     {
-        // Set linefeed / newline character
-        $lf = chr(10);
-        $yaml = self::YAML_COMMENT . $lf;
-
-        $bundleClassSets = $this->findBundleClasses();
-        if (count($bundleClassSets) === 0) {
-            return $yaml . '{  }';
-        }
-
-        /** @var string[][] $bundleClasses */
-        foreach ($bundleClassSets as $packageName => $bundleClasses) {
-            $yaml .= $packageName . ':' . $lf;
-            foreach ($bundleClasses as $bundleClass) {
-                $yaml .= '    - ' . $bundleClass . $lf;
-            }
-        }
-
-        return $yaml;
+        return self::YAML_COMMENT . "\n" . Yaml::dump($this->findBundleClasses());
     }
 }
