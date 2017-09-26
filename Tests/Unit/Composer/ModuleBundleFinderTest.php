@@ -260,7 +260,7 @@ class ModuleBundleFinderTest extends TestCase
 
         $result = $this->subject->createBundleConfigurationYaml();
 
-        self::assertSame(self::YAML_COMMENT . chr(10), $result);
+        self::assertSame(self::YAML_COMMENT . chr(10) . '{  }', $result);
     }
 
     /**
@@ -280,8 +280,8 @@ class ModuleBundleFinderTest extends TestCase
                         ],
                     ],
                 ],
-                '"phplist/foo":' . $lf .
-                '    - "Symfony\\\\Bundle\\\\FrameworkBundle\\\\FrameworkBundle"' . $lf
+                'phplist/foo:' . $lf .
+                '    - Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle' . $lf
             ],
             'one module with two bundles' => [
                 [
@@ -294,9 +294,9 @@ class ModuleBundleFinderTest extends TestCase
                         ],
                     ],
                 ],
-                '"phplist/foo":' . $lf .
-                '    - "Symfony\\\\Bundle\\\\FrameworkBundle\\\\FrameworkBundle"' . $lf .
-                '    - "PhpList\\\\PhpList4\\\\ApplicationBundle\\\\PhpListApplicationBundle"' . $lf
+                'phplist/foo:' . $lf .
+                '    - Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle' . $lf .
+                '    - PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle' . $lf
             ],
             'two module with one bundle each' => [
                 [
@@ -311,10 +311,10 @@ class ModuleBundleFinderTest extends TestCase
                         ],
                     ],
                 ],
-                '"phplist/foo":' . $lf .
-                '    - "Symfony\\\\Bundle\\\\FrameworkBundle\\\\FrameworkBundle"' . $lf .
-                '"phplist/bar":' . $lf .
-                '    - "PhpList\\\\PhpList4\\\\ApplicationBundle\\\\PhpListApplicationBundle"' . $lf
+                'phplist/foo:' . $lf .
+                '    - Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle' . $lf .
+                'phplist/bar:' . $lf .
+                '    - PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle' . $lf
             ],
         ];
 

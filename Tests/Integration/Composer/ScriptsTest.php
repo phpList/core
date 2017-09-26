@@ -34,8 +34,8 @@ class ScriptsTest extends TestCase
     public function bundleClassNameDataProvider(): array
     {
         return [
-            'framework bundle' => ['Symfony\\\\Bundle\\\\FrameworkBundle\\\\FrameworkBundle'],
-            'application bundle' => ['PhpList\\\\PhpList4\\\\ApplicationBundle\\\\PhpListApplicationBundle'],
+            'framework bundle' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
+            'application bundle' => ['PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle'],
         ];
     }
 

@@ -112,12 +112,16 @@ class ModuleBundleFinder
         $lf = chr(10);
         $yaml = self::YAML_COMMENT . $lf;
 
+        $bundleClassSets = $this->findBundleClasses();
+        if (count($bundleClassSets) === 0) {
+            return $yaml . '{  }';
+        }
+
         /** @var string[][] $bundleClasses */
-        foreach ($this->findBundleClasses() as $packageName => $bundleClasses) {
-            $yaml .= '"' . $packageName . '":' . $lf;
+        foreach ($bundleClassSets as $packageName => $bundleClasses) {
+            $yaml .= $packageName . ':' . $lf;
             foreach ($bundleClasses as $bundleClass) {
-                $escapedBundleClassName = str_replace('\\', '\\\\', $bundleClass);
-                $yaml .= '    - "' . $escapedBundleClassName . '"' . $lf;
+                $yaml .= '    - ' . $bundleClass . $lf;
             }
         }
 
