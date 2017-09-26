@@ -260,7 +260,7 @@ class ModuleBundleFinderTest extends TestCase
 
         $result = $this->subject->createBundleConfigurationYaml();
 
-        self::assertSame(self::YAML_COMMENT . chr(10) . '{  }', $result);
+        self::assertSame(self::YAML_COMMENT . "\n{  }", $result);
     }
 
     /**
@@ -268,8 +268,6 @@ class ModuleBundleFinderTest extends TestCase
      */
     public function modulesWithBundlesForYamlDataProvider(): array
     {
-        $lf = chr(10);
-
         /** @var array[][] $dataSets */
         $dataSets = [
             'one module with one bundle' => [
@@ -280,8 +278,8 @@ class ModuleBundleFinderTest extends TestCase
                         ],
                     ],
                 ],
-                'phplist/foo:' . $lf .
-                '    - Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle' . $lf
+                "phplist/foo:\n" .
+                "    - Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle\n",
             ],
             'one module with two bundles' => [
                 [
@@ -294,9 +292,9 @@ class ModuleBundleFinderTest extends TestCase
                         ],
                     ],
                 ],
-                'phplist/foo:' . $lf .
-                '    - Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle' . $lf .
-                '    - PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle' . $lf
+                "phplist/foo:\n" .
+                "    - Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle\n" .
+                "    - PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle\n",
             ],
             'two module with one bundle each' => [
                 [
@@ -311,10 +309,10 @@ class ModuleBundleFinderTest extends TestCase
                         ],
                     ],
                 ],
-                'phplist/foo:' . $lf .
-                '    - Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle' . $lf .
-                'phplist/bar:' . $lf .
-                '    - PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle' . $lf
+                "phplist/foo:\n" .
+                "    - Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle\n" .
+                "phplist/bar:\n" .
+                "    - PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle\n",
             ],
         ];
 
@@ -351,6 +349,6 @@ class ModuleBundleFinderTest extends TestCase
 
         $result = $this->subject->createBundleConfigurationYaml();
 
-        self::assertSame(self::YAML_COMMENT . chr(10) . $expectedYaml, $result);
+        self::assertSame(self::YAML_COMMENT . "\n" . $expectedYaml, $result);
     }
 }
