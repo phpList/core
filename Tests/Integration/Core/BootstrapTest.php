@@ -33,9 +33,9 @@ class BootstrapTest extends TestCase
     /**
      * @test
      */
-    public function preventProductionEnvironmentForTestingEnvironmentHasFluentInterface()
+    public function ensureDevelopmentOrTestingEnvironmentForTestingEnvironmentHasFluentInterface()
     {
-        self::assertSame($this->subject, $this->subject->preventProductionEnvironment());
+        self::assertSame($this->subject, $this->subject->ensureDevelopmentOrTestingEnvironment());
     }
 
     /**
