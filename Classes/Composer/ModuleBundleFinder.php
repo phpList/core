@@ -66,7 +66,7 @@ class ModuleBundleFinder
      *
      * @return void
      *
-     * @throws \InvalidArgumentException if $extra has an
+     * @throws \InvalidArgumentException if $extra has an invalid bundles configuration
      */
     private function validateBundlesSectionInExtra(array $extra)
     {
