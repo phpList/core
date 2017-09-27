@@ -34,7 +34,8 @@
         "symfony/dependency-injection": "^3.0.0",
         "symfony/config": "^3.0.0",
         "symfony/yaml": "^3.0.0",
-        "sensio/framework-extra-bundle": "^3.0.26"
+        "sensio/framework-extra-bundle": "^3.0.26",
+        "sensio/distribution-bundle": "^5.0.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^6.2.2",
@@ -70,7 +71,8 @@
         ],
         "update-configuration": [
             "PhpList\\PhpList4\\Composer\\ScriptHandler::createBundleConfiguration",
-            "PhpList\\PhpList4\\Composer\\ScriptHandler::createRoutesConfiguration"
+            "PhpList\\PhpList4\\Composer\\ScriptHandler::createRoutesConfiguration",
+            "PhpList\\PhpList4\\Composer\\ScriptHandler::clearAllCaches"
         ],
         "post-install-cmd": [
             "@update-configuration"
@@ -83,7 +85,7 @@
         "branch-alias": {
             "dev-master": "4.0.x-dev"
         },
-        "symfony-app-dir": "Classes",
+        "symfony-app-dir": "",
         "symfony-bin-dir": "bin",
         "symfony-var-dir": "var",
         "symfony-web-dir": "web",

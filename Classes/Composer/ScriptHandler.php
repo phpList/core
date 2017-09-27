@@ -6,6 +6,7 @@ namespace PhpList\PhpList4\Composer;
 use Composer\Package\PackageInterface;
 use Composer\Script\Event;
 use PhpList\PhpList4\Core\ApplicationStructure;
+use Sensio\Bundle\DistributionBundle\Composer\ScriptHandler as SensioScriptHandler;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -13,7 +14,7 @@ use Symfony\Component\Filesystem\Filesystem;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class ScriptHandler
+class ScriptHandler extends SensioScriptHandler
 {
     /**
      * @var string
@@ -206,5 +207,42 @@ class ScriptHandler
         $bundleFinder->injectPackageRepository($packageRepository);
 
         return $bundleFinder;
+    }
+
+    /**
+     * Clears the caches of all environments.
+     *
+     * @param Event $event
+     *
+     * @return void
+     */
+    public static function clearAllCaches(Event $event)
+    {
+        $environments = ['test', 'dev', 'prod'];
+        $consoleDir = self::getConsoleDir($event, 'clear the cache');
+        if ($consoleDir === null) {
+            return;
+        }
+
+        foreach ($environments as $environment) {
+            self::executeCommand($event, $consoleDir, 'cache:clear --no-warmup -e ' . $environment);
+        }
+    }
+
+    /**
+     * Warms the production cache.
+     *
+     * @param Event $event
+     *
+     * @return void
+     */
+    public static function warmProductionCache(Event $event)
+    {
+        $consoleDir = self::getConsoleDir($event, 'warm the cache');
+        if ($consoleDir === null) {
+            return;
+        }
+
+        self::executeCommand($event, $consoleDir, 'cache:warm -e prod');
     }
 }
