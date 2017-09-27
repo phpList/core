@@ -147,8 +147,7 @@ class Bootstrap
     }
 
     /**
-     * Checks that the application is not running on a production server, but on a local
-     * machine or via CLI.
+     * Checks that the application is running on a local testing machine or via CLI, not on a production server.
      *
      * If a production server is detected, a 403 header is sent and execution is stopped.
      *
@@ -157,7 +156,7 @@ class Bootstrap
      *
      * @return Bootstrap fluent interface
      */
-    public function preventProductionEnvironment(): Bootstrap
+    public function ensureDevelopmentOrTestingEnvironment(): Bootstrap
     {
         $usesProxy = isset($_SERVER['HTTP_CLIENT_IP']) || isset($_SERVER['HTTP_X_FORWARDED_FOR']);
         $isOnCli = PHP_SAPI === 'cli' || PHP_SAPI === 'cli-server';

@@ -7,7 +7,7 @@ use PhpList\PhpList4\Core\Environment;
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 Bootstrap::getInstance()
-    ->preventProductionEnvironment()
+    ->ensureDevelopmentOrTestingEnvironment()
     ->setEnvironment(Environment::TESTING)
     ->configure()
     ->dispatch();
