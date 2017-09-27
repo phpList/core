@@ -6,11 +6,11 @@ namespace PhpList\PhpList4\Composer;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * This class finds the Symfony bundles registered by phpList modules.
+ * This class finds things related to phpList modules, e.g., bundles and routes.
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class ModuleBundleFinder
+class ModuleFinder
 {
     /**
      * @var string

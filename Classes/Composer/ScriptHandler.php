@@ -169,7 +169,7 @@ class ScriptHandler
         $packageRepository = new PackageRepository();
         $packageRepository->injectComposer($event->getComposer());
 
-        $bundleFinder = new ModuleBundleFinder();
+        $bundleFinder = new ModuleFinder();
         $bundleFinder->injectPackageRepository($packageRepository);
 
         $configurationFilePath = self::getApplicationRoot() . self::BUNDLE_CONFIGURATION_FILE;
