@@ -65,19 +65,15 @@
         "list-modules": [
             "PhpList\\PhpList4\\Composer\\ScriptHandler::listModules"
         ],
-        "bundle-configuration": [
-            "PhpList\\PhpList4\\Composer\\ScriptHandler::createBundleConfiguration"
-        ],
-        "routes-configuration": [
+        "update-configuration": [
+            "PhpList\\PhpList4\\Composer\\ScriptHandler::createBundleConfiguration",
             "PhpList\\PhpList4\\Composer\\ScriptHandler::createRoutesConfiguration"
         ],
         "post-install-cmd": [
-            "@bundle-configuration",
-            "@routes-configuration"
+            "@update-configuration"
         ],
         "post-update-cmd": [
-            "@bundle-configuration",
-            "@routes-configuration"
+            "@update-configuration"
         ]
     },
     "extra": {
