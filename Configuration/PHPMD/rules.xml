@@ -42,7 +42,7 @@
     <!-- rules from the "naming" rule set -->
     <rule ref="rulesets/naming.xml/ShortVariable">
         <properties>
-            <property name="exceptions" value="id,lf"/>
+            <property name="exceptions" value="id"/>
         </properties>
     </rule>
     <rule ref="rulesets/naming.xml/LongVariable">
