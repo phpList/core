@@ -67,7 +67,7 @@ class ModuleBundleFinderTest extends TestCase
             'one module with empty bundles extras section' => [['phplist/phplist4-core' => ['bundles' => []]]],
         ];
 
-        return $this->buildMockPackagesWithBundleConfiguration($extrasSets);
+        return $this->buildMockPackagesWithModuleConfiguration($extrasSets);
     }
 
     /**
@@ -75,7 +75,7 @@ class ModuleBundleFinderTest extends TestCase
      *
      * @return PackageInterface[][]
      */
-    private function buildMockPackagesWithBundleConfiguration(array $extrasSets): array
+    private function buildMockPackagesWithModuleConfiguration(array $extrasSets): array
     {
         $moduleSets = [];
         foreach ($extrasSets as $packageName => $extrasSet) {
@@ -141,7 +141,7 @@ class ModuleBundleFinderTest extends TestCase
             'one module with one bundle class name as null' => [['phplist/phplist4-core' => ['bundles' => [null]]]],
         ];
 
-        return $this->buildMockPackagesWithBundleConfiguration($extrasSets);
+        return $this->buildMockPackagesWithModuleConfiguration($extrasSets);
     }
 
     /**
