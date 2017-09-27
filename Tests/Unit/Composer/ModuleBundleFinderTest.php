@@ -8,6 +8,7 @@ use PhpList\PhpList4\Composer\ModuleBundleFinder;
 use PhpList\PhpList4\Composer\PackageRepository;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ProphecySubjectInterface;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Testcase.
@@ -264,91 +265,17 @@ class ModuleBundleFinderTest extends TestCase
     }
 
     /**
-     * @return array[]
-     */
-    public function modulesWithBundlesForYamlDataProvider(): array
-    {
-        /** @var array[][] $dataSets */
-        $dataSets = [
-            'one module with one bundle' => [
-                [
-                    'phplist/foo' => [
-                        'phplist/phplist4-core' => [
-                            'bundles' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
-                        ],
-                    ],
-                ],
-                "phplist/foo:\n" .
-                "    - Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle\n",
-            ],
-            'one module with two bundles' => [
-                [
-                    'phplist/foo' => [
-                        'phplist/phplist4-core' => [
-                            'bundles' => [
-                                'Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle',
-                                'PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle',
-                            ],
-                        ],
-                    ],
-                ],
-                "phplist/foo:\n" .
-                "    - Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle\n" .
-                "    - PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle\n",
-            ],
-            'two module with one bundle each' => [
-                [
-                    'phplist/foo' => [
-                        'phplist/phplist4-core' => [
-                            'bundles' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
-                        ],
-                    ],
-                    'phplist/bar' => [
-                        'phplist/phplist4-core' => [
-                            'bundles' => ['PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle'],
-                        ],
-                    ],
-                ],
-                "phplist/foo:\n" .
-                "    - Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle\n" .
-                "phplist/bar:\n" .
-                "    - PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle\n",
-            ],
-        ];
-
-        $moduleSets = [];
-        /** @var array[] $dataSet */
-        foreach ($dataSets as $dataSetName => $dataSet) {
-            /** @var string[][][] $extraSets */
-            /** @var string $expectedYaml */
-            list($extraSets, $expectedYaml) = $dataSet;
-
-            $testCases = [];
-            foreach ($extraSets as $packageName => $extraSet) {
-                /** @var PackageInterface|ProphecySubjectInterface $packageProphecy */
-                $packageProphecy = $this->prophesize(PackageInterface::class);
-                $packageProphecy->getExtra()->willReturn($extraSet);
-                $packageProphecy->getName()->willReturn($packageName);
-                $testCases[] = $packageProphecy->reveal();
-            }
-            $moduleSets[$dataSetName] = [$testCases, $expectedYaml];
-        }
-
-        return $moduleSets;
-    }
-
-    /**
      * @test
      * @param PackageInterface[][] $modules
-     * @param string $expectedYaml
-     * @dataProvider modulesWithBundlesForYamlDataProvider
+     * @param array[] $bundles
+     * @dataProvider modulesWithBundlesDataProvider
      */
-    public function createBundleConfigurationYamlReturnsYamlForBundles(array $modules, string $expectedYaml)
+    public function createBundleConfigurationYamlReturnsYamlForBundles(array $modules, array $bundles)
     {
         $this->packageRepositoryProphecy->findModules()->willReturn($modules);
 
         $result = $this->subject->createBundleConfigurationYaml();
 
-        self::assertSame(self::YAML_COMMENT . "\n" . $expectedYaml, $result);
+        self::assertSame(self::YAML_COMMENT . "\n" . Yaml::dump($bundles), $result);
     }
 }
