@@ -34,7 +34,7 @@ class DefaultControllerTest extends WebTestCase
     {
         $this->client->request('GET', '/');
 
-        self::assertSame(200, $this->client->getResponse()->getStatusCode());
+        self::assertTrue($this->client->getResponse()->isSuccessful());
         self::assertContains('Hello world!', $this->client->getResponse()->getContent());
     }
 }
