@@ -79,6 +79,11 @@
         "branch-alias": {
             "dev-master": "4.0.x-dev"
         },
+        "symfony-app-dir": "Classes",
+        "symfony-bin-dir": "bin",
+        "symfony-var-dir": "var",
+        "symfony-web-dir": "web",
+        "symfony-tests-dir": "Tests",
         "phplist/phplist4-core": {
             "bundles": [
                 "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
