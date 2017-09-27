@@ -73,12 +73,7 @@ class ModuleBundleFinder
         if (!isset($extra['phplist/phplist4-core'])) {
             return;
         }
-        if (!is_array($extra['phplist/phplist4-core'])) {
-            throw new \InvalidArgumentException(
-                'The extras.phplist/phplist4-core" section in the composer.json must be an array.',
-                1505411436144
-            );
-        }
+        $this->validatePhpListSectionInExtra($extra);
 
         if (!isset($extra['phplist/phplist4-core']['bundles'])) {
             return;
@@ -100,6 +95,25 @@ class ModuleBundleFinder
                     1505412184038
                 );
             }
+        }
+    }
+
+    /**
+     * Validates the phpList modules configuration in the "extra" section of the composer.json of a module.
+     *
+     * @param array $extra
+     *
+     * @return void
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function validatePhpListSectionInExtra(array $extra)
+    {
+        if (!is_array($extra['phplist/phplist4-core'])) {
+            throw new \InvalidArgumentException(
+                'The extras.phplist/phplist4-core" section in the composer.json must be an array.',
+                1505411436144
+            );
         }
     }
 
