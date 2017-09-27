@@ -26,6 +26,11 @@ class ScriptHandler
     const BUNDLE_CONFIGURATION_FILE = '/Configuration/bundles.yml';
 
     /**
+     * @var string
+     */
+    const ROUTES_CONFIGURATION_FILE = '/Configuration/routing_modules.yml';
+
+    /**
      * @return string absolute application root directory without the trailing slash
      *
      * @throws \RuntimeException if there is no composer.json in the application root
@@ -166,15 +171,40 @@ class ScriptHandler
      */
     public static function createBundleConfiguration(Event $event)
     {
+        $configurationFilePath = self::getApplicationRoot() . self::BUNDLE_CONFIGURATION_FILE;
+        $fileHandle = fopen($configurationFilePath, 'wb');
+        fwrite($fileHandle, self::createAndInitializeModuleFinder($event)->createBundleConfigurationYaml());
+        fclose($fileHandle);
+    }
+
+    /**
+     * Creates the routes file for the Symfony bundles provided by the modules.
+     *
+     * @param Event $event
+     *
+     * @return void
+     */
+    public static function createRoutesConfiguration(Event $event)
+    {
+        $configurationFilePath = self::getApplicationRoot() . self::ROUTES_CONFIGURATION_FILE;
+        $fileHandle = fopen($configurationFilePath, 'wb');
+        fwrite($fileHandle, self::createAndInitializeModuleFinder($event)->createRouteConfigurationYaml());
+        fclose($fileHandle);
+    }
+
+    /**
+     * @param Event $event
+     *
+     * @return ModuleFinder
+     */
+    private static function createAndInitializeModuleFinder(Event $event): ModuleFinder
+    {
         $packageRepository = new PackageRepository();
         $packageRepository->injectComposer($event->getComposer());
 
         $bundleFinder = new ModuleFinder();
         $bundleFinder->injectPackageRepository($packageRepository);
 
-        $configurationFilePath = self::getApplicationRoot() . self::BUNDLE_CONFIGURATION_FILE;
-        $fileHandle = fopen($configurationFilePath, 'wb');
-        fwrite($fileHandle, $bundleFinder->createBundleConfigurationYaml());
-        fclose($fileHandle);
+        return $bundleFinder;
     }
 }

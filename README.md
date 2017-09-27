@@ -117,6 +117,24 @@ listed in the `extra` section of the module's `composer.json` like this:
 }
 ````
 
+Similarly, if your module provides any routes, those also need to be listed in
+the `extra` section of the module's `composer.json` like this:
+
+````
+"extra": {
+    "phplist/phplist4-core": {
+        "routes": {
+            "application_homepage": {
+                "path": "/",
+                "defaults": {
+                    "_controller": "PhpListApplicationBundle:Default:index"
+                }
+            }
+        }
+    }
+}
+````
+
 Please note that the key of the section with `extra` needs to always be
 `phplist/phplist4-core`, not the name of your module package.
 

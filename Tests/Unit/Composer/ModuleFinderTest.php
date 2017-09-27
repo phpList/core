@@ -80,7 +80,7 @@ class ModuleFinderTest extends TestCase
     {
         $moduleSets = [];
         foreach ($extrasSets as $packageName => $extrasSet) {
-            $moduleSet = $this->buildSingleMockPackageWithBundleConfiguration($extrasSet);
+            $moduleSet = $this->buildSingleMockPackageWithModuleConfiguration($extrasSet);
             $moduleSets[$packageName] = [$moduleSet];
         }
 
@@ -92,7 +92,7 @@ class ModuleFinderTest extends TestCase
      *
      * @return PackageInterface[]
      */
-    private function buildSingleMockPackageWithBundleConfiguration(array $extrasSet): array
+    private function buildSingleMockPackageWithModuleConfiguration(array $extrasSet): array
     {
         /** @var PackageInterface[] $moduleSet */
         $moduleSet = [];
@@ -277,5 +277,228 @@ class ModuleFinderTest extends TestCase
         $result = $this->subject->createBundleConfigurationYaml();
 
         self::assertSame(self::YAML_COMMENT . "\n" . Yaml::dump($bundles), $result);
+    }
+
+    /**
+     * @return PackageInterface[][]
+     */
+    public function modulesWithoutRoutesDataProvider(): array
+    {
+        /** @var array[][] $extras */
+        $extrasSets = [
+            'one module without/with empty extras' => [[]],
+            'one module with extras for other stuff' => [['branch-alias' => ['dev-master' => '4.0.x-dev']]],
+            'one module with empty "phplist/phplist4-core" extras section' => [['phplist/phplist4-core' => []]],
+            'one module with empty routes extras section' => [['phplist/phplist4-core' => ['routes' => []]]],
+        ];
+
+        return $this->buildMockPackagesWithModuleConfiguration($extrasSets);
+    }
+
+    /**
+     * @test
+     * @param PackageInterface[] $modules
+     * @dataProvider modulesWithoutRoutesDataProvider
+     */
+    public function findRoutesForModulesWithoutRoutesReturnsEmptyArray(array $modules)
+    {
+        $this->packageRepositoryProphecy->findModules()->willReturn($modules);
+
+        $result = $this->subject->findRoutes();
+
+        self::assertSame([], $result);
+    }
+
+    /**
+     * @return PackageInterface[][]
+     */
+    public function modulesWithInvalidRoutesDataProvider(): array
+    {
+        /** @var array[][] $extras */
+        $extrasSets = [
+            'one module with phplist4-core section as string' => [['phplist/phplist4-core' => 'foo']],
+            'one module with phplist4-core section as int' => [['phplist/phplist4-core' => 42]],
+            'one module with phplist4-core section as float' => [['phplist/phplist4-core' => 3.14159]],
+            'one module with phplist4-core section as bool' => [['phplist/phplist4-core' => true]],
+            'one module with routes section as string' => [['phplist/phplist4-core' => ['routes' => 'foo']]],
+            'one module with routes section as int' => [['phplist/phplist4-core' => ['routes' => 42]]],
+            'one module with routes section as float' => [['phplist/phplist4-core' => ['routes' => 3.14159]]],
+            'one module with routes section as bool' => [['phplist/phplist4-core' => ['routes' => true]]],
+            'one module with one route class name as string' => [['phplist/phplist4-core' => ['routes' => ['foo']]]],
+            'one module with one route class name as int' => [['phplist/phplist4-core' => ['routes' => [42]]]],
+            'one module with one route class name as float' => [['phplist/phplist4-core' => ['routes' => [3.14159]]]],
+            'one module with one route class name as bool' => [['phplist/phplist4-core' => ['routes' => [true]]]],
+            'one module with one route class name as null' => [['phplist/phplist4-core' => ['routes' => [null]]]],
+        ];
+
+        return $this->buildMockPackagesWithModuleConfiguration($extrasSets);
+    }
+
+    /**
+     * @test
+     * @param PackageInterface[] $modules
+     * @dataProvider modulesWithInvalidRoutesDataProvider
+     */
+    public function findRoutesClassesForModulesWithInvalidRoutesConfigurationThrowsException(array $modules)
+    {
+        $this->packageRepositoryProphecy->findModules()->willReturn($modules);
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->subject->findRoutes();
+    }
+
+    /**
+     * @return array[]
+     */
+    public function modulesWithRoutesDataProvider(): array
+    {
+        /** @var array[][] $dataSets */
+        $dataSets = [
+            'one module with one route' => [
+                [
+                    'phplist/foo' => [
+                        'phplist/phplist4-core' => [
+                            'routes' => [
+                                'application_homepage' => [
+                                    'path' => '/',
+                                    'defaults' => ['_controller' => 'PhpListApplicationBundle:Default:index'],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'phplist/foo.application_homepage' => [
+                        'path' => '/',
+                        'defaults' => ['_controller' => 'PhpListApplicationBundle:Default:index'],
+                    ],
+                ],
+            ],
+            'one module with two routes' => [
+                [
+                    'phplist/foo' => [
+                        'phplist/phplist4-core' => [
+                            'routes' => [
+                                'homepage' => [
+                                    'path' => '/',
+                                    'defaults' => ['_controller' => 'PhpListApplicationBundle:Default:index'],
+                                ],
+                                'blog' => [
+                                    'path' => '/blog',
+                                    'defaults' => ['_controller' => 'PhpListApplicationBundle:Blog:index'],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'phplist/foo.homepage' => [
+                        'path' => '/',
+                        'defaults' => ['_controller' => 'PhpListApplicationBundle:Default:index'],
+                    ],
+                    'phplist/foo.blog' => [
+                        'path' => '/blog',
+                        'defaults' => ['_controller' => 'PhpListApplicationBundle:Blog:index'],
+                    ],
+                ],
+            ],
+            'two module with one route each' => [
+                [
+                    'phplist/foo' => [
+                        'phplist/phplist4-core' => [
+                            'routes' => [
+                                'homepage' => [
+                                    'path' => '/',
+                                    'defaults' => ['_controller' => 'PhpListApplicationBundle:Default:index'],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'phplist/bar' => [
+                        'phplist/phplist4-core' => [
+                            'routes' => [
+                                'blog' => [
+                                    'path' => '/blog',
+                                    'defaults' => ['_controller' => 'PhpListApplicationBundle:Blog:index'],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'phplist/foo.homepage' => [
+                        'path' => '/',
+                        'defaults' => ['_controller' => 'PhpListApplicationBundle:Default:index'],
+                    ],
+                    'phplist/bar.blog' => [
+                        'path' => '/blog',
+                        'defaults' => ['_controller' => 'PhpListApplicationBundle:Blog:index'],
+                    ],
+                ],
+            ],
+        ];
+
+        $moduleSets = [];
+        /** @var array[] $dataSet */
+        foreach ($dataSets as $dataSetName => $dataSet) {
+            /** @var string[][][] $extraSets */
+            /** @var array[] $expectedRoutes */
+            list($extraSets, $expectedRoutes) = $dataSet;
+
+            $testCases = [];
+            foreach ($extraSets as $packageName => $extraSet) {
+                /** @var PackageInterface|ProphecySubjectInterface $packageProphecy */
+                $packageProphecy = $this->prophesize(PackageInterface::class);
+                $packageProphecy->getExtra()->willReturn($extraSet);
+                $packageProphecy->getName()->willReturn($packageName);
+                $testCases[] = $packageProphecy->reveal();
+            }
+            $moduleSets[$dataSetName] = [$testCases, $expectedRoutes];
+        }
+
+        return $moduleSets;
+    }
+
+    /**
+     * @test
+     * @param PackageInterface[] $modules
+     * @param array[] $expectedRoutes
+     * @dataProvider modulesWithRoutesDataProvider
+     */
+    public function findRoutesForModulesWithRoutesReturnsRoutes(array $modules, array $expectedRoutes)
+    {
+        $this->packageRepositoryProphecy->findModules()->willReturn($modules);
+
+        $result = $this->subject->findRoutes();
+
+        self::assertSame($expectedRoutes, $result);
+    }
+
+    /**
+     * @test
+     */
+    public function createRouteConfigurationYamlForNoModulesReturnsCommentOnly()
+    {
+        $this->packageRepositoryProphecy->findModules()->willReturn([]);
+
+        $result = $this->subject->createRouteConfigurationYaml();
+
+        self::assertSame(self::YAML_COMMENT . "\n{  }", $result);
+    }
+
+    /**
+     * @test
+     * @param PackageInterface[][] $modules
+     * @param array[] $routes
+     * @dataProvider modulesWithRoutesDataProvider
+     */
+    public function createRouteConfigurationYamlReturnsYamlForRoutes(array $modules, array $routes)
+    {
+        $this->packageRepositoryProphecy->findModules()->willReturn($modules);
+
+        $result = $this->subject->createRouteConfigurationYaml();
+
+        self::assertSame(self::YAML_COMMENT . "\n" . Yaml::dump($routes), $result);
     }
 }

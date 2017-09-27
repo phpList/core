@@ -126,4 +126,85 @@ class ModuleFinder
     {
         return self::YAML_COMMENT . "\n" . Yaml::dump($this->findBundleClasses());
     }
+
+    /**
+     * Finds the routes in all installed modules.
+     *
+     * @return array[] class names of the routes of all installed phpList modules:
+     * ['route name' => [route configuration]
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function findRoutes(): array
+    {
+        /** @var array[] $routes */
+        $routes = [];
+
+        $modules = $this->packageRepository->findModules();
+        foreach ($modules as $module) {
+            $extra = $module->getExtra();
+            $this->validateRoutesSectionInExtra($extra);
+            if (empty($extra['phplist/phplist4-core']['routes'])) {
+                continue;
+            }
+
+            /** @var array $moduleRoutes */
+            $moduleRoutes = $extra['phplist/phplist4-core']['routes'];
+            foreach ($moduleRoutes as $name => $route) {
+                $prefixedRouteName = $module->getName() . '.' . $name;
+                $routes[$prefixedRouteName] = $route;
+            }
+        }
+
+        return $routes;
+    }
+
+    /**
+     * Validates the routes configuration in the "extra" section of the composer.json of a module.
+     *
+     * @param array $extra
+     *
+     * @return void
+     *
+     * @throws \InvalidArgumentException if $extra has an invalid routes configuration
+     */
+    private function validateRoutesSectionInExtra(array $extra)
+    {
+        if (!isset($extra['phplist/phplist4-core'])) {
+            return;
+        }
+        $this->validatePhpListSectionInExtra($extra);
+
+        if (!isset($extra['phplist/phplist4-core']['routes'])) {
+            return;
+        }
+        if (!is_array($extra['phplist/phplist4-core']['routes'])) {
+            throw new \InvalidArgumentException(
+                'The extras.phplist/phplist4-core.routes section in the composer.json must be an array.',
+                1506429004462
+            );
+        }
+
+        /** @var array $bundleExtras */
+        $bundleExtras = $extra['phplist/phplist4-core']['routes'];
+        foreach ($bundleExtras as $routeName => $routeConfiguration) {
+            if (!is_array($routeConfiguration)) {
+                throw new \InvalidArgumentException(
+                    'The extras.phplist/phplist4-core.routes. ' . $routeName .
+                    '" section in the composer.json must be an array.',
+                    1506429860740
+                );
+            }
+        }
+    }
+
+    /**
+     * Builds the YAML configuration file contents for the registered routes in all modules.
+     *
+     * @return string
+     */
+    public function createRouteConfigurationYaml(): string
+    {
+        return self::YAML_COMMENT . "\n" . Yaml::dump($this->findRoutes());
+    }
 }
