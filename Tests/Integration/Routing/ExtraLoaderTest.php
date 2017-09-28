@@ -3,16 +3,18 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Tests\Integration\Routing;
 
+use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use PhpList\PhpList4\Core\ApplicationKernel;
 use PhpList\PhpList4\Core\ApplicationStructure;
 use PhpList\PhpList4\Core\Bootstrap;
 use PhpList\PhpList4\Core\Environment;
 use PhpList\PhpList4\Routing\ExtraLoader;
 use PHPUnit\Framework\TestCase;
+use Sensio\Bundle\FrameworkExtraBundle\Routing\AnnotatedRouteControllerLoader;
 use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\HttpKernel\Config\FileLocator;
+use Symfony\Component\Routing\Loader\AnnotationDirectoryLoader;
 use Symfony\Component\Routing\Loader\YamlFileLoader;
-use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -41,10 +43,16 @@ class ExtraLoaderTest extends TestCase
         $this->kernel->boot();
         $container = $this->kernel->getContainer();
 
-        /** @var FileLocator $fileLocator */
-        $fileLocator = $container->get('file_locator');
-        $yamlFileLoader = new YamlFileLoader($fileLocator);
-        $loaderResolver = new LoaderResolver([$yamlFileLoader]);
+        /** @var FileLocator $locator */
+        $locator = $container->get('file_locator');
+        $routeControllerLoader = new AnnotatedRouteControllerLoader(new SimpleAnnotationReader());
+
+        $loaderResolver = new LoaderResolver(
+            [
+                new YamlFileLoader($locator),
+                new AnnotationDirectoryLoader($locator, $routeControllerLoader),
+            ]
+        );
 
         $this->subject = new ExtraLoader(new ApplicationStructure());
         $this->subject->setResolver($loaderResolver);
@@ -62,20 +70,5 @@ class ExtraLoaderTest extends TestCase
     public function loadReturnsRouteCollection()
     {
         self::assertInstanceOf(RouteCollection::class, $this->subject->load('', 'extra'));
-    }
-
-    /**
-     * @test
-     */
-    public function loadRegistersModulesRoutes()
-    {
-        $loadedRoutes = $this->subject->load('', 'extra');
-
-        $route = $loadedRoutes->get('phplist/phplist4-core.application_homepage');
-        self::assertNotNull($route);
-
-        /** @var Route $route */
-        self::assertSame('/', $route->getPath());
-        self::assertSame(['_controller' => 'PhpListApplicationBundle:Default:index'], $route->getDefaults());
     }
 }
