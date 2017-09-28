@@ -35,6 +35,7 @@ class ScriptsTest extends TestCase
     {
         return [
             'framework bundle' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
+            'sensio framework extras' => ['Sensio\\Bundle\\FrameworkExtraBundle\\SensioFrameworkExtraBundle'],
             'application bundle' => ['PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle'],
         ];
     }
@@ -73,8 +74,9 @@ class ScriptsTest extends TestCase
     public function moduleRoutingDataProvider(): array
     {
         return [
-            'route name' => ['phplist/phplist4-core.application_homepage'],
-            'defaults' => ["defaults: { _controller: 'PhpListApplicationBundle:Default:index' }"],
+            'route name' => ['phplist/phplist4-core.homepage'],
+            'resource' => ["resource: '@PhpListApplicationBundle/Controller/'"],
+            'type' => ['type: annotation'],
         ];
     }
 

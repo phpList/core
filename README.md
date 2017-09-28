@@ -124,16 +124,19 @@ the `extra` section of the module's `composer.json` like this:
 "extra": {
     "phplist/phplist4-core": {
         "routes": {
-            "application_homepage": {
-                "path": "/",
-                "defaults": {
-                    "_controller": "PhpListApplicationBundle:Default:index"
-                }
+            "homepage": {
+                "resource": "@PhpListApplicationBundle/Controller/",
+                "type": "annotation"
             }
         }
     }
 }
 ````
+
+It is recommended to define the routes using
+[annotations](https://symfony.com/doc/current/routing.html#routing-examples)
+in the controller classes so that the route configuration in the composer.json
+is minimal.
 
 Please note that the key of the section with `extra` needs to always be
 `phplist/phplist4-core`, not the name of your module package.

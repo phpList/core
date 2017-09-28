@@ -91,14 +91,13 @@
         "phplist/phplist4-core": {
             "bundles": [
                 "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
+                "Sensio\\Bundle\\FrameworkExtraBundle\\SensioFrameworkExtraBundle",
                 "PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle"
             ],
             "routes": {
-                "application_homepage": {
-                    "path": "/",
-                    "defaults": {
-                        "_controller": "PhpListApplicationBundle:Default:index"
-                    }
+                "homepage": {
+                    "resource": "@PhpListApplicationBundle/Controller/",
+                    "type": "annotation"
                 }
             }
         }

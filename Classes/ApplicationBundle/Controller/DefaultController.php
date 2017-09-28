@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\ApplicationBundle\Controller;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -14,6 +16,9 @@ use Symfony\Component\HttpFoundation\Response;
 class DefaultController extends Controller
 {
     /**
+     * @Route("/")
+     * @Method("GET")
+     *
      * @return Response
      *
      * @throws \InvalidArgumentException
