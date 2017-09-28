@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Tests\Unit\Routing;
 
+use PhpList\PhpList4\Core\ApplicationStructure;
 use PhpList\PhpList4\Core\Bootstrap;
 use PhpList\PhpList4\Routing\ExtraLoader;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Loader\Loader;
-use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Testcase.
@@ -23,7 +23,7 @@ class ExtraLoaderTest extends TestCase
 
     protected function setUp()
     {
-        $this->subject = new ExtraLoader();
+        $this->subject = new ExtraLoader(new ApplicationStructure());
     }
 
     protected function tearDown()

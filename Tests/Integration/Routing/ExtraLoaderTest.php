@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace PhpList\PhpList4\Tests\Integration\Routing;
 
 use PhpList\PhpList4\Core\ApplicationKernel;
+use PhpList\PhpList4\Core\ApplicationStructure;
 use PhpList\PhpList4\Core\Bootstrap;
 use PhpList\PhpList4\Core\Environment;
 use PhpList\PhpList4\Routing\ExtraLoader;
@@ -45,7 +46,7 @@ class ExtraLoaderTest extends TestCase
         $yamlFileLoader = new YamlFileLoader($fileLocator);
         $loaderResolver = new LoaderResolver([$yamlFileLoader]);
 
-        $this->subject = new ExtraLoader();
+        $this->subject = new ExtraLoader(new ApplicationStructure());
         $this->subject->setResolver($loaderResolver);
     }
 
