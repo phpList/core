@@ -25,6 +25,19 @@ class ExtraLoader extends Loader
     private $loaded = false;
 
     /**
+     * @var ApplicationStructure
+     */
+    private $applicationStructure = null;
+
+    /**
+     * @param ApplicationStructure $applicationStructure
+     */
+    public function __construct(ApplicationStructure $applicationStructure)
+    {
+        $this->applicationStructure = $applicationStructure;
+    }
+
+    /**
      * Loads a resource.
      *
      * @SuppressWarnings("PHPMD.UnusedFormalParameter")
@@ -72,9 +85,8 @@ class ExtraLoader extends Loader
      */
     private function addModuleRoutes(RouteCollection $routes)
     {
-        // This will be solved via dependency injection later.
-        $applicationStructure = new ApplicationStructure();
-        $bundleRoutesFilePath = $applicationStructure->getApplicationRoot() . self::MODULE_ROUTING_CONFIGURATION_FILE;
+        $bundleRoutesFilePath = $this->applicationStructure->getApplicationRoot() .
+            self::MODULE_ROUTING_CONFIGURATION_FILE;
 
         $routesConfiguration = $this->import($bundleRoutesFilePath);
         $routes->addCollection($routesConfiguration);
