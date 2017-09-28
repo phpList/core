@@ -11,6 +11,7 @@ use PHPUnit\DbUnit\Database\Connection;
 use PHPUnit\DbUnit\DataSet\CsvDataSet;
 use PHPUnit\DbUnit\TestCaseTrait;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * This is the base class for all repository integration tests.
@@ -48,10 +49,16 @@ abstract class AbstractRepositoryTest extends TestCase
      */
     protected $entityManager = null;
 
+    /**
+     * @var ContainerInterface
+     */
+    protected $container = null;
+
     protected function setUp()
     {
         $this->initializeDatabaseTester();
         $this->bootstrap = Bootstrap::getInstance()->setEnvironment(Environment::TESTING)->configure();
+        $this->container = $this->bootstrap->getContainer();
         $this->entityManager = $this->bootstrap->getEntityManager();
         self::assertTrue($this->entityManager->isOpen());
     }

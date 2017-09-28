@@ -152,6 +152,12 @@ For accessing the phpList database tables from a module, please use the
 stored in `Classes/Domain/` in the `phplist/phplist4-core` package (this
 package).
 
+For accessing a repository, please have it injected via
+[dependency injection](https://symfony.com/doc/current/components/dependency_injection.html).
+Please do not get the repository directly from the entity manager as this would
+skip dependency injection for that repository, causing those methods to break
+that rely on other services having been injected.
+
 Currently, only a few database tables are mapped as models/repositories. If you
 need a mode or a repository method that still is missing, please
 [submit a pull request](https://github.com/phpList/phplist4-core/pulls) or

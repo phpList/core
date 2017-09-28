@@ -15,6 +15,21 @@ use PhpList\PhpList4\Security\HashGenerator;
 class AdministratorRepository extends EntityRepository
 {
     /**
+     * @var HashGenerator
+     */
+    private $hashGenerator = null;
+
+    /**
+     * @param HashGenerator $hashGenerator
+     *
+     * @return void
+     */
+    public function injectHashGenerator(HashGenerator $hashGenerator)
+    {
+        $this->hashGenerator = $hashGenerator;
+    }
+
+    /**
      * Finds the Administrator with the given login credentials. Returns null if there is no match,
      * i.e., if the login credentials are incorrect.
      *
@@ -25,9 +40,7 @@ class AdministratorRepository extends EntityRepository
      */
     public function findOneByLoginCredentials(string $loginName, string $plainTextPassword)
     {
-        // This will be solved via dependency injection later.
-        $hashGenerator = new HashGenerator();
-        $passwordHash = $hashGenerator->createPasswordHash($plainTextPassword);
+        $passwordHash = $this->hashGenerator->createPasswordHash($plainTextPassword);
 
         return $this->findOneBy(
             [

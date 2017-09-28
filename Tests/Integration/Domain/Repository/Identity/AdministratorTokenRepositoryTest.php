@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Identity;
 
-use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\ORM\Proxy\Proxy;
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Model\Identity\AdministratorToken;
@@ -28,7 +27,7 @@ class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
     const ADMINISTRATOR_TABLE_NAME = 'phplist_admin';
 
     /**
-     * @var AdministratorTokenRepository|ObjectRepository
+     * @var AdministratorTokenRepository
      */
     private $subject = null;
 
@@ -36,13 +35,13 @@ class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
     {
         parent::setUp();
 
-        $this->subject = $this->entityManager->getRepository(AdministratorToken::class);
+        $this->subject = $this->container->get('test.AdministratorTokenRepository');
     }
 
     /**
      * @test
      */
-    public function instanceFromEntityManagerIsAdministratorTokenRepository()
+    public function containerDeliversAdministratorTokenRepository()
     {
         self::assertInstanceOf(AdministratorTokenRepository::class, $this->subject);
     }
