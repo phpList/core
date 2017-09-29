@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\ApplicationBundle\Controller;
+namespace PhpList\PhpList4\EmptyStartPageBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -9,7 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * This controller is a placeholder that will be removed once there is a REST controller.
+ * This controller provides an empty start page.
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
@@ -25,6 +25,6 @@ class DefaultController extends Controller
      */
     public function indexAction(): Response
     {
-        return new Response('Hello world!');
+        return new Response('This page has been intentionally left empty.');
     }
 }

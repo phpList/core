@@ -94,11 +94,11 @@
             "bundles": [
                 "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
                 "Sensio\\Bundle\\FrameworkExtraBundle\\SensioFrameworkExtraBundle",
-                "PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle"
+                "PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle"
             ],
             "routes": {
                 "homepage": {
-                    "resource": "@PhpListApplicationBundle/Controller/",
+                    "resource": "@PhpListEmptyStartPageBundle/Controller/",
                     "type": "annotation"
                 }
             }

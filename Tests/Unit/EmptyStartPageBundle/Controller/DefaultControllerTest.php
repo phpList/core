@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\ApplicationBundle\Controller;
+namespace PhpList\PhpList4\Tests\Unit\EmptyStartPageBundle\Controller;
 
-use PhpList\PhpList4\ApplicationBundle\Controller\DefaultController;
+use PhpList\PhpList4\EmptyStartPageBundle\Controller\DefaultController;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,7 +40,7 @@ class DefaultControllerTest extends TestCase
     {
         $result = $this->subject->indexAction();
 
-        $expectedResult = new Response('Hello world!');
+        $expectedResult = new Response('This page has been intentionally left empty.');
         self::assertEquals($expectedResult, $result);
     }
 }

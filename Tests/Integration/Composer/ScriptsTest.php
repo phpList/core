@@ -36,7 +36,7 @@ class ScriptsTest extends TestCase
         return [
             'framework bundle' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
             'sensio framework extras' => ['Sensio\\Bundle\\FrameworkExtraBundle\\SensioFrameworkExtraBundle'],
-            'application bundle' => ['PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle'],
+            'empty start page bundle' => ['PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
         ];
     }
 
@@ -75,7 +75,7 @@ class ScriptsTest extends TestCase
     {
         return [
             'route name' => ['phplist/phplist4-core.homepage'],
-            'resource' => ["resource: '@PhpListApplicationBundle/Controller/'"],
+            'resource' => ["resource: '@PhpListEmptyStartPageBundle/Controller/'"],
             'type' => ['type: annotation'],
         ];
     }

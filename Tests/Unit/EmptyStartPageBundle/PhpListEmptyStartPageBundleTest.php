@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\ApplicationBundle;
+namespace PhpList\PhpList4\Tests\Unit\EmptyStartPageBundle;
 
-use PhpList\PhpList4\ApplicationBundle\PhpListApplicationBundle;
+use PhpList\PhpList4\EmptyStartPageBundle\PhpListEmptyStartPageBundle;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -12,16 +12,16 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class PhpListApplicationBundleTest extends TestCase
+class PhpListEmptyStartPageBundleTest extends TestCase
 {
     /**
-     * @var PhpListApplicationBundle
+     * @var PhpListEmptyStartPageBundle
      */
     private $subject = null;
 
     protected function setUp()
     {
-        $this->subject = new PhpListApplicationBundle();
+        $this->subject = new PhpListEmptyStartPageBundle();
     }
 
     /**
