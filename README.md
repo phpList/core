@@ -98,10 +98,12 @@ For changing the database schema, please edit `Database/Schema.sql` and adapt
 the corresponding domain model classes and repository classes accordingly.
 
 
-## phpList 4 plugins
+## Developing phpList 4 modules (plugins)
 
-In phpList 4, plugins are called modules, and are Composer packages which have 
-the type `phplist-module`.
+In phpList 4, plugins are called **modules**. They are Composer packages which
+have the type `phplist-module`.
+
+### Bundle and route configuration
 
 If your module provides any Symfony bundles, the bundle class names need to be
 listed in the `extra` section of the module's `composer.json` like this:
@@ -141,7 +143,24 @@ is minimal.
 Please note that the key of the section with `extra` needs to always be
 `phplist/phplist4-core`, not the name of your module package.
 
-More documentation on the creation of modules will follow.
+### Accessing the database
+
+For accessing the phpList database tables from a module, please use the
+[Doctrine](http://www.doctrine-project.org/) model and repository classes
+stored in `Classes/Domain/` in the `phplist/phplist4-core` package (this
+package).
+
+Currently, only a few database tables are mapped as models/repositories. If you
+need a mode or a repository method that still is missing, please
+[submit a pull request](https://github.com/phpList/phplist4-core/pulls) or
+[file an issue](https://github.com/phpList/phplist4-core/issues).
+
+
+## Accessing the phpList data from third-party applications
+
+To access the phpList data from a third-party application (i.e., not from a
+phpList module), please use the
+[REST API](https://github.com/phpList/rest-api).
 
 
 ## Copyright
