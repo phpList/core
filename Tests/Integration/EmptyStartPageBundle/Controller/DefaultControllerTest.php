@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Integration\ApplicationBundle\Controller;
+namespace PhpList\PhpList4\Tests\Integration\EmptyStartPageBundle\Controller;
 
 use PhpList\PhpList4\Core\Bootstrap;
 use PhpList\PhpList4\Core\Environment;
@@ -35,6 +35,9 @@ class DefaultControllerTest extends WebTestCase
         $this->client->request('GET', '/');
 
         self::assertTrue($this->client->getResponse()->isSuccessful());
-        self::assertContains('Hello world!', $this->client->getResponse()->getContent());
+        self::assertContains(
+            'This page has been intentionally left empty.',
+            $this->client->getResponse()->getContent()
+        );
     }
 }

@@ -113,7 +113,7 @@ listed in the `extra` section of the module's `composer.json` like this:
     "phplist/phplist4-core": {
         "bundles": [
             "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
-            "PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle"
+            "PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle"
         ]
     }
 }
@@ -127,7 +127,7 @@ the `extra` section of the module's `composer.json` like this:
     "phplist/phplist4-core": {
         "routes": {
             "homepage": {
-                "resource": "@PhpListApplicationBundle/Controller/",
+                "resource": "@PhpListEmptyStartPageBundle/Controller/",
                 "type": "annotation"
             }
         }

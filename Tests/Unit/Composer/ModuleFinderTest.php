@@ -182,7 +182,7 @@ class ModuleFinderTest extends TestCase
                         'phplist/phplist4-core' => [
                             'bundles' => [
                                 'Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle',
-                                'PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle',
+                                'PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle',
                             ],
                         ],
                     ],
@@ -190,7 +190,7 @@ class ModuleFinderTest extends TestCase
                 [
                     'phplist/foo' => [
                         'Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle',
-                        'PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle',
+                        'PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle',
                     ],
                 ],
             ],
@@ -203,13 +203,13 @@ class ModuleFinderTest extends TestCase
                     ],
                     'phplist/bar' => [
                         'phplist/phplist4-core' => [
-                            'bundles' => ['PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle'],
+                            'bundles' => ['PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
                         ],
                     ],
                 ],
                 [
                     'phplist/foo' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
-                    'phplist/bar' => ['PhpList\\PhpList4\\ApplicationBundle\\PhpListApplicationBundle'],
+                    'phplist/bar' => ['PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
                 ],
             ],
         ];
@@ -360,18 +360,18 @@ class ModuleFinderTest extends TestCase
                     'phplist/foo' => [
                         'phplist/phplist4-core' => [
                             'routes' => [
-                                'application_homepage' => [
+                                'homepage' => [
                                     'path' => '/',
-                                    'defaults' => ['_controller' => 'PhpListApplicationBundle:Default:index'],
+                                    'defaults' => ['_controller' => 'PhpListEmptyStartPageBundle:Default:index'],
                                 ],
                             ],
                         ],
                     ],
                 ],
                 [
-                    'phplist/foo.application_homepage' => [
+                    'phplist/foo.homepage' => [
                         'path' => '/',
-                        'defaults' => ['_controller' => 'PhpListApplicationBundle:Default:index'],
+                        'defaults' => ['_controller' => 'PhpListEmptyStartPageBundle:Default:index'],
                     ],
                 ],
             ],
@@ -382,11 +382,11 @@ class ModuleFinderTest extends TestCase
                             'routes' => [
                                 'homepage' => [
                                     'path' => '/',
-                                    'defaults' => ['_controller' => 'PhpListApplicationBundle:Default:index'],
+                                    'defaults' => ['_controller' => 'PhpListEmptyStartPageBundle:Default:index'],
                                 ],
                                 'blog' => [
                                     'path' => '/blog',
-                                    'defaults' => ['_controller' => 'PhpListApplicationBundle:Blog:index'],
+                                    'defaults' => ['_controller' => 'PhpListEmptyStartPageBundle:Blog:index'],
                                 ],
                             ],
                         ],
@@ -395,11 +395,11 @@ class ModuleFinderTest extends TestCase
                 [
                     'phplist/foo.homepage' => [
                         'path' => '/',
-                        'defaults' => ['_controller' => 'PhpListApplicationBundle:Default:index'],
+                        'defaults' => ['_controller' => 'PhpListEmptyStartPageBundle:Default:index'],
                     ],
                     'phplist/foo.blog' => [
                         'path' => '/blog',
-                        'defaults' => ['_controller' => 'PhpListApplicationBundle:Blog:index'],
+                        'defaults' => ['_controller' => 'PhpListEmptyStartPageBundle:Blog:index'],
                     ],
                 ],
             ],
@@ -410,7 +410,7 @@ class ModuleFinderTest extends TestCase
                             'routes' => [
                                 'homepage' => [
                                     'path' => '/',
-                                    'defaults' => ['_controller' => 'PhpListApplicationBundle:Default:index'],
+                                    'defaults' => ['_controller' => 'PhpListEmptyStartPageBundle:Default:index'],
                                 ],
                             ],
                         ],
@@ -420,7 +420,7 @@ class ModuleFinderTest extends TestCase
                             'routes' => [
                                 'blog' => [
                                     'path' => '/blog',
-                                    'defaults' => ['_controller' => 'PhpListApplicationBundle:Blog:index'],
+                                    'defaults' => ['_controller' => 'PhpListEmptyStartPageBundle:Blog:index'],
                                 ],
                             ],
                         ],
@@ -429,11 +429,11 @@ class ModuleFinderTest extends TestCase
                 [
                     'phplist/foo.homepage' => [
                         'path' => '/',
-                        'defaults' => ['_controller' => 'PhpListApplicationBundle:Default:index'],
+                        'defaults' => ['_controller' => 'PhpListEmptyStartPageBundle:Default:index'],
                     ],
                     'phplist/bar.blog' => [
                         'path' => '/blog',
-                        'defaults' => ['_controller' => 'PhpListApplicationBundle:Blog:index'],
+                        'defaults' => ['_controller' => 'PhpListEmptyStartPageBundle:Blog:index'],
                     ],
                 ],
             ],

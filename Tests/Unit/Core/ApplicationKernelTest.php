@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Tests\Unit\Core;
 
-use PhpList\PhpList4\ApplicationBundle\PhpListApplicationBundle;
+use PhpList\PhpList4\EmptyStartPageBundle\PhpListEmptyStartPageBundle;
 use PhpList\PhpList4\Core\ApplicationKernel;
 use PhpList\PhpList4\Core\Bootstrap;
 use PhpList\PhpList4\Core\Environment;
@@ -63,7 +63,7 @@ class ApplicationKernelTest extends TestCase
     {
         return [
             'framework' => [FrameworkBundle::class],
-            'phpList default bundle' => [PhpListApplicationBundle::class],
+            'phpList default bundle' => [PhpListEmptyStartPageBundle::class],
             'web server' => [WebServerBundle::class],
         ];
     }
