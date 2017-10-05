@@ -3,9 +3,8 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Core;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\Setup;
 use Symfony\Component\Debug\Debug;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,11 +40,6 @@ class Bootstrap
      * @var string
      */
     private $environment = Environment::DEFAULT_ENVIRONMENT;
-
-    /**
-     * @var EntityManager
-     */
-    private $entityManager = null;
 
     /**
      * @var ApplicationKernel
@@ -126,14 +120,6 @@ class Bootstrap
     /**
      * @return bool
      */
-    private function isDoctrineOrmDevelopmentModeEnabled(): bool
-    {
-        return $this->environment !== Environment::PRODUCTION;
-    }
-
-    /**
-     * @return bool
-     */
     private function isSymfonyDebugModeEnabled(): bool
     {
         return $this->environment !== Environment::PRODUCTION;
@@ -182,8 +168,7 @@ class Bootstrap
         $this->isConfigured = true;
 
         return $this->configureDebugging()
-            ->configureApplicationKernel()
-            ->configureDoctrineOrm();
+            ->configureApplicationKernel();
     }
 
     /**
@@ -237,34 +222,6 @@ class Bootstrap
     /**
      * @return Bootstrap fluent interface
      */
-    private function configureDoctrineOrm(): Bootstrap
-    {
-        $packageRootPath = dirname(__DIR__, 2);
-        $domainModelPath = $packageRootPath . 'Classes/Domain/Model/';
-        $domainModelPaths = [$domainModelPath];
-        $container = $this->getContainer();
-
-        $databaseConfiguration = [
-            'driver' => $container->getParameter('database_driver'),
-            'host' => $container->getParameter('database_host'),
-            'port' => $container->getParameter('database_port'),
-            'dbname' => $container->getParameter('database_name'),
-            'user' => $container->getParameter('database_user'),
-            'password' => $container->getParameter('database_password'),
-        ];
-
-        $ormConfiguration = Setup::createAnnotationMetadataConfiguration(
-            $domainModelPaths,
-            $this->isDoctrineOrmDevelopmentModeEnabled()
-        );
-        $this->entityManager = EntityManager::create($databaseConfiguration, $ormConfiguration);
-
-        return $this;
-    }
-
-    /**
-     * @return Bootstrap fluent interface
-     */
     private function configureApplicationKernel(): Bootstrap
     {
         $this->applicationKernel = new ApplicationKernel(
@@ -300,6 +257,20 @@ class Bootstrap
     }
 
     /**
+     * Gets the Doctrine registry.
+     *
+     * @return Registry
+     *
+     * @throws \RuntimeException if configure has not been called before
+     */
+    public function getDoctrine(): Registry
+    {
+        $this->assertConfigureHasBeenCalled();
+
+        return $this->getContainer()->get('doctrine');
+    }
+
+    /**
      * @return EntityManagerInterface
      *
      * @throws \RuntimeException if configure has not been called before
@@ -308,7 +279,10 @@ class Bootstrap
     {
         $this->assertConfigureHasBeenCalled();
 
-        return $this->entityManager;
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $this->getDoctrine()->getManager();
+
+        return $entityManager;
     }
 
     /**

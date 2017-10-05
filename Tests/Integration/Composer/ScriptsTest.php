@@ -34,8 +34,9 @@ class ScriptsTest extends TestCase
     public function bundleClassNameDataProvider(): array
     {
         return [
-            'framework bundle' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
+            'Symfony framework bundle' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
             'sensio framework extras' => ['Sensio\\Bundle\\FrameworkExtraBundle\\SensioFrameworkExtraBundle'],
+            'Doctrine bundle' => ['Doctrine\\Bundle\\DoctrineBundle\\DoctrineBundle'],
             'empty start page bundle' => ['PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
         ];
     }

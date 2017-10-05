@@ -183,4 +183,14 @@ class BootstrapTest extends TestCase
 
         self::assertInstanceOf(EntityManagerInterface::class, $this->subject->getEntityManager());
     }
+
+    /**
+     * @test
+     */
+    public function getDoctrineWithoutConfigureThrowsException()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $this->subject->getDoctrine();
+    }
 }
