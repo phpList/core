@@ -70,8 +70,11 @@ class PackageRepositoryTest extends TestCase
     {
         $this->composerProphecy->getPackage()->willReturn($this->prophesize(RootPackageInterface::class)->reveal());
 
+        /** @var PackageInterface|ObjectProphecy $dependencyProphecy */
+        $dependencyProphecy = $this->prophesize(PackageInterface::class);
+        $dependencyProphecy->getName()->willReturn('phplist/phplist4-core');
         /** @var PackageInterface|ProphecySubjectInterface $dependency */
-        $dependency = $this->prophesize(PackageInterface::class)->reveal();
+        $dependency = $dependencyProphecy->reveal();
         $this->localRepositoryProphecy->getPackages()->willReturn([$dependency]);
 
         self::assertContains($dependency, $this->subject->findAll());
@@ -94,10 +97,35 @@ class PackageRepositoryTest extends TestCase
     /**
      * @test
      */
+    public function findAllExcludesDuplicates()
+    {
+        $this->composerProphecy->getPackage()->willReturn($this->prophesize(RootPackageInterface::class)->reveal());
+
+        $packageName = 'phplist/phplist4-core';
+
+        /** @var PackageInterface|ObjectProphecy $dependencyProphecy */
+        $dependencyProphecy = $this->prophesize(PackageInterface::class);
+        $dependencyProphecy->getName()->willReturn($packageName);
+        /** @var PackageInterface|ProphecySubjectInterface $dependency */
+        $dependency = $dependencyProphecy->reveal();
+        /** @var PackageInterface|ObjectProphecy $dependencyAliasProphecy */
+        $dependencyAliasProphecy = $this->prophesize(PackageInterface::class);
+        $dependencyAliasProphecy->getName()->willReturn($packageName);
+        /** @var PackageInterface|ProphecySubjectInterface $dependency1 */
+        $dependencyAlias = $dependencyAliasProphecy->reveal();
+        $this->localRepositoryProphecy->getPackages()->willReturn([$dependency, $dependencyAlias]);
+
+        self::assertNotContains($dependencyAlias, $this->subject->findAll());
+    }
+
+    /**
+     * @test
+     */
     public function findModulesForPhpListModuleRootPackageIncludesIt()
     {
         /** @var RootPackageInterface|ObjectProphecy $rootPackageProphecy */
         $rootPackageProphecy = $this->prophesize(RootPackageInterface::class);
+        $rootPackageProphecy->getName()->willReturn('phplist/base-installation');
         $rootPackageProphecy->getType()->willReturn('phplist-module');
         /** @var RootPackageInterface|ObjectProphecy $rootPackage */
         $rootPackage = $rootPackageProphecy->reveal();
@@ -122,6 +150,7 @@ class PackageRepositoryTest extends TestCase
         /** @var RootPackageInterface|ObjectProphecy $dependencyProphecy */
         $dependencyProphecy = $this->prophesize(RootPackageInterface::class);
         $dependencyProphecy->getType()->willReturn('phplist-module');
+        $dependencyProphecy->getName()->willReturn('phplist/phplist4-core');
         /** @var RootPackageInterface|ObjectProphecy $dependency */
         $dependency = $dependencyProphecy->reveal();
 
@@ -153,6 +182,7 @@ class PackageRepositoryTest extends TestCase
         /** @var RootPackageInterface|ObjectProphecy $rootPackageProphecy */
         $rootPackageProphecy = $this->prophesize(RootPackageInterface::class);
         $rootPackageProphecy->getType()->willReturn($type);
+        $rootPackageProphecy->getName()->willReturn('phplist/base-installation');
         /** @var RootPackageInterface|ObjectProphecy $rootPackage */
         $rootPackage = $rootPackageProphecy->reveal();
         $this->composerProphecy->getPackage()->willReturn($rootPackage);
@@ -178,6 +208,7 @@ class PackageRepositoryTest extends TestCase
         /** @var RootPackageInterface|ObjectProphecy $dependencyProphecy */
         $dependencyProphecy = $this->prophesize(RootPackageInterface::class);
         $dependencyProphecy->getType()->willReturn($type);
+        $dependencyProphecy->getName()->willReturn('phplist/test');
         /** @var RootPackageInterface|ObjectProphecy $dependency */
         $dependency = $dependencyProphecy->reveal();
 
