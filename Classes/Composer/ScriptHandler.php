@@ -32,6 +32,16 @@ class ScriptHandler extends SensioScriptHandler
     const ROUTES_CONFIGURATION_FILE = '/Configuration/routing_modules.yml';
 
     /**
+     * @var string
+     */
+    const PARAMETERS_CONFIGURATION_FILE = '/Configuration/parameters.yml';
+
+    /**
+     * @var string
+     */
+    const PARAMETERS_TEMPLATE_FILE = '/Configuration/parameters_template.yml';
+
+    /**
      * @return string absolute application root directory without the trailing slash
      *
      * @throws \RuntimeException if there is no composer.json in the application root
@@ -172,9 +182,28 @@ class ScriptHandler extends SensioScriptHandler
      */
     public static function createBundleConfiguration(Event $event)
     {
-        $configurationFilePath = self::getApplicationRoot() . self::BUNDLE_CONFIGURATION_FILE;
-        $fileHandle = fopen($configurationFilePath, 'wb');
-        fwrite($fileHandle, self::createAndInitializeModuleFinder($event)->createBundleConfigurationYaml());
+        self::createAndWriteFile(
+            self::getApplicationRoot() . self::BUNDLE_CONFIGURATION_FILE,
+            self::createAndInitializeModuleFinder($event)->createBundleConfigurationYaml()
+        );
+    }
+
+    /**
+     * Writes $contents to the file with the path $path.
+     *
+     * If the file does not exist yet, it will be created.
+     *
+     * If the file already exists, it will be overwritten.
+     *
+     * @param string $path
+     * @param string $contents
+     *
+     * @return void
+     */
+    private static function createAndWriteFile(string $path, string $contents)
+    {
+        $fileHandle = fopen($path, 'wb');
+        fwrite($fileHandle, $contents);
         fclose($fileHandle);
     }
 
@@ -187,10 +216,10 @@ class ScriptHandler extends SensioScriptHandler
      */
     public static function createRoutesConfiguration(Event $event)
     {
-        $configurationFilePath = self::getApplicationRoot() . self::ROUTES_CONFIGURATION_FILE;
-        $fileHandle = fopen($configurationFilePath, 'wb');
-        fwrite($fileHandle, self::createAndInitializeModuleFinder($event)->createRouteConfigurationYaml());
-        fclose($fileHandle);
+        self::createAndWriteFile(
+            self::getApplicationRoot() . self::ROUTES_CONFIGURATION_FILE,
+            self::createAndInitializeModuleFinder($event)->createRouteConfigurationYaml()
+        );
     }
 
     /**
@@ -244,5 +273,26 @@ class ScriptHandler extends SensioScriptHandler
         }
 
         self::executeCommand($event, $consoleDir, 'cache:warm -e prod');
+    }
+
+    /**
+     * Creates the parameters.yml configuration file.
+     *
+     * @return void
+     */
+    public static function createParametersConfiguration()
+    {
+        $configurationFilePath = self::getApplicationRoot() . self::PARAMETERS_CONFIGURATION_FILE;
+        if (file_exists($configurationFilePath)) {
+            return;
+        }
+
+        $templateFilePath = __DIR__ . '/../..' . self::PARAMETERS_TEMPLATE_FILE;
+        $template = file_get_contents($templateFilePath);
+
+        $secret = bin2hex(random_bytes(20));
+        $configuration = sprintf($template, $secret);
+
+        self::createAndWriteFile($configurationFilePath, $configuration);
     }
 }

@@ -72,6 +72,7 @@
         "update-configuration": [
             "PhpList\\PhpList4\\Composer\\ScriptHandler::createBundleConfiguration",
             "PhpList\\PhpList4\\Composer\\ScriptHandler::createRoutesConfiguration",
+            "PhpList\\PhpList4\\Composer\\ScriptHandler::createParametersConfiguration",
             "PhpList\\PhpList4\\Composer\\ScriptHandler::clearAllCaches"
         ],
         "post-install-cmd": [
