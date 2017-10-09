@@ -43,7 +43,35 @@ class PackageRepository
         $rootPackage = $this->composer->getPackage();
         $dependencies = $this->composer->getRepositoryManager()->getLocalRepository()->getPackages();
 
-        return array_merge([$rootPackage], $dependencies);
+        $packagesWithDuplicates = array_merge([$rootPackage], $dependencies);
+
+        return $this->removeDuplicates($packagesWithDuplicates);
+    }
+
+    /**
+     * @param PackageInterface[] $packages
+     *
+     * @return PackageInterface[]
+     */
+    private function removeDuplicates(array $packages): array
+    {
+        /** @var bool[] $registeredPackages */
+        $registeredPackages = [];
+
+        $result = array_filter(
+            $packages,
+            function (PackageInterface $package) use (&$registeredPackages) {
+                $packageName = $package->getName();
+                if (isset($registeredPackages[$packageName])) {
+                    return false;
+                }
+
+                $registeredPackages[$packageName] = true;
+                return true;
+            }
+        );
+
+        return $result;
     }
 
     /**
