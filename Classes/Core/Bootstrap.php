@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Setup;
 use Symfony\Component\Debug\Debug;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -181,8 +182,8 @@ class Bootstrap
         $this->isConfigured = true;
 
         return $this->configureDebugging()
-            ->configureDoctrineOrm()
-            ->configureApplicationKernel();
+            ->configureApplicationKernel()
+            ->configureDoctrineOrm();
     }
 
     /**
@@ -241,14 +242,15 @@ class Bootstrap
         $packageRootPath = dirname(__DIR__, 2);
         $domainModelPath = $packageRootPath . 'Classes/Domain/Model/';
         $domainModelPaths = [$domainModelPath];
+        $container = $this->getContainer();
 
-        // The getenv calls will be replaced by YAML configuration later
-        // (with the option to use environment variables as overrides).
         $databaseConfiguration = [
-            'driver' => 'pdo_mysql',
-            'user' => getenv('PHPLIST_DATABASE_USER'),
-            'password' => getenv('PHPLIST_DATABASE_PASSWORD'),
-            'dbname' => getenv('PHPLIST_DATABASE_NAME'),
+            'driver' => $container->getParameter('database_driver'),
+            'host' => $container->getParameter('database_host'),
+            'port' => $container->getParameter('database_port'),
+            'dbname' => $container->getParameter('database_name'),
+            'user' => $container->getParameter('database_user'),
+            'password' => $container->getParameter('database_password'),
         ];
 
         $ormConfiguration = Setup::createAnnotationMetadataConfiguration(
@@ -295,6 +297,18 @@ class Bootstrap
         $this->assertConfigureHasBeenCalled();
 
         return $this->applicationKernel;
+    }
+
+    /**
+     * Returns the Symfony DI container.
+     *
+     * @return ContainerInterface
+     */
+    public function getContainer(): ContainerInterface
+    {
+        $this->applicationKernel->boot();
+
+        return $this->getApplicationKernel()->getContainer();
     }
 
     /**

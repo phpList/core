@@ -6,6 +6,7 @@ namespace PhpList\PhpList4\Tests\Integration\Core;
 use PhpList\PhpList4\Core\Bootstrap;
 use PhpList\PhpList4\Core\Environment;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Testcase.
@@ -44,5 +45,15 @@ class BootstrapTest extends TestCase
     public function getApplicationRootReturnsCoreApplicationRoot()
     {
         self::assertSame(dirname(__DIR__, 3), $this->subject->getApplicationRoot());
+    }
+
+    /**
+     * @test
+     */
+    public function getContainerReturnsContainer()
+    {
+        $this->subject->configure();
+
+        self::assertInstanceOf(ContainerInterface::class, $this->subject->getContainer());
     }
 }
