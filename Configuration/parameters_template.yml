@@ -1,2 +1,3 @@
 parameters:
-    secret: %1$s
+    secret: '%%env(PHPLIST_SECRET)%%'
+    env(PHPLIST_SECRET): %1$s
