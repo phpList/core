@@ -276,18 +276,6 @@ class Bootstrap
     }
 
     /**
-     * @return EntityManagerInterface
-     *
-     * @throws \RuntimeException if configure has not been called before
-     */
-    public function getEntityManager(): EntityManagerInterface
-    {
-        $this->assertConfigureHasBeenCalled();
-
-        return $this->entityManager;
-    }
-
-    /**
      * @return ApplicationKernel
      *
      * @throws \RuntimeException if configure has not been called before
@@ -309,6 +297,18 @@ class Bootstrap
         $this->applicationKernel->boot();
 
         return $this->getApplicationKernel()->getContainer();
+    }
+
+    /**
+     * @return EntityManagerInterface
+     *
+     * @throws \RuntimeException if configure has not been called before
+     */
+    public function getEntityManager(): EntityManagerInterface
+    {
+        $this->assertConfigureHasBeenCalled();
+
+        return $this->entityManager;
     }
 
     /**
