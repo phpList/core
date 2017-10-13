@@ -8,6 +8,7 @@ use PhpList\PhpList4\Core\ApplicationKernel;
 use PhpList\PhpList4\Core\Bootstrap;
 use PhpList\PhpList4\Core\Environment;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Testcase.
@@ -126,26 +127,6 @@ class BootstrapTest extends TestCase
     /**
      * @test
      */
-    public function configureInitializesEntityManager()
-    {
-        $this->subject->configure();
-
-        self::assertInstanceOf(EntityManagerInterface::class, $this->subject->getEntityManager());
-    }
-
-    /**
-     * @test
-     */
-    public function getEntityManagerWithoutConfigureThrowsException()
-    {
-        $this->expectException(\RuntimeException::class);
-
-        $this->subject->getEntityManager();
-    }
-
-    /**
-     * @test
-     */
     public function configureCreatesApplicationKernel()
     {
         $this->subject->configure();
@@ -171,5 +152,35 @@ class BootstrapTest extends TestCase
         $this->expectException(\RuntimeException::class);
 
         $this->subject->dispatch();
+    }
+
+    /**
+     * @test
+     */
+    public function getContainerReturnsContainer()
+    {
+        $this->subject->configure();
+
+        self::assertInstanceOf(ContainerInterface::class, $this->subject->getContainer());
+    }
+
+    /**
+     * @test
+     */
+    public function getEntityManagerWithoutConfigureThrowsException()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $this->subject->getEntityManager();
+    }
+
+    /**
+     * @test
+     */
+    public function getEntityManagerAfterConfigureReturnsEntityManager()
+    {
+        $this->subject->configure();
+
+        self::assertInstanceOf(EntityManagerInterface::class, $this->subject->getEntityManager());
     }
 }
