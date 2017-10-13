@@ -92,10 +92,12 @@ this:
 
     mysql -u phplist_test --password=batterystaple phplist_test < Database/Schema.sql
 
-When running the integration tests, you will need to specify the database name
-and access credentials on the command line (in the same line):
+For running the integration tests, please first enter the database name
+and access credentials in `Configuration/parameters.yml`.
 
-    PHPLIST_DATABASE_NAME=phplist_test PHPLIST_DATABASE_USER=phplist PHPLIST_DATABASE_PASSWORD=batterystaple vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml Tests/Integration/
+After that has been done, you can run the integration tests:
+
+    vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml Tests/Integration/
 
 
 ## Coding Style
