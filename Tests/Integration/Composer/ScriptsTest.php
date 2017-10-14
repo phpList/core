@@ -100,4 +100,12 @@ class ScriptsTest extends TestCase
     {
         self::assertFileExists(dirname(__DIR__, 3) . '/Configuration/parameters.yml');
     }
+
+    /**
+     * @test
+     */
+    public function modulesConfigurationFileExists()
+    {
+        self::assertFileExists(dirname(__DIR__, 3) . '/Configuration/config_modules.yml');
+    }
 }

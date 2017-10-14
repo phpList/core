@@ -71,6 +71,7 @@
             "PhpList\\PhpList4\\Composer\\ScriptHandler::listModules"
         ],
         "update-configuration": [
+            "PhpList\\PhpList4\\Composer\\ScriptHandler::createGeneralConfiguration",
             "PhpList\\PhpList4\\Composer\\ScriptHandler::createBundleConfiguration",
             "PhpList\\PhpList4\\Composer\\ScriptHandler::createRoutesConfiguration",
             "PhpList\\PhpList4\\Composer\\ScriptHandler::createParametersConfiguration",

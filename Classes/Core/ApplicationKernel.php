@@ -123,6 +123,7 @@ class ApplicationKernel extends Kernel
     {
         $loader->load($this->getApplicationDir() . '/Configuration/parameters.yml');
         $loader->load($this->getRootDir() . '/Configuration/config_' . $this->getEnvironment() . '.yml');
+        $loader->load($this->getRootDir() . '/Configuration/config_modules.yml');
     }
 
     /**

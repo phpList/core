@@ -39,6 +39,11 @@ class ScriptHandler extends SensioScriptHandler
     /**
      * @var string
      */
+    const GENERAL_CONFIGURATION_FILE = '/Configuration/config_modules.yml';
+
+    /**
+     * @var string
+     */
     const PARAMETERS_TEMPLATE_FILE = '/Configuration/parameters.yml.dist';
 
     /**
@@ -174,7 +179,8 @@ class ScriptHandler extends SensioScriptHandler
     }
 
     /**
-     * Creates the configuration file for the Symfony bundles provided by the modules.
+     * Creates Configuration/bundles.yml
+     * (the configuration file for the Symfony bundles provided by the modules).
      *
      * @param Event $event
      *
@@ -208,7 +214,8 @@ class ScriptHandler extends SensioScriptHandler
     }
 
     /**
-     * Creates the routes file for the Symfony bundles provided by the modules.
+     * Creates Configuration/routing_modules.yml
+     * (the routes file for the Symfony bundles provided by the modules).
      *
      * @param Event $event
      *
@@ -276,7 +283,7 @@ class ScriptHandler extends SensioScriptHandler
     }
 
     /**
-     * Creates the parameters.yml configuration file.
+     * Creates Configuration/parameters.yml (the parameters configuration file).
      *
      * @return void
      */
@@ -294,5 +301,20 @@ class ScriptHandler extends SensioScriptHandler
         $configuration = sprintf($template, $secret);
 
         self::createAndWriteFile($configurationFilePath, $configuration);
+    }
+
+    /**
+     * Creates Configuration/config_modules.yml (the general configuration provided by the modules).
+     *
+     * @param Event $event
+     *
+     * @return void
+     */
+    public static function createGeneralConfiguration(Event $event)
+    {
+        self::createAndWriteFile(
+            self::getApplicationRoot() . self::GENERAL_CONFIGURATION_FILE,
+            self::createAndInitializeModuleFinder($event)->createGeneralConfigurationYaml()
+        );
     }
 }
