@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace PhpList\PhpList4\Domain\Model\Identity;
 
 use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use Doctrine\ORM\Mapping\PrePersist;
 use Doctrine\ORM\Mapping\PreUpdate;

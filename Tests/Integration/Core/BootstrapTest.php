@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Tests\Integration\Core;
 
+use Doctrine\Bundle\DoctrineBundle\Registry as DoctrineRegistry;
 use PhpList\PhpList4\Core\Bootstrap;
 use PhpList\PhpList4\Core\Environment;
 use PHPUnit\Framework\TestCase;
@@ -44,5 +45,15 @@ class BootstrapTest extends TestCase
     public function getApplicationRootReturnsCoreApplicationRoot()
     {
         self::assertSame(dirname(__DIR__, 3), $this->subject->getApplicationRoot());
+    }
+
+    /**
+     * @test
+     */
+    public function getDoctrineAfterConfigureReturnsDoctrineRegistry()
+    {
+        $this->subject->configure();
+
+        self::assertInstanceOf(DoctrineRegistry::class, $this->subject->getDoctrine());
     }
 }

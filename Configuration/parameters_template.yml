@@ -1,4 +1,8 @@
 parameters:
+    # These variables are read from environment variables using the "env" construct.
+    # You can set environment variables in the Apache host configuration and also on the command line.
+    # If you cannot provide any environment variables, you can also set the variables in this file
+    # in the lines with "env(VARIABLE_NAME)".
     secret: '%%env(PHPLIST_SECRET)%%'
     env(PHPLIST_SECRET): %1$s
     database_driver: '%%env(PHPLIST_DATABASE_DRIVER)%%'
