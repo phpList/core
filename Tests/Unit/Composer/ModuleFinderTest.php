@@ -7,6 +7,7 @@ use Composer\Package\PackageInterface;
 use PhpList\PhpList4\Composer\ModuleFinder;
 use PhpList\PhpList4\Composer\PackageRepository;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Prophecy\ObjectProphecy;
 use Prophecy\Prophecy\ProphecySubjectInterface;
 use Symfony\Component\Yaml\Yaml;
 
@@ -28,7 +29,7 @@ class ModuleFinderTest extends TestCase
     private $subject = null;
 
     /**
-     * @var PackageRepository|ProphecySubjectInterface
+     * @var PackageRepository|ObjectProphecy
      */
     private $packageRepositoryProphecy = null;
 
@@ -97,7 +98,7 @@ class ModuleFinderTest extends TestCase
         /** @var PackageInterface[] $moduleSet */
         $moduleSet = [];
         foreach ($extrasSet as $key => $extras) {
-            /** @var PackageInterface|ProphecySubjectInterface $packageProphecy */
+            /** @var PackageInterface|ObjectProphecy $packageProphecy */
             $packageProphecy = $this->prophesize(PackageInterface::class);
             $packageProphecy->getExtra()->willReturn($extras);
             $packageProphecy->getName()->willReturn('phplist/test');
@@ -223,7 +224,7 @@ class ModuleFinderTest extends TestCase
 
             $testCases = [];
             foreach ($extraSets as $packageName => $extraSet) {
-                /** @var PackageInterface|ProphecySubjectInterface $packageProphecy */
+                /** @var PackageInterface|ObjectProphecy $packageProphecy */
                 $packageProphecy = $this->prophesize(PackageInterface::class);
                 $packageProphecy->getExtra()->willReturn($extraSet);
                 $packageProphecy->getName()->willReturn($packageName);
@@ -448,7 +449,7 @@ class ModuleFinderTest extends TestCase
 
             $testCases = [];
             foreach ($extraSets as $packageName => $extraSet) {
-                /** @var PackageInterface|ProphecySubjectInterface $packageProphecy */
+                /** @var PackageInterface|ObjectProphecy $packageProphecy */
                 $packageProphecy = $this->prophesize(PackageInterface::class);
                 $packageProphecy->getExtra()->willReturn($extraSet);
                 $packageProphecy->getName()->willReturn($packageName);

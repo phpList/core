@@ -22,7 +22,7 @@ use Prophecy\Prophecy\ProphecySubjectInterface;
 class ScriptHandlerTest extends TestCase
 {
     /**
-     * @var WritableRepositoryInterface|ProphecySubjectInterface
+     * @var WritableRepositoryInterface|ObjectProphecy
      */
     private $localRepositoryProphecy = null;
 
@@ -194,7 +194,7 @@ class ScriptHandlerTest extends TestCase
 
         /** @var RootPackageInterface|ObjectProphecy $rootPackageProphecy */
         $rootPackageProphecy = $this->prophesize(RootPackageInterface::class);
-        /** @var RootPackageInterface|ObjectProphecy $rootPackage */
+        /** @var RootPackageInterface|ProphecySubjectInterface $rootPackage */
         $rootPackage = $rootPackageProphecy->reveal();
         $composerProphecy->getPackage()->willReturn($rootPackage);
         $this->rootPackageProphecy = $rootPackageProphecy;
