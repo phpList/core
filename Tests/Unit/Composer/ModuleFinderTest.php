@@ -61,7 +61,7 @@ class ModuleFinderTest extends TestCase
      */
     public function modulesWithoutBundlesDataProvider(): array
     {
-        /** @var array[][] $extras */
+        /** @var array[][] $extrasSets */
         $extrasSets = [
             'one module without/with empty extras' => [[]],
             'one module with extras for other stuff' => [['branch-alias' => ['dev-master' => '4.0.x-dev']]],
@@ -139,7 +139,7 @@ class ModuleFinderTest extends TestCase
      */
     public function modulesWithInvalidBundlesDataProvider(): array
     {
-        /** @var array[][] $extras */
+        /** @var array[][] $extrasSets */
         $extrasSets = [
             'one module with phplist4-core section as string' => [['phplist/phplist4-core' => 'foo']],
             'one module with phplist4-core section as int' => [['phplist/phplist4-core' => 42]],
@@ -294,7 +294,7 @@ class ModuleFinderTest extends TestCase
      */
     public function modulesWithoutRoutesDataProvider(): array
     {
-        /** @var array[][] $extras */
+        /** @var array[][] $extrasSets */
         $extrasSets = [
             'one module without/with empty extras' => [[]],
             'one module with extras for other stuff' => [['branch-alias' => ['dev-master' => '4.0.x-dev']]],
@@ -324,7 +324,7 @@ class ModuleFinderTest extends TestCase
      */
     public function modulesWithInvalidRoutesDataProvider(): array
     {
-        /** @var array[][] $extras */
+        /** @var array[][] $extrasSets */
         $extrasSets = [
             'one module with phplist4-core section as string' => [['phplist/phplist4-core' => 'foo']],
             'one module with phplist4-core section as int' => [['phplist/phplist4-core' => 42]],
