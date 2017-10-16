@@ -97,14 +97,27 @@ class ModuleFinderTest extends TestCase
     {
         /** @var PackageInterface[] $moduleSet */
         $moduleSet = [];
-        foreach ($extrasSet as $key => $extras) {
-            /** @var PackageInterface|ObjectProphecy $packageProphecy */
-            $packageProphecy = $this->prophesize(PackageInterface::class);
-            $packageProphecy->getExtra()->willReturn($extras);
-            $packageProphecy->getName()->willReturn('phplist/test');
-            $moduleSet[] = $packageProphecy->reveal();
+        foreach ($extrasSet as $extras) {
+            $moduleSet[] = $this->buildPackageProphecyWithExtras($extras, 'phplist/test');
         }
+
         return $moduleSet;
+    }
+
+    /**
+     * @param array $extras
+     * @param string $packageName
+     *
+     * @return PackageInterface|ProphecySubjectInterface
+     */
+    private function buildPackageProphecyWithExtras(array $extras, string $packageName): PackageInterface
+    {
+        /** @var PackageInterface|ObjectProphecy $packageProphecy */
+        $packageProphecy = $this->prophesize(PackageInterface::class);
+        $packageProphecy->getExtra()->willReturn($extras);
+        $packageProphecy->getName()->willReturn($packageName);
+
+        return $packageProphecy->reveal();
     }
 
     /**
@@ -223,12 +236,8 @@ class ModuleFinderTest extends TestCase
             list($extraSets, $expectedBundles) = $dataSet;
 
             $testCases = [];
-            foreach ($extraSets as $packageName => $extraSet) {
-                /** @var PackageInterface|ObjectProphecy $packageProphecy */
-                $packageProphecy = $this->prophesize(PackageInterface::class);
-                $packageProphecy->getExtra()->willReturn($extraSet);
-                $packageProphecy->getName()->willReturn($packageName);
-                $testCases[] = $packageProphecy->reveal();
+            foreach ($extraSets as $packageName => $extras) {
+                $testCases[] = $this->buildPackageProphecyWithExtras($extras, $packageName);
             }
             $moduleSets[$dataSetName] = [$testCases, $expectedBundles];
         }
@@ -350,7 +359,7 @@ class ModuleFinderTest extends TestCase
     }
 
     /**
-     * @return array[]
+     * @return array[][]
      */
     public function modulesWithRoutesDataProvider(): array
     {
@@ -440,6 +449,16 @@ class ModuleFinderTest extends TestCase
             ],
         ];
 
+        return $this->buildModuleSets($dataSets);
+    }
+
+    /**
+     * @param array[][] $dataSets
+     *
+     * @return array[]
+     */
+    private function buildModuleSets(array $dataSets): array
+    {
         $moduleSets = [];
         /** @var array[] $dataSet */
         foreach ($dataSets as $dataSetName => $dataSet) {
@@ -448,12 +467,8 @@ class ModuleFinderTest extends TestCase
             list($extraSets, $expectedRoutes) = $dataSet;
 
             $testCases = [];
-            foreach ($extraSets as $packageName => $extraSet) {
-                /** @var PackageInterface|ObjectProphecy $packageProphecy */
-                $packageProphecy = $this->prophesize(PackageInterface::class);
-                $packageProphecy->getExtra()->willReturn($extraSet);
-                $packageProphecy->getName()->willReturn($packageName);
-                $testCases[] = $packageProphecy->reveal();
+            foreach ($extraSets as $packageName => $extras) {
+                $testCases[] = $this->buildPackageProphecyWithExtras($extras, $packageName);
             }
             $moduleSets[$dataSetName] = [$testCases, $expectedRoutes];
         }
