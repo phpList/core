@@ -7,6 +7,8 @@ parameters:
     env(PHPLIST_SECRET): %1$s
     database_driver: '%%env(PHPLIST_DATABASE_DRIVER)%%'
     env(PHPLIST_DATABASE_DRIVER): 'pdo_mysql'
+    database_path: '%%env(PHPLIST_DATABASE_PATH)%%'
+    env(PHPLIST_DATABASE_PATH): null
     database_host: '%%env(PHPLIST_DATABASE_HOST)%%'
     env(PHPLIST_DATABASE_HOST): '127.0.0.1'
     database_port: '%%env(PHPLIST_DATABASE_PORT)%%'

@@ -38,6 +38,7 @@ doctrine:
         # and can also be set directly in the parameters.yml file.
         driver: '%database_driver%'
         host: '%database_host%'
+        path: '%database_path%'
         port: '%database_port%'
         dbname: '%database_name%'
         user: '%database_user%'
