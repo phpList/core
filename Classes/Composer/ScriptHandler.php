@@ -39,7 +39,7 @@ class ScriptHandler extends SensioScriptHandler
     /**
      * @var string
      */
-    const PARAMETERS_TEMPLATE_FILE = '/Configuration/parameters_template.yml';
+    const PARAMETERS_TEMPLATE_FILE = '/Configuration/parameters.yml.dist';
 
     /**
      * @return string absolute application root directory without the trailing slash
