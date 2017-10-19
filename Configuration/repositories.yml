@@ -8,3 +8,8 @@ services:
         parent: PhpList\PhpList4\Domain\Repository
         arguments:
             - PhpList\PhpList4\Domain\Model\Identity\AdministratorToken
+
+    PhpList\PhpList4\Domain\Repository\Messaging\SubscriberListRepository:
+        parent: PhpList\PhpList4\Domain\Repository
+        arguments:
+            - PhpList\PhpList4\Domain\Model\Messaging\SubscriberList

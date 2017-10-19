@@ -1,0 +1,142 @@
+<?php
+declare(strict_types=1);
+
+namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Messaging;
+
+use Doctrine\ORM\Proxy\Proxy;
+use PhpList\PhpList4\Domain\Model\Identity\Administrator;
+use PhpList\PhpList4\Domain\Model\Messaging\SubscriberList;
+use PhpList\PhpList4\Domain\Repository\Messaging\SubscriberListRepository;
+use PhpList\PhpList4\Tests\Integration\Domain\Repository\AbstractRepositoryTest;
+use PhpList\PhpList4\Tests\Support\Traits\SimilarDatesAssertionTrait;
+
+/**
+ * Testcase.
+ *
+ * @author Oliver Klee <oliver@phplist.com>
+ */
+class SubscriberListRepositoryTest extends AbstractRepositoryTest
+{
+    use SimilarDatesAssertionTrait;
+
+    /**
+     * @var string
+     */
+    const TABLE_NAME = 'phplist_list';
+
+    /**
+     * @var string
+     */
+    const ADMINISTRATOR_TABLE_NAME = 'phplist_admin';
+
+    /**
+     * @var SubscriberListRepository
+     */
+    private $subject = null;
+
+    protected function setUp()
+    {
+        parent::setUp();
+
+        $this->subject = $this->container->get(SubscriberListRepository::class);
+    }
+
+    /**
+     * @test
+     */
+    public function findReadsModelFromDatabase()
+    {
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/SubscriberList.csv');
+        $this->applyDatabaseChanges();
+
+        $id = 1;
+        $creationDate = new \DateTime('2016-06-22 15:01:17');
+        $modificationDate = new \DateTime('2016-06-23 19:50:43');
+        $name = 'News';
+        $description = 'News (and some fun stuff)';
+        $listPosition = 12;
+        $subjectPrefix = 'phpList';
+        $category = 'news';
+
+        /** @var SubscriberList $model */
+        $model = $this->subject->find($id);
+
+        self::assertSame($id, $model->getId());
+        self::assertEquals($creationDate, $model->getCreationDate());
+        self::assertEquals($modificationDate, $model->getModificationDate());
+        self::assertSame($name, $model->getName());
+        self::assertSame($description, $model->getDescription());
+        self::assertSame($listPosition, $model->getListPosition());
+        self::assertSame($subjectPrefix, $model->getSubjectPrefix());
+        self::assertTrue($model->isActive());
+        self::assertSame($category, $model->getCategory());
+    }
+
+    /**
+     * @test
+     */
+    public function createsOwnerAssociationAsProxy()
+    {
+        $this->getDataSet()->addTable(
+            self::ADMINISTRATOR_TABLE_NAME,
+            __DIR__ . '/../Identity/Fixtures/Administrator.csv'
+        );
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/SubscriberList.csv');
+        $this->applyDatabaseChanges();
+
+        $subscriberListId = 1;
+        $ownerId = 1;
+        /** @var SubscriberList $model */
+        $model = $this->subject->find($subscriberListId);
+        $owner = $model->getOwner();
+
+        self::assertInstanceOf(Administrator::class, $owner);
+        self::assertInstanceOf(Proxy::class, $owner);
+        self::assertSame($ownerId, $owner->getId());
+    }
+
+    /**
+     * @test
+     */
+    public function creationDateOfNewModelIsSetToNowOnPersist()
+    {
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/SubscriberList.csv');
+        $this->applyDatabaseChanges();
+
+        $model = new SubscriberList();
+        $expectedCreationDate = new \DateTime();
+
+        $this->entityManager->persist($model);
+
+        self::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
+    }
+
+    /**
+     * @test
+     */
+    public function modificationDateOfNewModelIsSetToNowOnPersist()
+    {
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/SubscriberList.csv');
+        $this->applyDatabaseChanges();
+
+        $model = new SubscriberList();
+        $expectedModificationDate = new \DateTime();
+
+        $this->entityManager->persist($model);
+
+        self::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
+    }
+
+    /**
+     * @test
+     */
+    public function savePersistsAndFlushesModel()
+    {
+        $this->touchDatabaseTable(self::TABLE_NAME);
+
+        $model = new SubscriberList();
+        $this->subject->save($model);
+
+        self::assertSame($model, $this->subject->find($model->getId()));
+    }
+}
