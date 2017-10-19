@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Identity;
 
-use Doctrine\Common\Persistence\ObjectRepository;
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\PhpList4\Tests\Integration\Domain\Repository\AbstractRepositoryTest;
@@ -24,7 +23,7 @@ class AdministratorRepositoryTest extends AbstractRepositoryTest
     const TABLE_NAME = 'phplist_admin';
 
     /**
-     * @var AdministratorRepository|ObjectRepository
+     * @var AdministratorRepository
      */
     private $subject = null;
 
@@ -32,13 +31,13 @@ class AdministratorRepositoryTest extends AbstractRepositoryTest
     {
         parent::setUp();
 
-        $this->subject = $this->entityManager->getRepository(Administrator::class);
+        $this->subject = $this->container->get('test.AdministratorRepository');
     }
 
     /**
      * @test
      */
-    public function instanceFromEntityManagerIsAdministratorRepository()
+    public function containerDeliversAdministratorRepository()
     {
         self::assertInstanceOf(AdministratorRepository::class, $this->subject);
     }

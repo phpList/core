@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Core;
 
-use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Debug\Debug;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -257,20 +256,6 @@ class Bootstrap
     }
 
     /**
-     * Gets the Doctrine registry.
-     *
-     * @return Registry
-     *
-     * @throws \RuntimeException if configure has not been called before
-     */
-    public function getDoctrine(): Registry
-    {
-        $this->assertConfigureHasBeenCalled();
-
-        return $this->getContainer()->get('doctrine');
-    }
-
-    /**
      * @return EntityManagerInterface
      *
      * @throws \RuntimeException if configure has not been called before
@@ -279,10 +264,7 @@ class Bootstrap
     {
         $this->assertConfigureHasBeenCalled();
 
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $this->getDoctrine()->getManager();
-
-        return $entityManager;
+        return $this->getContainer()->get('doctrine.orm.entity_manager');
     }
 
     /**

@@ -1,6 +1,3 @@
-parameters:
-    #parameter_name: value
-
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -16,5 +13,23 @@ services:
         class: PhpList\PhpList4\Core\ApplicationStructure
         public: true
 
+    security.hash_generator:
+        class: PhpList\PhpList4\Security\HashGenerator
+        public: true
+
     PhpList\PhpList4\Routing\ExtraLoader:
         tags: [routing.loader]
+
+    PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository:
+        class: PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository
+        factory: Doctrine\ORM\EntityManagerInterface:getRepository
+        arguments:
+            - PhpList\PhpList4\Domain\Model\Identity\Administrator
+        calls:
+            - [injectHashGenerator, ['@security.hash_generator']]
+
+    PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository:
+        class: PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository
+        factory: Doctrine\ORM\EntityManagerInterface:getRepository
+        arguments:
+            - PhpList\PhpList4\Domain\Model\Identity\AdministratorToken
