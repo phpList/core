@@ -35,7 +35,7 @@ class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
     {
         parent::setUp();
 
-        $this->subject = $this->container->get('test.AdministratorTokenRepository');
+        $this->subject = $this->container->get('phplist.domain.repository.identity.AdministratorTokenRepository');
     }
 
     /**
