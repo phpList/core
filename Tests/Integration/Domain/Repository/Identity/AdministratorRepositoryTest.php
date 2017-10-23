@@ -31,15 +31,7 @@ class AdministratorRepositoryTest extends AbstractRepositoryTest
     {
         parent::setUp();
 
-        $this->subject = $this->container->get('test.AdministratorRepository');
-    }
-
-    /**
-     * @test
-     */
-    public function containerDeliversAdministratorRepository()
-    {
-        self::assertInstanceOf(AdministratorRepository::class, $this->subject);
+        $this->subject = $this->container->get(AdministratorRepository::class);
     }
 
     /**
