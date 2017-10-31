@@ -517,4 +517,180 @@ class ModuleFinderTest extends TestCase
 
         self::assertSame(self::YAML_COMMENT . "\n" . Yaml::dump($routes), $result);
     }
+
+    /**
+     * @return PackageInterface[][]
+     */
+    public function modulesWithoutConfigurationDataProvider(): array
+    {
+        /** @var array[][] $extrasSets */
+        $extrasSets = [
+            'without/with empty extras' => [[]],
+            'with extras for other stuff' => [['branch-alias' => ['dev-master' => '4.0.x-dev']]],
+            'with empty "phplist/phplist4-core" extras section' => [['phplist/phplist4-core' => []]],
+            'with empty configuration extras section' => [['phplist/phplist4-core' => ['configuration' => []]]],
+        ];
+
+        return $this->buildMockPackagesWithModuleConfiguration($extrasSets);
+    }
+
+    /**
+     * @test
+     * @param PackageInterface[] $modules
+     * @dataProvider modulesWithoutConfigurationDataProvider
+     */
+    public function findGeneralConfigurationForModulesWithoutConfigurationReturnsEmptyArray(array $modules)
+    {
+        $this->packageRepositoryProphecy->findModules()->willReturn($modules);
+
+        $result = $this->subject->findGeneralConfiguration();
+
+        self::assertSame([], $result);
+    }
+
+    /**
+     * @return PackageInterface[][]
+     */
+    public function modulesWithInvalidConfigurationDataProvider(): array
+    {
+        /** @var array[][] $extrasSets */
+        $extrasSets = [
+            'phplist4-core section as string' => [['phplist/phplist4-core' => 'foo']],
+            'phplist4-core section as int' => [['phplist/phplist4-core' => 42]],
+            'phplist4-core section as float' => [['phplist/phplist4-core' => 3.14159]],
+            'phplist4-core section as bool' => [['phplist/phplist4-core' => true]],
+            'configuration section as string' => [['phplist/phplist4-core' => ['configuration' => 'foo']]],
+            'configuration section as int' => [['phplist/phplist4-core' => ['configuration' => 42]]],
+            'configuration section as float' => [['phplist/phplist4-core' => ['configuration' => 3.14159]]],
+            'configuration section as bool' => [['phplist/phplist4-core' => ['configuration' => true]]],
+        ];
+
+        return $this->buildMockPackagesWithModuleConfiguration($extrasSets);
+    }
+
+    /**
+     * @test
+     * @param PackageInterface[] $modules
+     * @dataProvider modulesWithInvalidConfigurationDataProvider
+     */
+    public function findGeneralConfigurationForModulesWithInvalidConfigurationThrowsException(array $modules)
+    {
+        $this->packageRepositoryProphecy->findModules()->willReturn($modules);
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->subject->findGeneralConfiguration();
+    }
+
+    /**
+     * @return array[][]
+     */
+    public function modulesWithConfigurationDataProvider(): array
+    {
+        /** @var array[][] $dataSets */
+        $dataSets = [
+            'one module with configuration' => [
+                [
+                    'phplist/foo' => [
+                        'phplist/phplist4-core' => [
+                            'configuration' => ['foo' => 'bar'],
+                        ],
+                    ],
+                ],
+                ['foo' => 'bar'],
+            ],
+            'two modules non-overlapping configuration sets' => [
+                [
+                    'phplist/foo' => [
+                        'phplist/phplist4-core' => [
+                            'configuration' => ['foo' => 'bar'],
+                        ],
+                    ],
+                    'phplist/bar' => [
+                        'phplist/phplist4-core' => [
+                            'configuration' => [
+                                'foobar' => ['life' => 'everything'],
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'foo' => 'bar',
+                    'foobar' => ['life' => 'everything'],
+                ],
+            ],
+            'two modules overlapping configuration sets' => [
+                [
+                    'phplist/foo' => [
+                        'phplist/phplist4-core' => [
+                            'configuration' => [
+                                'foo' => 'bar',
+                                'foobar' => [1 => 'hello'],
+                                'good' => 'code',
+                            ],
+                        ],
+                    ],
+                    'phplist/bar' => [
+                        'phplist/phplist4-core' => [
+                            'configuration' => [
+                                'foo' => 'bonjour',
+                                'foobar' => [2 => 'world'],
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'foo' => 'bonjour',
+                    'foobar' => [1 => 'hello', 2 => 'world'],
+                    'good' => 'code',
+                ],
+            ],
+        ];
+
+        return $this->buildModuleSets($dataSets);
+    }
+
+    /**
+     * @test
+     * @param PackageInterface[] $modules
+     * @param array $expectedConfiguration
+     * @dataProvider modulesWithConfigurationDataProvider
+     */
+    public function findGeneralConfigurationForModulesWithConfigurationReturnsConfiguration(
+        array $modules,
+        array $expectedConfiguration
+    ) {
+        $this->packageRepositoryProphecy->findModules()->willReturn($modules);
+
+        $result = $this->subject->findGeneralConfiguration();
+
+        self::assertSame($expectedConfiguration, $result);
+    }
+
+    /**
+     * @test
+     */
+    public function createGeneralConfigurationYamlForNoModulesReturnsCommentOnly()
+    {
+        $this->packageRepositoryProphecy->findModules()->willReturn([]);
+
+        $result = $this->subject->createGeneralConfigurationYaml();
+
+        self::assertSame(self::YAML_COMMENT . "\n{  }", $result);
+    }
+
+    /**
+     * @test
+     * @param PackageInterface[][] $modules
+     * @param array[] $routes
+     * @dataProvider modulesWithConfigurationDataProvider
+     */
+    public function createGeneralConfigurationYamlReturnsYamlForConfiguration(array $modules, array $routes)
+    {
+        $this->packageRepositoryProphecy->findModules()->willReturn($modules);
+
+        $result = $this->subject->createGeneralConfigurationYaml();
+
+        self::assertSame(self::YAML_COMMENT . "\n" . Yaml::dump($routes), $result);
+    }
 }

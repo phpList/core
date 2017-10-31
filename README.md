@@ -121,6 +121,12 @@ listed in the `extra` section of the module's `composer.json` like this:
 }
 ````
 
+Please note that the key of the section with `extra` needs to always be
+`phplist/phplist4-core`, not the name of your module package. Please have a
+look at the
+[`composer.json` in the `rest-api` module](https://github.com/phpList/rest-api/blob/master/composer.json)
+for an example.
+
 Similarly, if your module provides any routes, those also need to be listed in
 the `extra` section of the module's `composer.json` like this:
 
@@ -137,13 +143,28 @@ the `extra` section of the module's `composer.json` like this:
 }
 ````
 
+You can also provide system configuration for your module:
+
+````
+"extra": {
+    "phplist/phplist4-core": {
+        "configuration": {
+            "framework": {
+                "templating": {
+                    "engines": [
+                        "twig"
+                    ]
+                }
+            }
+        }
+    }
+}
+````
+
 It is recommended to define the routes using
 [annotations](https://symfony.com/doc/current/routing.html#routing-examples)
 in the controller classes so that the route configuration in the composer.json
 is minimal.
-
-Please note that the key of the section with `extra` needs to always be
-`phplist/phplist4-core`, not the name of your module package.
 
 ### Accessing the database
 

@@ -60,7 +60,7 @@ class ModuleFinder
     }
 
     /**
-     * Validates the bundles configuration in the "extra" section of the composer.json of a module.
+     * Validates the bundles section in the "extra" section of the composer.json of a module.
      *
      * @param array $extra
      *
@@ -99,7 +99,7 @@ class ModuleFinder
     }
 
     /**
-     * Validates the phpList modules configuration in the "extra" section of the composer.json of a module.
+     * Validates the phpList modules section in the "extra" section of the composer.json of a module.
      *
      * @param array $extra
      *
@@ -119,6 +119,8 @@ class ModuleFinder
 
     /**
      * Builds the YAML configuration file contents for the registered bundles in all modules.
+     *
+     * The returned string is intended to be written to Configuration/bundles.yml.
      *
      * @return string
      */
@@ -160,7 +162,7 @@ class ModuleFinder
     }
 
     /**
-     * Validates the routes configuration in the "extra" section of the composer.json of a module.
+     * Validates the routes section in the "extra" section of the composer.json of a module.
      *
      * @param array $extra
      *
@@ -201,10 +203,77 @@ class ModuleFinder
     /**
      * Builds the YAML configuration file contents for the registered routes in all modules.
      *
+     * The returned string is intended to be written to Configuration/routing_modules.yml.
+     *
      * @return string
      */
     public function createRouteConfigurationYaml(): string
     {
         return self::YAML_COMMENT . "\n" . Yaml::dump($this->findRoutes());
+    }
+
+    /**
+     * Finds and merges the configuration in all installed modules.
+     *
+     * @return array configuration which can be dumped in a config_modules.yml file
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function findGeneralConfiguration(): array
+    {
+        /** @var array[] $configurationSets */
+        $configurationSets = [[]];
+
+        $modules = $this->packageRepository->findModules();
+        foreach ($modules as $module) {
+            $extra = $module->getExtra();
+            $this->validateGeneralConfigurationSectionInExtra($extra);
+            if (!isset($extra['phplist/phplist4-core']['configuration'])) {
+                continue;
+            }
+
+            $configurationSets[] = $extra['phplist/phplist4-core']['configuration'];
+        }
+
+        return array_replace_recursive(...$configurationSets);
+    }
+
+    /**
+     * Validates the configuration in the "extra" section of the composer.json of a module.
+     *
+     * @param array $extra
+     *
+     * @return void
+     *
+     * @throws \InvalidArgumentException if $extra has an invalid routes configuration
+     */
+    private function validateGeneralConfigurationSectionInExtra(array $extra)
+    {
+        if (!isset($extra['phplist/phplist4-core'])) {
+            return;
+        }
+        $this->validatePhpListSectionInExtra($extra);
+
+        if (!isset($extra['phplist/phplist4-core']['configuration'])) {
+            return;
+        }
+        if (!is_array($extra['phplist/phplist4-core']['configuration'])) {
+            throw new \InvalidArgumentException(
+                'The extras.phplist/phplist4-core.configuration section in the composer.json must be an array.',
+                1508165934174
+            );
+        }
+    }
+
+    /**
+     * Builds the YAML configuration file contents all modules.
+     *
+     * The returned string is intended to be written to Configuration/config_modules.yml.
+     *
+     * @return string
+     */
+    public function createGeneralConfigurationYaml(): string
+    {
+        return self::YAML_COMMENT . "\n" . Yaml::dump($this->findGeneralConfiguration());
     }
 }
