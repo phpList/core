@@ -35,15 +35,7 @@ class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
     {
         parent::setUp();
 
-        $this->subject = $this->container->get('test.AdministratorTokenRepository');
-    }
-
-    /**
-     * @test
-     */
-    public function containerDeliversAdministratorTokenRepository()
-    {
-        self::assertInstanceOf(AdministratorTokenRepository::class, $this->subject);
+        $this->subject = $this->container->get(AdministratorTokenRepository::class);
     }
 
     /**

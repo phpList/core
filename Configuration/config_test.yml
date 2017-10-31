@@ -7,11 +7,3 @@ framework:
         storage_id: session.storage.mock_file
     profiler:
         collect: false
-
-# These aliases allow retrieving non-public services via the container in the integration tests.
-# See https://symfony.com/doc/current/service_container/alias_private.html#aliasing for details.
-services:
-    test.AdministratorRepository:
-        alias: PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository
-    test.AdministratorTokenRepository:
-        alias: PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository
