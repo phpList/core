@@ -6,6 +6,7 @@ namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Identity;
 use Doctrine\ORM\Proxy\Proxy;
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Model\Identity\AdministratorToken;
+use PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository;
 use PhpList\PhpList4\Tests\Integration\Domain\Repository\AbstractRepositoryTest;
 
@@ -191,5 +192,24 @@ class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
         $this->applyDatabaseChanges();
 
         self::assertSame(1, $this->subject->removeExpired());
+    }
+
+    /**
+     * @test
+     */
+    public function savePersistsAndFlushesModel()
+    {
+        $this->getDataSet()->addTable(self::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/Fixtures/Administrator.csv');
+        $this->applyDatabaseChanges();
+
+        $administratorRepository = $this->container->get(AdministratorRepository::class);
+        /** @var Administrator $administrator */
+        $administrator = $administratorRepository->find(1);
+
+        $model = new AdministratorToken();
+        $model->setAdministrator($administrator);
+        $this->subject->save($model);
+
+        self::assertSame($model, $this->subject->find($model->getId()));
     }
 }

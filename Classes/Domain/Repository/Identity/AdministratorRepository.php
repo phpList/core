@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Domain\Repository\Identity;
 
-use Doctrine\ORM\EntityRepository;
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
+use PhpList\PhpList4\Domain\Repository\AbstractRepository;
 use PhpList\PhpList4\Security\HashGenerator;
 
 /**
@@ -12,7 +12,7 @@ use PhpList\PhpList4\Security\HashGenerator;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class AdministratorRepository extends EntityRepository
+class AdministratorRepository extends AbstractRepository
 {
     /**
      * @var HashGenerator

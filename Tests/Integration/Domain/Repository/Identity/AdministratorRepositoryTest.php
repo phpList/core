@@ -178,4 +178,15 @@ class AdministratorRepositoryTest extends AbstractRepositoryTest
 
         self::assertNull($result);
     }
+
+    /**
+     * @test
+     */
+    public function savePersistsAndFlushesModel()
+    {
+        $model = new Administrator();
+        $this->subject->save($model);
+
+        self::assertSame($model, $this->subject->find($model->getId()));
+    }
 }
