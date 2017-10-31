@@ -4,15 +4,15 @@ declare(strict_types=1);
 namespace PhpList\PhpList4\Domain\Repository\Identity;
 
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\EntityRepository;
 use PhpList\PhpList4\Domain\Model\Identity\AdministratorToken;
+use PhpList\PhpList4\Domain\Repository\AbstractRepository;
 
 /**
  * Repository for AdministratorToken models.
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class AdministratorTokenRepository extends EntityRepository
+class AdministratorTokenRepository extends AbstractRepository
 {
     /**
      * Finds one unexpired token by the given key. Returns null if there is no match.
