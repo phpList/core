@@ -32,17 +32,15 @@ cache:
 
 before_install:
 - phpenv config-rm xdebug.ini
-
-install:
-- composer install
-
-before_script:
 - >
   echo;
   echo "Creating the database and importing the database schema";
   mysql -e "CREATE DATABASE ${PHPLIST_DATABASE_NAME};";
   mysql -u root -e "GRANT ALL ON ${PHPLIST_DATABASE_NAME}.* TO '${PHPLIST_DATABASE_USER}'@'%';";
   mysql ${PHPLIST_DATABASE_NAME} < Database/Schema.sql;
+
+install:
+- composer install
 
 script:
 - >
