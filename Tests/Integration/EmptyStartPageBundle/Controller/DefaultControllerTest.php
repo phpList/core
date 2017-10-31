@@ -5,6 +5,7 @@ namespace PhpList\PhpList4\Tests\Integration\EmptyStartPageBundle\Controller;
 
 use PhpList\PhpList4\Core\Bootstrap;
 use PhpList\PhpList4\Core\Environment;
+use PhpList\PhpList4\EmptyStartPageBundle\Controller\DefaultController;
 use Symfony\Bundle\FrameworkBundle\Client;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -25,6 +26,14 @@ class DefaultControllerTest extends WebTestCase
         Bootstrap::getInstance()->setEnvironment(Environment::TESTING)->configure();
 
         $this->client = self::createClient(['environment' => Environment::TESTING]);
+    }
+
+    /**
+     * @test
+     */
+    public function controllerIsAvailableViaContainer()
+    {
+        self::assertInstanceOf(DefaultController::class, $this->client->getContainer()->get(DefaultController::class));
     }
 
     /**

@@ -49,7 +49,7 @@ class ApplicationStructureTest extends TestCase
      */
     public function subjectIsAvailableViaContainer()
     {
-        self::assertInstanceOf(ApplicationStructure::class, $this->container->get('application.structure'));
+        self::assertInstanceOf(ApplicationStructure::class, $this->container->get(ApplicationStructure::class));
     }
 
     /**
@@ -57,7 +57,7 @@ class ApplicationStructureTest extends TestCase
      */
     public function classIsRegisteredAsSingletonInContainer()
     {
-        $id = 'application.structure';
+        $id = ApplicationStructure::class;
 
         self::assertSame($this->container->get($id), $this->container->get($id));
     }

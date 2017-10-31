@@ -49,7 +49,7 @@ class HashGeneratorTest extends TestCase
      */
     public function subjectIsAvailableViaContainer()
     {
-        self::assertInstanceOf(HashGenerator::class, $this->container->get('security.hash_generator'));
+        self::assertInstanceOf(HashGenerator::class, $this->container->get(HashGenerator::class));
     }
 
     /**
@@ -57,7 +57,7 @@ class HashGeneratorTest extends TestCase
      */
     public function classIsRegisteredAsSingletonInContainer()
     {
-        $id = 'security.hash_generator';
+        $id = HashGenerator::class;
 
         self::assertSame($this->container->get($id), $this->container->get($id));
     }

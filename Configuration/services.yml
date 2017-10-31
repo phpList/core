@@ -9,27 +9,30 @@ services:
         # if you need to do this, you can override this setting on individual services
         public: false
 
-    application.structure:
-        class: PhpList\PhpList4\Core\ApplicationStructure
+    PhpList\PhpList4\Core\ApplicationStructure:
         public: true
 
-    security.hash_generator:
-        class: PhpList\PhpList4\Security\HashGenerator
+    PhpList\PhpList4\Security\HashGenerator:
         public: true
 
     PhpList\PhpList4\Routing\ExtraLoader:
         tags: [routing.loader]
 
     PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository:
-        class: PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository
         factory: Doctrine\ORM\EntityManagerInterface:getRepository
         arguments:
             - PhpList\PhpList4\Domain\Model\Identity\Administrator
         calls:
-            - [injectHashGenerator, ['@security.hash_generator']]
+            - [injectHashGenerator, ['@PhpList\PhpList4\Security\HashGenerator']]
 
     PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository:
-        class: PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository
         factory: Doctrine\ORM\EntityManagerInterface:getRepository
         arguments:
             - PhpList\PhpList4\Domain\Model\Identity\AdministratorToken
+
+    # controllers are imported separately to make sure they're public
+    # and have a tag that allows actions to type-hint services
+    PhpList\PhpList4\EmptyStartPageBundle\Controller\:
+        resource: '../Classes/EmptyStartPageBundle/Controller'
+        public: true
+        tags: ['controller.service_arguments']
