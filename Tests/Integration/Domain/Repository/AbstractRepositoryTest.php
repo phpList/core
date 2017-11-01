@@ -6,7 +6,6 @@ namespace PhpList\PhpList4\Tests\Integration\Domain\Repository;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\PhpList4\Core\Bootstrap;
 use PhpList\PhpList4\Core\Environment;
-use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
 use PHPUnit\DbUnit\Database\Connection;
 use PHPUnit\DbUnit\DataSet\CsvDataSet;
 use PHPUnit\DbUnit\TestCaseTrait;
@@ -134,21 +133,5 @@ abstract class AbstractRepositoryTest extends TestCase
     {
         $this->getDatabaseTester()->setDataSet($this->getDataSet());
         $this->getDatabaseTester()->onSetUp();
-    }
-
-    /**
-     * Sets the (private) ID of $subject.
-     *
-     * @param Identity $subject
-     * @param int $id
-     *
-     * @return void
-     */
-    protected function setId(Identity $subject, int $id)
-    {
-        $reflectionObject = new \ReflectionObject($subject);
-        $reflectionProperty = $reflectionObject->getProperty('id');
-        $reflectionProperty->setAccessible(true);
-        $reflectionProperty->setValue($subject, $id);
     }
 }
