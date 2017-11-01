@@ -18,23 +18,16 @@ services:
     PhpList\PhpList4\Routing\ExtraLoader:
         tags: [routing.loader]
 
-    PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository:
+    PhpList\PhpList4\Domain\Repository:
+        abstract: true
+        autowire: true
+        autoconfigure: false
         public: true
         factory: Doctrine\ORM\EntityManagerInterface:getRepository
-        arguments:
-            - PhpList\PhpList4\Domain\Model\Identity\Administrator
-        calls:
-            - [injectHashGenerator, ['@PhpList\PhpList4\Security\HashGenerator']]
-
-    PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository:
-        public: true
-        factory: Doctrine\ORM\EntityManagerInterface:getRepository
-        arguments:
-            - PhpList\PhpList4\Domain\Model\Identity\AdministratorToken
 
     # controllers are imported separately to make sure they're public
     # and have a tag that allows actions to type-hint services
     PhpList\PhpList4\EmptyStartPageBundle\Controller\:
         resource: '../Classes/EmptyStartPageBundle/Controller'
         public: true
-        tags: ['controller.service_arguments']
+        tags: [controller.service_arguments]

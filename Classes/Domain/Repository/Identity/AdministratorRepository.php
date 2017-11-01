@@ -21,6 +21,7 @@ class AdministratorRepository extends AbstractRepository
 
     /**
      * @param HashGenerator $hashGenerator
+     * @required
      *
      * @return void
      */
