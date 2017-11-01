@@ -6,11 +6,13 @@ namespace PhpList\PhpList4\Domain\Model\Identity;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
-use Doctrine\ORM\Mapping\PrePersist;
-use Doctrine\ORM\Mapping\PreUpdate;
 use Doctrine\ORM\Mapping\Table;
+use PhpList\PhpList4\Domain\Model\Interfaces\CreationDate;
 use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
+use PhpList\PhpList4\Domain\Model\Interfaces\ModificationDate;
+use PhpList\PhpList4\Domain\Model\Traits\CreationDateTrait;
 use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
+use PhpList\PhpList4\Domain\Model\Traits\ModificationDateTrait;
 
 /**
  * This class represents an administrator who can log to the system, is allowed to administer
@@ -22,9 +24,11 @@ use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class Administrator implements Identity
+class Administrator implements Identity, CreationDate, ModificationDate
 {
     use IdentityTrait;
+    use CreationDateTrait;
+    use ModificationDateTrait;
 
     /**
      * @var string
@@ -42,13 +46,13 @@ class Administrator implements Identity
      * @var \DateTime|null
      * @Column(type="datetime", nullable=true, name="created")
      */
-    private $creationDate = null;
+    protected $creationDate = null;
 
     /**
      * @var \DateTime|null
      * @Column(type="datetime", nullable=true, name="modified")
      */
-    private $modificationDate = null;
+    protected $modificationDate = null;
 
     /**
      * @var string
@@ -102,67 +106,6 @@ class Administrator implements Identity
     public function setEmailAddress(string $emailAddress)
     {
         $this->emailAddress = $emailAddress;
-    }
-
-    /**
-     * @return \DateTime|null
-     */
-    public function getCreationDate()
-    {
-        return $this->creationDate;
-    }
-
-    /**
-     * @param \DateTime $creationDate
-     *
-     * @return void
-     */
-    private function setCreationDate(\DateTime $creationDate)
-    {
-        $this->creationDate = $creationDate;
-    }
-
-    /**
-     * Updates the creation date to now.
-     *
-     * @PrePersist
-     *
-     * @return void
-     */
-    public function updateCreationDate()
-    {
-        $this->setCreationDate(new \DateTime());
-    }
-
-    /**
-     * @return \DateTime|null
-     */
-    public function getModificationDate()
-    {
-        return $this->modificationDate;
-    }
-
-    /**
-     * @param \DateTime $modificationDate
-     *
-     * @return void
-     */
-    private function setModificationDate(\DateTime $modificationDate)
-    {
-        $this->modificationDate = $modificationDate;
-    }
-
-    /**
-     * Updates the modification date to now.
-     *
-     * @PrePersist
-     * @PreUpdate
-     *
-     * @return void
-     */
-    public function updateModificationDate()
-    {
-        $this->setModificationDate(new \DateTime());
     }
 
     /**

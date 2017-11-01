@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 
 /**
- * This class provides an ID property to domain models.
+ * This trait provides an ID property to domain models.
  *
  * This is the default implementation of the Identity interface.
  *
