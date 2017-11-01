@@ -134,4 +134,19 @@ abstract class AbstractRepositoryTest extends TestCase
         $this->getDatabaseTester()->setDataSet($this->getDataSet());
         $this->getDatabaseTester()->onSetUp();
     }
+
+    /**
+     * Marks the table with the given name as "touched", i.e., it will be truncated in the tearDown method.
+     *
+     * This is useful if the table gets populated only by the tested code instead of by using the addTable
+     * and applyDatabaseChanges method.
+     *
+     * @param string $tableName
+     *
+     * @return void
+     */
+    protected function touchDatabaseTable(string $tableName)
+    {
+        $this->getDataSet()->addTable($tableName, __DIR__ . '/Fixtures/TouchTable.csv');
+    }
 }
