@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Domain\Model\Traits;
 
+use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 
@@ -17,7 +18,8 @@ trait IdentityTrait
 {
     /**
      * @var int
-     * @Id @Column(type="integer")
+     * @Id
+     * @Column(type="integer")
      * @GeneratedValue
      */
     private $id = 0;
