@@ -184,6 +184,8 @@ class AdministratorRepositoryTest extends AbstractRepositoryTest
      */
     public function savePersistsAndFlushesModel()
     {
+        $this->touchDatabaseTable(self::TABLE_NAME);
+
         $model = new Administrator();
         $this->subject->save($model);
 

@@ -199,6 +199,7 @@ class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
      */
     public function savePersistsAndFlushesModel()
     {
+        $this->touchDatabaseTable(self::TABLE_NAME);
         $this->getDataSet()->addTable(self::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/Fixtures/Administrator.csv');
         $this->applyDatabaseChanges();
 
