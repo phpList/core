@@ -6,11 +6,11 @@
 Table name: `phplist_admin`
 
 An **administrator** can log in to the system and is allowed to administer
-selected **lists** (as the owner), send **campaigns** to these lists and edit
-**subscribers**.
+selected **subscriber lists** (as the owner), send **campaigns** to these
+subscriber lists and edit **subscribers**.
 
 Administrators are not subscribers. If administrators would like to subscribe
-to lists, they need to have a separate subscriber account.
+to subscriber lists, they need to have a separate subscriber account.
 
 ### AdministratorAttribute
 Table name: `phplist_adminattribute` or `phplist_admin_attribute`
@@ -50,11 +50,11 @@ particular **subscriber**.
 ### SubscribePage
 Table name: `phplist_subscribepage`
 
-*subscribePages** allow setting up a selection of lists, attributes and
-language, and some other settings to control the content for the page that can
-be used to subscribe to the system. As a result, you can e.g., have different
-pages per language, which allows you to translate all the content for each
-language.
+*subscribePages** allow setting up a selection of subscriber lists, attributes
+and language, and some other settings to control the content for the page that
+can be used to subscribe to the system. As a result, you can e.g., have
+different pages per language, which allows you to translate all the content
+for each language.
 
 ### SubscribePageData
 Table name: `phplist_subscribepage_data`
@@ -64,8 +64,8 @@ This is where the data for a subscribe page is stored as key-value pair.
 ### Subscriber
 Table name: `phplist_user_user`
 
-A subscriber can subscribe to multiple **lists** and can receive email
-messages from **campaigns** for those lists.
+A subscriber can subscribe to multiple **subscriber lists** and can receive
+email messages from **campaigns** for those subscriber lists.
 
 Each subscriber has a (unique) email address.
 
@@ -86,15 +86,16 @@ and reasons for their blacklisting.
 ### Subscription
 Table name: `phplist_listuser`
 
-A **subscription** means that a **subscriber** is subscribed to a **list**.
+A **subscription** means that a **subscriber** is subscribed to a
+**subscriber list**.
 
 ### Subscriber-Campaign Connection
 Table name: `phplist_usermessage`
 
 This association is the core of everything. A subscriber can be member of
-multiple lists, and a campaign can be sent to multiple lists, but this
-association ensures that a subscriber always only receives one copy of a
-campaign, regardless of other associations.
+multiple subscriber lists, and a campaign can be sent to multiple subscriber
+lists, but this association ensures that a subscriber always only receives
+one copy of a campaign, regardless of other associations.
 
 Should we use a named association for this? What should it be named?
 
@@ -130,10 +131,10 @@ Table name: `phplist_bounceregex`
 ### Campaign
 Table name: `phplist_message`
 
-A **campaign** is a non-personalized message on a **list** (or potentially
-multiple lists). The campaign has been created by an **administrator** owner
-and sends out email messages to multiple **subscribers**. It is stored to
-which subscribers a campaign has been sent.
+A **campaign** is a non-personalized message on a **subscriber list** (or
+potentially multiple subscriber lists). The campaign has been created by an
+**administrator** owner and sends out email messages to multiple
+**subscribers**. It is stored to which subscribers a campaign has been sent.
 
 ### CampaignBounce
 Table name: `phplist_message_bounce`
@@ -142,7 +143,8 @@ Table name: `phplist_message_bounce`
 Table name: `phplist_messagedata`
 
 This contains additional miscellaneous attributes for **campaigns**, such as
-Google tracking IDs, special relationships to **lists**, and alias titles.
+Google tracking IDs, special relationships to **subscriber lists**, and alias
+titles.
 
 ### CampaignForward
 Table name: `phplist_message_forward`
@@ -150,12 +152,12 @@ Table name: `phplist_message_forward`
 This tracks details of **campaigns** which were forwarded by a recipient
 **subscriber** to someone else via an email message.
 
-### List
+### SubscriberList
 Table name: `phplist_list`
 
-A **list** is something to which **subscribers** can subscribe in order to
-receive email messages from **campaigns**. Each list has exactly one **administrator**
-owner.
+A **subscriber list** is something to which **subscribers** can subscribe in
+order to receive email messages from **campaigns**. Each subscriber list has
+exactly one **administrator** owner.
 
 ### Template
 Table name: `phplist_template`

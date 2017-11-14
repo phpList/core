@@ -74,6 +74,7 @@ class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
         /** @var AdministratorToken $model */
         $model = $this->subject->find($tokenId);
         $administrator = $model->getAdministrator();
+
         self::assertInstanceOf(Administrator::class, $administrator);
         self::assertInstanceOf(Proxy::class, $administrator);
         self::assertSame($administratorId, $administrator->getId());

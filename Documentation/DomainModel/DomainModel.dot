@@ -69,7 +69,7 @@ digraph phpListDomainModel {
     CampaignBounce  [label = "CampaignBounce"]
     CampaignData    [label = "CampaignData"]
     CampaignForward [label = "CampaignForward"]
-    List            [label = "List"]
+    SubscriberList  [label = "SubscriberList"]
     Template        [label = "Template"]
     TemplateImage   [label = "TemplateImage"]
   }
@@ -125,8 +125,8 @@ digraph phpListDomainModel {
   LinkTrackMessageLink      -> LinkTrackForward         [taillabel="*"    headlabel="1"]
   LinkTrackUmlClick         -> LinkTrackMessageLink     [taillabel="*"    headlabel="1"]
   LinkTrackUmlClick         -> Subscriber               [taillabel="*"    headlabel="1"]
-  List                      -> Campaign                 [taillabel="*"    headlabel="*"]
-  List                      -> Subscription             [taillabel="1"    headlabel="*"]
+  SubscriberList:s          -> Campaign                 [taillabel="*"    headlabel="*"]
+  SubscriberList:sw         -> Subscription             [taillabel="1"    headlabel="*"]
   SubscribePage             -> SubscribePageData        [taillabel="1"    headlabel="*"]
   Subscriber                -> CampaignForward          [taillabel="1"    headlabel="*"]
   Subscriber                -> SubscriberAttributeValue [taillabel="1"    headlabel="*"]
@@ -146,7 +146,7 @@ digraph phpListDomainModel {
     dir = ""
   ]
 
-  List -> Administrator [taillabel="*"    headlabel="1" label="owner"]
+  SubscriberList -> Administrator [taillabel="*"    headlabel="1" label="owner"]
 
 
   //
