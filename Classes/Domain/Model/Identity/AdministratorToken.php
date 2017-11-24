@@ -9,6 +9,8 @@ use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Proxy\Proxy;
+use JMS\Serializer\Annotation\ExclusionPolicy;
+use JMS\Serializer\Annotation\Expose;
 use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
 use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
 
@@ -17,6 +19,7 @@ use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
  *
  * @Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository")
  * @Table(name="phplist_admintoken")
+ * @ExclusionPolicy("all")
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
@@ -32,12 +35,14 @@ class AdministratorToken implements Identity
     /**
      * @var \DateTime
      * @Column(type="datetime", name="expires")
+     * @Expose
      */
     private $expiry = null;
 
     /**
      * @var string
      * @Column(name="value")
+     * @Expose
      */
     private $key = '';
 
