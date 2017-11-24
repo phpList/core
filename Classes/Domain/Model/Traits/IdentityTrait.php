@@ -6,6 +6,7 @@ namespace PhpList\PhpList4\Domain\Model\Traits;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
+use JMS\Serializer\Annotation\Expose;
 
 /**
  * This trait provides an ID property to domain models.
@@ -21,6 +22,7 @@ trait IdentityTrait
      * @Id
      * @Column(type="integer")
      * @GeneratedValue
+     * @Expose
      */
     private $id = 0;
 
