@@ -72,9 +72,9 @@ class SubscriberList implements Identity, CreationDate, ModificationDate
 
     /**
      * @var bool
-     * @Column(type="boolean")
+     * @Column(type="boolean", name="active")
      */
-    private $active = false;
+    private $public = false;
 
     /**
      * @var string
@@ -164,19 +164,19 @@ class SubscriberList implements Identity, CreationDate, ModificationDate
     /**
      * @return bool
      */
-    public function isActive(): bool
+    public function isPublic(): bool
     {
-        return $this->active;
+        return $this->public;
     }
 
     /**
-     * @param bool $active
+     * @param bool $public
      *
      * @return void
      */
-    public function setActive(bool $active)
+    public function setPublic(bool $public)
     {
-        $this->active = $active;
+        $this->public = $public;
     }
 
     /**

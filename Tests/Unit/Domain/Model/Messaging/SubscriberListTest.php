@@ -163,19 +163,19 @@ class SubscriberListTest extends TestCase
     /**
      * @test
      */
-    public function isActiveInitiallyReturnsFalse()
+    public function isPublicInitiallyReturnsFalse()
     {
-        self::assertFalse($this->subject->isActive());
+        self::assertFalse($this->subject->isPublic());
     }
 
     /**
      * @test
      */
-    public function setActiveSetsActive()
+    public function setPublicSetsPublic()
     {
-        $this->subject->setActive(true);
+        $this->subject->setPublic(true);
 
-        self::assertTrue($this->subject->isActive());
+        self::assertTrue($this->subject->isPublic());
     }
 
     /**
