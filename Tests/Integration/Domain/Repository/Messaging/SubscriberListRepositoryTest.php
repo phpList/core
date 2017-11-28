@@ -68,7 +68,7 @@ class SubscriberListRepositoryTest extends AbstractRepositoryTest
         self::assertSame($description, $model->getDescription());
         self::assertSame($listPosition, $model->getListPosition());
         self::assertSame($subjectPrefix, $model->getSubjectPrefix());
-        self::assertTrue($model->isActive());
+        self::assertTrue($model->isPublic());
         self::assertSame($category, $model->getCategory());
     }
 
