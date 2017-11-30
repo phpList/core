@@ -13,3 +13,8 @@ services:
         parent: PhpList\PhpList4\Domain\Repository
         arguments:
             - PhpList\PhpList4\Domain\Model\Messaging\SubscriberList
+
+    PhpList\PhpList4\Domain\Repository\Subscription\SubscriberRepository:
+        parent: PhpList\PhpList4\Domain\Repository
+        arguments:
+            - PhpList\PhpList4\Domain\Model\Subscription\Subscriber
