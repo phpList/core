@@ -39,7 +39,7 @@ class Subscriber implements Identity, CreationDate, ModificationDate
 
     /**
      * @var \DateTime|null
-     * @Column(type="datetime", nullable=true, name="modified")
+     * @Column(type="datetime", name="modified")
      */
     protected $modificationDate = null;
 

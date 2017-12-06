@@ -44,13 +44,13 @@ class Administrator implements Identity, CreationDate, ModificationDate
 
     /**
      * @var \DateTime|null
-     * @Column(type="datetime", nullable=true, name="created")
+     * @Column(type="datetime", name="created")
      */
     protected $creationDate = null;
 
     /**
      * @var \DateTime|null
-     * @Column(type="datetime", nullable=true, name="modified")
+     * @Column(type="datetime", name="modified")
      */
     protected $modificationDate = null;
 
