@@ -1,2 +1,4 @@
 id,name,description,entered,modified,listorder,prefix,active,category,owner
 1,"News","News (and some fun stuff)","2016-06-22 15:01:17","2016-06-23 19:50:43",12,"phpList",1,"news",1
+2,"More news","","2016-06-22 15:01:17","2016-06-23 19:50:43",12,"",1,"",2
+3,"Without owner","","2016-06-22 15:01:17","2016-06-23 19:50:43",12,"",1,"",0

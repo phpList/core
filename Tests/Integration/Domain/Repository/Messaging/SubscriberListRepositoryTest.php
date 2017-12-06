@@ -6,6 +6,7 @@ namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Messaging;
 use Doctrine\ORM\Proxy\Proxy;
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Model\Messaging\SubscriberList;
+use PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\PhpList4\Domain\Repository\Messaging\SubscriberListRepository;
 use PhpList\PhpList4\Tests\Integration\Domain\Repository\AbstractRepositoryTest;
 use PhpList\PhpList4\Tests\Support\Traits\SimilarDatesAssertionTrait;
@@ -34,11 +35,17 @@ class SubscriberListRepositoryTest extends AbstractRepositoryTest
      */
     private $subject = null;
 
+    /**
+     * @var AdministratorRepository
+     */
+    private $administratorRepository = null;
+
     protected function setUp()
     {
         parent::setUp();
 
         $this->subject = $this->container->get(SubscriberListRepository::class);
+        $this->administratorRepository = $this->container->get(AdministratorRepository::class);
     }
 
     /**
@@ -138,5 +145,65 @@ class SubscriberListRepositoryTest extends AbstractRepositoryTest
         $this->subject->save($model);
 
         self::assertSame($model, $this->subject->find($model->getId()));
+    }
+
+    /**
+     * @test
+     */
+    public function findByOwnerFindsSubscriberListWithTheGivenOwner()
+    {
+        $this->getDataSet()->addTable(
+            self::ADMINISTRATOR_TABLE_NAME,
+            __DIR__ . '/../Identity/Fixtures/Administrator.csv'
+        );
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/SubscriberList.csv');
+        $this->applyDatabaseChanges();
+
+        $owner = $this->administratorRepository->find(1);
+        $ownedList = $this->subject->find(1);
+
+        $result = $this->subject->findByOwner($owner);
+
+        self::assertContains($ownedList, $result);
+    }
+
+    /**
+     * @test
+     */
+    public function findByOwnerIgnoresSubscriberListWithOtherOwner()
+    {
+        $this->getDataSet()->addTable(
+            self::ADMINISTRATOR_TABLE_NAME,
+            __DIR__ . '/../Identity/Fixtures/Administrator.csv'
+        );
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/SubscriberList.csv');
+        $this->applyDatabaseChanges();
+
+        $owner = $this->administratorRepository->find(1);
+        $foreignList = $this->subject->find(2);
+
+        $result = $this->subject->findByOwner($owner);
+
+        self::assertNotContains($foreignList, $result);
+    }
+
+    /**
+     * @test
+     */
+    public function findByOwnerIgnoresSubscriberListFromOtherOwner()
+    {
+        $this->getDataSet()->addTable(
+            self::ADMINISTRATOR_TABLE_NAME,
+            __DIR__ . '/../Identity/Fixtures/Administrator.csv'
+        );
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/SubscriberList.csv');
+        $this->applyDatabaseChanges();
+
+        $owner = $this->administratorRepository->find(1);
+        $unownedList = $this->subject->find(3);
+
+        $result = $this->subject->findByOwner($owner);
+
+        self::assertNotContains($unownedList, $result);
     }
 }
