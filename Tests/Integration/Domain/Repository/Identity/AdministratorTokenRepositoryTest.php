@@ -9,6 +9,7 @@ use PhpList\PhpList4\Domain\Model\Identity\AdministratorToken;
 use PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository;
 use PhpList\PhpList4\Tests\Integration\Domain\Repository\AbstractRepositoryTest;
+use PhpList\PhpList4\Tests\Support\Traits\SimilarDatesAssertionTrait;
 
 /**
  * Testcase.
@@ -17,6 +18,8 @@ use PhpList\PhpList4\Tests\Integration\Domain\Repository\AbstractRepositoryTest;
  */
 class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
 {
+    use SimilarDatesAssertionTrait;
+
     /**
      * @var string
      */
@@ -48,6 +51,7 @@ class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
         $this->applyDatabaseChanges();
 
         $id = 1;
+        $creationDate = new \DateTime('2017-12-06 17:41:40');
         $expiry = new \DateTime('2017-06-22 16:43:29');
         $key = 'cfdf64eecbbf336628b0f3071adba762';
 
@@ -56,6 +60,7 @@ class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
 
         self::assertInstanceOf(AdministratorToken::class, $model);
         self::assertSame($id, $model->getId());
+        self::assertEquals($creationDate, $model->getCreationDate());
         self::assertEquals($expiry, $model->getExpiry());
         self::assertSame($key, $model->getKey());
     }
@@ -78,6 +83,41 @@ class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
         self::assertInstanceOf(Administrator::class, $administrator);
         self::assertInstanceOf(Proxy::class, $administrator);
         self::assertSame($administratorId, $administrator->getId());
+    }
+
+    /**
+     * @test
+     */
+    public function creationDateOfExistingModelStaysUnchangedOnUpdate()
+    {
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/DetachedAdministratorTokens.csv');
+        $this->applyDatabaseChanges();
+
+        $id = 1;
+        /** @var AdministratorToken $model */
+        $model = $this->subject->find($id);
+        $creationDate = $model->getCreationDate();
+
+        $model->setKey('asdfasd');
+        $this->entityManager->flush();
+
+        self::assertEquals($creationDate, $model->getCreationDate());
+    }
+
+    /**
+     * @test
+     */
+    public function creationDateOfNewModelIsSetToNowOnPersist()
+    {
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/DetachedAdministratorTokens.csv');
+        $this->applyDatabaseChanges();
+
+        $model = new Administrator();
+        $expectedCreationDate = new \DateTime();
+
+        $this->entityManager->persist($model);
+
+        self::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
     }
 
     /**

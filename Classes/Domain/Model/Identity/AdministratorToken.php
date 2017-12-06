@@ -7,10 +7,12 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\PrePersist;
 use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Proxy\Proxy;
 use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Expose;
+use PhpList\PhpList4\Domain\Model\Interfaces\CreationDate;
 use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
 use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
 
@@ -23,7 +25,7 @@ use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class AdministratorToken implements Identity
+class AdministratorToken implements Identity, CreationDate
 {
     use IdentityTrait;
 
@@ -31,6 +33,12 @@ class AdministratorToken implements Identity
      * @var string
      */
     const DEFAULT_EXPIRY = '+1 hour';
+
+    /**
+     * @var int
+     * @Column(type="integer", name="entered")
+     */
+    protected $creationDate = 0;
 
     /**
      * @var \DateTime
@@ -59,6 +67,42 @@ class AdministratorToken implements Identity
     public function __construct()
     {
         $this->setExpiry(new \DateTime());
+    }
+
+    /**
+     * @return \DateTime|null
+     */
+    public function getCreationDate()
+    {
+        if ($this->creationDate === 0) {
+            return null;
+        }
+
+        $date = new \DateTime();
+        $date->setTimestamp($this->creationDate);
+        return $date;
+    }
+
+    /**
+     * @param \DateTime $creationDate
+     *
+     * @return void
+     */
+    private function setCreationDate(\DateTime $creationDate)
+    {
+        $this->creationDate = $creationDate->getTimestamp();
+    }
+
+    /**
+     * Updates the creation date to now.
+     *
+     * @PrePersist
+     *
+     * @return void
+     */
+    public function updateCreationDate()
+    {
+        $this->setCreationDate(new \DateTime());
     }
 
     /**

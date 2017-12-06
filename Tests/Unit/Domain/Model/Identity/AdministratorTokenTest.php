@@ -51,6 +51,24 @@ class AdministratorTokenTest extends TestCase
     /**
      * @test
      */
+    public function getCreationDateInitiallyReturnsNull()
+    {
+        self::assertNull($this->subject->getCreationDate());
+    }
+
+    /**
+     * @test
+     */
+    public function updateCreationDateSetsCreationDateToNow()
+    {
+        $this->subject->updateCreationDate();
+
+        self::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
+    }
+
+    /**
+     * @test
+     */
     public function getKeyInitiallyReturnsEmptyString()
     {
         self::assertSame('', $this->subject->getKey());
