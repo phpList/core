@@ -8,7 +8,7 @@ use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Model\Identity\AdministratorToken;
 use PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository;
-use PhpList\PhpList4\Tests\Integration\Domain\Repository\AbstractRepositoryTest;
+use PhpList\PhpList4\Tests\Integration\AbstractDatabaseTest;
 use PhpList\PhpList4\Tests\Support\Traits\SimilarDatesAssertionTrait;
 
 /**
@@ -16,7 +16,7 @@ use PhpList\PhpList4\Tests\Support\Traits\SimilarDatesAssertionTrait;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class AdministratorTokenRepositoryTest extends AbstractRepositoryTest
+class AdministratorTokenDatabaseTest extends AbstractDatabaseTest
 {
     use SimilarDatesAssertionTrait;
 

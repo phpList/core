@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Integration\Domain\Repository;
+namespace PhpList\PhpList4\Tests\Integration;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\PhpList4\Core\Bootstrap;
@@ -13,13 +13,13 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * This is the base class for all repository integration tests.
+ * This is the base class for integration tests that use database records.
  *
  * Make sure to call parent::setUp() first thing in your setUp method.
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-abstract class AbstractRepositoryTest extends TestCase
+abstract class AbstractDatabaseTest extends TestCase
 {
     use TestCaseTrait;
 
