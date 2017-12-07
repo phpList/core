@@ -13,7 +13,7 @@ use PhpList\PhpList4\Tests\Support\Traits\SimilarDatesAssertionTrait;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class AdministratorDatabaseTest extends AbstractDatabaseTest
+class AdministratorRepositoryTest extends AbstractDatabaseTest
 {
     use SimilarDatesAssertionTrait;
 
