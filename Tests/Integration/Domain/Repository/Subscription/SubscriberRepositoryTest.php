@@ -14,7 +14,7 @@ use PhpList\PhpList4\Tests\Support\Traits\SimilarDatesAssertionTrait;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class SubscriberDatabaseTest extends AbstractDatabaseTest
+class SubscriberRepositoryTest extends AbstractDatabaseTest
 {
     use SimilarDatesAssertionTrait;
 
