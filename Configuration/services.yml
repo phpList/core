@@ -12,6 +12,9 @@ services:
     PhpList\PhpList4\Core\ApplicationStructure:
         public: true
 
+    PhpList\PhpList4\Security\Authentication:
+        public: true
+
     PhpList\PhpList4\Security\HashGenerator:
         public: true
 
