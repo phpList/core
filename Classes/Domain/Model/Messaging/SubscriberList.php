@@ -10,6 +10,8 @@ use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Proxy\Proxy;
+use JMS\Serializer\Annotation\ExclusionPolicy;
+use JMS\Serializer\Annotation\Expose;
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Model\Interfaces\CreationDate;
 use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
@@ -25,6 +27,7 @@ use PhpList\PhpList4\Domain\Model\Traits\ModificationDateTrait;
  * @Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Messaging\SubscriberListRepository")
  * @Table(name="phplist_list")
  * @HasLifecycleCallbacks
+ * @ExclusionPolicy("all")
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
@@ -37,18 +40,21 @@ class SubscriberList implements Identity, CreationDate, ModificationDate
     /**
      * @var string
      * @Column
+     * @Expose
      */
     private $name = '';
 
     /**
      * @var string
      * @Column
+     * @Expose
      */
     private $description = '';
 
     /**
      * @var \DateTime|null
      * @Column(type="datetime", nullable=true, name="entered")
+     * @Expose
      */
     protected $creationDate = null;
 
@@ -61,24 +67,28 @@ class SubscriberList implements Identity, CreationDate, ModificationDate
     /**
      * @var int
      * @Column(type="integer", name="listorder")
+     * @Expose
      */
     private $listPosition = 0;
 
     /**
      * @var string
      * @Column(name="prefix")
+     * @Expose
      */
     private $subjectPrefix = '';
 
     /**
      * @var bool
      * @Column(type="boolean", name="active")
+     * @Expose
      */
     private $public = false;
 
     /**
      * @var string
      * @Column
+     * @Expose
      */
     private $category = '';
 
