@@ -97,4 +97,24 @@ class AuthenticationTest extends AbstractDatabaseTest
 
         self::assertNull($result);
     }
+
+    /**
+     * @test
+     */
+    public function authenticateByApiKeyWithValidApiKeyForNonSuperUserAdministratorReturnsNull()
+    {
+        $this->getDataSet()->addTable(
+            self::TOKEN_TABLE_NAME,
+            __DIR__ . '/../Domain/Repository/Identity/Fixtures/AdministratorTokenWithAdministrator.csv'
+        );
+        $this->applyDatabaseChanges();
+
+        $apiKey = 'cfdf64eecbbf336628b0f3071adba764';
+        $request = new Request();
+        $request->headers->add(['php-auth-pw' => $apiKey]);
+
+        $result = $this->subject->authenticateByApiKey($request);
+
+        self::assertNull($result);
+    }
 }

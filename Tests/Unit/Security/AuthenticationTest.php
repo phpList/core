@@ -48,6 +48,7 @@ class AuthenticationTest extends TestCase
 
         $token = new AdministratorToken();
         $administrator = new Administrator();
+        $administrator->setSuperUser(true);
         $token->setAdministrator($administrator);
 
         $this->tokenRepositoryProphecy->findOneUnexpiredByKey($apiKey)->willReturn($token)->shouldBeCalled();

@@ -49,7 +49,6 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
         $modificationDate = new \DateTime('2017-06-23 19:50:43');
         $passwordHash = '1491a3c7e7b23b9a6393323babbb095dee0d7d81b2199617b487bd0fb5236f3c';
         $passwordChangeDate = new \DateTime('2017-06-28');
-        $disabled = true;
 
         /** @var Administrator $actualModel */
         $actualModel = $this->subject->find($id);
@@ -61,7 +60,8 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
         self::assertEquals($modificationDate, $actualModel->getModificationDate());
         self::assertSame($passwordHash, $actualModel->getPasswordHash());
         self::assertEquals($passwordChangeDate, $actualModel->getPasswordChangeDate());
-        self::assertSame($disabled, $actualModel->isDisabled());
+        self::assertTrue($actualModel->isDisabled());
+        self::assertTrue($actualModel->isDisabled());
     }
 
     /**
@@ -164,6 +164,20 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
             'empty login name, correct password' => ['', $password],
             'incorrect name, correct password' => ['jane.doe', $password],
         ];
+    }
+
+    /**
+     * @test
+     */
+    public function findOneByLoginCredentialsIgnoresNonSuperUser()
+    {
+        $id = 1;
+        $loginName = 'max.doe';
+        $password = 'Bazinga!';
+
+        $result = $this->subject->findOneByLoginCredentials($loginName, $password);
+
+        self::assertNull($result);
     }
 
     /**

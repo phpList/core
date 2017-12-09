@@ -176,4 +176,22 @@ class AdministratorTest extends TestCase
 
         self::assertTrue($this->subject->isDisabled());
     }
+
+    /**
+     * @test
+     */
+    public function isSuperUserInitiallyReturnsFalse()
+    {
+        self::assertFalse($this->subject->isSuperUser());
+    }
+
+    /**
+     * @test
+     */
+    public function setSuperUserSetsSuperUser()
+    {
+        $this->subject->setSuperUser(true);
+
+        self::assertTrue($this->subject->isSuperUser());
+    }
 }

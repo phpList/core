@@ -57,9 +57,13 @@ class Authentication
         }
 
         try {
-            // Access any property to load the model from the database,
-            // which will check that the model really exists in the database.
-            $administrator->getLoginName();
+            // This checks for cases where a super user created a session key and then got their super user
+            // privileges removed during the lifetime of the session key.
+            // In addition, this will load the lazy-loaded model from the database,
+            // which will check that the model really exists in the database (i.e., it has not been deleted).
+            if (!$administrator->isSuperUser()) {
+                $administrator = null;
+            }
         } catch (EntityNotFoundException $exception) {
             $administrator = null;
         }
