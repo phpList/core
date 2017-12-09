@@ -34,6 +34,8 @@ class AdministratorRepository extends AbstractRepository
      * Finds the Administrator with the given login credentials. Returns null if there is no match,
      * i.e., if the login credentials are incorrect.
      *
+     * This also checks that the administrator is a super user.
+     *
      * @param string $loginName
      * @param string $plainTextPassword
      *
@@ -47,6 +49,7 @@ class AdministratorRepository extends AbstractRepository
             [
                 'loginName' => $loginName,
                 'passwordHash' => $passwordHash,
+                'superUser' => true,
             ]
         );
     }

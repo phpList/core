@@ -73,6 +73,12 @@ class Administrator implements Identity, CreationDate, ModificationDate
     private $disabled = false;
 
     /**
+     * @var bool
+     * @Column(type="boolean", name="superuser")
+     */
+    private $superUser = false;
+
+    /**
      * @return string
      */
     public function getLoginName(): string
@@ -163,5 +169,23 @@ class Administrator implements Identity, CreationDate, ModificationDate
     public function setDisabled(bool $disabled)
     {
         $this->disabled = $disabled;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSuperUser(): bool
+    {
+        return $this->superUser;
+    }
+
+    /**
+     * @param bool $superUser
+     *
+     * @return void
+     */
+    public function setSuperUser(bool $superUser)
+    {
+        $this->superUser = $superUser;
     }
 }
