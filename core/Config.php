@@ -548,7 +548,7 @@ class Config
         $PoweredByText = '<div style="clear: both; font-family: arial, verdana, sans-serif; font-size: 8px; font-variant: small-caps; font-weight: normal; padding: 2px; padding-left:10px;padding-top:20px;">powered by <a href="https://www.phplist.com/poweredby?utm_source=download' . $v . '&amp;utm_medium=poweredtxt&amp;utm_campaign=phpList" target="_blank" title="powered by phpList version ' . $v . ', &copy; phpList ltd">phpList</a></div>';
         $this->running_config['PoweredBy'] = $this->running_config['PAGETEXTCREDITS'] ? $PoweredByText : $PoweredByImage;
 
-        if (DEBUG && @($_SERVER['HTTP_HOST'] != 'dev.phplist.com')) {
+        if (DEBUG && @($_SERVER['HTTP_HOST'] != 'master.phplist.org')) {
             error_reporting(E_ALL);
             ini_set('display_errors', 1);
             foreach ($_REQUEST as $key => $val) {
