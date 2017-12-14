@@ -166,4 +166,36 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
 
         self::assertSame($oldUniqueId, $model->getUniqueId());
     }
+
+    /**
+     * @test
+     */
+    public function findOneByEmailFindsSubscriberWithMatchingEmail()
+    {
+        $email = 'oliver@example.com';
+
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/Subscriber.csv');
+        $this->applyDatabaseChanges();
+
+        /** @var Subscriber $model */
+        $model = $this->subject->findOneByEmail($email);
+
+        self::assertInstanceOf(Subscriber::class, $model);
+        self::assertSame($email, $model->getEmail());
+    }
+
+    /**
+     * @test
+     */
+    public function findOneByEmailIgnoresSubscriberWithNonMatchingEmail()
+    {
+        $email = 'other@example.com';
+
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/Subscriber.csv');
+        $this->applyDatabaseChanges();
+
+        $model = $this->subject->findOneByEmail($email);
+
+        self::assertNull($model);
+    }
 }
