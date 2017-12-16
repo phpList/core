@@ -8,6 +8,8 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use Doctrine\ORM\Mapping\PrePersist;
 use Doctrine\ORM\Mapping\Table;
+use JMS\Serializer\Annotation\ExclusionPolicy;
+use JMS\Serializer\Annotation\Expose;
 use PhpList\PhpList4\Domain\Model\Interfaces\CreationDate;
 use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
 use PhpList\PhpList4\Domain\Model\Interfaces\ModificationDate;
@@ -22,6 +24,7 @@ use PhpList\PhpList4\Domain\Model\Traits\ModificationDateTrait;
  * @Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Subscription\SubscriberRepository")
  * @Table(name="phplist_user_user")
  * @HasLifecycleCallbacks
+ * @ExclusionPolicy("all")
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
@@ -34,6 +37,7 @@ class Subscriber implements Identity, CreationDate, ModificationDate
     /**
      * @var \DateTime|null
      * @Column(type="datetime", nullable=true, name="entered")
+     * @Expose
      */
     protected $creationDate = null;
 
@@ -46,24 +50,28 @@ class Subscriber implements Identity, CreationDate, ModificationDate
     /**
      * @var string
      * @Column(unique=true)
+     * @Expose
      */
     private $email = '';
 
     /**
      * @var bool
      * @Column(type="boolean")
+     * @Expose
      */
     private $confirmed = false;
 
     /**
      * @var bool
      * @Column(type="boolean")
+     * @Expose
      */
     private $blacklisted = false;
 
     /**
      * @var int
      * @Column(type="integer", name="bouncecount")
+     * @Expose
      */
     private $bounceCount = 0;
 
@@ -73,18 +81,21 @@ class Subscriber implements Identity, CreationDate, ModificationDate
      *
      * @var string
      * @Column(name="uniqid", unique=true)
+     * @Expose
      */
     private $uniqueId = '';
 
     /**
      * @var bool
      * @Column(type="boolean", name="htmlemail")
+     * @Expose
      */
     private $htmlEmail = false;
 
     /**
      * @var bool
      * @Column(type="boolean")
+     * @Expose
      */
     private $disabled = false;
 
