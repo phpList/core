@@ -98,6 +98,7 @@
             "bundles": [
                 "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
                 "Sensio\\Bundle\\FrameworkExtraBundle\\SensioFrameworkExtraBundle",
+                "Symfony\\Bundle\\MonologBundle\\MonologBundle",
                 "JMS\\SerializerBundle\\JMSSerializerBundle",
                 "Doctrine\\Bundle\\DoctrineBundle\\DoctrineBundle",
                 "PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle"
