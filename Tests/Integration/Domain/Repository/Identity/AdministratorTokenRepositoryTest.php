@@ -51,7 +51,7 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
         $this->applyDatabaseChanges();
 
         $id = 1;
-        $creationDate = new \DateTime('2017-12-06 17:41:40');
+        $creationDate = new \DateTime('2017-12-06 17:41:40+0000');
         $expiry = new \DateTime('2017-06-22 16:43:29');
         $key = 'cfdf64eecbbf336628b0f3071adba762';
 
