@@ -80,6 +80,7 @@ class AdministratorToken implements Identity, CreationDate
 
         $date = new \DateTime();
         $date->setTimestamp($this->creationDate);
+        $date->setTimezone(new \DateTimeZone('UTC'));
         return $date;
     }
 
