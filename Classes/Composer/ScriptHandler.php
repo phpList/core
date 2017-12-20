@@ -246,23 +246,14 @@ class ScriptHandler extends SensioScriptHandler
     }
 
     /**
-     * Clears the caches of all environments.
-     *
-     * @param Event $event
+     * Clears the caches of all environments. This does not warm the caches.
      *
      * @return void
      */
-    public static function clearAllCaches(Event $event)
+    public static function clearAllCaches()
     {
-        $environments = ['test', 'dev', 'prod'];
-        $consoleDir = self::getConsoleDir($event, 'clear the cache');
-        if ($consoleDir === null) {
-            return;
-        }
-
-        foreach ($environments as $environment) {
-            self::executeCommand($event, $consoleDir, 'cache:clear --no-warmup -e ' . $environment);
-        }
+        $fileSystem = new Filesystem();
+        $fileSystem->remove(self::getApplicationRoot() . '/var/cache');
     }
 
     /**
