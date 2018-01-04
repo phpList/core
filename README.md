@@ -70,7 +70,9 @@ Please first set the database credentials in `Configuration/parameters.yml`.
 For running the application in development mode using the built-in PHP server,
 use this command:
 
-    bin/console server:run -d web/
+```bash
+bin/console server:run -d web/
+```
 
 The server will then listen on `http://127.0.0.1:8000` (or, if port 8000 is
 already in use, on the next free port after 8000).
@@ -82,7 +84,9 @@ You can stop the server with CTRL + C.
 To run the server in testing mode (which normally will only be needed for the
 automated tests, provide the `--env` option:
 
-    bin/console server:run -d web/ --env=test
+```bash
+bin/console server:run -d web/ --env=test
+```
 
 ### Production
 
@@ -110,7 +114,7 @@ have the type `phplist-module`.
 If your module provides any Symfony bundles, the bundle class names need to be
 listed in the `extra` section of the module's `composer.json` like this:
 
-````
+```json
 "extra": {
     "phplist/phplist4-core": {
         "bundles": [
@@ -119,7 +123,7 @@ listed in the `extra` section of the module's `composer.json` like this:
         ]
     }
 }
-````
+```
 
 Please note that the key of the section with `extra` needs to always be
 `phplist/phplist4-core`, not the name of your module package. Please have a
@@ -130,7 +134,7 @@ for an example.
 Similarly, if your module provides any routes, those also need to be listed in
 the `extra` section of the module's `composer.json` like this:
 
-````
+```json
 "extra": {
     "phplist/phplist4-core": {
         "routes": {
@@ -141,11 +145,11 @@ the `extra` section of the module's `composer.json` like this:
         }
     }
 }
-````
+```
 
 You can also provide system configuration for your module:
 
-````
+```json
 "extra": {
     "phplist/phplist4-core": {
         "configuration": {
@@ -159,7 +163,7 @@ You can also provide system configuration for your module:
         }
     }
 }
-````
+```
 
 It is recommended to define the routes using
 [annotations](https://symfony.com/doc/current/routing.html#routing-examples)
@@ -194,4 +198,4 @@ phpList module), please use the
 
 ## Copyright
 
-phpList is copyright (C) 2000-2017 [phpList Ltd](https://www.phplist.com/).
+phpList is copyright (C) 2000-2018 [phpList Ltd](https://www.phplist.com/).

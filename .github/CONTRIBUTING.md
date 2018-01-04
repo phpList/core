@@ -78,7 +78,9 @@ code coverage of the fixed bugs and the new features.
 
 To run the existing unit tests, run this command:
 
-    vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml Tests/Unit/
+```bash
+vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml Tests/Unit/
+```
 
 ### Running the integration tests
 
@@ -90,14 +92,18 @@ schema once. Assuming that your database is named `phplist_test`, the user is
 named `phplist`, and the password is `batterystaple`, the command looks like
 this:
 
-    mysql -u phplist_test --password=batterystaple phplist_test < Database/Schema.sql
+```bash
+mysql -u phplist_test --password=batterystaple phplist_test < Database/Schema.sql
+```
 
 For running the integration tests, please first enter the database name
 and access credentials in `Configuration/parameters.yml`.
 
 After that has been done, you can run the integration tests:
 
-    vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml Tests/Integration/
+```bash
+vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml Tests/Integration/
+```
 
 
 ## Coding Style
@@ -111,18 +117,27 @@ We will only merge pull requests that follow the project's coding style.
 
 Please check your code with the provided PHP_CodeSniffer standard:
 
-    vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ Classes/ Tests/ web/
+```bash
+vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ Classes/ Tests/ web/
+```
 
 Please also check the code structure using PHPMD:
 
-    vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml
+```bash
+vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml
+```
 
 And also please run the static code analysis:
 
-    vendor/bin/phpstan analyse -l 5 bin/ Classes/ Tests/ web/
+```bash
+vendor/bin/phpstan analyse -l 5 bin/ Classes/ Tests/ web/
+```
 
 You can also run all code style checks using one long line from a bash shell:
-    find Classes/ Tests/ web/ core/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l && php -l bin/* && vendor/bin/phpstan analyse -l 5 bin/ Classes/ Tests/ web/ && vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml && vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ Classes/ Tests/ web/
+
+```bash
+find Classes/ Tests/ web/ core/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l && php -l bin/* && vendor/bin/phpstan analyse -l 5 bin/ Classes/ Tests/ web/ && vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml && vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ Classes/ Tests/ web/
+```
 
 This will execute all tests except for the unit tests and the integration
 tests.
