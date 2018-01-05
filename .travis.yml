@@ -1,10 +1,9 @@
 language: php
 
-matrix:
-  include:
-  - php: 7.0
-  - php: 7.1
-  - php: 7.2
+php:
+- 7.0
+- 7.1
+- 7.2
 
 services:
 - mysql
@@ -12,9 +11,10 @@ services:
 env:
   global:
   - secure: GRmIZt08nxg5r3uREPfW2Gz49LIkFVmU/kzSzJ78VISmjuWMUdiZ9GJFmzzvKBxQ0tzUlpvibBu1dvSqOAA4HZ72+p2PvTvezgL8S6dyaJ7bHRlyQlE1SDkK/tctFrIjGdXLAP7vNwqC7ZXtX7iH9Fk3znxy9BnLp4xGZDW54YU=
-  - PHPLIST_DATABASE_NAME=phplist
-  - PHPLIST_DATABASE_USER=travis
-  - PHPLIST_DATABASE_PASSWORD=''
+  - PHPLIST_DATABASE_NAME=phplist PHPLIST_DATABASE_USER=travis PHPLIST_DATABASE_PASSWORD=''
+  matrix:
+  - DEPENDENCIES=latest
+  - DEPENDENCIES=oldest
 
 notifications:
   slack:
@@ -40,7 +40,16 @@ before_install:
   mysql ${PHPLIST_DATABASE_NAME} < Database/Schema.sql;
 
 install:
-- composer install
+- >
+  echo;
+  if [ "$DEPENDENCIES" = "latest" ]; then
+    echo "Installing the latest dependencies";
+    composer update --with-dependencies --prefer-stable --prefer-dist
+  else
+    echo "Installing the lowest dependencies";
+    composer update --with-dependencies --prefer-stable --prefer-dist --prefer-lowest
+  fi;
+  composer show;
 
 script:
 - >
