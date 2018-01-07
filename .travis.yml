@@ -10,7 +10,6 @@ services:
 
 env:
   global:
-  - secure: GRmIZt08nxg5r3uREPfW2Gz49LIkFVmU/kzSzJ78VISmjuWMUdiZ9GJFmzzvKBxQ0tzUlpvibBu1dvSqOAA4HZ72+p2PvTvezgL8S6dyaJ7bHRlyQlE1SDkK/tctFrIjGdXLAP7vNwqC7ZXtX7iH9Fk3znxy9BnLp4xGZDW54YU=
   - PHPLIST_DATABASE_NAME=phplist PHPLIST_DATABASE_USER=travis PHPLIST_DATABASE_PASSWORD=''
   matrix:
   - DEPENDENCIES=latest
@@ -19,7 +18,7 @@ env:
 notifications:
   slack:
     rooms:
-      secure: TtWruKo+t6cy1dzKguKyRL90KM0PM6LZXpWjxKfaVimJ8YpxUwkNbDm3VOUxfCCUEyauwj48jI8GeK2gnfIYTv7NA6GnqraKgRk16cwxogdEULwgoHVdZJAl4A+8hQRBUGQc02Nj8NIiKZNkTni8bf6o/ZKWLLzTi4ffU3U7Mp4=
+      - SLACKNOTIFICATION
   on_success: change
   on_failure: always
 
