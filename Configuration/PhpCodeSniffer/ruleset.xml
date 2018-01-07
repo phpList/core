@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ruleset name="phpList Coding Standard">
-    <description>This is the coding standard used for the phpList code.
-        This standard has been tested with to work with PHP_CodeSniffer >= 3.0.0.
+    <description>
+        This is the coding standard used for the phpList code.
+        This standard requires PHP_CodeSniffer >= 3.2.0.
     </description>
 
-    <!--The complete PSR-2 ruleset-->
+    <!--The complete PSR-2 rule set-->
     <rule ref="PSR2"/>
 
     <!-- Arrays -->
@@ -19,6 +20,7 @@
     <rule ref="Squiz.Classes.SelfMemberReference"/>
 
     <!-- Code analysis -->
+    <rule ref="Generic.CodeAnalysis.AssignmentInCondition"/>
     <rule ref="Generic.CodeAnalysis.EmptyStatement"/>
     <rule ref="Generic.CodeAnalysis.ForLoopShouldBeWhileLoop"/>
     <rule ref="Generic.CodeAnalysis.ForLoopWithTestFunctionCall"/>
@@ -45,6 +47,7 @@
     <!-- Files -->
     <rule ref="Generic.Files.OneClassPerFile"/>
     <rule ref="Generic.Files.OneInterfacePerFile"/>
+    <rule ref="Generic.Files.OneObjectStructurePerFile"/>
     <rule ref="Zend.Files.ClosingTag"/>
 
     <!-- Formatting -->
@@ -71,9 +74,12 @@
     <rule ref="Squiz.Operators.ValidLogicalOperators"/>
 
     <!-- PHP -->
+    <rule ref="Generic.PHP.BacktickOperator"/>
     <rule ref="Generic.PHP.CharacterBeforePHPOpeningTag"/>
     <rule ref="Generic.PHP.DeprecatedFunctions"/>
+    <rule ref="Generic.PHP.DisallowAlternativePHPTags"/>
     <rule ref="Generic.PHP.DisallowShortOpenTag"/>
+    <rule ref="Generic.PHP.DiscourageGoto"/>
     <rule ref="Generic.PHP.ForbiddenFunctions"/>
     <rule ref="Generic.PHP.NoSilencedErrors"/>
     <rule ref="Squiz.PHP.CommentedOutCode">
