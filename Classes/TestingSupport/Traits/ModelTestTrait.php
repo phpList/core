@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Support\Traits;
+namespace PhpList\PhpList4\TestingSupport\Traits;
 
 /**
  * This trait provides methods helpful in testing domain models.

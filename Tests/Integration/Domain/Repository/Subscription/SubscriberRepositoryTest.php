@@ -6,8 +6,8 @@ namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Subscription;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use PhpList\PhpList4\Domain\Model\Subscription\Subscriber;
 use PhpList\PhpList4\Domain\Repository\Subscription\SubscriberRepository;
+use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PhpList\PhpList4\Tests\Integration\AbstractDatabaseTest;
-use PhpList\PhpList4\Tests\Support\Traits\SimilarDatesAssertionTrait;
 
 /**
  * Testcase.

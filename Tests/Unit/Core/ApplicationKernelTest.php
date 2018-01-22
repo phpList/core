@@ -7,7 +7,7 @@ use PhpList\PhpList4\EmptyStartPageBundle\PhpListEmptyStartPageBundle;
 use PhpList\PhpList4\Core\ApplicationKernel;
 use PhpList\PhpList4\Core\Bootstrap;
 use PhpList\PhpList4\Core\Environment;
-use PhpList\PhpList4\Tests\Support\Traits\ContainsInstanceAssertionTrait;
+use PhpList\PhpList4\TestingSupport\Traits\ContainsInstanceAssertionTrait;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\WebServerBundle\WebServerBundle;
