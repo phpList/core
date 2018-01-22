@@ -5,8 +5,8 @@ namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Identity;
 
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository;
+use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PhpList\PhpList4\Tests\Integration\AbstractDatabaseTest;
-use PhpList\PhpList4\Tests\Support\Traits\SimilarDatesAssertionTrait;
 
 /**
  * Testcase.
