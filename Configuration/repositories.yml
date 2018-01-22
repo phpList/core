@@ -18,3 +18,8 @@ services:
         parent: PhpList\PhpList4\Domain\Repository
         arguments:
             - PhpList\PhpList4\Domain\Model\Subscription\Subscriber
+
+    PhpList\PhpList4\Domain\Repository\Subscription\SubscriptionRepository:
+        parent: PhpList\PhpList4\Domain\Repository
+        arguments:
+            - PhpList\PhpList4\Domain\Model\Subscription\Subscription

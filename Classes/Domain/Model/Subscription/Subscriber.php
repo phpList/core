@@ -3,9 +3,12 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Domain\Model\Subscription;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\PrePersist;
 use Doctrine\ORM\Mapping\Table;
 use JMS\Serializer\Annotation\ExclusionPolicy;
@@ -98,6 +101,20 @@ class Subscriber implements Identity, CreationDate, ModificationDate
      * @Expose
      */
     private $disabled = false;
+
+    /**
+     * @var Collection
+     * @OneToMany(targetEntity="PhpList\PhpList4\Domain\Model\Subscription\Subscription", mappedBy="subscriber")
+     */
+    private $subscriptions = null;
+
+    /**
+     * The constructor.
+     */
+    public function __construct()
+    {
+        $this->subscriptions = new ArrayCollection();
+    }
 
     /**
      * @return bool
@@ -245,5 +262,23 @@ class Subscriber implements Identity, CreationDate, ModificationDate
     public function setDisabled(bool $disabled)
     {
         $this->disabled = $disabled;
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getSubscriptions(): Collection
+    {
+        return $this->subscriptions;
+    }
+
+    /**
+     * @param Collection $subscriptions
+     *
+     * @return void
+     */
+    public function setSubscriptions(Collection $subscriptions)
+    {
+        $this->subscriptions = $subscriptions;
     }
 }
