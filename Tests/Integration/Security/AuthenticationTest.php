@@ -60,11 +60,11 @@ class AuthenticationTest extends AbstractDatabaseTest
     {
         $this->getDataSet()->addTable(
             self::ADMINISTRATOR_TABLE_NAME,
-            __DIR__ . '/../Domain/Repository/Identity/Fixtures/Administrator.csv'
+            __DIR__ . '/../Domain/Repository/Fixtures/Administrator.csv'
         );
         $this->getDataSet()->addTable(
             self::TOKEN_TABLE_NAME,
-            __DIR__ . '/../Domain/Repository/Identity/Fixtures/AdministratorTokenWithAdministrator.csv'
+            __DIR__ . '/../Domain/Repository/Fixtures/AdministratorTokenWithAdministrator.csv'
         );
         $this->applyDatabaseChanges();
 
@@ -85,7 +85,7 @@ class AuthenticationTest extends AbstractDatabaseTest
     {
         $this->getDataSet()->addTable(
             self::TOKEN_TABLE_NAME,
-            __DIR__ . '/../Domain/Repository/Identity/Fixtures/AdministratorTokenWithAdministrator.csv'
+            __DIR__ . '/../Domain/Repository/Fixtures/AdministratorTokenWithAdministrator.csv'
         );
         $this->applyDatabaseChanges();
 
@@ -105,7 +105,7 @@ class AuthenticationTest extends AbstractDatabaseTest
     {
         $this->getDataSet()->addTable(
             self::TOKEN_TABLE_NAME,
-            __DIR__ . '/../Domain/Repository/Identity/Fixtures/AdministratorTokenWithAdministrator.csv'
+            __DIR__ . '/../Domain/Repository/Fixtures/AdministratorTokenWithAdministrator.csv'
         );
         $this->applyDatabaseChanges();
 
