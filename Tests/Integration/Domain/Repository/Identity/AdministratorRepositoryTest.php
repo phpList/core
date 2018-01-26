@@ -171,7 +171,6 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function findOneByLoginCredentialsIgnoresNonSuperUser()
     {
-        $id = 1;
         $loginName = 'max.doe';
         $password = 'Bazinga!';
 

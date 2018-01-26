@@ -142,7 +142,6 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
 
         $model = new Subscriber();
         $model->setEmail('oliver@example.com');
-        $expectedModificationDate = new \DateTime();
 
         $this->entityManager->persist($model);
 
