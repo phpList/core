@@ -152,7 +152,7 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
     /**
      * @test
      */
-    public function persistingExistingModelKeepsUniquIdUnchanged()
+    public function persistingExistingModelKeepsUniqueIdUnchanged()
     {
         $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/Subscriber.csv');
         $this->applyDatabaseChanges();
