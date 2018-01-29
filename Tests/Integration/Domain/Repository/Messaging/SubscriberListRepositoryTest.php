@@ -6,6 +6,7 @@ namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Messaging;
 use Doctrine\ORM\Proxy\Proxy;
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Model\Messaging\SubscriberList;
+use PhpList\PhpList4\Domain\Model\Subscription\Subscription;
 use PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\PhpList4\Domain\Repository\Messaging\SubscriberListRepository;
 use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
@@ -29,6 +30,16 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      * @var string
      */
     const ADMINISTRATOR_TABLE_NAME = 'phplist_admin';
+
+    /**
+     * @var string
+     */
+    const SUBSCRIPTION_TABLE_NAME = 'phplist_listuser';
+
+    /**
+     * @var string
+     */
+    const SUBSCRIBER_TABLE_NAME = 'phplist_user_user';
 
     /**
      * @var SubscriberListRepository
@@ -193,5 +204,28 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
         $result = $this->subject->findByOwner($owner);
 
         self::assertNotContains($unownedList, $result);
+    }
+
+    /**
+     * @test
+     */
+    public function findsAssociatedSubscriptions()
+    {
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(self::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(self::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
+        $this->applyDatabaseChanges();
+
+        /** @var SubscriberList $model */
+        $id = 2;
+        $model = $this->subject->find($id);
+        $subscriptions = $model->getSubscriptions();
+
+        self::assertFalse($subscriptions->isEmpty());
+        /** @var Subscription $firstSubscription */
+        $firstSubscription = $subscriptions->first();
+        self::assertInstanceOf(Subscription::class, $firstSubscription);
+        $expectedSubscriberId = 1;
+        self::assertSame($expectedSubscriberId, $firstSubscription->getSubscriber()->getId());
     }
 }

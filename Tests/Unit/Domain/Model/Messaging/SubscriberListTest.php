@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Tests\Unit\Domain\Model\Messaging;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Model\Messaging\SubscriberList;
 use PhpList\PhpList4\TestingSupport\Traits\ModelTestTrait;
@@ -214,5 +216,28 @@ class SubscriberListTest extends TestCase
         $this->subject->setOwner($model);
 
         self::assertSame($model, $this->subject->getOwner());
+    }
+
+    /**
+     * @test
+     */
+    public function getSubscriptionsByDefaultReturnsEmptyCollection()
+    {
+        $result = $this->subject->getSubscriptions();
+
+        self::assertInstanceOf(Collection::class, $result);
+        self::assertTrue($result->isEmpty());
+    }
+
+    /**
+     * @test
+     */
+    public function setSubscriptionsSetsSubscriptions()
+    {
+        $subscriptions = new ArrayCollection();
+
+        $this->subject->setSubscriptions($subscriptions);
+
+        self::assertSame($subscriptions, $this->subject->getSubscriptions());
     }
 }

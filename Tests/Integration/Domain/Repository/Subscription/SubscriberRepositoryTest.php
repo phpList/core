@@ -5,6 +5,7 @@ namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Subscription;
 
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use PhpList\PhpList4\Domain\Model\Subscription\Subscriber;
+use PhpList\PhpList4\Domain\Model\Subscription\Subscription;
 use PhpList\PhpList4\Domain\Repository\Subscription\SubscriberRepository;
 use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PhpList\PhpList4\Tests\Integration\AbstractDatabaseTest;
@@ -27,6 +28,16 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
      * @var string
      */
     const ADMINISTRATOR_TABLE_NAME = 'phplist_admin';
+
+    /**
+     * @var string
+     */
+    const SUBSCRIPTION_TABLE_NAME = 'phplist_listuser';
+
+    /**
+     * @var string
+     */
+    const SUBSCRIBER_LIST_TABLE_NAME = 'phplist_list';
 
     /**
      * @var SubscriberRepository
@@ -196,5 +207,28 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
         $model = $this->subject->findOneByEmail($email);
 
         self::assertNull($model);
+    }
+
+    /**
+     * @test
+     */
+    public function findsAssociatedSubscriptions()
+    {
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(self::SUBSCRIBER_LIST_TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(self::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
+        $this->applyDatabaseChanges();
+
+        /** @var Subscriber $model */
+        $id = 1;
+        $model = $this->subject->find($id);
+        $subscriptions = $model->getSubscriptions();
+
+        self::assertFalse($subscriptions->isEmpty());
+        /** @var Subscription $firstSubscription */
+        $firstSubscription = $subscriptions->first();
+        self::assertInstanceOf(Subscription::class, $firstSubscription);
+        $expectedSubscriberListId = 2;
+        self::assertSame($expectedSubscriberListId, $firstSubscription->getSubscriberList()->getId());
     }
 }

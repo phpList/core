@@ -3,11 +3,14 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Domain\Model\Messaging;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Proxy\Proxy;
 use JMS\Serializer\Annotation\ExclusionPolicy;
@@ -98,6 +101,20 @@ class SubscriberList implements Identity, CreationDate, ModificationDate
      * @JoinColumn(name="owner")
      */
     private $owner = null;
+
+    /**
+     * @var Collection
+     * @OneToMany(targetEntity="PhpList\PhpList4\Domain\Model\Subscription\Subscription", mappedBy="subscriberList")
+     */
+    private $subscriptions = null;
+
+    /**
+     * The constructor.
+     */
+    public function __construct()
+    {
+        $this->subscriptions = new ArrayCollection();
+    }
 
     /**
      * @return string
@@ -223,5 +240,23 @@ class SubscriberList implements Identity, CreationDate, ModificationDate
     public function setOwner(Administrator $owner)
     {
         $this->owner = $owner;
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getSubscriptions(): Collection
+    {
+        return $this->subscriptions;
+    }
+
+    /**
+     * @param Collection $subscriptions
+     *
+     * @return void
+     */
+    public function setSubscriptions(Collection $subscriptions)
+    {
+        $this->subscriptions = $subscriptions;
     }
 }
