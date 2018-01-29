@@ -6,7 +6,6 @@ namespace PhpList\PhpList4\Tests\System\ApplicationBundle;
 use GuzzleHttp\Client;
 use PhpList\PhpList4\TestingSupport\Traits\SymfonyServerTrait;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
 
 /**
  * Testcase.
