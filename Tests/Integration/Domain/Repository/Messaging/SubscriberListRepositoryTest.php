@@ -53,7 +53,7 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function findReadsModelFromDatabase()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
         $this->applyDatabaseChanges();
 
         $id = 1;
@@ -84,11 +84,8 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function createsOwnerAssociationAsProxy()
     {
-        $this->getDataSet()->addTable(
-            self::ADMINISTRATOR_TABLE_NAME,
-            __DIR__ . '/../Identity/Fixtures/Administrator.csv'
-        );
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(self::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
         $this->applyDatabaseChanges();
 
         $subscriberListId = 1;
@@ -107,7 +104,7 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function creationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
         $this->applyDatabaseChanges();
 
         $model = new SubscriberList();
@@ -123,7 +120,7 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function modificationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
         $this->applyDatabaseChanges();
 
         $model = new SubscriberList();
@@ -152,11 +149,8 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function findByOwnerFindsSubscriberListWithTheGivenOwner()
     {
-        $this->getDataSet()->addTable(
-            self::ADMINISTRATOR_TABLE_NAME,
-            __DIR__ . '/../Identity/Fixtures/Administrator.csv'
-        );
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(self::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
         $this->applyDatabaseChanges();
 
         $owner = $this->administratorRepository->find(1);
@@ -172,11 +166,8 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function findByOwnerIgnoresSubscriberListWithOtherOwner()
     {
-        $this->getDataSet()->addTable(
-            self::ADMINISTRATOR_TABLE_NAME,
-            __DIR__ . '/../Identity/Fixtures/Administrator.csv'
-        );
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(self::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
         $this->applyDatabaseChanges();
 
         $owner = $this->administratorRepository->find(1);
@@ -192,11 +183,8 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function findByOwnerIgnoresSubscriberListFromOtherOwner()
     {
-        $this->getDataSet()->addTable(
-            self::ADMINISTRATOR_TABLE_NAME,
-            __DIR__ . '/../Identity/Fixtures/Administrator.csv'
-        );
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(self::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
         $this->applyDatabaseChanges();
 
         $owner = $this->administratorRepository->find(1);

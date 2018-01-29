@@ -45,7 +45,7 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
      */
     public function findReadsModelFromDatabase()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
         $this->applyDatabaseChanges();
 
         $id = 1;
@@ -118,7 +118,7 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
      */
     public function emailMustBeUnique()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
         $this->applyDatabaseChanges();
 
         /** @var Subscriber $model */
@@ -153,7 +153,7 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
      */
     public function persistingExistingModelKeepsUniqueIdUnchanged()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
         $this->applyDatabaseChanges();
 
         /** @var Subscriber $model */
@@ -173,7 +173,7 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
     {
         $email = 'oliver@example.com';
 
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
         $this->applyDatabaseChanges();
 
         /** @var Subscriber $model */
@@ -190,7 +190,7 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
     {
         $email = 'other@example.com';
 
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
         $this->applyDatabaseChanges();
 
         $model = $this->subject->findOneByEmail($email);

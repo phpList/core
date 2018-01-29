@@ -39,7 +39,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function findReadsModelFromDatabase()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
         $this->applyDatabaseChanges();
 
         $id = 1;
@@ -69,7 +69,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function creationDateOfExistingModelStaysUnchangedOnUpdate()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
         $this->applyDatabaseChanges();
 
         $id = 1;
@@ -88,7 +88,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function modificationDateOfExistingModelGetsUpdatedOnUpdate()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
         $this->applyDatabaseChanges();
 
         $id = 1;
@@ -107,7 +107,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function creationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
         $this->applyDatabaseChanges();
 
         $model = new Administrator();
@@ -123,7 +123,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function modificationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
         $this->applyDatabaseChanges();
 
         $model = new Administrator();
