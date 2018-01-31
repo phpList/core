@@ -240,4 +240,27 @@ class SubscriberListTest extends TestCase
 
         self::assertSame($subscriptions, $this->subject->getSubscriptions());
     }
+
+    /**
+     * @test
+     */
+    public function getSubscribersByDefaultReturnsEmptyCollection()
+    {
+        $result = $this->subject->getSubscribers();
+
+        self::assertInstanceOf(Collection::class, $result);
+        self::assertTrue($result->isEmpty());
+    }
+
+    /**
+     * @test
+     */
+    public function setSubscribersSetsSubscribers()
+    {
+        $subscriptions = new ArrayCollection();
+
+        $this->subject->setSubscribers($subscriptions);
+
+        self::assertSame($subscriptions, $this->subject->getSubscribers());
+    }
 }

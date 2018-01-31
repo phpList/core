@@ -8,6 +8,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\JoinTable;
+use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\PrePersist;
 use Doctrine\ORM\Mapping\Table;
@@ -109,11 +112,22 @@ class Subscriber implements Identity, CreationDate, ModificationDate
     private $subscriptions = null;
 
     /**
+     * @var Collection
+     * @ManyToMany(targetEntity="PhpList\PhpList4\Domain\Model\Messaging\SubscriberList", inversedBy="subscribers")
+     * @JoinTable(name="phplist_listuser",
+     *            joinColumns={@JoinColumn(name="userid")},
+     *            inverseJoinColumns={@JoinColumn(name="listid")}
+     * )
+     */
+    private $subscribedLists = null;
+
+    /**
      * The constructor.
      */
     public function __construct()
     {
         $this->subscriptions = new ArrayCollection();
+        $this->subscribedLists = new ArrayCollection();
     }
 
     /**
@@ -280,5 +294,23 @@ class Subscriber implements Identity, CreationDate, ModificationDate
     public function setSubscriptions(Collection $subscriptions)
     {
         $this->subscriptions = $subscriptions;
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getSubscribedLists(): Collection
+    {
+        return $this->subscribedLists;
+    }
+
+    /**
+     * @param Collection $subscribedLists
+     *
+     * @return void
+     */
+    public function setSubscribedLists(Collection $subscribedLists)
+    {
+        $this->subscribedLists = $subscribedLists;
     }
 }
