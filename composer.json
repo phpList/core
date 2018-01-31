@@ -52,8 +52,8 @@
         "composer/composer": "^1.5.0"
     },
     "suggest": {
-        "phplist/web-frontend": "4.0.x-dev",
-        "phplist/rest-api": "4.0.x-dev"
+        "phplist/web-frontend": "^4.0.0-alpha1",
+        "phplist/rest-api": "^4.0.0-alpha1"
     },
     "autoload": {
         "psr-4": {
