@@ -6,6 +6,7 @@ namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Subscription;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use PhpList\PhpList4\Domain\Model\Subscription\Subscriber;
 use PhpList\PhpList4\Domain\Model\Subscription\Subscription;
+use PhpList\PhpList4\Domain\Repository\Messaging\SubscriberListRepository;
 use PhpList\PhpList4\Domain\Repository\Subscription\SubscriberRepository;
 use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PhpList\PhpList4\Tests\Integration\AbstractDatabaseTest;
@@ -44,11 +45,17 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
      */
     private $subject = null;
 
+    /**
+     * @var SubscriberListRepository
+     */
+    private $subscriberListRepository = null;
+
     protected function setUp()
     {
         parent::setUp();
 
         $this->subject = $this->container->get(SubscriberRepository::class);
+        $this->subscriberListRepository = $this->container->get(SubscriberListRepository::class);
     }
 
     /**
@@ -230,5 +237,26 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
         self::assertInstanceOf(Subscription::class, $firstSubscription);
         $expectedSubscriberListId = 2;
         self::assertSame($expectedSubscriberListId, $firstSubscription->getSubscriberList()->getId());
+    }
+
+    /**
+     * @test
+     */
+    public function findsAssociatedSubscribedLists()
+    {
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(self::SUBSCRIBER_LIST_TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(self::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
+        $this->applyDatabaseChanges();
+
+        /** @var Subscriber $model */
+        $id = 1;
+        $model = $this->subject->find($id);
+        $subscribedLists = $model->getSubscribedLists();
+
+        $expectedList = $this->subscriberListRepository->find(2);
+        $unexpectedList = $this->subscriberListRepository->find(1);
+        self::assertTrue($subscribedLists->contains($expectedList));
+        self::assertFalse($subscribedLists->contains($unexpectedList));
     }
 }
