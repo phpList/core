@@ -174,4 +174,46 @@ class SubscriptionRepositoryTest extends AbstractDatabaseTest
 
         self::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
     }
+
+    /**
+     * @test
+     */
+    public function findBySubscriberFindsSubscriptionOnlyWithTheGivenSubscriber()
+    {
+        $this->getDataSet()->addTable(self::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
+        $this->touchDatabaseTable(self::TABLE_NAME);
+        $this->applyDatabaseChanges();
+
+        /** @var Subscriber $subscriber */
+        $subscriber = $this->subscriberRepository->find(1);
+
+        $result = $this->subject->findBySubscriber($subscriber);
+
+        /** @var Subscription $subscription */
+        foreach ($result as $subscription) {
+            self::assertSame($subscriber, $subscription->getSubscriber());
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function findBySubscriberListFindsSubscriptionOnlyWithTheGivenSubscriberList()
+    {
+        $this->getDataSet()->addTable(self::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
+        $this->touchDatabaseTable(self::TABLE_NAME);
+        $this->applyDatabaseChanges();
+
+        /** @var SubscriberList $subscriberList */
+        $subscriberList = $this->subscriberListRepository->find(1);
+
+        $result = $this->subject->findBySubscriberList($subscriberList);
+
+        /** @var Subscription $subscription */
+        foreach ($result as $subscription) {
+            self::assertSame($subscriberList, $subscription->getSubscriberList());
+        }
+    }
 }
