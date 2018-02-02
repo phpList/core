@@ -23,7 +23,7 @@ class PhpListApplicationBundleTest extends TestCase
 
     protected function setUp()
     {
-        $this->httpClient = new Client();
+        $this->httpClient = new Client(['http_errors' => false]);
     }
 
     protected function tearDown()
