@@ -51,7 +51,7 @@ class PhpListApplicationBundleTest extends TestCase
     {
         $this->startSymfonyServer($environment);
 
-        $response = $this->httpClient->request('GET', '/', ['base_uri' => $this->getBaseUrl()]);
+        $response = $this->httpClient->get('/', ['base_uri' => $this->getBaseUrl()]);
 
         self::assertSame(200, $response->getStatusCode());
     }
@@ -65,7 +65,7 @@ class PhpListApplicationBundleTest extends TestCase
     {
         $this->startSymfonyServer($environment);
 
-        $response = $this->httpClient->request('GET', '/', ['base_uri' => $this->getBaseUrl()]);
+        $response = $this->httpClient->get('/', ['base_uri' => $this->getBaseUrl()]);
 
         self::assertContains('This page has been intentionally left empty.', $response->getBody()->getContents());
     }
