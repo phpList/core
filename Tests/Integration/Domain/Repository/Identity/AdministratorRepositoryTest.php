@@ -139,6 +139,9 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function findOneByLoginCredentialsForMatchingCredentialsReturnsModel()
     {
+        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->applyDatabaseChanges();
+
         $id = 1;
         $loginName = 'john.doe';
         $password = 'Bazinga!';
