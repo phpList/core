@@ -122,8 +122,7 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function creationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
-        $this->applyDatabaseChanges();
+        $this->touchDatabaseTable(static::TABLE_NAME);
 
         $model = new SubscriberList();
         $expectedCreationDate = new \DateTime();
@@ -138,8 +137,7 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function modificationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
-        $this->applyDatabaseChanges();
+        $this->touchDatabaseTable(static::TABLE_NAME);
 
         $model = new SubscriberList();
         $expectedModificationDate = new \DateTime();

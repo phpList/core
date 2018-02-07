@@ -107,8 +107,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function creationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->applyDatabaseChanges();
+        $this->touchDatabaseTable(static::TABLE_NAME);
 
         $model = new Administrator();
         $expectedCreationDate = new \DateTime();
@@ -123,8 +122,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function modificationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->applyDatabaseChanges();
+        $this->touchDatabaseTable(static::TABLE_NAME);
 
         $model = new Administrator();
         $expectedModificationDate = new \DateTime();
