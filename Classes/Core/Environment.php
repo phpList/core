@@ -59,8 +59,8 @@ final class Environment
      */
     public static function validateEnvironment(string $environment)
     {
-        if (!in_array($environment, self::$validEnvironments, true)) {
-            $environmentsText = '"' . implode('", ', self::$validEnvironments) . '"';
+        if (!in_array($environment, static::$validEnvironments, true)) {
+            $environmentsText = '"' . implode('", ', static::$validEnvironments) . '"';
             throw new \UnexpectedValueException(
                 '$environment must be one of ' . $environmentsText . ', but actually was: "' . $environment . '"',
                 1499112172108

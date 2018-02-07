@@ -25,7 +25,7 @@ class ScriptsTest extends TestCase
      */
     public function bundleConfigurationFileExists()
     {
-        self::assertFileExists($this->getBundleConfigurationFilePath());
+        static::assertFileExists($this->getBundleConfigurationFilePath());
     }
 
     /**
@@ -50,7 +50,7 @@ class ScriptsTest extends TestCase
     {
         $fileContents = file_get_contents($this->getBundleConfigurationFilePath());
 
-        self::assertContains($bundleClassName, $fileContents);
+        static::assertContains($bundleClassName, $fileContents);
     }
 
     /**
@@ -66,7 +66,7 @@ class ScriptsTest extends TestCase
      */
     public function moduleRoutesConfigurationFileExists()
     {
-        self::assertFileExists($this->getModuleRoutesConfigurationFilePath());
+        static::assertFileExists($this->getModuleRoutesConfigurationFilePath());
     }
 
     /**
@@ -90,7 +90,7 @@ class ScriptsTest extends TestCase
     {
         $fileContents = file_get_contents($this->getModuleRoutesConfigurationFilePath());
 
-        self::assertContains($routeSearchString, $fileContents);
+        static::assertContains($routeSearchString, $fileContents);
     }
 
     /**
@@ -98,7 +98,7 @@ class ScriptsTest extends TestCase
      */
     public function parametersConfigurationFileExists()
     {
-        self::assertFileExists(dirname(__DIR__, 3) . '/Configuration/parameters.yml');
+        static::assertFileExists(dirname(__DIR__, 3) . '/Configuration/parameters.yml');
     }
 
     /**
@@ -106,6 +106,6 @@ class ScriptsTest extends TestCase
      */
     public function modulesConfigurationFileExists()
     {
-        self::assertFileExists(dirname(__DIR__, 3) . '/Configuration/config_modules.yml');
+        static::assertFileExists(dirname(__DIR__, 3) . '/Configuration/config_modules.yml');
     }
 }

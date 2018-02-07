@@ -33,7 +33,7 @@ class AdministratorTest extends TestCase
      */
     public function getIdInitiallyReturnsZero()
     {
-        self::assertSame(0, $this->subject->getId());
+        static::assertSame(0, $this->subject->getId());
     }
 
     /**
@@ -44,7 +44,7 @@ class AdministratorTest extends TestCase
         $id = 123456;
         $this->setSubjectId($id);
 
-        self::assertSame($id, $this->subject->getId());
+        static::assertSame($id, $this->subject->getId());
     }
 
     /**
@@ -52,7 +52,7 @@ class AdministratorTest extends TestCase
      */
     public function getLoginNameInitiallyReturnsEmptyString()
     {
-        self::assertSame('', $this->subject->getLoginName());
+        static::assertSame('', $this->subject->getLoginName());
     }
 
     /**
@@ -63,7 +63,7 @@ class AdministratorTest extends TestCase
         $value = 'jane.doe';
         $this->subject->setLoginName($value);
 
-        self::assertSame($value, $this->subject->getLoginName());
+        static::assertSame($value, $this->subject->getLoginName());
     }
 
     /**
@@ -71,7 +71,7 @@ class AdministratorTest extends TestCase
      */
     public function getEmailAddressInitiallyReturnsEmptyString()
     {
-        self::assertSame('', $this->subject->getEmailAddress());
+        static::assertSame('', $this->subject->getEmailAddress());
     }
 
     /**
@@ -82,7 +82,7 @@ class AdministratorTest extends TestCase
         $value = 'oliver@example.com';
         $this->subject->setEmailAddress($value);
 
-        self::assertSame($value, $this->subject->getEmailAddress());
+        static::assertSame($value, $this->subject->getEmailAddress());
     }
 
     /**
@@ -90,7 +90,7 @@ class AdministratorTest extends TestCase
      */
     public function getCreationDateInitiallyReturnsNull()
     {
-        self::assertNull($this->subject->getCreationDate());
+        static::assertNull($this->subject->getCreationDate());
     }
 
     /**
@@ -100,7 +100,7 @@ class AdministratorTest extends TestCase
     {
         $this->subject->updateCreationDate();
 
-        self::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
+        static::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
     }
 
     /**
@@ -108,7 +108,7 @@ class AdministratorTest extends TestCase
      */
     public function getModificationDateInitiallyReturnsNull()
     {
-        self::assertNull($this->subject->getModificationDate());
+        static::assertNull($this->subject->getModificationDate());
     }
 
     /**
@@ -118,7 +118,7 @@ class AdministratorTest extends TestCase
     {
         $this->subject->updateModificationDate();
 
-        self::assertSimilarDates(new \DateTime(), $this->subject->getModificationDate());
+        static::assertSimilarDates(new \DateTime(), $this->subject->getModificationDate());
     }
 
     /**
@@ -126,7 +126,7 @@ class AdministratorTest extends TestCase
      */
     public function getPasswordHashInitiallyReturnsEmptyString()
     {
-        self::assertSame('', $this->subject->getPasswordHash());
+        static::assertSame('', $this->subject->getPasswordHash());
     }
 
     /**
@@ -137,7 +137,7 @@ class AdministratorTest extends TestCase
         $value = 'Club-Mate';
         $this->subject->setPasswordHash($value);
 
-        self::assertSame($value, $this->subject->getPasswordHash());
+        static::assertSame($value, $this->subject->getPasswordHash());
     }
 
     /**
@@ -145,7 +145,7 @@ class AdministratorTest extends TestCase
      */
     public function getPasswordChangeDateInitiallyReturnsNull()
     {
-        self::assertNull($this->subject->getPasswordChangeDate());
+        static::assertNull($this->subject->getPasswordChangeDate());
     }
 
     /**
@@ -156,7 +156,7 @@ class AdministratorTest extends TestCase
         $date = new \DateTime();
         $this->subject->setPasswordHash('Zaphod Beeblebrox');
 
-        self::assertSimilarDates($date, $this->subject->getPasswordChangeDate());
+        static::assertSimilarDates($date, $this->subject->getPasswordChangeDate());
     }
 
     /**
@@ -164,7 +164,7 @@ class AdministratorTest extends TestCase
      */
     public function isDisabledInitiallyReturnsFalse()
     {
-        self::assertFalse($this->subject->isDisabled());
+        static::assertFalse($this->subject->isDisabled());
     }
 
     /**
@@ -174,7 +174,7 @@ class AdministratorTest extends TestCase
     {
         $this->subject->setDisabled(true);
 
-        self::assertTrue($this->subject->isDisabled());
+        static::assertTrue($this->subject->isDisabled());
     }
 
     /**
@@ -182,7 +182,7 @@ class AdministratorTest extends TestCase
      */
     public function isSuperUserInitiallyReturnsFalse()
     {
-        self::assertFalse($this->subject->isSuperUser());
+        static::assertFalse($this->subject->isSuperUser());
     }
 
     /**
@@ -192,6 +192,6 @@ class AdministratorTest extends TestCase
     {
         $this->subject->setSuperUser(true);
 
-        self::assertTrue($this->subject->isSuperUser());
+        static::assertTrue($this->subject->isSuperUser());
     }
 }

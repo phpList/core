@@ -49,7 +49,7 @@ class ApplicationStructureTest extends TestCase
      */
     public function subjectIsAvailableViaContainer()
     {
-        self::assertInstanceOf(ApplicationStructure::class, $this->container->get(ApplicationStructure::class));
+        static::assertInstanceOf(ApplicationStructure::class, $this->container->get(ApplicationStructure::class));
     }
 
     /**
@@ -59,6 +59,6 @@ class ApplicationStructureTest extends TestCase
     {
         $id = ApplicationStructure::class;
 
-        self::assertSame($this->container->get($id), $this->container->get($id));
+        static::assertSame($this->container->get($id), $this->container->get($id));
     }
 }

@@ -53,7 +53,7 @@ class AuthenticationTest extends TestCase
 
         $this->tokenRepositoryProphecy->findOneUnexpiredByKey($apiKey)->willReturn($token)->shouldBeCalled();
 
-        self::assertSame($administrator, $this->subject->authenticateByApiKey($request));
+        static::assertSame($administrator, $this->subject->authenticateByApiKey($request));
     }
 
     /**
@@ -69,7 +69,7 @@ class AuthenticationTest extends TestCase
 
         $this->tokenRepositoryProphecy->findOneUnexpiredByKey($apiKey)->willReturn($token)->shouldBeCalled();
 
-        self::assertNull($this->subject->authenticateByApiKey($request));
+        static::assertNull($this->subject->authenticateByApiKey($request));
     }
 
     /**
@@ -83,7 +83,7 @@ class AuthenticationTest extends TestCase
 
         $this->tokenRepositoryProphecy->findOneUnexpiredByKey($apiKey)->willReturn(null)->shouldBeCalled();
 
-        self::assertNull($this->subject->authenticateByApiKey($request));
+        static::assertNull($this->subject->authenticateByApiKey($request));
     }
 
     /**
@@ -94,7 +94,7 @@ class AuthenticationTest extends TestCase
         $request = new Request();
         $request->headers->add(['php-auth-pw' => '']);
 
-        self::assertNull($this->subject->authenticateByApiKey($request));
+        static::assertNull($this->subject->authenticateByApiKey($request));
     }
 
     /**
@@ -104,6 +104,6 @@ class AuthenticationTest extends TestCase
     {
         $request = new Request();
 
-        self::assertNull($this->subject->authenticateByApiKey($request));
+        static::assertNull($this->subject->authenticateByApiKey($request));
     }
 }

@@ -18,7 +18,7 @@ class EnvironmentTest extends TestCase
      */
     public function defaultEnvironmentIsProduction()
     {
-        self::assertSame(Environment::PRODUCTION, Environment::DEFAULT_ENVIRONMENT);
+        static::assertSame(Environment::PRODUCTION, Environment::DEFAULT_ENVIRONMENT);
     }
 
     /**
@@ -44,7 +44,7 @@ class EnvironmentTest extends TestCase
 
         // This is to avoid a warning in PHPUnit that this test has no assertions (as there is no assertion
         // for "no exception is thrown").
-        self::assertTrue(true);
+        static::assertTrue(true);
     }
 
     /**

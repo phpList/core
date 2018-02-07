@@ -71,7 +71,7 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function findReadsModelFromDatabase()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
         $this->applyDatabaseChanges();
 
         $id = 1;
@@ -86,15 +86,15 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
         /** @var SubscriberList $model */
         $model = $this->subject->find($id);
 
-        self::assertSame($id, $model->getId());
-        self::assertEquals($creationDate, $model->getCreationDate());
-        self::assertEquals($modificationDate, $model->getModificationDate());
-        self::assertSame($name, $model->getName());
-        self::assertSame($description, $model->getDescription());
-        self::assertSame($listPosition, $model->getListPosition());
-        self::assertSame($subjectPrefix, $model->getSubjectPrefix());
-        self::assertTrue($model->isPublic());
-        self::assertSame($category, $model->getCategory());
+        static::assertSame($id, $model->getId());
+        static::assertEquals($creationDate, $model->getCreationDate());
+        static::assertEquals($modificationDate, $model->getModificationDate());
+        static::assertSame($name, $model->getName());
+        static::assertSame($description, $model->getDescription());
+        static::assertSame($listPosition, $model->getListPosition());
+        static::assertSame($subjectPrefix, $model->getSubjectPrefix());
+        static::assertTrue($model->isPublic());
+        static::assertSame($category, $model->getCategory());
     }
 
     /**
@@ -102,8 +102,8 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function createsOwnerAssociationAsProxy()
     {
-        $this->getDataSet()->addTable(self::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
         $this->applyDatabaseChanges();
 
         $subscriberListId = 1;
@@ -112,9 +112,9 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
         $model = $this->subject->find($subscriberListId);
         $owner = $model->getOwner();
 
-        self::assertInstanceOf(Administrator::class, $owner);
-        self::assertInstanceOf(Proxy::class, $owner);
-        self::assertSame($ownerId, $owner->getId());
+        static::assertInstanceOf(Administrator::class, $owner);
+        static::assertInstanceOf(Proxy::class, $owner);
+        static::assertSame($ownerId, $owner->getId());
     }
 
     /**
@@ -122,7 +122,7 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function creationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
         $this->applyDatabaseChanges();
 
         $model = new SubscriberList();
@@ -130,7 +130,7 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
+        static::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
     }
 
     /**
@@ -138,7 +138,7 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function modificationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
         $this->applyDatabaseChanges();
 
         $model = new SubscriberList();
@@ -146,7 +146,7 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
+        static::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
     }
 
     /**
@@ -154,12 +154,12 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function savePersistsAndFlushesModel()
     {
-        $this->touchDatabaseTable(self::TABLE_NAME);
+        $this->touchDatabaseTable(static::TABLE_NAME);
 
         $model = new SubscriberList();
         $this->subject->save($model);
 
-        self::assertSame($model, $this->subject->find($model->getId()));
+        static::assertSame($model, $this->subject->find($model->getId()));
     }
 
     /**
@@ -167,8 +167,8 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function findByOwnerFindsSubscriberListWithTheGivenOwner()
     {
-        $this->getDataSet()->addTable(self::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
         $this->applyDatabaseChanges();
 
         $owner = $this->administratorRepository->find(1);
@@ -176,7 +176,7 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
 
         $result = $this->subject->findByOwner($owner);
 
-        self::assertContains($ownedList, $result);
+        static::assertContains($ownedList, $result);
     }
 
     /**
@@ -184,8 +184,8 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function findByOwnerIgnoresSubscriberListWithOtherOwner()
     {
-        $this->getDataSet()->addTable(self::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
         $this->applyDatabaseChanges();
 
         $owner = $this->administratorRepository->find(1);
@@ -193,7 +193,7 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
 
         $result = $this->subject->findByOwner($owner);
 
-        self::assertNotContains($foreignList, $result);
+        static::assertNotContains($foreignList, $result);
     }
 
     /**
@@ -201,8 +201,8 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function findByOwnerIgnoresSubscriberListFromOtherOwner()
     {
-        $this->getDataSet()->addTable(self::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
         $this->applyDatabaseChanges();
 
         $owner = $this->administratorRepository->find(1);
@@ -210,7 +210,7 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
 
         $result = $this->subject->findByOwner($owner);
 
-        self::assertNotContains($unownedList, $result);
+        static::assertNotContains($unownedList, $result);
     }
 
     /**
@@ -218,9 +218,9 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function findsAssociatedSubscriptions()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
-        $this->getDataSet()->addTable(self::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
-        $this->getDataSet()->addTable(self::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(static::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
         $this->applyDatabaseChanges();
 
         /** @var SubscriberList $model */
@@ -228,12 +228,12 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
         $model = $this->subject->find($id);
         $subscriptions = $model->getSubscriptions();
 
-        self::assertFalse($subscriptions->isEmpty());
+        static::assertFalse($subscriptions->isEmpty());
         /** @var Subscription $firstSubscription */
         $firstSubscription = $subscriptions->first();
-        self::assertInstanceOf(Subscription::class, $firstSubscription);
+        static::assertInstanceOf(Subscription::class, $firstSubscription);
         $expectedSubscriberId = 1;
-        self::assertSame($expectedSubscriberId, $firstSubscription->getSubscriber()->getId());
+        static::assertSame($expectedSubscriberId, $firstSubscription->getSubscriber()->getId());
     }
 
     /**
@@ -241,9 +241,9 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
      */
     public function findsAssociatedSubscribers()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
-        $this->getDataSet()->addTable(self::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
-        $this->getDataSet()->addTable(self::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(static::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
         $this->applyDatabaseChanges();
 
         /** @var SubscriberList $model */
@@ -253,7 +253,7 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
 
         $expectedSubscriber = $this->subscriberRepository->find(1);
         $unexpectedSubscriber = $this->subscriberRepository->find(3);
-        self::assertTrue($subscribers->contains($expectedSubscriber));
-        self::assertFalse($subscribers->contains($unexpectedSubscriber));
+        static::assertTrue($subscribers->contains($expectedSubscriber));
+        static::assertFalse($subscribers->contains($unexpectedSubscriber));
     }
 }

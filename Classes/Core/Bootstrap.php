@@ -75,7 +75,7 @@ class Bootstrap
     public static function getInstance(): Bootstrap
     {
         if (static::$instance === null) {
-            self::$instance = new static();
+            static::$instance = new static();
         }
 
         return static::$instance;
@@ -90,7 +90,7 @@ class Bootstrap
      */
     public static function purgeInstance()
     {
-        self::$instance = null;
+        static::$instance = null;
     }
 
     /**

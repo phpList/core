@@ -33,7 +33,7 @@ class Process
             );
         }
 
-        $running_processes = self::getRunningProcesses($page);
+        $running_processes = static::getRunningProcesses($page);
 
         phpList::log()->info($running_processes['count'] . ' out of ' . $max . ' active processes', ['page' => 'process']);
         $waited = 0;

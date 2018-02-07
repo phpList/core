@@ -43,7 +43,7 @@ class ApplicationKernelTest extends TestCase
      */
     public function isKernelInstance()
     {
-        self::assertInstanceOf(Kernel::class, $this->subject);
+        static::assertInstanceOf(Kernel::class, $this->subject);
     }
 
     /**
@@ -53,7 +53,7 @@ class ApplicationKernelTest extends TestCase
     {
         $bundles = $this->subject->registerBundles();
 
-        self::assertContainsOnlyInstancesOf(BundleInterface::class, $bundles);
+        static::assertContainsOnlyInstancesOf(BundleInterface::class, $bundles);
     }
 
     /**
@@ -77,6 +77,6 @@ class ApplicationKernelTest extends TestCase
     {
         $bundles = $this->subject->registerBundles();
 
-        self::assertContainsInstanceOf($className, $bundles);
+        static::assertContainsInstanceOf($className, $bundles);
     }
 }

@@ -25,7 +25,7 @@ class DefaultControllerTest extends WebTestCase
     {
         Bootstrap::getInstance()->setEnvironment(Environment::TESTING)->configure();
 
-        $this->client = self::createClient(['environment' => Environment::TESTING]);
+        $this->client = static::createClient(['environment' => Environment::TESTING]);
     }
 
     /**
@@ -33,7 +33,10 @@ class DefaultControllerTest extends WebTestCase
      */
     public function controllerIsAvailableViaContainer()
     {
-        self::assertInstanceOf(DefaultController::class, $this->client->getContainer()->get(DefaultController::class));
+        static::assertInstanceOf(
+            DefaultController::class,
+            $this->client->getContainer()->get(DefaultController::class)
+        );
     }
 
     /**
@@ -43,8 +46,8 @@ class DefaultControllerTest extends WebTestCase
     {
         $this->client->request('GET', '/');
 
-        self::assertTrue($this->client->getResponse()->isSuccessful());
-        self::assertContains(
+        static::assertTrue($this->client->getResponse()->isSuccessful());
+        static::assertContains(
             'This page has been intentionally left empty.',
             $this->client->getResponse()->getContent()
         );

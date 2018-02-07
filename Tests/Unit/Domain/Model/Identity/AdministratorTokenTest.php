@@ -34,7 +34,7 @@ class AdministratorTokenTest extends TestCase
      */
     public function getIdInitiallyReturnsZero()
     {
-        self::assertSame(0, $this->subject->getId());
+        static::assertSame(0, $this->subject->getId());
     }
 
     /**
@@ -45,7 +45,7 @@ class AdministratorTokenTest extends TestCase
         $id = 123456;
         $this->setSubjectId($id);
 
-        self::assertSame($id, $this->subject->getId());
+        static::assertSame($id, $this->subject->getId());
     }
 
     /**
@@ -53,7 +53,7 @@ class AdministratorTokenTest extends TestCase
      */
     public function getCreationDateInitiallyReturnsNull()
     {
-        self::assertNull($this->subject->getCreationDate());
+        static::assertNull($this->subject->getCreationDate());
     }
 
     /**
@@ -63,7 +63,7 @@ class AdministratorTokenTest extends TestCase
     {
         $this->subject->updateCreationDate();
 
-        self::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
+        static::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
     }
 
     /**
@@ -71,7 +71,7 @@ class AdministratorTokenTest extends TestCase
      */
     public function getKeyInitiallyReturnsEmptyString()
     {
-        self::assertSame('', $this->subject->getKey());
+        static::assertSame('', $this->subject->getKey());
     }
 
     /**
@@ -82,7 +82,7 @@ class AdministratorTokenTest extends TestCase
         $value = 'Club-Mate';
         $this->subject->setKey($value);
 
-        self::assertSame($value, $this->subject->getKey());
+        static::assertSame($value, $this->subject->getKey());
     }
 
     /**
@@ -90,7 +90,7 @@ class AdministratorTokenTest extends TestCase
      */
     public function getExpiryInitiallyReturnsDateTime()
     {
-        self::assertInstanceOf(\DateTime::class, $this->subject->getExpiry());
+        static::assertInstanceOf(\DateTime::class, $this->subject->getExpiry());
     }
 
     /**
@@ -100,7 +100,7 @@ class AdministratorTokenTest extends TestCase
     {
         $this->subject->generateExpiry();
 
-        self::assertSimilarDates(new \DateTime('+1 hour'), $this->subject->getExpiry());
+        static::assertSimilarDates(new \DateTime('+1 hour'), $this->subject->getExpiry());
     }
 
     /**
@@ -110,7 +110,7 @@ class AdministratorTokenTest extends TestCase
     {
         $this->subject->generateKey();
 
-        self::assertRegExp('/^[a-z0-9]{32}$/', $this->subject->getKey());
+        static::assertRegExp('/^[a-z0-9]{32}$/', $this->subject->getKey());
     }
 
     /**
@@ -124,7 +124,7 @@ class AdministratorTokenTest extends TestCase
         $this->subject->generateKey();
         $secondKey = $this->subject->getKey();
 
-        self::assertNotSame($firstKey, $secondKey);
+        static::assertNotSame($firstKey, $secondKey);
     }
 
     /**
@@ -132,7 +132,7 @@ class AdministratorTokenTest extends TestCase
      */
     public function getAdministratorInitiallyReturnsNull()
     {
-        self::assertNull($this->subject->getAdministrator());
+        static::assertNull($this->subject->getAdministrator());
     }
 
     /**
@@ -143,6 +143,6 @@ class AdministratorTokenTest extends TestCase
         $model = new Administrator();
         $this->subject->setAdministrator($model);
 
-        self::assertSame($model, $this->subject->getAdministrator());
+        static::assertSame($model, $this->subject->getAdministrator());
     }
 }

@@ -53,7 +53,7 @@ class ModuleFinderTest extends TestCase
 
         $result = $this->subject->findBundleClasses();
 
-        self::assertSame([], $result);
+        static::assertSame([], $result);
     }
 
     /**
@@ -131,7 +131,7 @@ class ModuleFinderTest extends TestCase
 
         $result = $this->subject->findBundleClasses();
 
-        self::assertSame([], $result);
+        static::assertSame([], $result);
     }
 
     /**
@@ -259,7 +259,7 @@ class ModuleFinderTest extends TestCase
 
         $result = $this->subject->findBundleClasses();
 
-        self::assertSame($expectedBundles, $result);
+        static::assertSame($expectedBundles, $result);
     }
 
     /**
@@ -271,7 +271,7 @@ class ModuleFinderTest extends TestCase
 
         $result = $this->subject->createBundleConfigurationYaml();
 
-        self::assertSame(self::YAML_COMMENT . "\n{  }", $result);
+        static::assertSame(static::YAML_COMMENT . "\n{  }", $result);
     }
 
     /**
@@ -286,7 +286,7 @@ class ModuleFinderTest extends TestCase
 
         $result = $this->subject->createBundleConfigurationYaml();
 
-        self::assertSame(self::YAML_COMMENT . "\n" . Yaml::dump($bundles), $result);
+        static::assertSame(static::YAML_COMMENT . "\n" . Yaml::dump($bundles), $result);
     }
 
     /**
@@ -316,7 +316,7 @@ class ModuleFinderTest extends TestCase
 
         $result = $this->subject->findRoutes();
 
-        self::assertSame([], $result);
+        static::assertSame([], $result);
     }
 
     /**
@@ -488,7 +488,7 @@ class ModuleFinderTest extends TestCase
 
         $result = $this->subject->findRoutes();
 
-        self::assertSame($expectedRoutes, $result);
+        static::assertSame($expectedRoutes, $result);
     }
 
     /**
@@ -500,7 +500,7 @@ class ModuleFinderTest extends TestCase
 
         $result = $this->subject->createRouteConfigurationYaml();
 
-        self::assertSame(self::YAML_COMMENT . "\n{  }", $result);
+        static::assertSame(static::YAML_COMMENT . "\n{  }", $result);
     }
 
     /**
@@ -515,7 +515,7 @@ class ModuleFinderTest extends TestCase
 
         $result = $this->subject->createRouteConfigurationYaml();
 
-        self::assertSame(self::YAML_COMMENT . "\n" . Yaml::dump($routes), $result);
+        static::assertSame(static::YAML_COMMENT . "\n" . Yaml::dump($routes), $result);
     }
 
     /**
@@ -545,7 +545,7 @@ class ModuleFinderTest extends TestCase
 
         $result = $this->subject->findGeneralConfiguration();
 
-        self::assertSame([], $result);
+        static::assertSame([], $result);
     }
 
     /**
@@ -664,7 +664,7 @@ class ModuleFinderTest extends TestCase
 
         $result = $this->subject->findGeneralConfiguration();
 
-        self::assertSame($expectedConfiguration, $result);
+        static::assertSame($expectedConfiguration, $result);
     }
 
     /**
@@ -676,7 +676,7 @@ class ModuleFinderTest extends TestCase
 
         $result = $this->subject->createGeneralConfigurationYaml();
 
-        self::assertSame(self::YAML_COMMENT . "\n{  }", $result);
+        static::assertSame(static::YAML_COMMENT . "\n{  }", $result);
     }
 
     /**
@@ -691,6 +691,6 @@ class ModuleFinderTest extends TestCase
 
         $result = $this->subject->createGeneralConfigurationYaml();
 
-        self::assertSame(self::YAML_COMMENT . "\n" . Yaml::dump($routes), $result);
+        static::assertSame(static::YAML_COMMENT . "\n" . Yaml::dump($routes), $result);
     }
 }

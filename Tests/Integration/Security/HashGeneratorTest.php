@@ -49,7 +49,7 @@ class HashGeneratorTest extends TestCase
      */
     public function subjectIsAvailableViaContainer()
     {
-        self::assertInstanceOf(HashGenerator::class, $this->container->get(HashGenerator::class));
+        static::assertInstanceOf(HashGenerator::class, $this->container->get(HashGenerator::class));
     }
 
     /**
@@ -59,6 +59,6 @@ class HashGeneratorTest extends TestCase
     {
         $id = HashGenerator::class;
 
-        self::assertSame($this->container->get($id), $this->container->get($id));
+        static::assertSame($this->container->get($id), $this->container->get($id));
     }
 }

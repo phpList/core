@@ -63,7 +63,7 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
      */
     public function findReadsModelFromDatabase()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
         $this->applyDatabaseChanges();
 
         $id = 1;
@@ -73,16 +73,16 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
         /** @var Subscriber $model */
         $model = $this->subject->find($id);
 
-        self::assertSame($id, $model->getId());
-        self::assertEquals($creationDate, $model->getCreationDate());
-        self::assertEquals($modificationDate, $model->getModificationDate());
-        self::assertEquals('oliver@example.com', $model->getEmail());
-        self::assertTrue($model->isConfirmed());
-        self::assertTrue($model->isBlacklisted());
-        self::assertSame(17, $model->getBounceCount());
-        self::assertSame('95feb7fe7e06e6c11ca8d0c48cb46e89', $model->getUniqueId());
-        self::assertTrue($model->hasHtmlEmail());
-        self::assertTrue($model->isDisabled());
+        static::assertSame($id, $model->getId());
+        static::assertEquals($creationDate, $model->getCreationDate());
+        static::assertEquals($modificationDate, $model->getModificationDate());
+        static::assertEquals('oliver@example.com', $model->getEmail());
+        static::assertTrue($model->isConfirmed());
+        static::assertTrue($model->isBlacklisted());
+        static::assertSame(17, $model->getBounceCount());
+        static::assertSame('95feb7fe7e06e6c11ca8d0c48cb46e89', $model->getUniqueId());
+        static::assertTrue($model->hasHtmlEmail());
+        static::assertTrue($model->isDisabled());
     }
 
     /**
@@ -90,7 +90,7 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
      */
     public function creationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->touchDatabaseTable(self::TABLE_NAME);
+        $this->touchDatabaseTable(static::TABLE_NAME);
 
         $model = new Subscriber();
         $model->setEmail('sam@example.com');
@@ -98,7 +98,7 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
+        static::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
     }
 
     /**
@@ -106,7 +106,7 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
      */
     public function modificationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->touchDatabaseTable(self::TABLE_NAME);
+        $this->touchDatabaseTable(static::TABLE_NAME);
 
         $model = new Subscriber();
         $model->setEmail('oliver@example.com');
@@ -114,7 +114,7 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
+        static::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
     }
 
     /**
@@ -122,13 +122,13 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
      */
     public function savePersistsAndFlushesModel()
     {
-        $this->touchDatabaseTable(self::TABLE_NAME);
+        $this->touchDatabaseTable(static::TABLE_NAME);
 
         $model = new Subscriber();
         $model->setEmail('michiel@example.com');
         $this->subject->save($model);
 
-        self::assertSame($model, $this->subject->find($model->getId()));
+        static::assertSame($model, $this->subject->find($model->getId()));
     }
 
     /**
@@ -136,7 +136,7 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
      */
     public function emailMustBeUnique()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
         $this->applyDatabaseChanges();
 
         /** @var Subscriber $model */
@@ -156,14 +156,14 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
      */
     public function uniqueIdOfNewModelIsGeneratedOnPersist()
     {
-        $this->touchDatabaseTable(self::TABLE_NAME);
+        $this->touchDatabaseTable(static::TABLE_NAME);
 
         $model = new Subscriber();
         $model->setEmail('oliver@example.com');
 
         $this->entityManager->persist($model);
 
-        self::assertRegExp('/^[0-9a-f]{32}$/', $model->getUniqueId());
+        static::assertRegExp('/^[0-9a-f]{32}$/', $model->getUniqueId());
     }
 
     /**
@@ -171,7 +171,7 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
      */
     public function persistingExistingModelKeepsUniqueIdUnchanged()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
         $this->applyDatabaseChanges();
 
         /** @var Subscriber $model */
@@ -181,7 +181,7 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
         $model->setEmail('other@example.com');
         $this->entityManager->persist($model);
 
-        self::assertSame($oldUniqueId, $model->getUniqueId());
+        static::assertSame($oldUniqueId, $model->getUniqueId());
     }
 
     /**
@@ -191,14 +191,14 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
     {
         $email = 'oliver@example.com';
 
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
         $this->applyDatabaseChanges();
 
         /** @var Subscriber $model */
         $model = $this->subject->findOneByEmail($email);
 
-        self::assertInstanceOf(Subscriber::class, $model);
-        self::assertSame($email, $model->getEmail());
+        static::assertInstanceOf(Subscriber::class, $model);
+        static::assertSame($email, $model->getEmail());
     }
 
     /**
@@ -208,12 +208,12 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
     {
         $email = 'other@example.com';
 
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
         $this->applyDatabaseChanges();
 
         $model = $this->subject->findOneByEmail($email);
 
-        self::assertNull($model);
+        static::assertNull($model);
     }
 
     /**
@@ -221,9 +221,9 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
      */
     public function findsAssociatedSubscriptions()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
-        $this->getDataSet()->addTable(self::SUBSCRIBER_LIST_TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
-        $this->getDataSet()->addTable(self::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(static::SUBSCRIBER_LIST_TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
         $this->applyDatabaseChanges();
 
         /** @var Subscriber $model */
@@ -231,12 +231,12 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
         $model = $this->subject->find($id);
         $subscriptions = $model->getSubscriptions();
 
-        self::assertFalse($subscriptions->isEmpty());
+        static::assertFalse($subscriptions->isEmpty());
         /** @var Subscription $firstSubscription */
         $firstSubscription = $subscriptions->first();
-        self::assertInstanceOf(Subscription::class, $firstSubscription);
+        static::assertInstanceOf(Subscription::class, $firstSubscription);
         $expectedSubscriberListId = 2;
-        self::assertSame($expectedSubscriberListId, $firstSubscription->getSubscriberList()->getId());
+        static::assertSame($expectedSubscriberListId, $firstSubscription->getSubscriberList()->getId());
     }
 
     /**
@@ -244,9 +244,9 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
      */
     public function findsAssociatedSubscribedLists()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
-        $this->getDataSet()->addTable(self::SUBSCRIBER_LIST_TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
-        $this->getDataSet()->addTable(self::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(static::SUBSCRIBER_LIST_TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
         $this->applyDatabaseChanges();
 
         /** @var Subscriber $model */
@@ -256,7 +256,7 @@ class SubscriberRepositoryTest extends AbstractDatabaseTest
 
         $expectedList = $this->subscriberListRepository->find(2);
         $unexpectedList = $this->subscriberListRepository->find(1);
-        self::assertTrue($subscribedLists->contains($expectedList));
-        self::assertFalse($subscribedLists->contains($unexpectedList));
+        static::assertTrue($subscribedLists->contains($expectedList));
+        static::assertFalse($subscribedLists->contains($unexpectedList));
     }
 }

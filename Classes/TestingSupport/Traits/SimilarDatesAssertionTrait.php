@@ -24,6 +24,6 @@ trait SimilarDatesAssertionTrait
 
         $difference = $actual->diff($expected, true);
         $differenceInSeconds = $difference->s + $difference->i * 60 + $difference->h * 3600;
-        self::assertLessThan($maximumAllowedDifference, $differenceInSeconds);
+        static::assertLessThan($maximumAllowedDifference, $differenceInSeconds);
     }
 }
