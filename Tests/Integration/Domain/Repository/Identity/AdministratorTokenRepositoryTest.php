@@ -112,8 +112,7 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
      */
     public function creationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
-        $this->applyDatabaseChanges();
+        $this->touchDatabaseTable(static::TABLE_NAME);
 
         $model = new Administrator();
         $expectedCreationDate = new \DateTime();
