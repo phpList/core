@@ -29,6 +29,6 @@ class PhpListEmptyStartPageBundleTest extends TestCase
      */
     public function classIsBundle()
     {
-        self::assertInstanceOf(Bundle::class, $this->subject);
+        static::assertInstanceOf(Bundle::class, $this->subject);
     }
 }

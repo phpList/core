@@ -126,7 +126,7 @@ class ModuleFinder
      */
     public function createBundleConfigurationYaml(): string
     {
-        return self::YAML_COMMENT . "\n" . Yaml::dump($this->findBundleClasses());
+        return static::YAML_COMMENT . "\n" . Yaml::dump($this->findBundleClasses());
     }
 
     /**
@@ -209,7 +209,7 @@ class ModuleFinder
      */
     public function createRouteConfigurationYaml(): string
     {
-        return self::YAML_COMMENT . "\n" . Yaml::dump($this->findRoutes());
+        return static::YAML_COMMENT . "\n" . Yaml::dump($this->findRoutes());
     }
 
     /**
@@ -274,6 +274,6 @@ class ModuleFinder
      */
     public function createGeneralConfigurationYaml(): string
     {
-        return self::YAML_COMMENT . "\n" . Yaml::dump($this->findGeneralConfiguration());
+        return static::YAML_COMMENT . "\n" . Yaml::dump($this->findGeneralConfiguration());
     }
 }

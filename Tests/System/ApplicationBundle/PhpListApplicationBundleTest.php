@@ -53,7 +53,7 @@ class PhpListApplicationBundleTest extends TestCase
 
         $response = $this->httpClient->get('/', ['base_uri' => $this->getBaseUrl()]);
 
-        self::assertSame(200, $response->getStatusCode());
+        static::assertSame(200, $response->getStatusCode());
     }
 
     /**
@@ -67,6 +67,6 @@ class PhpListApplicationBundleTest extends TestCase
 
         $response = $this->httpClient->get('/', ['base_uri' => $this->getBaseUrl()]);
 
-        self::assertContains('This page has been intentionally left empty.', $response->getBody()->getContents());
+        static::assertContains('This page has been intentionally left empty.', $response->getBody()->getContents());
     }
 }

@@ -30,7 +30,7 @@ class DefaultControllerTest extends TestCase
      */
     public function classIsController()
     {
-        self::assertInstanceOf(Controller::class, $this->subject);
+        static::assertInstanceOf(Controller::class, $this->subject);
     }
 
     /**
@@ -41,6 +41,6 @@ class DefaultControllerTest extends TestCase
         $result = $this->subject->indexAction();
 
         $expectedResult = new Response('This page has been intentionally left empty.');
-        self::assertEquals($expectedResult, $result);
+        static::assertEquals($expectedResult, $result);
     }
 }

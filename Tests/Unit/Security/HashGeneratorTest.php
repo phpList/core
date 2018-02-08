@@ -28,7 +28,7 @@ class HashGeneratorTest extends TestCase
      */
     public function createPasswordHashCreates32ByteHash()
     {
-        self::assertRegExp('/^[a-z0-9]{64}$/', $this->subject->createPasswordHash('Portal'));
+        static::assertRegExp('/^[a-z0-9]{64}$/', $this->subject->createPasswordHash('Portal'));
     }
 
     /**
@@ -38,7 +38,10 @@ class HashGeneratorTest extends TestCase
     {
         $password = 'Aperture Science';
 
-        self::assertSame($this->subject->createPasswordHash($password), $this->subject->createPasswordHash($password));
+        static::assertSame(
+            $this->subject->createPasswordHash($password),
+            $this->subject->createPasswordHash($password)
+        );
     }
 
     /**
@@ -46,7 +49,7 @@ class HashGeneratorTest extends TestCase
      */
     public function createPasswordHashCalledTwoTimesWithDifferentPasswordsCreatesDifferentHashes()
     {
-        self::assertNotSame(
+        static::assertNotSame(
             $this->subject->createPasswordHash('Mel'),
             $this->subject->createPasswordHash('Cave Johnson')
         );

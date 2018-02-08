@@ -36,7 +36,7 @@ class ExtraLoaderTest extends TestCase
      */
     public function classIsLoader()
     {
-        self::assertInstanceOf(Loader::class, $this->subject);
+        static::assertInstanceOf(Loader::class, $this->subject);
     }
 
     /**
@@ -44,7 +44,7 @@ class ExtraLoaderTest extends TestCase
      */
     public function supportsExtraType()
     {
-        self::assertTrue($this->subject->supports('', 'extra'));
+        static::assertTrue($this->subject->supports('', 'extra'));
     }
 
     /**
@@ -52,6 +52,6 @@ class ExtraLoaderTest extends TestCase
      */
     public function notSupportsOtherType()
     {
-        self::assertFalse($this->subject->supports('', 'foo'));
+        static::assertFalse($this->subject->supports('', 'foo'));
     }
 }

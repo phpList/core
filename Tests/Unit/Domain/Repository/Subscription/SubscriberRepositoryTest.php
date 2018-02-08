@@ -36,6 +36,6 @@ class SubscriberRepositoryTest extends TestCase
      */
     public function classIsEntityRepository()
     {
-        self::assertInstanceOf(EntityRepository::class, $this->subject);
+        static::assertInstanceOf(EntityRepository::class, $this->subject);
     }
 }

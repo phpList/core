@@ -131,7 +131,7 @@ class AdministratorToken implements Identity, CreationDate
      */
     public function generateExpiry()
     {
-        $this->setExpiry(new \DateTime(self::DEFAULT_EXPIRY));
+        $this->setExpiry(new \DateTime(static::DEFAULT_EXPIRY));
     }
 
     /**

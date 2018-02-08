@@ -38,7 +38,7 @@ class BootstrapTest extends TestCase
      */
     public function getInstanceReturnsBootstrapInstance()
     {
-        self::assertInstanceOf(Bootstrap::class, Bootstrap::getInstance());
+        static::assertInstanceOf(Bootstrap::class, Bootstrap::getInstance());
     }
 
     /**
@@ -46,7 +46,7 @@ class BootstrapTest extends TestCase
      */
     public function classIsSingleton()
     {
-        self::assertSame(Bootstrap::getInstance(), Bootstrap::getInstance());
+        static::assertSame(Bootstrap::getInstance(), Bootstrap::getInstance());
     }
 
     /**
@@ -59,7 +59,7 @@ class BootstrapTest extends TestCase
         Bootstrap::purgeInstance();
 
         $secondInstance = Bootstrap::getInstance();
-        self::assertNotSame($firstInstance, $secondInstance);
+        static::assertNotSame($firstInstance, $secondInstance);
     }
 
     /**
@@ -71,7 +71,7 @@ class BootstrapTest extends TestCase
 
         $subject = Bootstrap::getInstance();
 
-        self::assertSame(Environment::PRODUCTION, $subject->getEnvironment());
+        static::assertSame(Environment::PRODUCTION, $subject->getEnvironment());
     }
 
     /**
@@ -79,7 +79,7 @@ class BootstrapTest extends TestCase
      */
     public function setEnvironmentHasFluentInterface()
     {
-        self::assertSame($this->subject, $this->subject->setEnvironment(Environment::TESTING));
+        static::assertSame($this->subject, $this->subject->setEnvironment(Environment::TESTING));
     }
 
     /**
@@ -103,7 +103,7 @@ class BootstrapTest extends TestCase
     {
         $this->subject->setEnvironment($environment);
 
-        self::assertSame($environment, $this->subject->getEnvironment());
+        static::assertSame($environment, $this->subject->getEnvironment());
     }
 
     /**
@@ -121,7 +121,7 @@ class BootstrapTest extends TestCase
      */
     public function configureHasFluentInterface()
     {
-        self::assertSame($this->subject, $this->subject->configure());
+        static::assertSame($this->subject, $this->subject->configure());
     }
 
     /**
@@ -131,7 +131,7 @@ class BootstrapTest extends TestCase
     {
         $this->subject->configure();
 
-        self::assertInstanceOf(ApplicationKernel::class, $this->subject->getApplicationKernel());
+        static::assertInstanceOf(ApplicationKernel::class, $this->subject->getApplicationKernel());
     }
 
     /**
@@ -161,7 +161,7 @@ class BootstrapTest extends TestCase
     {
         $this->subject->configure();
 
-        self::assertInstanceOf(ContainerInterface::class, $this->subject->getContainer());
+        static::assertInstanceOf(ContainerInterface::class, $this->subject->getContainer());
     }
 
     /**
@@ -181,6 +181,6 @@ class BootstrapTest extends TestCase
     {
         $this->subject->configure();
 
-        self::assertInstanceOf(EntityManagerInterface::class, $this->subject->getEntityManager());
+        static::assertInstanceOf(EntityManagerInterface::class, $this->subject->getEntityManager());
     }
 }

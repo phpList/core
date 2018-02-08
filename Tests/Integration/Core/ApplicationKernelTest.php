@@ -44,7 +44,7 @@ class ApplicationKernelTest extends TestCase
      */
     public function getProjectDirReturnsCorePackageRoot()
     {
-        self::assertSame($this->getCorePackageRoot(), $this->subject->getProjectDir());
+        static::assertSame($this->getCorePackageRoot(), $this->subject->getProjectDir());
     }
 
     /**
@@ -52,7 +52,7 @@ class ApplicationKernelTest extends TestCase
      */
     public function getRootDirReturnsCorePackageRoot()
     {
-        self::assertSame($this->getCorePackageRoot(), $this->subject->getRootDir());
+        static::assertSame($this->getCorePackageRoot(), $this->subject->getRootDir());
     }
 
     /**
@@ -68,7 +68,7 @@ class ApplicationKernelTest extends TestCase
      */
     public function getCacheDirReturnsEnvironmentSpecificVarCacheDirectoryInApplicationRoot()
     {
-        self::assertSame(
+        static::assertSame(
             $this->getApplicationRoot() . '/var/cache/' . Environment::TESTING,
             $this->subject->getCacheDir()
         );
@@ -79,7 +79,7 @@ class ApplicationKernelTest extends TestCase
      */
     public function getLogDirReturnsVarLogsDirectoryInApplicationRoot()
     {
-        self::assertSame($this->getApplicationRoot() . '/var/logs', $this->subject->getLogDir());
+        static::assertSame($this->getApplicationRoot() . '/var/logs', $this->subject->getLogDir());
     }
 
     /**
@@ -89,6 +89,6 @@ class ApplicationKernelTest extends TestCase
     {
         $container = $this->subject->getContainer();
 
-        self::assertSame($this->getApplicationRoot(), $container->getParameter('kernel.application_dir'));
+        static::assertSame($this->getApplicationRoot(), $container->getParameter('kernel.application_dir'));
     }
 }

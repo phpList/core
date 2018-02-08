@@ -69,6 +69,6 @@ class ExtraLoaderTest extends TestCase
      */
     public function loadReturnsRouteCollection()
     {
-        self::assertInstanceOf(RouteCollection::class, $this->subject->load('', 'extra'));
+        static::assertInstanceOf(RouteCollection::class, $this->subject->load('', 'extra'));
     }
 }

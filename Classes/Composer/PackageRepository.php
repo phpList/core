@@ -84,7 +84,7 @@ class PackageRepository
         return array_filter(
             $this->findAll(),
             function (PackageInterface $package) {
-                return $package->getType() === self::PHPLIST_MODULE_TYPE;
+                return $package->getType() === static::PHPLIST_MODULE_TYPE;
             }
         );
     }

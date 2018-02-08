@@ -22,6 +22,6 @@ class HashGenerator
      */
     public function createPasswordHash(string $plainTextPassword): string
     {
-        return hash(self::PASSWORD_HASH_ALGORITHM, $plainTextPassword);
+        return hash(static::PASSWORD_HASH_ALGORITHM, $plainTextPassword);
     }
 }

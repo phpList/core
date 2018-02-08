@@ -77,7 +77,7 @@ class PackageRepositoryTest extends TestCase
         $dependency = $dependencyProphecy->reveal();
         $this->localRepositoryProphecy->getPackages()->willReturn([$dependency]);
 
-        self::assertContains($dependency, $this->subject->findAll());
+        static::assertContains($dependency, $this->subject->findAll());
     }
 
     /**
@@ -91,7 +91,7 @@ class PackageRepositoryTest extends TestCase
 
         $this->localRepositoryProphecy->getPackages()->willReturn([]);
 
-        self::assertContains($rootPackage, $this->subject->findAll());
+        static::assertContains($rootPackage, $this->subject->findAll());
     }
 
     /**
@@ -115,7 +115,7 @@ class PackageRepositoryTest extends TestCase
         $dependencyAlias = $dependencyAliasProphecy->reveal();
         $this->localRepositoryProphecy->getPackages()->willReturn([$dependency, $dependencyAlias]);
 
-        self::assertNotContains($dependencyAlias, $this->subject->findAll());
+        static::assertNotContains($dependencyAlias, $this->subject->findAll());
     }
 
     /**
@@ -133,7 +133,7 @@ class PackageRepositoryTest extends TestCase
 
         $this->localRepositoryProphecy->getPackages()->willReturn([]);
 
-        self::assertContains($rootPackage, $this->subject->findModules());
+        static::assertContains($rootPackage, $this->subject->findModules());
     }
 
     /**
@@ -156,7 +156,7 @@ class PackageRepositoryTest extends TestCase
 
         $this->localRepositoryProphecy->getPackages()->willReturn([$dependency]);
 
-        self::assertContains($dependency, $this->subject->findModules());
+        static::assertContains($dependency, $this->subject->findModules());
     }
 
     /**
@@ -189,7 +189,7 @@ class PackageRepositoryTest extends TestCase
 
         $this->localRepositoryProphecy->getPackages()->willReturn([]);
 
-        self::assertNotContains($rootPackage, $this->subject->findModules());
+        static::assertNotContains($rootPackage, $this->subject->findModules());
     }
 
     /**
@@ -214,6 +214,6 @@ class PackageRepositoryTest extends TestCase
 
         $this->localRepositoryProphecy->getPackages()->willReturn([$dependency]);
 
-        self::assertNotContains($dependency, $this->subject->findModules());
+        static::assertNotContains($dependency, $this->subject->findModules());
     }
 }

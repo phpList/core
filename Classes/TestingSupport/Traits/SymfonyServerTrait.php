@@ -58,7 +58,7 @@ trait SymfonyServerTrait
      */
     protected function startSymfonyServer(string $environment)
     {
-        if (!\in_array($environment, self::$validEnvironments, true)) {
+        if (!\in_array($environment, static::$validEnvironments, true)) {
             throw new \InvalidArgumentException('"' . $environment . '" is not a valid environment.', 1516284149961);
         }
         if ($this->lockFileExists()) {
@@ -110,9 +110,9 @@ trait SymfonyServerTrait
     private function waitForServerLockFileToAppear()
     {
         $currentWaitTime = 0;
-        while (!$this->lockFileExists() && $currentWaitTime < self::$maximumWaitTimeForServerLockFile) {
-            \usleep(self::$waitTimeBetweenServerCommands);
-            $currentWaitTime += self::$waitTimeBetweenServerCommands;
+        while (!$this->lockFileExists() && $currentWaitTime < static::$maximumWaitTimeForServerLockFile) {
+            \usleep(static::$waitTimeBetweenServerCommands);
+            $currentWaitTime += static::$waitTimeBetweenServerCommands;
         }
 
         if (!$this->lockFileExists()) {
@@ -168,11 +168,11 @@ trait SymfonyServerTrait
      */
     protected function getApplicationRoot(): string
     {
-        if (self::$applicationStructure === null) {
-            self::$applicationStructure = new ApplicationStructure();
+        if (static::$applicationStructure === null) {
+            static::$applicationStructure = new ApplicationStructure();
         }
 
-        return self::$applicationStructure->getApplicationRoot();
+        return static::$applicationStructure->getApplicationRoot();
     }
 
     /**

@@ -36,7 +36,7 @@ class SubscriberListTest extends TestCase
      */
     public function getIdInitiallyReturnsZero()
     {
-        self::assertSame(0, $this->subject->getId());
+        static::assertSame(0, $this->subject->getId());
     }
 
     /**
@@ -47,7 +47,7 @@ class SubscriberListTest extends TestCase
         $id = 123456;
         $this->setSubjectId($id);
 
-        self::assertSame($id, $this->subject->getId());
+        static::assertSame($id, $this->subject->getId());
     }
 
     /**
@@ -55,7 +55,7 @@ class SubscriberListTest extends TestCase
      */
     public function getCreationDateInitiallyReturnsNull()
     {
-        self::assertNull($this->subject->getCreationDate());
+        static::assertNull($this->subject->getCreationDate());
     }
 
     /**
@@ -65,7 +65,7 @@ class SubscriberListTest extends TestCase
     {
         $this->subject->updateCreationDate();
 
-        self::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
+        static::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
     }
 
     /**
@@ -73,7 +73,7 @@ class SubscriberListTest extends TestCase
      */
     public function getModificationDateInitiallyReturnsNull()
     {
-        self::assertNull($this->subject->getModificationDate());
+        static::assertNull($this->subject->getModificationDate());
     }
 
     /**
@@ -83,7 +83,7 @@ class SubscriberListTest extends TestCase
     {
         $this->subject->updateModificationDate();
 
-        self::assertSimilarDates(new \DateTime(), $this->subject->getModificationDate());
+        static::assertSimilarDates(new \DateTime(), $this->subject->getModificationDate());
     }
 
     /**
@@ -91,7 +91,7 @@ class SubscriberListTest extends TestCase
      */
     public function getNameInitiallyReturnsEmptyString()
     {
-        self::assertSame('', $this->subject->getName());
+        static::assertSame('', $this->subject->getName());
     }
 
     /**
@@ -102,7 +102,7 @@ class SubscriberListTest extends TestCase
         $value = 'phpList releases';
         $this->subject->setName($value);
 
-        self::assertSame($value, $this->subject->getName());
+        static::assertSame($value, $this->subject->getName());
     }
 
     /**
@@ -110,7 +110,7 @@ class SubscriberListTest extends TestCase
      */
     public function getDescriptionInitiallyReturnsEmptyString()
     {
-        self::assertSame('', $this->subject->getDescription());
+        static::assertSame('', $this->subject->getDescription());
     }
 
     /**
@@ -121,7 +121,7 @@ class SubscriberListTest extends TestCase
         $value = 'Subscribe to this list when you would like to be notified of new phpList releases.';
         $this->subject->setDescription($value);
 
-        self::assertSame($value, $this->subject->getDescription());
+        static::assertSame($value, $this->subject->getDescription());
     }
 
     /**
@@ -129,7 +129,7 @@ class SubscriberListTest extends TestCase
      */
     public function getListPositionInitiallyReturnsZero()
     {
-        self::assertSame(0, $this->subject->getListPosition());
+        static::assertSame(0, $this->subject->getListPosition());
     }
 
     /**
@@ -140,7 +140,7 @@ class SubscriberListTest extends TestCase
         $value = 123456;
         $this->subject->setListPosition($value);
 
-        self::assertSame($value, $this->subject->getListPosition());
+        static::assertSame($value, $this->subject->getListPosition());
     }
 
     /**
@@ -148,7 +148,7 @@ class SubscriberListTest extends TestCase
      */
     public function getSubjectPrefixInitiallyReturnsEmptyString()
     {
-        self::assertSame('', $this->subject->getSubjectPrefix());
+        static::assertSame('', $this->subject->getSubjectPrefix());
     }
 
     /**
@@ -159,7 +159,7 @@ class SubscriberListTest extends TestCase
         $value = 'Club-Mate';
         $this->subject->setSubjectPrefix($value);
 
-        self::assertSame($value, $this->subject->getSubjectPrefix());
+        static::assertSame($value, $this->subject->getSubjectPrefix());
     }
 
     /**
@@ -167,7 +167,7 @@ class SubscriberListTest extends TestCase
      */
     public function isPublicInitiallyReturnsFalse()
     {
-        self::assertFalse($this->subject->isPublic());
+        static::assertFalse($this->subject->isPublic());
     }
 
     /**
@@ -177,7 +177,7 @@ class SubscriberListTest extends TestCase
     {
         $this->subject->setPublic(true);
 
-        self::assertTrue($this->subject->isPublic());
+        static::assertTrue($this->subject->isPublic());
     }
 
     /**
@@ -185,7 +185,7 @@ class SubscriberListTest extends TestCase
      */
     public function getCategoryInitiallyReturnsEmptyString()
     {
-        self::assertSame('', $this->subject->getCategory());
+        static::assertSame('', $this->subject->getCategory());
     }
 
     /**
@@ -196,7 +196,7 @@ class SubscriberListTest extends TestCase
         $value = 'Club-Mate';
         $this->subject->setCategory($value);
 
-        self::assertSame($value, $this->subject->getCategory());
+        static::assertSame($value, $this->subject->getCategory());
     }
 
     /**
@@ -204,7 +204,7 @@ class SubscriberListTest extends TestCase
      */
     public function getOwnerInitiallyReturnsNull()
     {
-        self::assertNull($this->subject->getOwner());
+        static::assertNull($this->subject->getOwner());
     }
 
     /**
@@ -215,7 +215,7 @@ class SubscriberListTest extends TestCase
         $model = new Administrator();
         $this->subject->setOwner($model);
 
-        self::assertSame($model, $this->subject->getOwner());
+        static::assertSame($model, $this->subject->getOwner());
     }
 
     /**
@@ -225,8 +225,8 @@ class SubscriberListTest extends TestCase
     {
         $result = $this->subject->getSubscriptions();
 
-        self::assertInstanceOf(Collection::class, $result);
-        self::assertTrue($result->isEmpty());
+        static::assertInstanceOf(Collection::class, $result);
+        static::assertTrue($result->isEmpty());
     }
 
     /**
@@ -238,7 +238,7 @@ class SubscriberListTest extends TestCase
 
         $this->subject->setSubscriptions($subscriptions);
 
-        self::assertSame($subscriptions, $this->subject->getSubscriptions());
+        static::assertSame($subscriptions, $this->subject->getSubscriptions());
     }
 
     /**
@@ -248,8 +248,8 @@ class SubscriberListTest extends TestCase
     {
         $result = $this->subject->getSubscribers();
 
-        self::assertInstanceOf(Collection::class, $result);
-        self::assertTrue($result->isEmpty());
+        static::assertInstanceOf(Collection::class, $result);
+        static::assertTrue($result->isEmpty());
     }
 
     /**
@@ -261,6 +261,6 @@ class SubscriberListTest extends TestCase
 
         $this->subject->setSubscribers($subscriptions);
 
-        self::assertSame($subscriptions, $this->subject->getSubscribers());
+        static::assertSame($subscriptions, $this->subject->getSubscribers());
     }
 }

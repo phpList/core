@@ -28,6 +28,6 @@ trait ContainsInstanceAssertionTrait
         }
 
         $defaultMessage = 'Failed asserting that an array contains an instance of ' . $className;
-        self::assertTrue($found, $message ?: $defaultMessage);
+        static::assertTrue($found, $message ?: $defaultMessage);
     }
 }

@@ -39,7 +39,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function findReadsModelFromDatabase()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
         $this->applyDatabaseChanges();
 
         $id = 1;
@@ -53,15 +53,15 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
         /** @var Administrator $actualModel */
         $actualModel = $this->subject->find($id);
 
-        self::assertSame($id, $actualModel->getId());
-        self::assertSame($loginName, $actualModel->getLoginName());
-        self::assertSame($emailAddress, $actualModel->getEmailAddress());
-        self::assertEquals($creationDate, $actualModel->getCreationDate());
-        self::assertEquals($modificationDate, $actualModel->getModificationDate());
-        self::assertSame($passwordHash, $actualModel->getPasswordHash());
-        self::assertEquals($passwordChangeDate, $actualModel->getPasswordChangeDate());
-        self::assertTrue($actualModel->isDisabled());
-        self::assertTrue($actualModel->isDisabled());
+        static::assertSame($id, $actualModel->getId());
+        static::assertSame($loginName, $actualModel->getLoginName());
+        static::assertSame($emailAddress, $actualModel->getEmailAddress());
+        static::assertEquals($creationDate, $actualModel->getCreationDate());
+        static::assertEquals($modificationDate, $actualModel->getModificationDate());
+        static::assertSame($passwordHash, $actualModel->getPasswordHash());
+        static::assertEquals($passwordChangeDate, $actualModel->getPasswordChangeDate());
+        static::assertTrue($actualModel->isDisabled());
+        static::assertTrue($actualModel->isDisabled());
     }
 
     /**
@@ -69,7 +69,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function creationDateOfExistingModelStaysUnchangedOnUpdate()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
         $this->applyDatabaseChanges();
 
         $id = 1;
@@ -80,7 +80,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
         $model->setLoginName('mel');
         $this->entityManager->flush();
 
-        self::assertSame($creationDate, $model->getCreationDate());
+        static::assertSame($creationDate, $model->getCreationDate());
     }
 
     /**
@@ -88,7 +88,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function modificationDateOfExistingModelGetsUpdatedOnUpdate()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
         $this->applyDatabaseChanges();
 
         $id = 1;
@@ -99,7 +99,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
         $model->setLoginName('mel');
         $this->entityManager->flush();
 
-        self::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
+        static::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
     }
 
     /**
@@ -107,7 +107,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function creationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
         $this->applyDatabaseChanges();
 
         $model = new Administrator();
@@ -115,7 +115,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
+        static::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
     }
 
     /**
@@ -123,7 +123,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function modificationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
         $this->applyDatabaseChanges();
 
         $model = new Administrator();
@@ -131,7 +131,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
+        static::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
     }
 
     /**
@@ -139,7 +139,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function findOneByLoginCredentialsForMatchingCredentialsReturnsModel()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
         $this->applyDatabaseChanges();
 
         $id = 1;
@@ -148,8 +148,8 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
 
         $result = $this->subject->findOneByLoginCredentials($loginName, $password);
 
-        self::assertInstanceOf(Administrator::class, $result);
-        self::assertSame($id, $result->getId());
+        static::assertInstanceOf(Administrator::class, $result);
+        static::assertSame($id, $result->getId());
     }
 
     /**
@@ -179,7 +179,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
 
         $result = $this->subject->findOneByLoginCredentials($loginName, $password);
 
-        self::assertNull($result);
+        static::assertNull($result);
     }
 
     /**
@@ -192,7 +192,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
     {
         $result = $this->subject->findOneByLoginCredentials($loginName, $password);
 
-        self::assertNull($result);
+        static::assertNull($result);
     }
 
     /**
@@ -200,11 +200,11 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
      */
     public function savePersistsAndFlushesModel()
     {
-        $this->touchDatabaseTable(self::TABLE_NAME);
+        $this->touchDatabaseTable(static::TABLE_NAME);
 
         $model = new Administrator();
         $this->subject->save($model);
 
-        self::assertSame($model, $this->subject->find($model->getId()));
+        static::assertSame($model, $this->subject->find($model->getId()));
     }
 }

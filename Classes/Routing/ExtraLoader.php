@@ -86,7 +86,7 @@ class ExtraLoader extends Loader
     private function addModuleRoutes(RouteCollection $routes)
     {
         $bundleRoutesFilePath = $this->applicationStructure->getApplicationRoot() .
-            self::MODULE_ROUTING_CONFIGURATION_FILE;
+            static::MODULE_ROUTING_CONFIGURATION_FILE;
 
         $routesConfiguration = $this->import($bundleRoutesFilePath);
         $routes->addCollection($routesConfiguration);

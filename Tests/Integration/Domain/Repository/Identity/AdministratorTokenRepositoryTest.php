@@ -47,7 +47,7 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
      */
     public function findReadsModelFromDatabase()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
         $this->applyDatabaseChanges();
 
         $id = 1;
@@ -58,11 +58,11 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
         /** @var AdministratorToken $model */
         $model = $this->subject->find($id);
 
-        self::assertInstanceOf(AdministratorToken::class, $model);
-        self::assertSame($id, $model->getId());
-        self::assertEquals($creationDate, $model->getCreationDate());
-        self::assertEquals($expiry, $model->getExpiry());
-        self::assertSame($key, $model->getKey());
+        static::assertInstanceOf(AdministratorToken::class, $model);
+        static::assertSame($id, $model->getId());
+        static::assertEquals($creationDate, $model->getCreationDate());
+        static::assertEquals($expiry, $model->getExpiry());
+        static::assertSame($key, $model->getKey());
     }
 
     /**
@@ -70,9 +70,9 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
      */
     public function createsAdministratorAssociationAsProxy()
     {
-        $this->getDataSet()->addTable(self::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->getDataSet()->addTable(static::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
         $this->getDataSet()->addTable(
-            self::TABLE_NAME,
+            static::TABLE_NAME,
             __DIR__ . '/../Fixtures/AdministratorTokenWithAdministrator.csv'
         );
         $this->applyDatabaseChanges();
@@ -83,9 +83,9 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
         $model = $this->subject->find($tokenId);
         $administrator = $model->getAdministrator();
 
-        self::assertInstanceOf(Administrator::class, $administrator);
-        self::assertInstanceOf(Proxy::class, $administrator);
-        self::assertSame($administratorId, $administrator->getId());
+        static::assertInstanceOf(Administrator::class, $administrator);
+        static::assertInstanceOf(Proxy::class, $administrator);
+        static::assertSame($administratorId, $administrator->getId());
     }
 
     /**
@@ -93,7 +93,7 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
      */
     public function creationDateOfExistingModelStaysUnchangedOnUpdate()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
         $this->applyDatabaseChanges();
 
         $id = 1;
@@ -104,7 +104,7 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
         $model->setKey('asdfasd');
         $this->entityManager->flush();
 
-        self::assertEquals($creationDate, $model->getCreationDate());
+        static::assertEquals($creationDate, $model->getCreationDate());
     }
 
     /**
@@ -112,7 +112,7 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
      */
     public function creationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
         $this->applyDatabaseChanges();
 
         $model = new Administrator();
@@ -120,7 +120,7 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
+        static::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
     }
 
     /**
@@ -128,7 +128,7 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
      */
     public function findOneUnexpiredByKeyFindsUnexpiredTokenWithMatchingKey()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
         $this->applyDatabaseChanges();
 
         $id = 2;
@@ -137,8 +137,8 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
         /** @var AdministratorToken $model */
         $model = $this->subject->findOneUnexpiredByKey($key);
 
-        self::assertInstanceOf(AdministratorToken::class, $model);
-        self::assertSame($id, $model->getId());
+        static::assertInstanceOf(AdministratorToken::class, $model);
+        static::assertSame($id, $model->getId());
     }
 
     /**
@@ -146,14 +146,14 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
      */
     public function findOneUnexpiredByKeyNotFindsExpiredTokenWithMatchingKey()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
         $this->applyDatabaseChanges();
 
         $key = 'cfdf64eecbbf336628b0f3071adba762';
 
         $model = $this->subject->findOneUnexpiredByKey($key);
 
-        self::assertNull($model);
+        static::assertNull($model);
     }
 
     /**
@@ -161,14 +161,14 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
      */
     public function findOneUnexpiredByKeyNotFindsUnexpiredTokenWithNonMatchingKey()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
         $this->applyDatabaseChanges();
 
         $key = '03e7a64fb29115ba7581092c342299df';
 
         $model = $this->subject->findOneUnexpiredByKey($key);
 
-        self::assertNull($model);
+        static::assertNull($model);
     }
 
     /**
@@ -176,14 +176,14 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
      */
     public function removeExpiredRemovesExpiredToken()
     {
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
         $this->applyDatabaseChanges();
 
         $idOfExpiredToken = 1;
         $this->subject->removeExpired();
 
         $token = $this->subject->find($idOfExpiredToken);
-        self::assertNull($token);
+        static::assertNull($token);
     }
 
     /**
@@ -193,14 +193,14 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
     {
         $this->assertNotYear2037Yet();
 
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
         $this->applyDatabaseChanges();
 
         $idOfUnexpiredToken = 2;
         $this->subject->removeExpired();
 
         $token = $this->subject->find($idOfUnexpiredToken);
-        self::assertNotNull($token);
+        static::assertNotNull($token);
     }
 
     /**
@@ -213,7 +213,7 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
     {
         $currentYear = (int)date('Y');
         if ($currentYear >= 2037) {
-            self::markTestIncomplete('The tests token has an expiry in the year 2037. Please update this test.');
+            static::markTestIncomplete('The tests token has an expiry in the year 2037. Please update this test.');
         }
     }
 
@@ -222,7 +222,7 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
      */
     public function removeExpiredForNoExpiredTokensReturnsZero()
     {
-        self::assertSame(0, $this->subject->removeExpired());
+        static::assertSame(0, $this->subject->removeExpired());
     }
 
     /**
@@ -232,10 +232,10 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
     {
         $this->assertNotYear2037Yet();
 
-        $this->getDataSet()->addTable(self::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
         $this->applyDatabaseChanges();
 
-        self::assertSame(1, $this->subject->removeExpired());
+        static::assertSame(1, $this->subject->removeExpired());
     }
 
     /**
@@ -243,8 +243,8 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
      */
     public function savePersistsAndFlushesModel()
     {
-        $this->touchDatabaseTable(self::TABLE_NAME);
-        $this->getDataSet()->addTable(self::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->touchDatabaseTable(static::TABLE_NAME);
+        $this->getDataSet()->addTable(static::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
         $this->applyDatabaseChanges();
 
         $administratorRepository = $this->container->get(AdministratorRepository::class);
@@ -255,6 +255,6 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
         $model->setAdministrator($administrator);
         $this->subject->save($model);
 
-        self::assertSame($model, $this->subject->find($model->getId()));
+        static::assertSame($model, $this->subject->find($model->getId()));
     }
 }

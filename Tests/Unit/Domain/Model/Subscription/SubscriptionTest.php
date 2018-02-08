@@ -35,7 +35,7 @@ class SubscriptionTest extends TestCase
      */
     public function getSubscriberInitiallyReturnsNull()
     {
-        self::assertNull($this->subject->getSubscriber());
+        static::assertNull($this->subject->getSubscriber());
     }
 
     /**
@@ -46,7 +46,7 @@ class SubscriptionTest extends TestCase
         $model = new Subscriber();
         $this->subject->setSubscriber($model);
 
-        self::assertSame($model, $this->subject->getSubscriber());
+        static::assertSame($model, $this->subject->getSubscriber());
     }
 
     /**
@@ -54,7 +54,7 @@ class SubscriptionTest extends TestCase
      */
     public function getSubscriberListInitiallyReturnsNull()
     {
-        self::assertNull($this->subject->getSubscriberList());
+        static::assertNull($this->subject->getSubscriberList());
     }
 
     /**
@@ -65,7 +65,7 @@ class SubscriptionTest extends TestCase
         $model = new SubscriberList();
         $this->subject->setSubscriberList($model);
 
-        self::assertSame($model, $this->subject->getSubscriberList());
+        static::assertSame($model, $this->subject->getSubscriberList());
     }
 
     /**
@@ -73,7 +73,7 @@ class SubscriptionTest extends TestCase
      */
     public function getCreationDateInitiallyReturnsNull()
     {
-        self::assertNull($this->subject->getCreationDate());
+        static::assertNull($this->subject->getCreationDate());
     }
 
     /**
@@ -83,7 +83,7 @@ class SubscriptionTest extends TestCase
     {
         $this->subject->updateCreationDate();
 
-        self::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
+        static::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
     }
 
     /**
@@ -91,7 +91,7 @@ class SubscriptionTest extends TestCase
      */
     public function getModificationDateInitiallyReturnsNull()
     {
-        self::assertNull($this->subject->getModificationDate());
+        static::assertNull($this->subject->getModificationDate());
     }
 
     /**
@@ -101,6 +101,6 @@ class SubscriptionTest extends TestCase
     {
         $this->subject->updateModificationDate();
 
-        self::assertSimilarDates(new \DateTime(), $this->subject->getModificationDate());
+        static::assertSimilarDates(new \DateTime(), $this->subject->getModificationDate());
     }
 }

@@ -28,7 +28,7 @@ class ApplicationStructureTest extends TestCase
      */
     public function getApplicationRootReturnsCoreApplicationRoot()
     {
-        self::assertSame(dirname(__DIR__, 3), $this->subject->getApplicationRoot());
+        static::assertSame(dirname(__DIR__, 3), $this->subject->getApplicationRoot());
     }
 
     /**
@@ -36,6 +36,6 @@ class ApplicationStructureTest extends TestCase
      */
     public function getCorePackageRootReturnsCorePackageRoot()
     {
-        self::assertSame(dirname(__DIR__, 3), $this->subject->getCorePackageRoot());
+        static::assertSame(dirname(__DIR__, 3), $this->subject->getCorePackageRoot());
     }
 }

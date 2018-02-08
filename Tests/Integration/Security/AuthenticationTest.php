@@ -42,7 +42,7 @@ class AuthenticationTest extends AbstractDatabaseTest
      */
     public function subjectIsAvailableViaContainer()
     {
-        self::assertInstanceOf(Authentication::class, $this->subject);
+        static::assertInstanceOf(Authentication::class, $this->subject);
     }
 
     /**
@@ -50,7 +50,7 @@ class AuthenticationTest extends AbstractDatabaseTest
      */
     public function classIsRegisteredAsSingletonInContainer()
     {
-        self::assertSame($this->subject, $this->container->get(Authentication::class));
+        static::assertSame($this->subject, $this->container->get(Authentication::class));
     }
 
     /**
@@ -59,11 +59,11 @@ class AuthenticationTest extends AbstractDatabaseTest
     public function authenticateByApiKeyWithValidApiKeyReturnsMatchingAdministrator()
     {
         $this->getDataSet()->addTable(
-            self::ADMINISTRATOR_TABLE_NAME,
+            static::ADMINISTRATOR_TABLE_NAME,
             __DIR__ . '/../Domain/Repository/Fixtures/Administrator.csv'
         );
         $this->getDataSet()->addTable(
-            self::TOKEN_TABLE_NAME,
+            static::TOKEN_TABLE_NAME,
             __DIR__ . '/../Domain/Repository/Fixtures/AdministratorTokenWithAdministrator.csv'
         );
         $this->applyDatabaseChanges();
@@ -74,8 +74,8 @@ class AuthenticationTest extends AbstractDatabaseTest
 
         $result = $this->subject->authenticateByApiKey($request);
 
-        self::assertInstanceOf(Administrator::class, $result);
-        self::assertSame(1, $result->getId());
+        static::assertInstanceOf(Administrator::class, $result);
+        static::assertSame(1, $result->getId());
     }
 
     /**
@@ -84,7 +84,7 @@ class AuthenticationTest extends AbstractDatabaseTest
     public function authenticateByApiKeyWithValidApiKeyForInexistentAdministratorReturnsNull()
     {
         $this->getDataSet()->addTable(
-            self::TOKEN_TABLE_NAME,
+            static::TOKEN_TABLE_NAME,
             __DIR__ . '/../Domain/Repository/Fixtures/AdministratorTokenWithAdministrator.csv'
         );
         $this->applyDatabaseChanges();
@@ -95,7 +95,7 @@ class AuthenticationTest extends AbstractDatabaseTest
 
         $result = $this->subject->authenticateByApiKey($request);
 
-        self::assertNull($result);
+        static::assertNull($result);
     }
 
     /**
@@ -104,7 +104,7 @@ class AuthenticationTest extends AbstractDatabaseTest
     public function authenticateByApiKeyWithValidApiKeyForNonSuperUserAdministratorReturnsNull()
     {
         $this->getDataSet()->addTable(
-            self::TOKEN_TABLE_NAME,
+            static::TOKEN_TABLE_NAME,
             __DIR__ . '/../Domain/Repository/Fixtures/AdministratorTokenWithAdministrator.csv'
         );
         $this->applyDatabaseChanges();
@@ -115,6 +115,6 @@ class AuthenticationTest extends AbstractDatabaseTest
 
         $result = $this->subject->authenticateByApiKey($request);
 
-        self::assertNull($result);
+        static::assertNull($result);
     }
 }

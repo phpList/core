@@ -111,7 +111,7 @@ class ScriptHandlerTest extends TestCase
         ScriptHandler::listModules($event);
 
         $output = $this->getActualOutput();
-        self::assertNotContains($rootPackageName, $output);
+        static::assertNotContains($rootPackageName, $output);
     }
 
     /**
@@ -168,7 +168,7 @@ class ScriptHandlerTest extends TestCase
         ScriptHandler::listModules($event);
 
         $output = $this->getActualOutput();
-        self::assertNotContains($dependencyPackageName, $output);
+        static::assertNotContains($dependencyPackageName, $output);
     }
 
     /**

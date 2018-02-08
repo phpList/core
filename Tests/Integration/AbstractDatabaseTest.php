@@ -61,7 +61,7 @@ abstract class AbstractDatabaseTest extends TestCase
         $this->bootstrap = Bootstrap::getInstance()->setEnvironment(Environment::TESTING)->configure();
         $this->container = $this->bootstrap->getContainer();
         $this->entityManager = $this->bootstrap->getEntityManager();
-        self::assertTrue($this->entityManager->isOpen());
+        static::assertTrue($this->entityManager->isOpen());
     }
 
     /**

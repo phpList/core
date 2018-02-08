@@ -35,7 +35,7 @@ class BootstrapTest extends TestCase
      */
     public function ensureDevelopmentOrTestingEnvironmentForTestingEnvironmentHasFluentInterface()
     {
-        self::assertSame($this->subject, $this->subject->ensureDevelopmentOrTestingEnvironment());
+        static::assertSame($this->subject, $this->subject->ensureDevelopmentOrTestingEnvironment());
     }
 
     /**
@@ -43,6 +43,6 @@ class BootstrapTest extends TestCase
      */
     public function getApplicationRootReturnsCoreApplicationRoot()
     {
-        self::assertSame(dirname(__DIR__, 3), $this->subject->getApplicationRoot());
+        static::assertSame(dirname(__DIR__, 3), $this->subject->getApplicationRoot());
     }
 }
