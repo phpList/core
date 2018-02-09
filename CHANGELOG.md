@@ -4,22 +4,24 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
 
-## 4.0.0 (unreleased)
+## x.y.z
 
 ### Added
-
+- Repository methods for querying subscriptions (#253)
+- Bidirectional m:n association Subscribers/SubscriberLists (#254)
 
 ### Changed
 
-
 ### Deprecated
-
 
 ### Removed
 
-
 ### Fixed
+- Always truncate the DB tables after an integration test (#259)
+- Adapt the system tests to possible HTTP errors (#256)
 
+
+## 4.0.0-alpha1
 
 ### Security
 - Update PHPMailer to 5.2.23
