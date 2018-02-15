@@ -10,16 +10,18 @@ use PhpList\PhpList4\Domain\Model\Subscription\Subscription;
 use PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\PhpList4\Domain\Repository\Messaging\SubscriberListRepository;
 use PhpList\PhpList4\Domain\Repository\Subscription\SubscriberRepository;
+use PhpList\PhpList4\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
-use PhpList\PhpList4\Tests\Integration\AbstractDatabaseTest;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Testcase.
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class SubscriberListRepositoryTest extends AbstractDatabaseTest
+class SubscriberListRepositoryTest extends TestCase
 {
+    use DatabaseTestTrait;
     use SimilarDatesAssertionTrait;
 
     /**
@@ -59,7 +61,7 @@ class SubscriberListRepositoryTest extends AbstractDatabaseTest
 
     protected function setUp()
     {
-        parent::setUp();
+        $this->setUpDatabaseTest();
 
         $this->subject = $this->container->get(SubscriberListRepository::class);
         $this->administratorRepository = $this->container->get(AdministratorRepository::class);

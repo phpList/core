@@ -5,7 +5,8 @@ namespace PhpList\PhpList4\Tests\Integration\Security;
 
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Security\Authentication;
-use PhpList\PhpList4\Tests\Integration\AbstractDatabaseTest;
+use PhpList\PhpList4\TestingSupport\Traits\DatabaseTestTrait;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -13,8 +14,10 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class AuthenticationTest extends AbstractDatabaseTest
+class AuthenticationTest extends TestCase
 {
+    use DatabaseTestTrait;
+
     /**
      * @var string
      */
@@ -32,7 +35,7 @@ class AuthenticationTest extends AbstractDatabaseTest
 
     protected function setUp()
     {
-        parent::setUp();
+        $this->setUpDatabaseTest();
 
         $this->subject = $this->container->get(Authentication::class);
     }
