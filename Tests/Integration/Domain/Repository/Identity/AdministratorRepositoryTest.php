@@ -5,16 +5,18 @@ namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Identity;
 
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository;
+use PhpList\PhpList4\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
-use PhpList\PhpList4\Tests\Integration\AbstractDatabaseTest;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Testcase.
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class AdministratorRepositoryTest extends AbstractDatabaseTest
+class AdministratorRepositoryTest extends TestCase
 {
+    use DatabaseTestTrait;
     use SimilarDatesAssertionTrait;
 
     /**
@@ -29,7 +31,7 @@ class AdministratorRepositoryTest extends AbstractDatabaseTest
 
     protected function setUp()
     {
-        parent::setUp();
+        $this->setUpDatabaseTest();
 
         $this->subject = $this->container->get(AdministratorRepository::class);
     }

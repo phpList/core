@@ -8,8 +8,16 @@
     <rule ref="rulesets/cleancode.xml/BooleanArgumentFlag"/>
     <rule ref="rulesets/cleancode.xml/StaticAccess">
         <properties>
-            <property name="exceptions"
-                      value="\Doctrine\ORM\EntityManager,\Doctrine\ORM\Tools\Setup,\Symfony\Component\Debug\Debug,PhpList\PhpList4\Core\Environment,Symfony\Component\Yaml\Yaml,\FOS\RestBundle\View\View"/>
+            <property name="exceptions" value="
+                      \Doctrine\ORM\EntityManager,
+                      \Doctrine\ORM\Tools\Setup,
+                      \FOS\RestBundle\View\View,
+                      \PhpList\PhpList4\Core\Bootstrap,
+                      \PhpList\PhpList4\Core\Environment,
+                      \PHPUnit\DbUnit\Operation\Factory,
+                      \Symfony\Component\Debug\Debug,
+                      \Symfony\Component\Yaml\Yaml,
+            "/>
         </properties>
     </rule>
 

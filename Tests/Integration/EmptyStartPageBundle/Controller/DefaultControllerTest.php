@@ -3,31 +3,16 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Tests\Integration\EmptyStartPageBundle\Controller;
 
-use PhpList\PhpList4\Core\Bootstrap;
-use PhpList\PhpList4\Core\Environment;
 use PhpList\PhpList4\EmptyStartPageBundle\Controller\DefaultController;
-use Symfony\Bundle\FrameworkBundle\Client;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use PhpList\PhpList4\TestingSupport\AbstractWebTest;
 
 /**
  * Testcase.
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class DefaultControllerTest extends WebTestCase
+class DefaultControllerTest extends AbstractWebTest
 {
-    /**
-     * @var Client
-     */
-    private $client = null;
-
-    protected function setUp()
-    {
-        Bootstrap::getInstance()->setEnvironment(Environment::TESTING)->configure();
-
-        $this->client = static::createClient(['environment' => Environment::TESTING]);
-    }
-
     /**
      * @test
      */

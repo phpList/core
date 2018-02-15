@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Integration;
+namespace PhpList\PhpList4\TestingSupport\Traits;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\PhpList4\Core\Bootstrap;
@@ -11,17 +11,18 @@ use PHPUnit\DbUnit\DataSet\CsvDataSet;
 use PHPUnit\DbUnit\Operation\Factory;
 use PHPUnit\DbUnit\Operation\Operation;
 use PHPUnit\DbUnit\TestCaseTrait;
-use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * This is the base class for integration tests that use database records.
+ * This is a trait for integration tests that use database records.
  *
- * Make sure to call parent::setUp() first thing in your setUp method.
+ * If you have your own setUp method, make sure to call $this->setUpDatabaseTest() first thing in your setUp method.
+ *
+ * And if you have your own tearDown method, call $this->tearDownDatabaseTest() first thing in your tearDown method.
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-abstract class AbstractDatabaseTest extends TestCase
+trait DatabaseTestTrait
 {
     use TestCaseTrait;
 
@@ -57,6 +58,11 @@ abstract class AbstractDatabaseTest extends TestCase
 
     protected function setUp()
     {
+        $this->setUpDatabaseTest();
+    }
+
+    protected function setUpDatabaseTest()
+    {
         $this->initializeDatabaseTester();
         $this->bootstrap = Bootstrap::getInstance()->setEnvironment(Environment::TESTING)->configure();
         $this->container = $this->bootstrap->getContainer();
@@ -78,6 +84,11 @@ abstract class AbstractDatabaseTest extends TestCase
     }
 
     protected function tearDown()
+    {
+        $this->tearDownDatabaseTest();
+    }
+
+    protected function tearDownDatabaseTest()
     {
         $this->entityManager->close();
         $this->getDatabaseTester()->setTearDownOperation($this->getTearDownOperation());
@@ -159,6 +170,6 @@ abstract class AbstractDatabaseTest extends TestCase
      */
     protected function touchDatabaseTable(string $tableName)
     {
-        $this->getDataSet()->addTable($tableName, __DIR__ . '/Fixtures/TouchTable.csv');
+        $this->getDataSet()->addTable($tableName, __DIR__ . '/../Fixtures/TouchTable.csv');
     }
 }

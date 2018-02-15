@@ -8,16 +8,18 @@ use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Model\Identity\AdministratorToken;
 use PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository;
+use PhpList\PhpList4\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
-use PhpList\PhpList4\Tests\Integration\AbstractDatabaseTest;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Testcase.
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
+class AdministratorTokenRepositoryTest extends TestCase
 {
+    use DatabaseTestTrait;
     use SimilarDatesAssertionTrait;
 
     /**
@@ -37,7 +39,7 @@ class AdministratorTokenRepositoryTest extends AbstractDatabaseTest
 
     protected function setUp()
     {
-        parent::setUp();
+        $this->setUpDatabaseTest();
 
         $this->subject = $this->container->get(AdministratorTokenRepository::class);
     }
