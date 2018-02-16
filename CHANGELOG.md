@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - Bidirectional m:n association Subscribers/SubscriberLists (#254)
 
 ### Changed
+- Adopt more of the default Symfony project structure (#265)
 
 ### Deprecated
 
