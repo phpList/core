@@ -12,7 +12,7 @@ Are your changes covered with unit tests, and do they not break anything?
 
 You can run the existing unit tests using this command:
 
-    vendor/bin/phpunit Tests/
+    vendor/bin/phpunit tests/
 
 
 ### Code style
@@ -22,7 +22,7 @@ style?
 
 You can check for this using this command:
 
-    vendor/bin/phpcs --standard=PSR2 Classes/ Tests/
+    vendor/bin/phpcs --standard=PSR2 Classes/ tests/
 
 
 ### Other Information

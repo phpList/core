@@ -68,7 +68,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "PhpList\\PhpList4\\Tests\\": "Tests/"
+            "PhpList\\PhpList4\\Tests\\": "tests/"
         }
     },
     "scripts": {
@@ -97,7 +97,7 @@
         "symfony-bin-dir": "bin",
         "symfony-var-dir": "var",
         "symfony-web-dir": "web",
-        "symfony-tests-dir": "Tests",
+        "symfony-tests-dir": "tests",
         "phplist/phplist4-core": {
             "bundles": [
                 "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
