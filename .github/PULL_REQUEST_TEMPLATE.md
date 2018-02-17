@@ -22,7 +22,7 @@ style?
 
 You can check for this using this command:
 
-    vendor/bin/phpcs --standard=PSR2 Classes/ tests/
+    vendor/bin/phpcs --standard=PSR2 src/ tests/
 
 
 ### Other Information

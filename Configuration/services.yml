@@ -31,6 +31,6 @@ services:
     # controllers are imported separately to make sure they're public
     # and have a tag that allows actions to type-hint services
     PhpList\PhpList4\EmptyStartPageBundle\Controller\:
-        resource: '../Classes/EmptyStartPageBundle/Controller'
+        resource: '../src/EmptyStartPageBundle/Controller'
         public: true
         tags: [controller.service_arguments]

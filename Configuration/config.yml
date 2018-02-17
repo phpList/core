@@ -55,4 +55,4 @@ doctrine:
                 type: annotation
                 is_bundle: false
                 prefix: PhpList\PhpList4\Domain\Model
-                dir: '%kernel.project_dir%/Classes/Domain/Model/'
+                dir: '%kernel.project_dir%/src/Domain/Model/'

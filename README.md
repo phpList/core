@@ -174,7 +174,7 @@ is minimal.
 
 For accessing the phpList database tables from a module, please use the
 [Doctrine](http://www.doctrine-project.org/) model and repository classes
-stored in `Classes/Domain/` in the `phplist/phplist4-core` package (this
+stored in `src/Domain/` in the `phplist/phplist4-core` package (this
 package).
 
 For accessing a repository, please have it injected via
