@@ -136,7 +136,7 @@ vendor/bin/phpstan analyse -l 5 bin/ Classes/ tests/ web/
 You can also run all code style checks using one long line from a bash shell:
 
 ```bash
-find Classes/ tests/ web/ core/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l && php -l bin/* && vendor/bin/phpstan analyse -l 5 bin/ Classes/ tests/ web/ && vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml && vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ Classes/ tests/ web/
+find Classes/ tests/ web/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l && php -l bin/* && vendor/bin/phpstan analyse -l 5 bin/ Classes/ tests/ web/ && vendor/bin/phpmd Classes/ text Configuration/PHPMD/rules.xml && vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ Classes/ tests/ web/
 ```
 
 This will execute all tests except for the unit tests and the integration

@@ -57,14 +57,8 @@
     },
     "autoload": {
         "psr-4": {
-            "PhpList\\PhpList4\\": "Classes/",
-
-            "phpList\\": "core/",
-            "phpList\\helper\\": "core/helper/"
-        },
-        "files": [
-            "core/helper/Shortcuts.php"
-        ]
+            "PhpList\\PhpList4\\": "Classes/"
+        }
     },
     "autoload-dev": {
         "psr-4": {
