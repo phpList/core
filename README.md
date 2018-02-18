@@ -53,9 +53,9 @@ this code.
 
 ## Structure
 
-* [class structure overview](Documentation/ClassStructure.md)
-* [graphic domain model](Documentation/DomainModel/DomainModel.svg) and
-  a [description of the domain entities](Documentation/DomainModel/Entities.md)
+* [class structure overview](docs/ClassStructure.md)
+* [graphic domain model](docs/DomainModel/DomainModel.svg) and
+  a [description of the domain entities](docs/DomainModel/Entities.md)
 
 
 ## Running the web server
