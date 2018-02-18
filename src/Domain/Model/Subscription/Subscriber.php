@@ -107,7 +107,11 @@ class Subscriber implements Identity, CreationDate, ModificationDate
 
     /**
      * @var Collection
-     * @OneToMany(targetEntity="PhpList\PhpList4\Domain\Model\Subscription\Subscription", mappedBy="subscriber")
+     * @OneToMany(
+     *     targetEntity="PhpList\PhpList4\Domain\Model\Subscription\Subscription",
+     *     mappedBy="subscriber",
+     *     cascade={"remove"}
+     *  )
      */
     private $subscriptions = null;
 

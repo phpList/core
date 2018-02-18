@@ -8,6 +8,7 @@ use PhpList\PhpList4\Domain\Model\Subscription\Subscriber;
 use PhpList\PhpList4\Domain\Model\Subscription\Subscription;
 use PhpList\PhpList4\Domain\Repository\Messaging\SubscriberListRepository;
 use PhpList\PhpList4\Domain\Repository\Subscription\SubscriberRepository;
+use PhpList\PhpList4\Domain\Repository\Subscription\SubscriptionRepository;
 use PhpList\PhpList4\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
@@ -52,12 +53,18 @@ class SubscriberRepositoryTest extends TestCase
      */
     private $subscriberListRepository = null;
 
+    /**
+     * @var SubscriptionRepository
+     */
+    private $subscriptionRepository = null;
+
     protected function setUp()
     {
         $this->setUpDatabaseTest();
 
         $this->subject = $this->container->get(SubscriberRepository::class);
         $this->subscriberListRepository = $this->container->get(SubscriberListRepository::class);
+        $this->subscriptionRepository = $this->container->get(SubscriptionRepository::class);
     }
 
     /**
@@ -260,5 +267,32 @@ class SubscriberRepositoryTest extends TestCase
         $unexpectedList = $this->subscriberListRepository->find(1);
         static::assertTrue($subscribedLists->contains($expectedList));
         static::assertFalse($subscribedLists->contains($unexpectedList));
+    }
+
+    /**
+     * @test
+     */
+    public function removeAlsoRemovesAssociatedSubscriptions()
+    {
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(static::SUBSCRIBER_LIST_TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
+        $this->applyDatabaseChanges();
+
+        $initialNumberOfSubscriptions = count($this->subscriptionRepository->findAll());
+
+        /** @var Subscriber $model */
+        $id = 2;
+        $model = $this->subject->find($id);
+
+        $numberOfAssociatedSubscriptions = count($model->getSubscriptions());
+        static::assertGreaterThan(0, $numberOfAssociatedSubscriptions);
+
+        $this->entityManager->remove($model);
+        $this->entityManager->flush();
+
+        $newNumberOfSubscriptions = count($this->subscriptionRepository->findAll());
+        $numberOfRemovedSubscriptions = $initialNumberOfSubscriptions - $newNumberOfSubscriptions;
+        static::assertSame($numberOfAssociatedSubscriptions, $newNumberOfSubscriptions);
     }
 }
