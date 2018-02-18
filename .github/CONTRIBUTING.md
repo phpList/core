@@ -93,7 +93,7 @@ named `phplist`, and the password is `batterystaple`, the command looks like
 this:
 
 ```bash
-mysql -u phplist_test --password=batterystaple phplist_test < Database/Schema.sql
+mysql -u phplist_test --password=batterystaple phplist_test < resources/Database/Schema.sql
 ```
 
 For running the integration tests, please first enter the database name

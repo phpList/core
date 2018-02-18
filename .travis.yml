@@ -36,7 +36,7 @@ before_install:
   echo "Creating the database and importing the database schema";
   mysql -e "CREATE DATABASE ${PHPLIST_DATABASE_NAME};";
   mysql -u root -e "GRANT ALL ON ${PHPLIST_DATABASE_NAME}.* TO '${PHPLIST_DATABASE_USER}'@'%';";
-  mysql ${PHPLIST_DATABASE_NAME} < Database/Schema.sql;
+  mysql ${PHPLIST_DATABASE_NAME} < resources/Database/Schema.sql;
 
 install:
 - >

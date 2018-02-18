@@ -101,8 +101,9 @@ please see the
 Any changes to the database schema must always be done both in phpList 3 and
 later versions so that both versions always have the same schema.
 
-For changing the database schema, please edit `Database/Schema.sql` and adapt
-the corresponding domain model classes and repository classes accordingly.
+For changing the database schema, please edit `resources/Database/Schema.sql`
+and adapt the corresponding domain model classes and repository classes
+accordingly.
 
 
 ## Developing phpList modules (plugins)
