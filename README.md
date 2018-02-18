@@ -71,7 +71,7 @@ For running the application in development mode using the built-in PHP server,
 use this command:
 
 ```bash
-bin/console server:run -d web/
+bin/console server:run -d public/
 ```
 
 The server will then listen on `http://127.0.0.1:8000` (or, if port 8000 is
@@ -85,7 +85,7 @@ To run the server in testing mode (which normally will only be needed for the
 automated tests, provide the `--env` option:
 
 ```bash
-bin/console server:run -d web/ --env=test
+bin/console server:run -d public/ --env=test
 ```
 
 ### Production

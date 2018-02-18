@@ -83,7 +83,7 @@ class ScriptHandler extends SensioScriptHandler
     }
 
     /**
-     * Creates the "web/" directory and its contents, copying it from the phplist4-core package.
+     * Creates the "public/" directory and its contents, copying it from the phplist4-core package.
      *
      * This method must not be called for the phplist4-core package itself.
      *
@@ -96,7 +96,7 @@ class ScriptHandler extends SensioScriptHandler
     public static function createPublicWebDirectory(Event $event)
     {
         static::preventScriptFromCorePackage($event);
-        static::mirrorDirectoryFromCore('web');
+        static::mirrorDirectoryFromCore('public');
     }
 
     /**

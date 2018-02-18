@@ -59,7 +59,7 @@ script:
 - >
   echo;
   echo "Linting all PHP files";
-  find src/ tests/ web/ -name ''*.php'' -print0 | xargs -0 -n 1 -P 4 php -l; php -l bin/*;
+  find src/ tests/ public/ -name ''*.php'' -print0 | xargs -0 -n 1 -P 4 php -l; php -l bin/*;
 
 - >
   echo;
@@ -79,7 +79,7 @@ script:
 - >
   echo;
   echo "Running the static analysis";
-  vendor/bin/phpstan analyse -l 5 bin/ src/ tests/ web/;
+  vendor/bin/phpstan analyse -l 5 bin/ src/ tests/ public/;
 
 - >
   echo;
@@ -89,4 +89,4 @@ script:
 - >
   echo;
   echo "Running PHP_CodeSniffer";
-  vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ src/ tests/ web/;
+  vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ src/ tests/ public/;

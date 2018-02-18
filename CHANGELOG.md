@@ -13,7 +13,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - Remove the obsolete core classes (#267)
-- Adopt more of the default Symfony project structure (#265, #268)
+- Adopt more of the default Symfony project structure (#265, #268, #269, #270)
 
 ### Deprecated
 

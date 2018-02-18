@@ -118,7 +118,7 @@ We will only merge pull requests that follow the project's coding style.
 Please check your code with the provided PHP_CodeSniffer standard:
 
 ```bash
-vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ src/ tests/ web/
+vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ src/ tests/ public/
 ```
 
 Please also check the code structure using PHPMD:
@@ -130,13 +130,13 @@ vendor/bin/phpmd src/ text Configuration/PHPMD/rules.xml
 And also please run the static code analysis:
 
 ```bash
-vendor/bin/phpstan analyse -l 5 bin/ src/ tests/ web/
+vendor/bin/phpstan analyse -l 5 bin/ src/ tests/ public/
 ```
 
 You can also run all code style checks using one long line from a bash shell:
 
 ```bash
-find src/ tests/ web/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l && php -l bin/* && vendor/bin/phpstan analyse -l 5 bin/ src/ tests/ web/ && vendor/bin/phpmd src/ text Configuration/PHPMD/rules.xml && vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ src/ tests/ web/
+find src/ tests/ public/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l && php -l bin/* && vendor/bin/phpstan analyse -l 5 bin/ src/ tests/ public/ && vendor/bin/phpmd src/ text Configuration/PHPMD/rules.xml && vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ src/ tests/ public/
 ```
 
 This will execute all tests except for the unit tests and the integration
