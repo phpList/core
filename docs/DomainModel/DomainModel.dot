@@ -1,5 +1,5 @@
 // How to generate the SVG file:
-// dot -Tsvg -oDocumentation/DomainModel/DomainModel.svg Documentation/DomainModel/DomainModel.dot
+// dot -Tsvg -odocs/DomainModel/DomainModel.svg docs/DomainModel/DomainModel.dot
 digraph phpListDomainModel {
 
   //
