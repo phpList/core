@@ -152,7 +152,7 @@ trait SymfonyServerTrait
      */
     private function getSymfonyServerStartCommand(string $environment): string
     {
-        $documentRoot = $this->getApplicationRoot() . '/web/';
+        $documentRoot = $this->getApplicationRoot() . '/public/';
         $this->checkDocumentRoot($documentRoot);
 
         return sprintf(

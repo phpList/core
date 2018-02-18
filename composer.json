@@ -90,7 +90,7 @@
         "symfony-app-dir": "",
         "symfony-bin-dir": "bin",
         "symfony-var-dir": "var",
-        "symfony-web-dir": "web",
+        "symfony-web-dir": "public",
         "symfony-tests-dir": "tests",
         "phplist/phplist4-core": {
             "bundles": [
