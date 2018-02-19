@@ -293,6 +293,6 @@ class SubscriberRepositoryTest extends TestCase
 
         $newNumberOfSubscriptions = count($this->subscriptionRepository->findAll());
         $numberOfRemovedSubscriptions = $initialNumberOfSubscriptions - $newNumberOfSubscriptions;
-        static::assertSame($numberOfAssociatedSubscriptions, $newNumberOfSubscriptions);
+        static::assertSame($numberOfAssociatedSubscriptions, $numberOfRemovedSubscriptions);
     }
 }
