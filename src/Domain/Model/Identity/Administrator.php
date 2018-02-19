@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use Doctrine\ORM\Mapping\Table;
 use PhpList\PhpList4\Domain\Model\Interfaces\CreationDate;
+use PhpList\PhpList4\Domain\Model\Interfaces\DomainModel;
 use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
 use PhpList\PhpList4\Domain\Model\Interfaces\ModificationDate;
 use PhpList\PhpList4\Domain\Model\Traits\CreationDateTrait;
@@ -24,7 +25,7 @@ use PhpList\PhpList4\Domain\Model\Traits\ModificationDateTrait;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class Administrator implements Identity, CreationDate, ModificationDate
+class Administrator implements DomainModel, Identity, CreationDate, ModificationDate
 {
     use IdentityTrait;
     use CreationDateTrait;

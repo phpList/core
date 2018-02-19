@@ -5,6 +5,7 @@ namespace PhpList\PhpList4\Tests\Unit\Domain\Model\Identity;
 
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Model\Identity\AdministratorToken;
+use PhpList\PhpList4\Domain\Model\Interfaces\DomainModel;
 use PhpList\PhpList4\TestingSupport\Traits\ModelTestTrait;
 use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
@@ -27,6 +28,14 @@ class AdministratorTokenTest extends TestCase
     protected function setUp()
     {
         $this->subject = new AdministratorToken();
+    }
+
+    /**
+     * @test
+     */
+    public function isDomainModel()
+    {
+        static::assertInstanceOf(DomainModel::class, $this->subject);
     }
 
     /**

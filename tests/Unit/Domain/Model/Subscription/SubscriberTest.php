@@ -5,6 +5,7 @@ namespace PhpList\PhpList4\Tests\Unit\Domain\Model\Subscription;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use PhpList\PhpList4\Domain\Model\Interfaces\DomainModel;
 use PhpList\PhpList4\Domain\Model\Subscription\Subscriber;
 use PhpList\PhpList4\TestingSupport\Traits\ModelTestTrait;
 use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
@@ -28,6 +29,14 @@ class SubscriberTest extends TestCase
     protected function setUp()
     {
         $this->subject = new Subscriber();
+    }
+
+    /**
+     * @test
+     */
+    public function isDomainModel()
+    {
+        static::assertInstanceOf(DomainModel::class, $this->subject);
     }
 
     /**

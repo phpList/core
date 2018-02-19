@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace PhpList\PhpList4\Tests\Unit\Domain\Model\Identity;
 
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
+use PhpList\PhpList4\Domain\Model\Interfaces\DomainModel;
 use PhpList\PhpList4\TestingSupport\Traits\ModelTestTrait;
 use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
@@ -26,6 +27,14 @@ class AdministratorTest extends TestCase
     protected function setUp()
     {
         $this->subject = new Administrator();
+    }
+
+    /**
+     * @test
+     */
+    public function isDomainModel()
+    {
+        static::assertInstanceOf(DomainModel::class, $this->subject);
     }
 
     /**
