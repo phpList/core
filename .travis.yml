@@ -33,7 +33,7 @@ cache:
 before_install:
 - >
   if [[ $DEPENDENCIES = "latest" && ${TRAVIS_PHP_VERSION:0:3} = "7.2" ]]; then
-    export PHPUNIT_OPTIONS="--coverage-clover=/tmp/clover.clover";
+    export PHPUNIT_OPTIONS="--coverage-clover=/tmp/coverage.clover";
     export COVERAGE=yes
   else
     phpenv config-rm xdebug.ini;
@@ -96,5 +96,5 @@ after_success:
 - >
   if [[ $COVERAGE = yes ]]; then
     wget https://scrutinizer-ci.com/ocular.phar;
-    php ocular.phar code-coverage:upload --access-token=$SCRUTINIZER_TOKEN --format=php-clover /tmp/coverage.clover
+    php ocular.phar code-coverage:upload --format=php-clover /tmp/coverage.clover
   fi;
