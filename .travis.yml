@@ -11,9 +11,10 @@ services:
 env:
   global:
   - PHPLIST_DATABASE_NAME=phplist PHPLIST_DATABASE_USER=travis PHPLIST_DATABASE_PASSWORD=''
+  - COVERAGE=no
   matrix:
-  - DEPENDENCIES=latest
-  - DEPENDENCIES=oldest
+    - DEPENDENCIES=latest
+    - DEPENDENCIES=oldest
 
 notifications:
   slack:
@@ -30,7 +31,14 @@ cache:
   - "$HOME/.composer/cache"
 
 before_install:
-- phpenv config-rm xdebug.ini
+- >
+  if [[ $DEPENDENCIES = "latest" && ${TRAVIS_PHP_VERSION:0:3} = "7.2" ]]; then
+    export PHPUNIT_OPTIONS="--coverage-clover=/tmp/clover.clover";
+    export COVERAGE=yes
+  else
+    phpenv config-rm xdebug.ini;
+  fi;
+
 - >
   echo;
   echo "Creating the database and importing the database schema";
@@ -64,17 +72,7 @@ script:
 - >
   echo;
   echo "Running the unit tests";
-  vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/Unit/;
-
-- >
-  echo;
-  echo "Running the integration tests";
-  vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/Integration/;
-
-- >
-  echo;
-  echo "Running the system tests";
-  vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/System/;
+  vendor/bin/phpunit $PHPUNIT_OPTIONS;
 
 - >
   echo;
@@ -90,3 +88,13 @@ script:
   echo;
   echo "Running PHP_CodeSniffer";
   vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ src/ tests/ public/;
+
+
+# only process coverage after success
+after_success:
+# setup
+- >
+  if [[ $COVERAGE = yes ]]; then
+    wget https://scrutinizer-ci.com/ocular.phar;
+    php ocular.phar code-coverage:upload --access-token=$SCRUTINIZER_TOKEN --format=php-clover /tmp/coverage.clover
+  fi;
