@@ -20,7 +20,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ### Removed
 
 ### Fixed
-- Remove associated subscriptions when a subscriber list or subscriber is removed (#271)
+- Remove associated subscriptions when a subscriber list or subscriber is removed (#271, #272)
 - Always truncate the DB tables after an integration test (#259)
 - Adapt the system tests to possible HTTP errors (#256)
 
