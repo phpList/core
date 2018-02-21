@@ -16,6 +16,11 @@
             "email": "oliver@phplist.com",
             "role": "Developer"
         }
+        {
+            "name": "Sam Tuke",
+            "email": "mail@samtuke.com",
+            "role": "Developer"
+        }
     ],
     "support": {
         "issues": "https://github.com/phpList/phplist4-core/issues",
