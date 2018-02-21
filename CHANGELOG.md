@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ## x.y.z
 
 ### Added
+- Repository.remove (#278)
 - Interface for domain models (#274)
 - Trait for database tests and abstract web test (#264)
 - Repository methods for querying subscriptions (#253)

@@ -207,4 +207,23 @@ class AdministratorRepositoryTest extends TestCase
 
         static::assertSame($model, $this->subject->find($model->getId()));
     }
+
+    /**
+     * @test
+     */
+    public function removeRemovesModel()
+    {
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
+        $this->applyDatabaseChanges();
+
+        /** @var Administrator[] $allModels */
+        $allModels = $this->subject->findAll();
+        $numberOfModelsBeforeRemove = count($allModels);
+        $firstModel = $allModels[0];
+
+        $this->subject->remove($firstModel);
+
+        $numberOfModelsAfterRemove = count($this->subject->findAll());
+        static::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);
+    }
 }

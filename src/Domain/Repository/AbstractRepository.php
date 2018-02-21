@@ -28,4 +28,20 @@ abstract class AbstractRepository extends EntityRepository
         $this->getEntityManager()->persist($model);
         $this->getEntityManager()->flush();
     }
+
+    /**
+     * Removes $model and flushes the entity manager change list.
+     *
+     * This method allows controllers to not depend on the entity manager, but only on the repositories instead,
+     * following the Law of Demeter.
+     *
+     * @param DomainModel $model
+     *
+     * @return void
+     */
+    public function remove(DomainModel $model)
+    {
+        $this->getEntityManager()->remove($model);
+        $this->getEntityManager()->flush();
+    }
 }
