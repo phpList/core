@@ -1,10 +1,10 @@
 # phpList 4 core module
 
-[![Build Status](https://travis-ci.org/phpList/phplist4-core.svg?branch=master)](https://travis-ci.org/phpList/phplist4-core)
-[![Latest Stable Version](https://poser.pugx.org/phplist/phplist4-core/v/stable.svg)](https://packagist.org/packages/phpList/phplist4-core)
-[![Total Downloads](https://poser.pugx.org/phplist/phplist4-core/downloads.svg)](https://packagist.org/packages/phpList/phplist4-core)
-[![Latest Unstable Version](https://poser.pugx.org/phplist/phplist4-core/v/unstable.svg)](https://packagist.org/packages/phpList/phplist4-core)
-[![License](https://poser.pugx.org/phplist/phplist4-core/license.svg)](https://packagist.org/packages/phpList/phplist4-core)
+[![Build Status](https://travis-ci.org/phpList/core.svg?branch=master)](https://travis-ci.org/phpList/core)
+[![Latest Stable Version](https://poser.pugx.org/phplist/core/v/stable.svg)](https://packagist.org/packages/phpList/core)
+[![Total Downloads](https://poser.pugx.org/phplist/core/downloads.svg)](https://packagist.org/packages/phpList/core)
+[![Latest Unstable Version](https://poser.pugx.org/phplist/core/v/unstable.svg)](https://packagist.org/packages/phpList/core)
+[![License](https://poser.pugx.org/phplist/core/license.svg)](https://packagist.org/packages/phpList/core)
 
 
 ## About phpList
@@ -116,7 +116,7 @@ listed in the `extra` section of the module's `composer.json` like this:
 
 ```json
 "extra": {
-    "phplist/phplist4-core": {
+    "phplist/core": {
         "bundles": [
             "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
             "PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle"
@@ -126,7 +126,7 @@ listed in the `extra` section of the module's `composer.json` like this:
 ```
 
 Please note that the key of the section with `extra` needs to always be
-`phplist/phplist4-core`, not the name of your module package. Please have a
+`phplist/core`, not the name of your module package. Please have a
 look at the
 [`composer.json` in the `rest-api` module](https://github.com/phpList/rest-api/blob/master/composer.json)
 for an example.
@@ -136,7 +136,7 @@ the `extra` section of the module's `composer.json` like this:
 
 ```json
 "extra": {
-    "phplist/phplist4-core": {
+    "phplist/core": {
         "routes": {
             "homepage": {
                 "resource": "@PhpListEmptyStartPageBundle/Controller/",
@@ -151,7 +151,7 @@ You can also provide system configuration for your module:
 
 ```json
 "extra": {
-    "phplist/phplist4-core": {
+    "phplist/core": {
         "configuration": {
             "framework": {
                 "templating": {
@@ -174,7 +174,7 @@ is minimal.
 
 For accessing the phpList database tables from a module, please use the
 [Doctrine](http://www.doctrine-project.org/) model and repository classes
-stored in `src/Domain/` in the `phplist/phplist4-core` package (this
+stored in `src/Domain/` in the `phplist/core` package (this
 package).
 
 For accessing a repository, please have it injected via
@@ -185,8 +185,8 @@ that rely on other services having been injected.
 
 Currently, only a few database tables are mapped as models/repositories. If you
 need a mode or a repository method that still is missing, please
-[submit a pull request](https://github.com/phpList/phplist4-core/pulls) or
-[file an issue](https://github.com/phpList/phplist4-core/issues).
+[submit a pull request](https://github.com/phpList/core/pulls) or
+[file an issue](https://github.com/phpList/core/issues).
 
 
 ## Accessing the phpList data from third-party applications
