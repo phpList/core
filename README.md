@@ -1,4 +1,4 @@
-# phpList 4 core module
+# phpList core module
 
 [![Build Status](https://travis-ci.org/phpList/core.svg?branch=master)](https://travis-ci.org/phpList/core)
 [![Latest Stable Version](https://poser.pugx.org/phplist/core/v/stable.svg)](https://packagist.org/packages/phpList/core)
@@ -15,7 +15,7 @@ phpList is an open source newsletter manager. This project is a rewrite of the
 
 ## About this package
 
-This is the phpList 4 core module. It will have the following responsibilities:
+This is the phpList core module. It will have the following responsibilities:
 
 * provide access to the DB via Doctrine models and repositories (and raw SQL
   for performance-critical parts that do not need the models)
@@ -98,15 +98,15 @@ please see the
 ## Changing the database schema
 
 Any changes to the database schema must always be done both in phpList 3 and
-phpList 4 so that both versions always have the same schema.
+later versions so that both versions always have the same schema.
 
 For changing the database schema, please edit `Database/Schema.sql` and adapt
 the corresponding domain model classes and repository classes accordingly.
 
 
-## Developing phpList 4 modules (plugins)
+## Developing phpList modules (plugins)
 
-In phpList 4, plugins are called **modules**. They are Composer packages which
+In phpList, plugins are called **modules**. They are Composer packages which
 have the type `phplist-module`.
 
 ### Bundle and route configuration
