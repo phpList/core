@@ -15,7 +15,8 @@ phpList is an open source newsletter manager. This project is a rewrite of the
 
 ## About this package
 
-This is the phpList core module. It will have the following responsibilities:
+This is the core module of the successor to phpList 3. It will have the 
+following responsibilities:
 
 * provide access to the DB via Doctrine models and repositories (and raw SQL
   for performance-critical parts that do not need the models)
