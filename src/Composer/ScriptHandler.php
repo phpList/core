@@ -19,7 +19,7 @@ class ScriptHandler extends SensioScriptHandler
     /**
      * @var string
      */
-    const CORE_PACKAGE_NAME = 'phplist/phplist4-core';
+    const CORE_PACKAGE_NAME = 'phplist/core';
 
     /**
      * @var string
@@ -66,15 +66,15 @@ class ScriptHandler extends SensioScriptHandler
     }
 
     /**
-     * Creates the "bin/" directory and its contents, copying it from the phplist4-core package.
+     * Creates the "bin/" directory and its contents, copying it from the core package.
      *
-     * This method must not be called for the phplist4-core package itself.
+     * This method must not be called for the core package itself.
      *
      * @param Event $event
      *
      * @return void
      *
-     * @throws \DomainException if this method is called for the phplist4-core package
+     * @throws \DomainException if this method is called for the core package
      */
     public static function createBinaries(Event $event)
     {
@@ -83,15 +83,15 @@ class ScriptHandler extends SensioScriptHandler
     }
 
     /**
-     * Creates the "public/" directory and its contents, copying it from the phplist4-core package.
+     * Creates the "public/" directory and its contents, copying it from the core package.
      *
-     * This method must not be called for the phplist4-core package itself.
+     * This method must not be called for the core package itself.
      *
      * @param Event $event
      *
      * @return void
      *
-     * @throws \DomainException if this method is called for the phplist4-core package
+     * @throws \DomainException if this method is called for the core package
      */
     public static function createPublicWebDirectory(Event $event)
     {
@@ -104,7 +104,7 @@ class ScriptHandler extends SensioScriptHandler
      *
      * @return void
      *
-     * @throws \DomainException if this method is called for the phplist4-core package
+     * @throws \DomainException if this method is called for the core package
      */
     private static function preventScriptFromCorePackage(Event $event)
     {
@@ -112,7 +112,7 @@ class ScriptHandler extends SensioScriptHandler
         $packageName = $composer->getPackage()->getName();
         if ($packageName === static::CORE_PACKAGE_NAME) {
             throw new \DomainException(
-                'This Composer script must not be called for the phplist4-core package itself.',
+                'This Composer script must not be called for the core package itself.',
                 1501240572934
             );
         }
@@ -123,7 +123,7 @@ class ScriptHandler extends SensioScriptHandler
      *
      * This method overwrites existing files, but will not delete any files.
      *
-     * This method must not be called for the phplist4-core package itself.
+     * This method must not be called for the core package itself.
      *
      * @param string $directoryWithoutSlashes directory name (without any slashes) relative to the core package
      *

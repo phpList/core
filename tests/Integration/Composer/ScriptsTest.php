@@ -75,7 +75,7 @@ class ScriptsTest extends TestCase
     public function moduleRoutingDataProvider(): array
     {
         return [
-            'route name' => ['phplist/phplist4-core.homepage'],
+            'route name' => ['phplist/core.homepage'],
             'resource' => ["resource: '@PhpListEmptyStartPageBundle/Controller/'"],
             'type' => ['type: annotation'],
         ];

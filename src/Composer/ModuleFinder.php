@@ -49,11 +49,11 @@ class ModuleFinder
         foreach ($modules as $module) {
             $extra = $module->getExtra();
             $this->validateBundlesSectionInExtra($extra);
-            if (empty($extra['phplist/phplist4-core']['bundles'])) {
+            if (empty($extra['phplist/core']['bundles'])) {
                 continue;
             }
 
-            $bundleSets[$module->getName()] = $extra['phplist/phplist4-core']['bundles'];
+            $bundleSets[$module->getName()] = $extra['phplist/core']['bundles'];
         }
 
         return $bundleSets;
@@ -70,27 +70,27 @@ class ModuleFinder
      */
     private function validateBundlesSectionInExtra(array $extra)
     {
-        if (!isset($extra['phplist/phplist4-core'])) {
+        if (!isset($extra['phplist/core'])) {
             return;
         }
         $this->validatePhpListSectionInExtra($extra);
 
-        if (!isset($extra['phplist/phplist4-core']['bundles'])) {
+        if (!isset($extra['phplist/core']['bundles'])) {
             return;
         }
-        if (!is_array($extra['phplist/phplist4-core']['bundles'])) {
+        if (!is_array($extra['phplist/core']['bundles'])) {
             throw new \InvalidArgumentException(
-                'The extras.phplist/phplist4-core.bundles section in the composer.json must be an array.',
+                'The extras.phplist/core.bundles section in the composer.json must be an array.',
                 1505411665146
             );
         }
 
         /** @var array $bundleExtras */
-        $bundleExtras = $extra['phplist/phplist4-core']['bundles'];
+        $bundleExtras = $extra['phplist/core']['bundles'];
         foreach ($bundleExtras as $key => $bundleName) {
             if (!is_string($bundleName)) {
                 throw new \InvalidArgumentException(
-                    'The extras.phplist/phplist4-core.bundles. ' . $key .
+                    'The extras.phplist/core.bundles. ' . $key .
                     '" section in the composer.json must be a string.',
                     1505412184038
                 );
@@ -109,9 +109,9 @@ class ModuleFinder
      */
     private function validatePhpListSectionInExtra(array $extra)
     {
-        if (!is_array($extra['phplist/phplist4-core'])) {
+        if (!is_array($extra['phplist/core'])) {
             throw new \InvalidArgumentException(
-                'The extras.phplist/phplist4-core" section in the composer.json must be an array.',
+                'The extras.phplist/core" section in the composer.json must be an array.',
                 1505411436144
             );
         }
@@ -146,12 +146,12 @@ class ModuleFinder
         foreach ($modules as $module) {
             $extra = $module->getExtra();
             $this->validateRoutesSectionInExtra($extra);
-            if (empty($extra['phplist/phplist4-core']['routes'])) {
+            if (empty($extra['phplist/core']['routes'])) {
                 continue;
             }
 
             /** @var array $moduleRoutes */
-            $moduleRoutes = $extra['phplist/phplist4-core']['routes'];
+            $moduleRoutes = $extra['phplist/core']['routes'];
             foreach ($moduleRoutes as $name => $route) {
                 $prefixedRouteName = $module->getName() . '.' . $name;
                 $routes[$prefixedRouteName] = $route;
@@ -172,27 +172,27 @@ class ModuleFinder
      */
     private function validateRoutesSectionInExtra(array $extra)
     {
-        if (!isset($extra['phplist/phplist4-core'])) {
+        if (!isset($extra['phplist/core'])) {
             return;
         }
         $this->validatePhpListSectionInExtra($extra);
 
-        if (!isset($extra['phplist/phplist4-core']['routes'])) {
+        if (!isset($extra['phplist/core']['routes'])) {
             return;
         }
-        if (!is_array($extra['phplist/phplist4-core']['routes'])) {
+        if (!is_array($extra['phplist/core']['routes'])) {
             throw new \InvalidArgumentException(
-                'The extras.phplist/phplist4-core.routes section in the composer.json must be an array.',
+                'The extras.phplist/core.routes section in the composer.json must be an array.',
                 1506429004462
             );
         }
 
         /** @var array $bundleExtras */
-        $bundleExtras = $extra['phplist/phplist4-core']['routes'];
+        $bundleExtras = $extra['phplist/core']['routes'];
         foreach ($bundleExtras as $routeName => $routeConfiguration) {
             if (!is_array($routeConfiguration)) {
                 throw new \InvalidArgumentException(
-                    'The extras.phplist/phplist4-core.routes. ' . $routeName .
+                    'The extras.phplist/core.routes. ' . $routeName .
                     '" section in the composer.json must be an array.',
                     1506429860740
                 );
@@ -228,11 +228,11 @@ class ModuleFinder
         foreach ($modules as $module) {
             $extra = $module->getExtra();
             $this->validateGeneralConfigurationSectionInExtra($extra);
-            if (!isset($extra['phplist/phplist4-core']['configuration'])) {
+            if (!isset($extra['phplist/core']['configuration'])) {
                 continue;
             }
 
-            $configurationSets[] = $extra['phplist/phplist4-core']['configuration'];
+            $configurationSets[] = $extra['phplist/core']['configuration'];
         }
 
         return array_replace_recursive(...$configurationSets);
@@ -249,17 +249,17 @@ class ModuleFinder
      */
     private function validateGeneralConfigurationSectionInExtra(array $extra)
     {
-        if (!isset($extra['phplist/phplist4-core'])) {
+        if (!isset($extra['phplist/core'])) {
             return;
         }
         $this->validatePhpListSectionInExtra($extra);
 
-        if (!isset($extra['phplist/phplist4-core']['configuration'])) {
+        if (!isset($extra['phplist/core']['configuration'])) {
             return;
         }
-        if (!is_array($extra['phplist/phplist4-core']['configuration'])) {
+        if (!is_array($extra['phplist/core']['configuration'])) {
             throw new \InvalidArgumentException(
-                'The extras.phplist/phplist4-core.configuration section in the composer.json must be an array.',
+                'The extras.phplist/core.configuration section in the composer.json must be an array.',
                 1508165934174
             );
         }

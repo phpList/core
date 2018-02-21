@@ -62,7 +62,7 @@ class ScriptHandlerTest extends TestCase
     {
         /** @var RootPackageInterface|ObjectProphecy $packageProphecy */
         $packageProphecy = $this->prophesize(RootPackageInterface::class);
-        $packageProphecy->getName()->willReturn('phplist/phplist4-core');
+        $packageProphecy->getName()->willReturn('phplist/core');
         /** @var Composer|ObjectProphecy $composerProphecy */
         $composerProphecy = $this->prophesize(Composer::class);
         $composerProphecy->getPackage()->willReturn($packageProphecy->reveal());
@@ -78,7 +78,7 @@ class ScriptHandlerTest extends TestCase
      */
     public function listModulesForPhpListModuleRootPackageListsIt()
     {
-        $rootPackageName = 'phplist/phplist4-core';
+        $rootPackageName = 'phplist/core';
         $rootPackageVersion = '1.2.3';
 
         $event = $this->buildMockEvent();
@@ -99,7 +99,7 @@ class ScriptHandlerTest extends TestCase
      */
     public function listModulesForNonPhpListModuleRootPackageExcludesIt()
     {
-        $rootPackageName = 'phplist/phplist4-core';
+        $rootPackageName = 'phplist/core';
 
         $event = $this->buildMockEvent();
 
