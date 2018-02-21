@@ -1,6 +1,6 @@
 # Class structure
 
-All production classes are located in `Classes/`, and all unit and integration
+All production classes are located in `src/`, and all unit and integration
 tests are located in `tests/`.
 
 
