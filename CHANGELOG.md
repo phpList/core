@@ -12,9 +12,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - Bidirectional m:n association Subscribers/SubscriberLists (#254)
 
 ### Changed
+- Change composer configuration to reflect new repository name 'core'
 - Remove the obsolete core classes (#267)
 - Adopt more of the default Symfony project structure (#265, #268, #269, #270)
-- Change composer configuration to reflect new repository name 'core'
 
 ### Deprecated
 
