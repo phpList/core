@@ -1,5 +1,5 @@
 {
-    "name": "phplist/phplist4-core",
+    "name": "phplist/core",
     "description": "The core module of phpList, the world's most popular open source newsletter manager",
     "type": "phplist-module",
     "keywords": [
@@ -18,10 +18,10 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/phpList/phplist4-core/issues",
+        "issues": "https://github.com/phpList/core/issues",
         "forum": "https://discuss.phplist.org/",
-        "wiki": "https://github.com/phpList/phplist4-core/wiki",
-        "source": "https://github.com/phpList/phplist4-core"
+        "wiki": "https://github.com/phpList/core/wiki",
+        "source": "https://github.com/phpList/core"
     },
     "require": {
         "php": "~7.0.0 || ~7.1.0 || ~7.2.0",
@@ -92,7 +92,7 @@
         "symfony-var-dir": "var",
         "symfony-web-dir": "public",
         "symfony-tests-dir": "tests",
-        "phplist/phplist4-core": {
+        "phplist/core": {
             "bundles": [
                 "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
                 "Sensio\\Bundle\\FrameworkExtraBundle\\SensioFrameworkExtraBundle",
