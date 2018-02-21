@@ -65,8 +65,8 @@ class ModuleFinderTest extends TestCase
         $extrasSets = [
             'one module without/with empty extras' => [[]],
             'one module with extras for other stuff' => [['branch-alias' => ['dev-master' => '4.0.x-dev']]],
-            'one module with empty "phplist/phplist4-core" extras section' => [['phplist/phplist4-core' => []]],
-            'one module with empty bundles extras section' => [['phplist/phplist4-core' => ['bundles' => []]]],
+            'one module with empty "phplist/core" extras section' => [['phplist/core' => []]],
+            'one module with empty bundles extras section' => [['phplist/core' => ['bundles' => []]]],
         ];
 
         return $this->buildMockPackagesWithModuleConfiguration($extrasSets);
@@ -141,19 +141,19 @@ class ModuleFinderTest extends TestCase
     {
         /** @var array[][] $extrasSets */
         $extrasSets = [
-            'one module with phplist4-core section as string' => [['phplist/phplist4-core' => 'foo']],
-            'one module with phplist4-core section as int' => [['phplist/phplist4-core' => 42]],
-            'one module with phplist4-core section as float' => [['phplist/phplist4-core' => 3.14159]],
-            'one module with phplist4-core section as bool' => [['phplist/phplist4-core' => true]],
-            'one module with bundles section as string' => [['phplist/phplist4-core' => ['bundles' => 'foo']]],
-            'one module with bundles section as int' => [['phplist/phplist4-core' => ['bundles' => 42]]],
-            'one module with bundles section as float' => [['phplist/phplist4-core' => ['bundles' => 3.14159]]],
-            'one module with bundles section as bool' => [['phplist/phplist4-core' => ['bundles' => true]]],
-            'one module with one bundle class name as array' => [['phplist/phplist4-core' => ['bundles' => [[]]]]],
-            'one module with one bundle class name as int' => [['phplist/phplist4-core' => ['bundles' => [42]]]],
-            'one module with one bundle class name as float' => [['phplist/phplist4-core' => ['bundles' => [3.14159]]]],
-            'one module with one bundle class name as bool' => [['phplist/phplist4-core' => ['bundles' => [true]]]],
-            'one module with one bundle class name as null' => [['phplist/phplist4-core' => ['bundles' => [null]]]],
+            'one module with core section as string' => [['phplist/core' => 'foo']],
+            'one module with core section as int' => [['phplist/core' => 42]],
+            'one module with core section as float' => [['phplist/core' => 3.14159]],
+            'one module with core section as bool' => [['phplist/core' => true]],
+            'one module with bundles section as string' => [['phplist/core' => ['bundles' => 'foo']]],
+            'one module with bundles section as int' => [['phplist/core' => ['bundles' => 42]]],
+            'one module with bundles section as float' => [['phplist/core' => ['bundles' => 3.14159]]],
+            'one module with bundles section as bool' => [['phplist/core' => ['bundles' => true]]],
+            'one module with one bundle class name as array' => [['phplist/core' => ['bundles' => [[]]]]],
+            'one module with one bundle class name as int' => [['phplist/core' => ['bundles' => [42]]]],
+            'one module with one bundle class name as float' => [['phplist/core' => ['bundles' => [3.14159]]]],
+            'one module with one bundle class name as bool' => [['phplist/core' => ['bundles' => [true]]]],
+            'one module with one bundle class name as null' => [['phplist/core' => ['bundles' => [null]]]],
         ];
 
         return $this->buildMockPackagesWithModuleConfiguration($extrasSets);
@@ -183,7 +183,7 @@ class ModuleFinderTest extends TestCase
             'one module with one bundle' => [
                 [
                     'phplist/foo' => [
-                        'phplist/phplist4-core' => [
+                        'phplist/core' => [
                             'bundles' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
                         ],
                     ],
@@ -193,7 +193,7 @@ class ModuleFinderTest extends TestCase
             'one module with two bundles' => [
                 [
                     'phplist/foo' => [
-                        'phplist/phplist4-core' => [
+                        'phplist/core' => [
                             'bundles' => [
                                 'Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle',
                                 'PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle',
@@ -211,12 +211,12 @@ class ModuleFinderTest extends TestCase
             'two module with one bundle each' => [
                 [
                     'phplist/foo' => [
-                        'phplist/phplist4-core' => [
+                        'phplist/core' => [
                             'bundles' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
                         ],
                     ],
                     'phplist/bar' => [
-                        'phplist/phplist4-core' => [
+                        'phplist/core' => [
                             'bundles' => ['PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
                         ],
                     ],
@@ -298,8 +298,8 @@ class ModuleFinderTest extends TestCase
         $extrasSets = [
             'one module without/with empty extras' => [[]],
             'one module with extras for other stuff' => [['branch-alias' => ['dev-master' => '4.0.x-dev']]],
-            'one module with empty "phplist/phplist4-core" extras section' => [['phplist/phplist4-core' => []]],
-            'one module with empty routes extras section' => [['phplist/phplist4-core' => ['routes' => []]]],
+            'one module with empty "phplist/core" extras section' => [['phplist/core' => []]],
+            'one module with empty routes extras section' => [['phplist/core' => ['routes' => []]]],
         ];
 
         return $this->buildMockPackagesWithModuleConfiguration($extrasSets);
@@ -326,19 +326,19 @@ class ModuleFinderTest extends TestCase
     {
         /** @var array[][] $extrasSets */
         $extrasSets = [
-            'one module with phplist4-core section as string' => [['phplist/phplist4-core' => 'foo']],
-            'one module with phplist4-core section as int' => [['phplist/phplist4-core' => 42]],
-            'one module with phplist4-core section as float' => [['phplist/phplist4-core' => 3.14159]],
-            'one module with phplist4-core section as bool' => [['phplist/phplist4-core' => true]],
-            'one module with routes section as string' => [['phplist/phplist4-core' => ['routes' => 'foo']]],
-            'one module with routes section as int' => [['phplist/phplist4-core' => ['routes' => 42]]],
-            'one module with routes section as float' => [['phplist/phplist4-core' => ['routes' => 3.14159]]],
-            'one module with routes section as bool' => [['phplist/phplist4-core' => ['routes' => true]]],
-            'one module with one route class name as string' => [['phplist/phplist4-core' => ['routes' => ['foo']]]],
-            'one module with one route class name as int' => [['phplist/phplist4-core' => ['routes' => [42]]]],
-            'one module with one route class name as float' => [['phplist/phplist4-core' => ['routes' => [3.14159]]]],
-            'one module with one route class name as bool' => [['phplist/phplist4-core' => ['routes' => [true]]]],
-            'one module with one route class name as null' => [['phplist/phplist4-core' => ['routes' => [null]]]],
+            'one module with core section as string' => [['phplist/core' => 'foo']],
+            'one module with core section as int' => [['phplist/core' => 42]],
+            'one module with core section as float' => [['phplist/core' => 3.14159]],
+            'one module with core section as bool' => [['phplist/core' => true]],
+            'one module with routes section as string' => [['phplist/core' => ['routes' => 'foo']]],
+            'one module with routes section as int' => [['phplist/core' => ['routes' => 42]]],
+            'one module with routes section as float' => [['phplist/core' => ['routes' => 3.14159]]],
+            'one module with routes section as bool' => [['phplist/core' => ['routes' => true]]],
+            'one module with one route class name as string' => [['phplist/core' => ['routes' => ['foo']]]],
+            'one module with one route class name as int' => [['phplist/core' => ['routes' => [42]]]],
+            'one module with one route class name as float' => [['phplist/core' => ['routes' => [3.14159]]]],
+            'one module with one route class name as bool' => [['phplist/core' => ['routes' => [true]]]],
+            'one module with one route class name as null' => [['phplist/core' => ['routes' => [null]]]],
         ];
 
         return $this->buildMockPackagesWithModuleConfiguration($extrasSets);
@@ -368,7 +368,7 @@ class ModuleFinderTest extends TestCase
             'one module with one route' => [
                 [
                     'phplist/foo' => [
-                        'phplist/phplist4-core' => [
+                        'phplist/core' => [
                             'routes' => [
                                 'homepage' => [
                                     'path' => '/',
@@ -388,7 +388,7 @@ class ModuleFinderTest extends TestCase
             'one module with two routes' => [
                 [
                     'phplist/foo' => [
-                        'phplist/phplist4-core' => [
+                        'phplist/core' => [
                             'routes' => [
                                 'homepage' => [
                                     'path' => '/',
@@ -416,7 +416,7 @@ class ModuleFinderTest extends TestCase
             'two module with one route each' => [
                 [
                     'phplist/foo' => [
-                        'phplist/phplist4-core' => [
+                        'phplist/core' => [
                             'routes' => [
                                 'homepage' => [
                                     'path' => '/',
@@ -426,7 +426,7 @@ class ModuleFinderTest extends TestCase
                         ],
                     ],
                     'phplist/bar' => [
-                        'phplist/phplist4-core' => [
+                        'phplist/core' => [
                             'routes' => [
                                 'blog' => [
                                     'path' => '/blog',
@@ -527,8 +527,8 @@ class ModuleFinderTest extends TestCase
         $extrasSets = [
             'without/with empty extras' => [[]],
             'with extras for other stuff' => [['branch-alias' => ['dev-master' => '4.0.x-dev']]],
-            'with empty "phplist/phplist4-core" extras section' => [['phplist/phplist4-core' => []]],
-            'with empty configuration extras section' => [['phplist/phplist4-core' => ['configuration' => []]]],
+            'with empty "phplist/core" extras section' => [['phplist/core' => []]],
+            'with empty configuration extras section' => [['phplist/core' => ['configuration' => []]]],
         ];
 
         return $this->buildMockPackagesWithModuleConfiguration($extrasSets);
@@ -555,14 +555,14 @@ class ModuleFinderTest extends TestCase
     {
         /** @var array[][] $extrasSets */
         $extrasSets = [
-            'phplist4-core section as string' => [['phplist/phplist4-core' => 'foo']],
-            'phplist4-core section as int' => [['phplist/phplist4-core' => 42]],
-            'phplist4-core section as float' => [['phplist/phplist4-core' => 3.14159]],
-            'phplist4-core section as bool' => [['phplist/phplist4-core' => true]],
-            'configuration section as string' => [['phplist/phplist4-core' => ['configuration' => 'foo']]],
-            'configuration section as int' => [['phplist/phplist4-core' => ['configuration' => 42]]],
-            'configuration section as float' => [['phplist/phplist4-core' => ['configuration' => 3.14159]]],
-            'configuration section as bool' => [['phplist/phplist4-core' => ['configuration' => true]]],
+            'core section as string' => [['phplist/core' => 'foo']],
+            'core section as int' => [['phplist/core' => 42]],
+            'core section as float' => [['phplist/core' => 3.14159]],
+            'core section as bool' => [['phplist/core' => true]],
+            'configuration section as string' => [['phplist/core' => ['configuration' => 'foo']]],
+            'configuration section as int' => [['phplist/core' => ['configuration' => 42]]],
+            'configuration section as float' => [['phplist/core' => ['configuration' => 3.14159]]],
+            'configuration section as bool' => [['phplist/core' => ['configuration' => true]]],
         ];
 
         return $this->buildMockPackagesWithModuleConfiguration($extrasSets);
@@ -592,7 +592,7 @@ class ModuleFinderTest extends TestCase
             'one module with configuration' => [
                 [
                     'phplist/foo' => [
-                        'phplist/phplist4-core' => [
+                        'phplist/core' => [
                             'configuration' => ['foo' => 'bar'],
                         ],
                     ],
@@ -602,12 +602,12 @@ class ModuleFinderTest extends TestCase
             'two modules non-overlapping configuration sets' => [
                 [
                     'phplist/foo' => [
-                        'phplist/phplist4-core' => [
+                        'phplist/core' => [
                             'configuration' => ['foo' => 'bar'],
                         ],
                     ],
                     'phplist/bar' => [
-                        'phplist/phplist4-core' => [
+                        'phplist/core' => [
                             'configuration' => [
                                 'foobar' => ['life' => 'everything'],
                             ],
@@ -622,7 +622,7 @@ class ModuleFinderTest extends TestCase
             'two modules overlapping configuration sets' => [
                 [
                     'phplist/foo' => [
-                        'phplist/phplist4-core' => [
+                        'phplist/core' => [
                             'configuration' => [
                                 'foo' => 'bar',
                                 'foobar' => [1 => 'hello'],
@@ -631,7 +631,7 @@ class ModuleFinderTest extends TestCase
                         ],
                     ],
                     'phplist/bar' => [
-                        'phplist/phplist4-core' => [
+                        'phplist/core' => [
                             'configuration' => [
                                 'foo' => 'bonjour',
                                 'foobar' => [2 => 'world'],
