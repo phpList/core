@@ -13,6 +13,7 @@ use Doctrine\ORM\Proxy\Proxy;
 use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Expose;
 use PhpList\PhpList4\Domain\Model\Interfaces\CreationDate;
+use PhpList\PhpList4\Domain\Model\Interfaces\DomainModel;
 use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
 use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
 
@@ -25,7 +26,7 @@ use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class AdministratorToken implements Identity, CreationDate
+class AdministratorToken implements DomainModel, Identity, CreationDate
 {
     use IdentityTrait;
 
