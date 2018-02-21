@@ -1,6 +1,8 @@
 # phpList 4 core module
 
 [![Build Status](https://travis-ci.org/phpList/phplist4-core.svg?branch=master)](https://travis-ci.org/phpList/phplist4-core)
+[![Code Coverage](https://scrutinizer-ci.com/g/phpList/core/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/phpList/core/?branch=master)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/phpList/core/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/phpList/core/?branch=master)
 [![Latest Stable Version](https://poser.pugx.org/phplist/phplist4-core/v/stable.svg)](https://packagist.org/packages/phpList/phplist4-core)
 [![Total Downloads](https://poser.pugx.org/phplist/phplist4-core/downloads.svg)](https://packagist.org/packages/phpList/phplist4-core)
 [![Latest Unstable Version](https://poser.pugx.org/phplist/phplist4-core/v/unstable.svg)](https://packagist.org/packages/phpList/phplist4-core)
