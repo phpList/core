@@ -288,6 +288,25 @@ class SubscriberListRepositoryTest extends TestCase
 
         $newNumberOfSubscriptions = count($this->subscriptionRepository->findAll());
         $numberOfRemovedSubscriptions = $initialNumberOfSubscriptions - $newNumberOfSubscriptions;
-        static::assertSame($numberOfAssociatedSubscriptions, $newNumberOfSubscriptions);
+        static::assertSame($numberOfAssociatedSubscriptions, $numberOfRemovedSubscriptions);
+    }
+
+    /**
+     * @test
+     */
+    public function removeRemovesModel()
+    {
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->applyDatabaseChanges();
+
+        /** @var SubscriberList[] $allModels */
+        $allModels = $this->subject->findAll();
+        $numberOfModelsBeforeRemove = count($allModels);
+        $firstModel = $allModels[0];
+
+        $this->subject->remove($firstModel);
+
+        $numberOfModelsAfterRemove = count($this->subject->findAll());
+        static::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);
     }
 }

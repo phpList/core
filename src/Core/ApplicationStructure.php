@@ -11,7 +11,7 @@ namespace PhpList\PhpList4\Core;
 class ApplicationStructure
 {
     /**
-     * Returns the absolute path to the phplist4-core package root.
+     * Returns the absolute path to the core package root.
      *
      * @return string the absolute path without the trailing slash.
      *
@@ -25,7 +25,7 @@ class ApplicationStructure
     /**
      * Returns the absolute path to the application root.
      *
-     * When phplist4-core is installed as a dependency (library) of an application, this method will return
+     * When core is installed as a dependency (library) of an application, this method will return
      * the application's package path.
      *
      * When phpList4-core is installed stand-alone (i.e., as an application - usually only for testing),
@@ -42,7 +42,7 @@ class ApplicationStructure
         if ($corePackageIsRootPackage) {
             $applicationRoot = $corePackagePath;
         } else {
-            // remove 3 more path segments, i.e., "vendor/phplist/phplist4-core/"
+            // remove 3 more path segments, i.e., "vendor/phplist/core/"
             $corePackagePath = dirname($corePackagePath, 3);
             $applicationRoot = $corePackagePath;
         }

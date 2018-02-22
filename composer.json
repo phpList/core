@@ -1,5 +1,5 @@
 {
-    "name": "phplist/phplist4-core",
+    "name": "phplist/core",
     "description": "The core module of phpList, the world's most popular open source newsletter manager",
     "type": "phplist-module",
     "keywords": [
@@ -15,13 +15,18 @@
             "name": "Oliver Klee",
             "email": "oliver@phplist.com",
             "role": "Developer"
+        },
+        {
+            "name": "Sam Tuke",
+            "email": "mail@samtuke.com",
+            "role": "Developer"
         }
     ],
     "support": {
-        "issues": "https://github.com/phpList/phplist4-core/issues",
+        "issues": "https://github.com/phpList/core/issues",
         "forum": "https://discuss.phplist.org/",
-        "wiki": "https://github.com/phpList/phplist4-core/wiki",
-        "source": "https://github.com/phpList/phplist4-core"
+        "wiki": "https://github.com/phpList/core/wiki",
+        "source": "https://github.com/phpList/core"
     },
     "require": {
         "php": "~7.0.0 || ~7.1.0 || ~7.2.0",
@@ -41,7 +46,8 @@
         "sensio/distribution-bundle": "^5.0.6"
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.5.0",
+        "phpunit/phpunit": "^6.5.6",
+        "phpunit/phpunit-mock-objects": "^5.0.6",
         "phpunit/dbunit": "^3.0.0",
         "guzzlehttp/guzzle": "^6.3.0",
         "squizlabs/php_codesniffer": "^3.2.0",
@@ -92,7 +98,7 @@
         "symfony-var-dir": "var",
         "symfony-web-dir": "public",
         "symfony-tests-dir": "tests",
-        "phplist/phplist4-core": {
+        "phplist/core": {
             "bundles": [
                 "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
                 "Sensio\\Bundle\\FrameworkExtraBundle\\SensioFrameworkExtraBundle",

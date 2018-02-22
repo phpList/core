@@ -57,7 +57,7 @@ class ApplicationKernel extends Kernel
     /**
      * Returns the absolute path to the application root.
      *
-     * When phplist4-core is installed as a dependency (library) of an application, this method will return
+     * When core is installed as a dependency (library) of an application, this method will return
      * the application's package path.
      *
      * When phpList4-core is installed stand-alone (i.e., as an application - usually only for testing),

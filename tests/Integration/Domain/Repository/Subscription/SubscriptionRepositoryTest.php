@@ -184,7 +184,6 @@ class SubscriptionRepositoryTest extends TestCase
     {
         $this->getDataSet()->addTable(static::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
         $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
-        $this->touchDatabaseTable(static::TABLE_NAME);
         $this->applyDatabaseChanges();
 
         /** @var Subscriber $subscriber */
@@ -205,7 +204,6 @@ class SubscriptionRepositoryTest extends TestCase
     {
         $this->getDataSet()->addTable(static::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
         $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
-        $this->touchDatabaseTable(static::TABLE_NAME);
         $this->applyDatabaseChanges();
 
         /** @var SubscriberList $subscriberList */
@@ -217,5 +215,24 @@ class SubscriptionRepositoryTest extends TestCase
         foreach ($result as $subscription) {
             static::assertSame($subscriberList, $subscription->getSubscriberList());
         }
+    }
+
+    /**
+     * @test
+     */
+    public function removeRemovesModel()
+    {
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
+        $this->applyDatabaseChanges();
+
+        /** @var Subscription[] $allModels */
+        $allModels = $this->subject->findAll();
+        $numberOfModelsBeforeRemove = count($allModels);
+        $firstModel = $allModels[0];
+
+        $this->subject->remove($firstModel);
+
+        $numberOfModelsAfterRemove = count($this->subject->findAll());
+        static::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);
     }
 }

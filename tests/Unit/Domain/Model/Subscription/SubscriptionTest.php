@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Tests\Unit\Domain\Model\Subscription;
 
+use PhpList\PhpList4\Domain\Model\Interfaces\DomainModel;
 use PhpList\PhpList4\Domain\Model\Messaging\SubscriberList;
 use PhpList\PhpList4\Domain\Model\Subscription\Subscriber;
 use PhpList\PhpList4\Domain\Model\Subscription\Subscription;
@@ -28,6 +29,14 @@ class SubscriptionTest extends TestCase
     protected function setUp()
     {
         $this->subject = new Subscription();
+    }
+
+    /**
+     * @test
+     */
+    public function isDomainModel()
+    {
+        static::assertInstanceOf(DomainModel::class, $this->subject);
     }
 
     /**

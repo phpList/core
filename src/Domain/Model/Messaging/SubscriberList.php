@@ -19,6 +19,7 @@ use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Expose;
 use PhpList\PhpList4\Domain\Model\Identity\Administrator;
 use PhpList\PhpList4\Domain\Model\Interfaces\CreationDate;
+use PhpList\PhpList4\Domain\Model\Interfaces\DomainModel;
 use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
 use PhpList\PhpList4\Domain\Model\Interfaces\ModificationDate;
 use PhpList\PhpList4\Domain\Model\Traits\CreationDateTrait;
@@ -36,7 +37,7 @@ use PhpList\PhpList4\Domain\Model\Traits\ModificationDateTrait;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class SubscriberList implements Identity, CreationDate, ModificationDate
+class SubscriberList implements DomainModel, Identity, CreationDate, ModificationDate
 {
     use IdentityTrait;
     use CreationDateTrait;
