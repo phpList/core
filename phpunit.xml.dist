@@ -12,9 +12,13 @@
         <server name="KERNEL_CLASS" value="PhpList\PhpList4\Core\ApplicationKernel"/>
     </php>
     <testsuites>
-        <testsuite name="PHPListCore">
+        <testsuite name="unit">
             <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="integration">
             <directory>tests/Integration</directory>
+        </testsuite>
+        <testsuite name="system">
             <directory>tests/System</directory>
         </testsuite>
     </testsuites>
