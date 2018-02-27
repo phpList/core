@@ -283,8 +283,7 @@ class SubscriberListRepositoryTest extends TestCase
         $numberOfAssociatedSubscriptions = count($model->getSubscriptions());
         static::assertGreaterThan(0, $numberOfAssociatedSubscriptions);
 
-        $this->entityManager->remove($model);
-        $this->entityManager->flush();
+        $this->subject->remove($model);
 
         $newNumberOfSubscriptions = count($this->subscriptionRepository->findAll());
         $numberOfRemovedSubscriptions = $initialNumberOfSubscriptions - $newNumberOfSubscriptions;
