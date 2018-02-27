@@ -220,6 +220,29 @@ class SubscriptionRepositoryTest extends TestCase
     /**
      * @test
      */
+    public function savePersistsAndFlushesModel()
+    {
+        $this->getDataSet()->addTable(static::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(static::SUBSCRIBER_LIST_TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->touchDatabaseTable(static::TABLE_NAME);
+        $this->applyDatabaseChanges();
+        $numberOfSaveModelsBefore = count($this->subject->findAll());
+
+        $model = new Subscription();
+        /** @var Subscriber $subscriber */
+        $subscriber = $this->subscriberRepository->find(1);
+        $model->setSubscriber($subscriber);
+        /** @var SubscriberList $subscriber */
+        $subscriberList = $this->subscriberListRepository->find(1);
+        $model->setSubscriberList($subscriberList);
+        $this->subject->save($model);
+
+        static::assertCount($numberOfSaveModelsBefore + 1, $this->subject->findAll());
+    }
+
+    /**
+     * @test
+     */
     public function removeRemovesModel()
     {
         $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
