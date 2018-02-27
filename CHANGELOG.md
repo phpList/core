@@ -12,6 +12,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - Trait for database tests and abstract web test (#264)
 - Repository methods for querying subscriptions (#253)
 - Bidirectional m:n association Subscribers/SubscriberLists (#254)
+- New Travis build matrix to collect code coverage during tests 
+- Scrutinizer CI integration
+- Scrutinizer score and coverage badges in README.md
 
 ### Changed
 - Rename the Composer package to "phplist/core" (#275)
@@ -21,6 +24,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ### Deprecated
 
 ### Removed
+- Configuration/PHPUnit/phpunit.xml, using phpunit.xml.dist as default configuration
 
 ### Fixed
 - Remove associated subscriptions when a subscriber list or subscriber is removed (#271, #272)

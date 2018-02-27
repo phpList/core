@@ -15,6 +15,11 @@ env:
   - DEPENDENCIES=latest
   - DEPENDENCIES=oldest
 
+matrix:
+  include:
+  - php: '7.2'
+    env: COVERAGE=yes DEPENDENCIES=latest
+
 notifications:
   slack:
     rooms:
@@ -30,7 +35,13 @@ cache:
   - "$HOME/.composer/cache"
 
 before_install:
-- phpenv config-rm xdebug.ini
+- >
+  if [[ $COVERAGE = yes ]]; then
+    export PHPUNIT_OPTIONS="--coverage-clover=/tmp/coverage.clover";
+  else
+    phpenv config-rm xdebug.ini;
+  fi;
+
 - >
   echo;
   echo "Creating the database and importing the database schema";
@@ -63,18 +74,8 @@ script:
 
 - >
   echo;
-  echo "Running the unit tests";
-  vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/Unit/;
-
-- >
-  echo;
-  echo "Running the integration tests";
-  vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/Integration/;
-
-- >
-  echo;
-  echo "Running the system tests";
-  vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/System/;
+  echo "Running PHPUnit tests";
+  vendor/bin/phpunit $PHPUNIT_OPTIONS;
 
 - >
   echo;
@@ -90,3 +91,10 @@ script:
   echo;
   echo "Running PHP_CodeSniffer";
   vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ src/ tests/ public/;
+
+after_script:
+- >
+  if [[ $COVERAGE = yes ]]; then
+    wget https://scrutinizer-ci.com/ocular.phar;
+    php ocular.phar code-coverage:upload --format=php-clover /tmp/coverage.clover
+  fi;
