@@ -64,17 +64,17 @@ script:
 - >
   echo;
   echo "Running the unit tests";
-  vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/Unit/;
+  vendor/bin/phpunit tests/Unit/;
 
 - >
   echo;
   echo "Running the integration tests";
-  vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/Integration/;
+  vendor/bin/phpunit tests/Integration/;
 
 - >
   echo;
   echo "Running the system tests";
-  vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/System/;
+  vendor/bin/phpunit tests/System/;
 
 - >
   echo;
