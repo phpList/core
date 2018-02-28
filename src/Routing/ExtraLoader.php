@@ -52,7 +52,7 @@ class ExtraLoader extends Loader
     public function load($resource, $type = null): RouteCollection
     {
         if ($this->loaded) {
-            throw new \RuntimeException('Do not add the "extra" loader twice.', 1500587713150);
+            throw new \RuntimeException('Do not add the "extra" loader twice.', 1500587713);
         }
 
         $routes = new RouteCollection();

@@ -59,7 +59,7 @@ trait SymfonyServerTrait
     protected function startSymfonyServer(string $environment)
     {
         if (!\in_array($environment, static::$validEnvironments, true)) {
-            throw new \InvalidArgumentException('"' . $environment . '" is not a valid environment.', 1516284149961);
+            throw new \InvalidArgumentException('"' . $environment . '" is not a valid environment.', 1516284149);
         }
         if ($this->lockFileExists()) {
             throw new \RuntimeException(
@@ -187,18 +187,18 @@ trait SymfonyServerTrait
     private function checkDocumentRoot(string $documentRoot)
     {
         if (!\file_exists($documentRoot)) {
-            throw new \RuntimeException('The document root "' . $documentRoot . '" does not exist.', 1499513246550);
+            throw new \RuntimeException('The document root "' . $documentRoot . '" does not exist.', 1499513246);
         }
         if (!\is_dir($documentRoot)) {
             throw new \RuntimeException(
                 'The document root "' . $documentRoot . '" exists, but is no directory.',
-                1499513263757
+                1499513263
             );
         }
         if (!\is_readable($documentRoot)) {
             throw new \RuntimeException(
                 'The document root "' . $documentRoot . '" exists and is a directory, but is not readable.',
-                1499513279590
+                1499513279
             );
         }
     }

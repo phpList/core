@@ -63,7 +63,7 @@ final class Environment
             $environmentsText = '"' . implode('", ', static::$validEnvironments) . '"';
             throw new \UnexpectedValueException(
                 '$environment must be one of ' . $environmentsText . ', but actually was: "' . $environment . '"',
-                1499112172108
+                1499112172
             );
         }
     }

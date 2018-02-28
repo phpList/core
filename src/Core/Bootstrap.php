@@ -180,7 +180,7 @@ class Bootstrap
     private function assertConfigureHasBeenCalled()
     {
         if (!$this->isConfigured) {
-            throw new \RuntimeException('Please call configure() first.', 1501170550897);
+            throw new \RuntimeException('Please call configure() first.', 1501170550);
         }
     }
 

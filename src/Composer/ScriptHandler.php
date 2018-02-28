@@ -113,7 +113,7 @@ class ScriptHandler extends SensioScriptHandler
         if ($packageName === static::CORE_PACKAGE_NAME) {
             throw new \DomainException(
                 'This Composer script must not be called for the core package itself.',
-                1501240572934
+                1501240572
             );
         }
     }

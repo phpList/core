@@ -168,7 +168,7 @@ class ApplicationKernel extends Kernel
     {
         $configurationFilePath = $this->getApplicationDir() . '/Configuration/bundles.yml';
         if (!is_readable($configurationFilePath)) {
-            throw new \RuntimeException('The file "' . $configurationFilePath . '" could not be read.', 1504272377302);
+            throw new \RuntimeException('The file "' . $configurationFilePath . '" could not be read.', 1504272377);
         }
 
         return Yaml::parse(file_get_contents($configurationFilePath));
