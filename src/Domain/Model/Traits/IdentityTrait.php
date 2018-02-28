@@ -3,9 +3,7 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Domain\Model\Traits;
 
-use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Mapping\GeneratedValue;
-use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping;
 use JMS\Serializer\Annotation\Expose;
 
 /**
@@ -19,9 +17,9 @@ trait IdentityTrait
 {
     /**
      * @var int
-     * @Id
-     * @Column(type="integer")
-     * @GeneratedValue
+     * @Mapping\Id
+     * @Mapping\Column(type="integer")
+     * @Mapping\GeneratedValue
      * @Expose
      */
     private $id = 0;

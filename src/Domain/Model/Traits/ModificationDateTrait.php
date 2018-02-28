@@ -3,8 +3,7 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Domain\Model\Traits;
 
-use Doctrine\ORM\Mapping\PrePersist;
-use Doctrine\ORM\Mapping\PreUpdate;
+use Doctrine\ORM\Mapping;
 
 /**
  * This trait provides an automatic modification date for models.
@@ -39,8 +38,8 @@ trait ModificationDateTrait
     /**
      * Updates the modification date to now.
      *
-     * @PrePersist
-     * @PreUpdate
+     * @Mapping\PrePersist
+     * @Mapping\PreUpdate
      *
      * @return void
      */

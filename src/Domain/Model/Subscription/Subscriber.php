@@ -5,15 +5,8 @@ namespace PhpList\PhpList4\Domain\Model\Subscription;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping;
 use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
-use Doctrine\ORM\Mapping\JoinColumn;
-use Doctrine\ORM\Mapping\JoinTable;
-use Doctrine\ORM\Mapping\ManyToMany;
-use Doctrine\ORM\Mapping\OneToMany;
-use Doctrine\ORM\Mapping\PrePersist;
-use Doctrine\ORM\Mapping\Table;
 use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Expose;
 use PhpList\PhpList4\Domain\Model\Interfaces\CreationDate;
@@ -28,9 +21,9 @@ use PhpList\PhpList4\Domain\Model\Traits\ModificationDateTrait;
  * This class represents asubscriber who can subscribe to multiple subscriber lists and can receive email messages from
  * campaigns for those subscriber lists.
  *
- * @Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Subscription\SubscriberRepository")
- * @Table(name="phplist_user_user")
- * @HasLifecycleCallbacks
+ * @Mapping\Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Subscription\SubscriberRepository")
+ * @Mapping\Table(name="phplist_user_user")
+ * @Mapping\HasLifecycleCallbacks
  * @ExclusionPolicy("all")
  *
  * @author Oliver Klee <oliver@phplist.com>
@@ -108,7 +101,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
 
     /**
      * @var Collection
-     * @OneToMany(
+     * @Mapping\OneToMany(
      *     targetEntity="PhpList\PhpList4\Domain\Model\Subscription\Subscription",
      *     mappedBy="subscriber",
      *     cascade={"remove"}
@@ -118,10 +111,10 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
 
     /**
      * @var Collection
-     * @ManyToMany(targetEntity="PhpList\PhpList4\Domain\Model\Messaging\SubscriberList", inversedBy="subscribers")
-     * @JoinTable(name="phplist_listuser",
-     *            joinColumns={@JoinColumn(name="userid")},
-     *            inverseJoinColumns={@JoinColumn(name="listid")}
+     * @Mapping\ManyToMany(targetEntity="PhpList\PhpList4\Domain\Model\Messaging\SubscriberList", inversedBy="subscribers")
+     * @Mapping\JoinTable(name="phplist_listuser",
+     *     joinColumns={@Mapping\JoinColumn(name="userid")},
+     *     inverseJoinColumns={@Mapping\JoinColumn(name="listid")}
      * )
      */
     private $subscribedLists = null;
@@ -220,7 +213,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     /**
      * Generates and sets a (new) random unique ID.
      *
-     * @PrePersist
+     * @Mapping\PrePersist
      *
      * @return void
      */

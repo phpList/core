@@ -3,12 +3,8 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Domain\Model\Identity;
 
+use Doctrine\ORM\Mapping;
 use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\JoinColumn;
-use Doctrine\ORM\Mapping\ManyToOne;
-use Doctrine\ORM\Mapping\PrePersist;
-use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Proxy\Proxy;
 use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Expose;
@@ -20,8 +16,8 @@ use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
 /**
  * This class represents an API authentication token for an administrator.
  *
- * @Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository")
- * @Table(name="phplist_admintoken")
+ * @Mapping\Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository")
+ * @Mapping\Table(name="phplist_admintoken")
  * @ExclusionPolicy("all")
  *
  * @author Oliver Klee <oliver@phplist.com>
@@ -57,8 +53,8 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
 
     /**
      * @var Administrator|Proxy
-     * @ManyToOne(targetEntity="PhpList\PhpList4\Domain\Model\Identity\Administrator")
-     * @JoinColumn(name="adminid")
+     * @Mapping\ManyToOne(targetEntity="PhpList\PhpList4\Domain\Model\Identity\Administrator")
+     * @Mapping\JoinColumn(name="adminid")
      */
     private $administrator = null;
 
@@ -98,7 +94,7 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
     /**
      * Updates the creation date to now.
      *
-     * @PrePersist
+     * @Mapping\PrePersist
      *
      * @return void
      */
