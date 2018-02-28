@@ -79,7 +79,7 @@ code coverage of the fixed bugs and the new features.
 To run the existing unit tests, run this command:
 
 ```bash
-vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/Unit/
+vendor/bin/phpunit tests/Unit/
 ```
 
 ### Running the integration tests
@@ -102,7 +102,7 @@ and access credentials in `Configuration/parameters.yml`.
 After that has been done, you can run the integration tests:
 
 ```bash
-vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/Integration/
+vendor/bin/phpunit tests/Integration/
 ```
 
 
