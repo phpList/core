@@ -234,7 +234,7 @@ class ModuleFinder
             $configurationSets[] = $extra['phplist/core']['configuration'];
         }
 
-        return array_replace_recursive(...$configurationSets);
+        return /** @scrutinizer ignore-call */ array_replace_recursive(...$configurationSets);
     }
 
     /**

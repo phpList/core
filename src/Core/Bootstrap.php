@@ -74,11 +74,11 @@ class Bootstrap
      */
     public static function getInstance(): Bootstrap
     {
-        if (static::$instance === null) {
-            static::$instance = new static();
+        if (self::$instance === null) {
+            self::$instance = new static();
         }
 
-        return static::$instance;
+        return self::$instance;
     }
 
     /**
@@ -90,7 +90,7 @@ class Bootstrap
      */
     public static function purgeInstance()
     {
-        static::$instance = null;
+        self::$instance = null;
     }
 
     /**
@@ -140,9 +140,9 @@ class Bootstrap
      * @SuppressWarnings("PHPMD.ExitExpression")
      * @SuppressWarnings("PHPMD.Superglobals")
      *
-     * @return Bootstrap fluent interface
+     * @return Bootstrap|null fluent interface
      */
-    public function ensureDevelopmentOrTestingEnvironment(): Bootstrap
+    public function ensureDevelopmentOrTestingEnvironment()
     {
         $usesProxy = isset($_SERVER['HTTP_CLIENT_IP']) || isset($_SERVER['HTTP_X_FORWARDED_FOR']);
         $isOnCli = PHP_SAPI === 'cli' || PHP_SAPI === 'cli-server';

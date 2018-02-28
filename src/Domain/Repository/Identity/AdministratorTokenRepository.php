@@ -47,6 +47,6 @@ class AdministratorTokenRepository extends AbstractRepository
         $queryBuilder = $this->getEntityManager()->createQueryBuilder();
         $queryBuilder->delete(AdministratorToken::class, 'token')->where('token.expiry <= CURRENT_TIMESTAMP()');
 
-        return $queryBuilder->getQuery()->execute();
+        return (int)$queryBuilder->getQuery()->execute();
     }
 }
