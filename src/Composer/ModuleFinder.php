@@ -81,7 +81,7 @@ class ModuleFinder
         if (!is_array($extra['phplist/core']['bundles'])) {
             throw new \InvalidArgumentException(
                 'The extras.phplist/core.bundles section in the composer.json must be an array.',
-                1505411665146
+                1505411665
             );
         }
 
@@ -90,9 +90,8 @@ class ModuleFinder
         foreach ($bundleExtras as $key => $bundleName) {
             if (!is_string($bundleName)) {
                 throw new \InvalidArgumentException(
-                    'The extras.phplist/core.bundles. ' . $key .
-                    '" section in the composer.json must be a string.',
-                    1505412184038
+                    'The extras.phplist/core.bundles. ' . $key . '" section in the composer.json must be a string.',
+                    1505412184
                 );
             }
         }
@@ -112,7 +111,7 @@ class ModuleFinder
         if (!is_array($extra['phplist/core'])) {
             throw new \InvalidArgumentException(
                 'The extras.phplist/core" section in the composer.json must be an array.',
-                1505411436144
+                1505411436
             );
         }
     }
@@ -183,7 +182,7 @@ class ModuleFinder
         if (!is_array($extra['phplist/core']['routes'])) {
             throw new \InvalidArgumentException(
                 'The extras.phplist/core.routes section in the composer.json must be an array.',
-                1506429004462
+                1506429004
             );
         }
 
@@ -194,7 +193,7 @@ class ModuleFinder
                 throw new \InvalidArgumentException(
                     'The extras.phplist/core.routes. ' . $routeName .
                     '" section in the composer.json must be an array.',
-                    1506429860740
+                    1506429860
                 );
             }
         }
@@ -260,7 +259,7 @@ class ModuleFinder
         if (!is_array($extra['phplist/core']['configuration'])) {
             throw new \InvalidArgumentException(
                 'The extras.phplist/core.configuration section in the composer.json must be an array.',
-                1508165934174
+                1508165934
             );
         }
     }

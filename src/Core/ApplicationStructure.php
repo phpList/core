@@ -50,7 +50,7 @@ class ApplicationStructure
         if (!file_exists($applicationRoot . '/composer.json')) {
             throw new \RuntimeException(
                 'There is no composer.json in the supposed application root "' . $applicationRoot . '".',
-                1501169001588
+                1501169001
             );
         }
 
