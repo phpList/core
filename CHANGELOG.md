@@ -15,6 +15,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - Bidirectional m:n association Subscribers/SubscriberLists (#254)
 
 ### Changed
+- Depend on Symfony 3.4.0 as minimum version (#288)
 - Move the PHPUnit configuration file (#283)
 - Rename the Composer package to "phplist/core" (#275)
 - Remove the obsolete core classes (#267)
