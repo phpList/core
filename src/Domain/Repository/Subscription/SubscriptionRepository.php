@@ -18,4 +18,19 @@ use PhpList\PhpList4\Domain\Repository\AbstractRepository;
  */
 class SubscriptionRepository extends AbstractRepository
 {
+    /**
+     * @param SubscriberList $list
+     * @param Subscriber $subscriber
+     *
+     * @return Subscription|null
+     */
+    public function findOneBySubscriberListAndSubscriber(SubscriberList $list, Subscriber $subscriber)
+    {
+        return $this->findOneBy(
+            [
+                'subscriberList' => $list,
+                'subscriber' => $subscriber,
+            ]
+        );
+    }
 }

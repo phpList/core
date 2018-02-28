@@ -258,4 +258,74 @@ class SubscriptionRepositoryTest extends TestCase
         $numberOfModelsAfterRemove = count($this->subject->findAll());
         static::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);
     }
+
+    /**
+     * @test
+     */
+    public function findOneBySubscriberListAndSubscriberForNeitherMatchingReturnsNull()
+    {
+        $this->getDataSet()->addTable(static::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(static::SUBSCRIBER_LIST_TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
+        $this->applyDatabaseChanges();
+
+        $subscriberList = $this->subscriberListRepository->find(3);
+        $subscriber = $this->subscriberRepository->find(4);
+        $result = $this->subject->findOneBySubscriberListAndSubscriber($subscriberList, $subscriber);
+
+        static::assertNull($result);
+    }
+
+    /**
+     * @test
+     */
+    public function findOneBySubscriberListAndSubscriberForMatchingSubscriberListOnlyReturnsNull()
+    {
+        $this->getDataSet()->addTable(static::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(static::SUBSCRIBER_LIST_TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
+        $this->applyDatabaseChanges();
+
+        $subscriberList = $this->subscriberListRepository->find(2);
+        $subscriber = $this->subscriberRepository->find(4);
+        $result = $this->subject->findOneBySubscriberListAndSubscriber($subscriberList, $subscriber);
+
+        static::assertNull($result);
+    }
+
+    /**
+     * @test
+     */
+    public function findOneBySubscriberListAndSubscriberForMatchingSubscriberOnlyReturnsNull()
+    {
+        $this->getDataSet()->addTable(static::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(static::SUBSCRIBER_LIST_TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
+        $this->applyDatabaseChanges();
+
+        $subscriberList = $this->subscriberListRepository->find(3);
+        $subscriber = $this->subscriberRepository->find(1);
+        $result = $this->subject->findOneBySubscriberListAndSubscriber($subscriberList, $subscriber);
+
+        static::assertNull($result);
+    }
+
+    /**
+     * @test
+     */
+    public function findOneBySubscriberListAndSubscriberForBothMatchingReturnsMatch()
+    {
+        $this->getDataSet()->addTable(static::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
+        $this->getDataSet()->addTable(static::SUBSCRIBER_LIST_TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
+        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
+        $this->applyDatabaseChanges();
+
+        $subscriberList = $this->subscriberListRepository->find(2);
+        $subscriber = $this->subscriberRepository->find(1);
+        $result = $this->subject->findOneBySubscriberListAndSubscriber($subscriberList, $subscriber);
+
+        static::assertInstanceOf(Subscription::class, $result);
+        static::assertSame($subscriberList, $result->getSubscriberList());
+        static::assertSame($subscriber, $result->getSubscriber());
+    }
 }
