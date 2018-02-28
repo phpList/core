@@ -3,10 +3,8 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Domain\Model\Identity;
 
+use Doctrine\ORM\Mapping;
 use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
-use Doctrine\ORM\Mapping\Table;
 use PhpList\PhpList4\Domain\Model\Interfaces\CreationDate;
 use PhpList\PhpList4\Domain\Model\Interfaces\DomainModel;
 use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
@@ -19,9 +17,9 @@ use PhpList\PhpList4\Domain\Model\Traits\ModificationDateTrait;
  * This class represents an administrator who can log to the system, is allowed to administer
  * selected lists (as the owner), send campaigns to these lists and edit subscribers.
  *
- * @Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository")
- * @Table(name="phplist_admin")
- * @HasLifecycleCallbacks
+ * @Mapping\Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository")
+ * @Mapping\Table(name="phplist_admin")
+ * @Mapping\HasLifecycleCallbacks
  *
  * @author Oliver Klee <oliver@phplist.com>
  */

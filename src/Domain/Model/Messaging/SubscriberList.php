@@ -5,15 +5,8 @@ namespace PhpList\PhpList4\Domain\Model\Messaging;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping;
 use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
-use Doctrine\ORM\Mapping\JoinColumn;
-use Doctrine\ORM\Mapping\JoinTable;
-use Doctrine\ORM\Mapping\ManyToMany;
-use Doctrine\ORM\Mapping\ManyToOne;
-use Doctrine\ORM\Mapping\OneToMany;
-use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Proxy\Proxy;
 use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Expose;
@@ -30,9 +23,9 @@ use PhpList\PhpList4\Domain\Model\Traits\ModificationDateTrait;
  * This class represents an administrator who can log to the system, is allowed to administer
  * selected lists (as the owner), send campaigns to these lists and edit subscribers.
  *
- * @Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Messaging\SubscriberListRepository")
- * @Table(name="phplist_list")
- * @HasLifecycleCallbacks
+ * @Mapping\Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Messaging\SubscriberListRepository")
+ * @Mapping\Table(name="phplist_list")
+ * @Mapping\HasLifecycleCallbacks
  * @ExclusionPolicy("all")
  *
  * @author Oliver Klee <oliver@phplist.com>
@@ -100,14 +93,14 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
 
     /**
      * @var Administrator
-     * @ManyToOne(targetEntity="PhpList\PhpList4\Domain\Model\Identity\Administrator")
-     * @JoinColumn(name="owner")
+     * @Mapping\ManyToOne(targetEntity="PhpList\PhpList4\Domain\Model\Identity\Administrator")
+     * @Mapping\JoinColumn(name="owner")
      */
     private $owner = null;
 
     /**
      * @var Collection
-     * @OneToMany(
+     * @Mapping\OneToMany(
      *     targetEntity="PhpList\PhpList4\Domain\Model\Subscription\Subscription",
      *     mappedBy="subscriberList",
      *     cascade={"remove"}
@@ -117,10 +110,13 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
 
     /**
      * @var Collection
-     * @ManyToMany(targetEntity="PhpList\PhpList4\Domain\Model\Subscription\Subscriber", inversedBy="subscribedLists")
-     * @JoinTable(name="phplist_listuser",
-     *            joinColumns={@JoinColumn(name="listid")},
-     *            inverseJoinColumns={@JoinColumn(name="userid")}
+     * @Mapping\ManyToMany(
+     *     targetEntity="PhpList\PhpList4\Domain\Model\Subscription\Subscriber",
+     *     inversedBy="subscribedLists"
+     * )
+     * @Mapping\JoinTable(name="phplist_listuser",
+     *     joinColumns={@Mapping\JoinColumn(name="listid")},
+     *     inverseJoinColumns={@Mapping\JoinColumn(name="userid")}
      * )
      */
     private $subscribers = null;

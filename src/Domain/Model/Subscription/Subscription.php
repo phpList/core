@@ -3,13 +3,8 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Domain\Model\Subscription;
 
+use Doctrine\ORM\Mapping;
 use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
-use Doctrine\ORM\Mapping\Id;
-use Doctrine\ORM\Mapping\JoinColumn;
-use Doctrine\ORM\Mapping\ManyToOne;
-use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Proxy\Proxy;
 use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Expose;
@@ -24,9 +19,9 @@ use PhpList\PhpList4\Domain\Model\Traits\ModificationDateTrait;
  * This class represents asubscriber who can subscribe to multiple subscriber lists and can receive email messages from
  * campaigns for those subscriber lists.
  *
- * @Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Subscription\SubscriptionRepository")
- * @Table(name="phplist_listuser")
- * @HasLifecycleCallbacks
+ * @Mapping\Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Subscription\SubscriptionRepository")
+ * @Mapping\Table(name="phplist_listuser")
+ * @Mapping\HasLifecycleCallbacks
  * @ExclusionPolicy("all")
  *
  * @author Oliver Klee <oliver@phplist.com>
@@ -51,17 +46,23 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
 
     /**
      * @var Subscriber|Proxy|null
-     * @Id
-     * @ManyToOne(targetEntity="PhpList\PhpList4\Domain\Model\Subscription\Subscriber", inversedBy="subscriptions")
-     * @JoinColumn(name="userid")
+     * @Mapping\Id
+     * @Mapping\ManyToOne(
+     *     targetEntity="PhpList\PhpList4\Domain\Model\Subscription\Subscriber",
+     *     inversedBy="subscriptions"
+     * )
+     * @Mapping\JoinColumn(name="userid")
      */
     private $subscriber = null;
 
     /**
      * @var SubscriberList|Proxy|null
-     * @Id
-     * @ManyToOne(targetEntity="PhpList\PhpList4\Domain\Model\Messaging\SubscriberList", inversedBy="subscriptions")
-     * @JoinColumn(name="listid")
+     * @Mapping\Id
+     * @Mapping\ManyToOne(
+     *     targetEntity="PhpList\PhpList4\Domain\Model\Messaging\SubscriberList",
+     *     inversedBy="subscriptions"
+     * )
+     * @Mapping\JoinColumn(name="listid")
      */
     private $subscriberList = null;
 

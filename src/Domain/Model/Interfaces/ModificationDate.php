@@ -3,8 +3,7 @@ declare(strict_types=1);
 
 namespace PhpList\PhpList4\Domain\Model\Interfaces;
 
-use Doctrine\ORM\Mapping\PrePersist;
-use Doctrine\ORM\Mapping\PreUpdate;
+use Doctrine\ORM\Mapping;
 
 /**
  * This interface communicates that a domain model has a modification date.
@@ -23,8 +22,8 @@ interface ModificationDate
     /**
      * Updates the modification date to now.
      *
-     * @PrePersist
-     * @PreUpdate
+     * @Mapping\PrePersist
+     * @Mapping\PreUpdate
      *
      * @return void
      */
