@@ -205,10 +205,16 @@ class ScriptHandler extends SensioScriptHandler
      * @param string $contents
      *
      * @return void
+     *
+     * @throws \RuntimeException
      */
     private static function createAndWriteFile(string $path, string $contents)
     {
         $fileHandle = fopen($path, 'wb');
+        if ($fileHandle === false) {
+            throw new \RuntimeException('The file "' . $path . '" could not be opened for writing.', 1519851153);
+        }
+
         fwrite($fileHandle, $contents);
         fclose($fileHandle);
     }
