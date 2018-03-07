@@ -1,22 +1,22 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Domain\Model\Identity;
+namespace PhpList\Core\Domain\Model\Identity;
 
 use Doctrine\ORM\Mapping;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Proxy\Proxy;
 use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Expose;
-use PhpList\PhpList4\Domain\Model\Interfaces\CreationDate;
-use PhpList\PhpList4\Domain\Model\Interfaces\DomainModel;
-use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
-use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
+use PhpList\Core\Domain\Model\Interfaces\CreationDate;
+use PhpList\Core\Domain\Model\Interfaces\DomainModel;
+use PhpList\Core\Domain\Model\Interfaces\Identity;
+use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 
 /**
  * This class represents an API authentication token for an administrator.
  *
- * @Mapping\Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository")
+ * @Mapping\Entity(repositoryClass="PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository")
  * @Mapping\Table(name="phplist_admintoken")
  * @ExclusionPolicy("all")
  *
@@ -53,7 +53,7 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
 
     /**
      * @var Administrator|Proxy
-     * @Mapping\ManyToOne(targetEntity="PhpList\PhpList4\Domain\Model\Identity\Administrator")
+     * @Mapping\ManyToOne(targetEntity="PhpList\Core\Domain\Model\Identity\Administrator")
      * @Mapping\JoinColumn(name="adminid")
      */
     private $administrator = null;

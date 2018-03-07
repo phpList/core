@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Integration\Routing;
+namespace PhpList\Core\Tests\Integration\Routing;
 
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
-use PhpList\PhpList4\Core\ApplicationKernel;
-use PhpList\PhpList4\Core\ApplicationStructure;
-use PhpList\PhpList4\Core\Bootstrap;
-use PhpList\PhpList4\Core\Environment;
-use PhpList\PhpList4\Routing\ExtraLoader;
+use PhpList\Core\Core\ApplicationKernel;
+use PhpList\Core\Core\ApplicationStructure;
+use PhpList\Core\Core\Bootstrap;
+use PhpList\Core\Core\Environment;
+use PhpList\Core\Routing\ExtraLoader;
 use PHPUnit\Framework\TestCase;
 use Sensio\Bundle\FrameworkExtraBundle\Routing\AnnotatedRouteControllerLoader;
 use Symfony\Component\Config\Loader\LoaderResolver;

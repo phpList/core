@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Domain\Repository\Identity;
+namespace PhpList\Core\Domain\Repository\Identity;
 
-use PhpList\PhpList4\Domain\Model\Identity\Administrator;
-use PhpList\PhpList4\Domain\Repository\AbstractRepository;
-use PhpList\PhpList4\Security\HashGenerator;
+use PhpList\Core\Domain\Model\Identity\Administrator;
+use PhpList\Core\Domain\Repository\AbstractRepository;
+use PhpList\Core\Security\HashGenerator;
 
 /**
  * Repository for Administrator models.

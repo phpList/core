@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\Domain\Model\Identity;
+namespace PhpList\Core\Tests\Unit\Domain\Model\Identity;
 
-use PhpList\PhpList4\Domain\Model\Identity\Administrator;
-use PhpList\PhpList4\Domain\Model\Identity\AdministratorToken;
-use PhpList\PhpList4\Domain\Model\Interfaces\DomainModel;
-use PhpList\PhpList4\TestingSupport\Traits\ModelTestTrait;
-use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
+use PhpList\Core\Domain\Model\Identity\Administrator;
+use PhpList\Core\Domain\Model\Identity\AdministratorToken;
+use PhpList\Core\Domain\Model\Interfaces\DomainModel;
+use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
+use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
 
 /**

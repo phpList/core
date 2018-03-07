@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\Composer;
+namespace PhpList\Core\Tests\Unit\Composer;
 
 use Composer\Package\PackageInterface;
-use PhpList\PhpList4\Composer\ModuleFinder;
-use PhpList\PhpList4\Composer\PackageRepository;
+use PhpList\Core\Composer\ModuleFinder;
+use PhpList\Core\Composer\PackageRepository;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 use Prophecy\Prophecy\ProphecySubjectInterface;
@@ -196,7 +196,7 @@ class ModuleFinderTest extends TestCase
                         'phplist/core' => [
                             'bundles' => [
                                 'Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle',
-                                'PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle',
+                                'PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle',
                             ],
                         ],
                     ],
@@ -204,7 +204,7 @@ class ModuleFinderTest extends TestCase
                 [
                     'phplist/foo' => [
                         'Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle',
-                        'PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle',
+                        'PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle',
                     ],
                 ],
             ],
@@ -217,13 +217,13 @@ class ModuleFinderTest extends TestCase
                     ],
                     'phplist/bar' => [
                         'phplist/core' => [
-                            'bundles' => ['PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
+                            'bundles' => ['PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
                         ],
                     ],
                 ],
                 [
                     'phplist/foo' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
-                    'phplist/bar' => ['PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
+                    'phplist/bar' => ['PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
                 ],
             ],
         ];

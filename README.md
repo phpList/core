@@ -121,7 +121,7 @@ listed in the `extra` section of the module's `composer.json` like this:
     "phplist/core": {
         "bundles": [
             "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
-            "PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle"
+            "PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle"
         ]
     }
 }

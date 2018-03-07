@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\EmptyStartPageBundle;
+namespace PhpList\Core\EmptyStartPageBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 

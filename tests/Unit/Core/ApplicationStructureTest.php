@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\Core;
+namespace PhpList\Core\Tests\Unit\Core;
 
-use PhpList\PhpList4\Core\ApplicationStructure;
+use PhpList\Core\Core\ApplicationStructure;
 use PHPUnit\Framework\TestCase;
 
 /**

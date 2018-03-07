@@ -51,8 +51,8 @@ doctrine:
         naming_strategy: doctrine.orm.naming_strategy.underscore
         auto_mapping: true
         mappings:
-            PhpList\PhpList4\Domain\Model:
+            PhpList\Core\Domain\Model:
                 type: annotation
                 is_bundle: false
-                prefix: PhpList\PhpList4\Domain\Model
+                prefix: PhpList\Core\Domain\Model
                 dir: '%kernel.project_dir%/src/Domain/Model/'

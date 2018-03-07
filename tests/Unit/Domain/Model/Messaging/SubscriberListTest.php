@@ -1,15 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\Domain\Model\Messaging;
+namespace PhpList\Core\Tests\Unit\Domain\Model\Messaging;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use PhpList\PhpList4\Domain\Model\Identity\Administrator;
-use PhpList\PhpList4\Domain\Model\Interfaces\DomainModel;
-use PhpList\PhpList4\Domain\Model\Messaging\SubscriberList;
-use PhpList\PhpList4\TestingSupport\Traits\ModelTestTrait;
-use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
+use PhpList\Core\Domain\Model\Identity\Administrator;
+use PhpList\Core\Domain\Model\Interfaces\DomainModel;
+use PhpList\Core\Domain\Model\Messaging\SubscriberList;
+use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
+use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
 
 /**

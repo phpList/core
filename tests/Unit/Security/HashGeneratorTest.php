@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\Security;
+namespace PhpList\Core\Tests\Unit\Security;
 
-use PhpList\PhpList4\Security\HashGenerator;
+use PhpList\Core\Security\HashGenerator;
 use PHPUnit\Framework\TestCase;
 
 /**

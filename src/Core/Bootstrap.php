@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Core;
+namespace PhpList\Core\Core;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Debug\Debug;

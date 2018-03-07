@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Domain\Model\Interfaces;
+namespace PhpList\Core\Domain\Model\Interfaces;
 
 use Doctrine\ORM\Mapping;
 

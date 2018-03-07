@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Routing;
+namespace PhpList\Core\Routing;
 
-use PhpList\PhpList4\Core\ApplicationStructure;
+use PhpList\Core\Core\ApplicationStructure;
 use Symfony\Component\Config\Loader\Loader;
 use Symfony\Component\Routing\RouteCollection;
 

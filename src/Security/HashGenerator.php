@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Security;
+namespace PhpList\Core\Security;
 
 /**
  * This class provides functions for working with secure hashes.

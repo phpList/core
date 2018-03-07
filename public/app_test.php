@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-use PhpList\PhpList4\Core\Bootstrap;
-use PhpList\PhpList4\Core\Environment;
+use PhpList\Core\Core\Bootstrap;
+use PhpList\Core\Core\Environment;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 

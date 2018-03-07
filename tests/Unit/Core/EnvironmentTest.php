@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\Core;
+namespace PhpList\Core\Tests\Unit\Core;
 
-use PhpList\PhpList4\Core\Environment;
+use PhpList\Core\Core\Environment;
 use PHPUnit\Framework\TestCase;
 
 /**

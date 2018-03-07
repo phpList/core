@@ -1,17 +1,17 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Subscription;
+namespace PhpList\Core\Tests\Integration\Domain\Repository\Subscription;
 
 use Doctrine\ORM\Proxy\Proxy;
-use PhpList\PhpList4\Domain\Model\Messaging\SubscriberList;
-use PhpList\PhpList4\Domain\Model\Subscription\Subscriber;
-use PhpList\PhpList4\Domain\Model\Subscription\Subscription;
-use PhpList\PhpList4\Domain\Repository\Messaging\SubscriberListRepository;
-use PhpList\PhpList4\Domain\Repository\Subscription\SubscriberRepository;
-use PhpList\PhpList4\Domain\Repository\Subscription\SubscriptionRepository;
-use PhpList\PhpList4\TestingSupport\Traits\DatabaseTestTrait;
-use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
+use PhpList\Core\Domain\Model\Messaging\SubscriberList;
+use PhpList\Core\Domain\Model\Subscription\Subscriber;
+use PhpList\Core\Domain\Model\Subscription\Subscription;
+use PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberRepository;
+use PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository;
+use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
+use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
 
 /**

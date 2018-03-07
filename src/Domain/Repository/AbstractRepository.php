@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Domain\Repository;
+namespace PhpList\Core\Domain\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use PhpList\PhpList4\Domain\Model\Interfaces\DomainModel;
+use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 
 /**
  * Base class for repositories.

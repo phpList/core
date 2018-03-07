@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Integration\Core;
+namespace PhpList\Core\Tests\Integration\Core;
 
-use PhpList\PhpList4\Core\ApplicationKernel;
-use PhpList\PhpList4\Core\Bootstrap;
-use PhpList\PhpList4\Core\Environment;
+use PhpList\Core\Core\ApplicationKernel;
+use PhpList\Core\Core\Bootstrap;
+use PhpList\Core\Core\Environment;
 use PHPUnit\Framework\TestCase;
 
 /**

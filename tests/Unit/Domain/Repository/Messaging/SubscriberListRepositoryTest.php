@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\Domain\Repository\Messaging;
+namespace PhpList\Core\Tests\Unit\Domain\Repository\Messaging;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use PhpList\PhpList4\Domain\Repository\Messaging\SubscriberListRepository;
+use PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ProphecySubjectInterface;
 

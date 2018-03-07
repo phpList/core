@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\EmptyStartPageBundle\Controller;
+namespace PhpList\Core\Tests\Unit\EmptyStartPageBundle\Controller;
 
-use PhpList\PhpList4\EmptyStartPageBundle\Controller\DefaultController;
+use PhpList\Core\EmptyStartPageBundle\Controller\DefaultController;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;

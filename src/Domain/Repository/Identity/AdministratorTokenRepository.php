@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Domain\Repository\Identity;
+namespace PhpList\Core\Domain\Repository\Identity;
 
 use Doctrine\Common\Collections\Criteria;
-use PhpList\PhpList4\Domain\Model\Identity\AdministratorToken;
-use PhpList\PhpList4\Domain\Repository\AbstractRepository;
+use PhpList\Core\Domain\Model\Identity\AdministratorToken;
+use PhpList\Core\Domain\Repository\AbstractRepository;
 
 /**
  * Repository for AdministratorToken models.

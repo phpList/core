@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Core;
+namespace PhpList\Core\Core;
 
 /**
  * This class provides information about the current application and its file structure.
@@ -38,7 +38,7 @@ class ApplicationStructure
     public function getApplicationRoot(): string
     {
         $corePackagePath = $this->getCorePackageRoot();
-        $corePackageIsRootPackage = interface_exists('PhpList\\PhpList4\\Tests\\Support\\Interfaces\\TestMarker');
+        $corePackageIsRootPackage = interface_exists('PhpList\\Core\\Tests\\Support\\Interfaces\\TestMarker');
         if ($corePackageIsRootPackage) {
             $applicationRoot = $corePackagePath;
         } else {

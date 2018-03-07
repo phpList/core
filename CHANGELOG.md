@@ -1,4 +1,4 @@
-# phpList 4 core change log
+# phpList core change log
 
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
@@ -15,6 +15,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - Bidirectional m:n association Subscribers/SubscriberLists (#254)
 
 ### Changed
+- Change the core namespace from PhpList\PhpList4 to PhpList\Core (#290)
 - Depend on Symfony 3.4.0 as minimum version (#288)
 - Move the PHPUnit configuration file (#283)
 - Rename the Composer package to "phplist/core" (#275)

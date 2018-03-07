@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\Domain\Repository\Subscription;
+namespace PhpList\Core\Tests\Unit\Domain\Repository\Subscription;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use PhpList\PhpList4\Domain\Repository\Subscription\SubscriptionRepository;
+use PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ProphecySubjectInterface;
 

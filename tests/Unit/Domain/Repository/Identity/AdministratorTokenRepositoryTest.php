@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\Domain\Repository\Identity;
+namespace PhpList\Core\Tests\Unit\Domain\Repository\Identity;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository;
+use PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ProphecySubjectInterface;
 

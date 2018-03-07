@@ -9,6 +9,6 @@
 >
     <php>
         <ini name="error_reporting" value="-1"/>
-        <server name="KERNEL_CLASS" value="PhpList\PhpList4\Core\ApplicationKernel"/>
+        <server name="KERNEL_CLASS" value="PhpList\Core\Core\ApplicationKernel"/>
     </php>
 </phpunit>

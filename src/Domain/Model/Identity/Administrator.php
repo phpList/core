@@ -1,23 +1,23 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Domain\Model\Identity;
+namespace PhpList\Core\Domain\Model\Identity;
 
 use Doctrine\ORM\Mapping;
 use Doctrine\ORM\Mapping\Column;
-use PhpList\PhpList4\Domain\Model\Interfaces\CreationDate;
-use PhpList\PhpList4\Domain\Model\Interfaces\DomainModel;
-use PhpList\PhpList4\Domain\Model\Interfaces\Identity;
-use PhpList\PhpList4\Domain\Model\Interfaces\ModificationDate;
-use PhpList\PhpList4\Domain\Model\Traits\CreationDateTrait;
-use PhpList\PhpList4\Domain\Model\Traits\IdentityTrait;
-use PhpList\PhpList4\Domain\Model\Traits\ModificationDateTrait;
+use PhpList\Core\Domain\Model\Interfaces\CreationDate;
+use PhpList\Core\Domain\Model\Interfaces\DomainModel;
+use PhpList\Core\Domain\Model\Interfaces\Identity;
+use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
+use PhpList\Core\Domain\Model\Traits\CreationDateTrait;
+use PhpList\Core\Domain\Model\Traits\IdentityTrait;
+use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 
 /**
  * This class represents an administrator who can log to the system, is allowed to administer
  * selected lists (as the owner), send campaigns to these lists and edit subscribers.
  *
- * @Mapping\Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository")
+ * @Mapping\Entity(repositoryClass="PhpList\Core\Domain\Repository\Identity\AdministratorRepository")
  * @Mapping\Table(name="phplist_admin")
  * @Mapping\HasLifecycleCallbacks
  *

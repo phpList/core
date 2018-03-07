@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Composer;
+namespace PhpList\Core\Composer;
 
 use Composer\Composer;
 use Composer\Package\PackageInterface;

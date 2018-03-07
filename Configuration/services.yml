@@ -9,19 +9,19 @@ services:
         # if you need to do this, you can override this setting on individual services
         public: false
 
-    PhpList\PhpList4\Core\ApplicationStructure:
+    PhpList\Core\Core\ApplicationStructure:
         public: true
 
-    PhpList\PhpList4\Security\Authentication:
+    PhpList\Core\Security\Authentication:
         public: true
 
-    PhpList\PhpList4\Security\HashGenerator:
+    PhpList\Core\Security\HashGenerator:
         public: true
 
-    PhpList\PhpList4\Routing\ExtraLoader:
+    PhpList\Core\Routing\ExtraLoader:
         tags: [routing.loader]
 
-    PhpList\PhpList4\Domain\Repository:
+    PhpList\Core\Domain\Repository:
         abstract: true
         autowire: true
         autoconfigure: false
@@ -30,7 +30,7 @@ services:
 
     # controllers are imported separately to make sure they're public
     # and have a tag that allows actions to type-hint services
-    PhpList\PhpList4\EmptyStartPageBundle\Controller\:
+    PhpList\Core\EmptyStartPageBundle\Controller\:
         resource: '../src/EmptyStartPageBundle/Controller'
         public: true
         tags: [controller.service_arguments]
