@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\Domain\Model\Subscription;
+namespace PhpList\Core\Tests\Unit\Domain\Model\Subscription;
 
-use PhpList\PhpList4\Domain\Model\Interfaces\DomainModel;
-use PhpList\PhpList4\Domain\Model\Messaging\SubscriberList;
-use PhpList\PhpList4\Domain\Model\Subscription\Subscriber;
-use PhpList\PhpList4\Domain\Model\Subscription\Subscription;
-use PhpList\PhpList4\TestingSupport\Traits\ModelTestTrait;
-use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
+use PhpList\Core\Domain\Model\Interfaces\DomainModel;
+use PhpList\Core\Domain\Model\Messaging\SubscriberList;
+use PhpList\Core\Domain\Model\Subscription\Subscriber;
+use PhpList\Core\Domain\Model\Subscription\Subscription;
+use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
+use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
 
 /**

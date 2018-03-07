@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Domain\Repository\Subscription;
+namespace PhpList\Core\Domain\Repository\Subscription;
 
-use PhpList\PhpList4\Domain\Model\Messaging\SubscriberList;
-use PhpList\PhpList4\Domain\Model\Subscription\Subscriber;
-use PhpList\PhpList4\Domain\Model\Subscription\Subscription;
-use PhpList\PhpList4\Domain\Repository\AbstractRepository;
+use PhpList\Core\Domain\Model\Messaging\SubscriberList;
+use PhpList\Core\Domain\Model\Subscription\Subscriber;
+use PhpList\Core\Domain\Model\Subscription\Subscription;
+use PhpList\Core\Domain\Repository\AbstractRepository;
 
 /**
  * Repository for Subscription models.

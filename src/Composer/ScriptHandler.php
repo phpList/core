@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Composer;
+namespace PhpList\Core\Composer;
 
 use Composer\Package\PackageInterface;
 use Composer\Script\Event;
-use PhpList\PhpList4\Core\ApplicationStructure;
+use PhpList\Core\Core\ApplicationStructure;
 use Sensio\Bundle\DistributionBundle\Composer\ScriptHandler as SensioScriptHandler;
 use Symfony\Component\Filesystem\Filesystem;
 

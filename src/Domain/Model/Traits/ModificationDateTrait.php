@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Domain\Model\Traits;
+namespace PhpList\Core\Domain\Model\Traits;
 
 use Doctrine\ORM\Mapping;
 

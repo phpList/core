@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Domain\Repository\Messaging;
+namespace PhpList\Core\Domain\Repository\Messaging;
 
-use PhpList\PhpList4\Domain\Model\Identity\Administrator;
-use PhpList\PhpList4\Domain\Model\Messaging\SubscriberList;
-use PhpList\PhpList4\Domain\Repository\AbstractRepository;
+use PhpList\Core\Domain\Model\Identity\Administrator;
+use PhpList\Core\Domain\Model\Messaging\SubscriberList;
+use PhpList\Core\Domain\Repository\AbstractRepository;
 
 /**
  * Repository for SubscriberList models.

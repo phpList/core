@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Domain\Model\Interfaces;
+namespace PhpList\Core\Domain\Model\Interfaces;
 
 /**
  * This is the interface all domain models (entities) should implement.

@@ -1,25 +1,25 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Domain\Model\Subscription;
+namespace PhpList\Core\Domain\Model\Subscription;
 
 use Doctrine\ORM\Mapping;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Proxy\Proxy;
 use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Expose;
-use PhpList\PhpList4\Domain\Model\Interfaces\CreationDate;
-use PhpList\PhpList4\Domain\Model\Interfaces\DomainModel;
-use PhpList\PhpList4\Domain\Model\Interfaces\ModificationDate;
-use PhpList\PhpList4\Domain\Model\Messaging\SubscriberList;
-use PhpList\PhpList4\Domain\Model\Traits\CreationDateTrait;
-use PhpList\PhpList4\Domain\Model\Traits\ModificationDateTrait;
+use PhpList\Core\Domain\Model\Interfaces\CreationDate;
+use PhpList\Core\Domain\Model\Interfaces\DomainModel;
+use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
+use PhpList\Core\Domain\Model\Messaging\SubscriberList;
+use PhpList\Core\Domain\Model\Traits\CreationDateTrait;
+use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 
 /**
  * This class represents asubscriber who can subscribe to multiple subscriber lists and can receive email messages from
  * campaigns for those subscriber lists.
  *
- * @Mapping\Entity(repositoryClass="PhpList\PhpList4\Domain\Repository\Subscription\SubscriptionRepository")
+ * @Mapping\Entity(repositoryClass="PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository")
  * @Mapping\Table(name="phplist_listuser")
  * @Mapping\HasLifecycleCallbacks
  * @ExclusionPolicy("all")
@@ -48,7 +48,7 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
      * @var Subscriber|Proxy|null
      * @Mapping\Id
      * @Mapping\ManyToOne(
-     *     targetEntity="PhpList\PhpList4\Domain\Model\Subscription\Subscriber",
+     *     targetEntity="PhpList\Core\Domain\Model\Subscription\Subscriber",
      *     inversedBy="subscriptions"
      * )
      * @Mapping\JoinColumn(name="userid")
@@ -59,7 +59,7 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
      * @var SubscriberList|Proxy|null
      * @Mapping\Id
      * @Mapping\ManyToOne(
-     *     targetEntity="PhpList\PhpList4\Domain\Model\Messaging\SubscriberList",
+     *     targetEntity="PhpList\Core\Domain\Model\Messaging\SubscriberList",
      *     inversedBy="subscriptions"
      * )
      * @Mapping\JoinColumn(name="listid")

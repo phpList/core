@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\Core;
+namespace PhpList\Core\Tests\Unit\Core;
 
-use PhpList\PhpList4\EmptyStartPageBundle\PhpListEmptyStartPageBundle;
-use PhpList\PhpList4\Core\ApplicationKernel;
-use PhpList\PhpList4\Core\Bootstrap;
-use PhpList\PhpList4\Core\Environment;
-use PhpList\PhpList4\TestingSupport\Traits\ContainsInstanceAssertionTrait;
+use PhpList\Core\EmptyStartPageBundle\PhpListEmptyStartPageBundle;
+use PhpList\Core\Core\ApplicationKernel;
+use PhpList\Core\Core\Bootstrap;
+use PhpList\Core\Core\Environment;
+use PhpList\Core\TestingSupport\Traits\ContainsInstanceAssertionTrait;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\WebServerBundle\WebServerBundle;

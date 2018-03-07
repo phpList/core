@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Security;
+namespace PhpList\Core\Security;
 
 use Doctrine\ORM\EntityNotFoundException;
-use PhpList\PhpList4\Domain\Model\Identity\Administrator;
-use PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository;
+use PhpList\Core\Domain\Model\Identity\Administrator;
+use PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository;
 use Symfony\Component\HttpFoundation\Request;
 
 /**

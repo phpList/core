@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\System\ApplicationBundle;
+namespace PhpList\Core\Tests\System\ApplicationBundle;
 
 use GuzzleHttp\Client;
-use PhpList\PhpList4\TestingSupport\Traits\SymfonyServerTrait;
+use PhpList\Core\TestingSupport\Traits\SymfonyServerTrait;
 use PHPUnit\Framework\TestCase;
 
 /**

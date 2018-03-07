@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Integration\Security;
+namespace PhpList\Core\Tests\Integration\Security;
 
-use PhpList\PhpList4\Domain\Model\Identity\Administrator;
-use PhpList\PhpList4\Security\Authentication;
-use PhpList\PhpList4\TestingSupport\Traits\DatabaseTestTrait;
+use PhpList\Core\Domain\Model\Identity\Administrator;
+use PhpList\Core\Security\Authentication;
+use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 

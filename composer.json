@@ -63,24 +63,24 @@
     },
     "autoload": {
         "psr-4": {
-            "PhpList\\PhpList4\\": "src/"
+            "PhpList\\Core\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "PhpList\\PhpList4\\Tests\\": "tests/"
+            "PhpList\\Core\\Tests\\": "tests/"
         }
     },
     "scripts": {
         "list-modules": [
-            "PhpList\\PhpList4\\Composer\\ScriptHandler::listModules"
+            "PhpList\\Core\\Composer\\ScriptHandler::listModules"
         ],
         "update-configuration": [
-            "PhpList\\PhpList4\\Composer\\ScriptHandler::createGeneralConfiguration",
-            "PhpList\\PhpList4\\Composer\\ScriptHandler::createBundleConfiguration",
-            "PhpList\\PhpList4\\Composer\\ScriptHandler::createRoutesConfiguration",
-            "PhpList\\PhpList4\\Composer\\ScriptHandler::createParametersConfiguration",
-            "PhpList\\PhpList4\\Composer\\ScriptHandler::clearAllCaches"
+            "PhpList\\Core\\Composer\\ScriptHandler::createGeneralConfiguration",
+            "PhpList\\Core\\Composer\\ScriptHandler::createBundleConfiguration",
+            "PhpList\\Core\\Composer\\ScriptHandler::createRoutesConfiguration",
+            "PhpList\\Core\\Composer\\ScriptHandler::createParametersConfiguration",
+            "PhpList\\Core\\Composer\\ScriptHandler::clearAllCaches"
         ],
         "post-install-cmd": [
             "@update-configuration"
@@ -105,7 +105,7 @@
                 "Symfony\\Bundle\\MonologBundle\\MonologBundle",
                 "JMS\\SerializerBundle\\JMSSerializerBundle",
                 "Doctrine\\Bundle\\DoctrineBundle\\DoctrineBundle",
-                "PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle"
+                "PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle"
             ],
             "routes": {
                 "homepage": {

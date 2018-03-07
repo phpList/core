@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\TestingSupport\Traits;
+namespace PhpList\Core\TestingSupport\Traits;
 
 use Doctrine\ORM\EntityManagerInterface;
-use PhpList\PhpList4\Core\Bootstrap;
-use PhpList\PhpList4\Core\Environment;
+use PhpList\Core\Core\Bootstrap;
+use PhpList\Core\Core\Environment;
 use PHPUnit\DbUnit\Database\Connection;
 use PHPUnit\DbUnit\DataSet\CsvDataSet;
 use PHPUnit\DbUnit\Operation\Factory;

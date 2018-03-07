@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Integration\Composer;
+namespace PhpList\Core\Tests\Integration\Composer;
 
 use PHPUnit\Framework\TestCase;
 
@@ -37,7 +37,7 @@ class ScriptsTest extends TestCase
             'Symfony framework bundle' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
             'sensio framework extras' => ['Sensio\\Bundle\\FrameworkExtraBundle\\SensioFrameworkExtraBundle'],
             'Doctrine bundle' => ['Doctrine\\Bundle\\DoctrineBundle\\DoctrineBundle'],
-            'empty start page bundle' => ['PhpList\\PhpList4\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
+            'empty start page bundle' => ['PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
         ];
     }
 

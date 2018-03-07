@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Core;
+namespace PhpList\Core\Core;
 
 /**
  * This class provides methods and constants for the application environment/context.

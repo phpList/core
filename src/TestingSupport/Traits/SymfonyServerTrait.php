@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\TestingSupport\Traits;
+namespace PhpList\Core\TestingSupport\Traits;
 
-use PhpList\PhpList4\Core\ApplicationStructure;
+use PhpList\Core\Core\ApplicationStructure;
 use Symfony\Bundle\WebServerBundle\WebServer;
 use Symfony\Component\Process\Process;
 

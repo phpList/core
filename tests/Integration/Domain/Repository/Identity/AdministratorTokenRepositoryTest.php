@@ -1,15 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Integration\Domain\Repository\Identity;
+namespace PhpList\Core\Tests\Integration\Domain\Repository\Identity;
 
 use Doctrine\ORM\Proxy\Proxy;
-use PhpList\PhpList4\Domain\Model\Identity\Administrator;
-use PhpList\PhpList4\Domain\Model\Identity\AdministratorToken;
-use PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository;
-use PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository;
-use PhpList\PhpList4\TestingSupport\Traits\DatabaseTestTrait;
-use PhpList\PhpList4\TestingSupport\Traits\SimilarDatesAssertionTrait;
+use PhpList\Core\Domain\Model\Identity\Administrator;
+use PhpList\Core\Domain\Model\Identity\AdministratorToken;
+use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
+use PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository;
+use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
+use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
 
 /**

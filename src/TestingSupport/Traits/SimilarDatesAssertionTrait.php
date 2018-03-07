@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\TestingSupport\Traits;
+namespace PhpList\Core\TestingSupport\Traits;
 
 /**
  * This trait provides the assertSimilarDates method.

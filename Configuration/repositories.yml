@@ -1,25 +1,25 @@
 services:
-    PhpList\PhpList4\Domain\Repository\Identity\AdministratorRepository:
-        parent: PhpList\PhpList4\Domain\Repository
+    PhpList\Core\Domain\Repository\Identity\AdministratorRepository:
+        parent: PhpList\Core\Domain\Repository
         arguments:
-            - PhpList\PhpList4\Domain\Model\Identity\Administrator
+            - PhpList\Core\Domain\Model\Identity\Administrator
 
-    PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository:
-        parent: PhpList\PhpList4\Domain\Repository
+    PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository:
+        parent: PhpList\Core\Domain\Repository
         arguments:
-            - PhpList\PhpList4\Domain\Model\Identity\AdministratorToken
+            - PhpList\Core\Domain\Model\Identity\AdministratorToken
 
-    PhpList\PhpList4\Domain\Repository\Messaging\SubscriberListRepository:
-        parent: PhpList\PhpList4\Domain\Repository
+    PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository:
+        parent: PhpList\Core\Domain\Repository
         arguments:
-            - PhpList\PhpList4\Domain\Model\Messaging\SubscriberList
+            - PhpList\Core\Domain\Model\Messaging\SubscriberList
 
-    PhpList\PhpList4\Domain\Repository\Subscription\SubscriberRepository:
-        parent: PhpList\PhpList4\Domain\Repository
+    PhpList\Core\Domain\Repository\Subscription\SubscriberRepository:
+        parent: PhpList\Core\Domain\Repository
         arguments:
-            - PhpList\PhpList4\Domain\Model\Subscription\Subscriber
+            - PhpList\Core\Domain\Model\Subscription\Subscriber
 
-    PhpList\PhpList4\Domain\Repository\Subscription\SubscriptionRepository:
-        parent: PhpList\PhpList4\Domain\Repository
+    PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository:
+        parent: PhpList\Core\Domain\Repository
         arguments:
-            - PhpList\PhpList4\Domain\Model\Subscription\Subscription
+            - PhpList\Core\Domain\Model\Subscription\Subscription

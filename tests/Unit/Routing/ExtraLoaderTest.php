@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\Routing;
+namespace PhpList\Core\Tests\Unit\Routing;
 
-use PhpList\PhpList4\Core\ApplicationStructure;
-use PhpList\PhpList4\Core\Bootstrap;
-use PhpList\PhpList4\Routing\ExtraLoader;
+use PhpList\Core\Core\ApplicationStructure;
+use PhpList\Core\Core\Bootstrap;
+use PhpList\Core\Routing\ExtraLoader;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Loader\Loader;
 

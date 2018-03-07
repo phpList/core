@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\Composer;
+namespace PhpList\Core\Tests\Unit\Composer;
 
 use Composer\Composer;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
-use PhpList\PhpList4\Composer\PackageRepository;
+use PhpList\Core\Composer\PackageRepository;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 use Prophecy\Prophecy\ProphecySubjectInterface;

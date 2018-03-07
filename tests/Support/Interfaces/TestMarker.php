@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Support\Interfaces;
+namespace PhpList\Core\Tests\Support\Interfaces;
 
 /**
  * The presence of this interface means that the test classes can be autoloaded (which can only be the case if

@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Integration\EmptyStartPageBundle\Controller;
+namespace PhpList\Core\Tests\Integration\EmptyStartPageBundle\Controller;
 
-use PhpList\PhpList4\EmptyStartPageBundle\Controller\DefaultController;
-use PhpList\PhpList4\TestingSupport\AbstractWebTest;
+use PhpList\Core\EmptyStartPageBundle\Controller\DefaultController;
+use PhpList\Core\TestingSupport\AbstractWebTest;
 
 /**
  * Testcase.

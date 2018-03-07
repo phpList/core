@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Unit\Security;
+namespace PhpList\Core\Tests\Unit\Security;
 
-use PhpList\PhpList4\Domain\Model\Identity\Administrator;
-use PhpList\PhpList4\Domain\Model\Identity\AdministratorToken;
-use PhpList\PhpList4\Domain\Repository\Identity\AdministratorTokenRepository;
-use PhpList\PhpList4\Security\Authentication;
+use PhpList\Core\Domain\Model\Identity\Administrator;
+use PhpList\Core\Domain\Model\Identity\AdministratorToken;
+use PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository;
+use PhpList\Core\Security\Authentication;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 use Prophecy\Prophecy\ProphecySubjectInterface;

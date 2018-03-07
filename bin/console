@@ -2,9 +2,9 @@
 <?php
 declare(strict_types=1);
 
-use PhpList\PhpList4\Core\ApplicationKernel;
-use PhpList\PhpList4\Core\Bootstrap;
-use PhpList\PhpList4\Core\Environment;
+use PhpList\Core\Core\ApplicationKernel;
+use PhpList\Core\Core\Bootstrap;
+use PhpList\Core\Core\Environment;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Debug\Debug;

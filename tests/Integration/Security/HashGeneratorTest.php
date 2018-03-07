@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace PhpList\PhpList4\Tests\Integration\Security;
+namespace PhpList\Core\Tests\Integration\Security;
 
-use PhpList\PhpList4\Core\ApplicationKernel;
-use PhpList\PhpList4\Core\Bootstrap;
-use PhpList\PhpList4\Core\Environment;
-use PhpList\PhpList4\Security\HashGenerator;
+use PhpList\Core\Core\ApplicationKernel;
+use PhpList\Core\Core\Bootstrap;
+use PhpList\Core\Core\Environment;
+use PhpList\Core\Security\HashGenerator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
