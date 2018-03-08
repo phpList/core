@@ -24,27 +24,27 @@ class ScriptHandler extends SensioScriptHandler
     /**
      * @var string
      */
-    const BUNDLE_CONFIGURATION_FILE = '/Configuration/bundles.yml';
+    const BUNDLE_CONFIGURATION_FILE = '/config/bundles.yml';
 
     /**
      * @var string
      */
-    const ROUTES_CONFIGURATION_FILE = '/Configuration/routing_modules.yml';
+    const ROUTES_CONFIGURATION_FILE = '/config/routing_modules.yml';
 
     /**
      * @var string
      */
-    const PARAMETERS_CONFIGURATION_FILE = '/Configuration/parameters.yml';
+    const PARAMETERS_CONFIGURATION_FILE = '/config/parameters.yml';
 
     /**
      * @var string
      */
-    const GENERAL_CONFIGURATION_FILE = '/Configuration/config_modules.yml';
+    const GENERAL_CONFIGURATION_FILE = '/config/config_modules.yml';
 
     /**
      * @var string
      */
-    const PARAMETERS_TEMPLATE_FILE = '/Configuration/parameters.yml.dist';
+    const PARAMETERS_TEMPLATE_FILE = '/config/parameters.yml.dist';
 
     /**
      * @return string absolute application root directory without the trailing slash
@@ -179,7 +179,7 @@ class ScriptHandler extends SensioScriptHandler
     }
 
     /**
-     * Creates Configuration/bundles.yml
+     * Creates config/bundles.yml
      * (the configuration file for the Symfony bundles provided by the modules).
      *
      * @param Event $event
@@ -220,7 +220,7 @@ class ScriptHandler extends SensioScriptHandler
     }
 
     /**
-     * Creates Configuration/routing_modules.yml
+     * Creates config/routing_modules.yml
      * (the routes file for the Symfony bundles provided by the modules).
      *
      * @param Event $event
@@ -280,7 +280,7 @@ class ScriptHandler extends SensioScriptHandler
     }
 
     /**
-     * Creates Configuration/parameters.yml (the parameters configuration file).
+     * Creates config/parameters.yml (the parameters configuration file).
      *
      * @return void
      */
@@ -301,7 +301,7 @@ class ScriptHandler extends SensioScriptHandler
     }
 
     /**
-     * Creates Configuration/config_modules.yml (the general configuration provided by the modules).
+     * Creates config/config_modules.yml (the general configuration provided by the modules).
      *
      * @param Event $event
      *

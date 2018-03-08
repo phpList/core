@@ -119,7 +119,7 @@ class ModuleFinder
     /**
      * Builds the YAML configuration file contents for the registered bundles in all modules.
      *
-     * The returned string is intended to be written to Configuration/bundles.yml.
+     * The returned string is intended to be written to config/bundles.yml.
      *
      * @return string
      */
@@ -202,7 +202,7 @@ class ModuleFinder
     /**
      * Builds the YAML configuration file contents for the registered routes in all modules.
      *
-     * The returned string is intended to be written to Configuration/routing_modules.yml.
+     * The returned string is intended to be written to config/routing_modules.yml.
      *
      * @return string
      */
@@ -267,7 +267,7 @@ class ModuleFinder
     /**
      * Builds the YAML configuration file contents all modules.
      *
-     * The returned string is intended to be written to Configuration/config_modules.yml.
+     * The returned string is intended to be written to config/config_modules.yml.
      *
      * @return string
      */

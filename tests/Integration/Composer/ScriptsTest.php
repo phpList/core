@@ -17,7 +17,7 @@ class ScriptsTest extends TestCase
      */
     private function getBundleConfigurationFilePath(): string
     {
-        return dirname(__DIR__, 3) . '/Configuration/bundles.yml';
+        return dirname(__DIR__, 3) . '/config/bundles.yml';
     }
 
     /**
@@ -58,7 +58,7 @@ class ScriptsTest extends TestCase
      */
     private function getModuleRoutesConfigurationFilePath(): string
     {
-        return dirname(__DIR__, 3) . '/Configuration/routing_modules.yml';
+        return dirname(__DIR__, 3) . '/config/routing_modules.yml';
     }
 
     /**
@@ -98,7 +98,7 @@ class ScriptsTest extends TestCase
      */
     public function parametersConfigurationFileExists()
     {
-        static::assertFileExists(dirname(__DIR__, 3) . '/Configuration/parameters.yml');
+        static::assertFileExists(dirname(__DIR__, 3) . '/config/parameters.yml');
     }
 
     /**
@@ -106,6 +106,6 @@ class ScriptsTest extends TestCase
      */
     public function modulesConfigurationFileExists()
     {
-        static::assertFileExists(dirname(__DIR__, 3) . '/Configuration/config_modules.yml');
+        static::assertFileExists(dirname(__DIR__, 3) . '/config/config_modules.yml');
     }
 }

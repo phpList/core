@@ -84,9 +84,9 @@ script:
 - >
   echo;
   echo "Running PHPMD";
-  vendor/bin/phpmd src/ text Configuration/PHPMD/rules.xml;
+  vendor/bin/phpmd src/ text config/PHPMD/rules.xml;
 
 - >
   echo;
   echo "Running PHP_CodeSniffer";
-  vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ src/ tests/ public/;
+  vendor/bin/phpcs --standard=config/PhpCodeSniffer/ bin/ src/ tests/ public/;

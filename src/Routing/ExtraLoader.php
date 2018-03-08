@@ -17,7 +17,7 @@ class ExtraLoader extends Loader
     /**
      * @var string
      */
-    const MODULE_ROUTING_CONFIGURATION_FILE = '/Configuration/routing_modules.yml';
+    const MODULE_ROUTING_CONFIGURATION_FILE = '/config/routing_modules.yml';
 
     /**
      * @var bool
