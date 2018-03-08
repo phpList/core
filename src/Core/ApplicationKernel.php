@@ -121,9 +121,9 @@ class ApplicationKernel extends Kernel
      */
     public function registerContainerConfiguration(LoaderInterface $loader)
     {
-        $loader->load($this->getApplicationDir() . '/Configuration/parameters.yml');
-        $loader->load($this->getRootDir() . '/Configuration/config_' . $this->getEnvironment() . '.yml');
-        $loader->load($this->getApplicationDir() . '/Configuration/config_modules.yml');
+        $loader->load($this->getApplicationDir() . '/config/parameters.yml');
+        $loader->load($this->getRootDir() . '/config/config_' . $this->getEnvironment() . '.yml');
+        $loader->load($this->getApplicationDir() . '/config/config_modules.yml');
     }
 
     /**
@@ -166,7 +166,7 @@ class ApplicationKernel extends Kernel
      */
     private function readBundleConfiguration(): array
     {
-        $configurationFilePath = $this->getApplicationDir() . '/Configuration/bundles.yml';
+        $configurationFilePath = $this->getApplicationDir() . '/config/bundles.yml';
         if (!is_readable($configurationFilePath)) {
             throw new \RuntimeException('The file "' . $configurationFilePath . '" could not be read.', 1504272377);
         }

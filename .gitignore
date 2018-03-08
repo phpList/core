@@ -5,10 +5,10 @@
 /.web-server-pid
 /.webprj
 /composer.lock
-/Configuration/bundles.yml
-/Configuration/config_modules.yml
-/Configuration/parameters.yml
-/Configuration/routing_modules.yml
+/config/bundles.yml
+/config/config_modules.yml
+/config/parameters.yml
+/config/routing_modules.yml
 /nbproject
 /var/
 /vendor/

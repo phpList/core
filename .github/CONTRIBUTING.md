@@ -97,7 +97,7 @@ mysql -u phplist_test --password=batterystaple phplist_test < resources/Database
 ```
 
 For running the integration tests, please first enter the database name
-and access credentials in `Configuration/parameters.yml`.
+and access credentials in `config/parameters.yml`.
 
 After that has been done, you can run the integration tests:
 
@@ -118,13 +118,13 @@ We will only merge pull requests that follow the project's coding style.
 Please check your code with the provided PHP_CodeSniffer standard:
 
 ```bash
-vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ src/ tests/ public/
+vendor/bin/phpcs --standard=config/PhpCodeSniffer/ bin/ src/ tests/ public/
 ```
 
 Please also check the code structure using PHPMD:
 
 ```bash
-vendor/bin/phpmd src/ text Configuration/PHPMD/rules.xml
+vendor/bin/phpmd src/ text config/PHPMD/rules.xml
 ```
 
 And also please run the static code analysis:
@@ -136,7 +136,7 @@ vendor/bin/phpstan analyse -l 5 bin/ src/ tests/ public/
 You can also run all code style checks using one long line from a bash shell:
 
 ```bash
-find src/ tests/ public/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l && php -l bin/* && vendor/bin/phpstan analyse -l 5 bin/ src/ tests/ public/ && vendor/bin/phpmd src/ text Configuration/PHPMD/rules.xml && vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ src/ tests/ public/
+find src/ tests/ public/ -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l && php -l bin/* && vendor/bin/phpstan analyse -l 5 bin/ src/ tests/ public/ && vendor/bin/phpmd src/ text config/PHPMD/rules.xml && vendor/bin/phpcs --standard=config/PhpCodeSniffer/ bin/ src/ tests/ public/
 ```
 
 This will execute all tests except for the unit tests and the integration
