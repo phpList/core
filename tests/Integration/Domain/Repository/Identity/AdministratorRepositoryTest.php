@@ -62,8 +62,7 @@ class AdministratorRepositoryTest extends TestCase
         static::assertEquals($modificationDate, $actualModel->getModificationDate());
         static::assertSame($passwordHash, $actualModel->getPasswordHash());
         static::assertEquals($passwordChangeDate, $actualModel->getPasswordChangeDate());
-        static::assertTrue($actualModel->isDisabled());
-        static::assertTrue($actualModel->isDisabled());
+        static::assertFalse($actualModel->isDisabled());
     }
 
     /**
