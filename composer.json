@@ -55,7 +55,8 @@
         "nette/caching": "^2.5.0 || ^3.0.0",
         "nikic/php-parser": "^3.1.0",
         "phpmd/phpmd": "^2.6.0",
-        "composer/composer": "^1.6.0"
+        "composer/composer": "^1.6.0",
+        "doctrine/instantiator": "^1.0.5"
     },
     "suggest": {
         "phplist/web-frontend": "4.0.x-dev",
