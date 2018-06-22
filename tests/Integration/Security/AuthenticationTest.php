@@ -84,6 +84,30 @@ class AuthenticationTest extends TestCase
     /**
      * @test
      */
+    public function authenticateByApiKeyWithValidApiKeyAndDisabledAdministratorReturnsNull()
+    {
+        $this->getDataSet()->addTable(
+            static::ADMINISTRATOR_TABLE_NAME,
+            __DIR__ . '/../Domain/Repository/Fixtures/Administrator.csv'
+        );
+        $this->getDataSet()->addTable(
+            static::TOKEN_TABLE_NAME,
+            __DIR__ . '/../Domain/Repository/Fixtures/AdministratorTokenWithAdministrator.csv'
+        );
+        $this->applyDatabaseChanges();
+
+        $apiKey = 'cfdf64eecbbf336628b0f3071adba765';
+        $request = new Request();
+        $request->headers->add(['php-auth-pw' => $apiKey]);
+
+        $result = $this->subject->authenticateByApiKey($request);
+
+        static::assertNull($result);
+    }
+
+    /**
+     * @test
+     */
     public function authenticateByApiKeyWithValidApiKeyForInexistentAdministratorReturnsNull()
     {
         $this->getDataSet()->addTable(

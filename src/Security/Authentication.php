@@ -58,10 +58,10 @@ class Authentication
 
         try {
             // This checks for cases where a super user created a session key and then got their super user
-            // privileges removed during the lifetime of the session key.
+            // privileges removed during the lifetime of the session key. Or an administrator got disabled.
             // In addition, this will load the lazy-loaded model from the database,
             // which will check that the model really exists in the database (i.e., it has not been deleted).
-            if (!$administrator->isSuperUser()) {
+            if (!$administrator->isSuperUser() || $administrator->isDisabled()) {
                 $administrator = null;
             }
         } catch (EntityNotFoundException $exception) {
