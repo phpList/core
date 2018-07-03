@@ -100,6 +100,13 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     private $disabled = false;
 
     /**
+     * @var string
+     * @Column
+     * @Expose
+     */
+    private $extraData = '';
+
+    /**
      * @var Collection
      * @Mapping\OneToMany(
      *     targetEntity="PhpList\Core\Domain\Model\Subscription\Subscription",
@@ -276,6 +283,23 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         $this->disabled = $disabled;
     }
 
+    /**
+     * @return string
+     */
+    public function getExtraData(): string
+    {
+        return $this->extraData;
+    }
+
+    /**
+     * @param string $extraData
+     *
+     * @return void
+     */
+    public function setExtraData(string $extraData)
+    {
+        $this->extraData = $extraData;
+    }
     /**
      * @return Collection
      */
