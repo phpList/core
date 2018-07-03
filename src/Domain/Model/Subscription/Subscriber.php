@@ -101,7 +101,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
 
     /**
      * @var string
-     * @Column
+     * @Column(type="text", name="extradata")
      * @Expose
      */
     private $extraData = '';
