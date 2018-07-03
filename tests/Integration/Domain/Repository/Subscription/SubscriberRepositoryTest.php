@@ -78,6 +78,7 @@ class SubscriberRepositoryTest extends TestCase
         $id = 1;
         $creationDate = new \DateTime('2016-07-22 15:01:17');
         $modificationDate = new \DateTime('2016-08-23 19:50:43');
+        $extraData = 'This is one of our favourite subscribers.';
 
         /** @var Subscriber $model */
         $model = $this->subject->find($id);
@@ -92,6 +93,7 @@ class SubscriberRepositoryTest extends TestCase
         static::assertSame('95feb7fe7e06e6c11ca8d0c48cb46e89', $model->getUniqueId());
         static::assertTrue($model->hasHtmlEmail());
         static::assertTrue($model->isDisabled());
+        static::assertSame($extraData, $model->getExtraData());
     }
 
     /**
