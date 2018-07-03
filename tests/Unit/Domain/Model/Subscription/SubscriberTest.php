@@ -250,6 +250,25 @@ class SubscriberTest extends TestCase
     /**
      * @test
      */
+    public function getExtraDataInitiallyReturnsEmptyString()
+    {
+        static::assertSame('', $this->subject->getExtraData());
+    }
+
+    /**
+     * @test
+     */
+    public function setExtraDataSetsExtraData()
+    {
+        $value = 'This is one of our favourite subscribers.';
+        $this->subject->setExtraData($value);
+
+        static::assertSame($value, $this->subject->getExtraData());
+    }
+
+    /**
+     * @test
+     */
     public function getSubscriptionsByDefaultReturnsEmptyCollection()
     {
         $result = $this->subject->getSubscriptions();
