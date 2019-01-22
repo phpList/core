@@ -545,20 +545,6 @@ CREATE TABLE `phplist_user_user_history` (
   KEY `dateidx` (`date`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `phplist_user_user_history`;
-CREATE TABLE `phplist_user_user_history` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `userid` int(11) NOT NULL,
-  `ip` varchar(255) DEFAULT NULL,
-  `date` datetime DEFAULT NULL,
-  `summary` varchar(255) DEFAULT NULL,
-  `detail` text,
-  `systeminfo` text,
-  PRIMARY KEY (`id`),
-  KEY `userididx` (`userid`),
-  KEY `dateidx` (`date`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
-
 DROP TABLE IF EXISTS `phplist_usermessage`;
 CREATE TABLE `phplist_usermessage` (
   `messageid` int(11) NOT NULL,
