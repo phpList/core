@@ -71,7 +71,7 @@ CREATE TABLE `phplist_bounce` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `date` datetime DEFAULT NULL,
   `header` text,
-  `data` blob,
+  `data` mediumblob,
   `status` varchar(255) DEFAULT NULL,
   `comment` text,
   PRIMARY KEY (`id`),
@@ -81,7 +81,8 @@ CREATE TABLE `phplist_bounce` (
 DROP TABLE IF EXISTS `phplist_bounceregex`;
 CREATE TABLE `phplist_bounceregex` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `regex` varchar(255) DEFAULT NULL,
+  `regex` varchar(2083) DEFAULT NULL,
+  `regexhash` char(32) DEFAULT NULL,
   `action` varchar(255) DEFAULT NULL,
   `listorder` int(11) DEFAULT '0',
   `admin` int(11) DEFAULT NULL,
@@ -89,7 +90,7 @@ CREATE TABLE `phplist_bounceregex` (
   `status` varchar(255) DEFAULT NULL,
   `count` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `regex` (`regex`)
+  UNIQUE KEY `regex` (`regexhash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `phplist_bounceregex_bounce`;
@@ -155,11 +156,12 @@ CREATE TABLE `phplist_linktrack` (
 DROP TABLE IF EXISTS `phplist_linktrack_forward`;
 CREATE TABLE `phplist_linktrack_forward` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `url` varchar(255) DEFAULT NULL,
+  `url` varchar(2083) DEFAULT NULL,
+  `urlhash` char(32) DEFAULT NULL,
   `personalise` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `urlunique` (`url`),
-  KEY `urlindex` (`url`)
+  UNIQUE KEY `urlunique` (`urlhash`),
+  KEY `urlindex` (`url(255)`)
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `phplist_linktrack_ml`;
@@ -416,12 +418,12 @@ CREATE TABLE `phplist_translation` (
 DROP TABLE IF EXISTS `phplist_urlcache`;
 CREATE TABLE `phplist_urlcache` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `url` varchar(255) NOT NULL,
+  `url` varchar(2083) NOT NULL,
   `lastmodified` int(11) DEFAULT NULL,
   `added` datetime DEFAULT NULL,
   `content` mediumtext,
   PRIMARY KEY (`id`),
-  KEY `urlindex` (`url`)
+  KEY `urlindex` (`url(255)`)
 ) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `phplist_user_attribute`;
