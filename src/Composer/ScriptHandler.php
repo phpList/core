@@ -280,27 +280,6 @@ class ScriptHandler extends SensioScriptHandler
     }
 
     /**
-     * Creates config/parameters.yml (the parameters configuration file).
-     *
-     * @return void
-     */
-    public static function createParametersConfiguration()
-    {
-        $configurationFilePath = static::getApplicationRoot() . static::PARAMETERS_CONFIGURATION_FILE;
-        if (file_exists($configurationFilePath)) {
-            return;
-        }
-
-        $templateFilePath = __DIR__ . '/../..' . static::PARAMETERS_TEMPLATE_FILE;
-        $template = file_get_contents($templateFilePath);
-
-        $secret = bin2hex(random_bytes(20));
-        $configuration = sprintf($template, $secret);
-
-        static::createAndWriteFile($configurationFilePath, $configuration);
-    }
-
-    /**
      * Creates config/config_modules.yml (the general configuration provided by the modules).
      *
      * @param Event $event
