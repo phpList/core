@@ -198,17 +198,6 @@ class Bootstrap
     {
         $this->assertConfigureHasBeenCalled();
 
-        if(strpos($_SERVER['REQUEST_URI'], '/api.php') === false) {
-            $splittedUrl = explode('/', $_SERVER['REQUEST_URI']);
-            foreach($splittedUrl as $key => $urlFragment) {
-                if($urlFragment === 'api') {
-                    $splittedUrl[$key] = 'api.php';
-                    break;
-                }
-            }
-            $_SERVER['REQUEST_URI'] = implode('/', $splittedUrl);
-        }
-
         $request = Request::createFromGlobals();
         $response = $this->getApplicationKernel()->handle($request);
         $response->send();
