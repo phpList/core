@@ -200,12 +200,15 @@ class Bootstrap
 
         if(strpos($_SERVER['REQUEST_URI'], '/api.php') === false) {
             $splittedUrl = explode('/', $_SERVER['REQUEST_URI']);
+
             foreach($splittedUrl as $key => $urlFragment) {
-                if($urlFragment === 'api') {
+                if($urlFragment === 'api' && $splittedUrl[$key + 1] === 'v2') {
+                    unset($splittedUrl[$key + 1]);
                     $splittedUrl[$key] = 'api.php';
                     break;
                 }
             }
+
             $_SERVER['REQUEST_URI'] = implode('/', $splittedUrl);
         }
 
