@@ -82,6 +82,14 @@ You can stop the server with CTRL + C.
 
 ### Testing
 
+Running tests requires that necessary composer packages, such as PHPUnit, are
+first installed for this repository. If you installed `core` using the 
+`base-distribution` package, then you must install the composer packages 
+separately. To do so, change to the base directory of `core` and run 
+`composer install`.
+
+See `.travis.yml` for commands to run various PHPUnit test suites.
+
 To run the server in testing mode (which normally will only be needed for the
 automated tests, provide the `--env` option:
 
