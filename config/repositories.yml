@@ -14,6 +14,11 @@ services:
         arguments:
             - PhpList\Core\Domain\Model\Messaging\SubscriberList
 
+    PhpList\Core\Domain\Repository\Messaging\TemplateRepository:
+        parent: PhpList\Core\Domain\Repository
+        arguments:
+            - PhpList\Core\Domain\Model\Messaging\Template
+
     PhpList\Core\Domain\Repository\Subscription\SubscriberRepository:
         parent: PhpList\Core\Domain\Repository
         arguments:
