@@ -112,7 +112,8 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
      * @var Collection
      * @Mapping\ManyToMany(
      *     targetEntity="PhpList\Core\Domain\Model\Subscription\Subscriber",
-     *     inversedBy="subscribedLists"
+     *     inversedBy="subscribedLists",
+     *     fetch="EXTRA_LAZY"
      * )
      * @Mapping\JoinTable(name="phplist_listuser",
      *     joinColumns={@Mapping\JoinColumn(name="listid")},
