@@ -200,4 +200,4 @@ phpList module), please use the
 
 ## Copyright
 
-phpList is copyright (C) 2000-2018 [phpList Ltd](https://www.phplist.com/).
+phpList is copyright (C) 2000-2019 [phpList Ltd](https://www.phplist.com/).
