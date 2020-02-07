@@ -105,6 +105,11 @@ After that has been done, you can run the integration tests:
 vendor/bin/phpunit tests/Integration/
 ```
 
+When changing database relations and entities please ensure the mapping is valid by running:
+
+```bash
+bin/console doctrine:schema:validate
+```
 
 ## Coding Style
 
