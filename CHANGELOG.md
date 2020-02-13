@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ### Removed
 
 ### Fixed
+- Security update for symfony/symfony (#314)
 - Security update for symfony/symfony and symfony/dependency-injection (#309)
 
 ## 4.0.0-alpha2
