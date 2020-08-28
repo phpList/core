@@ -12,14 +12,19 @@
     "license": "AGPL-3.0-or-later",
     "authors": [
         {
+            "name": "Xheni Myrtaj",
+            "email": "xheni@phplist.com",
+            "role": "Maintainer"
+        },
+        {
             "name": "Oliver Klee",
             "email": "oliver@phplist.com",
-            "role": "Developer"
+            "role": "Former developer"
         },
         {
             "name": "Sam Tuke",
             "email": "mail@samtuke.com",
-            "role": "Developer"
+            "role": "Former developer"
         }
     ],
     "support": {
