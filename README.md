@@ -1,6 +1,6 @@
 # phpList core module
 
-[![Build Status](https://travis-ci.org/phpList/core.svg?branch=master)](https://travis-ci.org/phpList/core)
+[![Build Status](https://travis-ci.com/phpList/core.svg?branch=master)](https://travis-ci.com/phpList/core)
 [![Latest Stable Version](https://poser.pugx.org/phplist/core/v/stable.svg)](https://packagist.org/packages/phpList/core)
 [![Total Downloads](https://poser.pugx.org/phplist/core/downloads.svg)](https://packagist.org/packages/phpList/core)
 [![Latest Unstable Version](https://poser.pugx.org/phplist/core/v/unstable.svg)](https://packagist.org/packages/phpList/core)
