@@ -65,8 +65,6 @@ jobs:
           export PHPLIST_DATABASE_PORT=${{ job.services.mysql.ports['3306'] }}
           export PHPLIST_DATABASE_HOST=127.0.0.1
           vendor/bin/phpunit tests/Integration/
-        env:
-            DB_PORT: ${{ job.services.mysql.ports[3306] }}
       - name: Running the system tests
         run: vendor/bin/phpunit tests/System/;
       - name: Running static analysis
