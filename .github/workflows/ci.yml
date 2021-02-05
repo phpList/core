@@ -1,0 +1,77 @@
+name: phpList Build
+on: [push, pull_request]
+jobs:
+  main:
+    name: phpList on PHP ${{ matrix.php-versions }} [Build, Test]
+    runs-on: ubuntu-latest
+    env:
+      DB_DATABASE: phplist
+      DB_USERNAME: root
+      DB_PASSWORD: phplist
+      BROADCAST_DRIVER: log  
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: false
+          MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
+          MYSQL_DATABASE: ${{ env.DB_DATABASE }}
+        ports:
+          - 3306/tcp
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    strategy:
+      fail-fast: false
+      matrix:
+        php-versions: ['7.0', '7.1', '7.2', '7.3', '7.4']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup PHP, with composer and extensions
+        uses: shivammathur/setup-php@v2 #https://github.com/shivammathur/setup-php
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: mbstring, dom, fileinfo, mysql
+          coverage: xdebug #optional
+      - name: Start mysql service
+        run: sudo /etc/init.d/mysql start
+      - name: Verify MySQL connection on host
+        run: mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports['3306'] }} -u${{ env.DB_USERNAME }} -p${{ env.DB_PASSWORD }} -e "SHOW DATABASES"
+      - name: Set up database schema
+        run: mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports['3306'] }} -u${{ env.DB_USERNAME }} -p${{ env.DB_PASSWORD }} ${{ env.DB_DATABASE }} < resources/Database/Schema.sql
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+      - name: Cache composer dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          # Use composer.json for key, if composer.lock is not committed.
+          # key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+      - name: Install Composer dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+      - name: Validating composer.json
+        run: composer validate --no-check-all --no-check-lock --strict;
+      - name: Linting all php files
+        run: find src/ tests/ public/ -name ''*.php'' -print0 | xargs -0 -n 1 -P 4 php -l; php -l bin/*;
+      - name: Run units tests with phpunit
+        run: vendor/bin/phpunit tests/Unit/ 
+      - name: Run integration tests with phpunit
+        run: | 
+          export PHPLIST_DATABASE_NAME=${{ env.DB_DATABASE }}
+          export PHPLIST_DATABASE_USER=${{ env.DB_USERNAME }}
+          export PHPLIST_DATABASE_PASSWORD=${{ env.DB_PASSWORD }}
+          export PHPLIST_DATABASE_PORT=${{ job.services.mysql.ports['3306'] }}
+          export PHPLIST_DATABASE_HOST=127.0.0.1
+          vendor/bin/phpunit tests/Integration/
+        env:
+            DB_PORT: ${{ job.services.mysql.ports[3306] }}
+      - name: Running the system tests
+        run: vendor/bin/phpunit tests/System/;
+      - name: Running static analysis
+        run: vendor/bin/phpstan analyse -l 5 bin/ src/ tests/ public/;
+      - name: Running PHPMD
+        run: vendor/bin/phpmd src/ text config/PHPMD/rules.xml;
+      - name: Running PHP_CodeSniffer
+        run: vendor/bin/phpcs --standard=config/PhpCodeSniffer/ bin/ src/ tests/ public/;

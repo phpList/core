@@ -122,7 +122,8 @@ trait DatabaseTestTrait
         if ($this->databaseConnection === null) {
             if (self::$pdo === null) {
                 self::$pdo = new \PDO(
-                    'mysql:dbname=' . getenv('PHPLIST_DATABASE_NAME'),
+                    // '.getenv('PHPLIST_DATABASE_HOST') ?: 'localhost'.'
+                    'mysql:host=127.0.0.1;port='.getenv('PHPLIST_DATABASE_PORT').';dbname=' . getenv('PHPLIST_DATABASE_NAME'),
                     getenv('PHPLIST_DATABASE_USER'),
                     getenv('PHPLIST_DATABASE_PASSWORD')
                 );
