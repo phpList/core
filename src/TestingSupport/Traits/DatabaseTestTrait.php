@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\TestingSupport\Traits;
@@ -121,8 +122,11 @@ trait DatabaseTestTrait
     {
         if ($this->databaseConnection === null) {
             if (self::$pdo === null) {
+                $databaseHost = getenv('PHPLIST_DATABASE_HOST') ?: 'localhost';
+                $databasePort = getenv('PHPLIST_DATABASE_PORT') ?: '3306';
+                $databaseName = getenv('PHPLIST_DATABASE_NAME');
                 self::$pdo = new \PDO(
-                    'mysql:dbname=' . getenv('PHPLIST_DATABASE_NAME'),
+                    'mysql:host='.$databaseHost.';port='.$databasePort.';dbname='.$databaseName,
                     getenv('PHPLIST_DATABASE_USER'),
                     getenv('PHPLIST_DATABASE_PASSWORD')
                 );
