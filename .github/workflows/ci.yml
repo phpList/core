@@ -3,7 +3,7 @@ on: [push, pull_request]
 jobs:
   main:
     name: phpList on PHP ${{ matrix.php-versions }} [Build, Test]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       DB_DATABASE: phplist
       DB_USERNAME: root
