@@ -1,7 +1,11 @@
 # phpList core module
 
 
+<<<<<<< HEAD
 [![Build Status](https://github.com/phpList/core/workflows/phpList%20Core%20Build/badge.svg)](https://github.com/phpList/core/actions)
+=======
+[![Build Status](https://github.com/phpList/core/workflows/phpList%20Build/badge.svg)](https://github.com/phpList/web-frontend/actions)
+>>>>>>> f6596fe9bfb52b9b788084880b7b88dd7758c4ed
 [![Latest Stable Version](https://poser.pugx.org/phplist/core/v/stable.svg)](https://packagist.org/packages/phpList/core)
 [![Total Downloads](https://poser.pugx.org/phplist/core/downloads.svg)](https://packagist.org/packages/phpList/core)
 [![Latest Unstable Version](https://poser.pugx.org/phplist/core/v/unstable.svg)](https://packagist.org/packages/phpList/core)
