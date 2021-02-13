@@ -34,7 +34,7 @@
         "source": "https://github.com/phpList/core"
     },
     "require": {
-        "php": ">=7.0",
+        "php": "^7.0|^8.0",
         "doctrine/orm": "^2.5.0",
         "doctrine/common": "^2.6.0",
         "doctrine/doctrine-bundle": "^1.8.0",
