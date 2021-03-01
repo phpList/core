@@ -1,0 +1,10 @@
+parameters:
+    level: 5
+    paths:
+        - bin
+        - src
+        - tests
+        - public
+    ignoreErrors:
+        - '#Cannot call method (?:willReturn|shouldBeCalledOnce|shouldNotBeCalled|shouldBeCalled|shouldNotHaveBeenCalled)\(\) on .*\.#'
+        - '#Call to an undefined method [a-zA-Z0-9\\_]+::willReturn\(\)#'

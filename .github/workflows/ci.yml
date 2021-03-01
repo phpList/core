@@ -51,12 +51,16 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
       - name: Install Composer dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
+        continue-on-error: ${{matrix.php-versions == '8.0' }} # Temporal until full support for php8 === [temp-php8]
       - name: Validating composer.json
         run: composer validate --no-check-all --no-check-lock --strict;
+        continue-on-error: ${{matrix.php-versions == '8.0' }} # [temp-php8]
       - name: Linting all php files
         run: find src/ tests/ public/ -name ''*.php'' -print0 | xargs -0 -n 1 -P 4 php -l; php -l bin/*;
+        continue-on-error: ${{matrix.php-versions == '8.0' }} # [temp-php8]
       - name: Run units tests with phpunit
         run: vendor/bin/phpunit tests/Unit/ 
+        continue-on-error: ${{matrix.php-versions == '8.0' }} # [temp-php8]
       - name: Run integration tests with phpunit
         run: | 
           export PHPLIST_DATABASE_NAME=${{ env.DB_DATABASE }}
@@ -65,11 +69,16 @@ jobs:
           export PHPLIST_DATABASE_PORT=${{ job.services.mysql.ports['3306'] }}
           export PHPLIST_DATABASE_HOST=127.0.0.1
           vendor/bin/phpunit tests/Integration/
+        continue-on-error: ${{matrix.php-versions == '8.0' }} # [temp-php8]
       - name: Running the system tests
         run: vendor/bin/phpunit tests/System/;
+        continue-on-error: ${{matrix.php-versions == '8.0' }} # [temp-php8]
       - name: Running static analysis
-        run: vendor/bin/phpstan analyse -l 5 bin/ src/ tests/ public/;
+        run: vendor/bin/phpstan analyse -c phpstan.neon;
+        continue-on-error: ${{matrix.php-versions == '8.0' }} # [temp-php8]
       - name: Running PHPMD
         run: vendor/bin/phpmd src/ text config/PHPMD/rules.xml;
+        continue-on-error: ${{matrix.php-versions == '8.0' }} # [temp-php8]
       - name: Running PHP_CodeSniffer
         run: vendor/bin/phpcs --standard=config/PhpCodeSniffer/ bin/ src/ tests/ public/;
+        continue-on-error: ${{matrix.php-versions == '8.0' }} # [temp-php8]

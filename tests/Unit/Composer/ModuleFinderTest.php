@@ -79,6 +79,7 @@ class ModuleFinderTest extends TestCase
      */
     private function buildMockPackagesWithModuleConfiguration(array $extrasSets): array
     {
+        /** @var PackageInterface[][] $moduleSets */
         $moduleSets = [];
         foreach ($extrasSets as $packageName => $extrasSet) {
             $moduleSet = $this->buildSingleMockPackageWithModuleConfiguration($extrasSet);
@@ -108,9 +109,9 @@ class ModuleFinderTest extends TestCase
      * @param array $extras
      * @param string $packageName
      *
-     * @return PackageInterface|ProphecySubjectInterface
+     * @return ProphecySubjectInterface
      */
-    private function buildPackageProphecyWithExtras(array $extras, string $packageName): PackageInterface
+    private function buildPackageProphecyWithExtras(array $extras, string $packageName): ProphecySubjectInterface
     {
         /** @var PackageInterface|ObjectProphecy $packageProphecy */
         $packageProphecy = $this->prophesize(PackageInterface::class);

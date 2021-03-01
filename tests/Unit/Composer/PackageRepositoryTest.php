@@ -36,7 +36,7 @@ class PackageRepositoryTest extends TestCase
     private $composer = null;
 
     /**
-     * @var WritableRepositoryInterface|ProphecySubjectInterface
+     * @var WritableRepositoryInterface|ObjectProphecy
      */
     private $localRepositoryProphecy = null;
 
@@ -111,7 +111,7 @@ class PackageRepositoryTest extends TestCase
         /** @var PackageInterface|ObjectProphecy $dependencyAliasProphecy */
         $dependencyAliasProphecy = $this->prophesize(PackageInterface::class);
         $dependencyAliasProphecy->getName()->willReturn($packageName);
-        /** @var PackageInterface|ProphecySubjectInterface $dependency1 */
+        /** @var PackageInterface|ProphecySubjectInterface $dependencyAlias  */
         $dependencyAlias = $dependencyAliasProphecy->reveal();
         $this->localRepositoryProphecy->getPackages()->willReturn([$dependency, $dependencyAlias]);
 
