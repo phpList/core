@@ -34,7 +34,7 @@
         "source": "https://github.com/phpList/core"
     },
     "require": {
-        "php": "^7.0|^8.0",
+        "php": "^7.2|^8.0",
         "doctrine/orm": "^2.5.0",
         "doctrine/common": "^2.6.0",
         "doctrine/doctrine-bundle": "^1.8.0",
@@ -43,7 +43,7 @@
         "symfony/dependency-injection": "^3.4.37",
         "symfony/config": "^3.4.37",
         "symfony/yaml": "^3.4.37",
-        "jms/serializer-bundle": "^2.3",
+        "jms/serializer-bundle": "^3.8.0",
         "sensio/framework-extra-bundle": "^5.1.0",
         "sensio/distribution-bundle": "^5.0.6"
     },
@@ -53,8 +53,8 @@
         "phpunit/dbunit": "^3.0.0",
         "guzzlehttp/guzzle": "^6.3.0",
         "squizlabs/php_codesniffer": "^3.2.0",
-        "phpstan/phpstan": "^0.7.0",
-        "nette/caching": "^2.5.0 || ^3.0.0",
+        "phpstan/phpstan": "^0.7.0|0.12.57",
+        "nette/caching": "^2.5.0|^3.0.0",
         "nikic/php-parser": "^3.1.0",
         "phpmd/phpmd": "^2.6.0",
         "composer/composer": "^1.6.0",

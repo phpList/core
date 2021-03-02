@@ -80,7 +80,7 @@ trait DatabaseTestTrait
     {
         $this->dataSet = new CsvDataSet();
 
-        $this->databaseTester = null;
+        unset($this->databaseTester);
         $this->getDatabaseTester()->setSetUpOperation($this->getSetUpOperation());
     }
 
@@ -98,7 +98,7 @@ trait DatabaseTestTrait
 
         // Destroy the tester after the test is run to keep DB connections
         // from piling up.
-        $this->databaseTester = null;
+        unset($this->databaseTester);
 
         Bootstrap::purgeInstance();
     }

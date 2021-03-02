@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-versions: ['7.0', '7.1', '7.2', '7.3', '7.4', '8.0']
+        php-versions: ['7.2', '7.3', '7.4', '8.0']
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -74,7 +74,7 @@ jobs:
         run: vendor/bin/phpunit tests/System/;
         continue-on-error: ${{matrix.php-versions == '8.0' }} # [temp-php8]
       - name: Running static analysis
-        run: vendor/bin/phpstan analyse -l 5 bin/ src/ tests/ public/;
+        run: vendor/bin/phpstan analyse -c phpstan.neon;
         continue-on-error: ${{matrix.php-versions == '8.0' }} # [temp-php8]
       - name: Running PHPMD
         run: vendor/bin/phpmd src/ text config/PHPMD/rules.xml;

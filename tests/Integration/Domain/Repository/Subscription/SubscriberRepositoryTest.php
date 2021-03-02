@@ -237,8 +237,8 @@ class SubscriberRepositoryTest extends TestCase
         $this->getDataSet()->addTable(static::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
         $this->applyDatabaseChanges();
 
-        /** @var Subscriber $model */
         $id = 1;
+        /** @var Subscriber $model */
         $model = $this->subject->find($id);
         $subscriptions = $model->getSubscriptions();
 
@@ -260,8 +260,8 @@ class SubscriberRepositoryTest extends TestCase
         $this->getDataSet()->addTable(static::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
         $this->applyDatabaseChanges();
 
-        /** @var Subscriber $model */
         $id = 1;
+        /** @var Subscriber $model */
         $model = $this->subject->find($id);
         $subscribedLists = $model->getSubscribedLists();
 
@@ -283,8 +283,8 @@ class SubscriberRepositoryTest extends TestCase
 
         $initialNumberOfSubscriptions = count($this->subscriptionRepository->findAll());
 
-        /** @var Subscriber $model */
         $id = 2;
+        /** @var Subscriber $model */
         $model = $this->subject->find($id);
 
         $numberOfAssociatedSubscriptions = count($model->getSubscriptions());

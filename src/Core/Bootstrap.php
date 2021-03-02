@@ -75,7 +75,7 @@ class Bootstrap
     public static function getInstance(): Bootstrap
     {
         if (self::$instance === null) {
-            self::$instance = new static();
+            self::$instance = new self;
         }
 
         return self::$instance;
