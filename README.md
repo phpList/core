@@ -52,8 +52,9 @@ this code.
 
 ## Structure
 
-* [class structure overview](docs/ClassStructure.md)
-* [graphic domain model](docs/DomainModel/DomainModel.svg) and
+* [Class Docs][docs/phpdoc/]
+* [Class structure overview](docs/ClassStructure.md)
+* [Graphic domain model](docs/DomainModel/DomainModel.svg) and
   a [description of the domain entities](docs/DomainModel/Entities.md)
 
 
@@ -77,6 +78,12 @@ The server will then listen on `http://127.0.0.1:8000` (or, if port 8000 is
 already in use, on the next free port after 8000).
 
 You can stop the server with CTRL + C.
+
+#### Development and Documentation 
+
+We use `phpDocumentor` to automatically generate documentation for classes. To make this process efficient and easier, you are required to properly "document" your  `classes`,`properties`, `methods` ... by annotating them with [docblocks](https://docs.phpdoc.org/latest/guide/guides/docblocks.html). 
+
+More about generatings docs in [PHPDOC.md](PHPDOC.md)
 
 ### Testing
 
