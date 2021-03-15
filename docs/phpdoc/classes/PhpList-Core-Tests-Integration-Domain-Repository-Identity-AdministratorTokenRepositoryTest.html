@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="../">
+    <link rel="icon" href="images/favicon.ico"/>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/base.css">
+            <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="css/template.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.0/css/all.min.css" integrity="sha256-ybRkN9dBjhcS2qrW1z+hfCxq+1aBdwyQM5wlQoQVt/0=" crossorigin="anonymous" />
+                <script src="https://cdn.jsdelivr.net/npm/fuse.js@3.4.6"></script>
+        <script src="https://cdn.jsdelivr.net/npm/css-vars-ponyfill@2"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.0/js/all.min.js" integrity="sha256-0vuk8LXoyrmCjp1f0O300qo1M75ZQyhH9X3J6d+scmk=" crossorigin="anonymous"></script>
+        <script src="js/search.js"></script>
+        <script defer src="js/searchIndex.js"></script>
+    </head>
+<body id="top">
+    <header class="phpdocumentor-header phpdocumentor-section">
+    <h1 class="phpdocumentor-title"><a href="" class="phpdocumentor-title__link">Documentation</a></h1>
+    <input class="phpdocumentor-header__menu-button" type="checkbox" id="menu-button" name="menu-button" />
+    <label class="phpdocumentor-header__menu-icon" for="menu-button">
+        <i class="fas fa-bars"></i>
+    </label>
+    <section data-search-form class="phpdocumentor-search">
+    <label>
+        <span class="visually-hidden">Search for</span>
+        <svg class="phpdocumentor-search__icon" width="21" height="20" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="2"/>
+            <line x1="12.4892" y1="12.2727" x2="19.1559" y2="18.9393" stroke="currentColor" stroke-width="3"/>
+        </svg>
+        <input type="search" class="phpdocumentor-field phpdocumentor-search__field" placeholder="Loading .." disabled />
+    </label>
+</section>
+
+    <nav class="phpdocumentor-topnav">
+    <ul class="phpdocumentor-topnav__menu">
+        </ul>
+</nav>
+</header>
+
+    <main class="phpdocumentor">
+        <div class="phpdocumentor-section">
+            <input class="phpdocumentor-sidebar__menu-button" type="checkbox" id="sidebar-button" name="sidebar-button" />
+<label class="phpdocumentor-sidebar__menu-icon" for="sidebar-button">
+    Menu
+</label>
+<aside class="phpdocumentor-column -four phpdocumentor-sidebar">
+    
+    <section class="phpdocumentor-sidebar__category">
+        <h2 class="phpdocumentor-sidebar__category-header">Namespaces</h2>
+                                                <h4 class="phpdocumentor-sidebar__root-namespace"><a href="namespaces/phplist.html"><abbr title="\PhpList">PhpList</abbr></a></h4>
+                <ul class="phpdocumentor-list">
+                                            <li><a href="namespaces/phplist-core.html"><abbr title="\PhpList\Core">Core</abbr></a></li>
+                                    </ul>
+                        </section>
+
+    
+    <section class="phpdocumentor-sidebar__category">
+        <h2 class="phpdocumentor-sidebar__category-header">Reports</h2>
+                <h3 class="phpdocumentor-sidebar__root-package"><a href="reports/deprecated.html">Deprecated</a></h3>
+        <h3 class="phpdocumentor-sidebar__root-package"><a href="reports/errors.html">Errors</a></h3>
+        <h3 class="phpdocumentor-sidebar__root-package"><a href="reports/markers.html">Markers</a></h3>
+    </section>
+
+    <section class="phpdocumentor-sidebar__category">
+        <h2 class="phpdocumentor-sidebar__category-header">Indices</h2>
+        <h3 class="phpdocumentor-sidebar__root-package"><a href="indices/files.html">Files</a></h3>
+    </section>
+</aside>
+
+            <div class="phpdocumentor-column -eight phpdocumentor-content">
+                    <ul class="phpdocumentor-breadcrumbs">
+            <li class="phpdocumentor-breadcrumb"><a href="namespaces/phplist.html">PhpList</a></li>
+            <li class="phpdocumentor-breadcrumb"><a href="namespaces/phplist-core.html">Core</a></li>
+            <li class="phpdocumentor-breadcrumb"><a href="namespaces/phplist-core-tests.html">Tests</a></li>
+            <li class="phpdocumentor-breadcrumb"><a href="namespaces/phplist-core-tests-integration.html">Integration</a></li>
+            <li class="phpdocumentor-breadcrumb"><a href="namespaces/phplist-core-tests-integration-domain.html">Domain</a></li>
+            <li class="phpdocumentor-breadcrumb"><a href="namespaces/phplist-core-tests-integration-domain-repository.html">Repository</a></li>
+            <li class="phpdocumentor-breadcrumb"><a href="namespaces/phplist-core-tests-integration-domain-repository-identity.html">Identity</a></li>
+    </ul>
+
+    <article class="phpdocumentor-element -class">
+        <h2 class="phpdocumentor-content__title">
+    AdministratorTokenRepositoryTest
+
+        <span class="phpdocumentor-element__extends">
+        extends <abbr title="\PHPUnit\Framework\TestCase">TestCase</abbr>
+    </span>
+    
+    
+    
+            <span class="phpdocumentor-element__extends">
+            Uses
+                            <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html"><abbr title="\PhpList\Core\TestingSupport\Traits\DatabaseTestTrait">DatabaseTestTrait</abbr></a>,                             <a href="classes/PhpList-Core-TestingSupport-Traits-SimilarDatesAssertionTrait.html"><abbr title="\PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait">SimilarDatesAssertionTrait</abbr></a>                    </span>
+    </h2>
+
+        <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">20</span>
+</aside>
+
+            <p class="phpdocumentor-summary">Testcase.</p>
+
+    <section class="phpdocumentor-description"></section>
+
+
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="#tags" class="headerlink"><i class="fas fa-link"></i></a>
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">author</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"><p>Oliver Klee <a href="mailto:oliver@phplist.com">oliver@phplist.com</a></p>
+</section>
+
+                                    </dd>
+                        </dl>
+
+
+
+
+
+
+<h3 id="toc">
+    Table of Contents
+    <a href="#toc" class="headerlink"><i class="fas fa-link"></i></a>
+</h3>
+
+<dl class="phpdocumentor-table-of-contents">
+            <dt class="phpdocumentor-table-of-contents__entry -constant -public">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#constant_ADMINISTRATOR_TABLE_NAME">ADMINISTRATOR_TABLE_NAME</a>
+    <span>
+        &nbsp;= &#039;phplist_admin&#039;                    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -constant -public">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#constant_TABLE_NAME">TABLE_NAME</a>
+    <span>
+        &nbsp;= &#039;phplist_admintoken&#039;                    </span>
+</dt>
+<dd></dd>
+
+                <dt class="phpdocumentor-table-of-contents__entry -property -protected">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#property_bootstrap">$bootstrap</a>
+    <span>
+                &nbsp;: <a href="classes/PhpList-Core-Core-Bootstrap.html"><abbr title="\PhpList\Core\Core\Bootstrap">Bootstrap</abbr></a>            </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -protected">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#property_container">$container</a>
+    <span>
+                &nbsp;: <abbr title="\Symfony\Component\DependencyInjection\ContainerInterface">ContainerInterface</abbr>            </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -protected">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#property_entityManager">$entityManager</a>
+    <span>
+                &nbsp;: <abbr title="\Doctrine\ORM\EntityManagerInterface">EntityManagerInterface</abbr>            </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -private">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#property_databaseConnection">$databaseConnection</a>
+    <span>
+                &nbsp;: <abbr title="\PHPUnit\DbUnit\Database\Connection">Connection</abbr>            </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -private">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#property_dataSet">$dataSet</a>
+    <span>
+                &nbsp;: <abbr title="\PHPUnit\DbUnit\DataSet\CsvDataSet">CsvDataSet</abbr>            </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -private">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#property_pdo">$pdo</a>
+    <span>
+                &nbsp;: <abbr title="\PDO">PDO</abbr>            </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -property -private">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#property_subject">$subject</a>
+    <span>
+                &nbsp;: <a href="classes/PhpList-Core-Domain-Repository-Identity-AdministratorTokenRepository.html"><abbr title="\PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository">AdministratorTokenRepository</abbr></a>            </span>
+</dt>
+<dd></dd>
+
+                <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_createsAdministratorAssociationAsProxy">createsAdministratorAssociationAsProxy()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_creationDateOfExistingModelStaysUnchangedOnUpdate">creationDateOfExistingModelStaysUnchangedOnUpdate()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_creationDateOfNewModelIsSetToNowOnPersist">creationDateOfNewModelIsSetToNowOnPersist()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_findOneUnexpiredByKeyFindsUnexpiredTokenWithMatchingKey">findOneUnexpiredByKeyFindsUnexpiredTokenWithMatchingKey()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_findOneUnexpiredByKeyNotFindsExpiredTokenWithMatchingKey">findOneUnexpiredByKeyNotFindsExpiredTokenWithMatchingKey()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_findOneUnexpiredByKeyNotFindsUnexpiredTokenWithNonMatchingKey">findOneUnexpiredByKeyNotFindsUnexpiredTokenWithNonMatchingKey()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_findReadsModelFromDatabase">findReadsModelFromDatabase()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_removeExpiredForNoExpiredTokensReturnsZero">removeExpiredForNoExpiredTokensReturnsZero()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_removeExpiredForOneExpiredTokenReturnsOne">removeExpiredForOneExpiredTokenReturnsOne()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_removeExpiredKeepsUnexpiredToken">removeExpiredKeepsUnexpiredToken()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_removeExpiredRemovesExpiredToken">removeExpiredRemovesExpiredToken()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_removeRemovesModel">removeRemovesModel()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -public">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_savePersistsAndFlushesModel">savePersistsAndFlushesModel()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_applyDatabaseChanges">applyDatabaseChanges()</a>
+    <span>
+                        &nbsp;: void    </span>
+</dt>
+<dd>Applies all database changes on $this-&gt;dataSet.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_getConnection">getConnection()</a>
+    <span>
+                        &nbsp;: <abbr title="\PHPUnit\DbUnit\Database\Connection">Connection</abbr>    </span>
+</dt>
+<dd>Returns the test database connection.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_getDataSet">getDataSet()</a>
+    <span>
+                        &nbsp;: <abbr title="\PHPUnit\DbUnit\DataSet\CsvDataSet">CsvDataSet</abbr>    </span>
+</dt>
+<dd>Returns the test data set.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_getTearDownOperation">getTearDownOperation()</a>
+    <span>
+                        &nbsp;: <abbr title="\PHPUnit\DbUnit\Operation\Operation">Operation</abbr>    </span>
+</dt>
+<dd>Returns the database operation executed in test cleanup.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_initializeDatabaseTester">initializeDatabaseTester()</a>
+    <span>
+                        &nbsp;: void    </span>
+</dt>
+<dd>Initializes the CSV data set and the database tester.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_setUp">setUp()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_setUpDatabaseTest">setUpDatabaseTest()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_tearDown">tearDown()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_tearDownDatabaseTest">tearDownDatabaseTest()</a>
+    <span>
+                        &nbsp;: mixed    </span>
+</dt>
+<dd></dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -protected">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_touchDatabaseTable">touchDatabaseTable()</a>
+    <span>
+                        &nbsp;: void    </span>
+</dt>
+<dd>Marks the table with the given name as &quot;touched&quot;, i.e., it will be truncated in the tearDown method.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -private">
+    <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_assertNotYear2037Yet">assertNotYear2037Yet()</a>
+    <span>
+                        &nbsp;: void    </span>
+</dt>
+<dd>Asserts that it&#039;s not year 2037 yet (which is the year the &quot;not expired&quot; token in the fixture
+data set expires).</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -method -private">
+    <a href="classes/PhpList-Core-TestingSupport-Traits-SimilarDatesAssertionTrait.html#method_assertSimilarDates">assertSimilarDates()</a>
+    <span>
+                        &nbsp;: void    </span>
+</dt>
+<dd>Asserts that $expected and $actual are similar, i.e., less than than 2 seconds apart.</dd>
+
+        </dl>
+
+
+
+        
+    <section class="phpdocumentor-constants">
+        <h3 class="phpdocumentor-elements__header" id="constants">
+            Constants
+            <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#constants" class="headerlink"><i class="fas fa-link"></i></a>
+        </h3>
+                    <article class="phpdocumentor-element -constant -public ">
+    <h4 class="phpdocumentor-element__name" id="constant_ADMINISTRATOR_TABLE_NAME">
+        ADMINISTRATOR_TABLE_NAME
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#constant_ADMINISTRATOR_TABLE_NAME" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">33</span>
+</aside>
+
+    
+    <code class="phpdocumentor-signature phpdocumentor-code ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+    <span class="phpdocumentor-signature__type">string</span>
+    <span class="phpdocumentor-signature__name">ADMINISTRATOR_TABLE_NAME</span>
+    = <span class="phpdocumentor-signature__default-value">&#039;phplist_admin&#039;</span>
+</code>
+
+
+        <section class="phpdocumentor-description"></section>
+
+    
+
+</article>
+                    <article class="phpdocumentor-element -constant -public ">
+    <h4 class="phpdocumentor-element__name" id="constant_TABLE_NAME">
+        TABLE_NAME
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#constant_TABLE_NAME" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">28</span>
+</aside>
+
+    
+    <code class="phpdocumentor-signature phpdocumentor-code ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+    <span class="phpdocumentor-signature__type">string</span>
+    <span class="phpdocumentor-signature__name">TABLE_NAME</span>
+    = <span class="phpdocumentor-signature__default-value">&#039;phplist_admintoken&#039;</span>
+</code>
+
+
+        <section class="phpdocumentor-description"></section>
+
+    
+
+</article>
+            </section>
+
+        
+    <section class="phpdocumentor-properties">
+        <h3 class="phpdocumentor-elements__header" id="properties">
+            Properties
+            <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#properties" class="headerlink"><i class="fas fa-link"></i></a>
+        </h3>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="property_bootstrap">
+        $bootstrap
+        <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#property_bootstrap" class="headerlink"><i class="fas fa-link"></i></a>
+        <span class="phpdocumentor-element__modifiers">
+                                </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/DatabaseTestTrait.php"><a href="files/src-testingsupport-traits-databasetesttrait.html"><abbr title="src/TestingSupport/Traits/DatabaseTestTrait.php">DatabaseTestTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">48</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+        <span class="phpdocumentor-signature__type"><a href="classes/PhpList-Core-Core-Bootstrap.html"><abbr title="\PhpList\Core\Core\Bootstrap">Bootstrap</abbr></a></span>
+    <span class="phpdocumentor-signature__name">$bootstrap</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="property_container">
+        $container
+        <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#property_container" class="headerlink"><i class="fas fa-link"></i></a>
+        <span class="phpdocumentor-element__modifiers">
+                                </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/DatabaseTestTrait.php"><a href="files/src-testingsupport-traits-databasetesttrait.html"><abbr title="src/TestingSupport/Traits/DatabaseTestTrait.php">DatabaseTestTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">58</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+        <span class="phpdocumentor-signature__type"><abbr title="\Symfony\Component\DependencyInjection\ContainerInterface">ContainerInterface</abbr></span>
+    <span class="phpdocumentor-signature__name">$container</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="property_entityManager">
+        $entityManager
+        <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#property_entityManager" class="headerlink"><i class="fas fa-link"></i></a>
+        <span class="phpdocumentor-element__modifiers">
+                                </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/DatabaseTestTrait.php"><a href="files/src-testingsupport-traits-databasetesttrait.html"><abbr title="src/TestingSupport/Traits/DatabaseTestTrait.php">DatabaseTestTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">53</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+        <span class="phpdocumentor-signature__type"><abbr title="\Doctrine\ORM\EntityManagerInterface">EntityManagerInterface</abbr></span>
+    <span class="phpdocumentor-signature__name">$entityManager</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -private
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="property_databaseConnection">
+        $databaseConnection
+        <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#property_databaseConnection" class="headerlink"><i class="fas fa-link"></i></a>
+        <span class="phpdocumentor-element__modifiers">
+                                </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/DatabaseTestTrait.php"><a href="files/src-testingsupport-traits-databasetesttrait.html"><abbr title="src/TestingSupport/Traits/DatabaseTestTrait.php">DatabaseTestTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">33</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">private</span>
+        <span class="phpdocumentor-signature__type"><abbr title="\PHPUnit\DbUnit\Database\Connection">Connection</abbr></span>
+    <span class="phpdocumentor-signature__name">$databaseConnection</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -private
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="property_dataSet">
+        $dataSet
+        <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#property_dataSet" class="headerlink"><i class="fas fa-link"></i></a>
+        <span class="phpdocumentor-element__modifiers">
+                                </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/DatabaseTestTrait.php"><a href="files/src-testingsupport-traits-databasetesttrait.html"><abbr title="src/TestingSupport/Traits/DatabaseTestTrait.php">DatabaseTestTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">43</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">private</span>
+        <span class="phpdocumentor-signature__type"><abbr title="\PHPUnit\DbUnit\DataSet\CsvDataSet">CsvDataSet</abbr></span>
+    <span class="phpdocumentor-signature__name">$dataSet</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -private
+            -static                                            "
+>
+    <h4 class="phpdocumentor-element__name" id="property_pdo">
+        $pdo
+        <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#property_pdo" class="headerlink"><i class="fas fa-link"></i></a>
+        <span class="phpdocumentor-element__modifiers">
+                                </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/DatabaseTestTrait.php"><a href="files/src-testingsupport-traits-databasetesttrait.html"><abbr title="src/TestingSupport/Traits/DatabaseTestTrait.php">DatabaseTestTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">38</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">private</span>
+    <span class="phpdocumentor-signature__static">static</span>    <span class="phpdocumentor-signature__type"><abbr title="\PDO">PDO</abbr></span>
+    <span class="phpdocumentor-signature__name">$pdo</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+
+</article>
+                    <article
+        class="
+            phpdocumentor-element
+            -property
+            -private
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="property_subject">
+        $subject
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#property_subject" class="headerlink"><i class="fas fa-link"></i></a>
+        <span class="phpdocumentor-element__modifiers">
+                                </span>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">38</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">private</span>
+        <span class="phpdocumentor-signature__type"><a href="classes/PhpList-Core-Domain-Repository-Identity-AdministratorTokenRepository.html"><abbr title="\PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository">AdministratorTokenRepository</abbr></a></span>
+    <span class="phpdocumentor-signature__name">$subject</span>
+     = <span class="phpdocumentor-signature__default-value">null</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+
+</article>
+            </section>
+
+            <section class="phpdocumentor-methods">
+        <h3 class="phpdocumentor-elements__header" id="methods">
+            Methods
+            <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#methods" class="headerlink"><i class="fas fa-link"></i></a>
+        </h3>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_createsAdministratorAssociationAsProxy">
+        createsAdministratorAssociationAsProxy()
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_createsAdministratorAssociationAsProxy" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">73</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                <span class="phpdocumentor-signature__name">createsAdministratorAssociationAsProxy</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="#tags" class="headerlink"><i class="fas fa-link"></i></a>
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">test</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"></section>
+
+                                    </dd>
+                        </dl>
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_creationDateOfExistingModelStaysUnchangedOnUpdate">
+        creationDateOfExistingModelStaysUnchangedOnUpdate()
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_creationDateOfExistingModelStaysUnchangedOnUpdate" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">96</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                <span class="phpdocumentor-signature__name">creationDateOfExistingModelStaysUnchangedOnUpdate</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="#tags" class="headerlink"><i class="fas fa-link"></i></a>
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">test</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"></section>
+
+                                    </dd>
+                        </dl>
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_creationDateOfNewModelIsSetToNowOnPersist">
+        creationDateOfNewModelIsSetToNowOnPersist()
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_creationDateOfNewModelIsSetToNowOnPersist" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">115</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                <span class="phpdocumentor-signature__name">creationDateOfNewModelIsSetToNowOnPersist</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="#tags" class="headerlink"><i class="fas fa-link"></i></a>
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">test</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"></section>
+
+                                    </dd>
+                        </dl>
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_findOneUnexpiredByKeyFindsUnexpiredTokenWithMatchingKey">
+        findOneUnexpiredByKeyFindsUnexpiredTokenWithMatchingKey()
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_findOneUnexpiredByKeyFindsUnexpiredTokenWithMatchingKey" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">130</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                <span class="phpdocumentor-signature__name">findOneUnexpiredByKeyFindsUnexpiredTokenWithMatchingKey</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="#tags" class="headerlink"><i class="fas fa-link"></i></a>
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">test</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"></section>
+
+                                    </dd>
+                        </dl>
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_findOneUnexpiredByKeyNotFindsExpiredTokenWithMatchingKey">
+        findOneUnexpiredByKeyNotFindsExpiredTokenWithMatchingKey()
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_findOneUnexpiredByKeyNotFindsExpiredTokenWithMatchingKey" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">148</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                <span class="phpdocumentor-signature__name">findOneUnexpiredByKeyNotFindsExpiredTokenWithMatchingKey</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="#tags" class="headerlink"><i class="fas fa-link"></i></a>
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">test</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"></section>
+
+                                    </dd>
+                        </dl>
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_findOneUnexpiredByKeyNotFindsUnexpiredTokenWithNonMatchingKey">
+        findOneUnexpiredByKeyNotFindsUnexpiredTokenWithNonMatchingKey()
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_findOneUnexpiredByKeyNotFindsUnexpiredTokenWithNonMatchingKey" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">163</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                <span class="phpdocumentor-signature__name">findOneUnexpiredByKeyNotFindsUnexpiredTokenWithNonMatchingKey</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="#tags" class="headerlink"><i class="fas fa-link"></i></a>
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">test</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"></section>
+
+                                    </dd>
+                        </dl>
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_findReadsModelFromDatabase">
+        findReadsModelFromDatabase()
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_findReadsModelFromDatabase" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">50</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                <span class="phpdocumentor-signature__name">findReadsModelFromDatabase</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="#tags" class="headerlink"><i class="fas fa-link"></i></a>
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">test</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"></section>
+
+                                    </dd>
+                        </dl>
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_removeExpiredForNoExpiredTokensReturnsZero">
+        removeExpiredForNoExpiredTokensReturnsZero()
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_removeExpiredForNoExpiredTokensReturnsZero" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">224</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                <span class="phpdocumentor-signature__name">removeExpiredForNoExpiredTokensReturnsZero</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="#tags" class="headerlink"><i class="fas fa-link"></i></a>
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">test</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"></section>
+
+                                    </dd>
+                        </dl>
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_removeExpiredForOneExpiredTokenReturnsOne">
+        removeExpiredForOneExpiredTokenReturnsOne()
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_removeExpiredForOneExpiredTokenReturnsOne" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">232</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                <span class="phpdocumentor-signature__name">removeExpiredForOneExpiredTokenReturnsOne</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="#tags" class="headerlink"><i class="fas fa-link"></i></a>
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">test</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"></section>
+
+                                    </dd>
+                        </dl>
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_removeExpiredKeepsUnexpiredToken">
+        removeExpiredKeepsUnexpiredToken()
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_removeExpiredKeepsUnexpiredToken" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">193</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                <span class="phpdocumentor-signature__name">removeExpiredKeepsUnexpiredToken</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="#tags" class="headerlink"><i class="fas fa-link"></i></a>
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">test</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"></section>
+
+                                    </dd>
+                        </dl>
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_removeExpiredRemovesExpiredToken">
+        removeExpiredRemovesExpiredToken()
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_removeExpiredRemovesExpiredToken" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">178</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                <span class="phpdocumentor-signature__name">removeExpiredRemovesExpiredToken</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="#tags" class="headerlink"><i class="fas fa-link"></i></a>
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">test</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"></section>
+
+                                    </dd>
+                        </dl>
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_removeRemovesModel">
+        removeRemovesModel()
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_removeRemovesModel" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">265</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                <span class="phpdocumentor-signature__name">removeRemovesModel</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="#tags" class="headerlink"><i class="fas fa-link"></i></a>
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">test</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"></section>
+
+                                    </dd>
+                        </dl>
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -public
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_savePersistsAndFlushesModel">
+        savePersistsAndFlushesModel()
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_savePersistsAndFlushesModel" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">245</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">public</span>
+                <span class="phpdocumentor-signature__name">savePersistsAndFlushesModel</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+    <h5 class="phpdocumentor-tag-list__heading" id="tags">
+        Tags
+        <a href="#tags" class="headerlink"><i class="fas fa-link"></i></a>
+    </h5>
+    <dl class="phpdocumentor-tag-list">
+                                    <dt class="phpdocumentor-tag-list__entry">
+                    <span class="phpdocumentor-tag__name">test</span>
+                </dt>
+                <dd class="phpdocumentor-tag-list__definition">
+                                                                                
+                                                 <section class="phpdocumentor-description"></section>
+
+                                    </dd>
+                        </dl>
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_applyDatabaseChanges">
+        applyDatabaseChanges()
+        <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_applyDatabaseChanges" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/DatabaseTestTrait.php"><a href="files/src-testingsupport-traits-databasetesttrait.html"><abbr title="src/TestingSupport/Traits/DatabaseTestTrait.php">DatabaseTestTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">159</span>
+</aside>
+
+        <p class="phpdocumentor-summary">Applies all database changes on $this-&gt;dataSet.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                <span class="phpdocumentor-signature__name">applyDatabaseChanges</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">void</span></code>
+
+        <section class="phpdocumentor-description"><p>This methods needs to be called after the last addTable call in each test.</p>
+</section>
+
+    
+    
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">void</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getConnection">
+        getConnection()
+        <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_getConnection" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/DatabaseTestTrait.php"><a href="files/src-testingsupport-traits-databasetesttrait.html"><abbr title="src/TestingSupport/Traits/DatabaseTestTrait.php">DatabaseTestTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">121</span>
+</aside>
+
+        <p class="phpdocumentor-summary">Returns the test database connection.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                <span class="phpdocumentor-signature__name">getConnection</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><abbr title="\PHPUnit\DbUnit\Database\Connection">Connection</abbr></span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type"><abbr title="\PHPUnit\DbUnit\Database\Connection">Connection</abbr></span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getDataSet">
+        getDataSet()
+        <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_getDataSet" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/DatabaseTestTrait.php"><a href="files/src-testingsupport-traits-databasetesttrait.html"><abbr title="src/TestingSupport/Traits/DatabaseTestTrait.php">DatabaseTestTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">147</span>
+</aside>
+
+        <p class="phpdocumentor-summary">Returns the test data set.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                <span class="phpdocumentor-signature__name">getDataSet</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><abbr title="\PHPUnit\DbUnit\DataSet\CsvDataSet">CsvDataSet</abbr></span></code>
+
+        <section class="phpdocumentor-description"><p>Add data to in the individual test by calling $this-&gt;getDataSet()-&gt;addTable.</p>
+</section>
+
+    
+    
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type"><abbr title="\PHPUnit\DbUnit\DataSet\CsvDataSet">CsvDataSet</abbr></span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_getTearDownOperation">
+        getTearDownOperation()
+        <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_getTearDownOperation" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/DatabaseTestTrait.php"><a href="files/src-testingsupport-traits-databasetesttrait.html"><abbr title="src/TestingSupport/Traits/DatabaseTestTrait.php">DatabaseTestTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">111</span>
+</aside>
+
+        <p class="phpdocumentor-summary">Returns the database operation executed in test cleanup.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                <span class="phpdocumentor-signature__name">getTearDownOperation</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><abbr title="\PHPUnit\DbUnit\Operation\Operation">Operation</abbr></span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type"><abbr title="\PHPUnit\DbUnit\Operation\Operation">Operation</abbr></span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_initializeDatabaseTester">
+        initializeDatabaseTester()
+        <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_initializeDatabaseTester" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/DatabaseTestTrait.php"><a href="files/src-testingsupport-traits-databasetesttrait.html"><abbr title="src/TestingSupport/Traits/DatabaseTestTrait.php">DatabaseTestTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">79</span>
+</aside>
+
+        <p class="phpdocumentor-summary">Initializes the CSV data set and the database tester.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                <span class="phpdocumentor-signature__name">initializeDatabaseTester</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">void</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">void</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_setUp">
+        setUp()
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_setUp" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">40</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                <span class="phpdocumentor-signature__name">setUp</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+    
+    
+    
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_setUpDatabaseTest">
+        setUpDatabaseTest()
+        <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_setUpDatabaseTest" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/DatabaseTestTrait.php"><a href="files/src-testingsupport-traits-databasetesttrait.html"><abbr title="src/TestingSupport/Traits/DatabaseTestTrait.php">DatabaseTestTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">65</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                <span class="phpdocumentor-signature__name">setUpDatabaseTest</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+    
+    
+    
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_tearDown">
+        tearDown()
+        <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_tearDown" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/DatabaseTestTrait.php"><a href="files/src-testingsupport-traits-databasetesttrait.html"><abbr title="src/TestingSupport/Traits/DatabaseTestTrait.php">DatabaseTestTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">87</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                <span class="phpdocumentor-signature__name">tearDown</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+    
+    
+    
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_tearDownDatabaseTest">
+        tearDownDatabaseTest()
+        <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_tearDownDatabaseTest" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/DatabaseTestTrait.php"><a href="files/src-testingsupport-traits-databasetesttrait.html"><abbr title="src/TestingSupport/Traits/DatabaseTestTrait.php">DatabaseTestTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">92</span>
+</aside>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                <span class="phpdocumentor-signature__name">tearDownDatabaseTest</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">mixed</span></code>
+
+    
+    
+    
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">mixed</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -protected
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_touchDatabaseTable">
+        touchDatabaseTable()
+        <a href="classes/PhpList-Core-TestingSupport-Traits-DatabaseTestTrait.html#method_touchDatabaseTable" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/DatabaseTestTrait.php"><a href="files/src-testingsupport-traits-databasetesttrait.html"><abbr title="src/TestingSupport/Traits/DatabaseTestTrait.php">DatabaseTestTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">175</span>
+</aside>
+
+        <p class="phpdocumentor-summary">Marks the table with the given name as &quot;touched&quot;, i.e., it will be truncated in the tearDown method.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">protected</span>
+                <span class="phpdocumentor-signature__name">touchDatabaseTable</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$tableName</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">void</span></code>
+
+        <section class="phpdocumentor-description"><p>This is useful if the table gets populated only by the tested code instead of by using the addTable
+and applyDatabaseChanges method.</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$tableName</span>
+                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"></section>
+
+            </dd>
+            </dl>
+
+    
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">void</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -private
+                                                        "
+>
+    <h4 class="phpdocumentor-element__name" id="method_assertNotYear2037Yet">
+        assertNotYear2037Yet()
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#method_assertNotYear2037Yet" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php"><a href="files/tests-integration-domain-repository-identity-administratortokenrepositorytest.html"><abbr title="tests/Integration/Domain/Repository/Identity/AdministratorTokenRepositoryTest.php">AdministratorTokenRepositoryTest.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">213</span>
+</aside>
+
+        <p class="phpdocumentor-summary">Asserts that it&#039;s not year 2037 yet (which is the year the &quot;not expired&quot; token in the fixture
+data set expires).</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">private</span>
+                <span class="phpdocumentor-signature__name">assertNotYear2037Yet</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">void</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+    
+    
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">void</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+                    <article
+        class="phpdocumentor-element
+            -method
+            -private
+                                    -static                    "
+>
+    <h4 class="phpdocumentor-element__name" id="method_assertSimilarDates">
+        assertSimilarDates()
+        <a href="classes/PhpList-Core-TestingSupport-Traits-SimilarDatesAssertionTrait.html#method_assertSimilarDates" class="headerlink"><i class="fas fa-link"></i></a>
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="src/TestingSupport/Traits/SimilarDatesAssertionTrait.php"><a href="files/src-testingsupport-traits-similardatesassertiontrait.html"><abbr title="src/TestingSupport/Traits/SimilarDatesAssertionTrait.php">SimilarDatesAssertionTrait.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">21</span>
+</aside>
+
+        <p class="phpdocumentor-summary">Asserts that $expected and $actual are similar, i.e., less than than 2 seconds apart.</p>
+
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility">private</span>
+            <span class="phpdocumentor-signature__static">static</span>    <span class="phpdocumentor-signature__name">assertSimilarDates</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type"><abbr title="\DateTime">DateTime</abbr>&nbsp;</span><span class="phpdocumentor-signature__argument__name">$expected</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__return-type"><abbr title="\DateTime">DateTime</abbr>&nbsp;</span><span class="phpdocumentor-signature__argument__name">$actual</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">void</span></code>
+
+        <section class="phpdocumentor-description"></section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$expected</span>
+                : <span class="phpdocumentor-signature__argument__return-type"><abbr title="\DateTime">DateTime</abbr></span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"></section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$actual</span>
+                : <span class="phpdocumentor-signature__argument__return-type"><abbr title="\DateTime">DateTime</abbr></span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"></section>
+
+            </dd>
+            </dl>
+
+    
+
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+    <span class="phpdocumentor-signature__response_type">void</span>
+            &mdash;
+            <section class="phpdocumentor-description"></section>
+
+    
+</article>
+            </section>
+
+    </article>
+                <section data-search-results class="phpdocumentor-search-results phpdocumentor-search-results--hidden">
+    <section class="phpdocumentor-search-results__dialog">
+        <header class="phpdocumentor-search-results__header">
+            <h2 class="phpdocumentor-search-results__title">Search results</h2>
+            <button class="phpdocumentor-search-results__close"><i class="fas fa-times"></i></button>
+        </header>
+        <section class="phpdocumentor-search-results__body">
+            <ul class="phpdocumentor-search-results__entries"></ul>
+        </section>
+    </section>
+</section>
+            </div>
+        </div>
+        <a href="classes/PhpList-Core-Tests-Integration-Domain-Repository-Identity-AdministratorTokenRepositoryTest.html#top" class="phpdocumentor-back-to-top"><i class="fas fa-chevron-circle-up"></i></a>
+
+    </main>
+
+    <script>
+        cssVars({});
+    </script>
+</body>
+</html>

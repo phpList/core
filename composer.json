@@ -90,6 +90,9 @@
         ],
         "post-update-cmd": [
             "@update-configuration"
+        ],
+        "generate-docs": [
+            "phpDocumentor -d 'src,tests' -t docs/phpdoc"
         ]
     },
     "extra": {
