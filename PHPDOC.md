@@ -16,7 +16,7 @@ So to be able to generate or update our class docs you would need to download an
 ## Generate Docs
 
 If you did install `phpDocumentor` globally as specified above then you can generate class docs as follows.
-Run : `composer generate docs`
+Run : `composer run-php-documentor`
 
 
 

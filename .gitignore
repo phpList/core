@@ -12,5 +12,6 @@
 /nbproject
 /var/
 /vendor/
+/docs/phpdocumentor
 .vagrant
 .phpdoc/
