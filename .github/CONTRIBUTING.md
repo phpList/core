@@ -31,8 +31,7 @@ Before you report an issue, please search through the existing issues here on
 GitHub to see if your issue is already reported or fixed to make sure you are
 not reporting a duplicated issue.
 
-Also please make sure you have the latest version of this package and check if
-the issue still exists.
+In addition, make sure you have the latest version of this package to ensure the issue still exists.
 
 
 # Contribute code, bug fixes or documentation (pull requests)
@@ -60,8 +59,7 @@ have a chance of keeping on top of things:
 8. Add a changelog entry.
 9. [Commit](#git-commits) and push your changes.
 10. [Create a pull request](https://help.github.com/articles/about-pull-requests/)
-    for your changes. Check that the Travis build is green. (If it is not, fix the
-    problems listed by Travis.)
+    for your changes. Check that CI checks implemented with `Github Actions` pass. (Otherwise, corrected listed issues to ensure checks pass.)
     We have provided a template for pull requests as well.
 11. [Request a review](https://help.github.com/articles/about-pull-request-reviews/).
 11. Together with your reviewer, polish your changes until they are ready to be

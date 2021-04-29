@@ -28,7 +28,7 @@ following responsibilities:
 * tasks to create and update the DB schema
 
 Please note that this module does not provide a web frontend or a REST API.
-There are the separate modules `phpList/web-frontend` and `phpList/rest-api`
+There are the separate modules [`phpList/web-frontend`](https://github.com/phpList/web-frontend) and [`phpList/rest-api`](https://github.com/phpList/rest-api)
 for these tasks.
 
 This module should not be modified locally. It should be updated via Composer.
@@ -36,15 +36,12 @@ This module should not be modified locally. It should be updated via Composer.
 
 ## Installation
 
-Please install this package via Composer from within the
-[phpList base distribution](https://github.com/phpList/base-distribution),
-which also has more detailed installation instructions in the README.
+Since this package is only a service required to run a full installation of **phpList 4**, the recommended way of installing this package is to run `composer install` from within the [phpList base distribution](https://github.com/phpList/base-distribution) which requires this package. [`phpList/base-distribution`](https://github.com/phpList/base-distribution) containrs detailed installation instructions in its [README](https://github.com/phpList/base-distribution/blob/master/README.md).
 
 
 ## Contributing to this package
 
-Please read the [contribution guide](.github/CONTRIBUTING.md) on how to
-contribute and how to run the unit tests and style checks locally.
+Contributions to phpList repositories are highly welcomed! To get started please take a look at the [contribution guide](.github/CONTRIBUTING.md). It contains everything you would need to make your first contribution including how to run local style checks and run tests. 
 
 ### Code of Conduct
 
@@ -55,8 +52,9 @@ this code.
 
 ## Structure
 
-* [class structure overview](docs/ClassStructure.md)
-* [graphic domain model](docs/DomainModel/DomainModel.svg) and
+* [Class Docs][docs/phpdoc/]
+* [Class structure overview](docs/ClassStructure.md)
+* [Graphic domain model](docs/DomainModel/DomainModel.svg) and
   a [description of the domain entities](docs/DomainModel/Entities.md)
 
 
@@ -69,7 +67,7 @@ Please first set the database credentials in `config/parameters.yml`.
 
 ### Development
 
-For running the application in development mode using the built-in PHP server,
+To run the application in development mode using PHP's built-in server,
 use this command:
 
 ```bash
@@ -80,6 +78,12 @@ The server will then listen on `http://127.0.0.1:8000` (or, if port 8000 is
 already in use, on the next free port after 8000).
 
 You can stop the server with CTRL + C.
+
+#### Development and Documentation 
+
+We use `phpDocumentor` to automatically generate documentation for classes. To make this process efficient and easier, you are required to properly "document" your  `classes`,`properties`, `methods` ... by annotating them with [docblocks](https://docs.phpdoc.org/latest/guide/guides/docblocks.html). 
+
+More about generatings docs in [PHPDOC.md](PHPDOC.md)
 
 ### Testing
 

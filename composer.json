@@ -90,6 +90,9 @@
         ],
         "post-update-cmd": [
             "@update-configuration"
+        ],
+        "run-php-documentor": [
+            "phpDocumentor -d 'src,tests'"
         ]
     },
     "extra": {
