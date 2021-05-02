@@ -60,8 +60,8 @@ jobs:
         rm phpdocumentor.zip
     - name: List Files
       run: ls
-    - name: Move Files
-      run: mv docs/phpdocumentor/* .
+    - name: Sync old files with newly generated ones.
+      run: rsync -av docs/phpdocumentor/* .
     - name: Check if updates/changes.
       run: git status --porcelain > repo-changes.txt
     - name: Verify updates.
