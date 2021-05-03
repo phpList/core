@@ -60,10 +60,14 @@ jobs:
         rm phpdocumentor.zip
     - name: List Files
       run: ls
-    - name: Move Files
-      run: mv docs/phpdocumentor/* .
+    - name: Sync old files with newly generated ones.
+      run: rsync -av docs/phpdocumentor/* .
+    - name: Removed temp dirs
+      run: rm -rf docs
     - name: Check if updates/changes.
       run: git status --porcelain > repo-changes.txt
+    - name: Check changes file
+      run: cat repo-changes.txt
     - name: Verify updates.
       id: allow-deploy
       run: |
@@ -71,9 +75,9 @@ jobs:
     - name: Commit changes and deply
       if: ${{ steps.allow-deploy.outputs.DEPLOY == 'true' }}
       run: |
-        rm -rf docs
+        rm repo-changes.txt
         git config user.name "github-actions"
         git config user.email "github-actions@restapi-docs.workflow"
         git add .
         git commit -s -m "phplist/core docs deployment `date`"
-        git push 
+        git push
