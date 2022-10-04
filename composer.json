@@ -29,7 +29,7 @@
         "source": "https://github.com/phpList/core"
     },
     "require": {
-        "php": "~7.0.0 || ~7.1.0 || ~7.2.0",
+        "php": "~7.1.0 || ~7.2.0 || ~7.3.0 || ~7.4.0",
 
         "roave/security-advisories": "dev-master",
 
@@ -59,8 +59,8 @@
         "doctrine/instantiator": "^1.0.5"
     },
     "suggest": {
-        "phplist/web-frontend": "4.0.x-dev",
-        "phplist/rest-api": "4.0.x-dev"
+        "phplist/web-frontend": "@dev",
+        "phplist/rest-api": "@dev"
     },
     "autoload": {
         "psr-4": {
