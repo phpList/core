@@ -30,9 +30,6 @@
     },
     "require": {
         "php": "~7.1.0 || ~7.2.0 || ~7.3.0 || ~7.4.0",
-
-        "roave/security-advisories": "dev-master",
-
         "doctrine/orm": "^2.5.0",
         "doctrine/common": "^2.6.0",
         "doctrine/doctrine-bundle": "^1.8.0",
