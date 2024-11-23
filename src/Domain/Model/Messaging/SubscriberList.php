@@ -1,15 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Model\Messaging;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping;
-use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Proxy\Proxy;
-use JMS\Serializer\Annotation\ExclusionPolicy;
-use JMS\Serializer\Annotation\Expose;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
@@ -22,273 +22,164 @@ use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 /**
  * This class represents an administrator who can log to the system, is allowed to administer
  * selected lists (as the owner), send campaigns to these lists and edit subscribers.
- *
- * @Mapping\Entity(repositoryClass="PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository")
- * @Mapping\Table(name="phplist_list")
- * @Mapping\HasLifecycleCallbacks
- * @ExclusionPolicy("all")
- *
- * @author Oliver Klee <oliver@phplist.com>
- */
+*/
+#[ORM\Entity(repositoryClass: "PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository")]
+#[ORM\Table(name: "phplist_list")]
+#[ORM\HasLifecycleCallbacks]
 class SubscriberList implements DomainModel, Identity, CreationDate, ModificationDate
 {
     use IdentityTrait;
     use CreationDateTrait;
     use ModificationDateTrait;
 
-    /**
-     * @var string
-     * @Column
-     * @Expose
-     */
-    private $name = '';
+    #[ORM\Column]
+    #[SerializedName("name")]
+    private string $name = '';
 
-    /**
-     * @var string
-     * @Column
-     * @Expose
-     */
-    private $description = '';
+    #[ORM\Column]
+    #[SerializedName("description")]
+    private string $description = '';
 
-    /**
-     * @var \DateTime|null
-     * @Column(type="datetime", nullable=true, name="entered")
-     * @Expose
-     */
-    protected $creationDate = null;
+    #[ORM\Column(name: "entered", type: "datetime", nullable: true)]
+    #[SerializedName("creation_date")]
+    protected ?DateTime $creationDate = null;
 
-    /**
-     * @var \DateTime|null
-     * @Column(type="datetime", name="modified")
-     */
-    protected $modificationDate = null;
+    #[ORM\Column(name: "modified", type: "datetime")]
+    #[Ignore]
+    protected ?DateTime $modificationDate = null;
 
-    /**
-     * @var int
-     * @Column(type="integer", name="listorder")
-     * @Expose
-     */
-    private $listPosition = 0;
+    #[ORM\Column(name: "listorder", type: "integer")]
+    #[SerializedName("list_position")]
+    private int $listPosition = 0;
 
-    /**
-     * @var string
-     * @Column(name="prefix")
-     * @Expose
-     */
-    private $subjectPrefix = '';
+    #[ORM\Column(name: "prefix")]
+    #[SerializedName("subject_prefix")]
+    private string $subjectPrefix = '';
 
-    /**
-     * @var bool
-     * @Column(type="boolean", name="active")
-     * @Expose
-     */
-    private $public = false;
+    #[ORM\Column(name: "active", type: "boolean")]
+    #[SerializedName("public")]
+    private bool $public = false;
 
-    /**
-     * @var string
-     * @Column
-     * @Expose
-     */
-    private $category = '';
+    #[ORM\Column]
+    #[SerializedName("category")]
+    private string $category = '';
 
-    /**
-     * @var Administrator
-     * @Mapping\ManyToOne(targetEntity="PhpList\Core\Domain\Model\Identity\Administrator")
-     * @Mapping\JoinColumn(name="owner")
-     */
-    private $owner = null;
+    #[ORM\ManyToOne(targetEntity: "PhpList\Core\Domain\Model\Identity\Administrator")]
+    #[ORM\JoinColumn(name: "owner")]
+    #[Ignore]
+    private ?Administrator $owner = null;
 
-    /**
-     * @var Collection
-     * @Mapping\OneToMany(
-     *     targetEntity="PhpList\Core\Domain\Model\Subscription\Subscription",
-     *     mappedBy="subscriberList",
-     *     cascade={"remove"}
-     * )
-     */
-    private $subscriptions = null;
+    #[ORM\OneToMany(
+        mappedBy: "subscriberList",
+        targetEntity: "PhpList\Core\Domain\Model\Subscription\Subscription",
+        cascade: ["remove"]
+    )]
+    private Collection $subscriptions;
 
-    /**
-     * @var Collection
-     * @Mapping\ManyToMany(
-     *     targetEntity="PhpList\Core\Domain\Model\Subscription\Subscriber",
-     *     inversedBy="subscribedLists",
-     *     fetch="EXTRA_LAZY"
-     * )
-     * @Mapping\JoinTable(name="phplist_listuser",
-     *     joinColumns={@Mapping\JoinColumn(name="listid")},
-     *     inverseJoinColumns={@Mapping\JoinColumn(name="userid")}
-     * )
-     */
-    private $subscribers = null;
+    #[ORM\ManyToMany(
+        targetEntity: "PhpList\Core\Domain\Model\Subscription\Subscriber",
+        inversedBy: "subscribedLists",
+        fetch: "EXTRA_LAZY"
+    )]
+    #[ORM\JoinTable(
+        name: "phplist_listuser",
+        joinColumns: [new ORM\JoinColumn(name: "listid")],
+        inverseJoinColumns: [new ORM\JoinColumn(name: "userid")]
+    )]
+    private Collection $subscribers;
 
-    /**
-     * The constructor.
-     */
     public function __construct()
     {
         $this->subscriptions = new ArrayCollection();
         $this->subscribers = new ArrayCollection();
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @param string $name
-     *
-     * @return void
-     */
-    public function setName(string $name)
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
 
-    /**
-     * @return string
-     */
     public function getDescription(): string
     {
         return $this->description;
     }
 
-    /**
-     * @param string $description
-     *
-     * @return void
-     */
-    public function setDescription(string $description)
+    public function setDescription(string $description): void
     {
         $this->description = $description;
     }
 
-    /**
-     * @return int
-     */
     public function getListPosition(): int
     {
         return $this->listPosition;
     }
 
-    /**
-     * @param int $listPosition
-     *
-     * @return void
-     */
-    public function setListPosition(int $listPosition)
+    public function setListPosition(int $listPosition): void
     {
         $this->listPosition = $listPosition;
     }
 
-    /**
-     * @return string
-     */
     public function getSubjectPrefix(): string
     {
         return $this->subjectPrefix;
     }
 
-    /**
-     * @param string $subjectPrefix
-     *
-     * @return void
-     */
-    public function setSubjectPrefix(string $subjectPrefix)
+    public function setSubjectPrefix(string $subjectPrefix): void
     {
         $this->subjectPrefix = $subjectPrefix;
     }
 
-    /**
-     * @return bool
-     */
     public function isPublic(): bool
     {
         return $this->public;
     }
 
-    /**
-     * @param bool $public
-     *
-     * @return void
-     */
-    public function setPublic(bool $public)
+    public function setPublic(bool $public): void
     {
         $this->public = $public;
     }
 
-    /**
-     * @return string
-     */
     public function getCategory(): string
     {
         return $this->category;
     }
 
-    /**
-     * @param string $category
-     *
-     * @return void
-     */
-    public function setCategory(string $category)
+    public function setCategory(string $category): void
     {
         $this->category = $category;
     }
 
-    /**
-     * @return Administrator|Proxy|null
-     */
-    public function getOwner()
+    public function getOwner(): ?Administrator
     {
         return $this->owner;
     }
 
-    /**
-     * @param Administrator $owner
-     *
-     * @return void
-     */
-    public function setOwner(Administrator $owner)
+    public function setOwner(Administrator $owner): void
     {
         $this->owner = $owner;
     }
 
-    /**
-     * @return Collection
-     */
     public function getSubscriptions(): Collection
     {
         return $this->subscriptions;
     }
 
-    /**
-     * @param Collection $subscriptions
-     *
-     * @return void
-     */
-    public function setSubscriptions(Collection $subscriptions)
+    public function setSubscriptions(Collection $subscriptions): void
     {
         $this->subscriptions = $subscriptions;
     }
 
-    /**
-     * @return Collection
-     */
     public function getSubscribers(): Collection
     {
         return $this->subscribers;
     }
 
-    /**
-     * @param Collection $subscribers
-     *
-     * @return void
-     */
-    public function setSubscribers(Collection $subscribers)
+    public function setSubscribers(Collection $subscribers): void
     {
         $this->subscribers = $subscribers;
     }

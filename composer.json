@@ -81,7 +81,8 @@
             "PhpList\\Core\\Composer\\ScriptHandler::createBundleConfiguration",
             "PhpList\\Core\\Composer\\ScriptHandler::createRoutesConfiguration",
             "PhpList\\Core\\Composer\\ScriptHandler::createParametersConfiguration",
-            "php bin/console cache:clear"
+            "php bin/console cache:clear --env=prod",
+            "php bin/console cache:warmup --env=prod"
         ],
         "post-install-cmd": [
             "@update-configuration"
