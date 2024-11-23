@@ -32,17 +32,17 @@ class Bootstrap
     /**
      * @var Bootstrap|null
      */
-    private static $instance = null;
+    private static ?Bootstrap $instance = null;
 
     /**
      * @var bool
      */
-    private $isConfigured = false;
+    private bool $isConfigured = false;
 
     /**
      * @var string
      */
-    private $environment = Environment::DEFAULT_ENVIRONMENT;
+    private string $environment = Environment::DEFAULT_ENVIRONMENT;
 
     /**
      * @var ApplicationKernel
@@ -52,7 +52,7 @@ class Bootstrap
     /**
      * @var ApplicationStructure
      */
-    private $applicationStructure = null;
+    private ApplicationStructure $applicationStructure;
 
     /**
      * Protected constructor to avoid direct instantiation of this class.
@@ -92,7 +92,7 @@ class Bootstrap
      *
      * @return void
      */
-    public static function purgeInstance()
+    public static function purgeInstance(): void
     {
         self::$instance = null;
     }
@@ -144,9 +144,9 @@ class Bootstrap
      * @SuppressWarnings("PHPMD.ExitExpression")
      * @SuppressWarnings("PHPMD.Superglobals")
      *
-     * @return Bootstrap|null fluent interface
+     * @return Bootstrap fluent interface
      */
-    public function ensureDevelopmentOrTestingEnvironment()
+    public function ensureDevelopmentOrTestingEnvironment(): static
     {
         $usesProxy = isset($_SERVER['HTTP_CLIENT_IP']) || isset($_SERVER['HTTP_X_FORWARDED_FOR']);
         $isOnCli = PHP_SAPI === 'cli' || PHP_SAPI === 'cli-server';
@@ -181,7 +181,7 @@ class Bootstrap
      *
      * @throws RuntimeException if configure has not been called before
      */
-    private function assertConfigureHasBeenCalled()
+    private function assertConfigureHasBeenCalled(): void
     {
         if (!$this->isConfigured) {
             throw new RuntimeException('Please call configure() first.', 1501170550);

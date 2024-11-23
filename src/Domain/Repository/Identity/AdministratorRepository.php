@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Repository\Identity;
@@ -15,9 +16,9 @@ use PhpList\Core\Security\HashGenerator;
 class AdministratorRepository extends AbstractRepository
 {
     /**
-     * @var HashGenerator
+     * @var HashGenerator|null
      */
-    private $hashGenerator = null;
+    private ?HashGenerator $hashGenerator = null;
 
     /**
      * @param HashGenerator $hashGenerator
@@ -25,7 +26,7 @@ class AdministratorRepository extends AbstractRepository
      *
      * @return void
      */
-    public function injectHashGenerator(HashGenerator $hashGenerator)
+    public function injectHashGenerator(HashGenerator $hashGenerator): void
     {
         $this->hashGenerator = $hashGenerator;
     }
@@ -34,14 +35,14 @@ class AdministratorRepository extends AbstractRepository
      * Finds the Administrator with the given login credentials. Returns null if there is no match,
      * i.e., if the login credentials are incorrect.
      *
-     * This also checks that the administrator is a super user.
+     * This also checks that the administrator is a superuser.
      *
      * @param string $loginName
      * @param string $plainTextPassword
      *
      * @return Administrator|null
      */
-    public function findOneByLoginCredentials(string $loginName, string $plainTextPassword)
+    public function findOneByLoginCredentials(string $loginName, string $plainTextPassword): ?Administrator
     {
         $passwordHash = $this->hashGenerator->createPasswordHash($plainTextPassword);
 

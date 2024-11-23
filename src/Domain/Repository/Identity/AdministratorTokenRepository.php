@@ -1,8 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Repository\Identity;
 
+use DateTime;
 use Doctrine\Common\Collections\Criteria;
 use PhpList\Core\Domain\Model\Identity\AdministratorToken;
 use PhpList\Core\Domain\Repository\AbstractRepository;
@@ -23,11 +25,11 @@ class AdministratorTokenRepository extends AbstractRepository
      *
      * @return AdministratorToken|null
      */
-    public function findOneUnexpiredByKey(string $key)
+    public function findOneUnexpiredByKey(string $key): ?AdministratorToken
     {
         $criteria = new Criteria();
         $criteria->where(Criteria::expr()->eq('key', $key))
-            ->andWhere(Criteria::expr()->gt('expiry', new \DateTime()));
+            ->andWhere(Criteria::expr()->gt('expiry', new DateTime()));
 
         $firstMatch = $this->matching($criteria)->first();
 

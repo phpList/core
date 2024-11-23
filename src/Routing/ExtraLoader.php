@@ -1,9 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Routing;
 
 use PhpList\Core\Core\ApplicationStructure;
+use RuntimeException;
 use Symfony\Component\Config\Loader\Loader;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -22,18 +24,19 @@ class ExtraLoader extends Loader
     /**
      * @var bool
      */
-    private $loaded = false;
+    private bool $loaded = false;
 
     /**
      * @var ApplicationStructure
      */
-    private $applicationStructure = null;
+    private ApplicationStructure $applicationStructure;
 
     /**
      * @param ApplicationStructure $applicationStructure
      */
     public function __construct(ApplicationStructure $applicationStructure)
     {
+        parent::__construct();
         $this->applicationStructure = $applicationStructure;
     }
 
@@ -47,12 +50,12 @@ class ExtraLoader extends Loader
      *
      * @return RouteCollection
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
-    public function load($resource, $type = null): RouteCollection
+    public function load($resource, string $type = null): RouteCollection
     {
         if ($this->loaded) {
-            throw new \RuntimeException('Do not add the "extra" loader twice.', 1500587713);
+            throw new RuntimeException('Do not add the "extra" loader twice.', 1500587713);
         }
 
         $routes = new RouteCollection();
@@ -73,7 +76,7 @@ class ExtraLoader extends Loader
      *
      * @return bool true if this class supports the given resource, false otherwise
      */
-    public function supports($resource, $type = null): bool
+    public function supports($resource, string $type = null): bool
     {
         return $type === 'extra';
     }
@@ -83,7 +86,7 @@ class ExtraLoader extends Loader
      *
      * @return void
      */
-    private function addModuleRoutes(RouteCollection $routes)
+    private function addModuleRoutes(RouteCollection $routes): void
     {
         $bundleRoutesFilePath = $this->applicationStructure->getApplicationRoot() .
             static::MODULE_ROUTING_CONFIGURATION_FILE;

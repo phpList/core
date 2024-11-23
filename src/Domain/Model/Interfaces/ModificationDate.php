@@ -1,8 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Model\Interfaces;
 
+use DateTime;
 use Doctrine\ORM\Mapping;
 
 /**
@@ -15,9 +17,9 @@ use Doctrine\ORM\Mapping;
 interface ModificationDate
 {
     /**
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getModificationDate();
+    public function getModificationDate(): ?DateTime;
 
     /**
      * Updates the modification date to now.
@@ -27,5 +29,5 @@ interface ModificationDate
      *
      * @return void
      */
-    public function updateModificationDate();
+    public function updateModificationDate(): void;
 }

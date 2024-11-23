@@ -38,7 +38,7 @@ class ApplicationKernel extends Kernel
      *
      * @return string absolute path without the trailing slash
      */
-    public function getProjectDir()
+    public function getProjectDir(): string
     {
         return $this->getAndCreateApplicationStructure()->getCorePackageRoot();
     }
@@ -46,7 +46,7 @@ class ApplicationKernel extends Kernel
     /**
      * @return string
      */
-    public function getRootDir()
+    public function getRootDir(): string
     {
         return $this->getProjectDir();
     }
@@ -70,7 +70,7 @@ class ApplicationKernel extends Kernel
     /**
      * @return string
      */
-    public function getCacheDir()
+    public function getCacheDir(): string
     {
         return $this->getApplicationDir() . '/var/cache/' . $this->getEnvironment();
     }
@@ -78,7 +78,7 @@ class ApplicationKernel extends Kernel
     /**
      * @return string
      */
-    public function getLogDir()
+    public function getLogDir(): string
     {
         return $this->getApplicationDir() . '/var/logs';
     }
@@ -102,7 +102,7 @@ class ApplicationKernel extends Kernel
      *
      * @return void
      */
-    protected function build(ContainerBuilder $container)
+    protected function build(ContainerBuilder $container): void
     {
         $container->setParameter('kernel.application_dir', $this->getApplicationDir());
     }
@@ -116,7 +116,7 @@ class ApplicationKernel extends Kernel
      *
      * @throws Exception
      */
-    public function registerContainerConfiguration(LoaderInterface $loader)
+    public function registerContainerConfiguration(LoaderInterface $loader): void
     {
         $loader->load($this->getApplicationDir() . '/config/parameters.yml');
         $loader->load($this->getRootDir() . '/config/config_' . $this->getEnvironment() . '.yml');
@@ -140,7 +140,6 @@ class ApplicationKernel extends Kernel
     {
         $bundles = [];
 
-        /** @var string[] $packageBundles */
         foreach ($this->readBundleConfiguration() as $packageBundles) {
             foreach ($packageBundles as $bundleClassName) {
                 if (class_exists($bundleClassName)) {

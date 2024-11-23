@@ -1,7 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Core;
+
+use RuntimeException;
 
 /**
  * This class provides information about the current application and its file structure.
@@ -15,7 +18,7 @@ class ApplicationStructure
      *
      * @return string the absolute path without the trailing slash.
      *
-     * @throws \RuntimeException if there is no composer.json in the application root
+     * @throws RuntimeException if there is no composer.json in the application root
      */
     public function getCorePackageRoot(): string
     {
@@ -33,22 +36,20 @@ class ApplicationStructure
      *
      * @return string the absolute path without the trailing slash
      *
-     * @throws \RuntimeException if there is no composer.json in the application root
+     * @throws RuntimeException if there is no composer.json in the application root
      */
     public function getApplicationRoot(): string
     {
         $corePackagePath = $this->getCorePackageRoot();
         $corePackageIsRootPackage = interface_exists('PhpList\\Core\\Tests\\Support\\Interfaces\\TestMarker');
-        if ($corePackageIsRootPackage) {
-            $applicationRoot = $corePackagePath;
-        } else {
+        if (!$corePackageIsRootPackage) {
             // remove 3 more path segments, i.e., "vendor/phplist/core/"
             $corePackagePath = dirname($corePackagePath, 3);
-            $applicationRoot = $corePackagePath;
         }
+        $applicationRoot = $corePackagePath;
 
         if (!file_exists($applicationRoot . '/composer.json')) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 'There is no composer.json in the supposed application root "' . $applicationRoot . '".',
                 1501169001
             );

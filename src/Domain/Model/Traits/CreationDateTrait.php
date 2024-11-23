@@ -1,8 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Model\Traits;
 
+use DateTime;
 use Doctrine\ORM\Mapping\PrePersist;
 
 /**
@@ -18,19 +20,19 @@ use Doctrine\ORM\Mapping\PrePersist;
 trait CreationDateTrait
 {
     /**
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getCreationDate()
+    public function getCreationDate(): ?DateTime
     {
         return $this->creationDate;
     }
 
     /**
-     * @param \DateTime $creationDate
+     * @param DateTime $creationDate
      *
      * @return void
      */
-    private function setCreationDate(\DateTime $creationDate)
+    private function setCreationDate(DateTime $creationDate): void
     {
         $this->creationDate = $creationDate;
     }
@@ -42,8 +44,8 @@ trait CreationDateTrait
      *
      * @return void
      */
-    public function updateCreationDate()
+    public function updateCreationDate(): void
     {
-        $this->setCreationDate(new \DateTime());
+        $this->setCreationDate(new DateTime());
     }
 }

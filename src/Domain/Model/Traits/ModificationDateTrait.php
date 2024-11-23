@@ -33,6 +33,6 @@ trait ModificationDateTrait
     #[ORM\PreUpdate]
     public function updateModificationDate(): void
     {
-        $this->setModificationDate(new \DateTime());
+        $this->setModificationDate(new DateTime());
     }
 }

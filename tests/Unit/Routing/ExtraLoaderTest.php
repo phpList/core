@@ -21,12 +21,12 @@ class ExtraLoaderTest extends TestCase
      */
     private $subject = null;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = new ExtraLoader(new ApplicationStructure());
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         Bootstrap::purgeInstance();
     }

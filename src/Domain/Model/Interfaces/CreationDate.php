@@ -1,8 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Model\Interfaces;
 
+use DateTime;
 use Doctrine\ORM\Mapping\PrePersist;
 
 /**
@@ -15,9 +17,9 @@ use Doctrine\ORM\Mapping\PrePersist;
 interface CreationDate
 {
     /**
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getCreationDate();
+    public function getCreationDate(): ?DateTime;
 
     /**
      * Updates the creation date to now.
@@ -26,5 +28,5 @@ interface CreationDate
      *
      * @return void
      */
-    public function updateCreationDate();
+    public function updateCreationDate(): void;
 }

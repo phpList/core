@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Repository\Subscription;
@@ -24,7 +25,7 @@ class SubscriptionRepository extends AbstractRepository
      *
      * @return Subscription|null
      */
-    public function findOneBySubscriberListAndSubscriber(SubscriberList $list, Subscriber $subscriber)
+    public function findOneBySubscriberListAndSubscriber(SubscriberList $list, Subscriber $subscriber): ?Subscription
     {
         return $this->findOneBy(
             [
