@@ -26,7 +26,7 @@ services:
         autowire: true
         autoconfigure: false
         public: true
-        factory: Doctrine\ORM\EntityManagerInterface:getRepository
+        factory: ['@doctrine.orm.entity_manager', getRepository]
 
     # controllers are imported separately to make sure they're public
     # and have a tag that allows actions to type-hint services
@@ -34,3 +34,16 @@ services:
         resource: '../src/EmptyStartPageBundle/Controller'
         public: true
         tags: [controller.service_arguments]
+
+    doctrine.orm.metadata.annotation_reader:
+        alias: doctrine.annotation_reader
+
+    doctrine.annotation_reader:
+        class: Doctrine\Common\Annotations\AnnotationReader
+        autowire: true
+
+    doctrine.orm.default_annotation_metadata_driver:
+        class: Doctrine\ORM\Mapping\Driver\AnnotationDriver
+        arguments:
+            - '@annotation_reader'
+            - '%kernel.project_dir%/src/Domain/Model/'

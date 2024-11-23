@@ -1,9 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Core;
 
-use Symfony\Bundle\WebServerBundle\WebServerBundle;
+use Exception;
+use RuntimeException;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -28,12 +30,7 @@ class ApplicationKernel extends Kernel
      */
     public function registerBundles(): array
     {
-        $bundles = $this->bundlesFromConfiguration();
-        if ($this->shouldHaveDevelopmentBundles()) {
-            $bundles[] = new WebServerBundle();
-        }
-
-        return $bundles;
+        return $this->bundlesFromConfiguration();
     }
 
     /**
@@ -117,7 +114,7 @@ class ApplicationKernel extends Kernel
      *
      * @return void
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function registerContainerConfiguration(LoaderInterface $loader)
     {
@@ -162,13 +159,13 @@ class ApplicationKernel extends Kernel
      *
      * @return string[][]
      *
-     * @throws \RuntimeException if the configuration file cannot be read
+     * @throws RuntimeException if the configuration file cannot be read
      */
     private function readBundleConfiguration(): array
     {
         $configurationFilePath = $this->getApplicationDir() . '/config/bundles.yml';
         if (!is_readable($configurationFilePath)) {
-            throw new \RuntimeException('The file "' . $configurationFilePath . '" could not be read.', 1504272377);
+            throw new RuntimeException('The file "' . $configurationFilePath . '" could not be read.', 1504272377);
         }
 
         return Yaml::parse(file_get_contents($configurationFilePath));

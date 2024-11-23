@@ -1,12 +1,16 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Core;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Debug\Debug;
+use Exception;
+use RuntimeException;
+use Symfony\Component\ErrorHandler\ErrorHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use UnexpectedValueException;
 
 /**
  * This class bootstraps the phpList core system.
@@ -98,7 +102,7 @@ class Bootstrap
      *
      * @return Bootstrap fluent interface
      *
-     * @throws \UnexpectedValueException
+     * @throws UnexpectedValueException
      */
     public function setEnvironment(string $environment): Bootstrap
     {
@@ -175,12 +179,12 @@ class Bootstrap
      *
      * @return void
      *
-     * @throws \RuntimeException if configure has not been called before
+     * @throws RuntimeException if configure has not been called before
      */
     private function assertConfigureHasBeenCalled()
     {
         if (!$this->isConfigured) {
-            throw new \RuntimeException('Please call configure() first.', 1501170550);
+            throw new RuntimeException('Please call configure() first.', 1501170550);
         }
     }
 
@@ -191,8 +195,8 @@ class Bootstrap
      *
      * @return null
      *
-     * @throws \RuntimeException if configure has not been called before
-     * @throws \Exception
+     * @throws RuntimeException if configure has not been called before
+     * @throws Exception
      */
     public function dispatch()
     {
@@ -212,7 +216,7 @@ class Bootstrap
     private function configureDebugging(): Bootstrap
     {
         if ($this->isDebugEnabled()) {
-            Debug::enable();
+            ErrorHandler::register();
         }
 
         return $this;
@@ -234,7 +238,7 @@ class Bootstrap
     /**
      * @return ApplicationKernel
      *
-     * @throws \RuntimeException if configure has not been called before
+     * @throws RuntimeException if configure has not been called before
      */
     public function getApplicationKernel(): ApplicationKernel
     {
@@ -258,7 +262,7 @@ class Bootstrap
     /**
      * @return EntityManagerInterface
      *
-     * @throws \RuntimeException if configure has not been called before
+     * @throws RuntimeException if configure has not been called before
      */
     public function getEntityManager(): EntityManagerInterface
     {
@@ -278,7 +282,7 @@ class Bootstrap
      *
      * @return string the absolute path without the trailing slash.
      *
-     * @throws \RuntimeException if there is no composer.json in the application root
+     * @throws RuntimeException if there is no composer.json in the application root
      */
     public function getApplicationRoot(): string
     {

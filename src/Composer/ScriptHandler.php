@@ -6,7 +6,6 @@ namespace PhpList\Core\Composer;
 use Composer\Package\PackageInterface;
 use Composer\Script\Event;
 use PhpList\Core\Core\ApplicationStructure;
-use Sensio\Bundle\DistributionBundle\Composer\ScriptHandler as SensioScriptHandler;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -14,7 +13,7 @@ use Symfony\Component\Filesystem\Filesystem;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class ScriptHandler extends SensioScriptHandler
+class ScriptHandler
 {
     /**
      * @var string
@@ -260,23 +259,6 @@ class ScriptHandler extends SensioScriptHandler
     {
         $fileSystem = new Filesystem();
         $fileSystem->remove(static::getApplicationRoot() . '/var/cache');
-    }
-
-    /**
-     * Warms the production cache.
-     *
-     * @param Event $event
-     *
-     * @return void
-     */
-    public static function warmProductionCache(Event $event)
-    {
-        $consoleDir = static::getConsoleDir($event, 'warm the cache');
-        if ($consoleDir === null) {
-            return;
-        }
-
-        static::executeCommand($event, $consoleDir, 'cache:warm -e prod');
     }
 
     /**
