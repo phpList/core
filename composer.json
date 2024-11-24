@@ -59,8 +59,8 @@
         "doctrine/instantiator": "^1.0.5"
     },
     "suggest": {
-        "phplist/web-frontend": "4.0.x-dev",
-        "phplist/rest-api": "4.0.x-dev"
+        "phplist/web-frontend": "5.0.x-dev",
+        "phplist/rest-api": "5.0.x-dev"
     },
     "autoload": {
         "psr-4": {
@@ -96,7 +96,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "4.0.x-dev"
+            "dev-ISSUE-337": "v5.0.x-dev"
         },
         "symfony-app-dir": "",
         "symfony-bin-dir": "bin",
@@ -106,9 +106,7 @@
         "phplist/core": {
             "bundles": [
                 "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
-                "Sensio\\Bundle\\FrameworkExtraBundle\\SensioFrameworkExtraBundle",
                 "Symfony\\Bundle\\MonologBundle\\MonologBundle",
-                "JMS\\SerializerBundle\\JMSSerializerBundle",
                 "Doctrine\\Bundle\\DoctrineBundle\\DoctrineBundle",
                 "PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle"
             ],
