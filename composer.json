@@ -56,7 +56,8 @@
         "nikic/php-parser": "^4.19.1",
         "phpmd/phpmd": "^2.6.0",
         "composer/composer": "^1.6.0",
-        "doctrine/instantiator": "^1.0.5"
+        "doctrine/instantiator": "^1.0.5",
+        "doctrine/doctrine-fixtures-bundle": "^3.6"
     },
     "suggest": {
         "phplist/web-frontend": "5.0.x-dev",
