@@ -7,3 +7,9 @@ framework:
         storage_id: session.storage.mock_file
     profiler:
         collect: false
+
+doctrine:
+    dbal:
+        driver: 'pdo_sqlite'
+        memory: true
+        charset: UTF8

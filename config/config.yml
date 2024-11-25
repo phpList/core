@@ -52,7 +52,7 @@ doctrine:
         auto_mapping: true
         mappings:
             PhpList\Core\Domain\Model:
-                type: annotation
                 is_bundle: false
-                prefix: PhpList\Core\Domain\Model
+                type: attribute
                 dir: '%kernel.project_dir%/src/Domain/Model/'
+                prefix: 'PhpList\Core\Domain\Model\'

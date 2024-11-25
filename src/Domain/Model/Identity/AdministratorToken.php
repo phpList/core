@@ -103,7 +103,7 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
         $this->setKey($key);
     }
 
-    public function getAdministrator(): ?Administrator
+    public function getAdministrator(): Administrator|Proxy|null
     {
         return $this->administrator;
     }

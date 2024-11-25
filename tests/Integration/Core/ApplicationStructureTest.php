@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Core;
@@ -20,14 +21,14 @@ class ApplicationStructureTest extends TestCase
     /**
      * @var ApplicationKernel
      */
-    private $kernel = null;
+    private ApplicationKernel $kernel;
 
     /**
      * @var ContainerInterface
      */
-    private $container = null;
+    private ContainerInterface $container;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $bootstrap = Bootstrap::getInstance();
         $bootstrap->setEnvironment(Environment::TESTING)->configure();
@@ -38,7 +39,7 @@ class ApplicationStructureTest extends TestCase
         $this->container = $this->kernel->getContainer();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->kernel->shutdown();
         Bootstrap::purgeInstance();

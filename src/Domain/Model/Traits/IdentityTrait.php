@@ -20,7 +20,7 @@ trait IdentityTrait
     #[ORM\Column(type: "integer")]
     #[ORM\GeneratedValue]
     #[SerializedName("id")]
-    private int $id = 0;
+    private int $id;
 
     public function getId(): int
     {

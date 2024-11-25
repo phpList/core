@@ -1,7 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\TestingSupport\Traits;
+
+use PhpList\Core\Domain\Model\Interfaces\DomainModel;
+use ReflectionObject;
 
 /**
  * This trait provides methods helpful in testing domain models.
@@ -11,32 +15,31 @@ namespace PhpList\Core\TestingSupport\Traits;
 trait ModelTestTrait
 {
     /**
-     * Sets the (private) ID of $this->subject.
+     * Sets the (private) ID of $this->repository.
      *
      * @param int $id
      *
      * @return void
      */
-    private function setSubjectId(int $id)
+    private function setSubjectId(DomainModel $model,int $id): void
     {
-        $this->setSubjectProperty('id', $id);
+        $this->setSubjectProperty($model,'id', $id);
     }
 
     /**
-     * Sets the (private) property $propertyName of $this->subject.
-     *
-     * @internal
+     * Sets the (private) property $propertyName of $this->repository.
      *
      * @param string $propertyName
      * @param mixed $value
      *
      * @return void
+     * @internal
+     *
      */
-    private function setSubjectProperty(string $propertyName, $value)
+    private function setSubjectProperty(DomainModel $model, string $propertyName, mixed $value): void
     {
-        $reflectionObject = new \ReflectionObject($this->subject);
+        $reflectionObject = new ReflectionObject($model);
         $reflectionProperty = $reflectionObject->getProperty($propertyName);
-        $reflectionProperty->setAccessible(true);
-        $reflectionProperty->setValue($this->subject, $value);
+        $reflectionProperty->setValue($model, $value);
     }
 }

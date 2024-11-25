@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Core;
@@ -18,15 +19,15 @@ class ApplicationKernelTest extends TestCase
     /**
      * @var ApplicationKernel
      */
-    private $subject = null;
+    private ApplicationKernel $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = new ApplicationKernel(Environment::TESTING, true);
         $this->subject->boot();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         Bootstrap::purgeInstance();
     }

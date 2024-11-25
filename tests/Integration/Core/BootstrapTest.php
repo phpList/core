@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Core;
@@ -17,15 +18,15 @@ class BootstrapTest extends TestCase
     /**
      * @var Bootstrap
      */
-    private $subject = null;
+    private Bootstrap $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = Bootstrap::getInstance();
         $this->subject->setEnvironment(Environment::TESTING);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         Bootstrap::purgeInstance();
     }

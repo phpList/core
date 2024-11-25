@@ -4,176 +4,109 @@ declare(strict_types=1);
 
 namespace PhpList\Core\TestingSupport\Traits;
 
+use Doctrine\Common\DataFixtures\Purger\ORMPurger;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\SchemaTool;
+use Doctrine\ORM\Tools\ToolsException;
+use InvalidArgumentException;
 use PhpList\Core\Core\Bootstrap;
 use PhpList\Core\Core\Environment;
-use PHPUnit\DbUnit\Database\Connection;
-use PHPUnit\DbUnit\DataSet\CsvDataSet;
-use PHPUnit\DbUnit\Operation\Factory;
-use PHPUnit\DbUnit\Operation\Operation;
-use PHPUnit\DbUnit\TestCaseTrait;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use RuntimeException;
 
 /**
- * This is a trait for integration tests that use database records.
- *
- * If you have your own setUp method, make sure to call $this->setUpDatabaseTest() first thing in your setUp method.
- *
- * And if you have your own tearDown method, call $this->tearDownDatabaseTest() first thing in your tearDown method.
- *
- * @author Oliver Klee <oliver@phplist.com>
+ * This trait provides support for integration tests involving database records.
  */
 trait DatabaseTestTrait
 {
-    use TestCaseTrait;
+    protected ?Bootstrap $bootstrap = null;
+    protected ?EntityManagerInterface $entityManager = null;
+    protected static $container;
 
     /**
-     * @var Connection
+     * Sets up the database test environment.
      */
-    private $databaseConnection = null;
-
-    /**
-     * @var \PDO
-     */
-    private static $pdo = null;
-
-    /**
-     * @var CsvDataSet
-     */
-    private $dataSet = null;
-
-    /**
-     * @var Bootstrap
-     */
-    protected $bootstrap = null;
-
-    /**
-     * @var EntityManagerInterface
-     */
-    protected $entityManager = null;
-
-    /**
-     * @var ContainerInterface
-     */
-    protected $container = null;
-
-    protected function setUp()
+    protected function setUpDatabaseTest(): void
     {
-        $this->setUpDatabaseTest();
+        $this->initializeBootstrap();
+        $this->clearDatabase();
     }
 
-    protected function setUpDatabaseTest()
+    /**
+     * Tears down the database test environment.
+     */
+    protected function tearDownDatabaseTest(): void
     {
-        $this->initializeDatabaseTester();
-        $this->bootstrap = Bootstrap::getInstance()->setEnvironment(Environment::TESTING)->configure();
-        $this->container = $this->bootstrap->getContainer();
+        $this->entityManager?->clear();
+        $this->entityManager?->close();
+        $this->bootstrap = null;
+        $this->entityManager = null;
+    }
+
+    /**
+     * Initializes the Bootstrap and Doctrine EntityManager.
+     */
+    private function initializeBootstrap(): void
+    {
+        $this->bootstrap = Bootstrap::getInstance()
+            ->setEnvironment(Environment::TESTING)
+            ->configure();
+
         $this->entityManager = $this->bootstrap->getEntityManager();
-        static::assertTrue($this->entityManager->isOpen());
+
+        if (!$this->entityManager->isOpen()) {
+            throw new RuntimeException('The Doctrine EntityManager is not open.');
+        }
     }
 
     /**
-     * Initializes the CSV data set and the database tester.
-     *
-     * @return void
+     * Clears the database using ORMPurger.
      */
-    protected function initializeDatabaseTester()
+    private function clearDatabase(): void
     {
-        $this->dataSet = new CsvDataSet();
-
-        unset($this->databaseTester);
-        $this->getDatabaseTester()->setSetUpOperation($this->getSetUpOperation());
-    }
-
-    protected function tearDown()
-    {
-        $this->tearDownDatabaseTest();
-    }
-
-    protected function tearDownDatabaseTest()
-    {
-        $this->entityManager->close();
-        $this->getDatabaseTester()->setTearDownOperation($this->getTearDownOperation());
-        $this->getDatabaseTester()->setDataSet($this->getDataSet());
-        $this->getDatabaseTester()->onTearDown();
-
-        // Destroy the tester after the test is run to keep DB connections
-        // from piling up.
-        unset($this->databaseTester);
-
-        Bootstrap::purgeInstance();
-    }
-
-    /**
-     * Returns the database operation executed in test cleanup.
-     *
-     * @return Operation
-     */
-    protected function getTearDownOperation(): Operation
-    {
-        return Factory::TRUNCATE();
-    }
-
-    /**
-     * Returns the test database connection.
-     *
-     * @return Connection
-     */
-    protected function getConnection(): Connection
-    {
-        if ($this->databaseConnection === null) {
-            if (self::$pdo === null) {
-                $databaseHost = getenv('PHPLIST_DATABASE_HOST') ?: 'localhost';
-                $databasePort = getenv('PHPLIST_DATABASE_PORT') ?: '3306';
-                $databaseName = getenv('PHPLIST_DATABASE_NAME');
-                self::$pdo = new \PDO(
-                    'mysql:host='.$databaseHost.';port='.$databasePort.';dbname='.$databaseName,
-                    getenv('PHPLIST_DATABASE_USER'),
-                    getenv('PHPLIST_DATABASE_PASSWORD')
-                );
-            }
-            $this->databaseConnection = $this->createDefaultDBConnection(self::$pdo);
+        if (!$this->entityManager) {
+            throw new RuntimeException('EntityManager not initialized.');
         }
 
-        return $this->databaseConnection;
+        $purger = new ORMPurger($this->entityManager);
+        $purger->purge();
     }
 
     /**
-     * Returns the test data set.
+     * Loads data fixtures into the database.
      *
-     * Add data to in the individual test by calling $this->getDataSet()->addTable.
-     *
-     * @return CsvDataSet
+     * @param array $fixtures List of fixture classes to load
      */
-    protected function getDataSet(): CsvDataSet
+    protected function loadFixtures(array $fixtures): void
     {
-        return $this->dataSet;
+        foreach ($fixtures as $fixture) {
+            $fixtureInstance = new $fixture();
+            if (!method_exists($fixtureInstance, 'load')) {
+                throw new InvalidArgumentException(sprintf('Fixture %s must have a load() method.', $fixture));
+            }
+
+            $fixtureInstance->load($this->entityManager);
+        }
+
+        $this->entityManager->flush();
     }
 
-    /**
-     * Applies all database changes on $this->dataSet.
-     *
-     * This methods needs to be called after the last addTable call in each test.
-     *
-     * @return void
-     */
-    protected function applyDatabaseChanges()
+    protected function loadSchema(): void
     {
-        $this->getDatabaseTester()->setDataSet($this->getDataSet());
-        $this->getDatabaseTester()->onSetUp();
-    }
+        $this->entityManager = self::getContainer()->get('doctrine.orm.entity_manager');
+        $schemaTool = new SchemaTool($this->entityManager);
+        $metadata = $this->entityManager->getMetadataFactory()->getAllMetadata();
 
-    /**
-     * Marks the table with the given name as "touched", i.e., it will be truncated in the tearDown method.
-     *
-     * This is useful if the table gets populated only by the tested code instead of by using the addTable
-     * and applyDatabaseChanges method.
-     *
-     * @param string $tableName
-     *
-     * @return void
-     */
-    protected function touchDatabaseTable(string $tableName)
-    {
-        $this->getDataSet()->addTable($tableName, __DIR__ . '/../Fixtures/TouchTable.csv');
+        $connection = $this->entityManager->getConnection();
+        $schemaManager = $connection->createSchemaManager();
+
+        foreach ($metadata as $classMetadata) {
+            $tableName = $classMetadata->getTableName();
+
+            if (!$schemaManager->tablesExist([$tableName])) {
+                try {
+                    $schemaTool->createSchema([$classMetadata]);
+                } catch (ToolsException $e){}
+            }
+        }
     }
 }

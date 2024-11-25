@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Composer;
@@ -35,7 +36,6 @@ class ScriptsTest extends TestCase
     {
         return [
             'Symfony framework bundle' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
-            'sensio framework extras' => ['Sensio\\Bundle\\FrameworkExtraBundle\\SensioFrameworkExtraBundle'],
             'Doctrine bundle' => ['Doctrine\\Bundle\\DoctrineBundle\\DoctrineBundle'],
             'empty start page bundle' => ['PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
         ];
@@ -50,7 +50,7 @@ class ScriptsTest extends TestCase
     {
         $fileContents = file_get_contents($this->getBundleConfigurationFilePath());
 
-        static::assertContains($bundleClassName, $fileContents);
+        static::assertStringContainsString($bundleClassName, $fileContents);
     }
 
     /**
@@ -90,7 +90,7 @@ class ScriptsTest extends TestCase
     {
         $fileContents = file_get_contents($this->getModuleRoutesConfigurationFilePath());
 
-        static::assertContains($routeSearchString, $fileContents);
+        static::assertStringContainsString($routeSearchString, $fileContents);
     }
 
     /**
