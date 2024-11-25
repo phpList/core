@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\TestingSupport;
+namespace PhpList\Core\Tests\TestingSupport;
 
 use PhpList\Core\Core\Bootstrap;
 use PhpList\Core\Core\Environment;

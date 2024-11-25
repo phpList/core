@@ -6,8 +6,8 @@ namespace PhpList\Core\Tests\Unit\Domain\Model\Identity;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Identity\AdministratorToken;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
-use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
-use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
+use PhpList\Core\Tests\TestingSupport\Traits\ModelTestTrait;
+use PhpList\Core\Tests\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
 
 /**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\TestingSupport\Traits;
+namespace PhpList\Core\Tests\TestingSupport\Traits;
 
 use DateTime;
 

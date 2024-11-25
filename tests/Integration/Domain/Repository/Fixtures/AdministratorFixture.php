@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Domain\Repository\Fixtures;
 
+use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use PhpList\Core\Domain\Model\Identity\Administrator;
-use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
+use PhpList\Core\Tests\TestingSupport\Traits\ModelTestTrait;
 use RuntimeException;
-use DateTime;
 
 class AdministratorFixture extends Fixture
 {

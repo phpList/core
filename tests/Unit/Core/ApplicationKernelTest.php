@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Core;
 
-use PhpList\Core\EmptyStartPageBundle\PhpListEmptyStartPageBundle;
 use PhpList\Core\Core\ApplicationKernel;
 use PhpList\Core\Core\Bootstrap;
 use PhpList\Core\Core\Environment;
-use PhpList\Core\TestingSupport\Traits\ContainsInstanceAssertionTrait;
+use PhpList\Core\EmptyStartPageBundle\PhpListEmptyStartPageBundle;
+use PhpList\Core\Tests\TestingSupport\Traits\ContainsInstanceAssertionTrait;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\WebServerBundle\WebServerBundle;

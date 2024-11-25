@@ -8,9 +8,9 @@ use DateTime;
 use Doctrine\ORM\Tools\SchemaTool;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
-use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
-use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
 use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\AdministratorFixture;
+use PhpList\Core\Tests\TestingSupport\Traits\DatabaseTestTrait;
+use PhpList\Core\Tests\TestingSupport\Traits\ModelTestTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class AdministratorRepositoryTest extends KernelTestCase

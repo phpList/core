@@ -21,6 +21,7 @@ use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 /**
  * This class represents subscriber who can subscribe to multiple subscriber lists and can receive email messages from
  * campaigns for those subscriber lists.
+ * @author Oliver Klee <oliver@phplist.com>
  */
 #[ORM\Entity(repositoryClass: "PhpList\Core\Domain\Repository\Subscription\SubscriberRepository")]
 #[ORM\Table(name: "phplist_user_user")]

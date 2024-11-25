@@ -19,6 +19,7 @@ use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 /**
  * This class represents subscriber who can subscribe to multiple subscriber lists and can receive email messages from
  * campaigns for those subscriber lists.
+ * @author Oliver Klee <oliver@phplist.com>
  */
 #[ORM\Entity(repositoryClass: "PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository")]
 #[ORM\Table(name: "phplist_listuser")]
@@ -54,7 +55,7 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
     #[Ignore]
     private ?SubscriberList $subscriberList = null;
 
-    public function getSubscriber(): ?Subscriber
+    public function getSubscriber(): Subscriber|Proxy|null
     {
         return $this->subscriber;
     }

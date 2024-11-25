@@ -22,7 +22,8 @@ use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 /**
  * This class represents an administrator who can log to the system, is allowed to administer
  * selected lists (as the owner), send campaigns to these lists and edit subscribers.
-*/
+ * @author Oliver Klee <oliver@phplist.com>
+ */
 #[ORM\Entity(repositoryClass: "PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository")]
 #[ORM\Table(name: "phplist_list")]
 #[ORM\HasLifecycleCallbacks]

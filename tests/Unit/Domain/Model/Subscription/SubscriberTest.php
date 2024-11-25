@@ -7,8 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
-use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
-use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
+use PhpList\Core\Tests\TestingSupport\Traits\ModelTestTrait;
+use PhpList\Core\Tests\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
 
 /**

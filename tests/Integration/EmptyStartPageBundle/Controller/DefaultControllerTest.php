@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Integration\EmptyStartPageBundle\Controller;
 
 use PhpList\Core\EmptyStartPageBundle\Controller\DefaultController;
-use PhpList\Core\TestingSupport\AbstractWebTest;
+use PhpList\Core\Tests\TestingSupport\AbstractWebTest;
 
 /**
  * Testcase.

@@ -17,6 +17,7 @@ use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 
 /**
  * This class represents an API authentication token for an administrator.
+ * @author Oliver Klee <oliver@phplist.com>
  */
 #[ORM\Entity(repositoryClass: "PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository")]
 #[ORM\Table(name: "phplist_admintoken")]
