@@ -42,11 +42,13 @@ class ApplicationStructure
     {
         $corePackagePath = $this->getCorePackageRoot();
         $corePackageIsRootPackage = interface_exists('PhpList\\Core\\Tests\\Support\\Interfaces\\TestMarker');
-        if (!$corePackageIsRootPackage) {
+        if ($corePackageIsRootPackage) {
+            $applicationRoot = $corePackagePath;
+        } else {
             // remove 3 more path segments, i.e., "vendor/phplist/core/"
             $corePackagePath = dirname($corePackagePath, 3);
+            $applicationRoot = $corePackagePath;
         }
-        $applicationRoot = $corePackagePath;
 
         if (!file_exists($applicationRoot . '/composer.json')) {
             throw new RuntimeException(

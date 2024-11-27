@@ -31,6 +31,8 @@ framework:
     assets: ~
     php_errors:
         log: true
+    serializer:
+        enabled: true
 
 # Doctrine Configuration
 doctrine:

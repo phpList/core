@@ -45,10 +45,11 @@
         "symfony/yaml": "^4.4|^5.4",
         "doctrine/annotations": "*",
         "symfony/error-handler": "*",
-        "symfony/serializer": "*"
+        "symfony/serializer": "*",
+        "monolog/monolog": "^2.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^10.0",
+        "phpunit/phpunit": "^9.5.2",
         "guzzlehttp/guzzle": "^6.3.0",
         "squizlabs/php_codesniffer": "^3.2.0",
         "phpstan/phpstan": "^0.7.0|0.12.57",
@@ -82,8 +83,8 @@
             "PhpList\\Core\\Composer\\ScriptHandler::createBundleConfiguration",
             "PhpList\\Core\\Composer\\ScriptHandler::createRoutesConfiguration",
             "PhpList\\Core\\Composer\\ScriptHandler::createParametersConfiguration",
-            "php bin/console cache:clear --env=prod",
-            "php bin/console cache:warmup --env=prod"
+            "php bin/console cache:clear",
+            "php bin/console cache:warmup"
         ],
         "post-install-cmd": [
             "@update-configuration"
@@ -114,7 +115,7 @@
             "routes": {
                 "homepage": {
                     "resource": "@PhpListEmptyStartPageBundle/Controller/",
-                    "type": "annotation"
+                    "type": "attribute"
                 }
             }
         }
