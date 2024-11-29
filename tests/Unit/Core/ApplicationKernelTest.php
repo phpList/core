@@ -6,7 +6,7 @@ namespace PhpList\Core\Tests\Unit\Core;
 use PhpList\Core\Core\ApplicationKernel;
 use PhpList\Core\Core\Bootstrap;
 use PhpList\Core\Core\Environment;
-use PhpList\Core\EmptyStartPageBundle\PhpListEmptyStartPageBundle;
+use PhpList\Core\EmptyStartPageBundle\EmptyStartPageBundle;
 use PhpList\Core\Tests\TestingSupport\Traits\ContainsInstanceAssertionTrait;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
@@ -28,12 +28,12 @@ class ApplicationKernelTest extends TestCase
      */
     private $subject = null;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = new ApplicationKernel(Environment::TESTING, true);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         Bootstrap::purgeInstance();
     }
@@ -63,7 +63,7 @@ class ApplicationKernelTest extends TestCase
     {
         return [
             'framework' => [FrameworkBundle::class],
-            'phpList default bundle' => [PhpListEmptyStartPageBundle::class],
+            'phpList default bundle' => [EmptyStartPageBundle::class],
             'web server' => [WebServerBundle::class],
         ];
     }

@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\EmptyStartPageBundle;
 
-use PhpList\Core\EmptyStartPageBundle\PhpListEmptyStartPageBundle;
+use PhpList\Core\EmptyStartPageBundle\EmptyStartPageBundle;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -15,13 +16,13 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 class PhpListEmptyStartPageBundleTest extends TestCase
 {
     /**
-     * @var PhpListEmptyStartPageBundle
+     * @var EmptyStartPageBundle
      */
     private $subject = null;
 
-    protected function setUp()
+    protected function setUp(): void
     {
-        $this->subject = new PhpListEmptyStartPageBundle();
+        $this->subject = new EmptyStartPageBundle();
     }
 
     /**

@@ -197,7 +197,7 @@ class ModuleFinderTest extends TestCase
                         'phplist/core' => [
                             'bundles' => [
                                 'Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle',
-                                'PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle',
+                                'PhpList\\Core\\EmptyStartPageBundle\\EmptyStartPageBundle',
                             ],
                         ],
                     ],
@@ -205,7 +205,7 @@ class ModuleFinderTest extends TestCase
                 [
                     'phplist/foo' => [
                         'Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle',
-                        'PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle',
+                        'PhpList\\Core\\EmptyStartPageBundle\\EmptyStartPageBundle',
                     ],
                 ],
             ],
@@ -218,13 +218,13 @@ class ModuleFinderTest extends TestCase
                     ],
                     'phplist/bar' => [
                         'phplist/core' => [
-                            'bundles' => ['PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
+                            'bundles' => ['PhpList\\Core\\EmptyStartPageBundle\\EmptyStartPageBundle'],
                         ],
                     ],
                 ],
                 [
                     'phplist/foo' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
-                    'phplist/bar' => ['PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
+                    'phplist/bar' => ['PhpList\\Core\\EmptyStartPageBundle\\EmptyStartPageBundle'],
                 ],
             ],
         ];

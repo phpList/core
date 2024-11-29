@@ -37,7 +37,7 @@ class ScriptsTest extends TestCase
         return [
             'Symfony framework bundle' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
             'Doctrine bundle' => ['Doctrine\\Bundle\\DoctrineBundle\\DoctrineBundle'],
-            'empty start page bundle' => ['PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
+            'empty start page bundle' => ['PhpList\\Core\\EmptyStartPageBundle\\EmptyStartPageBundle'],
         ];
     }
 

@@ -58,7 +58,7 @@ class PackageRepository
         /** @var bool[] $registeredPackages */
         $registeredPackages = [];
 
-        $result = array_filter(
+        return array_filter(
             $packages,
             function (PackageInterface $package) use (&$registeredPackages) {
                 $packageName = $package->getName();
@@ -70,8 +70,6 @@ class PackageRepository
                 return true;
             }
         );
-
-        return $result;
     }
 
     /**

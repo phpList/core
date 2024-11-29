@@ -110,12 +110,12 @@
                 "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
                 "Symfony\\Bundle\\MonologBundle\\MonologBundle",
                 "Doctrine\\Bundle\\DoctrineBundle\\DoctrineBundle",
-                "PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle"
+                "PhpList\\Core\\EmptyStartPageBundle\\EmptyStartPageBundle"
             ],
             "routes": {
                 "homepage": {
-                    "resource": "@PhpListEmptyStartPageBundle/Controller/",
-                    "type": "attribute"
+                    "resource": "@EmptyStartPageBundle/Controller/",
+                    "type": "annotation"
                 }
             }
         }

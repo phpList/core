@@ -11,6 +11,6 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class PhpListEmptyStartPageBundle extends Bundle
+class EmptyStartPageBundle extends Bundle
 {
 }
