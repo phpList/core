@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Model\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
  * This trait provides an ID property to domain models.
@@ -20,6 +21,7 @@ trait IdentityTrait
     #[ORM\Column(type: "integer")]
     #[ORM\GeneratedValue]
     #[SerializedName("id")]
+    #[Groups(['SubscriberList'])]
     private int $id;
 
     public function getId(): int

@@ -18,6 +18,8 @@ use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
 use PhpList\Core\Domain\Model\Traits\CreationDateTrait;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Attribute\MaxDepth;
 
 /**
  * This class represents an administrator who can log to the system, is allowed to administer
@@ -35,14 +37,17 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
 
     #[ORM\Column]
     #[SerializedName("name")]
+    #[Groups(['SubscriberList'])]
     private string $name = '';
 
     #[ORM\Column]
     #[SerializedName("description")]
+    #[Groups(['SubscriberList'])]
     private string $description = '';
 
     #[ORM\Column(name: "entered", type: "datetime", nullable: true)]
     #[SerializedName("creation_date")]
+    #[Groups(['SubscriberList'])]
     protected ?DateTime $creationDate = null;
 
     #[ORM\Column(name: "modified", type: "datetime")]
@@ -51,11 +56,13 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
 
     #[ORM\Column(name: "listorder", type: "integer")]
     #[SerializedName("list_position")]
-    private int $listPosition = 0;
+    #[Groups(['SubscriberList'])]
+    private ?int $listPosition;
 
     #[ORM\Column(name: "prefix")]
     #[SerializedName("subject_prefix")]
-    private string $subjectPrefix = '';
+    #[Groups(['SubscriberList'])]
+    private ?string $subjectPrefix;
 
     #[ORM\Column(name: "active", type: "boolean")]
     #[SerializedName("public")]
@@ -75,6 +82,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         targetEntity: "PhpList\Core\Domain\Model\Subscription\Subscription",
         cascade: ["remove"]
     )]
+    #[MaxDepth(1)]
     private Collection $subscriptions;
 
     #[ORM\ManyToMany(
@@ -87,6 +95,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         joinColumns: [new ORM\JoinColumn(name: "listid")],
         inverseJoinColumns: [new ORM\JoinColumn(name: "userid")]
     )]
+    #[MaxDepth(1)]
     private Collection $subscribers;
 
     public function __construct()
@@ -117,7 +126,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
 
     public function getListPosition(): int
     {
-        return $this->listPosition;
+        return $this->listPosition ?? 0;
     }
 
     public function setListPosition(int $listPosition): void
@@ -127,7 +136,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
 
     public function getSubjectPrefix(): string
     {
-        return $this->subjectPrefix;
+        return $this->subjectPrefix ?? '';
     }
 
     public function setSubjectPrefix(string $subjectPrefix): void
@@ -137,7 +146,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
 
     public function isPublic(): bool
     {
-        return $this->public;
+        return $this->public ?? false;
     }
 
     public function setPublic(bool $public): void
@@ -147,7 +156,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
 
     public function getCategory(): string
     {
-        return $this->category;
+        return $this->category ?? '';
     }
 
     public function setCategory(string $category): void

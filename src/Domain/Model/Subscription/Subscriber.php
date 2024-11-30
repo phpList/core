@@ -17,6 +17,7 @@ use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
 use PhpList\Core\Domain\Model\Traits\CreationDateTrait;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
  * This class represents subscriber who can subscribe to multiple subscriber lists and can receive email messages from
@@ -34,6 +35,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
 
     #[ORM\Column(name: "entered", type: "datetime", nullable: true)]
     #[SerializedName("creation_date")]
+    #[Groups(['SubscriberListMembers'])]
     protected ?DateTime $creationDate = null;
 
     #[ORM\Column(name: "modified", type: "datetime")]
@@ -42,35 +44,42 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
 
     #[ORM\Column(unique: true)]
     #[SerializedName("email")]
+    #[Groups(['SubscriberListMembers'])]
     private string $email = '';
 
     #[ORM\Column(type: "boolean")]
     #[SerializedName("confirmed")]
+    #[Groups(['SubscriberListMembers'])]
     private bool $confirmed = false;
 
     #[ORM\Column(type: "boolean")]
     #[SerializedName("blacklisted")]
+    #[Groups(['SubscriberListMembers'])]
     private bool $blacklisted = false;
 
     #[ORM\Column(name: "bouncecount", type: "integer")]
     #[SerializedName("bounce_count")]
+    #[Groups(['SubscriberListMembers'])]
     private int $bounceCount = 0;
 
     #[ORM\Column(name: "uniqid", unique: true)]
     #[SerializedName("unique_id")]
+    #[Groups(['SubscriberListMembers'])]
     private string $uniqueId = '';
 
     #[ORM\Column(name: "htmlemail", type: "boolean")]
     #[SerializedName("html_email")]
+    #[Groups(['SubscriberListMembers'])]
     private bool $htmlEmail = false;
 
     #[ORM\Column(type: "boolean")]
     #[SerializedName("disabled")]
+    #[Groups(['SubscriberListMembers'])]
     private bool $disabled = false;
 
     #[ORM\Column(name: "extradata", type: "text")]
     #[SerializedName("extra_data")]
-    private string $extraData = '';
+    private ?string $extraData;
 
     #[ORM\OneToMany(
         mappedBy: "subscriber",
@@ -179,7 +188,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
 
     public function getExtraData(): string
     {
-        return $this->extraData;
+        return $this->extraData ?? '';
     }
 
     public function setExtraData(string $extraData): void

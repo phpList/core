@@ -33,6 +33,7 @@ framework:
         log: true
     serializer:
         enabled: true
+        enable_attributes: true
 
 # Doctrine Configuration
 doctrine:
