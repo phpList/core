@@ -103,6 +103,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     {
         $this->subscriptions = new ArrayCollection();
         $this->subscribedLists = new ArrayCollection();
+        $this->extraData = '';
     }
 
     public function isConfirmed(): bool
@@ -188,7 +189,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
 
     public function getExtraData(): string
     {
-        return $this->extraData ?? '';
+        return $this->extraData;
     }
 
     public function setExtraData(string $extraData): void

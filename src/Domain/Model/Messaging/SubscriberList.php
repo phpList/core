@@ -78,8 +78,8 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     private ?Administrator $owner = null;
 
     #[ORM\OneToMany(
-        mappedBy: "subscriberList",
         targetEntity: "PhpList\Core\Domain\Model\Subscription\Subscription",
+        mappedBy: "subscriberList",
         cascade: ["remove"]
     )]
     #[MaxDepth(1)]
@@ -102,6 +102,8 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     {
         $this->subscriptions = new ArrayCollection();
         $this->subscribers = new ArrayCollection();
+        $this->listPosition = 0;
+        $this->subjectPrefix = '';
     }
 
     public function getName(): string
@@ -126,7 +128,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
 
     public function getListPosition(): int
     {
-        return $this->listPosition ?? 0;
+        return $this->listPosition;
     }
 
     public function setListPosition(int $listPosition): void
@@ -136,7 +138,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
 
     public function getSubjectPrefix(): string
     {
-        return $this->subjectPrefix ?? '';
+        return $this->subjectPrefix;
     }
 
     public function setSubjectPrefix(string $subjectPrefix): void
@@ -156,7 +158,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
 
     public function getCategory(): string
     {
-        return $this->category ?? '';
+        return $this->category;
     }
 
     public function setCategory(string $category): void

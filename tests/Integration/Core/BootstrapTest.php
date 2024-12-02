@@ -15,9 +15,6 @@ use PHPUnit\Framework\TestCase;
  */
 class BootstrapTest extends TestCase
 {
-    /**
-     * @var Bootstrap
-     */
     private Bootstrap $subject;
 
     protected function setUp(): void
@@ -31,19 +28,13 @@ class BootstrapTest extends TestCase
         Bootstrap::purgeInstance();
     }
 
-    /**
-     * @test
-     */
-    public function ensureDevelopmentOrTestingEnvironmentForTestingEnvironmentHasFluentInterface()
+    public function testEnsureDevelopmentOrTestingEnvironmentForTestingEnvironmentHasFluentInterface()
     {
-        static::assertSame($this->subject, $this->subject->ensureDevelopmentOrTestingEnvironment());
+        self::assertSame($this->subject, $this->subject->ensureDevelopmentOrTestingEnvironment());
     }
 
-    /**
-     * @test
-     */
-    public function getApplicationRootReturnsCoreApplicationRoot()
+    public function testGetApplicationRootReturnsCoreApplicationRoot()
     {
-        static::assertSame(dirname(__DIR__, 3), $this->subject->getApplicationRoot());
+        self::assertSame(dirname(__DIR__, 3), $this->subject->getApplicationRoot());
     }
 }

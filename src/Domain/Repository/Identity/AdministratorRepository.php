@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Repository\Identity;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Repository\AbstractRepository;
 use PhpList\Core\Security\HashGenerator;
@@ -15,20 +17,15 @@ use PhpList\Core\Security\HashGenerator;
  */
 class AdministratorRepository extends AbstractRepository
 {
-    /**
-     * @var HashGenerator|null
-     */
-    private ?HashGenerator $hashGenerator = null;
+    private HashGenerator $hashGenerator;
 
-    /**
-     * @param HashGenerator $hashGenerator
-     * @required
-     *
-     * @return void
-     */
-    public function injectHashGenerator(HashGenerator $hashGenerator): void
-    {
-        $this->hashGenerator = $hashGenerator;
+    public function __construct(
+        EntityManagerInterface $em,
+        ClassMetadata $class,
+        HashGenerator $hashGenerator = null
+    ) {
+        parent::__construct($em, $class);
+        $this->hashGenerator = $hashGenerator ?? new HashGenerator();
     }
 
     /**

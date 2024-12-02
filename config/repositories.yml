@@ -3,6 +3,8 @@ services:
         parent: PhpList\Core\Domain\Repository
         arguments:
             - PhpList\Core\Domain\Model\Identity\Administrator
+            - Doctrine\ORM\Mapping\ClassMetadata\ClassMetadata
+            - PhpList\Core\Security\HashGenerator
 
     PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository:
         parent: PhpList\Core\Domain\Repository

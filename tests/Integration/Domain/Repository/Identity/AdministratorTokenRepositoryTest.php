@@ -16,6 +16,12 @@ use PhpList\Core\Tests\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\Core\Tests\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
+/**
+ * Testcase.
+ *
+ * @author Oliver Klee <oliver@phplist.com>
+ * @author Tatevik Grigoryan <tatevik@phplist.com>
+ */
 class AdministratorTokenRepositoryTest extends KernelTestCase
 {
     use DatabaseTestTrait;
@@ -49,11 +55,11 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
         /** @var AdministratorToken $model */
         $model = $this->repository->find($id);
 
-        static::assertInstanceOf(AdministratorToken::class, $model);
-        static::assertSame($id, $model->getId());
-        static::assertEqualsWithDelta($creationDate, $model->getCreationDate(), 1);
-        static::assertEquals($expiry, $model->getExpiry());
-        static::assertSame($key, $model->getKey());
+        self::assertInstanceOf(AdministratorToken::class, $model);
+        self::assertSame($id, $model->getId());
+        self::assertEqualsWithDelta($creationDate, $model->getCreationDate(), 1);
+        self::assertEquals($expiry, $model->getExpiry());
+        self::assertSame($key, $model->getKey());
     }
 
 //    public function testCreatesAdministratorAssociationAsProxy()
@@ -66,9 +72,9 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
 //        $model = $this->repository->find($tokenId);
 //        $administrator = $model->getAdministrator();
 //
-//        static::assertInstanceOf(Administrator::class, $administrator);
-//        static::assertInstanceOf(Proxy::class, $administrator);
-//        static::assertSame($administratorId, $administrator->getId());
+//        self::assertInstanceOf(Administrator::class, $administrator);
+//        self::assertInstanceOf(Proxy::class, $administrator);
+//        self::assertSame($administratorId, $administrator->getId());
 //    }
 
     public function testCreationDateOfExistingModelStaysUnchangedOnUpdate()
@@ -83,7 +89,7 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
         $model->setKey('asdfasd');
         $this->entityManager->flush();
 
-        static::assertEquals($creationDate, $model->getCreationDate());
+        self::assertEquals($creationDate, $model->getCreationDate());
     }
 
     public function testCreationDateOfNewModelIsSetToNowOnPersist()
@@ -93,7 +99,7 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
 
         $this->entityManager->persist($model);
 
-        static::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
+        self::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
     }
 
     public function testFindOneUnexpiredByKeyFindsUnexpiredTokenWithMatchingKey()
@@ -106,8 +112,8 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
         /** @var AdministratorToken $model */
         $model = $this->repository->findOneUnexpiredByKey($key);
 
-        static::assertInstanceOf(AdministratorToken::class, $model);
-        static::assertSame($id, $model->getId());
+        self::assertInstanceOf(AdministratorToken::class, $model);
+        self::assertSame($id, $model->getId());
     }
 
     public function testFindOneUnexpiredByKeyNotFindsExpiredTokenWithMatchingKey()
@@ -118,7 +124,7 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
 
         $model = $this->repository->findOneUnexpiredByKey($key);
 
-        static::assertNull($model);
+        self::assertNull($model);
     }
 
     public function testFindOneUnexpiredByKeyNotFindsUnexpiredTokenWithNonMatchingKey()
@@ -129,7 +135,7 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
 
         $model = $this->repository->findOneUnexpiredByKey($key);
 
-        static::assertNull($model);
+        self::assertNull($model);
     }
 
 //    public function testRemoveExpiredRemovesExpiredToken()
@@ -141,7 +147,7 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
 //        $this->entityManager->flush();
 //
 //        $token = $this->repository->find($idOfExpiredToken);
-//        static::assertNull($token);
+//        self::assertNull($token);
 //    }
 
     public function testRemoveExpiredKeepsUnexpiredToken()
@@ -154,7 +160,7 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
         $this->repository->removeExpired();
 
         $token = $this->repository->find($idOfUnexpiredToken);
-        static::assertNotNull($token);
+        self::assertNotNull($token);
     }
 
     /**
@@ -165,13 +171,13 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
     {
         $currentYear = (int)date('Y');
         if ($currentYear >= 2037) {
-            static::markTestIncomplete('The tests token has an expiry in the year 2037. Please update this test.');
+            self::markTestIncomplete('The tests token has an expiry in the year 2037. Please update this test.');
         }
     }
 
     public function testRemoveExpiredForNoExpiredTokensReturnsZero()
     {
-        static::assertSame(0, $this->repository->removeExpired());
+        self::assertSame(0, $this->repository->removeExpired());
     }
 
     public function testRemoveExpiredForOneExpiredTokenReturnsOne()
@@ -180,7 +186,7 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
 
         $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
 
-        static::assertSame(1, $this->repository->removeExpired());
+        self::assertSame(1, $this->repository->removeExpired());
     }
 
     public function testSavePersistsAndFlushesModel()
@@ -195,7 +201,7 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
         $model->setAdministrator($administrator);
         $this->repository->save($model);
 
-        static::assertSame($model, $this->repository->find($model->getId()));
+        self::assertSame($model, $this->repository->find($model->getId()));
     }
 
     public function testRemoveRemovesModel()
@@ -210,6 +216,6 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
         $this->repository->remove($firstModel);
 
         $numberOfModelsAfterRemove = count($this->repository->findAll());
-        static::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);
+        self::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);
     }
 }

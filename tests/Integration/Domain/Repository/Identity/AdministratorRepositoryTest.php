@@ -13,6 +13,12 @@ use PhpList\Core\Tests\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\Core\Tests\TestingSupport\Traits\ModelTestTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
+/**
+ * Testcase.
+ *
+ * @author Oliver Klee <oliver@phplist.com>
+ * @author Tatevik Grigoryan <tatevik@phplist.com>
+ */
 class AdministratorRepositoryTest extends KernelTestCase
 {
     use DatabaseTestTrait;
@@ -63,7 +69,7 @@ class AdministratorRepositoryTest extends KernelTestCase
         $originalCreationDate = $model->getCreationDate();
         $model->setLoginName('mel');
 
-        self::getContainer()->get('doctrine.orm.entity_manager')->flush();
+        $this->entityManager->flush();
 
         $this->assertSame($originalCreationDate, $model->getCreationDate());
     }
@@ -75,7 +81,7 @@ class AdministratorRepositoryTest extends KernelTestCase
         $this->assertNotNull($model);
 
         $model->setLoginName('mel');
-        self::getContainer()->get('doctrine.orm.entity_manager')->flush();
+        $this->entityManager->flush();
 
         $expectedModificationDate = new DateTime();
         $this->assertEqualsWithDelta($expectedModificationDate, $model->getModificationDate(), 5);
@@ -123,8 +129,8 @@ class AdministratorRepositoryTest extends KernelTestCase
 
         $result = $this->repository->findOneByLoginCredentials($loginName, $password);
 
-        static::assertInstanceOf(Administrator::class, $result);
-        static::assertSame($id, $result->getId());
+        self::assertInstanceOf(Administrator::class, $result);
+        self::assertSame($id, $result->getId());
     }
 
     public static function incorrectLoginCredentialsDataProvider(): array
@@ -148,7 +154,7 @@ class AdministratorRepositoryTest extends KernelTestCase
 
         $result = $this->repository->findOneByLoginCredentials($loginName, $password);
 
-        static::assertNull($result);
+        self::assertNull($result);
     }
 
     public function testSavePersistsAndFlushesModel(): void

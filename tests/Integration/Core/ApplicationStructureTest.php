@@ -18,14 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class ApplicationStructureTest extends TestCase
 {
-    /**
-     * @var ApplicationKernel
-     */
     private ApplicationKernel $kernel;
-
-    /**
-     * @var ContainerInterface
-     */
     private ContainerInterface $container;
 
     protected function setUp(): void
@@ -45,21 +38,15 @@ class ApplicationStructureTest extends TestCase
         Bootstrap::purgeInstance();
     }
 
-    /**
-     * @test
-     */
-    public function subjectIsAvailableViaContainer()
+    public function testSubjectIsAvailableViaContainer()
     {
-        static::assertInstanceOf(ApplicationStructure::class, $this->container->get(ApplicationStructure::class));
+        self::assertInstanceOf(ApplicationStructure::class, $this->container->get(ApplicationStructure::class));
     }
 
-    /**
-     * @test
-     */
-    public function classIsRegisteredAsSingletonInContainer()
+    public function testClassIsRegisteredAsSingletonInContainer()
     {
         $id = ApplicationStructure::class;
 
-        static::assertSame($this->container->get($id), $this->container->get($id));
+        self::assertSame($this->container->get($id), $this->container->get($id));
     }
 }

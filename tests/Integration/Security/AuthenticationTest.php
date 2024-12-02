@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Security;
@@ -6,7 +7,7 @@ namespace PhpList\Core\Tests\Integration\Security;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Security\Authentication;
 use PhpList\Core\Tests\TestingSupport\Traits\DatabaseTestTrait;
-use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -14,28 +15,16 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class AuthenticationTest extends TestCase
+class AuthenticationTest extends KernelTestCase
 {
     use DatabaseTestTrait;
 
-    /**
-     * @var string
-     */
-    const ADMINISTRATOR_TABLE_NAME = 'phplist_admin';
+    private ?Authentication $subject = null;
 
-    /**
-     * @var string
-     */
-    const TOKEN_TABLE_NAME = 'phplist_admintoken';
-
-    /**
-     * @var Authentication
-     */
-    private $subject = null;
-
-    protected function setUp()
+    protected function setUp(): void
     {
-        $this->setUpDatabaseTest();
+        parent::setUp();
+        $this->loadSchema();
 
         $this->subject = $this->container->get(Authentication::class);
     }

@@ -11,6 +11,9 @@ use PhpList\Core\Domain\Model\Identity\AdministratorToken;
 use PhpList\Core\Tests\TestingSupport\Traits\ModelTestTrait;
 use RuntimeException;
 
+/**
+ * @author Tatevik Grigoryan <tatevik@phplist.com>
+ */
 class DetachedAdministratorTokenFixture extends Fixture
 {
     use ModelTestTrait;
@@ -33,7 +36,7 @@ class DetachedAdministratorTokenFixture extends Fixture
             $row = array_combine($headers, $data);
 
             $adminToken = new AdministratorToken();
-            $this->setSubjectId($adminToken,(int)$data['id']);
+            $this->setSubjectId($adminToken,(int)$row['id']);
             $adminToken->setKey($row['value']);
             $this->setSubjectProperty($adminToken,'expiry', new DateTime($row['expires']));
             $this->setSubjectProperty($adminToken, 'creationDate', (bool) $row['entered']);

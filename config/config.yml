@@ -16,16 +16,21 @@ framework:
         strict_requirements: ~
     form: ~
     csrf_protection: ~
-    validation: { enable_annotations: true }
+    validation:
+        enable_attributes: true
+        email_validation_mode: html5
     #serializer: { enable_annotations: true }
     #templating:
         #engines: ['twig']
     default_locale: '%locale%'
     trusted_hosts: ~
+    handle_all_throwables: true
     session:
         # https://symfony.com/doc/current/reference/configuration/framework.html#handler-id
         handler_id: session.handler.native_file
         save_path: '%kernel.application_dir%/var/sessions/%kernel.environment%'
+        cookie_secure: auto
+        cookie_samesite: lax
     fragments: ~
     http_method_override: true
     assets: ~
@@ -59,3 +64,5 @@ doctrine:
                 type: attribute
                 dir: '%kernel.project_dir%/src/Domain/Model/'
                 prefix: 'PhpList\Core\Domain\Model\'
+        controller_resolver:
+            auto_mapping: true

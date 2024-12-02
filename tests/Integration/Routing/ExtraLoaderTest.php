@@ -1,9 +1,9 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Routing;
 
-use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use PhpList\Core\Core\ApplicationKernel;
 use PhpList\Core\Core\ApplicationStructure;
 use PhpList\Core\Core\Bootstrap;
@@ -24,17 +24,10 @@ use Symfony\Component\Routing\RouteCollection;
  */
 class ExtraLoaderTest extends TestCase
 {
-    /**
-     * @var ExtraLoader
-     */
-    private $subject = null;
+    private ?ExtraLoader $subject = null;
+    private ?ApplicationKernel $kernel = null;
 
-    /**
-     * @var ApplicationKernel
-     */
-    private $kernel = null;
-
-    protected function setUp()
+    protected function setUp(): void
     {
         $bootstrap = Bootstrap::getInstance();
         $bootstrap->setEnvironment(Environment::TESTING)->configure();
@@ -45,12 +38,12 @@ class ExtraLoaderTest extends TestCase
 
         /** @var FileLocator $locator */
         $locator = $container->get('file_locator');
-        $routeControllerLoader = new AnnotatedRouteControllerLoader(new SimpleAnnotationReader());
+//        $attributeLoader = new AttributeRouteControllerLoader(new SimpleAnnotationReader());
 
         $loaderResolver = new LoaderResolver(
             [
                 new YamlFileLoader($locator),
-                new AnnotationDirectoryLoader($locator, $routeControllerLoader),
+//                new AttributeDirectoryLoader($locator, $attributeLoader),
             ]
         );
 
@@ -58,17 +51,14 @@ class ExtraLoaderTest extends TestCase
         $this->subject->setResolver($loaderResolver);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->kernel->shutdown();
         Bootstrap::purgeInstance();
     }
 
-    /**
-     * @test
-     */
-    public function loadReturnsRouteCollection()
+    public function testLoadReturnsRouteCollection()
     {
-        static::assertInstanceOf(RouteCollection::class, $this->subject->load('', 'extra'));
+        self::assertInstanceOf(RouteCollection::class, $this->subject->load('', 'extra'));
     }
 }

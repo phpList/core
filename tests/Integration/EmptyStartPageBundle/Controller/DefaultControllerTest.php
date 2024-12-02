@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\EmptyStartPageBundle\Controller;
@@ -13,12 +14,9 @@ use PhpList\Core\Tests\TestingSupport\AbstractWebTest;
  */
 class DefaultControllerTest extends AbstractWebTest
 {
-    /**
-     * @test
-     */
-    public function controllerIsAvailableViaContainer()
+    public function testControllerIsAvailableViaContainer()
     {
-        static::assertInstanceOf(
+        self::assertInstanceOf(
             DefaultController::class,
             $this->client->getContainer()->get(DefaultController::class)
         );
@@ -31,8 +29,8 @@ class DefaultControllerTest extends AbstractWebTest
     {
         $this->client->request('GET', '/');
 
-        static::assertTrue($this->client->getResponse()->isSuccessful());
-        static::assertContains(
+        self::assertTrue($this->client->getResponse()->isSuccessful());
+        self::assertContains(
             'This page has been intentionally left empty.',
             $this->client->getResponse()->getContent()
         );
