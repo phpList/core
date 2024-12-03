@@ -82,8 +82,8 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     private ?string $extraData;
 
     #[ORM\OneToMany(
-        mappedBy: "subscriber",
         targetEntity: "PhpList\Core\Domain\Model\Subscription\Subscription",
+        mappedBy: "subscriber",
         cascade: ["remove"]
     )]
     private Collection $subscriptions;

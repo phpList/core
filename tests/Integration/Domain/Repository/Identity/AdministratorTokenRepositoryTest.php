@@ -20,7 +20,6 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
  * Testcase.
  *
  * @author Oliver Klee <oliver@phplist.com>
- * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 class AdministratorTokenRepositoryTest extends KernelTestCase
 {

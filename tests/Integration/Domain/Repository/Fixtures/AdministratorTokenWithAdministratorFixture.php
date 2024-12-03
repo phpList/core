@@ -12,9 +12,7 @@ use PhpList\Core\Domain\Model\Identity\AdministratorToken;
 use PhpList\Core\Tests\TestingSupport\Traits\ModelTestTrait;
 use RuntimeException;
 
-/**
- * @author Tatevik Grigoryan <tatevik@phplist.com>
- */
+
 class AdministratorTokenWithAdministratorFixture extends Fixture
 {
     use ModelTestTrait;

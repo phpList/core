@@ -11,9 +11,6 @@ use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Tests\TestingSupport\Traits\ModelTestTrait;
 use RuntimeException;
 
-/**
- * @author Tatevik Grigoryan <tatevik@phplist.com>
- */
 class AdministratorFixture extends Fixture
 {
     use ModelTestTrait;

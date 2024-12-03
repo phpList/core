@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Security;
 
+use Doctrine\ORM\Tools\SchemaTool;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Security\Authentication;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\AdministratorFixture;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\AdministratorTokenWithAdministratorFixture;
 use PhpList\Core\Tests\TestingSupport\Traits\DatabaseTestTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,39 +29,29 @@ class AuthenticationTest extends KernelTestCase
         parent::setUp();
         $this->loadSchema();
 
-        $this->subject = $this->container->get(Authentication::class);
+        $this->subject = self::getContainer()->get(Authentication::class);
     }
 
-    /**
-     * @test
-     */
-    public function subjectIsAvailableViaContainer()
+    protected function tearDown(): void
     {
-        static::assertInstanceOf(Authentication::class, $this->subject);
+        $schemaTool = new SchemaTool($this->entityManager);
+        $schemaTool->dropDatabase();
+        parent::tearDown();
     }
 
-    /**
-     * @test
-     */
-    public function classIsRegisteredAsSingletonInContainer()
+    public function testSubjectIsAvailableViaContainer()
     {
-        static::assertSame($this->subject, $this->container->get(Authentication::class));
+        self::assertInstanceOf(Authentication::class, $this->subject);
     }
 
-    /**
-     * @test
-     */
-    public function authenticateByApiKeyWithValidApiKeyReturnsMatchingAdministrator()
+    public function testClassIsRegisteredAsSingletonInContainer()
     {
-        $this->getDataSet()->addTable(
-            static::ADMINISTRATOR_TABLE_NAME,
-            __DIR__ . '/../Domain/Repository/Fixtures/Administrator.csv'
-        );
-        $this->getDataSet()->addTable(
-            static::TOKEN_TABLE_NAME,
-            __DIR__ . '/../Domain/Repository/Fixtures/AdministratorTokenWithAdministrator.csv'
-        );
-        $this->applyDatabaseChanges();
+        self::assertSame($this->subject, self::getContainer()->get(Authentication::class));
+    }
+
+    public function testAuthenticateByApiKeyWithValidApiKeyReturnsMatchingAdministrator()
+    {
+        $this->loadFixtures([AdministratorFixture::class, AdministratorTokenWithAdministratorFixture::class]);
 
         $apiKey = 'cfdf64eecbbf336628b0f3071adba762';
         $request = new Request();
@@ -66,24 +59,13 @@ class AuthenticationTest extends KernelTestCase
 
         $result = $this->subject->authenticateByApiKey($request);
 
-        static::assertInstanceOf(Administrator::class, $result);
-        static::assertSame(1, $result->getId());
+        self::assertInstanceOf(Administrator::class, $result);
+        self::assertSame(1, $result->getId());
     }
 
-    /**
-     * @test
-     */
-    public function authenticateByApiKeyWithValidApiKeyAndDisabledAdministratorReturnsNull()
+    public function testAuthenticateByApiKeyWithValidApiKeyAndDisabledAdministratorReturnsNull()
     {
-        $this->getDataSet()->addTable(
-            static::ADMINISTRATOR_TABLE_NAME,
-            __DIR__ . '/../Domain/Repository/Fixtures/Administrator.csv'
-        );
-        $this->getDataSet()->addTable(
-            static::TOKEN_TABLE_NAME,
-            __DIR__ . '/../Domain/Repository/Fixtures/AdministratorTokenWithAdministrator.csv'
-        );
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([AdministratorFixture::class, AdministratorTokenWithAdministratorFixture::class]);
 
         $apiKey = 'cfdf64eecbbf336628b0f3071adba765';
         $request = new Request();
@@ -91,19 +73,12 @@ class AuthenticationTest extends KernelTestCase
 
         $result = $this->subject->authenticateByApiKey($request);
 
-        static::assertNull($result);
+        self::assertNull($result);
     }
 
-    /**
-     * @test
-     */
-    public function authenticateByApiKeyWithValidApiKeyForInexistentAdministratorReturnsNull()
+    public function testAuthenticateByApiKeyWithValidApiKeyForInexistentAdministratorReturnsNull()
     {
-        $this->getDataSet()->addTable(
-            static::TOKEN_TABLE_NAME,
-            __DIR__ . '/../Domain/Repository/Fixtures/AdministratorTokenWithAdministrator.csv'
-        );
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([AdministratorTokenWithAdministratorFixture::class]);
 
         $apiKey = 'cfdf64eecbbf336628b0f3071adba763';
         $request = new Request();
@@ -114,16 +89,9 @@ class AuthenticationTest extends KernelTestCase
         static::assertNull($result);
     }
 
-    /**
-     * @test
-     */
-    public function authenticateByApiKeyWithValidApiKeyForNonSuperUserAdministratorReturnsNull()
+    public function testAuthenticateByApiKeyWithValidApiKeyForNonSuperUserAdministratorReturnsNull()
     {
-        $this->getDataSet()->addTable(
-            static::TOKEN_TABLE_NAME,
-            __DIR__ . '/../Domain/Repository/Fixtures/AdministratorTokenWithAdministrator.csv'
-        );
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([AdministratorTokenWithAdministratorFixture::class]);
 
         $apiKey = 'cfdf64eecbbf336628b0f3071adba764';
         $request = new Request();
@@ -131,6 +99,6 @@ class AuthenticationTest extends KernelTestCase
 
         $result = $this->subject->authenticateByApiKey($request);
 
-        static::assertNull($result);
+        self::assertNull($result);
     }
 }

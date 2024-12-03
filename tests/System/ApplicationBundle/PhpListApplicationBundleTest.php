@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\System\ApplicationBundle;
@@ -16,19 +17,19 @@ class PhpListApplicationBundleTest extends TestCase
 {
     use SymfonyServerTrait;
 
-    /**
-     * @var Client
-     */
-    private $httpClient = null;
+    private ?Client $httpClient = null;
 
-    protected function setUp()
+    protected function setUp(): void
     {
+        parent::setUp();
         $this->httpClient = new Client(['http_errors' => false]);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->stopSymfonyServer();
+        $this->httpClient = null;
+        parent::tearDown();
     }
 
     /**
@@ -43,30 +44,31 @@ class PhpListApplicationBundleTest extends TestCase
     }
 
     /**
-     * @test
      * @param string $environment
      * @dataProvider environmentDataProvider
      */
-    public function homepageReturnsSuccess(string $environment)
+    public function testHomepageReturnsSuccess(string $environment): void
     {
         $this->startSymfonyServer($environment);
 
         $response = $this->httpClient->get('/', ['base_uri' => $this->getBaseUrl()]);
 
-        static::assertSame(200, $response->getStatusCode());
+        self::assertSame(200, $response->getStatusCode());
     }
 
     /**
-     * @test
      * @param string $environment
      * @dataProvider environmentDataProvider
      */
-    public function homepageReturnsDummyContent(string $environment)
+    public function testHomepageReturnsDummyContent(string $environment): void
     {
         $this->startSymfonyServer($environment);
 
         $response = $this->httpClient->get('/', ['base_uri' => $this->getBaseUrl()]);
 
-        static::assertContains('This page has been intentionally left empty.', $response->getBody()->getContents());
+        self::assertStringContainsString(
+            'This page has been intentionally left empty.',
+            $response->getBody()->getContents()
+        );
     }
 }

@@ -12,9 +12,6 @@ use PhpList\Core\Domain\Model\Messaging\SubscriberList;
 use PhpList\Core\Tests\TestingSupport\Traits\ModelTestTrait;
 use RuntimeException;
 
-/**
- * @author Tatevik Grigoryan <tatevik@phplist.com>
- */
 class SubscriberListFixture extends Fixture
 {
     use ModelTestTrait;
@@ -52,10 +49,9 @@ class SubscriberListFixture extends Fixture
 
             $manager->persist($admin);
             $manager->persist($subscriberList);
-            $this->setSubjectProperty($subscriberList,'creationDate', new DateTime($row['entered']));
+            $manager->flush();
         }
 
         fclose($handle);
-        $manager->flush();
     }
 }
