@@ -59,7 +59,9 @@
         "nikic/php-parser": "^4.19.1",
         "phpmd/phpmd": "^2.6.0",
         "symfony/test-pack": "^1.1",
-        "symfony/process": "^6.4"
+        "symfony/process": "^6.4",
+        "composer/composer": "^2.7",
+        "symfony/symfony": "^6.4"
     },
     "suggest": {
         "phplist/web-frontend": "5.0.x-dev",

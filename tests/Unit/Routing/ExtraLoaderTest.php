@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Routing;
@@ -16,10 +17,7 @@ use Symfony\Component\Config\Loader\Loader;
  */
 class ExtraLoaderTest extends TestCase
 {
-    /**
-     * @var ExtraLoader
-     */
-    private $subject = null;
+    private ExtraLoader $subject;
 
     protected function setUp(): void
     {
@@ -31,27 +29,18 @@ class ExtraLoaderTest extends TestCase
         Bootstrap::purgeInstance();
     }
 
-    /**
-     * @test
-     */
-    public function classIsLoader()
+    public function testClassIsLoader(): void
     {
-        static::assertInstanceOf(Loader::class, $this->subject);
+        self::assertInstanceOf(Loader::class, $this->subject);
     }
 
-    /**
-     * @test
-     */
-    public function supportsExtraType()
+    public function testSupportsExtraType(): void
     {
-        static::assertTrue($this->subject->supports('', 'extra'));
+        self::assertTrue($this->subject->supports('', 'extra'));
     }
 
-    /**
-     * @test
-     */
-    public function notSupportsOtherType()
+    public function testNotSupportsOtherType(): void
     {
-        static::assertFalse($this->subject->supports('', 'foo'));
+        self::assertFalse($this->subject->supports('', 'foo'));
     }
 }

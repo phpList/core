@@ -15,21 +15,15 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  */
 class PhpListEmptyStartPageBundleTest extends TestCase
 {
-    /**
-     * @var EmptyStartPageBundle
-     */
-    private $subject = null;
+    private EmptyStartPageBundle $subject;
 
     protected function setUp(): void
     {
         $this->subject = new EmptyStartPageBundle();
     }
 
-    /**
-     * @test
-     */
-    public function classIsBundle()
+    public function testClassIsBundle(): void
     {
-        static::assertInstanceOf(Bundle::class, $this->subject);
+        self::assertInstanceOf(Bundle::class, $this->subject);
     }
 }

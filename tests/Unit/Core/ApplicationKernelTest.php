@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Core;
@@ -7,10 +8,9 @@ use PhpList\Core\Core\ApplicationKernel;
 use PhpList\Core\Core\Bootstrap;
 use PhpList\Core\Core\Environment;
 use PhpList\Core\EmptyStartPageBundle\EmptyStartPageBundle;
-use PhpList\Core\Tests\TestingSupport\Traits\ContainsInstanceAssertionTrait;
+use PhpList\Core\TestingSupport\Traits\ContainsInstanceAssertionTrait;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
-use Symfony\Bundle\WebServerBundle\WebServerBundle;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\HttpKernel\Kernel;
 
@@ -23,10 +23,7 @@ class ApplicationKernelTest extends TestCase
 {
     use ContainsInstanceAssertionTrait;
 
-    /**
-     * @var ApplicationKernel
-     */
-    private $subject = null;
+    private ApplicationKernel $subject;
 
     protected function setUp(): void
     {
@@ -38,45 +35,37 @@ class ApplicationKernelTest extends TestCase
         Bootstrap::purgeInstance();
     }
 
-    /**
-     * @test
-     */
-    public function isKernelInstance()
+    public function testIsKernelInstance(): void
     {
-        static::assertInstanceOf(Kernel::class, $this->subject);
+        self::assertInstanceOf(Kernel::class, $this->subject);
     }
 
-    /**
-     * @test
-     */
-    public function registerBundlesReturnsBundlesOnly()
+    public function testRegisterBundlesReturnsBundlesOnly(): void
     {
         $bundles = $this->subject->registerBundles();
 
-        static::assertContainsOnlyInstancesOf(BundleInterface::class, $bundles);
+        self::assertContainsOnlyInstancesOf(BundleInterface::class, $bundles);
     }
 
     /**
-     * @return string[][]
+     * @return array<string[]>
      */
     public function requiredBundlesDataProvider(): array
     {
         return [
             'framework' => [FrameworkBundle::class],
             'phpList default bundle' => [EmptyStartPageBundle::class],
-            'web server' => [WebServerBundle::class],
         ];
     }
 
     /**
      * @test
-     * @param string $className
      * @dataProvider requiredBundlesDataProvider
      */
-    public function registerBundlesHasAllRequiredBundles(string $className)
+    public function testRegisterBundlesHasAllRequiredBundles(string $className): void
     {
         $bundles = $this->subject->registerBundles();
 
-        static::assertContainsInstanceOf($className, $bundles);
+        self::assertContainsInstanceOf($className, $bundles);
     }
 }

@@ -1,14 +1,16 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Model\Subscription;
 
+use DateTime;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Messaging\SubscriberList;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
 use PhpList\Core\Domain\Model\Subscription\Subscription;
-use PhpList\Core\Tests\TestingSupport\Traits\ModelTestTrait;
-use PhpList\Core\Tests\TestingSupport\Traits\SimilarDatesAssertionTrait;
+use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
+use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,95 +23,65 @@ class SubscriptionTest extends TestCase
     use ModelTestTrait;
     use SimilarDatesAssertionTrait;
 
-    /**
-     * @var Subscription
-     */
-    private $subject = null;
+    private Subscription $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = new Subscription();
     }
 
-    /**
-     * @test
-     */
-    public function isDomainModel()
+    public function testIsDomainModel(): void
     {
-        static::assertInstanceOf(DomainModel::class, $this->subject);
+        self::assertInstanceOf(DomainModel::class, $this->subject);
     }
 
-    /**
-     * @test
-     */
-    public function getSubscriberInitiallyReturnsNull()
+    public function testGetSubscriberInitiallyReturnsNull(): void
     {
-        static::assertNull($this->subject->getSubscriber());
+        self::assertNull($this->subject->getSubscriber());
     }
 
-    /**
-     * @test
-     */
-    public function setSubscriberSetsSubscriber()
+    public function testSetSubscriberSetsSubscriber(): void
     {
         $model = new Subscriber();
         $this->subject->setSubscriber($model);
 
-        static::assertSame($model, $this->subject->getSubscriber());
+        self::assertSame($model, $this->subject->getSubscriber());
     }
 
-    /**
-     * @test
-     */
-    public function getSubscriberListInitiallyReturnsNull()
+    public function testGetSubscriberListInitiallyReturnsNull(): void
     {
-        static::assertNull($this->subject->getSubscriberList());
+        self::assertNull($this->subject->getSubscriberList());
     }
 
-    /**
-     * @test
-     */
-    public function setSubscriberListSetsSubscriberList()
+    public function testSetSubscriberListSetsSubscriberList(): void
     {
         $model = new SubscriberList();
         $this->subject->setSubscriberList($model);
 
-        static::assertSame($model, $this->subject->getSubscriberList());
+        self::assertSame($model, $this->subject->getSubscriberList());
     }
 
-    /**
-     * @test
-     */
-    public function getCreationDateInitiallyReturnsNull()
+    public function testGetCreationDateInitiallyReturnsNull(): void
     {
-        static::assertNull($this->subject->getCreationDate());
+        self::assertNull($this->subject->getCreationDate());
     }
 
-    /**
-     * @test
-     */
-    public function updateCreationDateSetsCreationDateToNow()
+    public function testUpdateCreationDateSetsCreationDateToNow(): void
     {
         $this->subject->updateCreationDate();
 
-        static::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
+        self::assertSimilarDates(new DateTime(), $this->subject->getCreationDate());
     }
 
-    /**
-     * @test
-     */
-    public function getModificationDateInitiallyReturnsNull()
+    public function testGetModificationDateInitiallyReturnsNull(): void
     {
-        static::assertNull($this->subject->getModificationDate());
+        self::assertNull($this->subject->getModificationDate());
     }
 
-    /**
-     * @test
-     */
-    public function updateModificationDateSetsModificationDateToNow()
+    public function testUpdateModificationDateSetsModificationDateToNow(): void
     {
         $this->subject->updateModificationDate();
 
-        static::assertSimilarDates(new \DateTime(), $this->subject->getModificationDate());
+        self::assertSimilarDates(new DateTime(), $this->subject->getModificationDate());
     }
 }

@@ -6,7 +6,7 @@ namespace PhpList\Core\Tests\Integration\Security;
 
 use Doctrine\ORM\Tools\SchemaTool;
 use PhpList\Core\Security\HashGenerator;
-use PhpList\Core\Tests\TestingSupport\Traits\DatabaseTestTrait;
+use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**

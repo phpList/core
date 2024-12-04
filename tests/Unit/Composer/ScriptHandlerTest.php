@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Composer;
@@ -6,13 +7,13 @@ namespace PhpList\Core\Tests\Unit\Composer;
 use Composer\Composer;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\RepositoryManager;
-use Composer\Repository\WritableRepositoryInterface;
 use Composer\Script\Event;
 use PhpList\Core\Composer\ScriptHandler;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Prophecy\ProphecySubjectInterface;
+use Symfony\Component\Filesystem\Exception\IOException;
 
 /**
  * Testcase.
@@ -21,189 +22,140 @@ use Prophecy\Prophecy\ProphecySubjectInterface;
  */
 class ScriptHandlerTest extends TestCase
 {
-    /**
-     * @var WritableRepositoryInterface|ObjectProphecy
-     */
-    private $localRepositoryProphecy = null;
+    private InstalledRepositoryInterface|MockObject $localRepository;
+    private RootPackageInterface|MockObject $rootPackage;
 
-    /**
-     * @var RootPackageInterface|ObjectProphecy
-     */
-    private $rootPackageProphecy = null;
-
-    /**
-     * @test
-     */
-    public function createBinariesForCorePackageThrowsException()
+    public function testCreateBinariesForCorePackageThrowsException(): void
     {
-        $event = $this->createEventProphecyForCorePackage();
+        $event = $this->createMockEventForCorePackage();
 
-        $this->expectException(\DomainException::class);
+        $this->expectException(IOException::class);
 
         ScriptHandler::createBinaries($event);
     }
 
-    /**
-     * @test
-     */
-    public function createPublicWebDirectoryForCorePackageThrowsException()
+    public function testCreatePublicWebDirectoryForCorePackageThrowsException(): void
     {
-        $event = $this->createEventProphecyForCorePackage();
+        $event = $this->createMockEventForCorePackage();
 
-        $this->expectException(\DomainException::class);
+        $this->expectException(IOException::class);
 
         ScriptHandler::createPublicWebDirectory($event);
     }
 
-    /**
-     * @return Event|ProphecySubjectInterface
-     */
-    private function createEventProphecyForCorePackage()
-    {
-        /** @var RootPackageInterface|ObjectProphecy $packageProphecy */
-        $packageProphecy = $this->prophesize(RootPackageInterface::class);
-        $packageProphecy->getName()->willReturn('phplist/core');
-        /** @var Composer|ObjectProphecy $composerProphecy */
-        $composerProphecy = $this->prophesize(Composer::class);
-        $composerProphecy->getPackage()->willReturn($packageProphecy->reveal());
-        /** @var Event|ObjectProphecy $eventProphecy */
-        $eventProphecy = $this->prophesize(Event::class);
-        $eventProphecy->getComposer()->willReturn($composerProphecy->reveal());
-
-        return $eventProphecy->reveal();
-    }
-
-    /**
-     * @test
-     */
-    public function listModulesForPhpListModuleRootPackageListsIt()
+    public function testListModulesForPhpListModuleRootPackageListsIt(): void
     {
         $rootPackageName = 'phplist/core';
         $rootPackageVersion = '1.2.3';
 
-        $event = $this->buildMockEvent();
+        $event = $this->createMockEvent();
 
-        $this->rootPackageProphecy->getName()->willReturn($rootPackageName);
-        $this->rootPackageProphecy->getType()->willReturn('phplist-module');
-        $this->rootPackageProphecy->getPrettyVersion()->willReturn($rootPackageVersion);
+        $this->rootPackage->method('getName')->willReturn($rootPackageName);
+        $this->rootPackage->method('getType')->willReturn('phplist-module');
+        $this->rootPackage->method('getPrettyVersion')->willReturn($rootPackageVersion);
 
-        $this->localRepositoryProphecy->getPackages()->willReturn([]);
+        $this->localRepository->method('getPackages')->willReturn([]);
 
         ScriptHandler::listModules($event);
 
-        $this->expectOutputRegex('#' . $rootPackageName . ' +' . $rootPackageVersion . '#');
+        $this->expectOutputRegex('/' . preg_quote($rootPackageName, '/') . '\s+' . preg_quote($rootPackageVersion, '/') . '/');
     }
 
-    /**
-     * @test
-     */
-    public function listModulesForNonPhpListModuleRootPackageExcludesIt()
+    public function testListModulesForNonPhpListModuleRootPackageExcludesIt(): void
     {
         $rootPackageName = 'phplist/core';
 
-        $event = $this->buildMockEvent();
+        $event = $this->createMockEvent();
 
-        $this->rootPackageProphecy->getName()->willReturn($rootPackageName);
-        $this->rootPackageProphecy->getType()->willReturn('project');
+        $this->rootPackage->method('getName')->willReturn($rootPackageName);
+        $this->rootPackage->method('getType')->willReturn('project');
 
-        $this->localRepositoryProphecy->getPackages()->willReturn([]);
+        $this->localRepository->method('getPackages')->willReturn([]);
 
         ScriptHandler::listModules($event);
 
         $output = $this->getActualOutput();
-        static::assertNotContains($rootPackageName, $output);
+        self::assertStringNotContainsString($rootPackageName, $output);
     }
 
-    /**
-     * @test
-     */
-    public function listModulesForPhpListModuleDependencyListsIt()
+    public function testListModulesForPhpListModuleDependencyListsIt(): void
     {
         $rootPackageName = 'phplist/base-distribution';
         $dependencyPackageName = 'amazing/listview';
         $dependencyPackageVersion = '2.3.6';
 
-        $event = $this->buildMockEvent();
+        $event = $this->createMockEvent();
 
-        $this->rootPackageProphecy->getName()->willReturn($rootPackageName);
-        $this->rootPackageProphecy->getType()->willReturn('project');
+        $this->rootPackage->method('getName')->willReturn($rootPackageName);
+        $this->rootPackage->method('getType')->willReturn('project');
 
-        /** @var PackageInterface|ObjectProphecy $dependencyProphecy */
-        $dependencyProphecy = $this->prophesize(PackageInterface::class);
-        $dependencyProphecy->getName()->willReturn($dependencyPackageName);
-        $dependencyProphecy->getType()->willReturn('phplist-module');
-        $dependencyProphecy->getPrettyVersion()->willReturn($dependencyPackageVersion);
+        $dependency = $this->createMock(PackageInterface::class);
+        $dependency->method('getName')->willReturn($dependencyPackageName);
+        $dependency->method('getType')->willReturn('phplist-module');
+        $dependency->method('getPrettyVersion')->willReturn($dependencyPackageVersion);
 
-        /** @var PackageInterface|ProphecySubjectInterface $dependency */
-        $dependency = $dependencyProphecy->reveal();
-        $this->localRepositoryProphecy->getPackages()->willReturn([$dependency]);
+        $this->localRepository->method('getPackages')->willReturn([$dependency]);
 
         ScriptHandler::listModules($event);
 
-        $this->expectOutputRegex('#' . $dependencyPackageName . ' +' . $dependencyPackageVersion . '#');
+        $this->expectOutputRegex('/' . preg_quote($dependencyPackageName, '/') . '\s+' . preg_quote($dependencyPackageVersion, '/') . '/');
     }
 
-    /**
-     * @test
-     */
-    public function listModulesForNonPhpListModuleDependencyExcludesIt()
+    public function testListModulesForNonPhpListModuleDependencyExcludesIt(): void
     {
         $rootPackageName = 'phplist/base-distribution';
         $dependencyPackageName = 'symfony/symfony';
 
-        $event = $this->buildMockEvent();
+        $event = $this->createMockEvent();
 
-        $this->rootPackageProphecy->getName()->willReturn($rootPackageName);
-        $this->rootPackageProphecy->getType()->willReturn('project');
+        $this->rootPackage->method('getName')->willReturn($rootPackageName);
+        $this->rootPackage->method('getType')->willReturn('project');
 
-        /** @var PackageInterface|ObjectProphecy $dependencyProphecy */
-        $dependencyProphecy = $this->prophesize(PackageInterface::class);
-        $dependencyProphecy->getName()->willReturn($dependencyPackageName);
-        $dependencyProphecy->getType()->willReturn('library');
+        $dependency = $this->createMock(PackageInterface::class);
+        $dependency->method('getName')->willReturn($dependencyPackageName);
+        $dependency->method('getType')->willReturn('library');
 
-        /** @var PackageInterface|ProphecySubjectInterface $dependency */
-        $dependency = $dependencyProphecy->reveal();
-        $this->localRepositoryProphecy->getPackages()->willReturn([$dependency]);
+        $this->localRepository->method('getPackages')->willReturn([$dependency]);
 
         ScriptHandler::listModules($event);
 
         $output = $this->getActualOutput();
-        static::assertNotContains($dependencyPackageName, $output);
+        self::assertStringNotContainsString($dependencyPackageName, $output);
     }
 
-    /**
-     * @return Event
-     */
-    private function buildMockEvent(): Event
+    private function createMockEventForCorePackage(): Event
     {
-        /** @var Composer|ObjectProphecy $composerProphecy */
-        $composerProphecy = $this->prophesize(Composer::class);
-        /** @var Composer|ProphecySubjectInterface $composer */
-        $composer = $composerProphecy->reveal();
+        $this->rootPackage = $this->createMock(RootPackageInterface::class);
 
-        /** @var RepositoryManager|ObjectProphecy $repositoryManagerProphecy */
-        $repositoryManagerProphecy = $this->prophesize(RepositoryManager::class);
-        /** @var RepositoryManager|ProphecySubjectInterface $repositoryManager */
-        $repositoryManager = $repositoryManagerProphecy->reveal();
-        $composerProphecy->getRepositoryManager()->willReturn($repositoryManager);
+        $composer = $this->createMock(Composer::class);
+        $composer->method('getPackage')->willReturn($this->rootPackage);
 
-        $this->localRepositoryProphecy = $this->prophesize(WritableRepositoryInterface::class);
-        /** @var WritableRepositoryInterface|ProphecySubjectInterface $localRepository */
-        $localRepository = $this->localRepositoryProphecy->reveal();
-        $repositoryManagerProphecy->getLocalRepository()->willReturn($localRepository);
+        $repositoryManager = $this->createMock(RepositoryManager::class);
+        $composer->method('getRepositoryManager')->willReturn($repositoryManager);
 
-        /** @var RootPackageInterface|ObjectProphecy $rootPackageProphecy */
-        $rootPackageProphecy = $this->prophesize(RootPackageInterface::class);
-        /** @var RootPackageInterface|ProphecySubjectInterface $rootPackage */
-        $rootPackage = $rootPackageProphecy->reveal();
-        $composerProphecy->getPackage()->willReturn($rootPackage);
-        $this->rootPackageProphecy = $rootPackageProphecy;
+        $this->localRepository = $this->createMock(InstalledRepositoryInterface::class);
+        $repositoryManager->method('getLocalRepository')->willReturn($this->localRepository);
 
-        /** @var Event|ObjectProphecy $eventProphecy */
-        $eventProphecy = $this->prophesize(Event::class);
-        $eventProphecy->getComposer()->willReturn($composer);
-        /** @var Event|ProphecySubjectInterface $eventProphecy */
-        $event = $eventProphecy->reveal();
+        $event = $this->createMock(Event::class);
+        $event->method('getComposer')->willReturn($composer);
+
+        return $event;
+    }
+
+    private function createMockEvent(): Event
+    {
+        $this->rootPackage = $this->createMock(RootPackageInterface::class);
+        $composer = $this->createMock(Composer::class);
+        $composer->method('getPackage')->willReturn($this->rootPackage);
+
+        $repositoryManager = $this->createMock(RepositoryManager::class);
+        $composer->method('getRepositoryManager')->willReturn($repositoryManager);
+
+        $this->localRepository = $this->createMock(InstalledRepositoryInterface::class);
+        $repositoryManager->method('getLocalRepository')->willReturn($this->localRepository);
+
+        $event = $this->createMock(Event::class);
+        $event->method('getComposer')->willReturn($composer);
 
         return $event;
     }

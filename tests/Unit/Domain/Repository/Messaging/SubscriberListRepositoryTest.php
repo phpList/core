@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Repository\Messaging;
@@ -8,7 +9,6 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophecy\ProphecySubjectInterface;
 
 /**
  * Testcase.
@@ -17,25 +17,20 @@ use Prophecy\Prophecy\ProphecySubjectInterface;
  */
 class SubscriberListRepositoryTest extends TestCase
 {
-    /**
-     * @var SubscriberListRepository
-     */
-    private $subject = null;
+    private SubscriberListRepository $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
-        /** @var EntityManager|ProphecySubjectInterface $entityManager */
-        $entityManager = $this->prophesize(EntityManager::class)->reveal();
-        /** @var ClassMetadata|ProphecySubjectInterface $classDescriptor */
-        $classDescriptor = $this->prophesize(ClassMetadata::class)->reveal();
-        $this->subject = new SubscriberListRepository($entityManager, $classDescriptor);
+        $entityManager = $this->createMock(EntityManager::class);
+
+        $classMetadata = $this->createMock(ClassMetadata::class);
+        $classMetadata->name = 'PhpList\Core\Domain\Model\Messaging\SubscriberList';
+
+        $this->subject = new SubscriberListRepository($entityManager, $classMetadata);
     }
 
-    /**
-     * @test
-     */
-    public function classIsEntityRepository()
+    public function testClassIsEntityRepository(): void
     {
-        static::assertInstanceOf(EntityRepository::class, $this->subject);
+        self::assertInstanceOf(EntityRepository::class, $this->subject);
     }
 }

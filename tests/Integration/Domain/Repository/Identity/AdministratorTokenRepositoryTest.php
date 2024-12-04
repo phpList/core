@@ -10,10 +10,10 @@ use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Identity\AdministratorToken;
 use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository;
+use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
+use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\AdministratorFixture;
 use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\DetachedAdministratorTokenFixture;
-use PhpList\Core\Tests\TestingSupport\Traits\DatabaseTestTrait;
-use PhpList\Core\Tests\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**

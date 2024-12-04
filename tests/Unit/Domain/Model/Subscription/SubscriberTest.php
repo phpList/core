@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Model\Subscription;
@@ -7,8 +8,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
-use PhpList\Core\Tests\TestingSupport\Traits\ModelTestTrait;
-use PhpList\Core\Tests\TestingSupport\Traits\SimilarDatesAssertionTrait;
+use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
+use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,157 +22,101 @@ class SubscriberTest extends TestCase
     use ModelTestTrait;
     use SimilarDatesAssertionTrait;
 
-    /**
-     * @var Subscriber
-     */
-    private $subject = null;
+    private Subscriber $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = new Subscriber();
     }
 
-    /**
-     * @test
-     */
-    public function isDomainModel()
+    public function testIsDomainModel(): void
     {
-        static::assertInstanceOf(DomainModel::class, $this->subject);
+        self::assertInstanceOf(DomainModel::class, $this->subject);
     }
 
-    /**
-     * @test
-     */
-    public function getIdInitiallyReturnsZero()
-    {
-        static::assertSame(0, $this->subject->getId());
-    }
-
-    /**
-     * @test
-     */
-    public function getIdReturnsId()
+    public function testGetIdReturnsId(): void
     {
         $id = 123456;
-        $this->setSubjectId($id);
+        $this->setSubjectId($this->subject, $id);
 
-        static::assertSame($id, $this->subject->getId());
+        self::assertSame($id, $this->subject->getId());
     }
 
-    /**
-     * @test
-     */
-    public function getCreationDateInitiallyReturnsNull()
+    public function testGetCreationDateInitiallyReturnsNull(): void
     {
-        static::assertNull($this->subject->getCreationDate());
+        self::assertNull($this->subject->getCreationDate());
     }
 
-    /**
-     * @test
-     */
-    public function updateCreationDateSetsCreationDateToNow()
+    public function testUpdateCreationDateSetsCreationDateToNow(): void
     {
         $this->subject->updateCreationDate();
 
-        static::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
+        self::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
     }
 
-    /**
-     * @test
-     */
-    public function getModificationDateInitiallyReturnsNull()
+    public function testGetModificationDateInitiallyReturnsNull(): void
     {
-        static::assertNull($this->subject->getModificationDate());
+        self::assertNull($this->subject->getModificationDate());
     }
 
-    /**
-     * @test
-     */
-    public function updateModificationDateSetsModificationDateToNow()
+    public function testUpdateModificationDateSetsModificationDateToNow(): void
     {
         $this->subject->updateModificationDate();
 
-        static::assertSimilarDates(new \DateTime(), $this->subject->getModificationDate());
+        self::assertSimilarDates(new \DateTime(), $this->subject->getModificationDate());
     }
 
-    /**
-     * @test
-     */
-    public function getEmailInitiallyReturnsEmptyString()
+    public function testGetEmailInitiallyReturnsEmptyString(): void
     {
-        static::assertSame('', $this->subject->getEmail());
+        self::assertSame('', $this->subject->getEmail());
     }
 
-    /**
-     * @test
-     */
-    public function setEmailSetsEmail()
+    public function testSetEmailSetsEmail(): void
     {
         $value = 'Club-Mate';
         $this->subject->setEmail($value);
 
-        static::assertSame($value, $this->subject->getEmail());
+        self::assertSame($value, $this->subject->getEmail());
     }
 
-    /**
-     * @test
-     */
-    public function isConfirmedInitiallyReturnsFalse()
+    public function testIsConfirmedInitiallyReturnsFalse(): void
     {
-        static::assertFalse($this->subject->isConfirmed());
+        self::assertFalse($this->subject->isConfirmed());
     }
 
-    /**
-     * @test
-     */
-    public function setConfirmedSetsConfirmed()
+    public function testSetConfirmedSetsConfirmed(): void
     {
         $this->subject->setConfirmed(true);
 
-        static::assertTrue($this->subject->isConfirmed());
+        self::assertTrue($this->subject->isConfirmed());
     }
 
-    /**
-     * @test
-     */
-    public function isBlacklistedInitiallyReturnsFalse()
+    public function testIsBlacklistedInitiallyReturnsFalse(): void
     {
-        static::assertFalse($this->subject->isBlacklisted());
+        self::assertFalse($this->subject->isBlacklisted());
     }
 
-    /**
-     * @test
-     */
-    public function setBlacklistedSetsBlacklisted()
+    public function testSetBlacklistedSetsBlacklisted(): void
     {
         $this->subject->setBlacklisted(true);
 
-        static::assertTrue($this->subject->isBlacklisted());
+        self::assertTrue($this->subject->isBlacklisted());
     }
 
-    /**
-     * @test
-     */
-    public function getBounceCountInitiallyReturnsZero()
+    public function testGetBounceCountInitiallyReturnsZero(): void
     {
-        static::assertSame(0, $this->subject->getBounceCount());
+        self::assertSame(0, $this->subject->getBounceCount());
     }
 
-    /**
-     * @test
-     */
-    public function setBounceCountSetsBounceCount()
+    public function testSetBounceCountSetsBounceCount(): void
     {
         $value = 123456;
         $this->subject->setBounceCount($value);
 
-        static::assertSame($value, $this->subject->getBounceCount());
+        self::assertSame($value, $this->subject->getBounceCount());
     }
 
-    /**
-     * @test
-     */
-    public function addToBounceCountAddsToBounceCount()
+    public function testAddToBounceCountAddsToBounceCount(): void
     {
         $initialValue = 4;
         $this->subject->setBounceCount($initialValue);
@@ -179,136 +124,97 @@ class SubscriberTest extends TestCase
 
         $this->subject->addToBounceCount($delta);
 
-        static::assertSame($initialValue + $delta, $this->subject->getBounceCount());
+        self::assertSame($initialValue + $delta, $this->subject->getBounceCount());
     }
 
-    /**
-     * @test
-     */
-    public function getUniqueIdInitiallyReturnsEmptyString()
+    public function testGetUniqueIdInitiallyReturnsEmptyString(): void
     {
-        static::assertSame('', $this->subject->getUniqueId());
+        self::assertSame('', $this->subject->getUniqueId());
     }
 
-    /**
-     * @test
-     */
-    public function setUniqueIdSetsUniqueId()
+    public function testSetUniqueIdSetsUniqueId(): void
     {
         $value = 'Club-Mate';
         $this->subject->setUniqueId($value);
 
-        static::assertSame($value, $this->subject->getUniqueId());
+        self::assertSame($value, $this->subject->getUniqueId());
     }
 
-    /**
-     * @test
-     */
-    public function generateUniqueIdGeneratesUniqueId()
+    public function testGenerateUniqueIdGeneratesUniqueId(): void
     {
         $this->subject->generateUniqueId();
 
-        static::assertRegExp('/^[0-9a-f]{32}$/', $this->subject->getUniqueId());
+        self::assertMatchesRegularExpression('/^[0-9a-f]{32}$/', $this->subject->getUniqueId());
     }
 
-    /**
-     * @test
-     */
-    public function hasHtmlEmailInitiallyReturnsFalse()
+    public function testHasHtmlEmailInitiallyReturnsFalse(): void
     {
-        static::assertFalse($this->subject->hasHtmlEmail());
+        self::assertFalse($this->subject->hasHtmlEmail());
     }
 
-    /**
-     * @test
-     */
-    public function setHtmlEmailSetsWantsHtmlEmail()
+    public function testSetHtmlEmailSetsWantsHtmlEmail(): void
     {
         $this->subject->setHtmlEmail(true);
 
-        static::assertTrue($this->subject->hasHtmlEmail());
+        self::assertTrue($this->subject->hasHtmlEmail());
     }
 
-    /**
-     * @test
-     */
-    public function isDisabledInitiallyReturnsFalse()
+    public function testIsDisabledInitiallyReturnsFalse(): void
     {
-        static::assertFalse($this->subject->isDisabled());
+        self::assertFalse($this->subject->isDisabled());
     }
 
-    /**
-     * @test
-     */
-    public function setDisabledSetsDisabled()
+    public function testSetDisabledSetsDisabled(): void
     {
         $this->subject->setDisabled(true);
 
-        static::assertTrue($this->subject->isDisabled());
+        self::assertTrue($this->subject->isDisabled());
     }
 
-    /**
-     * @test
-     */
-    public function getExtraDataInitiallyReturnsEmptyString()
+    public function testGetExtraDataInitiallyReturnsEmptyString(): void
     {
-        static::assertSame('', $this->subject->getExtraData());
+        self::assertSame('', $this->subject->getExtraData());
     }
 
-    /**
-     * @test
-     */
-    public function setExtraDataSetsExtraData()
+    public function testSetExtraDataSetsExtraData(): void
     {
         $value = 'This is one of our favourite subscribers.';
         $this->subject->setExtraData($value);
 
-        static::assertSame($value, $this->subject->getExtraData());
+        self::assertSame($value, $this->subject->getExtraData());
     }
 
-    /**
-     * @test
-     */
-    public function getSubscriptionsByDefaultReturnsEmptyCollection()
+    public function testGetSubscriptionsByDefaultReturnsEmptyCollection(): void
     {
         $result = $this->subject->getSubscriptions();
 
-        static::assertInstanceOf(Collection::class, $result);
-        static::assertTrue($result->isEmpty());
+        self::assertInstanceOf(Collection::class, $result);
+        self::assertTrue($result->isEmpty());
     }
 
-    /**
-     * @test
-     */
-    public function setSubscriptionsSetsSubscriptions()
+    public function testSetSubscriptionsSetsSubscriptions(): void
     {
         $subscriptions = new ArrayCollection();
 
         $this->subject->setSubscriptions($subscriptions);
 
-        static::assertSame($subscriptions, $this->subject->getSubscriptions());
+        self::assertSame($subscriptions, $this->subject->getSubscriptions());
     }
 
-    /**
-     * @test
-     */
-    public function getSubscribedListsByDefaultReturnsEmptyCollection()
+    public function testGetSubscribedListsByDefaultReturnsEmptyCollection(): void
     {
         $result = $this->subject->getSubscribedLists();
 
-        static::assertInstanceOf(Collection::class, $result);
-        static::assertTrue($result->isEmpty());
+        self::assertInstanceOf(Collection::class, $result);
+        self::assertTrue($result->isEmpty());
     }
 
-    /**
-     * @test
-     */
-    public function setSubscribedListsSetsSubscribedLists()
+    public function testSetSubscribedListsSetsSubscribedLists(): void
     {
         $subscriptions = new ArrayCollection();
 
         $this->subject->setSubscribedLists($subscriptions);
 
-        static::assertSame($subscriptions, $this->subject->getSubscribedLists());
+        self::assertSame($subscriptions, $this->subject->getSubscribedLists());
     }
 }

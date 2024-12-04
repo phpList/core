@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\TestingSupport\Traits;
+namespace PhpList\Core\TestingSupport\Traits;
 
 use InvalidArgumentException;
 use PhpList\Core\Core\ApplicationStructure;

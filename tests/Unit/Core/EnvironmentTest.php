@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Core;
@@ -13,16 +14,13 @@ use PHPUnit\Framework\TestCase;
  */
 class EnvironmentTest extends TestCase
 {
-    /**
-     * @test
-     */
-    public function defaultEnvironmentIsProduction()
+    public function testDefaultEnvironmentIsProduction(): void
     {
-        static::assertSame(Environment::PRODUCTION, Environment::DEFAULT_ENVIRONMENT);
+        self::assertSame(Environment::PRODUCTION, Environment::DEFAULT_ENVIRONMENT);
     }
 
     /**
-     * @return string[][]
+     * @return array<string[]>
      */
     public function validEnvironmentDataProvider(): array
     {
@@ -34,23 +32,17 @@ class EnvironmentTest extends TestCase
     }
 
     /**
-     * @test
-     * @param string $environment
      * @dataProvider validEnvironmentDataProvider
      */
-    public function validateEnvironmentForValidEnvironmentPasses(string $environment)
+    public function testValidateEnvironmentForValidEnvironmentPasses(string $environment): void
     {
         Environment::validateEnvironment($environment);
 
-        // This is to avoid a warning in PHPUnit that this test has no assertions (as there is no assertion
-        // for "no exception is thrown").
-        static::assertTrue(true);
+        // Adding an assertion to confirm the method executes without throwing an exception.
+        self::assertTrue(true);
     }
 
-    /**
-     * @test
-     */
-    public function validateEnvironmentForInvalidEnvironmentThrowsException()
+    public function testValidateEnvironmentForInvalidEnvironmentThrowsException(): void
     {
         $environment = 'home';
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\EmptyStartPageBundle\Controller;
 
 use InvalidArgumentException;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -13,7 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class DefaultController
+class DefaultController extends AbstractController
 {
     /**
      * An empty start page route.

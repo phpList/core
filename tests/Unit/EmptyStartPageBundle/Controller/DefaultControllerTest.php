@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\EmptyStartPageBundle\Controller;
 
 use PhpList\Core\EmptyStartPageBundle\Controller\DefaultController;
 use PHPUnit\Framework\TestCase;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -15,32 +16,23 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class DefaultControllerTest extends TestCase
 {
-    /**
-     * @var DefaultController
-     */
-    private $subject = null;
+    private DefaultController $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = new DefaultController();
     }
 
-    /**
-     * @test
-     */
-    public function classIsController()
+    public function testClassIsController(): void
     {
-        static::assertInstanceOf(Controller::class, $this->subject);
+        self::assertInstanceOf(AbstractController::class, $this->subject);
     }
 
-    /**
-     * @test
-     */
-    public function indexActionReturnsResponseWithHelloWorld()
+    public function testIndexActionReturnsResponseWithHelloWorld(): void
     {
-        $result = $this->subject->indexAction();
+        $result = $this->subject->index();
 
         $expectedResult = new Response('This page has been intentionally left empty.');
-        static::assertEquals($expectedResult, $result);
+        self::assertEquals($expectedResult, $result);
     }
 }

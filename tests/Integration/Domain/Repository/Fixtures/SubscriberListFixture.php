@@ -9,7 +9,7 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Messaging\SubscriberList;
-use PhpList\Core\Tests\TestingSupport\Traits\ModelTestTrait;
+use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
 use RuntimeException;
 
 class SubscriberListFixture extends Fixture

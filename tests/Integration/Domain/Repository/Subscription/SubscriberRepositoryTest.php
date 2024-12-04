@@ -12,11 +12,11 @@ use PhpList\Core\Domain\Model\Subscription\Subscription;
 use PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository;
 use PhpList\Core\Domain\Repository\Subscription\SubscriberRepository;
 use PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository;
+use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
+use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriberFixture;
 use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriberListFixture;
 use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriptionFixture;
-use PhpList\Core\Tests\TestingSupport\Traits\DatabaseTestTrait;
-use PhpList\Core\Tests\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**

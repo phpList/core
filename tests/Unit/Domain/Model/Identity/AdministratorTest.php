@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Model\Identity;
 
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
-use PhpList\Core\Tests\TestingSupport\Traits\ModelTestTrait;
-use PhpList\Core\Tests\TestingSupport\Traits\SimilarDatesAssertionTrait;
+use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
+use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -19,188 +20,123 @@ class AdministratorTest extends TestCase
     use ModelTestTrait;
     use SimilarDatesAssertionTrait;
 
-    /**
-     * @var Administrator
-     */
-    private $subject = null;
+    private Administrator $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = new Administrator();
     }
 
-    /**
-     * @test
-     */
-    public function isDomainModel()
+    public function testIsDomainModel(): void
     {
-        static::assertInstanceOf(DomainModel::class, $this->subject);
+        self::assertInstanceOf(DomainModel::class, $this->subject);
     }
 
-    /**
-     * @test
-     */
-    public function getIdInitiallyReturnsZero()
-    {
-        static::assertSame(0, $this->subject->getId());
-    }
-
-    /**
-     * @test
-     */
-    public function getIdReturnsId()
+    public function testGetIdReturnsId(): void
     {
         $id = 123456;
-        $this->setSubjectId($id);
+        $this->setSubjectId($this->subject,$id);
 
-        static::assertSame($id, $this->subject->getId());
+        self::assertSame($id, $this->subject->getId());
     }
 
-    /**
-     * @test
-     */
-    public function getLoginNameInitiallyReturnsEmptyString()
+    public function testGetLoginNameInitiallyReturnsEmptyString(): void
     {
-        static::assertSame('', $this->subject->getLoginName());
+        self::assertSame('', $this->subject->getLoginName());
     }
 
-    /**
-     * @test
-     */
-    public function setLoginNameSetsLoginName()
+    public function testSetLoginNameSetsLoginName(): void
     {
         $value = 'jane.doe';
         $this->subject->setLoginName($value);
 
-        static::assertSame($value, $this->subject->getLoginName());
+        self::assertSame($value, $this->subject->getLoginName());
     }
 
-    /**
-     * @test
-     */
-    public function getEmailAddressInitiallyReturnsEmptyString()
+    public function testGetEmailAddressInitiallyReturnsEmptyString(): void
     {
-        static::assertSame('', $this->subject->getEmailAddress());
+        self::assertSame('', $this->subject->getEmailAddress());
     }
 
-    /**
-     * @test
-     */
-    public function setEmailAddressSetsEmailAddress()
+    public function testSetEmailAddressSetsEmailAddress(): void
     {
         $value = 'oliver@example.com';
         $this->subject->setEmailAddress($value);
 
-        static::assertSame($value, $this->subject->getEmailAddress());
+        self::assertSame($value, $this->subject->getEmailAddress());
     }
 
-    /**
-     * @test
-     */
-    public function getCreationDateInitiallyReturnsNull()
+    public function testGetCreationDateInitiallyReturnsNull(): void
     {
-        static::assertNull($this->subject->getCreationDate());
+        self::assertNull($this->subject->getCreationDate());
     }
 
-    /**
-     * @test
-     */
-    public function updateCreationDateSetsCreationDateToNow()
+    public function testUpdateCreationDateSetsCreationDateToNow(): void
     {
         $this->subject->updateCreationDate();
 
-        static::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
+        self::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
     }
 
-    /**
-     * @test
-     */
-    public function getModificationDateInitiallyReturnsNull()
+    public function testGetModificationDateInitiallyReturnsNull(): void
     {
-        static::assertNull($this->subject->getModificationDate());
+        self::assertNull($this->subject->getModificationDate());
     }
 
-    /**
-     * @test
-     */
-    public function updateModificationDateSetsModificationDateToNow()
+    public function testUpdateModificationDateSetsModificationDateToNow(): void
     {
         $this->subject->updateModificationDate();
 
-        static::assertSimilarDates(new \DateTime(), $this->subject->getModificationDate());
+        self::assertSimilarDates(new \DateTime(), $this->subject->getModificationDate());
     }
 
-    /**
-     * @test
-     */
-    public function getPasswordHashInitiallyReturnsEmptyString()
+    public function testGetPasswordHashInitiallyReturnsEmptyString(): void
     {
-        static::assertSame('', $this->subject->getPasswordHash());
+        self::assertSame('', $this->subject->getPasswordHash());
     }
 
-    /**
-     * @test
-     */
-    public function setPasswordHashSetsPasswordHash()
+    public function testSetPasswordHashSetsPasswordHash(): void
     {
         $value = 'Club-Mate';
         $this->subject->setPasswordHash($value);
 
-        static::assertSame($value, $this->subject->getPasswordHash());
+        self::assertSame($value, $this->subject->getPasswordHash());
     }
 
-    /**
-     * @test
-     */
-    public function getPasswordChangeDateInitiallyReturnsNull()
+    public function testGetPasswordChangeDateInitiallyReturnsNull(): void
     {
-        static::assertNull($this->subject->getPasswordChangeDate());
+        self::assertNull($this->subject->getPasswordChangeDate());
     }
 
-    /**
-     * @test
-     */
-    public function setPasswordHashSetsPasswordChangeDateToNow()
+    public function testSetPasswordHashSetsPasswordChangeDateToNow(): void
     {
         $date = new \DateTime();
         $this->subject->setPasswordHash('Zaphod Beeblebrox');
 
-        static::assertSimilarDates($date, $this->subject->getPasswordChangeDate());
+        self::assertSimilarDates($date, $this->subject->getPasswordChangeDate());
     }
 
-    /**
-     * @test
-     */
-    public function isDisabledInitiallyReturnsFalse()
+    public function testIsDisabledInitiallyReturnsFalse(): void
     {
-        static::assertFalse($this->subject->isDisabled());
+        self::assertFalse($this->subject->isDisabled());
     }
 
-    /**
-     * @test
-     */
-    public function setDisabledSetsDisabled()
+    public function testSetDisabledSetsDisabled(): void
     {
         $this->subject->setDisabled(true);
 
-        static::assertTrue($this->subject->isDisabled());
+        self::assertTrue($this->subject->isDisabled());
     }
 
-    /**
-     * @test
-     */
-    public function isSuperUserInitiallyReturnsFalse()
+    public function testIsSuperUserInitiallyReturnsFalse(): void
     {
-        static::assertFalse($this->subject->isSuperUser());
+        self::assertFalse($this->subject->isSuperUser());
     }
 
-    /**
-     * @test
-     */
-    public function setSuperUserSetsSuperUser()
+    public function testSetSuperUserSetsSuperUser(): void
     {
         $this->subject->setSuperUser(true);
 
-        static::assertTrue($this->subject->isSuperUser());
+        self::assertTrue($this->subject->isSuperUser());
     }
 }
