@@ -15,3 +15,4 @@
 /docs/phpdocumentor
 .vagrant
 .phpdoc/
+.phpunit.result.cache

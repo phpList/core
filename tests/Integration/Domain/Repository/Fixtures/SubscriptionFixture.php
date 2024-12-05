@@ -6,12 +6,17 @@ namespace PhpList\Core\Tests\Integration\Domain\Repository\Fixtures;
 
 use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ObjectManager;
+use PhpList\Core\Domain\Model\Messaging\SubscriberList;
+use PhpList\Core\Domain\Model\Subscription\Subscriber;
+use PhpList\Core\Domain\Model\Subscription\Subscription;
+use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
 use RuntimeException;
 
 class SubscriptionFixture extends Fixture
 {
+    use ModelTestTrait;
+
     public function load(ObjectManager $manager): void
     {
         $csvFile = __DIR__ . '/Subscription.csv';
@@ -26,32 +31,24 @@ class SubscriptionFixture extends Fixture
         }
 
         $headers = fgetcsv($handle);
-        if ($headers === false) {
-            throw new RuntimeException('Could not read headers from CSV file.');
-        }
-
-        /** @var Connection $connection */
-        $connection = $manager->getConnection();
-
-        $insertSubscriptionQuery = "
-            INSERT INTO phplist_listuser (
-                userid, listid, entered, modified
-            ) VALUES (
-                :subscriber_id, :subscriber_list_id, :creation_date, :modification_date
-            )
-        ";
-
-        $subscriptionStmt = $connection->prepare($insertSubscriptionQuery);
 
         while (($data = fgetcsv($handle)) !== false) {
             $row = array_combine($headers, $data);
 
-            $subscriptionStmt->executeStatement([
-                'subscriber_id' => (int) $row['userid'],
-                'subscriber_list_id' => (int) $row['listid'],
-                'creation_date' => (new DateTime($row['entered']))->format('Y-m-d H:i:s'),
-                'modification_date' => (new DateTime($row['modified']))->format('Y-m-d H:i:s'),
-            ]);
+            $subscriber = new Subscriber();
+            $this->setSubjectId($subscriber,(int)$row['userid']);
+            $manager->persist($subscriber);
+
+            $subscriberList = new SubscriberList();
+            $this->setSubjectId($subscriberList,(int)$row['listid']);
+            $manager->persist($subscriberList);
+
+            $subscription = new Subscription();
+            $this->setSubjectProperty($subscription,'subscriber', $subscriber);
+            $this->setSubjectProperty($subscription,'subscriberList', $subscriberList);
+            $this->setSubjectProperty($subscription,'creationDate', new DateTime($row['entered']));
+            $this->setSubjectProperty($subscription,'modificationDate', new DateTime($row['modified']));
+            $manager->persist($subscription);
         }
 
         fclose($handle);

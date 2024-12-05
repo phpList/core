@@ -44,6 +44,5 @@ class AdministratorFixture extends Fixture
         }
 
         fclose($handle);
-        $manager->flush();
     }
 }

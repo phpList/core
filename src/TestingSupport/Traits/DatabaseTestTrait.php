@@ -85,9 +85,8 @@ trait DatabaseTestTrait
             }
 
             $fixtureInstance->load($this->entityManager);
+            $this->entityManager->flush();
         }
-
-        $this->entityManager->flush();
     }
 
     protected function loadSchema(): void

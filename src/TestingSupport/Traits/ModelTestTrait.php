@@ -17,6 +17,7 @@ trait ModelTestTrait
     /**
      * Sets the (private) ID of $this->repository.
      *
+     * @param DomainModel $model
      * @param int $id
      *
      * @return void
@@ -32,9 +33,7 @@ trait ModelTestTrait
      * @param string $propertyName
      * @param mixed $value
      *
-     * @return void
-     * @internal
-     *
+     * @return void*
      */
     private function setSubjectProperty(DomainModel $model, string $propertyName, mixed $value): void
     {

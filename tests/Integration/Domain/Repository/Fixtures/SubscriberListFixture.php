@@ -49,7 +49,6 @@ class SubscriberListFixture extends Fixture
 
             $manager->persist($admin);
             $manager->persist($subscriberList);
-            $manager->flush();
         }
 
         fclose($handle);

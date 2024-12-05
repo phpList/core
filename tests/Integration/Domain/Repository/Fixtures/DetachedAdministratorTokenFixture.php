@@ -41,6 +41,5 @@ class DetachedAdministratorTokenFixture extends Fixture
         }
 
         fclose($handle);
-        $manager->flush();
     }
 }

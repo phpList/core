@@ -90,12 +90,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
 
     #[ORM\ManyToMany(
         targetEntity: "PhpList\Core\Domain\Model\Messaging\SubscriberList",
-        inversedBy: "subscribers"
-    )]
-    #[ORM\JoinTable(
-        name: "phplist_listuser",
-        joinColumns: [new ORM\JoinColumn(name: "userid")],
-        inverseJoinColumns: [new ORM\JoinColumn(name: "listid")]
+        mappedBy: "subscribers"
     )]
     private Collection $subscribedLists;
 

@@ -48,6 +48,5 @@ class AdministratorTokenWithAdministratorFixture extends Fixture
         }
 
         fclose($handle);
-        $manager->flush();
     }
 }
