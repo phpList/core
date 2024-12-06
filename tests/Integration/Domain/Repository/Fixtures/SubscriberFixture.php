@@ -6,12 +6,15 @@ namespace PhpList\Core\Tests\Integration\Domain\Repository\Fixtures;
 
 use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ObjectManager;
+use PhpList\Core\Domain\Model\Subscription\Subscriber;
+use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
 use RuntimeException;
 
 class SubscriberFixture extends Fixture
 {
+    use ModelTestTrait;
+
     public function load(ObjectManager $manager): void
     {
         $csvFile = __DIR__ . '/Subscriber.csv';
@@ -26,41 +29,23 @@ class SubscriberFixture extends Fixture
         }
 
         $headers = fgetcsv($handle);
-        if ($headers === false) {
-            throw new RuntimeException('Could not read headers from CSV file.');
-        }
-
-        /** @var Connection $connection */
-        $connection = $manager->getConnection();
-
-        $insertQuery = "
-            INSERT INTO phplist_user_user (
-                id, entered, modified, email, confirmed, blacklisted, bouncecount,
-                uniqid, htmlemail, disabled, extradata
-            ) VALUES (
-                :id, :creation_date, :modification_date, :email, :confirmed, :blacklisted, :bounce_count,
-                :unique_id, :html_email, :disabled, :extra_data
-            )
-        ";
-
-        $stmt = $connection->prepare($insertQuery);
 
         while (($data = fgetcsv($handle)) !== false) {
             $row = array_combine($headers, $data);
 
-            $stmt->executeStatement([
-                'id' => (int) $row['id'],
-                'creation_date' => (new DateTime($row['entered']))->format('Y-m-d H:i:s'),
-                'modification_date' => (new DateTime($row['modified']))->format('Y-m-d H:i:s'),
-                'email' => $row['email'],
-                'confirmed' => (bool) $row['confirmed'] ? 1 : 0,
-                'blacklisted' => (bool) $row['blacklisted'] ? 1 : 0,
-                'bounce_count' => (int) $row['bouncecount'],
-                'unique_id' => $row['uniqueid'],
-                'html_email' => (bool) $row['htmlemail'] ? 1 : 0,
-                'disabled' => (bool) $row['disabled'] ? 1 : 0,
-                'extra_data' => $row['extradata'],
-            ]);
+            $subscriber = new Subscriber();
+            $this->setSubjectId($subscriber,(int)$row['id']);
+            $this->setSubjectProperty($subscriber,'creationDate', new DateTime($row['entered']));
+            $this->setSubjectProperty($subscriber,'modificationDate', new DateTime($row['modified']));
+            $subscriber->setEmail($row['email']);
+            $subscriber->setConfirmed((bool) $row['confirmed']);
+            $subscriber->setBlacklisted((bool) $row['blacklisted']);
+            $subscriber->setBounceCount((int) $row['bouncecount']);
+            $subscriber->setUniqueId($row['uniqueid']);
+            $subscriber->setHtmlEmail((bool) $row['htmlemail']);
+            $subscriber->setDisabled((bool) $row['disabled']);
+            $subscriber->setExtraData($row['extradata']);
+            $manager->persist($subscriber);
         }
 
         fclose($handle);
