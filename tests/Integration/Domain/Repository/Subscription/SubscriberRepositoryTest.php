@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Integration\Domain\Repository\Subscription;
 
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\Tools\SchemaTool;
+use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
 use PhpList\Core\Domain\Model\Subscription\Subscription;
 use PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository;
@@ -14,6 +17,7 @@ use PhpList\Core\Domain\Repository\Subscription\SubscriberRepository;
 use PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository;
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\AdministratorFixture;
 use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriberFixture;
 use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriberListFixture;
 use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriptionFixture;
@@ -175,11 +179,15 @@ class SubscriberRepositoryTest extends KernelTestCase
 
     public function testFindsAssociatedSubscriptions()
     {
-        $this->loadFixtures([SubscriberFixture::class, SubscriberListFixture::class, SubscriptionFixture::class]);
+        $this->loadFixtures([
+            AdministratorFixture::class,
+            SubscriberFixture::class,
+            SubscriberListFixture::class,
+            SubscriptionFixture::class,
+        ]);
 
         $id = 1;
-        /** @var Subscriber $model */
-        $model = $this->subscriberRepository->find($id);
+        $model = $this->subscriberRepository->findSubscriberWithSubscriptions($id);
         $subscriptions = $model->getSubscriptions();
 
         self::assertFalse($subscriptions->isEmpty());
@@ -196,13 +204,16 @@ class SubscriberRepositoryTest extends KernelTestCase
 
         $id = 1;
         /** @var Subscriber $model */
-        $model = $this->subscriberRepository->find($id);
-        $subscribedLists = $model->getSubscribedLists();
+        $model = $this->subscriberRepository->findSubscriberWithSubscriptions($id);
+        $subscriberLists = new ArrayCollection();
+        foreach ($model->getSubscriptions() as $subscription) {
+            $subscriberLists->add($subscription->getSubscriberList());
+        }
 
         $expectedList = $this->subscriberListRepository->find(2);
         $unexpectedList = $this->subscriberListRepository->find(1);
-        self::assertTrue($subscribedLists->contains($expectedList));
-        self::assertFalse($subscribedLists->contains($unexpectedList));
+        self::assertTrue($subscriberLists->contains($expectedList));
+        self::assertFalse($subscriberLists->contains($unexpectedList));
     }
 
     public function testRemoveAlsoRemovesAssociatedSubscriptions()
@@ -213,7 +224,7 @@ class SubscriberRepositoryTest extends KernelTestCase
 
         $id = 2;
         /** @var Subscriber $model */
-        $model = $this->subscriberRepository->find($id);
+        $model = $this->subscriberRepository->findSubscriberWithSubscriptions($id);
 
         $numberOfAssociatedSubscriptions = count($model->getSubscriptions());
         self::assertGreaterThan(0, $numberOfAssociatedSubscriptions);

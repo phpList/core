@@ -7,20 +7,20 @@ namespace PhpList\Core\TestingSupport\Traits;
 use InvalidArgumentException;
 use PhpList\Core\Core\ApplicationStructure;
 use RuntimeException;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 /**
  * Trait for running the Symfony server in the background.
+ *
+ * @author Oliver Klee <oliver@phplist.com>
  */
 trait SymfonyServerTrait
 {
     private ?Process $serverProcess = null;
 
-    private static array $validEnvironments = ['test', 'dev', 'prod'];
     private static string $lockFileName = '.web-server-pid';
-    private static int $maximumWaitTimeForServerLockFile = 5000000; // microseconds
-    private static int $waitTimeBetweenServerCommands = 50000; // microseconds
+    private static int $maximumWaitTimeForServerLockFile = 5000000;
+    private static int $waitTimeBetweenServerCommands = 50000;
 
     private static ?ApplicationStructure $applicationStructure = null;
 
@@ -29,34 +29,26 @@ trait SymfonyServerTrait
      *
      * @throws InvalidArgumentException|RuntimeException
      */
-    protected function startSymfonyServer(string $environment): void
+    protected function startSymfonyServer(): void
     {
-        if (!in_array($environment, self::$validEnvironments, true)) {
-            throw new InvalidArgumentException(sprintf('"%s" is not a valid environment.', $environment));
-        }
-
         if ($this->lockFileExists()) {
             throw new RuntimeException(
                 sprintf(
-                    'The server lock file "%s" already exists. A Symfony server might already be running. Please stop the server or delete the lock file.',
+                    'The server lock file "%s" already exists.',
                     self::$lockFileName
                 )
             );
         }
 
         $this->serverProcess = new Process(
-            $this->getSymfonyServerStartCommand($environment),
+            $this->getSymfonyServerStartCommand(),
             $this->getApplicationRoot()
         );
+        $this->serverProcess->start();
 
-        try {
-            $this->serverProcess->start();
-        } catch (ProcessFailedException $exception) {
-            throw new RuntimeException('Failed to start the Symfony server.', 0, $exception);
-        }
-
+        usleep(self::$waitTimeBetweenServerCommands);
         $this->waitForServerLockFileToAppear();
-        usleep(75000); // Allow the server time to initialize
+        usleep(self::$waitTimeBetweenServerCommands);
     }
 
     private function lockFileExists(): bool
@@ -81,14 +73,26 @@ trait SymfonyServerTrait
     private function waitForServerLockFileToAppear(): void
     {
         $currentWaitTime = 0;
+        while (!$this->lockFileExists() && $currentWaitTime < static::$maximumWaitTimeForServerLockFile) {
+            $process = new Process(['symfony', 'server:status', '--no-ansi']);
+            $process->run();
 
-        while (!$this->lockFileExists() && $currentWaitTime < self::$maximumWaitTimeForServerLockFile) {
-            usleep(self::$waitTimeBetweenServerCommands);
-            $currentWaitTime += self::$waitTimeBetweenServerCommands;
+            if ($process->isSuccessful()) {
+                $output = $process->getOutput();
+                if (preg_match('/Listening on (http[s]?:\/\/127\.0\.0\.1:(\d+))/', $output, $matches)) {
+                    $port = $matches[2];
+                    file_put_contents(self::$lockFileName, trim($port));
+                }
+            }
+            usleep(static::$waitTimeBetweenServerCommands);
+            $currentWaitTime += static::$waitTimeBetweenServerCommands;
         }
 
         if (!$this->lockFileExists()) {
-            throw new RuntimeException(sprintf('Symfony server lock file "%s" did not appear.', self::$lockFileName));
+            throw new RuntimeException(
+                'There is no symfony server lock file "' . static::$lockFileName . '".',
+                1516625236
+            );
         }
     }
 
@@ -108,7 +112,7 @@ trait SymfonyServerTrait
         }
     }
 
-    private function getSymfonyServerStartCommand(string $environment): array
+    private function getSymfonyServerStartCommand(): array
     {
         $documentRoot = $this->getApplicationRoot() . '/public/';
         $this->checkDocumentRoot($documentRoot);
@@ -117,8 +121,6 @@ trait SymfonyServerTrait
             'symfony',
             'server:start',
             '--daemon',
-            '--document-root=' . $documentRoot,
-            '--env=' . $environment,
         ];
     }
 

@@ -42,11 +42,13 @@ class SubscriptionFixture extends Fixture
             $subscriberList = $subscriberListRepository->find((int)$row['listid']);
 
             $subscription = new Subscription();
-            $this->setSubjectProperty($subscription,'subscriber', $subscriber);
-            $this->setSubjectProperty($subscription,'subscriberList', $subscriberList);
+            $subscriberList->addSubscription($subscription);
+            $subscriber->addSubscription($subscription);
+
+            $manager->persist($subscription);
+
             $this->setSubjectProperty($subscription,'creationDate', new DateTime($row['entered']));
             $this->setSubjectProperty($subscription,'modificationDate', new DateTime($row['modified']));
-            $manager->persist($subscription);
         }
 
         fclose($handle);

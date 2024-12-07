@@ -21,7 +21,7 @@ trait IdentityTrait
     #[ORM\Column(type: "integer")]
     #[ORM\GeneratedValue]
     #[SerializedName("id")]
-    #[Groups(['SubscriberList'])]
+    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private int $id;
 
     public function getId(): int

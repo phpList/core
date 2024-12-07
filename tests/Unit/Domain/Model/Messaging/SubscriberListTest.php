@@ -10,6 +10,8 @@ use Doctrine\Common\Collections\Collection;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Messaging\SubscriberList;
+use PhpList\Core\Domain\Model\Subscription\Subscriber;
+use PhpList\Core\Domain\Model\Subscription\Subscription;
 use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
 use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
@@ -24,160 +26,160 @@ class SubscriberListTest extends TestCase
     use ModelTestTrait;
     use SimilarDatesAssertionTrait;
 
-    private SubscriberList $subject;
+    private SubscriberList $subscriberList;
 
     protected function setUp(): void
     {
-        $this->subject = new SubscriberList();
+        $this->subscriberList = new SubscriberList();
     }
 
     public function testIsDomainModel(): void
     {
-        self::assertInstanceOf(DomainModel::class, $this->subject);
+        self::assertInstanceOf(DomainModel::class, $this->subscriberList);
     }
 
     public function testGetIdReturnsId(): void
     {
         $id = 123456;
-        $this->setSubjectId($this->subject, $id);
+        $this->setSubjectId($this->subscriberList, $id);
 
-        self::assertSame($id, $this->subject->getId());
+        self::assertSame($id, $this->subscriberList->getId());
     }
 
     public function testGetCreationDateInitiallyReturnsNull(): void
     {
-        self::assertNull($this->subject->getCreationDate());
+        self::assertNull($this->subscriberList->getCreationDate());
     }
 
     public function testUpdateCreationDateSetsCreationDateToNow(): void
     {
-        $this->subject->updateCreationDate();
+        $this->subscriberList->updateCreationDate();
 
-        self::assertSimilarDates(new DateTime(), $this->subject->getCreationDate());
+        self::assertSimilarDates(new DateTime(), $this->subscriberList->getCreationDate());
     }
 
     public function testGetModificationDateInitiallyReturnsNull(): void
     {
-        self::assertNull($this->subject->getModificationDate());
+        self::assertNull($this->subscriberList->getModificationDate());
     }
 
     public function testUpdateModificationDateSetsModificationDateToNow(): void
     {
-        $this->subject->updateModificationDate();
+        $this->subscriberList->updateModificationDate();
 
-        self::assertSimilarDates(new DateTime(), $this->subject->getModificationDate());
+        self::assertSimilarDates(new DateTime(), $this->subscriberList->getModificationDate());
     }
 
     public function testGetNameInitiallyReturnsEmptyString(): void
     {
-        self::assertSame('', $this->subject->getName());
+        self::assertSame('', $this->subscriberList->getName());
     }
 
     public function testSetNameSetsName(): void
     {
         $value = 'phpList releases';
-        $this->subject->setName($value);
+        $this->subscriberList->setName($value);
 
-        self::assertSame($value, $this->subject->getName());
+        self::assertSame($value, $this->subscriberList->getName());
     }
 
     public function testGetDescriptionInitiallyReturnsEmptyString(): void
     {
-        self::assertSame('', $this->subject->getDescription());
+        self::assertSame('', $this->subscriberList->getDescription());
     }
 
     public function testSetDescriptionSetsDescription(): void
     {
         $value = 'Subscribe to this list when you would like to be notified of new phpList releases.';
-        $this->subject->setDescription($value);
+        $this->subscriberList->setDescription($value);
 
-        self::assertSame($value, $this->subject->getDescription());
+        self::assertSame($value, $this->subscriberList->getDescription());
     }
 
     public function testGetListPositionInitiallyReturnsZero(): void
     {
-        self::assertSame(0, $this->subject->getListPosition());
+        self::assertSame(0, $this->subscriberList->getListPosition());
     }
 
     public function testSetListPositionSetsListPosition(): void
     {
         $value = 123456;
-        $this->subject->setListPosition($value);
+        $this->subscriberList->setListPosition($value);
 
-        self::assertSame($value, $this->subject->getListPosition());
+        self::assertSame($value, $this->subscriberList->getListPosition());
     }
 
     public function testGetSubjectPrefixInitiallyReturnsEmptyString(): void
     {
-        self::assertSame('', $this->subject->getSubjectPrefix());
+        self::assertSame('', $this->subscriberList->getSubjectPrefix());
     }
 
     public function testSetSubjectPrefixSetsSubjectPrefix(): void
     {
         $value = 'Club-Mate';
-        $this->subject->setSubjectPrefix($value);
+        $this->subscriberList->setSubjectPrefix($value);
 
-        self::assertSame($value, $this->subject->getSubjectPrefix());
+        self::assertSame($value, $this->subscriberList->getSubjectPrefix());
     }
 
     public function testIsPublicInitiallyReturnsFalse(): void
     {
-        self::assertFalse($this->subject->isPublic());
+        self::assertFalse($this->subscriberList->isPublic());
     }
 
     public function testSetPublicSetsPublic(): void
     {
-        $this->subject->setPublic(true);
+        $this->subscriberList->setPublic(true);
 
-        self::assertTrue($this->subject->isPublic());
+        self::assertTrue($this->subscriberList->isPublic());
     }
 
     public function testGetCategoryInitiallyReturnsEmptyString(): void
     {
-        self::assertSame('', $this->subject->getCategory());
+        self::assertSame('', $this->subscriberList->getCategory());
     }
 
     public function testSetCategorySetsCategory(): void
     {
         $value = 'Club-Mate';
-        $this->subject->setCategory($value);
+        $this->subscriberList->setCategory($value);
 
-        self::assertSame($value, $this->subject->getCategory());
+        self::assertSame($value, $this->subscriberList->getCategory());
     }
 
     public function testGetOwnerInitiallyReturnsNull(): void
     {
-        self::assertNull($this->subject->getOwner());
+        self::assertNull($this->subscriberList->getOwner());
     }
 
     public function testSetOwnerSetsOwner(): void
     {
         $model = new Administrator();
-        $this->subject->setOwner($model);
+        $this->subscriberList->setOwner($model);
 
-        self::assertSame($model, $this->subject->getOwner());
+        self::assertSame($model, $this->subscriberList->getOwner());
     }
 
     public function testGetSubscriptionsByDefaultReturnsEmptyCollection(): void
     {
-        $result = $this->subject->getSubscriptions();
+        $result = $this->subscriberList->getSubscriptions();
 
         self::assertInstanceOf(Collection::class, $result);
         self::assertTrue($result->isEmpty());
     }
 
-    public function testSetSubscriptionsSetsSubscriptions(): void
+    public function testAddSubscriptionsSetsSubscriptions(): void
     {
-        $subscriptions = new ArrayCollection();
+        $subscription = new Subscription();
 
-        $this->subject->setSubscriptions($subscriptions);
+        $this->subscriberList->addSubscription($subscription);
 
-        self::assertSame($subscriptions, $this->subject->getSubscriptions());
+        self::assertTrue($this->subscriberList->getSubscriptions()->contains($subscription));
     }
 
     public function testGetSubscribersByDefaultReturnsEmptyCollection(): void
     {
-        $result = $this->subject->getSubscribers();
+        $result = $this->subscriberList->getSubscribers();
 
         self::assertInstanceOf(Collection::class, $result);
         self::assertTrue($result->isEmpty());
@@ -185,10 +187,12 @@ class SubscriberListTest extends TestCase
 
     public function testSetSubscribersSetsSubscribers(): void
     {
-        $subscriptions = new ArrayCollection();
+        $subscriber = new Subscriber();
+        $subscription = new Subscription();
+        $subscription->setSubscriber($subscriber);
 
-        $this->subject->setSubscribers($subscriptions);
+        $this->subscriberList->addSubscription($subscription);
 
-        self::assertSame($subscriptions, $this->subject->getSubscribers());
+        self::assertTrue($this->subscriberList->getSubscribers()->contains($subscriber));
     }
 }

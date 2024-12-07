@@ -8,6 +8,7 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use PhpList\Core\Domain\Model\Subscription\Subscription;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use PhpList\Core\Domain\Model\Identity\Administrator;
@@ -28,6 +29,8 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
  */
 #[ORM\Entity(repositoryClass: "PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository")]
 #[ORM\Table(name: "phplist_list")]
+#[ORM\Index(name: "nameidx", columns: ["name"])]
+#[ORM\Index(name: "listorderidx", columns: ["listorder"])]
 #[ORM\HasLifecycleCallbacks]
 class SubscriberList implements DomainModel, Identity, CreationDate, ModificationDate
 {
@@ -66,11 +69,13 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
 
     #[ORM\Column(name: "active", type: "boolean")]
     #[SerializedName("public")]
-    private bool $public = false;
+    #[Groups(['SubscriberList'])]
+    private bool $public;
 
     #[ORM\Column]
     #[SerializedName("category")]
-    private string $category = '';
+    #[Groups(['SubscriberList'])]
+    private string $category;
 
     #[ORM\ManyToOne(targetEntity: "PhpList\Core\Domain\Model\Identity\Administrator")]
     #[ORM\JoinColumn(name: "owner")]
@@ -80,30 +85,19 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     #[ORM\OneToMany(
         targetEntity: "PhpList\Core\Domain\Model\Subscription\Subscription",
         mappedBy: "subscriberList",
-        cascade: ["remove"]
+        cascade: ["remove"],
+        orphanRemoval: true,
     )]
     #[MaxDepth(1)]
     private Collection $subscriptions;
 
-    #[ORM\ManyToMany(
-        targetEntity: "PhpList\Core\Domain\Model\Subscription\Subscriber",
-        inversedBy: "subscribedLists",
-        fetch: "EXTRA_LAZY"
-    )]
-    #[ORM\JoinTable(
-        name: "phplist_listuser",
-        joinColumns: [new ORM\JoinColumn(name: "listid")],
-        inverseJoinColumns: [new ORM\JoinColumn(name: "userid")]
-    )]
-    #[MaxDepth(1)]
-    private Collection $subscribers;
-
     public function __construct()
     {
         $this->subscriptions = new ArrayCollection();
-        $this->subscribers = new ArrayCollection();
         $this->listPosition = 0;
         $this->subjectPrefix = '';
+        $this->category = '';
+        $this->public = false;
     }
 
     public function getName(): string
@@ -181,18 +175,32 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this->subscriptions;
     }
 
-    public function setSubscriptions(Collection $subscriptions): void
+    public function addSubscription(Subscription $subscription): self
     {
-        $this->subscriptions = $subscriptions;
+        if (!$this->subscriptions->contains($subscription)) {
+            $this->subscriptions->add($subscription);
+            $subscription->setSubscriberList($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSubscription(Subscription $subscription): self
+    {
+        if ($this->subscriptions->removeElement($subscription)) {
+            $subscription->setSubscriberList(null);
+        }
+
+        return $this;
     }
 
     public function getSubscribers(): Collection
     {
-        return $this->subscribers;
-    }
+        $result = new ArrayCollection();
+        foreach ($this->subscriptions as $subscription) {
+            $result->add($subscription->getSubscriber());
+        }
 
-    public function setSubscribers(Collection $subscribers): void
-    {
-        $this->subscribers = $subscribers;
+        return $result;
     }
 }

@@ -30,10 +30,16 @@ class SubscriberListFixture extends Fixture
 
         $headers = fgetcsv($handle);
 
+        $adminRepository = $manager->getRepository(Administrator::class);
+
         while (($data = fgetcsv($handle)) !== false) {
             $row = array_combine($headers, $data);
-            $admin = new Administrator();
-            $this->setSubjectId($admin,(int)$row['owner']);
+            $admin = $adminRepository->find($row['owner']);
+            if ($admin === null) {
+                $admin = new Administrator();
+                $this->setSubjectId($admin,(int)$row['owner']);
+                $manager->persist($admin);
+            }
 
             $subscriberList = new SubscriberList();
             $this->setSubjectId($subscriberList,(int)$row['id']);
@@ -47,7 +53,6 @@ class SubscriberListFixture extends Fixture
             $subscriberList->setCategory($row['category']);
             $subscriberList->setOwner($admin);
 
-            $manager->persist($admin);
             $manager->persist($subscriberList);
         }
 

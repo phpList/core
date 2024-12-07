@@ -16,19 +16,39 @@ use PhpList\Core\Domain\Repository\AbstractRepository;
  */
 class SubscriberRepository extends AbstractRepository
 {
-    /**
-     * Get subscribers by subscribed lists.
-     *
-     * @param int $listId The ID of the subscription list.
-     * @return Subscriber[] Returns an array of Subscriber entities.
-     */
-    public function findSubscribersBySubscribedList(int $listId): array
+    public function findSubscribersBySubscribedList(int $listId): ?Subscriber
     {
         return $this->createQueryBuilder('s')
-            ->innerJoin('s.subscribedLists', 'l')
-            ->where('l.id = :listId')
+            ->innerJoin('s.subscriptions', 'subscription')
+            ->innerJoin('subscription.subscriberList', 'list')
+            ->where('list.id = :listId')
+            ->setParameter('listId', $listId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /** @return Subscriber[] */
+    public function getSubscribersBySubscribedListId(int $listId): array
+    {
+        return $this->createQueryBuilder('s')
+            ->innerJoin('s.subscriptions', 'subscription')
+            ->innerJoin('subscription.subscriberList', 'list')
+            ->where('list.id = :listId')
             ->setParameter('listId', $listId)
             ->getQuery()
             ->getResult();
+    }
+
+    public function findSubscriberWithSubscriptions(int $id): ?Subscriber
+    {
+        return $this->createQueryBuilder('s')
+            ->innerJoin('s.subscriptions', 'subscription')
+            ->innerJoin('subscription.subscriberList', 'list')
+            ->addSelect('subscription')
+            ->addSelect('list')
+            ->where('s.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

@@ -35,17 +35,20 @@ class SubscriberFixture extends Fixture
 
             $subscriber = new Subscriber();
             $this->setSubjectId($subscriber,(int)$row['id']);
-            $this->setSubjectProperty($subscriber,'creationDate', new DateTime($row['entered']));
-            $this->setSubjectProperty($subscriber,'modificationDate', new DateTime($row['modified']));
+
             $subscriber->setEmail($row['email']);
             $subscriber->setConfirmed((bool) $row['confirmed']);
             $subscriber->setBlacklisted((bool) $row['blacklisted']);
             $subscriber->setBounceCount((int) $row['bouncecount']);
-            $subscriber->setUniqueId($row['uniqueid']);
             $subscriber->setHtmlEmail((bool) $row['htmlemail']);
             $subscriber->setDisabled((bool) $row['disabled']);
             $subscriber->setExtraData($row['extradata']);
+
             $manager->persist($subscriber);
+            // avoid pre-persist
+            $subscriber->setUniqueId($row['uniqueid']);
+            $this->setSubjectProperty($subscriber,'creationDate', new DateTime($row['entered']));
+            $this->setSubjectProperty($subscriber,'modificationDate', new DateTime($row['modified']));
         }
 
         fclose($handle);

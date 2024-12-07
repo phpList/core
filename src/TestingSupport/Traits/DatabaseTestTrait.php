@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\TestingSupport\Traits;
 
-use Doctrine\Common\DataFixtures\Purger\ORMPurger;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\ToolsException;
@@ -28,7 +27,6 @@ trait DatabaseTestTrait
     protected function setUpDatabaseTest(): void
     {
         $this->initializeBootstrap();
-        $this->clearDatabase();
     }
 
     /**
@@ -56,19 +54,6 @@ trait DatabaseTestTrait
         if (!$this->entityManager->isOpen()) {
             throw new RuntimeException('The Doctrine EntityManager is not open.');
         }
-    }
-
-    /**
-     * Clears the database using ORMPurger.
-     */
-    private function clearDatabase(): void
-    {
-        if (!$this->entityManager) {
-            throw new RuntimeException('EntityManager not initialized.');
-        }
-
-        $purger = new ORMPurger($this->entityManager);
-        $purger->purge();
     }
 
     /**

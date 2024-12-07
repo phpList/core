@@ -36,9 +36,9 @@ class ExtraLoaderTest extends TestCase
         $this->kernel->boot();
 
         $locator = new FileLocator([
+            $this->kernel->getProjectDir() . '/src/EmptyStartPageBundle/Controller',
+            $this->kernel->getProjectDir() . '/src/EmptyStartPageBundle',
             $this->kernel->getProjectDir() . '/config',
-            $this->kernel->getProjectDir() . '/composer.json',
-            $this->kernel->getProjectDir() . '/src/EmptyStartPageBundle/Controller/'
         ]);
 
         $attributeLoader = new AttributeRouteControllerLoader();
@@ -61,8 +61,11 @@ class ExtraLoaderTest extends TestCase
         Bootstrap::purgeInstance();
     }
 
-    public function testLoadReturnsRouteCollection(): void
+    public function loadReturnsRouteCollection(): void
     {
-        self::assertInstanceOf(RouteCollection::class, $this->subject->load('', 'extra'));
+        $routeCollection = $this->subject->load('@EmptyStartPageBundle/Controller/', 'extra');
+
+        self::assertInstanceOf(RouteCollection::class, $routeCollection);
+        self::assertNotNull($routeCollection->get('empty_start_page'));
     }
 }

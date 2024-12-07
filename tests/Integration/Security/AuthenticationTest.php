@@ -78,7 +78,7 @@ class AuthenticationTest extends KernelTestCase
 
     public function testAuthenticateByApiKeyWithValidApiKeyForInexistentAdministratorReturnsNull()
     {
-        $this->loadFixtures([AdministratorTokenWithAdministratorFixture::class]);
+        $this->loadFixtures([AdministratorFixture::class, AdministratorTokenWithAdministratorFixture::class]);
 
         $apiKey = 'cfdf64eecbbf336628b0f3071adba763';
         $request = new Request();
@@ -91,7 +91,7 @@ class AuthenticationTest extends KernelTestCase
 
     public function testAuthenticateByApiKeyWithValidApiKeyForNonSuperUserAdministratorReturnsNull()
     {
-        $this->loadFixtures([AdministratorTokenWithAdministratorFixture::class]);
+        $this->loadFixtures([AdministratorFixture::class, AdministratorTokenWithAdministratorFixture::class]);
 
         $apiKey = 'cfdf64eecbbf336628b0f3071adba764';
         $request = new Request();

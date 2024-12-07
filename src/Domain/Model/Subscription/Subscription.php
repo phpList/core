@@ -23,6 +23,10 @@ use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
  */
 #[ORM\Entity(repositoryClass: "PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository")]
 #[ORM\Table(name: "phplist_listuser")]
+#[ORM\Index(name: "userenteredidx", columns: ["userid", "entered"])]
+#[ORM\Index(name: "userlistenteredidx", columns: ["userid", "entered", "listid"])]
+#[ORM\Index(name: "useridx", columns: ["userid"])]
+#[ORM\Index(name: "listidx", columns: ["listid"])]
 #[ORM\HasLifecycleCallbacks]
 class Subscription implements DomainModel, CreationDate, ModificationDate
 {
@@ -51,7 +55,7 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
         targetEntity: "PhpList\Core\Domain\Model\Messaging\SubscriberList",
         inversedBy: "subscriptions"
     )]
-    #[ORM\JoinColumn(name: "listid")]
+    #[ORM\JoinColumn(name: "listid", onDelete: "CASCADE")]
     #[Ignore]
     private ?SubscriberList $subscriberList = null;
 
@@ -60,7 +64,7 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
         return $this->subscriber;
     }
 
-    public function setSubscriber(Subscriber $subscriber): void
+    public function setSubscriber(?Subscriber $subscriber): void
     {
         $this->subscriber = $subscriber;
     }
@@ -70,7 +74,7 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
         return $this->subscriberList;
     }
 
-    public function setSubscriberList(SubscriberList $subscriberList): void
+    public function setSubscriberList(?SubscriberList $subscriberList): void
     {
         $this->subscriberList = $subscriberList;
     }

@@ -30,28 +30,39 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     use ModificationDateTrait;
 
     #[ORM\Column(name: "loginname")]
-    private string $loginName = '';
+    private string $loginName;
 
     #[ORM\Column(name: "email")]
-    private string $emailAddress = '';
+    private string $emailAddress;
 
     #[ORM\Column(name: "created", type: "datetime")]
     protected ?DateTime $creationDate = null;
 
     #[ORM\Column(name: "modified", type: "datetime")]
-    protected ?DateTime $modificationDate = null;
+    protected ?DateTime $modificationDate;
 
     #[ORM\Column(name: "password")]
-    private string $passwordHash = '';
+    private string $passwordHash;
 
     #[ORM\Column(name: "passwordchanged", type: "date", nullable: true)]
-    private ?DateTime $passwordChangeDate = null;
+    private ?DateTime $passwordChangeDate;
 
     #[ORM\Column(type: "boolean")]
-    private bool $disabled = false;
+    private bool $disabled;
 
     #[ORM\Column(name: "superuser", type: "boolean")]
-    private bool $superUser = false;
+    private bool $superUser;
+
+    public function __construct()
+    {
+        $this->disabled = false;
+        $this->superUser = false;
+        $this->passwordChangeDate = null;
+        $this->loginName = '';
+        $this->passwordHash = '';
+        $this->modificationDate = null;
+        $this->emailAddress = '';
+    }
 
     public function getLoginName(): string
     {

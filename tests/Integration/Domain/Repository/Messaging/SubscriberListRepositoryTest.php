@@ -8,6 +8,7 @@ use DateTime;
 use Doctrine\ORM\Tools\SchemaTool;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Messaging\SubscriberList;
+use PhpList\Core\Domain\Model\Subscription\Subscriber;
 use PhpList\Core\Domain\Model\Subscription\Subscription;
 use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository;
@@ -31,9 +32,10 @@ class SubscriberListRepositoryTest extends KernelTestCase
     use DatabaseTestTrait;
     use SimilarDatesAssertionTrait;
 
-    private ?AdministratorRepository $administratorRepository = null;
-    private ?SubscriberRepository $subscriberRepository = null;
-    private ?SubscriptionRepository $subscriptionRepository = null;
+    private SubscriberListRepository $subscriberListRepository;
+    private AdministratorRepository $administratorRepository;
+    private SubscriberRepository $subscriberRepository;
+    private SubscriptionRepository $subscriptionRepository;
 
     protected function setUp(): void
     {
@@ -161,16 +163,15 @@ class SubscriberListRepositoryTest extends KernelTestCase
 
     public function testFindsAssociatedSubscriptions()
     {
-        $this->loadFixtures([SubscriptionFixture::class]);
+        $this->loadFixtures([SubscriberListFixture::class, SubscriberFixture::class, SubscriptionFixture::class]);
 
         $id = 2;
-        /** @var SubscriberList $model */
-        $model = $this->subscriberListRepository->find($id);
-        $subscriptions = $model->getSubscriptions();
+        /** @var Subscription[] $model */
+        $subscriptions = $this->subscriptionRepository->findBySubscriberList($id);
 
-        self::assertFalse($subscriptions->isEmpty());
+        self::assertNotEmpty($subscriptions);
         /** @var Subscription $firstSubscription */
-        $firstSubscription = $subscriptions->first();
+        $firstSubscription = $subscriptions[0];
         self::assertInstanceOf(Subscription::class, $firstSubscription);
         $expectedSubscriberId = 1;
         self::assertSame($expectedSubscriberId, $firstSubscription->getSubscriber()->getId());
@@ -181,14 +182,13 @@ class SubscriberListRepositoryTest extends KernelTestCase
         $this->loadFixtures([SubscriberListFixture::class, SubscriberFixture::class, SubscriptionFixture::class]);
 
         $id = 2;
-        /** @var SubscriberList $model */
-        $model = $this->subscriberListRepository->find($id);
-        $subscribers = $model->getSubscribers();
+        /** @var Subscriber[] $model */
+        $subscribers = $this->subscriberRepository->getSubscribersBySubscribedListId($id);
 
         $expectedSubscriber = $this->subscriberRepository->find(1);
         $unexpectedSubscriber = $this->subscriberRepository->find(3);
-        self::assertTrue($subscribers->contains($expectedSubscriber));
-        self::assertFalse($subscribers->contains($unexpectedSubscriber));
+        self::assertTrue(in_array($expectedSubscriber, $subscribers, true));
+        self::assertFalse(in_array($unexpectedSubscriber, $subscribers, true));
     }
 
     public function testRemoveAlsoRemovesAssociatedSubscriptions()
@@ -199,14 +199,16 @@ class SubscriberListRepositoryTest extends KernelTestCase
 
         $id = 2;
         /** @var SubscriberList $model */
-        $model = $this->subscriberListRepository->find($id);
+        $subscriberList = $this->subscriberListRepository->findWithSubscription($id);
 
-        $numberOfAssociatedSubscriptions = count($model->getSubscriptions());
+        $numberOfAssociatedSubscriptions = count($subscriberList->getSubscriptions());
         self::assertGreaterThan(0, $numberOfAssociatedSubscriptions);
 
-        $this->subscriberListRepository->remove($model);
+        $this->entityManager->remove($subscriberList);
+        $this->entityManager->flush();
 
         $newNumberOfSubscriptions = count($this->subscriptionRepository->findAll());
+
         $numberOfRemovedSubscriptions = $initialNumberOfSubscriptions - $newNumberOfSubscriptions;
         self::assertSame($numberOfAssociatedSubscriptions, $numberOfRemovedSubscriptions);
     }

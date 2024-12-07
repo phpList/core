@@ -26,6 +26,10 @@ use Symfony\Component\Serializer\Attribute\Groups;
  */
 #[ORM\Entity(repositoryClass: "PhpList\Core\Domain\Repository\Subscription\SubscriberRepository")]
 #[ORM\Table(name: "phplist_user_user")]
+#[ORM\Index(name: "idxuniqid", columns: ["uniqid"])]
+#[ORM\Index(name: "enteredindex", columns: ["entered"])]
+#[ORM\Index(name: "confidx", columns: ["confirmed"])]
+#[ORM\Index(name: "blidx", columns: ["blacklisted"])]
 #[ORM\HasLifecycleCallbacks]
 class Subscriber implements DomainModel, Identity, CreationDate, ModificationDate
 {
@@ -84,20 +88,14 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     #[ORM\OneToMany(
         targetEntity: "PhpList\Core\Domain\Model\Subscription\Subscription",
         mappedBy: "subscriber",
-        cascade: ["remove"]
+        cascade: ["remove"],
+        orphanRemoval: true,
     )]
     private Collection $subscriptions;
-
-    #[ORM\ManyToMany(
-        targetEntity: "PhpList\Core\Domain\Model\Messaging\SubscriberList",
-        mappedBy: "subscribers"
-    )]
-    private Collection $subscribedLists;
 
     public function __construct()
     {
         $this->subscriptions = new ArrayCollection();
-        $this->subscribedLists = new ArrayCollection();
         $this->extraData = '';
     }
 
@@ -192,23 +190,40 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         $this->extraData = $extraData;
     }
 
+    /**
+     * @return Collection<Subscription>
+     */
     public function getSubscriptions(): Collection
     {
         return $this->subscriptions;
     }
 
-    public function setSubscriptions(Collection $subscriptions): void
+    public function addSubscription(Subscription $subscription): self
     {
-        $this->subscriptions = $subscriptions;
+        if (!$this->subscriptions->contains($subscription)) {
+            $this->subscriptions->add($subscription);
+            $subscription->setSubscriber($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSubscription(Subscription $subscription): self
+    {
+        if ($this->subscriptions->removeElement($subscription)) {
+            $subscription->setSubscriber(null);
+        }
+
+        return $this;
     }
 
     public function getSubscribedLists(): Collection
     {
-        return $this->subscribedLists;
-    }
+        $result = new ArrayCollection();
+        foreach ($this->subscriptions as $subscription) {
+            $result->add($subscription->getSubscriberList());
+        }
 
-    public function setSubscribedLists(Collection $subscribedLists): void
-    {
-        $this->subscribedLists = $subscribedLists;
+        return $result;
     }
 }

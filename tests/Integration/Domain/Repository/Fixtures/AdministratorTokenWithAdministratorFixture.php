@@ -30,16 +30,20 @@ class AdministratorTokenWithAdministratorFixture extends Fixture
         }
 
         $headers = fgetcsv($handle);
+        $adminRepository = $manager->getRepository(Administrator::class);
 
         while (($data = fgetcsv($handle)) !== false) {
             $row = array_combine($headers, $data);
 
-            $admin = new Administrator();
-            $this->setSubjectId($admin,(int)$data['adminid']);
-            $manager->persist($admin);
+            $admin = $adminRepository->find($row['adminid']);
+            if ($admin === null) {
+                $admin = new Administrator();
+                $this->setSubjectId($admin,(int)$row['adminid']);
+                $manager->persist($admin);
+            }
 
             $adminToken = new AdministratorToken();
-            $this->setSubjectId($adminToken,(int)$data['id']);
+            $this->setSubjectId($adminToken,(int)$row['id']);
             $adminToken->setKey($row['value']);
             $this->setSubjectProperty($adminToken,'expiry', new DateTime($row['expires']));
             $this->setSubjectProperty($adminToken, 'creationDate', (bool) $row['entered']);

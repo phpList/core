@@ -48,7 +48,8 @@
         "symfony/form": "^6.4",
         "symfony/validator": "^6.4",
         "doctrine/doctrine-fixtures-bundle": "^3.7",
-        "doctrine/instantiator": "^2.0"
+        "doctrine/instantiator": "^2.0",
+        "masterminds/html5": "^2.9"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
@@ -101,7 +102,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-ISSUE-337": "v5.0.x-dev"
+            "dev-master": "5.0.x-dev"
         },
         "symfony-app-dir": "",
         "symfony-bin-dir": "bin",

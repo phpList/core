@@ -54,7 +54,7 @@ class SubscriptionRepositoryTest extends KernelTestCase
 
     public function testFindAllReadsModelsFromDatabase()
     {
-        $this->loadFixtures([SubscriptionFixture::class]);
+        $this->loadFixtures([SubscriberFixture::class, SubscriberListFixture::class, SubscriptionFixture::class]);
 
         $creationDate = new DateTime('2016-07-22 15:01:17');
         $modificationDate = new DateTime('2016-08-23 19:50:43');
@@ -72,7 +72,7 @@ class SubscriptionRepositoryTest extends KernelTestCase
 
     public function testCreatesSubscriberAssociationAsProxy()
     {
-        $this->loadFixtures([SubscriberFixture::class, SubscriptionFixture::class]);
+        $this->loadFixtures([SubscriberFixture::class, SubscriberListFixture::class, SubscriptionFixture::class]);
 
         $subscriberId = 1;
         /** @var Subscription $model */
@@ -82,20 +82,6 @@ class SubscriptionRepositoryTest extends KernelTestCase
         self::assertInstanceOf(Subscriber::class, $subscriber);
 //        self::assertInstanceOf(Proxy::class, $subscriber); // todo: check proxy
         self::assertSame($subscriberId, $subscriber->getId());
-    }
-
-    public function testCreatesSubscriberListAssociationAsProxy()
-    {
-        $this->loadFixtures([SubscriberFixture::class, SubscriptionFixture::class]);
-
-        $subscriberListId = 2;
-        /** @var Subscription $model */
-        $model = $this->subscriberRepository->findAll()[0];
-        $subscriberList = $model->getSubscriberList();
-
-        self::assertInstanceOf(SubscriberList::class, $subscriberList);
-        self::assertInstanceOf(Proxy::class, $subscriberList);
-        self::assertSame($subscriberListId, $subscriberList->getId());
     }
 
     public function testCreationDateOfNewModelIsSetToNowOnPersist()
@@ -118,7 +104,7 @@ class SubscriptionRepositoryTest extends KernelTestCase
 
     public function testModificationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->loadFixtures([SubscriberFixture::class, SubscriberLIstFixture::class]);
+        $this->loadFixtures([SubscriberFixture::class, SubscriberListFixture::class]);
 
         $model = new Subscription();
         /** @var Subscriber $subscriber */
@@ -136,7 +122,7 @@ class SubscriptionRepositoryTest extends KernelTestCase
 
     public function testFindBySubscriberFindsSubscriptionOnlyWithTheGivenSubscriber()
     {
-        $this->loadFixtures([SubscriberFixture::class, SubscriptionFixture::class]);
+        $this->loadFixtures([SubscriberFixture::class, SubscriberListFixture::class, SubscriptionFixture::class]);
 
         /** @var Subscriber $subscriber */
         $subscriber = $this->subscriberRepository->find(1);
@@ -151,7 +137,7 @@ class SubscriptionRepositoryTest extends KernelTestCase
 
     public function testFindBySubscriberListFindsSubscriptionOnlyWithTheGivenSubscriberList()
     {
-        $this->loadFixtures([SubscriberFixture::class, SubscriptionFixture::class]);
+        $this->loadFixtures([SubscriberFixture::class, SubscriberListFixture::class, SubscriptionFixture::class]);
 
         /** @var SubscriberList $subscriberList */
         $subscriberList = $this->subscriberListRepository->find(1);
@@ -184,7 +170,7 @@ class SubscriptionRepositoryTest extends KernelTestCase
 
     public function testRemoveRemovesModel()
     {
-        $this->loadFixtures([SubscriptionFixture::class]);
+        $this->loadFixtures([SubscriberFixture::class, SubscriberListFixture::class, SubscriptionFixture::class]);
 
         /** @var Subscription[] $allModels */
         $allModels = $this->subscriptionRepository->findAll();

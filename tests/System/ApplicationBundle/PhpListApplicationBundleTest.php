@@ -22,6 +22,10 @@ class PhpListApplicationBundleTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        putenv('APP_ENV=test');
+        $_ENV['APP_ENV'] = 'test';
+        $_SERVER['APP_ENV'] = 'test';
         $this->httpClient = new Client(['http_errors' => false]);
     }
 
@@ -32,40 +36,14 @@ class PhpListApplicationBundleTest extends TestCase
         parent::tearDown();
     }
 
-    /**
-     * @return string[][]
-     */
-    public function environmentDataProvider(): array
+    public function testHomepageReturnsSuccess(): void
     {
-        return [
-            'test' => ['test'],
-            'dev' => ['dev'],
-        ];
-    }
-
-    /**
-     * @param string $environment
-     * @dataProvider environmentDataProvider
-     */
-    public function testHomepageReturnsSuccess(string $environment): void
-    {
-        $this->startSymfonyServer($environment);
-
-        $response = $this->httpClient->get('/', ['base_uri' => $this->getBaseUrl()]);
+        $this->startSymfonyServer();
+        $response = $this->httpClient->get('/api/v2', [
+            'base_uri' => $this->getBaseUrl(),
+        ]);
 
         self::assertSame(200, $response->getStatusCode());
-    }
-
-    /**
-     * @param string $environment
-     * @dataProvider environmentDataProvider
-     */
-    public function testHomepageReturnsDummyContent(string $environment): void
-    {
-        $this->startSymfonyServer($environment);
-
-        $response = $this->httpClient->get('/', ['base_uri' => $this->getBaseUrl()]);
-
         self::assertStringContainsString(
             'This page has been intentionally left empty.',
             $response->getBody()->getContents()

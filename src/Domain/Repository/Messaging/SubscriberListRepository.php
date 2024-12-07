@@ -17,4 +17,15 @@ use PhpList\Core\Domain\Repository\AbstractRepository;
  */
 class SubscriberListRepository extends AbstractRepository
 {
+    public function findWithSubscription($id)
+    {
+        return $this->createQueryBuilder('sl')
+            ->innerJoin('sl.subscriptions', 's')
+            ->addSelect('s')
+            ->where('sl.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
 }

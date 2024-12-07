@@ -32,8 +32,6 @@ class DefaultControllerTest extends WebTestCase
 
         $response = $client->getResponse();
 
-        dump($response->getContent());
-
         self::assertTrue($response->isSuccessful());
         self::assertStringContainsString(
             'This page has been intentionally left empty.',
