@@ -8,7 +8,7 @@ jobs:
       DB_DATABASE: phplist
       DB_USERNAME: root
       DB_PASSWORD: phplist
-      BROADCAST_DRIVER: log  
+      BROADCAST_DRIVER: log
     services:
       mysql:
         image: mysql:5.7
@@ -27,11 +27,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup PHP, with composer and extensions
-        uses: shivammathur/setup-php@v2 #https://github.com/shivammathur/setup-php
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
           extensions: mbstring, dom, fileinfo, mysql
           coverage: xdebug #optional
+      - name: Install Symfony CLI
+        run: |
+          curl -sS https://get.symfony.com/cli/installer | bash
+          mv $HOME/.symfony*/bin/symfony /usr/local/bin/symfony
+          symfony version
       - name: Start mysql service
         run: sudo /etc/init.d/mysql start
       - name: Verify MySQL connection on host
@@ -45,8 +50,6 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          # Use composer.json for key, if composer.lock is not committed.
-          # key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
       - name: Install Composer dependencies
@@ -56,9 +59,9 @@ jobs:
       - name: Linting all php files
         run: find src/ tests/ public/ -name ''*.php'' -print0 | xargs -0 -n 1 -P 4 php -l; php -l bin/*;
       - name: Run units tests with phpunit
-        run: vendor/bin/phpunit tests/Unit/ 
+        run: vendor/bin/phpunit tests/Unit/
       - name: Run integration tests with phpunit
-        run: | 
+        run: |
           export PHPLIST_DATABASE_NAME=${{ env.DB_DATABASE }}
           export PHPLIST_DATABASE_USER=${{ env.DB_USERNAME }}
           export PHPLIST_DATABASE_PASSWORD=${{ env.DB_PASSWORD }}
