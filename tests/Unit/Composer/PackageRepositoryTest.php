@@ -9,6 +9,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryManager;
 use PhpList\Core\Composer\PackageRepository;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Composer\Repository\InstalledRepositoryInterface;
 
@@ -20,8 +21,8 @@ use Composer\Repository\InstalledRepositoryInterface;
 class PackageRepositoryTest extends TestCase
 {
     private PackageRepository $subject;
-    private Composer $composer;
-    private InstalledRepositoryInterface $localRepository;
+    private Composer|MockObject $composer;
+    private InstalledRepositoryInterface|MockObject $localRepository;
 
     protected function setUp(): void
     {
@@ -30,10 +31,16 @@ class PackageRepositoryTest extends TestCase
         $this->composer = $this->createMock(Composer::class);
 
         $repositoryManager = $this->createMock(RepositoryManager::class);
-        $this->composer->method('getRepositoryManager')->willReturn($repositoryManager);
+        $this->composer
+            ->expects($this->any())
+            ->method('getRepositoryManager')
+            ->willReturn($repositoryManager);
 
         $this->localRepository = $this->createMock(InstalledRepositoryInterface::class);
-        $repositoryManager->method('getLocalRepository')->willReturn($this->localRepository);
+        $repositoryManager
+            ->expects($this->any())
+            ->method('getLocalRepository')
+            ->willReturn($this->localRepository);
 
         $this->subject->injectComposer($this->composer);
 
@@ -43,12 +50,12 @@ class PackageRepositoryTest extends TestCase
     public function testFindAllIncludesDependencies(): void
     {
         $rootPackage = $this->createMock(RootPackageInterface::class);
-        $this->composer->method('getPackage')->willReturn($rootPackage);
+        $this->composer->expects($this->any())->method('getPackage')->willReturn($rootPackage);
 
         $dependency = $this->createMock(PackageInterface::class);
-        $dependency->method('getName')->willReturn('phplist/core');
+        $dependency->expects($this->any())->method('getName')->willReturn('phplist/core');
 
-        $this->localRepository->method('getPackages')->willReturn([$dependency]);
+        $this->localRepository->expects($this->any())->method('getPackages')->willReturn([$dependency]);
 
         $result = $this->subject->findAll();
         self::assertContains($dependency, $result);
@@ -57,9 +64,9 @@ class PackageRepositoryTest extends TestCase
     public function testFindAllIncludesRootPackage(): void
     {
         $rootPackage = $this->createMock(RootPackageInterface::class);
-        $this->composer->method('getPackage')->willReturn($rootPackage);
+        $this->composer->expects($this->any())->method('getPackage')->willReturn($rootPackage);
 
-        $this->localRepository->method('getPackages')->willReturn([]);
+        $this->localRepository->expects($this->any())->method('getPackages')->willReturn([]);
 
         $result = $this->subject->findAll();
         self::assertContains($rootPackage, $result);
@@ -68,15 +75,18 @@ class PackageRepositoryTest extends TestCase
     public function testFindAllExcludesDuplicates(): void
     {
         $rootPackage = $this->createMock(RootPackageInterface::class);
-        $this->composer->method('getPackage')->willReturn($rootPackage);
+        $this->composer->expects($this->any())->method('getPackage')->willReturn($rootPackage);
 
         $dependency = $this->createMock(PackageInterface::class);
-        $dependency->method('getName')->willReturn('phplist/core');
+        $dependency->expects($this->any())->method('getName')->willReturn('phplist/core');
 
         $duplicateDependency = $this->createMock(PackageInterface::class);
-        $duplicateDependency->method('getName')->willReturn('phplist/core');
+        $duplicateDependency->expects($this->any())->method('getName')->willReturn('phplist/core');
 
-        $this->localRepository->method('getPackages')->willReturn([$dependency, $duplicateDependency]);
+        $this->localRepository
+            ->expects($this->any())
+            ->method('getPackages')
+            ->willReturn([$dependency, $duplicateDependency]);
 
         $result = $this->subject->findAll();
         self::assertNotContains($duplicateDependency, $result);
@@ -85,12 +95,12 @@ class PackageRepositoryTest extends TestCase
     public function testFindModulesForPhpListModuleRootPackageIncludesIt(): void
     {
         $rootPackage = $this->createMock(RootPackageInterface::class);
-        $rootPackage->method('getName')->willReturn('phplist/base-installation');
-        $rootPackage->method('getType')->willReturn('phplist-module');
+        $rootPackage->expects($this->any())->method('getName')->willReturn('phplist/base-installation');
+        $rootPackage->expects($this->any())->method('getType')->willReturn('phplist-module');
 
-        $this->composer->method('getPackage')->willReturn($rootPackage);
+        $this->composer->expects($this->any())->method('getPackage')->willReturn($rootPackage);
 
-        $this->localRepository->method('getPackages')->willReturn([]);
+        $this->localRepository->expects($this->any())->method('getPackages')->willReturn([]);
 
         $result = $this->subject->findModules();
         self::assertContains($rootPackage, $result);
@@ -99,13 +109,13 @@ class PackageRepositoryTest extends TestCase
     public function testFindModulesForPhpListModuleDependencyReturnsIt(): void
     {
         $rootPackage = $this->createMock(RootPackageInterface::class);
-        $this->composer->method('getPackage')->willReturn($rootPackage);
+        $this->composer->expects($this->any())->method('getPackage')->willReturn($rootPackage);
 
         $dependency = $this->createMock(PackageInterface::class);
-        $dependency->method('getName')->willReturn('phplist/core');
-        $dependency->method('getType')->willReturn('phplist-module');
+        $dependency->expects($this->any())->method('getName')->willReturn('phplist/core');
+        $dependency->expects($this->any())->method('getType')->willReturn('phplist-module');
 
-        $this->localRepository->method('getPackages')->willReturn([$dependency]);
+        $this->localRepository->expects($this->any())->method('getPackages')->willReturn([$dependency]);
 
         $result = $this->subject->findModules();
         self::assertContains($dependency, $result);
@@ -127,12 +137,12 @@ class PackageRepositoryTest extends TestCase
     public function testFindModulesForNonPhpListModuleRootPackageIgnoresIt(string $type): void
     {
         $rootPackage = $this->createMock(RootPackageInterface::class);
-        $rootPackage->method('getName')->willReturn('phplist/base-installation');
-        $rootPackage->method('getType')->willReturn($type);
+        $rootPackage->expects($this->any())->method('getName')->willReturn('phplist/base-installation');
+        $rootPackage->expects($this->any())->method('getType')->willReturn($type);
 
-        $this->composer->method('getPackage')->willReturn($rootPackage);
+        $this->composer->expects($this->any())->method('getPackage')->willReturn($rootPackage);
 
-        $this->localRepository->method('getPackages')->willReturn([]);
+        $this->localRepository->expects($this->any())->method('getPackages')->willReturn([]);
 
         $result = $this->subject->findModules();
         self::assertNotContains($rootPackage, $result);
@@ -147,10 +157,10 @@ class PackageRepositoryTest extends TestCase
         $this->composer->method('getPackage')->willReturn($rootPackage);
 
         $dependency = $this->createMock(PackageInterface::class);
-        $dependency->method('getName')->willReturn('phplist/test');
-        $dependency->method('getType')->willReturn($type);
+        $dependency->expects($this->any())->method('getName')->willReturn('phplist/test');
+        $dependency->expects($this->any())->method('getType')->willReturn($type);
 
-        $this->localRepository->method('getPackages')->willReturn([$dependency]);
+        $this->localRepository->expects($this->any())->method('getPackages')->willReturn([$dependency]);
 
         $result = $this->subject->findModules();
         self::assertNotContains($dependency, $result);

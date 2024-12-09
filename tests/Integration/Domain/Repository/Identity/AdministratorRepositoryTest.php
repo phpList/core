@@ -42,7 +42,7 @@ class AdministratorRepositoryTest extends KernelTestCase
 
     public function testFindReadsModelFromDatabase(): void
     {
-        /** @var $actual Administrator */
+        /** @var Administrator $actual */
         $actual = $this->repository->find(1);
 
         $this->assertNotNull($actual);

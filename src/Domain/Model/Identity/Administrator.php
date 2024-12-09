@@ -127,12 +127,4 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     {
         $this->superUser = $superUser;
     }
-
-    #[ORM\PrePersist]
-    public function setCreationDate(): void
-    {
-        if ($this->creationDate === null) {
-            $this->creationDate = new DateTime();
-        }
-    }
 }

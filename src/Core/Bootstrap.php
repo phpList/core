@@ -146,7 +146,7 @@ class Bootstrap
      *
      * @return Bootstrap fluent interface
      */
-    public function ensureDevelopmentOrTestingEnvironment(): static
+    public function ensureDevelopmentOrTestingEnvironment(): self
     {
         if (isset($_ENV['APP_ENV']) && $_ENV['APP_ENV'] === Environment::TESTING) {
             return $this;

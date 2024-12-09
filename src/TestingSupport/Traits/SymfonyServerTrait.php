@@ -73,7 +73,7 @@ trait SymfonyServerTrait
     private function waitForServerLockFileToAppear(): void
     {
         $currentWaitTime = 0;
-        while (!$this->lockFileExists() && $currentWaitTime < static::$maximumWaitTimeForServerLockFile) {
+        while (!$this->lockFileExists() && $currentWaitTime < self::$maximumWaitTimeForServerLockFile) {
             $process = new Process(['symfony', 'server:status', '--no-ansi']);
             $process->run();
 
@@ -84,13 +84,13 @@ trait SymfonyServerTrait
                     file_put_contents(self::$lockFileName, trim($port));
                 }
             }
-            usleep(static::$waitTimeBetweenServerCommands);
-            $currentWaitTime += static::$waitTimeBetweenServerCommands;
+            usleep(self::$waitTimeBetweenServerCommands);
+            $currentWaitTime += self::$waitTimeBetweenServerCommands;
         }
 
         if (!$this->lockFileExists()) {
             throw new RuntimeException(
-                'There is no symfony server lock file "' . static::$lockFileName . '".',
+                'There is no symfony server lock file "' . self::$lockFileName . '".',
                 1516625236
             );
         }

@@ -166,11 +166,11 @@ class SubscriberListRepositoryTest extends KernelTestCase
         $this->loadFixtures([SubscriberListFixture::class, SubscriberFixture::class, SubscriptionFixture::class]);
 
         $id = 2;
-        /** @var Subscription[] $model */
-        $subscriptions = $this->subscriptionRepository->findBySubscriberList($id);
+        $subscriber = $this->subscriberRepository->find($id);
+        /** @var Subscription[] $subscriptions */
+        $subscriptions = $this->subscriptionRepository->findBySubscriberList($subscriber);
 
         self::assertNotEmpty($subscriptions);
-        /** @var Subscription $firstSubscription */
         $firstSubscription = $subscriptions[0];
         self::assertInstanceOf(Subscription::class, $firstSubscription);
         $expectedSubscriberId = 1;
@@ -182,7 +182,7 @@ class SubscriberListRepositoryTest extends KernelTestCase
         $this->loadFixtures([SubscriberListFixture::class, SubscriberFixture::class, SubscriptionFixture::class]);
 
         $id = 2;
-        /** @var Subscriber[] $model */
+        /** @var Subscriber[] $subscribers */
         $subscribers = $this->subscriberRepository->getSubscribersBySubscribedListId($id);
 
         $expectedSubscriber = $this->subscriberRepository->find(1);
@@ -198,7 +198,7 @@ class SubscriberListRepositoryTest extends KernelTestCase
         $initialNumberOfSubscriptions = count($this->subscriptionRepository->findAll());
 
         $id = 2;
-        /** @var SubscriberList $model */
+        /** @var SubscriberList $subscriberList */
         $subscriberList = $this->subscriberListRepository->findWithSubscription($id);
 
         $numberOfAssociatedSubscriptions = count($subscriberList->getSubscriptions());

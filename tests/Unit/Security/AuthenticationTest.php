@@ -8,6 +8,7 @@ use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Identity\AdministratorToken;
 use PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository;
 use PhpList\Core\Security\Authentication;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -19,7 +20,7 @@ use Symfony\Component\HttpFoundation\Request;
 class AuthenticationTest extends TestCase
 {
     private Authentication $subject;
-    private AdministratorTokenRepository $tokenRepository;
+    private AdministratorTokenRepository|MockObject $tokenRepository;
 
     protected function setUp(): void
     {
@@ -39,6 +40,7 @@ class AuthenticationTest extends TestCase
         $token->setAdministrator($administrator);
 
         $this->tokenRepository
+            ->expects($this->any())
             ->method('findOneUnexpiredByKey')
             ->with($apiKey)
             ->willReturn($token);
@@ -55,6 +57,7 @@ class AuthenticationTest extends TestCase
         $token = new AdministratorToken();
 
         $this->tokenRepository
+            ->expects($this->any())
             ->method('findOneUnexpiredByKey')
             ->with($apiKey)
             ->willReturn($token);
@@ -69,6 +72,7 @@ class AuthenticationTest extends TestCase
         $request->headers->add(['php-auth-pw' => $apiKey]);
 
         $this->tokenRepository
+            ->expects($this->any())
             ->method('findOneUnexpiredByKey')
             ->with($apiKey)
             ->willReturn(null);

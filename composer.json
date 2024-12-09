@@ -55,7 +55,7 @@
         "phpunit/phpunit": "^9.5",
         "guzzlehttp/guzzle": "^6.3.0",
         "squizlabs/php_codesniffer": "^3.2.0",
-        "phpstan/phpstan": "^0.12.57",
+        "phpstan/phpstan": "^1.10",
         "nette/caching": "^3.0.0",
         "nikic/php-parser": "^4.19.1",
         "phpmd/phpmd": "^2.6.0",

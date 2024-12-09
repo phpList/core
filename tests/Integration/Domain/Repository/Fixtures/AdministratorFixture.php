@@ -36,13 +36,13 @@ class AdministratorFixture extends Fixture
             $this->setSubjectId($admin, (int)$row['id']);
             $admin->setLoginName($row['loginname']);
             $admin->setEmailAddress($row['email']);
-            $this->setSubjectProperty($admin,'creationDate', new DateTime($row['created']));
             $admin->setPasswordHash($row['password']);
-            $this->setSubjectProperty($admin,'passwordChangeDate', new DateTime($row['passwordchanged']));
             $admin->setDisabled((bool) $row['disabled']);
             $admin->setSuperUser((bool) $row['superuser']);
 
             $manager->persist($admin);
+            $this->setSubjectProperty($admin,'creationDate', new DateTime($row['created']));
+            $this->setSubjectProperty($admin,'passwordChangeDate', new DateTime($row['passwordchanged']));
         }
 
         fclose($handle);

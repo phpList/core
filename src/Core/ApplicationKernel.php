@@ -124,14 +124,6 @@ class ApplicationKernel extends Kernel
     }
 
     /**
-     * @return bool
-     */
-    private function shouldHaveDevelopmentBundles(): bool
-    {
-        return $this->environment !== Environment::PRODUCTION;
-    }
-
-    /**
      * Reads the bundles from the bundle configuration file and instantiates them.
      *
      * @return Bundle[]
