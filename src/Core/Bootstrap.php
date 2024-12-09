@@ -54,6 +54,8 @@ class Bootstrap
      */
     private ApplicationStructure $applicationStructure;
 
+    private ErrorHandler $errorHandler;
+
     /**
      * Protected constructor to avoid direct instantiation of this class.
      *
@@ -62,6 +64,7 @@ class Bootstrap
     protected function __construct()
     {
         $this->applicationStructure = new ApplicationStructure();
+        $this->errorHandler = new ErrorHandler();
     }
 
     /**
@@ -219,7 +222,7 @@ class Bootstrap
     private function configureDebugging(): Bootstrap
     {
         if ($this->isDebugEnabled()) {
-            ErrorHandler::register();
+            $this->errorHandler->register();
         }
 
         return $this;

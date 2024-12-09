@@ -19,8 +19,8 @@ trait SymfonyServerTrait
     private ?Process $serverProcess = null;
 
     private static string $lockFileName = '.web-server-pid';
-    private static int $maximumWaitTimeForServerLockFile = 5000000;
-    private static int $waitTimeBetweenServerCommands = 50000;
+    private static int $lockWaitTimeout = 5000000;
+    private static int $serverCommandTimeout = 50000;
 
     private static ?ApplicationStructure $applicationStructure = null;
 
@@ -46,9 +46,9 @@ trait SymfonyServerTrait
         );
         $this->serverProcess->start();
 
-        usleep(self::$waitTimeBetweenServerCommands);
+        usleep(self::$serverCommandTimeout);
         $this->waitForServerLockFileToAppear();
-        usleep(self::$waitTimeBetweenServerCommands);
+        usleep(self::$serverCommandTimeout);
     }
 
     private function lockFileExists(): bool
@@ -73,7 +73,7 @@ trait SymfonyServerTrait
     private function waitForServerLockFileToAppear(): void
     {
         $currentWaitTime = 0;
-        while (!$this->lockFileExists() && $currentWaitTime < self::$maximumWaitTimeForServerLockFile) {
+        while (!$this->lockFileExists() && $currentWaitTime < self::$lockWaitTimeout) {
             $process = new Process(['symfony', 'server:status', '--no-ansi']);
             $process->run();
 
@@ -84,8 +84,8 @@ trait SymfonyServerTrait
                     file_put_contents(self::$lockFileName, trim($port));
                 }
             }
-            usleep(self::$waitTimeBetweenServerCommands);
-            $currentWaitTime += self::$waitTimeBetweenServerCommands;
+            usleep(self::$serverCommandTimeout);
+            $currentWaitTime += self::$serverCommandTimeout;
         }
 
         if (!$this->lockFileExists()) {

@@ -20,11 +20,11 @@ class AdministratorRepository extends AbstractRepository
     private HashGenerator $hashGenerator;
 
     public function __construct(
-        EntityManagerInterface $em,
+        EntityManagerInterface $entityManager,
         ClassMetadata $class,
         HashGenerator $hashGenerator = null
     ) {
-        parent::__construct($em, $class);
+        parent::__construct($entityManager, $class);
         $this->hashGenerator = $hashGenerator ?? new HashGenerator();
     }
 
