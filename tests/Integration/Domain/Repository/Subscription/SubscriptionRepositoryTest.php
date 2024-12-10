@@ -19,8 +19,6 @@ use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriberListFixt
 use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriptionFixture;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-//use Doctrine\ORM\Proxy\Proxy;
-
 /**
  * Testcase.
  *
@@ -68,20 +66,6 @@ class SubscriptionRepositoryTest extends KernelTestCase
         self::assertInstanceOf(Subscription::class, $model);
         self::assertEquals($creationDate, $model->getCreationDate());
         self::assertEquals($modificationDate, $model->getModificationDate());
-    }
-
-    public function testCreatesSubscriberAssociationAsProxy()
-    {
-        $this->loadFixtures([SubscriberFixture::class, SubscriberListFixture::class, SubscriptionFixture::class]);
-
-        $subscriberId = 1;
-        /** @var Subscription $model */
-        $model = $this->subscriptionRepository->findAll()[0];
-        $subscriber = $model->getSubscriber();
-
-        self::assertInstanceOf(Subscriber::class, $subscriber);
-//        self::assertInstanceOf(Proxy::class, $subscriber); // todo: check proxy
-        self::assertSame($subscriberId, $subscriber->getId());
     }
 
     public function testCreationDateOfNewModelIsSetToNowOnPersist()

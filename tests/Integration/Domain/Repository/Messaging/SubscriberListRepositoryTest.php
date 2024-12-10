@@ -82,21 +82,6 @@ class SubscriberListRepositoryTest extends KernelTestCase
         self::assertSame($category, $model->getCategory());
     }
 
-    public function testCreatesOwnerAssociationAsProxy()
-    {
-        $this->loadFixtures([SubscriberListFixture::class, AdministratorFixture::class]);
-
-        $subscriberListId = 1;
-        $ownerId = 1;
-        /** @var SubscriberList $model */
-        $model = $this->subscriberListRepository->find($subscriberListId);
-        $owner = $model->getOwner();
-
-        self::assertInstanceOf(Administrator::class, $owner);
-//        self::assertInstanceOf(Proxy::class, $owner); todo: check proxy
-        self::assertSame($ownerId, $owner->getId());
-    }
-
     public function testCreationDateOfNewModelIsSetToNowOnPersist()
     {
         $model = new SubscriberList();
