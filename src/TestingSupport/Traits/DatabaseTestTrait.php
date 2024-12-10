@@ -42,6 +42,8 @@ trait DatabaseTestTrait
 
     /**
      * Initializes the Bootstrap and Doctrine EntityManager.
+     *
+     * @throws RuntimeException
      */
     private function initializeBootstrap(): void
     {
@@ -60,6 +62,7 @@ trait DatabaseTestTrait
      * Loads data fixtures into the database.
      *
      * @param array $fixtures List of fixture classes to load
+     * @throws InvalidArgumentException
      */
     protected function loadFixtures(array $fixtures): void
     {
@@ -89,7 +92,10 @@ trait DatabaseTestTrait
             if (!$schemaManager->tablesExist([$tableName])) {
                 try {
                     $schemaTool->createSchema([$classMetadata]);
-                } catch (ToolsException $e){}
+                } catch (ToolsException $e) {
+                    // nothing to do
+                    echo $e->getMessage();
+                }
             }
         }
     }

@@ -27,10 +27,10 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
  * selected lists (as the owner), send campaigns to these lists and edit subscribers.
  * @author Oliver Klee <oliver@phplist.com>
  */
-#[ORM\Entity(repositoryClass: "PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository")]
-#[ORM\Table(name: "phplist_list")]
-#[ORM\Index(name: "nameidx", columns: ["name"])]
-#[ORM\Index(name: "listorderidx", columns: ["listorder"])]
+#[ORM\Entity(repositoryClass: 'PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository')]
+#[ORM\Table(name: 'phplist_list')]
+#[ORM\Index(name: 'nameidx', columns: ['name'])]
+#[ORM\Index(name: 'listorderidx', columns: ['listorder'])]
 #[ORM\HasLifecycleCallbacks]
 class SubscriberList implements DomainModel, Identity, CreationDate, ModificationDate
 {
@@ -39,53 +39,53 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     use ModificationDateTrait;
 
     #[ORM\Column]
-    #[SerializedName("name")]
+    #[SerializedName('name')]
     #[Groups(['SubscriberList'])]
     private string $name = '';
 
     #[ORM\Column]
-    #[SerializedName("description")]
+    #[SerializedName('description')]
     #[Groups(['SubscriberList'])]
     private string $description = '';
 
-    #[ORM\Column(name: "entered", type: "datetime", nullable: true)]
-    #[SerializedName("creation_date")]
+    #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
+    #[SerializedName('creation_date')]
     #[Groups(['SubscriberList'])]
     protected ?DateTime $creationDate = null;
 
-    #[ORM\Column(name: "modified", type: "datetime")]
+    #[ORM\Column(name: 'modified', type: 'datetime')]
     #[Ignore]
     protected ?DateTime $modificationDate = null;
 
-    #[ORM\Column(name: "listorder", type: "integer")]
-    #[SerializedName("list_position")]
+    #[ORM\Column(name: 'listorder', type: 'integer')]
+    #[SerializedName('list_position')]
     #[Groups(['SubscriberList'])]
     private ?int $listPosition;
 
-    #[ORM\Column(name: "prefix")]
-    #[SerializedName("subject_prefix")]
+    #[ORM\Column(name: 'prefix')]
+    #[SerializedName('subject_prefix')]
     #[Groups(['SubscriberList'])]
     private ?string $subjectPrefix;
 
-    #[ORM\Column(name: "active", type: "boolean")]
-    #[SerializedName("public")]
+    #[ORM\Column(name: 'active', type: 'boolean')]
+    #[SerializedName('public')]
     #[Groups(['SubscriberList'])]
     private bool $public;
 
     #[ORM\Column]
-    #[SerializedName("category")]
+    #[SerializedName('category')]
     #[Groups(['SubscriberList'])]
     private string $category;
 
-    #[ORM\ManyToOne(targetEntity: "PhpList\Core\Domain\Model\Identity\Administrator")]
-    #[ORM\JoinColumn(name: "owner")]
+    #[ORM\ManyToOne(targetEntity: 'PhpList\Core\Domain\Model\Identity\Administrator')]
+    #[ORM\JoinColumn(name: 'owner')]
     #[Ignore]
     private ?Administrator $owner = null;
 
     #[ORM\OneToMany(
-        targetEntity: "PhpList\Core\Domain\Model\Subscription\Subscription",
-        mappedBy: "subscriberList",
-        cascade: ["remove"],
+        targetEntity: 'PhpList\Core\Domain\Model\Subscription\Subscription',
+        mappedBy: 'subscriberList',
+        cascade: ['remove'],
         orphanRemoval: true,
     )]
     #[MaxDepth(1)]

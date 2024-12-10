@@ -21,41 +21,41 @@ use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
  * campaigns for those subscriber lists.
  * @author Oliver Klee <oliver@phplist.com>
  */
-#[ORM\Entity(repositoryClass: "PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository")]
-#[ORM\Table(name: "phplist_listuser")]
-#[ORM\Index(name: "userenteredidx", columns: ["userid", "entered"])]
-#[ORM\Index(name: "userlistenteredidx", columns: ["userid", "entered", "listid"])]
-#[ORM\Index(name: "useridx", columns: ["userid"])]
-#[ORM\Index(name: "listidx", columns: ["listid"])]
+#[ORM\Entity(repositoryClass: 'PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository')]
+#[ORM\Table(name: 'phplist_listuser')]
+#[ORM\Index(name: 'userenteredidx', columns: ['userid', 'entered'])]
+#[ORM\Index(name: 'userlistenteredidx', columns: ['userid', 'entered', 'listid'])]
+#[ORM\Index(name: 'useridx', columns: ['userid'])]
+#[ORM\Index(name: 'listidx', columns: ['listid'])]
 #[ORM\HasLifecycleCallbacks]
 class Subscription implements DomainModel, CreationDate, ModificationDate
 {
     use CreationDateTrait;
     use ModificationDateTrait;
 
-    #[ORM\Column(name: "entered", type: "datetime", nullable: true)]
-    #[SerializedName("creation_date")]
+    #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
+    #[SerializedName('creation_date')]
     protected ?DateTime $creationDate = null;
 
-    #[ORM\Column(name: "modified", type: "datetime")]
+    #[ORM\Column(name: 'modified', type: 'datetime')]
     #[Ignore]
     protected ?DateTime $modificationDate = null;
 
     #[ORM\Id]
     #[ORM\ManyToOne(
-        targetEntity: "PhpList\Core\Domain\Model\Subscription\Subscriber",
-        inversedBy: "subscriptions"
+        targetEntity: 'PhpList\Core\Domain\Model\Subscription\Subscriber',
+        inversedBy: 'subscriptions'
     )]
-    #[ORM\JoinColumn(name: "userid")]
-    #[SerializedName("subscriber")]
+    #[ORM\JoinColumn(name: 'userid')]
+    #[SerializedName('subscriber')]
     private ?Subscriber $subscriber = null;
 
     #[ORM\Id]
     #[ORM\ManyToOne(
-        targetEntity: "PhpList\Core\Domain\Model\Messaging\SubscriberList",
-        inversedBy: "subscriptions"
+        targetEntity: 'PhpList\Core\Domain\Model\Messaging\SubscriberList',
+        inversedBy: 'subscriptions'
     )]
-    #[ORM\JoinColumn(name: "listid", onDelete: "CASCADE")]
+    #[ORM\JoinColumn(name: 'listid', onDelete: 'CASCADE')]
     #[Ignore]
     private ?SubscriberList $subscriberList = null;
 

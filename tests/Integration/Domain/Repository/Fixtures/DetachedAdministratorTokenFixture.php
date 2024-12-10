@@ -29,16 +29,20 @@ class DetachedAdministratorTokenFixture extends Fixture
 
         $headers = fgetcsv($handle);
 
-        while (($data = fgetcsv($handle)) !== false) {
+        do {
+            $data = fgetcsv($handle);
+            if ($data === false) {
+                break;
+            }
             $row = array_combine($headers, $data);
 
             $adminToken = new AdministratorToken();
-            $this->setSubjectId($adminToken,(int)$row['id']);
+            $this->setSubjectId($adminToken, (int)$row['id']);
             $adminToken->setKey($row['value']);
-            $this->setSubjectProperty($adminToken,'expiry', new DateTime($row['expires']));
+            $this->setSubjectProperty($adminToken, 'expiry', new DateTime($row['expires']));
             $this->setSubjectProperty($adminToken, 'creationDate', (bool) $row['entered']);
             $manager->persist($adminToken);
-        }
+        } while (true);
 
         fclose($handle);
     }

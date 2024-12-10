@@ -47,7 +47,8 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
         $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
 
         $id = 1;
-        $creationDate = new DateTime(); // prePersist
+        // prePersist
+        $creationDate = new DateTime();
         $expiry = new DateTime('2017-06-22 16:43:29');
         $key = 'cfdf64eecbbf336628b0f3071adba762';
 

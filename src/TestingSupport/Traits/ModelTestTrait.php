@@ -22,9 +22,9 @@ trait ModelTestTrait
      *
      * @return void
      */
-    private function setSubjectId(DomainModel $model,int $id): void
+    private function setSubjectId(DomainModel $model, int $id): void
     {
-        $this->setSubjectProperty($model,'id', $id);
+        $this->setSubjectProperty($model, 'id', $id);
     }
 
     /**

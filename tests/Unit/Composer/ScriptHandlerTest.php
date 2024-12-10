@@ -58,7 +58,13 @@ class ScriptHandlerTest extends TestCase
 
         ScriptHandler::listModules($event);
 
-        $this->expectOutputRegex('/' . preg_quote($rootPackageName, '/') . '\s+' . preg_quote($rootPackageVersion, '/') . '/');
+        $this->expectOutputRegex(
+            '/'
+            . preg_quote($rootPackageName, '/')
+            . '\s+'
+            . preg_quote($rootPackageVersion, '/')
+            . '/'
+        );
     }
 
     public function testListModulesForNonPhpListModuleRootPackageExcludesIt(): void
@@ -98,7 +104,13 @@ class ScriptHandlerTest extends TestCase
 
         ScriptHandler::listModules($event);
 
-        $this->expectOutputRegex('/' . preg_quote($dependencyPackageName, '/') . '\s+' . preg_quote($dependencyPackageVersion, '/') . '/');
+        $this->expectOutputRegex(
+            '/'
+            . preg_quote($dependencyPackageName, '/')
+            . '\s+'
+            . preg_quote($dependencyPackageVersion, '/')
+            . '/'
+        );
     }
 
     public function testListModulesForNonPhpListModuleDependencyExcludesIt(): void

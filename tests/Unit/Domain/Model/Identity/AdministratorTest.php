@@ -35,7 +35,7 @@ class AdministratorTest extends TestCase
     public function testGetIdReturnsId(): void
     {
         $id = 123456;
-        $this->setSubjectId($this->subject,$id);
+        $this->setSubjectId($this->subject, $id);
 
         self::assertSame($id, $this->subject->getId());
     }

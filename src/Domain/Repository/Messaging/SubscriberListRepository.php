@@ -25,7 +25,6 @@ class SubscriberListRepository extends AbstractRepository
             ->where('sl.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getOneOrNullResult();
     }
 }

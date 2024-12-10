@@ -29,7 +29,11 @@ class AdministratorFixture extends Fixture
 
         $headers = fgetcsv($handle);
 
-        while (($data = fgetcsv($handle)) !== false) {
+        do {
+            $data = fgetcsv($handle);
+            if ($data === false) {
+                break;
+            }
             $row = array_combine($headers, $data);
 
             $admin = new Administrator();
@@ -41,9 +45,9 @@ class AdministratorFixture extends Fixture
             $admin->setSuperUser((bool) $row['superuser']);
 
             $manager->persist($admin);
-            $this->setSubjectProperty($admin,'creationDate', new DateTime($row['created']));
-            $this->setSubjectProperty($admin,'passwordChangeDate', new DateTime($row['passwordchanged']));
-        }
+            $this->setSubjectProperty($admin, 'creationDate', new DateTime($row['created']));
+            $this->setSubjectProperty($admin, 'passwordChangeDate', new DateTime($row['passwordchanged']));
+        } while (true);
 
         fclose($handle);
     }

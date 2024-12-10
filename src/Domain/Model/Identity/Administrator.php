@@ -20,8 +20,8 @@ use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-#[ORM\Entity(repositoryClass: "PhpList\Core\Domain\Repository\Identity\AdministratorRepository")]
-#[ORM\Table(name: "phplist_admin")]
+#[ORM\Entity(repositoryClass: 'PhpList\Core\Domain\Repository\Identity\AdministratorRepository')]
+#[ORM\Table(name: 'phplist_admin')]
 #[ORM\HasLifecycleCallbacks]
 class Administrator implements DomainModel, Identity, CreationDate, ModificationDate
 {
@@ -29,28 +29,28 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     use CreationDateTrait;
     use ModificationDateTrait;
 
-    #[ORM\Column(name: "loginname")]
+    #[ORM\Column(name: 'loginname')]
     private string $loginName;
 
-    #[ORM\Column(name: "email")]
+    #[ORM\Column(name: 'email')]
     private string $emailAddress;
 
-    #[ORM\Column(name: "created", type: "datetime")]
+    #[ORM\Column(name: 'created', type: 'datetime')]
     protected ?DateTime $creationDate = null;
 
-    #[ORM\Column(name: "modified", type: "datetime")]
+    #[ORM\Column(name: 'modified', type: 'datetime')]
     protected ?DateTime $modificationDate;
 
-    #[ORM\Column(name: "password")]
+    #[ORM\Column(name: 'password')]
     private string $passwordHash;
 
-    #[ORM\Column(name: "passwordchanged", type: "date", nullable: true)]
+    #[ORM\Column(name: 'passwordchanged', type: 'date', nullable: true)]
     private ?DateTime $passwordChangeDate;
 
-    #[ORM\Column(type: "boolean")]
+    #[ORM\Column(type: 'boolean')]
     private bool $disabled;
 
-    #[ORM\Column(name: "superuser", type: "boolean")]
+    #[ORM\Column(name: 'superuser', type: 'boolean')]
     private bool $superUser;
 
     public function __construct()

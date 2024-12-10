@@ -24,12 +24,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
  * campaigns for those subscriber lists.
  * @author Oliver Klee <oliver@phplist.com>
  */
-#[ORM\Entity(repositoryClass: "PhpList\Core\Domain\Repository\Subscription\SubscriberRepository")]
-#[ORM\Table(name: "phplist_user_user")]
-#[ORM\Index(name: "idxuniqid", columns: ["uniqid"])]
-#[ORM\Index(name: "enteredindex", columns: ["entered"])]
-#[ORM\Index(name: "confidx", columns: ["confirmed"])]
-#[ORM\Index(name: "blidx", columns: ["blacklisted"])]
+#[ORM\Entity(repositoryClass: 'PhpList\Core\Domain\Repository\Subscription\SubscriberRepository')]
+#[ORM\Table(name: 'phplist_user_user')]
+#[ORM\Index(name: 'idxuniqid', columns: ['uniqid'])]
+#[ORM\Index(name: 'enteredindex', columns: ['entered'])]
+#[ORM\Index(name: 'confidx', columns: ['confirmed'])]
+#[ORM\Index(name: 'blidx', columns: ['blacklisted'])]
 #[ORM\HasLifecycleCallbacks]
 class Subscriber implements DomainModel, Identity, CreationDate, ModificationDate
 {
@@ -37,58 +37,58 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     use CreationDateTrait;
     use ModificationDateTrait;
 
-    #[ORM\Column(name: "entered", type: "datetime", nullable: true)]
-    #[SerializedName("creation_date")]
+    #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
+    #[SerializedName('creation_date')]
     #[Groups(['SubscriberListMembers'])]
     protected ?DateTime $creationDate = null;
 
-    #[ORM\Column(name: "modified", type: "datetime")]
+    #[ORM\Column(name: 'modified', type: 'datetime')]
     #[Ignore]
     protected ?DateTime $modificationDate = null;
 
     #[ORM\Column(unique: true)]
-    #[SerializedName("email")]
+    #[SerializedName('email')]
     #[Groups(['SubscriberListMembers'])]
     private string $email = '';
 
-    #[ORM\Column(type: "boolean")]
-    #[SerializedName("confirmed")]
+    #[ORM\Column(type: 'boolean')]
+    #[SerializedName('confirmed')]
     #[Groups(['SubscriberListMembers'])]
     private bool $confirmed = false;
 
-    #[ORM\Column(type: "boolean")]
-    #[SerializedName("blacklisted")]
+    #[ORM\Column(type: 'boolean')]
+    #[SerializedName('blacklisted')]
     #[Groups(['SubscriberListMembers'])]
     private bool $blacklisted = false;
 
-    #[ORM\Column(name: "bouncecount", type: "integer")]
-    #[SerializedName("bounce_count")]
+    #[ORM\Column(name: 'bouncecount', type: 'integer')]
+    #[SerializedName('bounce_count')]
     #[Groups(['SubscriberListMembers'])]
     private int $bounceCount = 0;
 
-    #[ORM\Column(name: "uniqid", unique: true)]
-    #[SerializedName("unique_id")]
+    #[ORM\Column(name: 'uniqid', unique: true)]
+    #[SerializedName('unique_id')]
     #[Groups(['SubscriberListMembers'])]
     private string $uniqueId = '';
 
-    #[ORM\Column(name: "htmlemail", type: "boolean")]
-    #[SerializedName("html_email")]
+    #[ORM\Column(name: 'htmlemail', type: 'boolean')]
+    #[SerializedName('html_email')]
     #[Groups(['SubscriberListMembers'])]
     private bool $htmlEmail = false;
 
-    #[ORM\Column(type: "boolean")]
-    #[SerializedName("disabled")]
+    #[ORM\Column(type: 'boolean')]
+    #[SerializedName('disabled')]
     #[Groups(['SubscriberListMembers'])]
     private bool $disabled = false;
 
-    #[ORM\Column(name: "extradata", type: "text")]
-    #[SerializedName("extra_data")]
+    #[ORM\Column(name: 'extradata', type: 'text')]
+    #[SerializedName('extra_data')]
     private ?string $extraData;
 
     #[ORM\OneToMany(
-        targetEntity: "PhpList\Core\Domain\Model\Subscription\Subscription",
-        mappedBy: "subscriber",
-        cascade: ["remove"],
+        targetEntity: 'PhpList\Core\Domain\Model\Subscription\Subscription',
+        mappedBy: 'subscriber',
+        cascade: ['remove'],
         orphanRemoval: true,
     )]
     private Collection $subscriptions;

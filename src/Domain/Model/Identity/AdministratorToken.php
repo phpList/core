@@ -19,8 +19,8 @@ use PhpList\Core\Domain\Model\Traits\IdentityTrait;
  * This class represents an API authentication token for an administrator.
  * @author Oliver Klee <oliver@phplist.com>
  */
-#[ORM\Entity(repositoryClass: "PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository")]
-#[ORM\Table(name: "phplist_admintoken")]
+#[ORM\Entity(repositoryClass: 'PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository')]
+#[ORM\Table(name: 'phplist_admintoken')]
 #[ORM\HasLifecycleCallbacks]
 class AdministratorToken implements DomainModel, Identity, CreationDate
 {
@@ -28,20 +28,20 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
 
     public const DEFAULT_EXPIRY = '+1 hour';
 
-    #[ORM\Column(name: "entered", type: "integer")]
+    #[ORM\Column(name: 'entered', type: 'integer')]
     #[Ignore]
     protected int $creationDate = 0;
 
-    #[ORM\Column(name: "expires", type: "datetime")]
-    #[SerializedName("expiry_date")]
+    #[ORM\Column(name: 'expires', type: 'datetime')]
+    #[SerializedName('expiry_date')]
     private ?DateTime $expiry = null;
 
-    #[ORM\Column(name: "value")]
-    #[SerializedName("key")]
+    #[ORM\Column(name: 'value')]
+    #[SerializedName('key')]
     private string $key = '';
 
-    #[ORM\ManyToOne(targetEntity: "PhpList\Core\Domain\Model\Identity\Administrator")]
-    #[ORM\JoinColumn(name: "adminid")]
+    #[ORM\ManyToOne(targetEntity: 'PhpList\Core\Domain\Model\Identity\Administrator')]
+    #[ORM\JoinColumn(name: 'adminid')]
     #[Ignore]
     private ?Administrator $administrator = null;
 

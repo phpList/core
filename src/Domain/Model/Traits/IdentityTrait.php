@@ -18,9 +18,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
 trait IdentityTrait
 {
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[SerializedName("id")]
+    #[SerializedName('id')]
     #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private int $id;
 
