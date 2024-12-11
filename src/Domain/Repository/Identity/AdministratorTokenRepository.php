@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Repository\Identity;
 
 use DateTime;
+use DateTimeImmutable;
+use DateTimeZone;
 use Doctrine\Common\Collections\Criteria;
 use PhpList\Core\Domain\Model\Identity\AdministratorToken;
 use PhpList\Core\Domain\Repository\AbstractRepository;
@@ -46,9 +48,23 @@ class AdministratorTokenRepository extends AbstractRepository
      */
     public function removeExpired(): int
     {
-        $queryBuilder = $this->getEntityManager()->createQueryBuilder();
-        $queryBuilder->delete(AdministratorToken::class, 'token')->where('token.expiry <= CURRENT_TIMESTAMP()');
+        $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
 
-        return (int)$queryBuilder->getQuery()->execute();
+        $expiredTokens = $this->createQueryBuilder('at')
+            ->where('at.expiry <= :date')
+            ->setParameter('date', $now)
+            ->getQuery()
+            ->getResult();
+
+        $deletedCount = 0;
+
+        foreach ($expiredTokens as $token) {
+            $this->getEntityManager()->remove($token);
+            $deletedCount++;
+        }
+
+        $this->getEntityManager()->flush();
+
+        return $deletedCount;
     }
 }

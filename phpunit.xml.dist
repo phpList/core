@@ -9,7 +9,6 @@
 >
     <php>
         <ini name="error_reporting" value="-1"/>
-        <ini name="memory_limit" value="5G"/>
         <server name="KERNEL_CLASS" value="PhpList\Core\Core\ApplicationKernel"/>
     </php>
 </phpunit>

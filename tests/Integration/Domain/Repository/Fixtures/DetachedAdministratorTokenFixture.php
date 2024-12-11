@@ -39,9 +39,11 @@ class DetachedAdministratorTokenFixture extends Fixture
             $adminToken = new AdministratorToken();
             $this->setSubjectId($adminToken, (int)$row['id']);
             $adminToken->setKey($row['value']);
-            $this->setSubjectProperty($adminToken, 'expiry', new DateTime($row['expires']));
-            $this->setSubjectProperty($adminToken, 'creationDate', (bool) $row['entered']);
+
             $manager->persist($adminToken);
+
+            $this->setSubjectProperty($adminToken, 'expiry', new DateTime($row['expires']));
+            $this->setSubjectProperty($adminToken, 'creationDate', $row['entered']);
         } while (true);
 
         fclose($handle);

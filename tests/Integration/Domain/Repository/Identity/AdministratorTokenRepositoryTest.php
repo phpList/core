@@ -13,15 +13,17 @@ use PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository;
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\AdministratorFixture;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\AdministratorTokenWithAdministratorFixture;
 use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\DetachedAdministratorTokenFixture;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
  * Testcase.
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class AdministratorTokenRepositoryTest extends KernelTestCase
+class AdministratorTokenRepositoryTest extends WebTestCase
 {
     use DatabaseTestTrait;
     use SimilarDatesAssertionTrait;
@@ -47,8 +49,7 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
         $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
 
         $id = 1;
-        // prePersist
-        $creationDate = new DateTime();
+        $creationDate = new DateTime('2017-12-06 17:41:40');
         $expiry = new DateTime('2017-06-22 16:43:29');
         $key = 'cfdf64eecbbf336628b0f3071adba762';
 
@@ -61,21 +62,6 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
         self::assertEquals($expiry, $model->getExpiry());
         self::assertSame($key, $model->getKey());
     }
-
-//    public function testCreatesAdministratorAssociationAsProxy()
-//    {
-//        $this->loadFixtures([AdministratorFixture::class, AdministratorTokenWithAdministratorFixture::class]);
-//
-//        $tokenId = 1;
-//        $administratorId = 1;
-//        /** @var AdministratorToken $model */
-//        $model = $this->repository->find($tokenId);
-//        $administrator = $model->getAdministrator();
-//
-//        self::assertInstanceOf(Administrator::class, $administrator);
-//        self::assertInstanceOf(Proxy::class, $administrator);
-//        self::assertSame($administratorId, $administrator->getId());
-//    }
 
     public function testCreationDateOfExistingModelStaysUnchangedOnUpdate()
     {
@@ -138,17 +124,16 @@ class AdministratorTokenRepositoryTest extends KernelTestCase
         self::assertNull($model);
     }
 
-//    public function testRemoveExpiredRemovesExpiredToken()
-//    {
-//        $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
-//
-//        $idOfExpiredToken = 1;
-//        $this->repository->removeExpired();
-//        $this->entityManager->flush();
-//
-//        $token = $this->repository->find($idOfExpiredToken);
-//        self::assertNull($token);
-//    }
+    public function testRemoveExpiredRemovesExpiredToken()
+    {
+        $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
+
+        $idOfExpiredToken = 1;
+        $this->repository->removeExpired();
+
+        $token = $this->repository->find($idOfExpiredToken);
+        self::assertNull($token);
+    }
 
     public function testRemoveExpiredKeepsUnexpiredToken()
     {
