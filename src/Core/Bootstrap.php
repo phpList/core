@@ -29,31 +29,11 @@ use UnexpectedValueException;
  */
 class Bootstrap
 {
-    /**
-     * @var Bootstrap|null
-     */
     private static ?Bootstrap $instance = null;
-
-    /**
-     * @var bool
-     */
     private bool $isConfigured = false;
-
-    /**
-     * @var string
-     */
     private string $environment = Environment::DEFAULT_ENVIRONMENT;
-
-    /**
-     * @var ApplicationKernel
-     */
-    private $applicationKernel = null;
-
-    /**
-     * @var ApplicationStructure
-     */
+    private ?ApplicationKernel $applicationKernel = null;
     private ApplicationStructure $applicationStructure;
-
     private ErrorHandler $errorHandler;
 
     /**
@@ -115,25 +95,16 @@ class Bootstrap
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getEnvironment(): string
     {
         return $this->environment;
     }
 
-    /**
-     * @return bool
-     */
     private function isSymfonyDebugModeEnabled(): bool
     {
         return $this->environment !== Environment::PRODUCTION;
     }
 
-    /**
-     * @return bool
-     */
     private function isDebugEnabled(): bool
     {
         return $this->environment !== Environment::PRODUCTION;
@@ -163,6 +134,12 @@ class Bootstrap
             exit('You are not allowed to access this file.');
         }
 
+        return $this;
+    }
+
+    public function unsetHeaders(): self
+    {
+        unset($_SERVER['HTTP_X_FORWARDED_FOR']);
         return $this;
     }
 

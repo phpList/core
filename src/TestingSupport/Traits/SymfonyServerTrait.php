@@ -42,7 +42,8 @@ trait SymfonyServerTrait
 
         $this->serverProcess = new Process(
             $this->getSymfonyServerStartCommand(),
-            $this->getApplicationRoot()
+            $this->getApplicationRoot(),
+            ['APP_ENV' => 'test']
         );
         $this->serverProcess->start();
 

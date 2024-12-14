@@ -106,7 +106,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "5.0.x-dev"
+            "dev-ISSUE-337": "5.0.x-dev"
         },
         "symfony-app-dir": "",
         "symfony-bin-dir": "bin",

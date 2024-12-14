@@ -22,10 +22,6 @@ class PhpListApplicationBundleTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        putenv('APP_ENV=test');
-        $_ENV['APP_ENV'] = 'test';
-        $_SERVER['APP_ENV'] = 'test';
         $this->httpClient = new Client(['http_errors' => false]);
     }
 
