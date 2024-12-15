@@ -125,7 +125,7 @@ class Bootstrap
         if (isset($_ENV['APP_ENV']) && $_ENV['APP_ENV'] === Environment::TESTING) {
             return $this;
         }
-        $usesProxy = isset($_SERVER['HTTP_CLIENT_IP']) || isset($_SERVER['HTTP_X_FORWARDED_FOR']);
+        $usesProxy = isset($_SERVER['HTTP_CLIENT_IP']);
         $isOnCli = PHP_SAPI === 'cli' || PHP_SAPI === 'cli-server';
         $isLocalRequest = isset($_SERVER['REMOTE_ADDR'])
             && in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1'], true);
@@ -134,12 +134,6 @@ class Bootstrap
             exit('You are not allowed to access this file.');
         }
 
-        return $this;
-    }
-
-    public function unsetHeaders(): self
-    {
-        unset($_SERVER['HTTP_X_FORWARDED_FOR']);
         return $this;
     }
 

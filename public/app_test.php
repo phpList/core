@@ -8,7 +8,6 @@ use PhpList\Core\Core\Environment;
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 Bootstrap::getInstance()
-    ->unsetHeaders()
     ->ensureDevelopmentOrTestingEnvironment()
     ->setEnvironment(Environment::TESTING)
     ->configure()
