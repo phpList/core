@@ -19,8 +19,8 @@ trait SymfonyServerTrait
     private ?Process $serverProcess = null;
 
     private static string $lockFileName = '.web-server-pid';
-    private static int $lockWaitTimeout = 5000000;
-    private static int $serverCommandTimeout = 50000;
+    private static int $lockWaitTimeout = 6000000;
+    private static int $serverCommandTimeout = 60000;
 
     private static ?ApplicationStructure $applicationStructure = null;
 

@@ -86,4 +86,4 @@ jobs:
           git config user.email "github-actions@restapi-docs.workflow"
           git add .
           git commit -s -m "phplist/core docs deployment `date`"
-          git push
+          git push origin main --force
