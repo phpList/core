@@ -1,40 +1,41 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\EmptyStartPageBundle\Controller;
 
 use PhpList\Core\EmptyStartPageBundle\Controller\DefaultController;
-use PhpList\Core\TestingSupport\AbstractWebTest;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
  * Testcase.
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class DefaultControllerTest extends AbstractWebTest
+class DefaultControllerTest extends WebTestCase
 {
-    /**
-     * @test
-     */
-    public function controllerIsAvailableViaContainer()
+    public function testControllerIsAvailableViaContainer(): void
     {
-        static::assertInstanceOf(
+        $client = self::createClient();
+        $container = $client->getContainer();
+
+        self::assertInstanceOf(
             DefaultController::class,
-            $this->client->getContainer()->get(DefaultController::class)
+            $container->get(DefaultController::class)
         );
     }
 
-    /**
-     * @test
-     */
-    public function indexActionReturnsResponseWithHelloWorld()
+    public function testIndexActionReturnsResponseWithHelloWorld(): void
     {
-        $this->client->request('GET', '/');
+        $client = self::createClient();
+        $client->request('GET', '/api/v2');
 
-        static::assertTrue($this->client->getResponse()->isSuccessful());
-        static::assertContains(
+        $response = $client->getResponse();
+
+        self::assertTrue($response->isSuccessful());
+        self::assertStringContainsString(
             'This page has been intentionally left empty.',
-            $this->client->getResponse()->getContent()
+            $response->getContent()
         );
     }
 }

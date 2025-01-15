@@ -1,12 +1,16 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Core;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Debug\Debug;
+use Exception;
+use RuntimeException;
+use Symfony\Component\ErrorHandler\ErrorHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use UnexpectedValueException;
 
 /**
  * This class bootstraps the phpList core system.
@@ -25,30 +29,12 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class Bootstrap
 {
-    /**
-     * @var Bootstrap|null
-     */
-    private static $instance = null;
-
-    /**
-     * @var bool
-     */
-    private $isConfigured = false;
-
-    /**
-     * @var string
-     */
-    private $environment = Environment::DEFAULT_ENVIRONMENT;
-
-    /**
-     * @var ApplicationKernel
-     */
-    private $applicationKernel = null;
-
-    /**
-     * @var ApplicationStructure
-     */
-    private $applicationStructure = null;
+    private static ?Bootstrap $instance = null;
+    private bool $isConfigured = false;
+    private string $environment = Environment::DEFAULT_ENVIRONMENT;
+    private ?ApplicationKernel $applicationKernel = null;
+    private ApplicationStructure $applicationStructure;
+    private ErrorHandler $errorHandler;
 
     /**
      * Protected constructor to avoid direct instantiation of this class.
@@ -58,6 +44,7 @@ class Bootstrap
     protected function __construct()
     {
         $this->applicationStructure = new ApplicationStructure();
+        $this->errorHandler = new ErrorHandler();
     }
 
     /**
@@ -88,7 +75,7 @@ class Bootstrap
      *
      * @return void
      */
-    public static function purgeInstance()
+    public static function purgeInstance(): void
     {
         self::$instance = null;
     }
@@ -98,7 +85,7 @@ class Bootstrap
      *
      * @return Bootstrap fluent interface
      *
-     * @throws \UnexpectedValueException
+     * @throws UnexpectedValueException
      */
     public function setEnvironment(string $environment): Bootstrap
     {
@@ -108,25 +95,16 @@ class Bootstrap
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getEnvironment(): string
     {
         return $this->environment;
     }
 
-    /**
-     * @return bool
-     */
     private function isSymfonyDebugModeEnabled(): bool
     {
         return $this->environment !== Environment::PRODUCTION;
     }
 
-    /**
-     * @return bool
-     */
     private function isDebugEnabled(): bool
     {
         return $this->environment !== Environment::PRODUCTION;
@@ -140,11 +118,14 @@ class Bootstrap
      * @SuppressWarnings("PHPMD.ExitExpression")
      * @SuppressWarnings("PHPMD.Superglobals")
      *
-     * @return Bootstrap|null fluent interface
+     * @return Bootstrap fluent interface
      */
-    public function ensureDevelopmentOrTestingEnvironment()
+    public function ensureDevelopmentOrTestingEnvironment(): self
     {
-        $usesProxy = isset($_SERVER['HTTP_CLIENT_IP']) || isset($_SERVER['HTTP_X_FORWARDED_FOR']);
+        if (isset($_ENV['APP_ENV']) && $_ENV['APP_ENV'] === Environment::TESTING) {
+            return $this;
+        }
+        $usesProxy = isset($_SERVER['HTTP_CLIENT_IP']);
         $isOnCli = PHP_SAPI === 'cli' || PHP_SAPI === 'cli-server';
         $isLocalRequest = isset($_SERVER['REMOTE_ADDR'])
             && in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1'], true);
@@ -175,12 +156,12 @@ class Bootstrap
      *
      * @return void
      *
-     * @throws \RuntimeException if configure has not been called before
+     * @throws RuntimeException if configure has not been called before
      */
-    private function assertConfigureHasBeenCalled()
+    private function assertConfigureHasBeenCalled(): void
     {
         if (!$this->isConfigured) {
-            throw new \RuntimeException('Please call configure() first.', 1501170550);
+            throw new RuntimeException('Please call configure() first.', 1501170550);
         }
     }
 
@@ -191,8 +172,8 @@ class Bootstrap
      *
      * @return null
      *
-     * @throws \RuntimeException if configure has not been called before
-     * @throws \Exception
+     * @throws RuntimeException if configure has not been called before
+     * @throws Exception
      */
     public function dispatch()
     {
@@ -212,7 +193,7 @@ class Bootstrap
     private function configureDebugging(): Bootstrap
     {
         if ($this->isDebugEnabled()) {
-            Debug::enable();
+            $this->errorHandler->register();
         }
 
         return $this;
@@ -234,7 +215,7 @@ class Bootstrap
     /**
      * @return ApplicationKernel
      *
-     * @throws \RuntimeException if configure has not been called before
+     * @throws RuntimeException if configure has not been called before
      */
     public function getApplicationKernel(): ApplicationKernel
     {
@@ -258,7 +239,7 @@ class Bootstrap
     /**
      * @return EntityManagerInterface
      *
-     * @throws \RuntimeException if configure has not been called before
+     * @throws RuntimeException if configure has not been called before
      */
     public function getEntityManager(): EntityManagerInterface
     {
@@ -278,7 +259,7 @@ class Bootstrap
      *
      * @return string the absolute path without the trailing slash.
      *
-     * @throws \RuntimeException if there is no composer.json in the application root
+     * @throws RuntimeException if there is no composer.json in the application root
      */
     public function getApplicationRoot(): string
     {

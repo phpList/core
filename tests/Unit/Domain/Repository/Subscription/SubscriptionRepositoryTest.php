@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Repository\Subscription;
@@ -8,7 +9,6 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophecy\ProphecySubjectInterface;
 
 /**
  * Testcase.
@@ -17,25 +17,20 @@ use Prophecy\Prophecy\ProphecySubjectInterface;
  */
 class SubscriptionRepositoryTest extends TestCase
 {
-    /**
-     * @var SubscriptionRepository
-     */
-    private $subject = null;
+    private SubscriptionRepository $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
-        /** @var EntityManager|ProphecySubjectInterface $entityManager */
-        $entityManager = $this->prophesize(EntityManager::class)->reveal();
-        /** @var ClassMetadata|ProphecySubjectInterface $classDescriptor */
-        $classDescriptor = $this->prophesize(ClassMetadata::class)->reveal();
-        $this->subject = new SubscriptionRepository($entityManager, $classDescriptor);
+        $entityManager = $this->createMock(EntityManager::class);
+
+        $classMetadata = $this->createMock(ClassMetadata::class);
+        $classMetadata->name = 'PhpList\Core\Domain\Model\Subscription\Subscription';
+
+        $this->subject = new SubscriptionRepository($entityManager, $classMetadata);
     }
 
-    /**
-     * @test
-     */
-    public function classIsEntityRepository()
+    public function testClassIsEntityRepository(): void
     {
-        static::assertInstanceOf(EntityRepository::class, $this->subject);
+        self::assertInstanceOf(EntityRepository::class, $this->subject);
     }
 }

@@ -1,12 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Composer;
 
 use Composer\Package\PackageInterface;
 use Composer\Script\Event;
+use DomainException;
 use PhpList\Core\Core\ApplicationStructure;
-use Sensio\Bundle\DistributionBundle\Composer\ScriptHandler as SensioScriptHandler;
+use RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -14,7 +16,7 @@ use Symfony\Component\Filesystem\Filesystem;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class ScriptHandler extends SensioScriptHandler
+class ScriptHandler
 {
     /**
      * @var string
@@ -49,7 +51,7 @@ class ScriptHandler extends SensioScriptHandler
     /**
      * @return string absolute application root directory without the trailing slash
      *
-     * @throws \RuntimeException if there is no composer.json in the application root
+     * @throws RuntimeException if there is no composer.json in the application root
      */
     private static function getApplicationRoot(): string
     {
@@ -62,7 +64,7 @@ class ScriptHandler extends SensioScriptHandler
      */
     private static function getCoreDirectory(): string
     {
-        return static::getApplicationRoot() . '/vendor/' . static::CORE_PACKAGE_NAME;
+        return self::getApplicationRoot() . '/vendor/' . static::CORE_PACKAGE_NAME;
     }
 
     /**
@@ -74,12 +76,12 @@ class ScriptHandler extends SensioScriptHandler
      *
      * @return void
      *
-     * @throws \DomainException if this method is called for the core package
+     * @throws DomainException if this method is called for the core package
      */
-    public static function createBinaries(Event $event)
+    public static function createBinaries(Event $event): void
     {
-        static::preventScriptFromCorePackage($event);
-        static::mirrorDirectoryFromCore('bin');
+        self::preventScriptFromCorePackage($event);
+        self::mirrorDirectoryFromCore('bin');
     }
 
     /**
@@ -91,12 +93,12 @@ class ScriptHandler extends SensioScriptHandler
      *
      * @return void
      *
-     * @throws \DomainException if this method is called for the core package
+     * @throws DomainException if this method is called for the core package
      */
-    public static function createPublicWebDirectory(Event $event)
+    public static function createPublicWebDirectory(Event $event): void
     {
-        static::preventScriptFromCorePackage($event);
-        static::mirrorDirectoryFromCore('public');
+        self::preventScriptFromCorePackage($event);
+        self::mirrorDirectoryFromCore('public');
     }
 
     /**
@@ -104,14 +106,14 @@ class ScriptHandler extends SensioScriptHandler
      *
      * @return void
      *
-     * @throws \DomainException if this method is called for the core package
+     * @throws DomainException if this method is called for the core package
      */
-    private static function preventScriptFromCorePackage(Event $event)
+    private static function preventScriptFromCorePackage(Event $event): void
     {
         $composer = $event->getComposer();
         $packageName = $composer->getPackage()->getName();
-        if ($packageName === static::CORE_PACKAGE_NAME) {
-            throw new \DomainException(
+        if ($packageName === self::CORE_PACKAGE_NAME) {
+            throw new DomainException(
                 'This Composer script must not be called for the core package itself.',
                 1501240572
             );
@@ -129,14 +131,14 @@ class ScriptHandler extends SensioScriptHandler
      *
      * @return void
      */
-    private static function mirrorDirectoryFromCore(string $directoryWithoutSlashes)
+    private static function mirrorDirectoryFromCore(string $directoryWithoutSlashes): void
     {
         $directoryWithSlashes = '/' . $directoryWithoutSlashes . '/';
 
         $fileSystem = new Filesystem();
         $fileSystem->mirror(
-            static::getCoreDirectory() . $directoryWithSlashes,
-            static::getApplicationRoot() . $directoryWithSlashes,
+            self::getCoreDirectory() . $directoryWithSlashes,
+            self::getApplicationRoot() . $directoryWithSlashes,
             null,
             ['override' => true, 'delete' => false]
         );
@@ -149,13 +151,13 @@ class ScriptHandler extends SensioScriptHandler
      *
      * @return void
      */
-    public static function listModules(Event $event)
+    public static function listModules(Event $event): void
     {
         $packageRepository = new PackageRepository();
         $packageRepository->injectComposer($event->getComposer());
 
         $modules = $packageRepository->findModules();
-        $maximumPackageNameLength = static::calculateMaximumPackageNameLength($modules);
+        $maximumPackageNameLength = self::calculateMaximumPackageNameLength($modules);
 
         foreach ($modules as $module) {
             $paddedName = str_pad($module->getName(), $maximumPackageNameLength + 1);
@@ -186,11 +188,11 @@ class ScriptHandler extends SensioScriptHandler
      *
      * @return void
      */
-    public static function createBundleConfiguration(Event $event)
+    public static function createBundleConfiguration(Event $event): void
     {
-        static::createAndWriteFile(
-            static::getApplicationRoot() . static::BUNDLE_CONFIGURATION_FILE,
-            static::createAndInitializeModuleFinder($event)->createBundleConfigurationYaml()
+        self::createAndWriteFile(
+            self::getApplicationRoot() . self::BUNDLE_CONFIGURATION_FILE,
+            self::createAndInitializeModuleFinder($event)->createBundleConfigurationYaml()
         );
     }
 
@@ -206,13 +208,13 @@ class ScriptHandler extends SensioScriptHandler
      *
      * @return void
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
-    private static function createAndWriteFile(string $path, string $contents)
+    private static function createAndWriteFile(string $path, string $contents): void
     {
         $fileHandle = fopen($path, 'wb');
         if ($fileHandle === false) {
-            throw new \RuntimeException('The file "' . $path . '" could not be opened for writing.', 1519851153);
+            throw new RuntimeException('The file "' . $path . '" could not be opened for writing.', 1519851153);
         }
 
         fwrite($fileHandle, $contents);
@@ -227,11 +229,11 @@ class ScriptHandler extends SensioScriptHandler
      *
      * @return void
      */
-    public static function createRoutesConfiguration(Event $event)
+    public static function createRoutesConfiguration(Event $event): void
     {
-        static::createAndWriteFile(
-            static::getApplicationRoot() . static::ROUTES_CONFIGURATION_FILE,
-            static::createAndInitializeModuleFinder($event)->createRouteConfigurationYaml()
+        self::createAndWriteFile(
+            self::getApplicationRoot() . self::ROUTES_CONFIGURATION_FILE,
+            self::createAndInitializeModuleFinder($event)->createRouteConfigurationYaml()
         );
     }
 
@@ -256,27 +258,10 @@ class ScriptHandler extends SensioScriptHandler
      *
      * @return void
      */
-    public static function clearAllCaches()
+    public static function clearAllCaches():void
     {
         $fileSystem = new Filesystem();
-        $fileSystem->remove(static::getApplicationRoot() . '/var/cache');
-    }
-
-    /**
-     * Warms the production cache.
-     *
-     * @param Event $event
-     *
-     * @return void
-     */
-    public static function warmProductionCache(Event $event)
-    {
-        $consoleDir = static::getConsoleDir($event, 'warm the cache');
-        if ($consoleDir === null) {
-            return;
-        }
-
-        static::executeCommand($event, $consoleDir, 'cache:warm -e prod');
+        $fileSystem->remove(self::getApplicationRoot() . '/var/cache');
     }
 
     /**
@@ -284,9 +269,9 @@ class ScriptHandler extends SensioScriptHandler
      *
      * @return void
      */
-    public static function createParametersConfiguration()
+    public static function createParametersConfiguration(): void
     {
-        $configurationFilePath = static::getApplicationRoot() . static::PARAMETERS_CONFIGURATION_FILE;
+        $configurationFilePath = self::getApplicationRoot() . self::PARAMETERS_CONFIGURATION_FILE;
         if (file_exists($configurationFilePath)) {
             return;
         }
@@ -297,7 +282,7 @@ class ScriptHandler extends SensioScriptHandler
         $secret = bin2hex(random_bytes(20));
         $configuration = sprintf($template, $secret);
 
-        static::createAndWriteFile($configurationFilePath, $configuration);
+        self::createAndWriteFile($configurationFilePath, $configuration);
     }
 
     /**
@@ -307,11 +292,11 @@ class ScriptHandler extends SensioScriptHandler
      *
      * @return void
      */
-    public static function createGeneralConfiguration(Event $event)
+    public static function createGeneralConfiguration(Event $event): void
     {
-        static::createAndWriteFile(
-            static::getApplicationRoot() . static::GENERAL_CONFIGURATION_FILE,
-            static::createAndInitializeModuleFinder($event)->createGeneralConfigurationYaml()
+        self::createAndWriteFile(
+            self::getApplicationRoot() . self::GENERAL_CONFIGURATION_FILE,
+            self::createAndInitializeModuleFinder($event)->createGeneralConfigurationYaml()
         );
     }
 }

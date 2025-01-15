@@ -7,7 +7,7 @@ use PhpList\Core\Core\Bootstrap;
 use PhpList\Core\Core\Environment;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
-use Symfony\Component\Debug\Debug;
+use Symfony\Component\ErrorHandler\ErrorHandler;
 
 set_time_limit(0);
 
@@ -19,7 +19,7 @@ $debug = getenv('SYMFONY_DEBUG') !== '0' && !$input->hasParameterOption(['--no-d
     && $environment !== Environment::PRODUCTION;
 
 if ($debug) {
-    Debug::enable();
+    ErrorHandler::register();
 }
 
 Bootstrap::getInstance()->setEnvironment($environment)->configure();

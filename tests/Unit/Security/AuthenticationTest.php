@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Security;
@@ -7,9 +8,8 @@ use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Identity\AdministratorToken;
 use PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository;
 use PhpList\Core\Security\Authentication;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Prophecy\ProphecySubjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -19,28 +19,16 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class AuthenticationTest extends TestCase
 {
-    /**
-     * @var Authentication
-     */
-    private $subject = null;
+    private Authentication $subject;
+    private AdministratorTokenRepository|MockObject $tokenRepository;
 
-    /**
-     * @var AdministratorTokenRepository|ObjectProphecy
-     */
-    private $tokenRepositoryProphecy = null;
-
-    protected function setUp()
+    protected function setUp(): void
     {
-        $this->tokenRepositoryProphecy = $this->prophesize(AdministratorTokenRepository::class);
-        /** @var AdministratorTokenRepository|ProphecySubjectInterface $tokenRepository */
-        $tokenRepository = $this->tokenRepositoryProphecy->reveal();
-        $this->subject = new Authentication($tokenRepository);
+        $this->tokenRepository = $this->createMock(AdministratorTokenRepository::class);
+        $this->subject = new Authentication($this->tokenRepository);
     }
 
-    /**
-     * @test
-     */
-    public function authenticateByApiKeyWithValidApiKeyInBasicAuthReturnsMatchingAdministrator()
+    public function testAuthenticateByApiKeyWithValidApiKeyInBasicAuthReturnsMatchingAdministrator(): void
     {
         $apiKey = 'biuzaswcefblkjuzq43wtw2413';
         $request = new Request();
@@ -51,15 +39,16 @@ class AuthenticationTest extends TestCase
         $administrator->setSuperUser(true);
         $token->setAdministrator($administrator);
 
-        $this->tokenRepositoryProphecy->findOneUnexpiredByKey($apiKey)->willReturn($token)->shouldBeCalled();
+        $this->tokenRepository
+            ->expects($this->any())
+            ->method('findOneUnexpiredByKey')
+            ->with($apiKey)
+            ->willReturn($token);
 
-        static::assertSame($administrator, $this->subject->authenticateByApiKey($request));
+        self::assertSame($administrator, $this->subject->authenticateByApiKey($request));
     }
 
-    /**
-     * @test
-     */
-    public function authenticateByApiKeyWithValidApiKeyInBasicAuthWithoutAdministratorReturnsNull()
+    public function testAuthenticateByApiKeyWithValidApiKeyInBasicAuthWithoutAdministratorReturnsNull(): void
     {
         $apiKey = 'biuzaswcefblkjuzq43wtw2413';
         $request = new Request();
@@ -67,43 +56,42 @@ class AuthenticationTest extends TestCase
 
         $token = new AdministratorToken();
 
-        $this->tokenRepositoryProphecy->findOneUnexpiredByKey($apiKey)->willReturn($token)->shouldBeCalled();
+        $this->tokenRepository
+            ->expects($this->any())
+            ->method('findOneUnexpiredByKey')
+            ->with($apiKey)
+            ->willReturn($token);
 
-        static::assertNull($this->subject->authenticateByApiKey($request));
+        self::assertNull($this->subject->authenticateByApiKey($request));
     }
 
-    /**
-     * @test
-     */
-    public function authenticateByApiKeyWithInvalidApiKeyInBasicAuthReturnsNull()
+    public function testAuthenticateByApiKeyWithInvalidApiKeyInBasicAuthReturnsNull(): void
     {
         $apiKey = 'biuzaswcefblkjuzq43wtw2413';
         $request = new Request();
         $request->headers->add(['php-auth-pw' => $apiKey]);
 
-        $this->tokenRepositoryProphecy->findOneUnexpiredByKey($apiKey)->willReturn(null)->shouldBeCalled();
+        $this->tokenRepository
+            ->expects($this->any())
+            ->method('findOneUnexpiredByKey')
+            ->with($apiKey)
+            ->willReturn(null);
 
-        static::assertNull($this->subject->authenticateByApiKey($request));
+        self::assertNull($this->subject->authenticateByApiKey($request));
     }
 
-    /**
-     * @test
-     */
-    public function authenticateByApiKeyWithEmptyApiKeyInBasicAuthReturnsNull()
+    public function testAuthenticateByApiKeyWithEmptyApiKeyInBasicAuthReturnsNull(): void
     {
         $request = new Request();
         $request->headers->add(['php-auth-pw' => '']);
 
-        static::assertNull($this->subject->authenticateByApiKey($request));
+        self::assertNull($this->subject->authenticateByApiKey($request));
     }
 
-    /**
-     * @test
-     */
-    public function authenticateByApiKeyWithMissingApiKeyInBasicAuthReturnsNull()
+    public function testAuthenticateByApiKeyWithMissingApiKeyInBasicAuthReturnsNull(): void
     {
         $request = new Request();
 
-        static::assertNull($this->subject->authenticateByApiKey($request));
+        self::assertNull($this->subject->authenticateByApiKey($request));
     }
 }

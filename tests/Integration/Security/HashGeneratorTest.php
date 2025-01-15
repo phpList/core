@@ -1,64 +1,45 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Security;
 
-use PhpList\Core\Core\ApplicationKernel;
-use PhpList\Core\Core\Bootstrap;
-use PhpList\Core\Core\Environment;
+use Doctrine\ORM\Tools\SchemaTool;
 use PhpList\Core\Security\HashGenerator;
-use PHPUnit\Framework\TestCase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
  * Testcase.
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class HashGeneratorTest extends TestCase
+class HashGeneratorTest extends KernelTestCase
 {
-    /**
-     * @var ApplicationKernel
-     */
-    private $kernel = null;
+    use DatabaseTestTrait;
 
-    /**
-     * @var ContainerInterface
-     */
-    private $container = null;
-
-    protected function setUp()
+    protected function setUp(): void
     {
-        $bootstrap = Bootstrap::getInstance();
-        $bootstrap->setEnvironment(Environment::TESTING)->configure();
-
-        $this->kernel = $bootstrap->getApplicationKernel();
-        $this->kernel->boot();
-
-        $this->container = $this->kernel->getContainer();
+        parent::setUp();
+        $this->loadSchema();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
-        $this->kernel->shutdown();
-        Bootstrap::purgeInstance();
+        $schemaTool = new SchemaTool($this->entityManager);
+        $schemaTool->dropDatabase();
+        parent::tearDown();
     }
 
-    /**
-     * @test
-     */
-    public function subjectIsAvailableViaContainer()
+    public function testSubjectIsAvailableViaContainer()
     {
-        static::assertInstanceOf(HashGenerator::class, $this->container->get(HashGenerator::class));
+        self::assertInstanceOf(HashGenerator::class, self::getContainer()->get(HashGenerator::class));
     }
 
-    /**
-     * @test
-     */
-    public function classIsRegisteredAsSingletonInContainer()
+    public function testClassIsRegisteredAsSingletonInContainer()
     {
         $id = HashGenerator::class;
 
-        static::assertSame($this->container->get($id), $this->container->get($id));
+        self::assertSame(self::getContainer()->get($id), self::getContainer()->get($id));
     }
 }

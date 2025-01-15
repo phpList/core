@@ -1,10 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\TestingSupport\Traits;
 
+use InvalidArgumentException;
 use PhpList\Core\Core\ApplicationStructure;
-use Symfony\Bundle\WebServerBundle\WebServer;
+use RuntimeException;
 use Symfony\Component\Process\Process;
 
 /**
@@ -14,192 +16,136 @@ use Symfony\Component\Process\Process;
  */
 trait SymfonyServerTrait
 {
-    /**
-     * @var Process
-     */
-    private $serverProcess = null;
+    private ?Process $serverProcess = null;
+
+    private static string $lockFileName = '.web-server-pid';
+    private static int $lockWaitTimeout = 6000000;
+    private static int $serverCommandTimeout = 60000;
+
+    private static ?ApplicationStructure $applicationStructure = null;
 
     /**
-     * @var string[]
-     */
-    private static $validEnvironments = ['test', 'dev', 'prod'];
-
-    /**
-     * @var string
-     */
-    private static $lockFileName = '.web-server-pid';
-
-    /**
-     * @var int microseconds
-     */
-    private static $maximumWaitTimeForServerLockFile = 5000000;
-
-    /**
-     * @var int microseconds
-     */
-    private static $waitTimeBetweenServerCommands = 50000;
-
-    /**
-     * @var ApplicationStructure
-     */
-    private static $applicationStructure = null;
-
-    /**
-     * Starts the symfony server. The resulting base URL then can be retrieved using getBaseUrl().
+     * Starts the Symfony server.
      *
-     * @see getBaseUrl
-     *
-     * @param string $environment
-     *
-     * @return void
-     *
-     * @throws \InvalidArgumentException
-     * @throws \RuntimeException
+     * @throws InvalidArgumentException|RuntimeException
      */
-    protected function startSymfonyServer(string $environment)
+    protected function startSymfonyServer(): void
     {
-        if (!\in_array($environment, static::$validEnvironments, true)) {
-            throw new \InvalidArgumentException('"' . $environment . '" is not a valid environment.', 1516284149);
-        }
         if ($this->lockFileExists()) {
-            throw new \RuntimeException(
-                'The server lock file "' . static::$lockFileName . '" already exists. ' .
-                'Most probably, a symfony server already is running. ' .
-                'Please stop the symfony server or delete the lock file.',
-                1516622609
+            throw new RuntimeException(
+                sprintf(
+                    'The server lock file "%s" already exists.',
+                    self::$lockFileName
+                )
             );
         }
 
         $this->serverProcess = new Process(
-            $this->getSymfonyServerStartCommand($environment),
-            $this->getApplicationRoot()
+            $this->getSymfonyServerStartCommand(),
+            $this->getApplicationRoot(),
+            ['APP_ENV' => 'test']
         );
         $this->serverProcess->start();
 
+        usleep(self::$serverCommandTimeout);
         $this->waitForServerLockFileToAppear();
-        // Give the server some more time to initialize so it will accept connections.
-        \usleep(75000);
+        usleep(self::$serverCommandTimeout);
     }
 
-    /**
-     * @return bool
-     */
     private function lockFileExists(): bool
     {
-        return \file_exists($this->getFullLockFilePath());
+        return file_exists($this->getFullLockFilePath());
     }
 
-    /**
-     * @return string the base URL (including protocol and port, but without the trailing slash)
-     */
     protected function getBaseUrl(): string
     {
-        return 'http://' . \file_get_contents($this->getFullLockFilePath());
+        if (!$this->lockFileExists()) {
+            throw new RuntimeException('Lock file does not exist. Is the server running?');
+        }
+
+        $port = file_get_contents($this->getFullLockFilePath());
+        if ($port === false) {
+            throw new RuntimeException('Failed to read the lock file.');
+        }
+
+        return sprintf('http://localhost:%s', trim($port));
     }
 
-    /**
-     * Waits for the server lock file to appear, and throws an exception if the file has not appeared after the
-     * maximum wait time.
-     *
-     * If the file already exists, this method returns instantly.
-     *
-     * @return void
-     *
-     * @throws \RuntimeException
-     */
-    private function waitForServerLockFileToAppear()
+    private function waitForServerLockFileToAppear(): void
     {
         $currentWaitTime = 0;
-        while (!$this->lockFileExists() && $currentWaitTime < static::$maximumWaitTimeForServerLockFile) {
-            \usleep(static::$waitTimeBetweenServerCommands);
-            $currentWaitTime += static::$waitTimeBetweenServerCommands;
+        while (!$this->lockFileExists() && $currentWaitTime < self::$lockWaitTimeout) {
+            $process = new Process(['symfony', 'server:status', '--no-ansi']);
+            $process->run();
+
+            if ($process->isSuccessful()) {
+                $output = $process->getOutput();
+                if (preg_match('/Listening on (http[s]?:\/\/127\.0\.0\.1:(\d+))/', $output, $matches)) {
+                    $port = $matches[2];
+                    file_put_contents(self::$lockFileName, trim($port));
+                }
+            }
+            usleep(self::$serverCommandTimeout);
+            $currentWaitTime += self::$serverCommandTimeout;
         }
 
         if (!$this->lockFileExists()) {
-            throw new \RuntimeException(
-                'There is no symfony server lock file "' . static::$lockFileName . '".',
+            throw new RuntimeException(
+                'There is no symfony server lock file "' . self::$lockFileName . '".',
                 1516625236
             );
         }
     }
 
-    /**
-     * @return string
-     */
     private function getFullLockFilePath(): string
     {
-        return $this->getApplicationRoot() . '/' . static::$lockFileName;
+        return sprintf('%s/%s', $this->getApplicationRoot(), self::$lockFileName);
     }
 
-    /**
-     * @return void
-     */
-    protected function stopSymfonyServer()
+    protected function stopSymfonyServer(): void
     {
-        if ($this->lockFileExists()) {
-            $server = new WebServer();
-            $server->stop($this->getFullLockFilePath());
-        }
-        if ($this->serverProcess !== null && $this->serverProcess->isRunning()) {
+        if ($this->serverProcess && $this->serverProcess->isRunning()) {
             $this->serverProcess->stop();
         }
+
+        if ($this->lockFileExists()) {
+            unlink($this->getFullLockFilePath());
+        }
     }
 
-    /**
-     * @param string $environment
-     *
-     * @return string
-     */
-    private function getSymfonyServerStartCommand(string $environment): string
+    private function getSymfonyServerStartCommand(): array
     {
         $documentRoot = $this->getApplicationRoot() . '/public/';
         $this->checkDocumentRoot($documentRoot);
 
-        return sprintf(
-            '%1$s server:start -d %2$s --env=%3$s',
-            $this->getApplicationRoot() . '/bin/console',
-            $documentRoot,
-            $environment
-        );
+        return [
+            'symfony',
+            'server:start',
+            '--daemon',
+        ];
     }
 
-    /**
-     * @return string
-     */
     protected function getApplicationRoot(): string
     {
-        if (static::$applicationStructure === null) {
-            static::$applicationStructure = new ApplicationStructure();
+        if (self::$applicationStructure === null) {
+            self::$applicationStructure = new ApplicationStructure();
         }
 
-        return static::$applicationStructure->getApplicationRoot();
+        return self::$applicationStructure->getApplicationRoot();
     }
 
-    /**
-     * Checks that $documentRoot exists, is a directory and readable.
-     *
-     * @param string $documentRoot
-     *
-     * @return void
-     *
-     * @throws \RuntimeException
-     */
-    private function checkDocumentRoot(string $documentRoot)
+    private function checkDocumentRoot(string $documentRoot): void
     {
-        if (!\file_exists($documentRoot)) {
-            throw new \RuntimeException('The document root "' . $documentRoot . '" does not exist.', 1499513246);
+        if (!file_exists($documentRoot)) {
+            throw new RuntimeException(sprintf('The document root "%s" does not exist.', $documentRoot));
         }
-        if (!\is_dir($documentRoot)) {
-            throw new \RuntimeException(
-                'The document root "' . $documentRoot . '" exists, but is no directory.',
-                1499513263
-            );
+
+        if (!is_dir($documentRoot)) {
+            throw new RuntimeException(sprintf('The document root "%s" exists but is not a directory.', $documentRoot));
         }
-        if (!\is_readable($documentRoot)) {
-            throw new \RuntimeException(
-                'The document root "' . $documentRoot . '" exists and is a directory, but is not readable.',
-                1499513279
-            );
+
+        if (!is_readable($documentRoot)) {
+            throw new RuntimeException(sprintf('The document root "%s" is not readable.', $documentRoot));
         }
     }
 }

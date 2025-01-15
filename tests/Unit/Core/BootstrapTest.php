@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Core;
@@ -17,73 +18,55 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class BootstrapTest extends TestCase
 {
-    /**
-     * @var Bootstrap
-     */
-    private $subject = null;
+    private Bootstrap $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = Bootstrap::getInstance();
         $this->subject->setEnvironment(Environment::TESTING);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         Bootstrap::purgeInstance();
     }
 
-    /**
-     * @test
-     */
-    public function getInstanceReturnsBootstrapInstance()
+    public function testGetInstanceReturnsBootstrapInstance(): void
     {
-        static::assertInstanceOf(Bootstrap::class, Bootstrap::getInstance());
+        self::assertInstanceOf(Bootstrap::class, Bootstrap::getInstance());
     }
 
-    /**
-     * @test
-     */
-    public function classIsSingleton()
+    public function testClassIsSingleton(): void
     {
-        static::assertSame(Bootstrap::getInstance(), Bootstrap::getInstance());
+        self::assertSame(Bootstrap::getInstance(), Bootstrap::getInstance());
     }
 
-    /**
-     * @test
-     */
-    public function purgeInstancePurgesSingletonInstance()
+    public function testPurgeInstancePurgesSingletonInstance(): void
     {
         $firstInstance = Bootstrap::getInstance();
 
         Bootstrap::purgeInstance();
 
         $secondInstance = Bootstrap::getInstance();
-        static::assertNotSame($firstInstance, $secondInstance);
+        self::assertNotSame($firstInstance, $secondInstance);
     }
 
-    /**
-     * @test
-     */
-    public function environmentIsProductionByDefault()
+    public function testEnvironmentIsProductionByDefault(): void
     {
         Bootstrap::purgeInstance();
 
         $subject = Bootstrap::getInstance();
 
-        static::assertSame(Environment::PRODUCTION, $subject->getEnvironment());
+        self::assertSame(Environment::PRODUCTION, $subject->getEnvironment());
     }
 
-    /**
-     * @test
-     */
-    public function setEnvironmentHasFluentInterface()
+    public function testSetEnvironmentHasFluentInterface(): void
     {
-        static::assertSame($this->subject, $this->subject->setEnvironment(Environment::TESTING));
+        self::assertSame($this->subject, $this->subject->setEnvironment(Environment::TESTING));
     }
 
     /**
-     * @return string[][]
+     * @return array<string[]>
      */
     public function validEnvironmentDataProvider(): array
     {
@@ -95,92 +78,66 @@ class BootstrapTest extends TestCase
     }
 
     /**
-     * @test
-     * @param string $environment
      * @dataProvider validEnvironmentDataProvider
      */
-    public function setEnvironmentWithValidEnvironmentSetsEnvironment(string $environment)
+    public function testSetEnvironmentWithValidEnvironmentSetsEnvironment(string $environment): void
     {
         $this->subject->setEnvironment($environment);
 
-        static::assertSame($environment, $this->subject->getEnvironment());
+        self::assertSame($environment, $this->subject->getEnvironment());
     }
 
-    /**
-     * @test
-     */
-    public function setEnvironmentWithInvalidEnvironmentThrowsException()
+    public function testSetEnvironmentWithInvalidEnvironmentThrowsException(): void
     {
         $this->expectException(\UnexpectedValueException::class);
 
         $this->subject->setEnvironment('Reckless');
     }
 
-    /**
-     * @test
-     */
-    public function configureHasFluentInterface()
+    public function testConfigureHasFluentInterface(): void
     {
-        static::assertSame($this->subject, $this->subject->configure());
+        self::assertSame($this->subject, $this->subject->configure());
     }
 
-    /**
-     * @test
-     */
-    public function configureCreatesApplicationKernel()
+    public function testConfigureCreatesApplicationKernel(): void
     {
         $this->subject->configure();
 
-        static::assertInstanceOf(ApplicationKernel::class, $this->subject->getApplicationKernel());
+        self::assertInstanceOf(ApplicationKernel::class, $this->subject->getApplicationKernel());
     }
 
-    /**
-     * @test
-     */
-    public function getApplicationKernelWithoutConfigureThrowsException()
+    public function testGetApplicationKernelWithoutConfigureThrowsException(): void
     {
         $this->expectException(\RuntimeException::class);
 
         $this->subject->getApplicationKernel();
     }
 
-    /**
-     * @test
-     */
-    public function dispatchWithoutConfigureThrowsException()
+    public function testDispatchWithoutConfigureThrowsException(): void
     {
         $this->expectException(\RuntimeException::class);
 
         $this->subject->dispatch();
     }
 
-    /**
-     * @test
-     */
-    public function getContainerReturnsContainer()
+    public function testGetContainerReturnsContainer(): void
     {
         $this->subject->configure();
 
-        static::assertInstanceOf(ContainerInterface::class, $this->subject->getContainer());
+        self::assertInstanceOf(ContainerInterface::class, $this->subject->getContainer());
     }
 
-    /**
-     * @test
-     */
-    public function getEntityManagerWithoutConfigureThrowsException()
+    public function testGetEntityManagerWithoutConfigureThrowsException(): void
     {
         $this->expectException(\RuntimeException::class);
 
         $this->subject->getEntityManager();
     }
 
-    /**
-     * @test
-     */
-    public function getEntityManagerAfterConfigureReturnsEntityManager()
+    public function testGetEntityManagerAfterConfigureReturnsEntityManager(): void
     {
         $this->subject->configure();
 
-        static::assertInstanceOf(EntityManagerInterface::class, $this->subject->getEntityManager());
+        self::assertInstanceOf(EntityManagerInterface::class, $this->subject->getEntityManager());
     }
 }

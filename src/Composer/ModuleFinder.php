@@ -1,8 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Composer;
 
+use InvalidArgumentException;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -20,14 +22,14 @@ class ModuleFinder
     /**
      * @var PackageRepository
      */
-    private $packageRepository = null;
+    private ?PackageRepository $packageRepository = null;
 
     /**
      * @param PackageRepository $repository
      *
      * @return void
      */
-    public function injectPackageRepository(PackageRepository $repository)
+    public function injectPackageRepository(PackageRepository $repository): void
     {
         $this->packageRepository = $repository;
     }
@@ -38,7 +40,7 @@ class ModuleFinder
      * @return string[][] class names of the bundles of all installed phpList modules:
      * ['module package name' => ['bundle class name 1', 'bundle class name 2']]
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function findBundleClasses(): array
     {
@@ -66,9 +68,9 @@ class ModuleFinder
      *
      * @return void
      *
-     * @throws \InvalidArgumentException if $extra has an invalid bundles configuration
+     * @throws InvalidArgumentException if $extra has an invalid bundles configuration
      */
-    private function validateBundlesSectionInExtra(array $extra)
+    private function validateBundlesSectionInExtra(array $extra): void
     {
         if (!isset($extra['phplist/core'])) {
             return;
@@ -79,7 +81,7 @@ class ModuleFinder
             return;
         }
         if (!is_array($extra['phplist/core']['bundles'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'The extras.phplist/core.bundles section in the composer.json must be an array.',
                 1505411665
             );
@@ -89,7 +91,7 @@ class ModuleFinder
         $bundleExtras = $extra['phplist/core']['bundles'];
         foreach ($bundleExtras as $key => $bundleName) {
             if (!is_string($bundleName)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'The extras.phplist/core.bundles. ' . $key . '" section in the composer.json must be a string.',
                     1505412184
                 );
@@ -104,12 +106,12 @@ class ModuleFinder
      *
      * @return void
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
-    private function validatePhpListSectionInExtra(array $extra)
+    private function validatePhpListSectionInExtra(array $extra): void
     {
         if (!is_array($extra['phplist/core'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'The extras.phplist/core" section in the composer.json must be an array.',
                 1505411436
             );
@@ -125,7 +127,7 @@ class ModuleFinder
      */
     public function createBundleConfigurationYaml(): string
     {
-        return static::YAML_COMMENT . "\n" . Yaml::dump($this->findBundleClasses());
+        return static::YAML_COMMENT . PHP_EOL . Yaml::dump($this->findBundleClasses());
     }
 
     /**
@@ -134,7 +136,7 @@ class ModuleFinder
      * @return array[] class names of the routes of all installed phpList modules:
      * ['route name' => [route configuration]
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function findRoutes(): array
     {
@@ -167,9 +169,9 @@ class ModuleFinder
      *
      * @return void
      *
-     * @throws \InvalidArgumentException if $extra has an invalid routes configuration
+     * @throws InvalidArgumentException if $extra has an invalid routes configuration
      */
-    private function validateRoutesSectionInExtra(array $extra)
+    private function validateRoutesSectionInExtra(array $extra): void
     {
         if (!isset($extra['phplist/core'])) {
             return;
@@ -180,7 +182,7 @@ class ModuleFinder
             return;
         }
         if (!is_array($extra['phplist/core']['routes'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'The extras.phplist/core.routes section in the composer.json must be an array.',
                 1506429004
             );
@@ -190,7 +192,7 @@ class ModuleFinder
         $bundleExtras = $extra['phplist/core']['routes'];
         foreach ($bundleExtras as $routeName => $routeConfiguration) {
             if (!is_array($routeConfiguration)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'The extras.phplist/core.routes. ' . $routeName .
                     '" section in the composer.json must be an array.',
                     1506429860
@@ -208,7 +210,7 @@ class ModuleFinder
      */
     public function createRouteConfigurationYaml(): string
     {
-        return static::YAML_COMMENT . "\n" . Yaml::dump($this->findRoutes());
+        return static::YAML_COMMENT . PHP_EOL . Yaml::dump($this->findRoutes());
     }
 
     /**
@@ -216,7 +218,7 @@ class ModuleFinder
      *
      * @return array configuration which can be dumped in a config_modules.yml file
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function findGeneralConfiguration(): array
     {
@@ -244,9 +246,9 @@ class ModuleFinder
      *
      * @return void
      *
-     * @throws \InvalidArgumentException if $extra has an invalid routes configuration
+     * @throws InvalidArgumentException if $extra has an invalid routes configuration
      */
-    private function validateGeneralConfigurationSectionInExtra(array $extra)
+    private function validateGeneralConfigurationSectionInExtra(array $extra): void
     {
         if (!isset($extra['phplist/core'])) {
             return;
@@ -257,7 +259,7 @@ class ModuleFinder
             return;
         }
         if (!is_array($extra['phplist/core']['configuration'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'The extras.phplist/core.configuration section in the composer.json must be an array.',
                 1508165934
             );
@@ -273,6 +275,6 @@ class ModuleFinder
      */
     public function createGeneralConfigurationYaml(): string
     {
-        return static::YAML_COMMENT . "\n" . Yaml::dump($this->findGeneralConfiguration());
+        return static::YAML_COMMENT . PHP_EOL . Yaml::dump($this->findGeneralConfiguration());
     }
 }

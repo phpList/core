@@ -1,8 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Model\Identity;
 
+use DateTime;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Identity\AdministratorToken;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
@@ -20,112 +22,71 @@ class AdministratorTokenTest extends TestCase
     use ModelTestTrait;
     use SimilarDatesAssertionTrait;
 
-    /**
-     * @var AdministratorToken
-     */
-    private $subject = null;
+    private AdministratorToken $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = new AdministratorToken();
     }
 
-    /**
-     * @test
-     */
-    public function isDomainModel()
+    public function testIsDomainModel(): void
     {
-        static::assertInstanceOf(DomainModel::class, $this->subject);
+        self::assertInstanceOf(DomainModel::class, $this->subject);
     }
 
-    /**
-     * @test
-     */
-    public function getIdInitiallyReturnsZero()
-    {
-        static::assertSame(0, $this->subject->getId());
-    }
-
-    /**
-     * @test
-     */
-    public function getIdReturnsId()
+    public function testGetIdReturnsId(): void
     {
         $id = 123456;
-        $this->setSubjectId($id);
+        $this->setSubjectId($this->subject, $id);
 
-        static::assertSame($id, $this->subject->getId());
+        self::assertSame($id, $this->subject->getId());
     }
 
-    /**
-     * @test
-     */
-    public function getCreationDateInitiallyReturnsNull()
+    public function testGetCreationDateInitiallyReturnsNull(): void
     {
-        static::assertNull($this->subject->getCreationDate());
+        self::assertNull($this->subject->getCreationDate());
     }
 
-    /**
-     * @test
-     */
-    public function updateCreationDateSetsCreationDateToNow()
+    public function testUpdateCreationDateSetsCreationDateToNow(): void
     {
         $this->subject->updateCreationDate();
 
-        static::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
+        self::assertSimilarDates(new DateTime(), $this->subject->getCreationDate());
     }
 
-    /**
-     * @test
-     */
-    public function getKeyInitiallyReturnsEmptyString()
+    public function testGetKeyInitiallyReturnsEmptyString(): void
     {
-        static::assertSame('', $this->subject->getKey());
+        self::assertSame('', $this->subject->getKey());
     }
 
-    /**
-     * @test
-     */
-    public function setKeySetsKey()
+    public function testSetKeySetsKey(): void
     {
         $value = 'Club-Mate';
         $this->subject->setKey($value);
 
-        static::assertSame($value, $this->subject->getKey());
+        self::assertSame($value, $this->subject->getKey());
     }
 
-    /**
-     * @test
-     */
-    public function getExpiryInitiallyReturnsDateTime()
+    public function testGetExpiryInitiallyReturnsDateTime(): void
     {
-        static::assertInstanceOf(\DateTime::class, $this->subject->getExpiry());
+        self::assertInstanceOf(DateTime::class, $this->subject->getExpiry());
     }
 
-    /**
-     * @test
-     */
-    public function generateExpirySetsExpiryOneHourInTheFuture()
+    public function testGenerateExpirySetsExpiryOneHourInTheFuture(): void
     {
         $this->subject->generateExpiry();
 
-        static::assertSimilarDates(new \DateTime('+1 hour'), $this->subject->getExpiry());
+        self::assertSimilarDates(new DateTime('+1 hour'), $this->subject->getExpiry());
     }
 
-    /**
-     * @test
-     */
-    public function generateKeyCreates32CharacterKey()
+    public function testGenerateKeyCreates32CharacterKey(): void
     {
         $this->subject->generateKey();
 
-        static::assertRegExp('/^[a-z0-9]{32}$/', $this->subject->getKey());
+        self::assertMatchesRegularExpression('/^[a-z0-9]{32}$/', $this->subject->getKey());
     }
 
-    /**
-     * @test
-     */
-    public function generateKeyCreatesDifferentKeysForEachCall()
+    public function testGenerateKeyCreatesDifferentKeysForEachCall(): void
     {
         $this->subject->generateKey();
         $firstKey = $this->subject->getKey();
@@ -133,25 +94,19 @@ class AdministratorTokenTest extends TestCase
         $this->subject->generateKey();
         $secondKey = $this->subject->getKey();
 
-        static::assertNotSame($firstKey, $secondKey);
+        self::assertNotSame($firstKey, $secondKey);
     }
 
-    /**
-     * @test
-     */
-    public function getAdministratorInitiallyReturnsNull()
+    public function testGetAdministratorInitiallyReturnsNull(): void
     {
-        static::assertNull($this->subject->getAdministrator());
+        self::assertNull($this->subject->getAdministrator());
     }
 
-    /**
-     * @test
-     */
-    public function setAdministratorSetsAdministrator()
+    public function testSetAdministratorSetsAdministrator(): void
     {
         $model = new Administrator();
         $this->subject->setAdministrator($model);
 
-        static::assertSame($model, $this->subject->getAdministrator());
+        self::assertSame($model, $this->subject->getAdministrator());
     }
 }

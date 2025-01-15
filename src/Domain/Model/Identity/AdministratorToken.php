@@ -1,13 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Model\Identity;
 
-use Doctrine\ORM\Mapping;
-use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Proxy\Proxy;
-use JMS\Serializer\Annotation\ExclusionPolicy;
-use JMS\Serializer\Annotation\Expose;
+use DateTime;
+use DateTimeZone;
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Persistence\Proxy;
+use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use PhpList\Core\Domain\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
@@ -15,165 +17,99 @@ use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 
 /**
  * This class represents an API authentication token for an administrator.
- *
- * @Mapping\Entity(repositoryClass="PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository")
- * @Mapping\Table(name="phplist_admintoken")
- * @ExclusionPolicy("all")
- *
  * @author Oliver Klee <oliver@phplist.com>
  */
+#[ORM\Entity(repositoryClass: 'PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository')]
+#[ORM\Table(name: 'phplist_admintoken')]
+#[ORM\HasLifecycleCallbacks]
 class AdministratorToken implements DomainModel, Identity, CreationDate
 {
     use IdentityTrait;
 
-    /**
-     * @var string
-     */
-    const DEFAULT_EXPIRY = '+1 hour';
+    public const DEFAULT_EXPIRY = '+1 hour';
 
-    /**
-     * @var int
-     * @Column(type="integer", name="entered")
-     */
-    protected $creationDate = 0;
+    #[ORM\Column(name: 'entered', type: 'integer')]
+    #[Ignore]
+    protected int $creationDate = 0;
 
-    /**
-     * @var \DateTime
-     * @Column(type="datetime", name="expires")
-     * @Expose
-     */
-    private $expiry = null;
+    #[ORM\Column(name: 'expires', type: 'datetime')]
+    #[SerializedName('expiry_date')]
+    private ?DateTime $expiry = null;
 
-    /**
-     * @var string
-     * @Column(name="value")
-     * @Expose
-     */
-    private $key = '';
+    #[ORM\Column(name: 'value')]
+    #[SerializedName('key')]
+    private string $key = '';
 
-    /**
-     * @var Administrator|Proxy
-     * @Mapping\ManyToOne(targetEntity="PhpList\Core\Domain\Model\Identity\Administrator")
-     * @Mapping\JoinColumn(name="adminid")
-     */
-    private $administrator = null;
+    #[ORM\ManyToOne(targetEntity: 'PhpList\Core\Domain\Model\Identity\Administrator')]
+    #[ORM\JoinColumn(name: 'adminid')]
+    #[Ignore]
+    private ?Administrator $administrator = null;
 
-    /**
-     * The Constructor.
-     */
     public function __construct()
     {
-        $this->setExpiry(new \DateTime());
+        $this->setExpiry(new DateTime());
     }
 
-    /**
-     * @return \DateTime|null
-     */
-    public function getCreationDate()
+    public function getCreationDate(): ?DateTime
     {
         if ($this->creationDate === 0) {
             return null;
         }
 
-        $date = new \DateTime();
+        $date = new DateTime();
         $date->setTimestamp($this->creationDate);
-        $date->setTimezone(new \DateTimeZone('UTC'));
+        $date->setTimezone(new DateTimeZone('UTC'));
         return $date;
     }
 
-    /**
-     * @param \DateTime $creationDate
-     *
-     * @return void
-     */
-    private function setCreationDate(\DateTime $creationDate)
+    private function setCreationDate(DateTime $creationDate): void
     {
         $this->creationDate = $creationDate->getTimestamp();
     }
 
-    /**
-     * Updates the creation date to now.
-     *
-     * @Mapping\PrePersist
-     *
-     * @return void
-     */
-    public function updateCreationDate()
+    #[ORM\PrePersist]
+    public function updateCreationDate(): void
     {
-        $this->setCreationDate(new \DateTime());
+        $this->setCreationDate(new DateTime());
     }
 
-    /**
-     * @return \DateTime
-     */
-    public function getExpiry(): \DateTime
+    public function getExpiry(): DateTime
     {
         return $this->expiry;
     }
 
-    /**
-     * @param \DateTime $expiry
-     *
-     * @return void
-     */
-    private function setExpiry(\DateTime $expiry)
+    private function setExpiry(DateTime $expiry): void
     {
         $this->expiry = $expiry;
     }
 
-    /**
-     * Generates and sets an expiry one hour in the future.
-     *
-     * @return void
-     */
-    public function generateExpiry()
+    public function generateExpiry(): void
     {
-        $this->setExpiry(new \DateTime(static::DEFAULT_EXPIRY));
+        $this->setExpiry(new DateTime(static::DEFAULT_EXPIRY));
     }
 
-    /**
-     * @return string
-     */
     public function getKey(): string
     {
         return $this->key;
     }
 
-    /**
-     * @param string $key
-     *
-     * @return void
-     */
-    public function setKey(string $key)
+    public function setKey(string $key): void
     {
         $this->key = $key;
     }
 
-    /**
-     * Generates a new, random key.
-     *
-     * @return void
-     */
-    public function generateKey()
+    public function generateKey(): void
     {
         $key = md5(random_bytes(256));
         $this->setKey($key);
     }
 
-    /**
-     * @return Administrator|Proxy|null
-     */
-    public function getAdministrator()
+    public function getAdministrator(): Administrator|Proxy|null
     {
         return $this->administrator;
     }
 
-    /**
-     * @param Administrator $administrator
-     *
-     * @return void
-     */
-    public function setAdministrator(Administrator $administrator)
+    public function setAdministrator(Administrator $administrator): void
     {
         $this->administrator = $administrator;
     }

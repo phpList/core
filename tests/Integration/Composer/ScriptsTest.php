@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Composer;
@@ -12,100 +13,69 @@ use PHPUnit\Framework\TestCase;
  */
 class ScriptsTest extends TestCase
 {
-    /**
-     * @return string
-     */
     private function getBundleConfigurationFilePath(): string
     {
         return dirname(__DIR__, 3) . '/config/bundles.yml';
     }
 
-    /**
-     * @test
-     */
-    public function bundleConfigurationFileExists()
+    public function testBundleConfigurationFileExists(): void
     {
-        static::assertFileExists($this->getBundleConfigurationFilePath());
+        self::assertFileExists($this->getBundleConfigurationFilePath());
     }
 
-    /**
-     * @return string[][]
-     */
     public function bundleClassNameDataProvider(): array
     {
         return [
             'Symfony framework bundle' => ['Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
-            'sensio framework extras' => ['Sensio\\Bundle\\FrameworkExtraBundle\\SensioFrameworkExtraBundle'],
             'Doctrine bundle' => ['Doctrine\\Bundle\\DoctrineBundle\\DoctrineBundle'],
-            'empty start page bundle' => ['PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle'],
+            'empty start page bundle' => ['PhpList\\Core\\EmptyStartPageBundle\\EmptyStartPageBundle'],
         ];
     }
 
     /**
-     * @test
-     * @param string $bundleClassName
      * @dataProvider bundleClassNameDataProvider
      */
-    public function bundleConfigurationFileContainsModuleBundles(string $bundleClassName)
+    public function testBundleConfigurationFileContainsModuleBundles(string $bundleClassName): void
     {
         $fileContents = file_get_contents($this->getBundleConfigurationFilePath());
-
-        static::assertContains($bundleClassName, $fileContents);
+        self::assertStringContainsString($bundleClassName, $fileContents);
     }
 
-    /**
-     * @return string
-     */
     private function getModuleRoutesConfigurationFilePath(): string
     {
         return dirname(__DIR__, 3) . '/config/routing_modules.yml';
     }
 
-    /**
-     * @test
-     */
-    public function moduleRoutesConfigurationFileExists()
+    public function testModuleRoutesConfigurationFileExists(): void
     {
-        static::assertFileExists($this->getModuleRoutesConfigurationFilePath());
+        self::assertFileExists($this->getModuleRoutesConfigurationFilePath());
     }
 
-    /**
-     * @return string[][]
-     */
     public function moduleRoutingDataProvider(): array
     {
         return [
             'route name' => ['phplist/core.homepage'],
-            'resource' => ["resource: '@PhpListEmptyStartPageBundle/Controller/'"],
-            'type' => ['type: annotation'],
+            'resource' => ["resource: '@EmptyStartPageBundle/Controller/'"],
+            'type' => ['type: attribute'],
         ];
     }
 
     /**
-     * @test
-     * @param string $routeSearchString
      * @dataProvider moduleRoutingDataProvider
      */
-    public function moduleRoutesConfigurationFileContainsModuleRoutes(string $routeSearchString)
+    public function testModuleRoutesConfigurationFileContainsModuleRoutes(string $routeSearchString): void
     {
         $fileContents = file_get_contents($this->getModuleRoutesConfigurationFilePath());
-
-        static::assertContains($routeSearchString, $fileContents);
+        self::assertStringContainsString($routeSearchString, $fileContents);
     }
 
-    /**
-     * @test
-     */
-    public function parametersConfigurationFileExists()
+    public function testParametersConfigurationFileExists(): void
     {
-        static::assertFileExists(dirname(__DIR__, 3) . '/config/parameters.yml');
+        self::assertFileExists(dirname(__DIR__, 3) . '/config/parameters.yml');
     }
 
-    /**
-     * @test
-     */
-    public function modulesConfigurationFileExists()
+    public function testModulesConfigurationFileExists(): void
     {
-        static::assertFileExists(dirname(__DIR__, 3) . '/config/config_modules.yml');
+        self::assertFileExists(dirname(__DIR__, 3) . '/config/config_modules.yml');
     }
 }

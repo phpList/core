@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Repository\Messaging;
@@ -16,4 +17,14 @@ use PhpList\Core\Domain\Repository\AbstractRepository;
  */
 class SubscriberListRepository extends AbstractRepository
 {
+    public function findWithSubscription($id)
+    {
+        return $this->createQueryBuilder('sl')
+            ->innerJoin('sl.subscriptions', 's')
+            ->addSelect('s')
+            ->where('sl.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

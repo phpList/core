@@ -1,6 +1,7 @@
 imports:
     - { resource: services.yml }
     - { resource: repositories.yml }
+    - { resource: doctrine.yml }
 
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
@@ -16,43 +17,26 @@ framework:
         strict_requirements: ~
     form: ~
     csrf_protection: ~
-    validation: { enable_annotations: true }
+    validation:
+        enable_attributes: true
+        email_validation_mode: html5
     #serializer: { enable_annotations: true }
     #templating:
         #engines: ['twig']
     default_locale: '%locale%'
     trusted_hosts: ~
+    handle_all_throwables: true
     session:
         # https://symfony.com/doc/current/reference/configuration/framework.html#handler-id
         handler_id: session.handler.native_file
         save_path: '%kernel.application_dir%/var/sessions/%kernel.environment%'
+        cookie_secure: auto
+        cookie_samesite: lax
     fragments: ~
     http_method_override: true
     assets: ~
     php_errors:
         log: true
-
-# Doctrine Configuration
-doctrine:
-    dbal:
-        # These variables come from parameters.yml. There, the values are read from environment variables
-        # and can also be set directly in the parameters.yml file.
-        driver: '%database_driver%'
-        host: '%database_host%'
-        path: '%database_path%'
-        port: '%database_port%'
-        dbname: '%database_name%'
-        user: '%database_user%'
-        password: '%database_password%'
-        charset: UTF8
-
-    orm:
-        auto_generate_proxy_classes: '%kernel.debug%'
-        naming_strategy: doctrine.orm.naming_strategy.underscore
-        auto_mapping: true
-        mappings:
-            PhpList\Core\Domain\Model:
-                type: annotation
-                is_bundle: false
-                prefix: PhpList\Core\Domain\Model
-                dir: '%kernel.project_dir%/src/Domain/Model/'
+    serializer:
+        enabled: true
+        enable_attributes: true

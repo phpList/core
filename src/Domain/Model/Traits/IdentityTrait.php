@@ -1,10 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Model\Traits;
 
-use Doctrine\ORM\Mapping;
-use JMS\Serializer\Annotation\Expose;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
  * This trait provides an ID property to domain models.
@@ -15,18 +17,13 @@ use JMS\Serializer\Annotation\Expose;
  */
 trait IdentityTrait
 {
-    /**
-     * @var int
-     * @Mapping\Id
-     * @Mapping\Column(type="integer")
-     * @Mapping\GeneratedValue
-     * @Expose
-     */
-    private $id = 0;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    #[SerializedName('id')]
+    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
+    private int $id;
 
-    /**
-     * @return int
-     */
     public function getId(): int
     {
         return $this->id;

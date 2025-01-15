@@ -14,13 +14,13 @@ parameters:
     database_host: '%%env(PHPLIST_DATABASE_HOST)%%'
     env(PHPLIST_DATABASE_HOST): '127.0.0.1'
     database_port: '%%env(PHPLIST_DATABASE_PORT)%%'
-    env(PHPLIST_DATABASE_PORT): null
+    env(PHPLIST_DATABASE_PORT): '3306'
     database_name: '%%env(PHPLIST_DATABASE_NAME)%%'
-    env(PHPLIST_DATABASE_NAME): 'phplist'
+    env(PHPLIST_DATABASE_NAME): 'phplistdb'
     database_user: '%%env(PHPLIST_DATABASE_USER)%%'
-    env(PHPLIST_DATABASE_USER): 'foo'
+    env(PHPLIST_DATABASE_USER): 'phplist'
     database_password: '%%env(PHPLIST_DATABASE_PASSWORD)%%'
-    env(PHPLIST_DATABASE_PASSWORD): 'correct horse battery staple'
+    env(PHPLIST_DATABASE_PASSWORD): 'phplist'
 
     # A secret key that's used to generate certain security-related tokens
     secret: '%%env(PHPLIST_SECRET)%%'

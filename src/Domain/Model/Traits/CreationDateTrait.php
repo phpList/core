@@ -1,9 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Model\Traits;
 
-use Doctrine\ORM\Mapping\PrePersist;
+use DateTime;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
  * This trait provides an automatic creation date for models.
@@ -18,32 +20,26 @@ use Doctrine\ORM\Mapping\PrePersist;
 trait CreationDateTrait
 {
     /**
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getCreationDate()
+    public function getCreationDate(): ?DateTime
     {
         return $this->creationDate;
     }
 
     /**
-     * @param \DateTime $creationDate
+     * @param DateTime $creationDate
      *
      * @return void
      */
-    private function setCreationDate(\DateTime $creationDate)
+    private function setCreationDate(DateTime $creationDate): void
     {
         $this->creationDate = $creationDate;
     }
 
-    /**
-     * Updates the creation date to now.
-     *
-     * @PrePersist
-     *
-     * @return void
-     */
-    public function updateCreationDate()
+    #[ORM\PrePersist]
+    public function updateCreationDate(): void
     {
-        $this->setCreationDate(new \DateTime());
+        $this->setCreationDate(new DateTime());
     }
 }

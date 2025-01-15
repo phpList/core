@@ -1,7 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\TestingSupport\Traits;
+
+use DateTime;
 
 /**
  * This trait provides the assertSimilarDates method.
@@ -13,12 +16,12 @@ trait SimilarDatesAssertionTrait
     /**
      * Asserts that $expected and $actual are similar, i.e., less than than 2 seconds apart.
      *
-     * @param \DateTime $expected
-     * @param \DateTime $actual
+     * @param DateTime $expected
+     * @param DateTime $actual
      *
      * @return void
      */
-    private static function assertSimilarDates(\DateTime $expected, \DateTime $actual)
+    private static function assertSimilarDates(DateTime $expected, DateTime $actual): void
     {
         $maximumAllowedDifference = 2;
 

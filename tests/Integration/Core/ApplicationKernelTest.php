@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Core;
@@ -18,15 +19,15 @@ class ApplicationKernelTest extends TestCase
     /**
      * @var ApplicationKernel
      */
-    private $subject = null;
+    private ApplicationKernel $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = new ApplicationKernel(Environment::TESTING, true);
         $this->subject->boot();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         Bootstrap::purgeInstance();
     }
@@ -44,7 +45,7 @@ class ApplicationKernelTest extends TestCase
      */
     public function getProjectDirReturnsCorePackageRoot()
     {
-        static::assertSame($this->getCorePackageRoot(), $this->subject->getProjectDir());
+        self::assertSame($this->getCorePackageRoot(), $this->subject->getProjectDir());
     }
 
     /**
@@ -52,7 +53,7 @@ class ApplicationKernelTest extends TestCase
      */
     public function getRootDirReturnsCorePackageRoot()
     {
-        static::assertSame($this->getCorePackageRoot(), $this->subject->getRootDir());
+        self::assertSame($this->getCorePackageRoot(), $this->subject->getRootDir());
     }
 
     /**
@@ -68,7 +69,7 @@ class ApplicationKernelTest extends TestCase
      */
     public function getCacheDirReturnsEnvironmentSpecificVarCacheDirectoryInApplicationRoot()
     {
-        static::assertSame(
+        self::assertSame(
             $this->getApplicationRoot() . '/var/cache/' . Environment::TESTING,
             $this->subject->getCacheDir()
         );
@@ -79,7 +80,7 @@ class ApplicationKernelTest extends TestCase
      */
     public function getLogDirReturnsVarLogsDirectoryInApplicationRoot()
     {
-        static::assertSame($this->getApplicationRoot() . '/var/logs', $this->subject->getLogDir());
+        self::assertSame($this->getApplicationRoot() . '/var/logs', $this->subject->getLogDir());
     }
 
     /**
@@ -89,6 +90,6 @@ class ApplicationKernelTest extends TestCase
     {
         $container = $this->subject->getContainer();
 
-        static::assertSame($this->getApplicationRoot(), $container->getParameter('kernel.application_dir'));
+        self::assertSame($this->getApplicationRoot(), $container->getParameter('kernel.application_dir'));
     }
 }

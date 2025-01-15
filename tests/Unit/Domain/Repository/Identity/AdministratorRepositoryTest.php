@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Repository\Identity;
@@ -8,7 +9,6 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophecy\ProphecySubjectInterface;
 
 /**
  * Testcase.
@@ -17,25 +17,19 @@ use Prophecy\Prophecy\ProphecySubjectInterface;
  */
 class AdministratorRepositoryTest extends TestCase
 {
-    /**
-     * @var AdministratorRepository
-     */
-    private $subject = null;
+    private AdministratorRepository $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
-        /** @var EntityManager|ProphecySubjectInterface $entityManager */
-        $entityManager = $this->prophesize(EntityManager::class)->reveal();
-        /** @var ClassMetadata|ProphecySubjectInterface $classDescriptor */
-        $classDescriptor = $this->prophesize(ClassMetadata::class)->reveal();
-        $this->subject = new AdministratorRepository($entityManager, $classDescriptor);
+        $entityManager = $this->createMock(EntityManager::class);
+        $classMetadata = $this->createMock(ClassMetadata::class);
+        $classMetadata->name = 'PhpList\Core\Domain\Model\Identity\Administrator';
+
+        $this->subject = new AdministratorRepository($entityManager, $classMetadata);
     }
 
-    /**
-     * @test
-     */
-    public function classIsEntityRepository()
+    public function testClassIsEntityRepository(): void
     {
-        static::assertInstanceOf(EntityRepository::class, $this->subject);
+        self::assertInstanceOf(EntityRepository::class, $this->subject);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Security;
@@ -18,7 +19,7 @@ class Authentication
     /**
      * @var AdministratorTokenRepository
      */
-    private $tokenRepository = null;
+    private AdministratorTokenRepository $tokenRepository;
 
     /**
      * Authentication constructor.
@@ -38,7 +39,7 @@ class Authentication
      *
      * @return Administrator|null the authenticated Administrator or null if authentication has failed
      */
-    public function authenticateByApiKey(Request $request)
+    public function authenticateByApiKey(Request $request): ?Administrator
     {
         $apiKey = $request->headers->get('php-auth-pw');
         if (empty($apiKey)) {
@@ -57,7 +58,7 @@ class Authentication
         }
 
         try {
-            // This checks for cases where a super user created a session key and then got their super user
+            // This checks for cases where a superuser created a session key and then got their super user
             // privileges removed during the lifetime of the session key. Or an administrator got disabled.
             // In addition, this will load the lazy-loaded model from the database,
             // which will check that the model really exists in the database (i.e., it has not been deleted).

@@ -1,7 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Core;
+
+use UnexpectedValueException;
 
 /**
  * This class provides methods and constants for the application environment/context.
@@ -39,7 +42,7 @@ final class Environment
     /**
      * @var string[]
      */
-    private static $validEnvironments = [self::PRODUCTION, self::DEVELOPMENT, self::TESTING];
+    private static array $validEnvironments = [self::PRODUCTION, self::DEVELOPMENT, self::TESTING];
 
     /**
      * Private constructor to avoid instantiation.
@@ -55,13 +58,13 @@ final class Environment
      *
      * @return void
      *
-     * @throws \UnexpectedValueException
+     * @throws UnexpectedValueException
      */
-    public static function validateEnvironment(string $environment)
+    public static function validateEnvironment(string $environment): void
     {
         if (!in_array($environment, self::$validEnvironments, true)) {
             $environmentsText = '"' . implode('", ', self::$validEnvironments) . '"';
-            throw new \UnexpectedValueException(
+            throw new UnexpectedValueException(
                 '$environment must be one of ' . $environmentsText . ', but actually was: "' . $environment . '"',
                 1499112172
             );

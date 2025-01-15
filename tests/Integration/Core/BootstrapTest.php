@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Core;
@@ -14,35 +15,26 @@ use PHPUnit\Framework\TestCase;
  */
 class BootstrapTest extends TestCase
 {
-    /**
-     * @var Bootstrap
-     */
-    private $subject = null;
+    private Bootstrap $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = Bootstrap::getInstance();
         $this->subject->setEnvironment(Environment::TESTING);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         Bootstrap::purgeInstance();
     }
 
-    /**
-     * @test
-     */
-    public function ensureDevelopmentOrTestingEnvironmentForTestingEnvironmentHasFluentInterface()
+    public function testEnsureDevelopmentOrTestingEnvironmentForTestingEnvironmentHasFluentInterface()
     {
-        static::assertSame($this->subject, $this->subject->ensureDevelopmentOrTestingEnvironment());
+        self::assertSame($this->subject, $this->subject->ensureDevelopmentOrTestingEnvironment());
     }
 
-    /**
-     * @test
-     */
-    public function getApplicationRootReturnsCoreApplicationRoot()
+    public function testGetApplicationRootReturnsCoreApplicationRoot()
     {
-        static::assertSame(dirname(__DIR__, 3), $this->subject->getApplicationRoot());
+        self::assertSame(dirname(__DIR__, 3), $this->subject->getApplicationRoot());
     }
 }

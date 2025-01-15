@@ -1,9 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Core;
 
-use Symfony\Bundle\WebServerBundle\WebServerBundle;
+use Exception;
+use RuntimeException;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -28,12 +30,7 @@ class ApplicationKernel extends Kernel
      */
     public function registerBundles(): array
     {
-        $bundles = $this->bundlesFromConfiguration();
-        if ($this->shouldHaveDevelopmentBundles()) {
-            $bundles[] = new WebServerBundle();
-        }
-
-        return $bundles;
+        return $this->bundlesFromConfiguration();
     }
 
     /**
@@ -41,7 +38,7 @@ class ApplicationKernel extends Kernel
      *
      * @return string absolute path without the trailing slash
      */
-    public function getProjectDir()
+    public function getProjectDir(): string
     {
         return $this->getAndCreateApplicationStructure()->getCorePackageRoot();
     }
@@ -49,7 +46,7 @@ class ApplicationKernel extends Kernel
     /**
      * @return string
      */
-    public function getRootDir()
+    public function getRootDir(): string
     {
         return $this->getProjectDir();
     }
@@ -73,7 +70,7 @@ class ApplicationKernel extends Kernel
     /**
      * @return string
      */
-    public function getCacheDir()
+    public function getCacheDir(): string
     {
         return $this->getApplicationDir() . '/var/cache/' . $this->getEnvironment();
     }
@@ -81,7 +78,7 @@ class ApplicationKernel extends Kernel
     /**
      * @return string
      */
-    public function getLogDir()
+    public function getLogDir(): string
     {
         return $this->getApplicationDir() . '/var/logs';
     }
@@ -105,7 +102,7 @@ class ApplicationKernel extends Kernel
      *
      * @return void
      */
-    protected function build(ContainerBuilder $container)
+    protected function build(ContainerBuilder $container): void
     {
         $container->setParameter('kernel.application_dir', $this->getApplicationDir());
     }
@@ -117,21 +114,13 @@ class ApplicationKernel extends Kernel
      *
      * @return void
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function registerContainerConfiguration(LoaderInterface $loader)
+    public function registerContainerConfiguration(LoaderInterface $loader): void
     {
         $loader->load($this->getApplicationDir() . '/config/parameters.yml');
         $loader->load($this->getRootDir() . '/config/config_' . $this->getEnvironment() . '.yml');
         $loader->load($this->getApplicationDir() . '/config/config_modules.yml');
-    }
-
-    /**
-     * @return bool
-     */
-    private function shouldHaveDevelopmentBundles(): bool
-    {
-        return $this->environment !== Environment::PRODUCTION;
     }
 
     /**
@@ -143,7 +132,6 @@ class ApplicationKernel extends Kernel
     {
         $bundles = [];
 
-        /** @var string[] $packageBundles */
         foreach ($this->readBundleConfiguration() as $packageBundles) {
             foreach ($packageBundles as $bundleClassName) {
                 if (class_exists($bundleClassName)) {
@@ -162,13 +150,13 @@ class ApplicationKernel extends Kernel
      *
      * @return string[][]
      *
-     * @throws \RuntimeException if the configuration file cannot be read
+     * @throws RuntimeException if the configuration file cannot be read
      */
     private function readBundleConfiguration(): array
     {
         $configurationFilePath = $this->getApplicationDir() . '/config/bundles.yml';
         if (!is_readable($configurationFilePath)) {
-            throw new \RuntimeException('The file "' . $configurationFilePath . '" could not be read.', 1504272377);
+            throw new RuntimeException('The file "' . $configurationFilePath . '" could not be read.', 1504272377);
         }
 
         return Yaml::parse(file_get_contents($configurationFilePath));

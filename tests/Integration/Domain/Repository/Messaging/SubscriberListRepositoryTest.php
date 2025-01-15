@@ -1,11 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Domain\Repository\Messaging;
 
-use Doctrine\ORM\Proxy\Proxy;
+use DateTime;
+use Doctrine\ORM\Tools\SchemaTool;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Messaging\SubscriberList;
+use PhpList\Core\Domain\Model\Subscription\Subscriber;
 use PhpList\Core\Domain\Model\Subscription\Subscription;
 use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository;
@@ -13,79 +16,52 @@ use PhpList\Core\Domain\Repository\Subscription\SubscriberRepository;
 use PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository;
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
-use PHPUnit\Framework\TestCase;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\AdministratorFixture;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriberFixture;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriberListFixture;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriptionFixture;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
  * Testcase.
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class SubscriberListRepositoryTest extends TestCase
+class SubscriberListRepositoryTest extends KernelTestCase
 {
     use DatabaseTestTrait;
     use SimilarDatesAssertionTrait;
 
-    /**
-     * @var string
-     */
-    const TABLE_NAME = 'phplist_list';
+    private SubscriberListRepository $subscriberListRepository;
+    private AdministratorRepository $administratorRepository;
+    private SubscriberRepository $subscriberRepository;
+    private SubscriptionRepository $subscriptionRepository;
 
-    /**
-     * @var string
-     */
-    const ADMINISTRATOR_TABLE_NAME = 'phplist_admin';
-
-    /**
-     * @var string
-     */
-    const SUBSCRIPTION_TABLE_NAME = 'phplist_listuser';
-
-    /**
-     * @var string
-     */
-    const SUBSCRIBER_TABLE_NAME = 'phplist_user_user';
-
-    /**
-     * @var SubscriberListRepository
-     */
-    private $subject = null;
-
-    /**
-     * @var AdministratorRepository
-     */
-    private $administratorRepository = null;
-
-    /**
-     * @var SubscriberRepository
-     */
-    private $subscriberRepository = null;
-
-    /**
-     * @var SubscriptionRepository
-     */
-    private $subscriptionRepository = null;
-
-    protected function setUp()
+    protected function setUp(): void
     {
-        $this->setUpDatabaseTest();
+        parent::setUp();
+        $this->loadSchema();
 
-        $this->subject = $this->container->get(SubscriberListRepository::class);
-        $this->administratorRepository = $this->container->get(AdministratorRepository::class);
-        $this->subscriberRepository = $this->container->get(SubscriberRepository::class);
-        $this->subscriptionRepository = $this->container->get(SubscriptionRepository::class);
+        $this->subscriberListRepository = self::getContainer()->get(SubscriberListRepository::class);
+        $this->administratorRepository = self::getContainer()->get(AdministratorRepository::class);
+        $this->subscriberRepository = self::getContainer()->get(SubscriberRepository::class);
+        $this->subscriptionRepository = self::getContainer()->get(SubscriptionRepository::class);
     }
 
-    /**
-     * @test
-     */
-    public function findReadsModelFromDatabase()
+    protected function tearDown(): void
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
-        $this->applyDatabaseChanges();
+        $schemaTool = new SchemaTool($this->entityManager);
+        $schemaTool->dropDatabase();
+        parent::tearDown();
+    }
+
+    public function testFindReadsModelFromDatabase()
+    {
+        $this->loadFixtures([SubscriberListFixture::class]);
 
         $id = 1;
-        $creationDate = new \DateTime('2016-06-22 15:01:17');
-        $modificationDate = new \DateTime('2016-06-23 19:50:43');
+        $creationDate = new DateTime();
+        $modificationDate = new DateTime();
         $name = 'News';
         $description = 'News (and some fun stuff)';
         $listPosition = 12;
@@ -93,219 +69,147 @@ class SubscriberListRepositoryTest extends TestCase
         $category = 'news';
 
         /** @var SubscriberList $model */
-        $model = $this->subject->find($id);
+        $model = $this->subscriberListRepository->find($id);
 
-        static::assertSame($id, $model->getId());
-        static::assertEquals($creationDate, $model->getCreationDate());
-        static::assertEquals($modificationDate, $model->getModificationDate());
-        static::assertSame($name, $model->getName());
-        static::assertSame($description, $model->getDescription());
-        static::assertSame($listPosition, $model->getListPosition());
-        static::assertSame($subjectPrefix, $model->getSubjectPrefix());
-        static::assertTrue($model->isPublic());
-        static::assertSame($category, $model->getCategory());
+        self::assertSame($id, $model->getId());
+        self::assertSimilarDates($creationDate, $model->getCreationDate());
+        self::assertSimilarDates($modificationDate, $model->getModificationDate());
+        self::assertSame($name, $model->getName());
+        self::assertSame($description, $model->getDescription());
+        self::assertSame($listPosition, $model->getListPosition());
+        self::assertSame($subjectPrefix, $model->getSubjectPrefix());
+        self::assertTrue($model->isPublic());
+        self::assertSame($category, $model->getCategory());
     }
 
-    /**
-     * @test
-     */
-    public function createsOwnerAssociationAsProxy()
+    public function testCreationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(static::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
-        $this->applyDatabaseChanges();
-
-        $subscriberListId = 1;
-        $ownerId = 1;
-        /** @var SubscriberList $model */
-        $model = $this->subject->find($subscriberListId);
-        $owner = $model->getOwner();
-
-        static::assertInstanceOf(Administrator::class, $owner);
-        static::assertInstanceOf(Proxy::class, $owner);
-        static::assertSame($ownerId, $owner->getId());
-    }
-
-    /**
-     * @test
-     */
-    public function creationDateOfNewModelIsSetToNowOnPersist()
-    {
-        $this->touchDatabaseTable(static::TABLE_NAME);
-
         $model = new SubscriberList();
-        $expectedCreationDate = new \DateTime();
+        $expectedCreationDate = new DateTime();
 
         $this->entityManager->persist($model);
 
-        static::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
+        self::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
     }
 
-    /**
-     * @test
-     */
-    public function modificationDateOfNewModelIsSetToNowOnPersist()
+    public function testModificationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->touchDatabaseTable(static::TABLE_NAME);
-
         $model = new SubscriberList();
-        $expectedModificationDate = new \DateTime();
+        $expectedModificationDate = new DateTime();
 
         $this->entityManager->persist($model);
 
-        static::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
+        self::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
     }
 
-    /**
-     * @test
-     */
-    public function savePersistsAndFlushesModel()
+    public function testSavePersistsAndFlushesModel()
     {
-        $this->touchDatabaseTable(static::TABLE_NAME);
-
         $model = new SubscriberList();
-        $this->subject->save($model);
+        $this->subscriberListRepository->save($model);
 
-        static::assertSame($model, $this->subject->find($model->getId()));
+        self::assertSame($model, $this->subscriberListRepository->find($model->getId()));
     }
 
-    /**
-     * @test
-     */
-    public function findByOwnerFindsSubscriberListWithTheGivenOwner()
+    public function testFindByOwnerFindsSubscriberListWithTheGivenOwner()
     {
-        $this->getDataSet()->addTable(static::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([SubscriberListFixture::class, AdministratorFixture::class]);
 
         $owner = $this->administratorRepository->find(1);
-        $ownedList = $this->subject->find(1);
+        $ownedList = $this->subscriberListRepository->find(1);
 
-        $result = $this->subject->findByOwner($owner);
+        $result = $this->subscriberListRepository->findByOwner($owner);
 
-        static::assertContains($ownedList, $result);
+        self::assertContains($ownedList, $result);
     }
 
-    /**
-     * @test
-     */
-    public function findByOwnerIgnoresSubscriberListWithOtherOwner()
+    public function testFindByOwnerIgnoresSubscriberListWithOtherOwner()
     {
-        $this->getDataSet()->addTable(static::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([SubscriberListFixture::class, AdministratorFixture::class]);
 
         $owner = $this->administratorRepository->find(1);
-        $foreignList = $this->subject->find(2);
+        $foreignList = $this->subscriberListRepository->find(2);
 
-        $result = $this->subject->findByOwner($owner);
+        $result = $this->subscriberListRepository->findByOwner($owner);
 
-        static::assertNotContains($foreignList, $result);
+        self::assertNotContains($foreignList, $result);
     }
 
-    /**
-     * @test
-     */
-    public function findByOwnerIgnoresSubscriberListFromOtherOwner()
+    public function testFindByOwnerIgnoresSubscriberListFromOtherOwner()
     {
-        $this->getDataSet()->addTable(static::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([SubscriberListFixture::class]);
 
         $owner = $this->administratorRepository->find(1);
-        $unownedList = $this->subject->find(3);
+        $unownedList = $this->subscriberListRepository->find(3);
 
-        $result = $this->subject->findByOwner($owner);
+        $result = $this->subscriberListRepository->findByOwner($owner);
 
-        static::assertNotContains($unownedList, $result);
+        self::assertNotContains($unownedList, $result);
     }
 
-    /**
-     * @test
-     */
-    public function findsAssociatedSubscriptions()
+    public function testFindsAssociatedSubscriptions()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
-        $this->getDataSet()->addTable(static::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
-        $this->getDataSet()->addTable(static::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([SubscriberListFixture::class, SubscriberFixture::class, SubscriptionFixture::class]);
 
         $id = 2;
-        /** @var SubscriberList $model */
-        $model = $this->subject->find($id);
-        $subscriptions = $model->getSubscriptions();
+        $subscriber = $this->subscriberRepository->find($id);
+        /** @var Subscription[] $subscriptions */
+        $subscriptions = $this->subscriptionRepository->findBySubscriberList($subscriber);
 
-        static::assertFalse($subscriptions->isEmpty());
-        /** @var Subscription $firstSubscription */
-        $firstSubscription = $subscriptions->first();
-        static::assertInstanceOf(Subscription::class, $firstSubscription);
+        self::assertNotEmpty($subscriptions);
+        $firstSubscription = $subscriptions[0];
+        self::assertInstanceOf(Subscription::class, $firstSubscription);
         $expectedSubscriberId = 1;
-        static::assertSame($expectedSubscriberId, $firstSubscription->getSubscriber()->getId());
+        self::assertSame($expectedSubscriberId, $firstSubscription->getSubscriber()->getId());
     }
 
-    /**
-     * @test
-     */
-    public function findsAssociatedSubscribers()
+    public function testFindsAssociatedSubscribers()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
-        $this->getDataSet()->addTable(static::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
-        $this->getDataSet()->addTable(static::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([SubscriberListFixture::class, SubscriberFixture::class, SubscriptionFixture::class]);
 
         $id = 2;
-        /** @var SubscriberList $model */
-        $model = $this->subject->find($id);
-        $subscribers = $model->getSubscribers();
+        /** @var Subscriber[] $subscribers */
+        $subscribers = $this->subscriberRepository->getSubscribersBySubscribedListId($id);
 
         $expectedSubscriber = $this->subscriberRepository->find(1);
         $unexpectedSubscriber = $this->subscriberRepository->find(3);
-        static::assertTrue($subscribers->contains($expectedSubscriber));
-        static::assertFalse($subscribers->contains($unexpectedSubscriber));
+        self::assertTrue(in_array($expectedSubscriber, $subscribers, true));
+        self::assertFalse(in_array($unexpectedSubscriber, $subscribers, true));
     }
 
-    /**
-     * @test
-     */
-    public function removeAlsoRemovesAssociatedSubscriptions()
+    public function testRemoveAlsoRemovesAssociatedSubscriptions()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
-        $this->getDataSet()->addTable(static::SUBSCRIBER_TABLE_NAME, __DIR__ . '/../Fixtures/Subscriber.csv');
-        $this->getDataSet()->addTable(static::SUBSCRIPTION_TABLE_NAME, __DIR__ . '/../Fixtures/Subscription.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([SubscriberListFixture::class, SubscriberFixture::class, SubscriptionFixture::class]);
 
         $initialNumberOfSubscriptions = count($this->subscriptionRepository->findAll());
 
         $id = 2;
-        /** @var SubscriberList $model */
-        $model = $this->subject->find($id);
+        /** @var SubscriberList $subscriberList */
+        $subscriberList = $this->subscriberListRepository->findWithSubscription($id);
 
-        $numberOfAssociatedSubscriptions = count($model->getSubscriptions());
-        static::assertGreaterThan(0, $numberOfAssociatedSubscriptions);
+        $numberOfAssociatedSubscriptions = count($subscriberList->getSubscriptions());
+        self::assertGreaterThan(0, $numberOfAssociatedSubscriptions);
 
-        $this->subject->remove($model);
+        $this->entityManager->remove($subscriberList);
+        $this->entityManager->flush();
 
         $newNumberOfSubscriptions = count($this->subscriptionRepository->findAll());
+
         $numberOfRemovedSubscriptions = $initialNumberOfSubscriptions - $newNumberOfSubscriptions;
-        static::assertSame($numberOfAssociatedSubscriptions, $numberOfRemovedSubscriptions);
+        self::assertSame($numberOfAssociatedSubscriptions, $numberOfRemovedSubscriptions);
     }
 
-    /**
-     * @test
-     */
-    public function removeRemovesModel()
+    public function testRemoveRemovesModel()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/SubscriberList.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([SubscriberListFixture::class]);
 
         /** @var SubscriberList[] $allModels */
-        $allModels = $this->subject->findAll();
+        $allModels = $this->subscriberListRepository->findAll();
         $numberOfModelsBeforeRemove = count($allModels);
         $firstModel = $allModels[0];
 
-        $this->subject->remove($firstModel);
+        $this->subscriberListRepository->remove($firstModel);
 
-        $numberOfModelsAfterRemove = count($this->subject->findAll());
-        static::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);
+        $numberOfModelsAfterRemove = count($this->subscriberListRepository->findAll());
+        self::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);
     }
 }

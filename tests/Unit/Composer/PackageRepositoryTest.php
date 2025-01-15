@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Composer;
@@ -7,11 +8,10 @@ use Composer\Composer;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryManager;
-use Composer\Repository\WritableRepositoryInterface;
 use PhpList\Core\Composer\PackageRepository;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Prophecy\ProphecySubjectInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 
 /**
  * Testcase.
@@ -20,148 +20,107 @@ use Prophecy\Prophecy\ProphecySubjectInterface;
  */
 class PackageRepositoryTest extends TestCase
 {
-    /**
-     * @var PackageRepository
-     */
-    private $subject = null;
+    private PackageRepository $subject;
+    private Composer|MockObject $composer;
+    private InstalledRepositoryInterface|MockObject $localRepository;
 
-    /**
-     * @var Composer|ObjectProphecy
-     */
-    private $composerProphecy = null;
-
-    /**
-     * @var Composer|ProphecySubjectInterface
-     */
-    private $composer = null;
-
-    /**
-     * @var WritableRepositoryInterface|ObjectProphecy
-     */
-    private $localRepositoryProphecy = null;
-
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = new PackageRepository();
 
-        /** @var Composer|ObjectProphecy $composerProphecy */
-        $composerProphecy = $this->prophesize(Composer::class);
-        $this->composerProphecy = $composerProphecy;
-        $this->composer = $composerProphecy->reveal();
+        $this->composer = $this->createMock(Composer::class);
 
-        /** @var RepositoryManager|ObjectProphecy $repositoryManagerProphecy */
-        $repositoryManagerProphecy = $this->prophesize(RepositoryManager::class);
-        /** @var RepositoryManager|ProphecySubjectInterface $repositoryManager */
-        $repositoryManager = $repositoryManagerProphecy->reveal();
-        $composerProphecy->getRepositoryManager()->willReturn($repositoryManager);
+        $repositoryManager = $this->createMock(RepositoryManager::class);
+        $this->composer
+            ->expects($this->any())
+            ->method('getRepositoryManager')
+            ->willReturn($repositoryManager);
 
-        $this->localRepositoryProphecy = $this->prophesize(WritableRepositoryInterface::class);
-        /** @var WritableRepositoryInterface|ProphecySubjectInterface $localRepository */
-        $localRepository = $this->localRepositoryProphecy->reveal();
-        $repositoryManagerProphecy->getLocalRepository()->willReturn($localRepository);
+        $this->localRepository = $this->createMock(InstalledRepositoryInterface::class);
+        $repositoryManager
+            ->expects($this->any())
+            ->method('getLocalRepository')
+            ->willReturn($this->localRepository);
+
+        $this->subject->injectComposer($this->composer);
 
         $this->subject->injectComposer($this->composer);
     }
 
-    /**
-     * @test
-     */
-    public function findAllIncludesDependencies()
+    public function testFindAllIncludesDependencies(): void
     {
-        $this->composerProphecy->getPackage()->willReturn($this->prophesize(RootPackageInterface::class)->reveal());
+        $rootPackage = $this->createMock(RootPackageInterface::class);
+        $this->composer->expects($this->any())->method('getPackage')->willReturn($rootPackage);
 
-        /** @var PackageInterface|ObjectProphecy $dependencyProphecy */
-        $dependencyProphecy = $this->prophesize(PackageInterface::class);
-        $dependencyProphecy->getName()->willReturn('phplist/core');
-        /** @var PackageInterface|ProphecySubjectInterface $dependency */
-        $dependency = $dependencyProphecy->reveal();
-        $this->localRepositoryProphecy->getPackages()->willReturn([$dependency]);
+        $dependency = $this->createMock(PackageInterface::class);
+        $dependency->expects($this->any())->method('getName')->willReturn('phplist/core');
 
-        static::assertContains($dependency, $this->subject->findAll());
+        $this->localRepository->expects($this->any())->method('getPackages')->willReturn([$dependency]);
+
+        $result = $this->subject->findAll();
+        self::assertContains($dependency, $result);
     }
 
-    /**
-     * @test
-     */
-    public function findAllIncludesRootPackage()
+    public function testFindAllIncludesRootPackage(): void
     {
-        /** @var RootPackageInterface|ProphecySubjectInterface $rootPackage */
-        $rootPackage = $this->prophesize(RootPackageInterface::class)->reveal();
-        $this->composerProphecy->getPackage()->willReturn($rootPackage);
+        $rootPackage = $this->createMock(RootPackageInterface::class);
+        $this->composer->expects($this->any())->method('getPackage')->willReturn($rootPackage);
 
-        $this->localRepositoryProphecy->getPackages()->willReturn([]);
+        $this->localRepository->expects($this->any())->method('getPackages')->willReturn([]);
 
-        static::assertContains($rootPackage, $this->subject->findAll());
+        $result = $this->subject->findAll();
+        self::assertContains($rootPackage, $result);
     }
 
-    /**
-     * @test
-     */
-    public function findAllExcludesDuplicates()
+    public function testFindAllExcludesDuplicates(): void
     {
-        $this->composerProphecy->getPackage()->willReturn($this->prophesize(RootPackageInterface::class)->reveal());
+        $rootPackage = $this->createMock(RootPackageInterface::class);
+        $this->composer->expects($this->any())->method('getPackage')->willReturn($rootPackage);
 
-        $packageName = 'phplist/core';
+        $dependency = $this->createMock(PackageInterface::class);
+        $dependency->expects($this->any())->method('getName')->willReturn('phplist/core');
 
-        /** @var PackageInterface|ObjectProphecy $dependencyProphecy */
-        $dependencyProphecy = $this->prophesize(PackageInterface::class);
-        $dependencyProphecy->getName()->willReturn($packageName);
-        /** @var PackageInterface|ProphecySubjectInterface $dependency */
-        $dependency = $dependencyProphecy->reveal();
-        /** @var PackageInterface|ObjectProphecy $dependencyAliasProphecy */
-        $dependencyAliasProphecy = $this->prophesize(PackageInterface::class);
-        $dependencyAliasProphecy->getName()->willReturn($packageName);
-        /** @var PackageInterface|ProphecySubjectInterface $dependencyAlias  */
-        $dependencyAlias = $dependencyAliasProphecy->reveal();
-        $this->localRepositoryProphecy->getPackages()->willReturn([$dependency, $dependencyAlias]);
+        $duplicateDependency = $this->createMock(PackageInterface::class);
+        $duplicateDependency->expects($this->any())->method('getName')->willReturn('phplist/core');
 
-        static::assertNotContains($dependencyAlias, $this->subject->findAll());
+        $this->localRepository
+            ->expects($this->any())
+            ->method('getPackages')
+            ->willReturn([$dependency, $duplicateDependency]);
+
+        $result = $this->subject->findAll();
+        self::assertNotContains($duplicateDependency, $result);
     }
 
-    /**
-     * @test
-     */
-    public function findModulesForPhpListModuleRootPackageIncludesIt()
+    public function testFindModulesForPhpListModuleRootPackageIncludesIt(): void
     {
-        /** @var RootPackageInterface|ObjectProphecy $rootPackageProphecy */
-        $rootPackageProphecy = $this->prophesize(RootPackageInterface::class);
-        $rootPackageProphecy->getName()->willReturn('phplist/base-installation');
-        $rootPackageProphecy->getType()->willReturn('phplist-module');
-        /** @var RootPackageInterface|ProphecySubjectInterface $rootPackage */
-        $rootPackage = $rootPackageProphecy->reveal();
-        $this->composerProphecy->getPackage()->willReturn($rootPackage);
+        $rootPackage = $this->createMock(RootPackageInterface::class);
+        $rootPackage->expects($this->any())->method('getName')->willReturn('phplist/base-installation');
+        $rootPackage->expects($this->any())->method('getType')->willReturn('phplist-module');
 
-        $this->localRepositoryProphecy->getPackages()->willReturn([]);
+        $this->composer->expects($this->any())->method('getPackage')->willReturn($rootPackage);
 
-        static::assertContains($rootPackage, $this->subject->findModules());
+        $this->localRepository->expects($this->any())->method('getPackages')->willReturn([]);
+
+        $result = $this->subject->findModules();
+        self::assertContains($rootPackage, $result);
     }
 
-    /**
-     * @test
-     */
-    public function findModulesForPhpListModuleDependencyReturnsIt()
+    public function testFindModulesForPhpListModuleDependencyReturnsIt(): void
     {
-        /** @var RootPackageInterface|ObjectProphecy $rootPackageProphecy */
-        $rootPackageProphecy = $this->prophesize(RootPackageInterface::class);
-        /** @var RootPackageInterface|ObjectProphecy $rootPackage */
-        $rootPackage = $rootPackageProphecy->reveal();
-        $this->composerProphecy->getPackage()->willReturn($rootPackage);
+        $rootPackage = $this->createMock(RootPackageInterface::class);
+        $this->composer->expects($this->any())->method('getPackage')->willReturn($rootPackage);
 
-        /** @var RootPackageInterface|ObjectProphecy $dependencyProphecy */
-        $dependencyProphecy = $this->prophesize(RootPackageInterface::class);
-        $dependencyProphecy->getType()->willReturn('phplist-module');
-        $dependencyProphecy->getName()->willReturn('phplist/core');
-        /** @var RootPackageInterface|ProphecySubjectInterface $dependency */
-        $dependency = $dependencyProphecy->reveal();
+        $dependency = $this->createMock(PackageInterface::class);
+        $dependency->expects($this->any())->method('getName')->willReturn('phplist/core');
+        $dependency->expects($this->any())->method('getType')->willReturn('phplist-module');
 
-        $this->localRepositoryProphecy->getPackages()->willReturn([$dependency]);
+        $this->localRepository->expects($this->any())->method('getPackages')->willReturn([$dependency]);
 
-        static::assertContains($dependency, $this->subject->findModules());
+        $result = $this->subject->findModules();
+        self::assertContains($dependency, $result);
     }
 
-    /**
-     * @return string[][]
-     */
     public function nonPhpListModuleTypeDataProvider(): array
     {
         return [
@@ -173,47 +132,37 @@ class PackageRepositoryTest extends TestCase
     }
 
     /**
-     * @test
-     * @param string $type
      * @dataProvider nonPhpListModuleTypeDataProvider
      */
-    public function findModulesForNonPhpListModuleRootPackageIgnoresIt(string $type)
+    public function testFindModulesForNonPhpListModuleRootPackageIgnoresIt(string $type): void
     {
-        /** @var RootPackageInterface|ObjectProphecy $rootPackageProphecy */
-        $rootPackageProphecy = $this->prophesize(RootPackageInterface::class);
-        $rootPackageProphecy->getType()->willReturn($type);
-        $rootPackageProphecy->getName()->willReturn('phplist/base-installation');
-        /** @var RootPackageInterface|ProphecySubjectInterface $rootPackage */
-        $rootPackage = $rootPackageProphecy->reveal();
-        $this->composerProphecy->getPackage()->willReturn($rootPackage);
+        $rootPackage = $this->createMock(RootPackageInterface::class);
+        $rootPackage->expects($this->any())->method('getName')->willReturn('phplist/base-installation');
+        $rootPackage->expects($this->any())->method('getType')->willReturn($type);
 
-        $this->localRepositoryProphecy->getPackages()->willReturn([]);
+        $this->composer->expects($this->any())->method('getPackage')->willReturn($rootPackage);
 
-        static::assertNotContains($rootPackage, $this->subject->findModules());
+        $this->localRepository->expects($this->any())->method('getPackages')->willReturn([]);
+
+        $result = $this->subject->findModules();
+        self::assertNotContains($rootPackage, $result);
     }
 
     /**
-     * @test
-     * @param string $type
      * @dataProvider nonPhpListModuleTypeDataProvider
      */
-    public function findModulesForNonPhpListModuleDependencyIgnoresIt(string $type)
+    public function testFindModulesForNonPhpListModuleDependencyIgnoresIt(string $type): void
     {
-        /** @var RootPackageInterface|ObjectProphecy $rootPackageProphecy */
-        $rootPackageProphecy = $this->prophesize(RootPackageInterface::class);
-        /** @var RootPackageInterface|ProphecySubjectInterface $rootPackage */
-        $rootPackage = $rootPackageProphecy->reveal();
-        $this->composerProphecy->getPackage()->willReturn($rootPackage);
+        $rootPackage = $this->createMock(RootPackageInterface::class);
+        $this->composer->method('getPackage')->willReturn($rootPackage);
 
-        /** @var RootPackageInterface|ObjectProphecy $dependencyProphecy */
-        $dependencyProphecy = $this->prophesize(RootPackageInterface::class);
-        $dependencyProphecy->getType()->willReturn($type);
-        $dependencyProphecy->getName()->willReturn('phplist/test');
-        /** @var RootPackageInterface|ProphecySubjectInterface $dependency */
-        $dependency = $dependencyProphecy->reveal();
+        $dependency = $this->createMock(PackageInterface::class);
+        $dependency->expects($this->any())->method('getName')->willReturn('phplist/test');
+        $dependency->expects($this->any())->method('getType')->willReturn($type);
 
-        $this->localRepositoryProphecy->getPackages()->willReturn([$dependency]);
+        $this->localRepository->expects($this->any())->method('getPackages')->willReturn([$dependency]);
 
-        static::assertNotContains($dependency, $this->subject->findModules());
+        $result = $this->subject->findModules();
+        self::assertNotContains($dependency, $result);
     }
 }

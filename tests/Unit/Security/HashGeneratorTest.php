@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Security;
@@ -13,45 +14,34 @@ use PHPUnit\Framework\TestCase;
  */
 class HashGeneratorTest extends TestCase
 {
-    /**
-     * @var HashGenerator
-     */
-    private $subject = null;
+    private HashGenerator $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = new HashGenerator();
     }
 
-    /**
-     * @test
-     */
-    public function createPasswordHashCreates32ByteHash()
+    public function testCreatePasswordHashCreates64CharacterHash(): void
     {
-        static::assertRegExp('/^[a-z0-9]{64}$/', $this->subject->createPasswordHash('Portal'));
+        $hash = $this->subject->createPasswordHash('Portal');
+        self::assertMatchesRegularExpression('/^[a-z0-9]{64}$/', $hash);
     }
 
-    /**
-     * @test
-     */
-    public function createPasswordHashCalledTwoTimesWithSamePasswordCreatesSameHash()
+    public function testCreatePasswordHashCalledTwoTimesWithSamePasswordCreatesSameHash(): void
     {
         $password = 'Aperture Science';
 
-        static::assertSame(
-            $this->subject->createPasswordHash($password),
-            $this->subject->createPasswordHash($password)
-        );
+        $hash1 = $this->subject->createPasswordHash($password);
+        $hash2 = $this->subject->createPasswordHash($password);
+
+        self::assertSame($hash1, $hash2);
     }
 
-    /**
-     * @test
-     */
-    public function createPasswordHashCalledTwoTimesWithDifferentPasswordsCreatesDifferentHashes()
+    public function testCreatePasswordHashCalledTwoTimesWithDifferentPasswordsCreatesDifferentHashes(): void
     {
-        static::assertNotSame(
-            $this->subject->createPasswordHash('Mel'),
-            $this->subject->createPasswordHash('Cave Johnson')
-        );
+        $hash1 = $this->subject->createPasswordHash('Mel');
+        $hash2 = $this->subject->createPasswordHash('Cave Johnson');
+
+        self::assertNotSame($hash1, $hash2);
     }
 }

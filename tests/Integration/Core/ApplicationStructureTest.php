@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Core;
@@ -17,17 +18,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class ApplicationStructureTest extends TestCase
 {
-    /**
-     * @var ApplicationKernel
-     */
-    private $kernel = null;
+    private ApplicationKernel $kernel;
+    private ContainerInterface $container;
 
-    /**
-     * @var ContainerInterface
-     */
-    private $container = null;
-
-    protected function setUp()
+    protected function setUp(): void
     {
         $bootstrap = Bootstrap::getInstance();
         $bootstrap->setEnvironment(Environment::TESTING)->configure();
@@ -38,27 +32,21 @@ class ApplicationStructureTest extends TestCase
         $this->container = $this->kernel->getContainer();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->kernel->shutdown();
         Bootstrap::purgeInstance();
     }
 
-    /**
-     * @test
-     */
-    public function subjectIsAvailableViaContainer()
+    public function testSubjectIsAvailableViaContainer()
     {
-        static::assertInstanceOf(ApplicationStructure::class, $this->container->get(ApplicationStructure::class));
+        self::assertInstanceOf(ApplicationStructure::class, $this->container->get(ApplicationStructure::class));
     }
 
-    /**
-     * @test
-     */
-    public function classIsRegisteredAsSingletonInContainer()
+    public function testClassIsRegisteredAsSingletonInContainer()
     {
         $id = ApplicationStructure::class;
 
-        static::assertSame($this->container->get($id), $this->container->get($id));
+        self::assertSame($this->container->get($id), $this->container->get($id));
     }
 }

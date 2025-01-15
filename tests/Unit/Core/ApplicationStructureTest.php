@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Core;
@@ -13,29 +14,20 @@ use PHPUnit\Framework\TestCase;
  */
 class ApplicationStructureTest extends TestCase
 {
-    /**
-     * @var ApplicationStructure
-     */
-    private $subject = null;
+    private ApplicationStructure $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = new ApplicationStructure();
     }
 
-    /**
-     * @test
-     */
-    public function getApplicationRootReturnsCoreApplicationRoot()
+    public function testGetApplicationRootReturnsCoreApplicationRoot(): void
     {
-        static::assertSame(dirname(__DIR__, 3), $this->subject->getApplicationRoot());
+        self::assertSame(dirname(__DIR__, 3), $this->subject->getApplicationRoot());
     }
 
-    /**
-     * @test
-     */
-    public function getCorePackageRootReturnsCorePackageRoot()
+    public function testGetCorePackageRootReturnsCorePackageRoot(): void
     {
-        static::assertSame(dirname(__DIR__, 3), $this->subject->getCorePackageRoot());
+        self::assertSame(dirname(__DIR__, 3), $this->subject->getCorePackageRoot());
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\TestingSupport\Traits;
@@ -17,11 +18,11 @@ trait ContainsInstanceAssertionTrait
      *
      * @return void
      */
-    public static function assertContainsInstanceOf(string $className, array $haystack, string $message = '')
+    public static function assertContainsInstanceOf(string $className, array $haystack, string $message = ''): void
     {
         $found = false;
         foreach ($haystack as $element) {
-            if (is_object($element) && $element instanceof $className) {
+            if ($element instanceof $className) {
                 $found = true;
                 break;
             }

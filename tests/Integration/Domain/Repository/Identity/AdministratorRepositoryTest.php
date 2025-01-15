@@ -1,160 +1,143 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Domain\Repository\Identity;
 
+use DateTime;
+use Doctrine\ORM\Tools\SchemaTool;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
-use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
-use PHPUnit\Framework\TestCase;
+use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\AdministratorFixture;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
  * Testcase.
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class AdministratorRepositoryTest extends TestCase
+class AdministratorRepositoryTest extends KernelTestCase
 {
     use DatabaseTestTrait;
-    use SimilarDatesAssertionTrait;
+    use ModelTestTrait;
 
-    /**
-     * @var string
-     */
-    const TABLE_NAME = 'phplist_admin';
+    private ?AdministratorRepository $repository = null;
 
-    /**
-     * @var AdministratorRepository
-     */
-    private $subject = null;
-
-    protected function setUp()
+    protected function setUp(): void
     {
-        $this->setUpDatabaseTest();
-
-        $this->subject = $this->container->get(AdministratorRepository::class);
+        parent::setUp();
+        $this->loadSchema();
+        $this->repository = self::getContainer()->get(AdministratorRepository::class);
+        $this->loadFixtures([AdministratorFixture::class]);
     }
 
-    /**
-     * @test
-     */
-    public function findReadsModelFromDatabase()
+    protected function tearDown(): void
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->applyDatabaseChanges();
-
-        $id = 1;
-        $loginName = 'john.doe';
-        $emailAddress = 'john@example.com';
-        $creationDate = new \DateTime('2017-06-22 15:01:17');
-        $modificationDate = new \DateTime('2017-06-23 19:50:43');
-        $passwordHash = '1491a3c7e7b23b9a6393323babbb095dee0d7d81b2199617b487bd0fb5236f3c';
-        $passwordChangeDate = new \DateTime('2017-06-28');
-
-        /** @var Administrator $actualModel */
-        $actualModel = $this->subject->find($id);
-
-        static::assertSame($id, $actualModel->getId());
-        static::assertSame($loginName, $actualModel->getLoginName());
-        static::assertSame($emailAddress, $actualModel->getEmailAddress());
-        static::assertEquals($creationDate, $actualModel->getCreationDate());
-        static::assertEquals($modificationDate, $actualModel->getModificationDate());
-        static::assertSame($passwordHash, $actualModel->getPasswordHash());
-        static::assertEquals($passwordChangeDate, $actualModel->getPasswordChangeDate());
-        static::assertFalse($actualModel->isDisabled());
+        $schemaTool = new SchemaTool($this->entityManager);
+        $schemaTool->dropDatabase();
+        parent::tearDown();
     }
 
-    /**
-     * @test
-     */
-    public function creationDateOfExistingModelStaysUnchangedOnUpdate()
+    public function testFindReadsModelFromDatabase(): void
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->applyDatabaseChanges();
+        /** @var Administrator $actual */
+        $actual = $this->repository->find(1);
 
+        $this->assertNotNull($actual);
+        $this->assertFalse($actual->isDisabled());
+        $this->assertTrue($actual->isSuperUser());
+        $this->assertSame($actual->getLoginName(), $actual->getLoginName());
+        $this->assertEqualsWithDelta(
+            (new DateTime())->getTimestamp(),
+            $actual->getModificationDate()->getTimestamp(),
+            1
+        );
+        $this->assertSame('john@example.com', $actual->getEmailAddress());
+        $this->assertSame(
+            '1491a3c7e7b23b9a6393323babbb095dee0d7d81b2199617b487bd0fb5236f3c',
+            $actual->getPasswordHash()
+        );
+        $this->assertEquals(new DateTime('2017-06-22 15:01:17'), $actual->getCreationDate());
+        $this->assertEquals(new DateTime('2017-06-28'), $actual->getPasswordChangeDate());
+    }
+
+    public function testCreationDateOfExistingModelStaysUnchangedOnUpdate(): void
+    {
         $id = 1;
-        /** @var Administrator $model */
-        $model = $this->subject->find($id);
-        $creationDate = $model->getCreationDate();
+        $model = $this->repository->find($id);
+        $this->assertNotNull($model);
+        $originalCreationDate = $model->getCreationDate();
+        $model->setLoginName('mel');
+
+        $this->entityManager->flush();
+
+        $this->assertSame($originalCreationDate, $model->getCreationDate());
+    }
+
+    public function testModificationDateOfExistingModelGetsUpdatedOnUpdate(): void
+    {
+        $id = 1;
+        $model = $this->repository->find($id);
+        $this->assertNotNull($model);
 
         $model->setLoginName('mel');
         $this->entityManager->flush();
 
-        static::assertSame($creationDate, $model->getCreationDate());
+        $expectedModificationDate = new DateTime();
+        $this->assertEqualsWithDelta($expectedModificationDate, $model->getModificationDate(), 5);
     }
 
-    /**
-     * @test
-     */
-    public function modificationDateOfExistingModelGetsUpdatedOnUpdate()
+    public function testCreationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->applyDatabaseChanges();
+        $model = new Administrator();
 
-        $id = 1;
-        /** @var Administrator $model */
-        $model = $this->subject->find($id);
-        $expectedModificationDate = new \DateTime();
-
-        $model->setLoginName('mel');
+        $this->entityManager->persist($model);
         $this->entityManager->flush();
 
-        static::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
+        $expectedCreationDate = new DateTime();
+        $this->assertEqualsWithDelta($expectedCreationDate, $model->getCreationDate(), 1);
     }
 
-    /**
-     * @test
-     */
-    public function creationDateOfNewModelIsSetToNowOnPersist()
+    public function testModificationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->touchDatabaseTable(static::TABLE_NAME);
-
         $model = new Administrator();
-        $expectedCreationDate = new \DateTime();
 
         $this->entityManager->persist($model);
+        $this->entityManager->flush();
 
-        static::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
+        $expectedCreationDate = new DateTime();
+        $this->assertEqualsWithDelta($expectedCreationDate, $model->getModificationDate(), 1);
     }
 
     /**
-     * @test
+     * Tests that findOneByLoginCredentials returns null for incorrect credentials.
+     *
+     * @dataProvider incorrectLoginCredentialsDataProvider
      */
-    public function modificationDateOfNewModelIsSetToNowOnPersist()
-    {
-        $this->touchDatabaseTable(static::TABLE_NAME);
+    public function testFindOneByLoginCredentialsForNonMatchingCredentialsReturnsNull(
+        string $loginName,
+        string $password
+    ): void {
+        $result = $this->repository->findOneByLoginCredentials($loginName, $password);
 
-        $model = new Administrator();
-        $expectedModificationDate = new \DateTime();
-
-        $this->entityManager->persist($model);
-
-        static::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
+        $this->assertNull($result);
     }
 
-    /**
-     * @test
-     */
-    public function findOneByLoginCredentialsForMatchingCredentialsReturnsModel()
+    public function testFindOneByLoginCredentialsForMatchingCredentialsReturnsModel()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->applyDatabaseChanges();
-
         $id = 1;
         $loginName = 'john.doe';
         $password = 'Bazinga!';
 
-        $result = $this->subject->findOneByLoginCredentials($loginName, $password);
+        $result = $this->repository->findOneByLoginCredentials($loginName, $password);
 
-        static::assertInstanceOf(Administrator::class, $result);
-        static::assertSame($id, $result->getId());
+        self::assertInstanceOf(Administrator::class, $result);
+        self::assertSame($id, $result->getId());
     }
 
-    /**
-     * @return string[][]
-     */
-    public function incorrectLoginCredentialsDataProvider(): array
+    public static function incorrectLoginCredentialsDataProvider(): array
     {
         $loginName = 'john.doe';
         $password = 'Bazinga!';
@@ -162,67 +145,39 @@ class AdministratorRepositoryTest extends TestCase
         return [
             'all empty' => ['', ''],
             'matching login name, empty password' => [$loginName, ''],
-            'matching login name, incorrect password' => [$loginName, 'The cake is a lie.'],
+            'matching login name, incorrect password' => [$loginName, 'wrong-password'],
             'empty login name, correct password' => ['', $password],
-            'incorrect name, correct password' => ['jane.doe', $password],
+            'incorrect login name, correct password' => ['jane.doe', $password],
         ];
     }
 
-    /**
-     * @test
-     */
-    public function findOneByLoginCredentialsIgnoresNonSuperUser()
+    public function testFindOneByLoginCredentialsIgnoresNonSuperUser()
     {
         $loginName = 'max.doe';
         $password = 'Bazinga!';
 
-        $result = $this->subject->findOneByLoginCredentials($loginName, $password);
+        $result = $this->repository->findOneByLoginCredentials($loginName, $password);
 
-        static::assertNull($result);
+        self::assertNull($result);
     }
 
-    /**
-     * @test
-     * @param string $loginName
-     * @param string $password
-     * @dataProvider incorrectLoginCredentialsDataProvider
-     */
-    public function findOneByLoginCredentialsForNonMatchingCredentialsReturnsNull(string $loginName, string $password)
+    public function testSavePersistsAndFlushesModel(): void
     {
-        $result = $this->subject->findOneByLoginCredentials($loginName, $password);
-
-        static::assertNull($result);
-    }
-
-    /**
-     * @test
-     */
-    public function savePersistsAndFlushesModel()
-    {
-        $this->touchDatabaseTable(static::TABLE_NAME);
-
         $model = new Administrator();
-        $this->subject->save($model);
+        $this->repository->save($model);
 
-        static::assertSame($model, $this->subject->find($model->getId()));
+        $this->assertSame($model, $this->repository->find($model->getId()));
     }
 
-    /**
-     * @test
-     */
-    public function removeRemovesModel()
+    public function testRemoveRemovesModel(): void
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->applyDatabaseChanges();
+        $allModels = $this->repository->findAll();
+        $this->assertNotEmpty($allModels);
 
-        /** @var Administrator[] $allModels */
-        $allModels = $this->subject->findAll();
-        $numberOfModelsBeforeRemove = count($allModels);
-        $firstModel = $allModels[0];
+        $model = $allModels[0];
+        $this->repository->remove($model);
 
-        $this->subject->remove($firstModel);
-
-        $numberOfModelsAfterRemove = count($this->subject->findAll());
-        static::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);
+        $remainingModels = $this->repository->findAll();
+        $this->assertCount(count($allModels) - 1, $remainingModels);
     }
 }

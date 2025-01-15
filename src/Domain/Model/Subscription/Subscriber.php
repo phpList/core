@@ -1,14 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Model\Subscription;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping;
-use Doctrine\ORM\Mapping\Column;
-use JMS\Serializer\Annotation\ExclusionPolicy;
-use JMS\Serializer\Annotation\Expose;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use PhpList\Core\Domain\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
@@ -16,323 +17,213 @@ use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
 use PhpList\Core\Domain\Model\Traits\CreationDateTrait;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
- * This class represents asubscriber who can subscribe to multiple subscriber lists and can receive email messages from
+ * This class represents subscriber who can subscribe to multiple subscriber lists and can receive email messages from
  * campaigns for those subscriber lists.
- *
- * @Mapping\Entity(repositoryClass="PhpList\Core\Domain\Repository\Subscription\SubscriberRepository")
- * @Mapping\Table(name="phplist_user_user")
- * @Mapping\HasLifecycleCallbacks
- * @ExclusionPolicy("all")
- *
  * @author Oliver Klee <oliver@phplist.com>
  */
+#[ORM\Entity(repositoryClass: 'PhpList\Core\Domain\Repository\Subscription\SubscriberRepository')]
+#[ORM\Table(name: 'phplist_user_user')]
+#[ORM\Index(name: 'idxuniqid', columns: ['uniqid'])]
+#[ORM\Index(name: 'enteredindex', columns: ['entered'])]
+#[ORM\Index(name: 'confidx', columns: ['confirmed'])]
+#[ORM\Index(name: 'blidx', columns: ['blacklisted'])]
+#[ORM\HasLifecycleCallbacks]
 class Subscriber implements DomainModel, Identity, CreationDate, ModificationDate
 {
     use IdentityTrait;
     use CreationDateTrait;
     use ModificationDateTrait;
 
-    /**
-     * @var \DateTime|null
-     * @Column(type="datetime", nullable=true, name="entered")
-     * @Expose
-     */
-    protected $creationDate = null;
+    #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
+    #[SerializedName('creation_date')]
+    #[Groups(['SubscriberListMembers'])]
+    protected ?DateTime $creationDate = null;
 
-    /**
-     * @var \DateTime|null
-     * @Column(type="datetime", name="modified")
-     */
-    protected $modificationDate = null;
+    #[ORM\Column(name: 'modified', type: 'datetime')]
+    #[Ignore]
+    protected ?DateTime $modificationDate = null;
 
-    /**
-     * @var string
-     * @Column(unique=true)
-     * @Expose
-     */
-    private $email = '';
+    #[ORM\Column(unique: true)]
+    #[SerializedName('email')]
+    #[Groups(['SubscriberListMembers'])]
+    private string $email = '';
 
-    /**
-     * @var bool
-     * @Column(type="boolean")
-     * @Expose
-     */
-    private $confirmed = false;
+    #[ORM\Column(type: 'boolean')]
+    #[SerializedName('confirmed')]
+    #[Groups(['SubscriberListMembers'])]
+    private bool $confirmed = false;
 
-    /**
-     * @var bool
-     * @Column(type="boolean")
-     * @Expose
-     */
-    private $blacklisted = false;
+    #[ORM\Column(type: 'boolean')]
+    #[SerializedName('blacklisted')]
+    #[Groups(['SubscriberListMembers'])]
+    private bool $blacklisted = false;
 
-    /**
-     * @var int
-     * @Column(type="integer", name="bouncecount")
-     * @Expose
-     */
-    private $bounceCount = 0;
+    #[ORM\Column(name: 'bouncecount', type: 'integer')]
+    #[SerializedName('bounce_count')]
+    #[Groups(['SubscriberListMembers'])]
+    private int $bounceCount = 0;
 
-    /**
-     * Note: The uniqueness of this column will not be enforced as long as we use the old DB schema,
-     * not the Doctrine-generated one.
-     *
-     * @var string
-     * @Column(name="uniqid", unique=true)
-     * @Expose
-     */
-    private $uniqueId = '';
+    #[ORM\Column(name: 'uniqid', unique: true)]
+    #[SerializedName('unique_id')]
+    #[Groups(['SubscriberListMembers'])]
+    private string $uniqueId = '';
 
-    /**
-     * @var bool
-     * @Column(type="boolean", name="htmlemail")
-     * @Expose
-     */
-    private $htmlEmail = false;
+    #[ORM\Column(name: 'htmlemail', type: 'boolean')]
+    #[SerializedName('html_email')]
+    #[Groups(['SubscriberListMembers'])]
+    private bool $htmlEmail = false;
 
-    /**
-     * @var bool
-     * @Column(type="boolean")
-     * @Expose
-     */
-    private $disabled = false;
+    #[ORM\Column(type: 'boolean')]
+    #[SerializedName('disabled')]
+    #[Groups(['SubscriberListMembers'])]
+    private bool $disabled = false;
 
-    /**
-     * @var string
-     * @Column(type="text", name="extradata")
-     * @Expose
-     */
-    private $extraData = '';
+    #[ORM\Column(name: 'extradata', type: 'text')]
+    #[SerializedName('extra_data')]
+    private ?string $extraData;
 
-    /**
-     * @var Collection
-     * @Mapping\OneToMany(
-     *     targetEntity="PhpList\Core\Domain\Model\Subscription\Subscription",
-     *     mappedBy="subscriber",
-     *     cascade={"remove"}
-     *  )
-     */
-    private $subscriptions = null;
+    #[ORM\OneToMany(
+        targetEntity: 'PhpList\Core\Domain\Model\Subscription\Subscription',
+        mappedBy: 'subscriber',
+        cascade: ['remove'],
+        orphanRemoval: true,
+    )]
+    private Collection $subscriptions;
 
-    /**
-     * @var Collection
-     * @Mapping\ManyToMany(targetEntity="PhpList\Core\Domain\Model\Messaging\SubscriberList", inversedBy="subscribers")
-     * @Mapping\JoinTable(name="phplist_listuser",
-     *     joinColumns={@Mapping\JoinColumn(name="userid")},
-     *     inverseJoinColumns={@Mapping\JoinColumn(name="listid")}
-     * )
-     */
-    private $subscribedLists = null;
-
-    /**
-     * The constructor.
-     */
     public function __construct()
     {
         $this->subscriptions = new ArrayCollection();
-        $this->subscribedLists = new ArrayCollection();
+        $this->extraData = '';
     }
 
-    /**
-     * @return bool
-     */
     public function isConfirmed(): bool
     {
         return $this->confirmed;
     }
 
-    /**
-     * @param bool $confirmed
-     *
-     * @return void
-     */
-    public function setConfirmed(bool $confirmed)
+    public function setConfirmed(bool $confirmed): void
     {
         $this->confirmed = $confirmed;
     }
 
-    /**
-     * @return bool
-     */
     public function isBlacklisted(): bool
     {
         return $this->blacklisted;
     }
 
-    /**
-     * @param bool $blacklisted
-     *
-     * @return void
-     */
-    public function setBlacklisted(bool $blacklisted)
+    public function setBlacklisted(bool $blacklisted): void
     {
         $this->blacklisted = $blacklisted;
     }
 
-    /**
-     * @return int
-     */
     public function getBounceCount(): int
     {
         return $this->bounceCount;
     }
 
-    /**
-     * @param int $bounceCount
-     *
-     * @return void
-     */
-    public function setBounceCount(int $bounceCount)
+    public function setBounceCount(int $bounceCount): void
     {
         $this->bounceCount = $bounceCount;
     }
 
-    /**
-     * @param int $delta the number of bounces to add to the bounce count
-     *
-     * @return void
-     */
-    public function addToBounceCount(int $delta)
+    public function addToBounceCount(int $delta): void
     {
         $this->setBounceCount($this->getBounceCount() + $delta);
     }
 
-    /**
-     * @return string
-     */
     public function getUniqueId(): string
     {
         return $this->uniqueId;
     }
 
-    /**
-     * @param string $uniqueId
-     *
-     * @return void
-     */
-    public function setUniqueId(string $uniqueId)
+    public function setUniqueId(string $uniqueId): void
     {
         $this->uniqueId = $uniqueId;
     }
 
-    /**
-     * Generates and sets a (new) random unique ID.
-     *
-     * @Mapping\PrePersist
-     *
-     * @return void
-     */
-    public function generateUniqueId()
+    #[ORM\PrePersist]
+    public function generateUniqueId(): void
     {
         $this->setUniqueId(bin2hex(random_bytes(16)));
     }
 
-    /**
-     * @return string
-     */
     public function getEmail(): string
     {
         return $this->email;
     }
 
-    /**
-     * @param string $email
-     *
-     * @return void
-     */
-    public function setEmail(string $email)
+    public function setEmail(string $email): void
     {
         $this->email = $email;
     }
 
-    /**
-     * @return bool
-     */
     public function hasHtmlEmail(): bool
     {
         return $this->htmlEmail;
     }
 
-    /**
-     * @param bool $htmlEmail
-     *
-     * @return void
-     */
-    public function setHtmlEmail(bool $htmlEmail)
+    public function setHtmlEmail(bool $htmlEmail): void
     {
         $this->htmlEmail = $htmlEmail;
     }
 
-    /**
-     * @return bool
-     */
     public function isDisabled(): bool
     {
         return $this->disabled;
     }
 
-    /**
-     * @param bool $disabled
-     *
-     * @return void
-     */
-    public function setDisabled(bool $disabled)
+    public function setDisabled(bool $disabled): void
     {
         $this->disabled = $disabled;
     }
 
-    /**
-     * @return string
-     */
     public function getExtraData(): string
     {
         return $this->extraData;
     }
 
-    /**
-     * @param string $extraData
-     *
-     * @return void
-     */
-    public function setExtraData(string $extraData)
+    public function setExtraData(string $extraData): void
     {
         $this->extraData = $extraData;
     }
+
     /**
-     * @return Collection
+     * @return Collection<Subscription>
      */
     public function getSubscriptions(): Collection
     {
         return $this->subscriptions;
     }
 
-    /**
-     * @param Collection $subscriptions
-     *
-     * @return void
-     */
-    public function setSubscriptions(Collection $subscriptions)
+    public function addSubscription(Subscription $subscription): self
     {
-        $this->subscriptions = $subscriptions;
+        if (!$this->subscriptions->contains($subscription)) {
+            $this->subscriptions->add($subscription);
+            $subscription->setSubscriber($this);
+        }
+
+        return $this;
     }
 
-    /**
-     * @return Collection
-     */
+    public function removeSubscription(Subscription $subscription): self
+    {
+        if ($this->subscriptions->removeElement($subscription)) {
+            $subscription->setSubscriber(null);
+        }
+
+        return $this;
+    }
+
     public function getSubscribedLists(): Collection
     {
-        return $this->subscribedLists;
-    }
+        $result = new ArrayCollection();
+        foreach ($this->subscriptions as $subscription) {
+            $result->add($subscription->getSubscriberList());
+        }
 
-    /**
-     * @param Collection $subscribedLists
-     *
-     * @return void
-     */
-    public function setSubscribedLists(Collection $subscribedLists)
-    {
-        $this->subscribedLists = $subscribedLists;
+        return $result;
     }
 }

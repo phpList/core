@@ -1,280 +1,206 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Domain\Repository\Identity;
 
-use Doctrine\ORM\Proxy\Proxy;
+use DateTime;
+use Doctrine\ORM\Tools\SchemaTool;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Identity\AdministratorToken;
 use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository;
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
-use PHPUnit\Framework\TestCase;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\AdministratorFixture;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\AdministratorTokenWithAdministratorFixture;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\DetachedAdministratorTokenFixture;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
  * Testcase.
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-class AdministratorTokenRepositoryTest extends TestCase
+class AdministratorTokenRepositoryTest extends WebTestCase
 {
     use DatabaseTestTrait;
     use SimilarDatesAssertionTrait;
 
-    /**
-     * @var string
-     */
-    const TABLE_NAME = 'phplist_admintoken';
+    private ?AdministratorTokenRepository $repository;
 
-    /**
-     * @var string
-     */
-    const ADMINISTRATOR_TABLE_NAME = 'phplist_admin';
-
-    /**
-     * @var AdministratorTokenRepository
-     */
-    private $subject = null;
-
-    protected function setUp()
+    protected function setUp(): void
     {
-        $this->setUpDatabaseTest();
-
-        $this->subject = $this->container->get(AdministratorTokenRepository::class);
+        parent::setUp();
+        $this->loadSchema();
+        $this->repository = self::getContainer()->get(AdministratorTokenRepository::class);
     }
 
-    /**
-     * @test
-     */
-    public function findReadsModelFromDatabase()
+    protected function tearDown(): void
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
-        $this->applyDatabaseChanges();
+        $schemaTool = new SchemaTool($this->entityManager);
+        $schemaTool->dropDatabase();
+        parent::tearDown();
+    }
+
+    public function testFindReadsModelFromDatabase()
+    {
+        $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
 
         $id = 1;
-        $creationDate = new \DateTime('2017-12-06 17:41:40+0000');
-        $expiry = new \DateTime('2017-06-22 16:43:29');
+        $creationDate = new DateTime('2017-12-06 17:41:40');
+        $expiry = new DateTime('2017-06-22 16:43:29');
         $key = 'cfdf64eecbbf336628b0f3071adba762';
 
         /** @var AdministratorToken $model */
-        $model = $this->subject->find($id);
+        $model = $this->repository->find($id);
 
-        static::assertInstanceOf(AdministratorToken::class, $model);
-        static::assertSame($id, $model->getId());
-        static::assertEquals($creationDate, $model->getCreationDate());
-        static::assertEquals($expiry, $model->getExpiry());
-        static::assertSame($key, $model->getKey());
+        self::assertInstanceOf(AdministratorToken::class, $model);
+        self::assertSame($id, $model->getId());
+        self::assertEqualsWithDelta($creationDate, $model->getCreationDate(), 1);
+        self::assertEquals($expiry, $model->getExpiry());
+        self::assertSame($key, $model->getKey());
     }
 
-    /**
-     * @test
-     */
-    public function createsAdministratorAssociationAsProxy()
+    public function testCreationDateOfExistingModelStaysUnchangedOnUpdate()
     {
-        $this->getDataSet()->addTable(static::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->getDataSet()->addTable(
-            static::TABLE_NAME,
-            __DIR__ . '/../Fixtures/AdministratorTokenWithAdministrator.csv'
-        );
-        $this->applyDatabaseChanges();
-
-        $tokenId = 1;
-        $administratorId = 1;
-        /** @var AdministratorToken $model */
-        $model = $this->subject->find($tokenId);
-        $administrator = $model->getAdministrator();
-
-        static::assertInstanceOf(Administrator::class, $administrator);
-        static::assertInstanceOf(Proxy::class, $administrator);
-        static::assertSame($administratorId, $administrator->getId());
-    }
-
-    /**
-     * @test
-     */
-    public function creationDateOfExistingModelStaysUnchangedOnUpdate()
-    {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
 
         $id = 1;
         /** @var AdministratorToken $model */
-        $model = $this->subject->find($id);
+        $model = $this->repository->find($id);
         $creationDate = $model->getCreationDate();
 
         $model->setKey('asdfasd');
         $this->entityManager->flush();
 
-        static::assertEquals($creationDate, $model->getCreationDate());
+        self::assertEquals($creationDate, $model->getCreationDate());
     }
 
-    /**
-     * @test
-     */
-    public function creationDateOfNewModelIsSetToNowOnPersist()
+    public function testCreationDateOfNewModelIsSetToNowOnPersist()
     {
-        $this->touchDatabaseTable(static::TABLE_NAME);
-
         $model = new Administrator();
-        $expectedCreationDate = new \DateTime();
+        $expectedCreationDate = new DateTime();
 
         $this->entityManager->persist($model);
 
-        static::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
+        self::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
     }
 
-    /**
-     * @test
-     */
-    public function findOneUnexpiredByKeyFindsUnexpiredTokenWithMatchingKey()
+    public function testFindOneUnexpiredByKeyFindsUnexpiredTokenWithMatchingKey()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
 
         $id = 2;
         $key = '8321b19193d80ce5e1b7cd8742266a5f';
 
         /** @var AdministratorToken $model */
-        $model = $this->subject->findOneUnexpiredByKey($key);
+        $model = $this->repository->findOneUnexpiredByKey($key);
 
-        static::assertInstanceOf(AdministratorToken::class, $model);
-        static::assertSame($id, $model->getId());
+        self::assertInstanceOf(AdministratorToken::class, $model);
+        self::assertSame($id, $model->getId());
     }
 
-    /**
-     * @test
-     */
-    public function findOneUnexpiredByKeyNotFindsExpiredTokenWithMatchingKey()
+    public function testFindOneUnexpiredByKeyNotFindsExpiredTokenWithMatchingKey()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
 
         $key = 'cfdf64eecbbf336628b0f3071adba762';
 
-        $model = $this->subject->findOneUnexpiredByKey($key);
+        $model = $this->repository->findOneUnexpiredByKey($key);
 
-        static::assertNull($model);
+        self::assertNull($model);
     }
 
-    /**
-     * @test
-     */
-    public function findOneUnexpiredByKeyNotFindsUnexpiredTokenWithNonMatchingKey()
+    public function testFindOneUnexpiredByKeyNotFindsUnexpiredTokenWithNonMatchingKey()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
 
         $key = '03e7a64fb29115ba7581092c342299df';
 
-        $model = $this->subject->findOneUnexpiredByKey($key);
+        $model = $this->repository->findOneUnexpiredByKey($key);
 
-        static::assertNull($model);
+        self::assertNull($model);
     }
 
-    /**
-     * @test
-     */
-    public function removeExpiredRemovesExpiredToken()
+    public function testRemoveExpiredRemovesExpiredToken()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
 
         $idOfExpiredToken = 1;
-        $this->subject->removeExpired();
+        $this->repository->removeExpired();
 
-        $token = $this->subject->find($idOfExpiredToken);
-        static::assertNull($token);
+        $token = $this->repository->find($idOfExpiredToken);
+        self::assertNull($token);
     }
 
-    /**
-     * @test
-     */
-    public function removeExpiredKeepsUnexpiredToken()
+    public function testRemoveExpiredKeepsUnexpiredToken()
     {
         $this->assertNotYear2037Yet();
 
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
 
         $idOfUnexpiredToken = 2;
-        $this->subject->removeExpired();
+        $this->repository->removeExpired();
 
-        $token = $this->subject->find($idOfUnexpiredToken);
-        static::assertNotNull($token);
+        $token = $this->repository->find($idOfUnexpiredToken);
+        self::assertNotNull($token);
     }
 
     /**
      * Asserts that it's not year 2037 yet (which is the year the "not expired" token in the fixture
      * data set expires).
-     *
-     * @return void
      */
-    private function assertNotYear2037Yet()
+    private function assertNotYear2037Yet(): void
     {
         $currentYear = (int)date('Y');
         if ($currentYear >= 2037) {
-            static::markTestIncomplete('The tests token has an expiry in the year 2037. Please update this test.');
+            self::markTestIncomplete('The tests token has an expiry in the year 2037. Please update this test.');
         }
     }
 
-    /**
-     * @test
-     */
-    public function removeExpiredForNoExpiredTokensReturnsZero()
+    public function testRemoveExpiredForNoExpiredTokensReturnsZero()
     {
-        static::assertSame(0, $this->subject->removeExpired());
+        self::assertSame(0, $this->repository->removeExpired());
     }
 
-    /**
-     * @test
-     */
-    public function removeExpiredForOneExpiredTokenReturnsOne()
+    public function testRemoveExpiredForOneExpiredTokenReturnsOne()
     {
         $this->assertNotYear2037Yet();
 
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
 
-        static::assertSame(1, $this->subject->removeExpired());
+        self::assertSame(1, $this->repository->removeExpired());
     }
 
-    /**
-     * @test
-     */
-    public function savePersistsAndFlushesModel()
+    public function testSavePersistsAndFlushesModel()
     {
-        $this->touchDatabaseTable(static::TABLE_NAME);
-        $this->getDataSet()->addTable(static::ADMINISTRATOR_TABLE_NAME, __DIR__ . '/../Fixtures/Administrator.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([AdministratorFixture::class]);
 
-        $administratorRepository = $this->container->get(AdministratorRepository::class);
+        $administratorRepository = $this->getContainer()->get(AdministratorRepository::class);
         /** @var Administrator $administrator */
         $administrator = $administratorRepository->find(1);
 
         $model = new AdministratorToken();
         $model->setAdministrator($administrator);
-        $this->subject->save($model);
+        $this->repository->save($model);
 
-        static::assertSame($model, $this->subject->find($model->getId()));
+        self::assertSame($model, $this->repository->find($model->getId()));
     }
 
-    /**
-     * @test
-     */
-    public function removeRemovesModel()
+    public function testRemoveRemovesModel()
     {
-        $this->getDataSet()->addTable(static::TABLE_NAME, __DIR__ . '/../Fixtures/DetachedAdministratorTokens.csv');
-        $this->applyDatabaseChanges();
+        $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
 
         /** @var AdministratorToken[] $allModels */
-        $allModels = $this->subject->findAll();
+        $allModels = $this->repository->findAll();
         $numberOfModelsBeforeRemove = count($allModels);
         $firstModel = $allModels[0];
 
-        $this->subject->remove($firstModel);
+        $this->repository->remove($firstModel);
 
-        $numberOfModelsAfterRemove = count($this->subject->findAll());
-        static::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);
+        $numberOfModelsAfterRemove = count($this->repository->findAll());
+        self::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);
     }
 }

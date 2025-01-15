@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Repository;
@@ -23,7 +24,7 @@ abstract class AbstractRepository extends EntityRepository
      *
      * @return void
      */
-    public function save(DomainModel $model)
+    public function save(DomainModel $model): void
     {
         $this->getEntityManager()->persist($model);
         $this->getEntityManager()->flush();
@@ -39,7 +40,7 @@ abstract class AbstractRepository extends EntityRepository
      *
      * @return void
      */
-    public function remove(DomainModel $model)
+    public function remove(DomainModel $model): void
     {
         $this->getEntityManager()->remove($model);
         $this->getEntityManager()->flush();

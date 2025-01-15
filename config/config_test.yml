@@ -4,6 +4,17 @@ imports:
 framework:
     test: ~
     session:
-        storage_id: session.storage.mock_file
+        cookie_domain: session.storage.mock_file
+        handler_id: null
     profiler:
         collect: false
+
+doctrine:
+    dbal:
+        driver: 'pdo_sqlite'
+        memory: true
+        charset: UTF8
+#    orm:
+#        entity_managers:
+#            default:
+#                report_fields_where_declared: true
