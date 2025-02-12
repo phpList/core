@@ -18,7 +18,7 @@ class AdminPasswordRequest implements DomainModel, Identity
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_key', type: 'integer', options: ['unsigned' => true])]
-    private int $id;
+    private ?int $id = null;
 
     #[ORM\Column(name: 'date', type: 'datetime', nullable: true)]
     private ?DateTime $date;
