@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
 use PhpList\Core\Domain\Model\Traits\CreationDateTrait;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
+use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
 
 /**
  * This class represents an administrator who can log to the system, is allowed to administer
@@ -20,7 +21,7 @@ use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
-#[ORM\Entity(repositoryClass: 'PhpList\Core\Domain\Repository\Identity\AdministratorRepository')]
+#[ORM\Entity(repositoryClass: AdministratorRepository::class)]
 #[ORM\Table(name: 'phplist_admin')]
 #[ORM\HasLifecycleCallbacks]
 class Administrator implements DomainModel, Identity, CreationDate, ModificationDate
@@ -32,6 +33,9 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     #[ORM\Column(name: 'loginname')]
     private string $loginName;
 
+    #[ORM\Column(name: 'namelc', nullable: true)]
+    private string $namelc;
+
     #[ORM\Column(name: 'email')]
     private string $emailAddress;
 
@@ -40,6 +44,9 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
 
     #[ORM\Column(name: 'modified', type: 'datetime')]
     protected ?DateTime $modificationDate;
+
+    #[ORM\Column(name: 'modifiedby', type: 'string', length: 66, nullable: true)]
+    protected ?string $modifiedBy;
 
     #[ORM\Column(name: 'password')]
     private string $passwordHash;
@@ -52,6 +59,9 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
 
     #[ORM\Column(name: 'superuser', type: 'boolean')]
     private bool $superUser;
+
+    #[ORM\Column(name: 'privileges', type: 'text', nullable: true)]
+    private ?string $privileges;
 
     public function __construct()
     {
@@ -89,9 +99,6 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->passwordHash;
     }
 
-    /**
-     * Sets the password hash and updates the password change date to now.
-     */
     public function setPasswordHash(string $passwordHash): void
     {
         $this->passwordHash = $passwordHash;
@@ -126,5 +133,25 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     public function setSuperUser(bool $superUser): void
     {
         $this->superUser = $superUser;
+    }
+
+    public function setNameLc(string $nameLc): void
+    {
+        $this->namelc = $nameLc;
+    }
+
+    public function getNameLc(): string
+    {
+        return $this->namelc;
+    }
+
+    public function setPrivileges(string $privileges): void
+    {
+        $this->privileges = $privileges;
+    }
+
+    public function getPrivileges(): string
+    {
+        return $this->privileges;
     }
 }
