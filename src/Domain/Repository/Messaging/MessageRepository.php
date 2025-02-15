@@ -6,6 +6,6 @@ namespace PhpList\Core\Domain\Repository\Messaging;
 
 use PhpList\Core\Domain\Repository\AbstractRepository;
 
-class SubscriberAttachmentRepository extends AbstractRepository
+class MessageRepository extends AbstractRepository
 {
 }

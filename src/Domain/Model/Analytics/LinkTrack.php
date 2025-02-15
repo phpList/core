@@ -27,7 +27,7 @@ class LinkTrack implements DomainModel, Identity
     #[ORM\Column(name: 'messageid', type: "integer")]
     private int $messageId;
 
-    #[ORM\Column(type: "integer", name: 'userid')]
+    #[ORM\Column(name: 'userid', type: "integer")]
     private int $userId;
 
     #[ORM\Column(type: "string", length: 255, nullable: true)]

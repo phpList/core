@@ -8,9 +8,9 @@ use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
-use PhpList\Core\Domain\Repository\Messaging\SubscriberAttachmentRepository;
+use PhpList\Core\Domain\Repository\Messaging\AttachmentRepository;
 
-#[ORM\Entity(repositoryClass: SubscriberAttachmentRepository::class)]
+#[ORM\Entity(repositoryClass: AttachmentRepository::class)]
 #[ORM\Table(name: 'phplist_attachment')]
 class Attachment implements DomainModel, Identity
 {
