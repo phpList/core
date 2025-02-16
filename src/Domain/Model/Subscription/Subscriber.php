@@ -8,6 +8,7 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberRepository;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use PhpList\Core\Domain\Model\Interfaces\CreationDate;
@@ -24,7 +25,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
  * campaigns for those subscriber lists.
  * @author Oliver Klee <oliver@phplist.com>
  */
-#[ORM\Entity(repositoryClass: 'PhpList\Core\Domain\Repository\Subscription\SubscriberRepository')]
+#[ORM\Entity(repositoryClass: SubscriberRepository::class)]
 #[ORM\Table(name: 'phplist_user_user')]
 #[ORM\Index(name: 'idxuniqid', columns: ['uniqid'])]
 #[ORM\Index(name: 'enteredindex', columns: ['entered'])]
