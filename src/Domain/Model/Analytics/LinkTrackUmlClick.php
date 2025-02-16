@@ -24,7 +24,7 @@ class LinkTrackUmlClick implements DomainModel, Identity
     #[ORM\Column(name: "messageid", type: "integer")]
     private int $messageId;
 
-    #[ORM\Column(name: 'messageid', type: "integer")]
+    #[ORM\Column(name: 'userid', type: "integer")]
     private int $userId;
 
     #[ORM\Column(name: "forwardid", type: "integer", nullable: true)]

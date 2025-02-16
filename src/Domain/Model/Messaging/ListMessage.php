@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Model\Messaging;
 
+use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
@@ -25,6 +26,9 @@ class ListMessage implements DomainModel, Identity, ModificationDate
 
     #[ORM\Column(name: 'messageid', type: "integer")]
     private int $messageId;
+
+    #[ORM\Column(name: 'modified', type: 'datetime')]
+    protected ?DateTime $modificationDate;
 
     #[ORM\Column(name: "listid", type: "integer")]
     private int $listId;
