@@ -10,7 +10,7 @@ use PhpList\Core\Domain\Repository\AbstractRepository;
 /**
  * Repository for Subscriber models.
  *
- * @method Subscriber findOneByEmail(string $email)
+ * @method Subscriber|null findOneByEmail(string $email)
  *
  * @author Oliver Klee <oliver@phplist.com>
  */
