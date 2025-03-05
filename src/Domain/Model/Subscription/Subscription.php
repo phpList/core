@@ -15,6 +15,7 @@ use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
 use PhpList\Core\Domain\Model\Messaging\SubscriberList;
 use PhpList\Core\Domain\Model\Traits\CreationDateTrait;
 use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
  * This class represents subscriber who can subscribe to multiple subscriber lists and can receive email messages from
@@ -57,6 +58,7 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
     )]
     #[ORM\JoinColumn(name: 'listid', onDelete: 'CASCADE')]
     #[Ignore]
+    #[Groups(['SubscriberListMembers'])]
     private ?SubscriberList $subscriberList = null;
 
     public function getSubscriber(): Subscriber|Proxy|null
