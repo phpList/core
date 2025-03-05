@@ -57,7 +57,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     #[Ignore]
     protected ?DateTime $modificationDate = null;
 
-    #[ORM\Column(name: 'listorder', type: 'integer')]
+    #[ORM\Column(name: 'listorder', type: 'integer', nullable: true)]
     #[SerializedName('list_position')]
     #[Groups(['SubscriberList'])]
     private ?int $listPosition;
@@ -120,7 +120,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         $this->description = $description;
     }
 
-    public function getListPosition(): int
+    public function getListPosition(): ?int
     {
         return $this->listPosition;
     }
@@ -130,7 +130,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         $this->listPosition = $listPosition;
     }
 
-    public function getSubjectPrefix(): string
+    public function getSubjectPrefix(): ?string
     {
         return $this->subjectPrefix;
     }
