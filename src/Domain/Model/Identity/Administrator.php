@@ -42,9 +42,6 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     #[ORM\Column(name: 'created', type: 'datetime')]
     protected ?DateTime $creationDate = null;
 
-    #[ORM\Column(name: 'modified', type: 'datetime')]
-    protected ?DateTime $modificationDate;
-
     #[ORM\Column(name: 'modifiedby', type: 'string', length: 66, nullable: true)]
     protected ?string $modifiedBy;
 

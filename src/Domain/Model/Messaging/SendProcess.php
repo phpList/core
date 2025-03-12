@@ -14,6 +14,7 @@ use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 
 #[ORM\Entity]
 #[ORM\Table(name: "phplist_sendprocess")]
+#[ORM\HasLifecycleCallbacks]
 class SendProcess implements DomainModel, Identity, ModificationDate
 {
     use IdentityTrait;
@@ -21,9 +22,6 @@ class SendProcess implements DomainModel, Identity, ModificationDate
 
     #[ORM\Column(name: "started", type: "datetime", nullable: true)]
     private ?DateTime $started = null;
-
-    #[ORM\Column(name: "modified", type: "datetime", options: ["default" => "CURRENT_TIMESTAMP"])]
-    private ?DateTime $modificationDate = null;
 
     #[ORM\Column(name: "alive", type: "integer", nullable: true, options: ["default" => 1])]
     private ?int $alive = 1;
@@ -43,11 +41,6 @@ class SendProcess implements DomainModel, Identity, ModificationDate
     {
         $this->started = $started;
         return $this;
-    }
-
-    public function getModificationDate(): ?DateTime
-    {
-        return $this->modificationDate;
     }
 
     public function getAlive(): ?int

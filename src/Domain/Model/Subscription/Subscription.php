@@ -38,10 +38,6 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
     #[SerializedName('creation_date')]
     protected ?DateTime $creationDate = null;
 
-    #[ORM\Column(name: 'modified', type: 'datetime')]
-    #[Ignore]
-    protected ?DateTime $modificationDate = null;
-
     #[ORM\Id]
     #[ORM\ManyToOne(
         targetEntity: 'PhpList\Core\Domain\Model\Subscription\Subscriber',

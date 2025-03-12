@@ -27,9 +27,6 @@ class ListMessage implements DomainModel, Identity, ModificationDate
     #[ORM\Column(name: 'messageid', type: "integer")]
     private int $messageId;
 
-    #[ORM\Column(name: 'modified', type: 'datetime')]
-    protected ?DateTime $modificationDate;
-
     #[ORM\Column(name: "listid", type: "integer")]
     private int $listId;
 

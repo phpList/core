@@ -43,10 +43,6 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     #[Groups(['SubscriberListMembers'])]
     protected ?DateTime $creationDate = null;
 
-    #[ORM\Column(name: 'modified', type: 'datetime')]
-    #[Ignore]
-    protected ?DateTime $modificationDate = null;
-
     #[ORM\Column(unique: true)]
     #[SerializedName('email')]
     #[Groups(['SubscriberListMembers'])]

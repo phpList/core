@@ -19,6 +19,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 trait ModificationDateTrait
 {
+    #[ORM\Column(name: 'modified', type: 'datetime')]
+    private ?DateTime $modificationDate = null;
+
     public function getModificationDate(): ?DateTime
     {
         return $this->modificationDate;
