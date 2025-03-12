@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Model\Interfaces\DomainModel;
  * Base class for repositories.
  *
  * @author Oliver Klee <oliver@phplist.com>
+ * @SuppressWarnings(PHPMD.NumberOfChildren)
  */
 abstract class AbstractRepository extends EntityRepository
 {
