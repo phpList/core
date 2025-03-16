@@ -11,26 +11,26 @@ use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 
 #[ORM\Entity]
-#[ORM\Table(name: "phplist_user_message_bounce")]
-#[ORM\Index(name: "bounceidx", columns: ["bounce"])]
-#[ORM\Index(name: "msgidx", columns: ["message"])]
-#[ORM\Index(name: "umbindex", columns: ["user", "message", "bounce"])]
-#[ORM\Index(name: "useridx", columns: ["user"])]
+#[ORM\Table(name: 'phplist_user_message_bounce')]
+#[ORM\Index(name: 'bounceidx', columns: ['bounce'])]
+#[ORM\Index(name: 'msgidx', columns: ['message'])]
+#[ORM\Index(name: 'umbindex', columns: ['user', 'message', 'bounce'])]
+#[ORM\Index(name: 'useridx', columns: ['user'])]
 #[ORM\HasLifecycleCallbacks]
 class UserMessageBounce implements DomainModel, Identity
 {
     use IdentityTrait;
 
-    #[ORM\Column(name: "user", type: "integer")]
+    #[ORM\Column(name: 'user', type: 'integer')]
     private int $user;
 
-    #[ORM\Column(name: "message", type: "integer")]
+    #[ORM\Column(name: 'message', type: 'integer')]
     private int $message;
 
-    #[ORM\Column(name: "bounce", type: "integer")]
+    #[ORM\Column(name: 'bounce', type: 'integer')]
     private int $bounce;
 
-    #[ORM\Column(name: "time", type: "datetime", options: ["default" => "CURRENT_TIMESTAMP"])]
+    #[ORM\Column(name: 'time', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private DateTime $time;
 
     public function __construct()

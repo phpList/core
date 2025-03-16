@@ -15,22 +15,22 @@ use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 use PhpList\Core\Domain\Repository\Messaging\ListMessageRepository;
 
 #[ORM\Entity(repositoryClass: ListMessageRepository::class)]
-#[ORM\Table(name: "phplist_listmessage")]
-#[ORM\UniqueConstraint(name: "messageid", columns: ["messageid", "listid"])]
-#[ORM\Index(name: "listmessageidx", columns: ["listid", "messageid"])]
+#[ORM\Table(name: 'phplist_listmessage')]
+#[ORM\UniqueConstraint(name: 'messageid', columns: ['messageid', 'listid'])]
+#[ORM\Index(name: 'listmessageidx', columns: ['listid', 'messageid'])]
 #[ORM\HasLifecycleCallbacks]
 class ListMessage implements DomainModel, Identity, ModificationDate
 {
     use IdentityTrait;
     use ModificationDateTrait;
 
-    #[ORM\Column(name: 'messageid', type: "integer")]
+    #[ORM\Column(name: 'messageid', type: 'integer')]
     private int $messageId;
 
-    #[ORM\Column(name: "listid", type: "integer")]
+    #[ORM\Column(name: 'listid', type: 'integer')]
     private int $listId;
 
-    #[ORM\Column(type: "datetime", nullable: true)]
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private ?DateTimeInterface $entered = null;
 
     public function getMessageId(): int

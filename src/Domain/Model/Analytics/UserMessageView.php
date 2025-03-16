@@ -11,27 +11,27 @@ use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 
 #[ORM\Entity]
-#[ORM\Table(name: "phplist_user_message_view")]
-#[ORM\Index(name: "msgidx", columns: ["messageid"])]
-#[ORM\Index(name: "useridx", columns: ["userid"])]
-#[ORM\Index(name: "usermsgidx", columns: ["userid", "messageid"])]
+#[ORM\Table(name: 'phplist_user_message_view')]
+#[ORM\Index(name: 'msgidx', columns: ['messageid'])]
+#[ORM\Index(name: 'useridx', columns: ['userid'])]
+#[ORM\Index(name: 'usermsgidx', columns: ['userid', 'messageid'])]
 class UserMessageView implements DomainModel, Identity
 {
     use IdentityTrait;
 
-    #[ORM\Column(name: "messageid", type: "integer")]
+    #[ORM\Column(name: 'messageid', type: 'integer')]
     private int $messageId;
 
-    #[ORM\Column(name: "userid", type: "integer")]
+    #[ORM\Column(name: 'userid', type: 'integer')]
     private int $userId;
 
-    #[ORM\Column(name: "viewed", type: "datetime", nullable: true)]
+    #[ORM\Column(name: 'viewed', type: 'datetime', nullable: true)]
     private ?DateTime $viewed = null;
 
-    #[ORM\Column(name: "ip", type: "string", length: 255, nullable: true)]
+    #[ORM\Column(name: 'ip', type: 'string', length: 255, nullable: true)]
     private ?string $ip = null;
 
-    #[ORM\Column(name: "data", type: "text", nullable: true)]
+    #[ORM\Column(name: 'data', type: 'text', nullable: true)]
     private ?string $data = null;
 
     public function getMessageId(): int

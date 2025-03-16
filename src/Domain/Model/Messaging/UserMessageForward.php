@@ -11,27 +11,27 @@ use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 
 #[ORM\Entity]
-#[ORM\Table(name: "phplist_user_message_forward")]
-#[ORM\Index(name: "messageidx", columns: ["message"])]
-#[ORM\Index(name: "useridx", columns: ["user"])]
-#[ORM\Index(name: "usermessageidx", columns: ["user", "message"])]
+#[ORM\Table(name: 'phplist_user_message_forward')]
+#[ORM\Index(name: 'messageidx', columns: ['message'])]
+#[ORM\Index(name: 'useridx', columns: ['user'])]
+#[ORM\Index(name: 'usermessageidx', columns: ['user', 'message'])]
 class UserMessageForward implements DomainModel, Identity
 {
     use IdentityTrait;
 
-    #[ORM\Column(name: "user", type: "integer")]
+    #[ORM\Column(name: 'user', type: 'integer')]
     private int $user;
 
-    #[ORM\Column(name: "message", type: "integer")]
+    #[ORM\Column(name: 'message', type: 'integer')]
     private int $message;
 
-    #[ORM\Column(name: "forward", type: "string", length: 255, nullable: true)]
+    #[ORM\Column(name: 'forward', type: 'string', length: 255, nullable: true)]
     private ?string $forward = null;
 
-    #[ORM\Column(name: "status", type: "string", length: 255, nullable: true)]
+    #[ORM\Column(name: 'status', type: 'string', length: 255, nullable: true)]
     private ?string $status = null;
 
-    #[ORM\Column(name: "time", type: "datetime", options: ["default" => "CURRENT_TIMESTAMP"])]
+    #[ORM\Column(name: 'time', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private DateTime $time;
 
     public function getUser(): int

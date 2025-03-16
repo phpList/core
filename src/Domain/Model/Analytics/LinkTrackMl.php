@@ -10,35 +10,35 @@ use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Repository\Analytics\LinkTrackMlRepository;
 
 #[ORM\Entity(repositoryClass: LinkTrackMlRepository::class)]
-#[ORM\Table(name: "phplist_linktrack_ml")]
-#[ORM\Index(name: "fwdindex", columns: ["forwardid"])]
-#[ORM\Index(name: "midindex", columns: ["messageid"])]
+#[ORM\Table(name: 'phplist_linktrack_ml')]
+#[ORM\Index(name: 'fwdindex', columns: ['forwardid'])]
+#[ORM\Index(name: 'midindex', columns: ['messageid'])]
 class LinkTrackMl implements DomainModel
 {
     #[ORM\Id]
-    #[ORM\Column(name: "messageid", type: "integer")]
+    #[ORM\Column(name: 'messageid', type: 'integer')]
     private int $messageId;
 
     #[ORM\Id]
-    #[ORM\Column(name: "forwardid", type: "integer")]
+    #[ORM\Column(name: 'forwardid', type: 'integer')]
     private int $forwardId;
 
-    #[ORM\Column(name: "firstclick", type: "datetime", nullable: true)]
+    #[ORM\Column(name: 'firstclick', type: 'datetime', nullable: true)]
     private ?DateTimeInterface $firstClick = null;
 
-    #[ORM\Column(name:'latestclick', type: "datetime", nullable: true)]
+    #[ORM\Column(name:'latestclick', type: 'datetime', nullable: true)]
     private ?DateTimeInterface $latestClick = null;
 
-    #[ORM\Column(type: "integer", nullable: true, options: ["default" => 0])]
+    #[ORM\Column(type: 'integer', nullable: true, options: ['default' => 0])]
     private ?int $total = 0;
 
-    #[ORM\Column(type: "integer", nullable: true, options: ["default" => 0])]
+    #[ORM\Column(type: 'integer', nullable: true, options: ['default' => 0])]
     private ?int $clicked = 0;
 
-    #[ORM\Column(name: "htmlclicked", type: "integer", nullable: true, options: ["default" => 0])]
+    #[ORM\Column(name: 'htmlclicked', type: 'integer', nullable: true, options: ['default' => 0])]
     private ?int $htmlClicked = 0;
 
-    #[ORM\Column(name: "textclicked", type: "integer", nullable: true, options: ["default" => 0])]
+    #[ORM\Column(name: 'textclicked', type: 'integer', nullable: true, options: ['default' => 0])]
     private ?int $textClicked = 0;
 
     public function getMessageId(): int

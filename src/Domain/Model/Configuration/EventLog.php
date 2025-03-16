@@ -12,20 +12,20 @@ use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Repository\Configuration\EventLogRepository;
 
 #[ORM\Entity(repositoryClass: EventLogRepository::class)]
-#[ORM\Table(name: "phplist_eventlog")]
-#[ORM\Index(name: "enteredidx", columns: ["entered"])]
-#[ORM\Index(name: "pageidx", columns: ["page"])]
+#[ORM\Table(name: 'phplist_eventlog')]
+#[ORM\Index(name: 'enteredidx', columns: ['entered'])]
+#[ORM\Index(name: 'pageidx', columns: ['page'])]
 class EventLog implements DomainModel, Identity
 {
     use IdentityTrait;
 
-    #[ORM\Column(type: "datetime", nullable: true)]
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private ?DateTimeInterface $entered = null;
 
-    #[ORM\Column(type: "string", length: 100, nullable: true)]
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private ?string $page = null;
 
-    #[ORM\Column(type: "text", nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $entry = null;
 
     public function getId(): int

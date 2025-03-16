@@ -9,20 +9,20 @@ use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Repository\Configuration\I18nRepository;
 
 #[ORM\Entity(repositoryClass: I18nRepository::class)]
-#[ORM\Table(name: "phplist_i18n")]
-#[ORM\UniqueConstraint(name: "lanorigunq", columns: ["lan", "original"])]
-#[ORM\Index(name: "lanorigidx", columns: ["lan", "original"])]
+#[ORM\Table(name: 'phplist_i18n')]
+#[ORM\UniqueConstraint(name: 'lanorigunq', columns: ['lan', 'original'])]
+#[ORM\Index(name: 'lanorigidx', columns: ['lan', 'original'])]
 class I18n implements DomainModel
 {
     #[ORM\Id]
-    #[ORM\Column(type: "string", length: 10)]
+    #[ORM\Column(type: 'string', length: 10)]
     private string $lan;
 
     #[ORM\Id]
-    #[ORM\Column(type: "text")]
+    #[ORM\Column(type: 'text')]
     private string $original;
 
-    #[ORM\Column(type: "text")]
+    #[ORM\Column(type: 'text')]
     private string $translation;
 
     public function getLan(): string

@@ -12,25 +12,30 @@ use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 
 #[ORM\Entity]
-#[ORM\Table(name: "phplist_template")]
-#[ORM\UniqueConstraint(name: "title", columns: ["title"])]
+#[ORM\Table(name: 'phplist_template')]
+#[ORM\UniqueConstraint(name: 'title', columns: ['title'])]
 class Template implements DomainModel, Identity
 {
     use IdentityTrait;
 
-    #[ORM\Column(name: "title", type: "string", length: 255, unique: true)]
+    #[ORM\Column(name: 'title', type: 'string', length: 255, unique: true)]
     private string $title;
 
-    #[ORM\Column(name: "template", type: "blob", nullable: true)]
+    #[ORM\Column(name: 'template', type: 'blob', nullable: true)]
     private ?string $template = null;
 
-    #[ORM\Column(name: "template_text", type: "blob", nullable: true)]
+    #[ORM\Column(name: 'template_text', type: 'blob', nullable: true)]
     private ?string $templateText = null;
 
-    #[ORM\Column(name: "listorder", type: "integer", nullable: true)]
+    #[ORM\Column(name: 'listorder', type: 'integer', nullable: true)]
     private ?int $listOrder = null;
 
-    #[ORM\OneToMany(targetEntity: TemplateImage::class, mappedBy: "template", cascade: ["persist", "remove"], orphanRemoval: true)]
+    #[ORM\OneToMany(
+        targetEntity: TemplateImage::class,
+        mappedBy: 'template',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
     private Collection $images;
 
     public function __construct()

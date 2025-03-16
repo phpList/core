@@ -9,20 +9,20 @@ use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Repository\Configuration\ConfigRepository;
 
 #[ORM\Entity(repositoryClass: ConfigRepository::class)]
-#[ORM\Table(name: "phplist_config")]
+#[ORM\Table(name: 'phplist_config')]
 class Config implements DomainModel
 {
     #[ORM\Id]
-    #[ORM\Column(type: "string", length: 35)]
+    #[ORM\Column(type: 'string', length: 35)]
     private string $item;
 
-    #[ORM\Column(type: "text", nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $value = null;
 
-    #[ORM\Column(type: "boolean", options: ["default" => 1])]
+    #[ORM\Column(type: 'boolean', options: ['default' => 1])]
     private bool $editable = true;
 
-    #[ORM\Column(type: "string", length: 25, nullable: true)]
+    #[ORM\Column(type: 'string', length: 25, nullable: true)]
     private ?string $type = null;
 
     public function getItem(): string

@@ -12,37 +12,37 @@ use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Repository\Analytics\LinkTrackUmlClickRepository;
 
 #[ORM\Entity(repositoryClass: LinkTrackUmlClickRepository::class)]
-#[ORM\Table(name: "phplist_linktrack_uml_click")]
-#[ORM\UniqueConstraint(name: "miduidfwdid", columns: ["messageid", "userid", "forwardid"])]
-#[ORM\Index(name: "midindex", columns: ["messageid"])]
-#[ORM\Index(name: "miduidindex", columns: ["messageid", "userid"])]
-#[ORM\Index(name: "uidindex", columns: ["userid"])]
+#[ORM\Table(name: 'phplist_linktrack_uml_click')]
+#[ORM\UniqueConstraint(name: 'miduidfwdid', columns: ['messageid', 'userid', 'forwardid'])]
+#[ORM\Index(name: 'midindex', columns: ['messageid'])]
+#[ORM\Index(name: 'miduidindex', columns: ['messageid', 'userid'])]
+#[ORM\Index(name: 'uidindex', columns: ['userid'])]
 class LinkTrackUmlClick implements DomainModel, Identity
 {
     use IdentityTrait;
 
-    #[ORM\Column(name: "messageid", type: "integer")]
+    #[ORM\Column(name: 'messageid', type: 'integer')]
     private int $messageId;
 
-    #[ORM\Column(name: 'userid', type: "integer")]
+    #[ORM\Column(name: 'userid', type: 'integer')]
     private int $userId;
 
-    #[ORM\Column(name: "forwardid", type: "integer", nullable: true)]
+    #[ORM\Column(name: 'forwardid', type: 'integer', nullable: true)]
     private ?int $forwardId = null;
 
-    #[ORM\Column(name: 'firstclick', type: "datetime", nullable: true)]
+    #[ORM\Column(name: 'firstclick', type: 'datetime', nullable: true)]
     private ?DateTimeInterface $firstClick = null;
 
-    #[ORM\Column(name: 'latestclick', type: "datetime", nullable: true)]
+    #[ORM\Column(name: 'latestclick', type: 'datetime', nullable: true)]
     private ?DateTimeInterface $latestClick = null;
 
-    #[ORM\Column(type: "integer", nullable: true, options: ["default" => 0])]
+    #[ORM\Column(type: 'integer', nullable: true, options: ['default' => 0])]
     private ?int $clicked = 0;
 
-    #[ORM\Column(name: 'htmlclicked', type: "integer", nullable: true, options: ["default" => 0])]
+    #[ORM\Column(name: 'htmlclicked', type: 'integer', nullable: true, options: ['default' => 0])]
     private ?int $htmlClicked = 0;
 
-    #[ORM\Column(name: 'textclicked', type: "integer", nullable: true, options: ["default" => 0])]
+    #[ORM\Column(name: 'textclicked', type: 'integer', nullable: true, options: ['default' => 0])]
     private ?int $textClicked = 0;
 
     public function getMessageId(): int

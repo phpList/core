@@ -11,31 +11,31 @@ use PhpList\Core\Domain\Model\Messaging\Message\Message;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
 
 #[ORM\Entity]
-#[ORM\Table(name: "phplist_usermessage")]
-#[ORM\Index(name: "enteredindex", columns: ["entered"])]
-#[ORM\Index(name: "messageidindex", columns: ["messageid"])]
-#[ORM\Index(name: "statusidx", columns: ["status"])]
-#[ORM\Index(name: "useridindex", columns: ["userid"])]
-#[ORM\Index(name: "viewedidx", columns: ["viewed"])]
+#[ORM\Table(name: 'phplist_usermessage')]
+#[ORM\Index(name: 'enteredindex', columns: ['entered'])]
+#[ORM\Index(name: 'messageidindex', columns: ['messageid'])]
+#[ORM\Index(name: 'statusidx', columns: ['status'])]
+#[ORM\Index(name: 'useridindex', columns: ['userid'])]
+#[ORM\Index(name: 'viewedidx', columns: ['viewed'])]
 class UserMessage implements DomainModel
 {
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: Subscriber::class)]
-    #[ORM\JoinColumn(name: "userid", referencedColumnName: "id", nullable: false, onDelete: "CASCADE")]
+    #[ORM\JoinColumn(name: 'userid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private Subscriber $user;
 
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: Message::class)]
-    #[ORM\JoinColumn(name: "messageid", referencedColumnName: "id", nullable: false, onDelete: "CASCADE")]
+    #[ORM\JoinColumn(name: 'messageid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private Message $message;
 
-    #[ORM\Column(name: "entered", type: "datetime")]
+    #[ORM\Column(name: 'entered', type: 'datetime')]
     private DateTime $entered;
 
-    #[ORM\Column(name: "viewed", type: "datetime", nullable: true)]
+    #[ORM\Column(name: 'viewed', type: 'datetime', nullable: true)]
     private ?DateTime $viewed = null;
 
-    #[ORM\Column(name: "status", type: "string", length: 255, nullable: true)]
+    #[ORM\Column(name: 'status', type: 'string', length: 255, nullable: true)]
     private ?string $status = null;
 
     public function getUser(): Subscriber

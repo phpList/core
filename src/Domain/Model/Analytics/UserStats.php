@@ -10,26 +10,26 @@ use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 
 #[ORM\Entity]
-#[ORM\Table(name: "phplist_userstats")]
-#[ORM\UniqueConstraint(name: "entry", columns: ["unixdate", "item", "listid"])]
-#[ORM\Index(name: "dateindex", columns: ["unixdate"])]
-#[ORM\Index(name: "itemindex", columns: ["item"])]
-#[ORM\Index(name: "listdateindex", columns: ["listid", "unixdate"])]
-#[ORM\Index(name: "listindex", columns: ["listid"])]
+#[ORM\Table(name: 'phplist_userstats')]
+#[ORM\UniqueConstraint(name: 'entry', columns: ['unixdate', 'item', 'listid'])]
+#[ORM\Index(name: 'dateindex', columns: ['unixdate'])]
+#[ORM\Index(name: 'itemindex', columns: ['item'])]
+#[ORM\Index(name: 'listdateindex', columns: ['listid', 'unixdate'])]
+#[ORM\Index(name: 'listindex', columns: ['listid'])]
 class UserStats implements DomainModel, Identity
 {
     use IdentityTrait;
 
-    #[ORM\Column(name: "unixdate", type: "integer", nullable: true)]
+    #[ORM\Column(name: 'unixdate', type: 'integer', nullable: true)]
     private ?int $unixDate = null;
 
-    #[ORM\Column(name: "item", type: "string", length: 255, nullable: true)]
+    #[ORM\Column(name: 'item', type: 'string', length: 255, nullable: true)]
     private ?string $item = null;
 
-    #[ORM\Column(name: "listid", type: "integer", options: ["default" => 0])]
+    #[ORM\Column(name: 'listid', type: 'integer', options: ['default' => 0])]
     private int $listId = 0;
 
-    #[ORM\Column(name: "value", type: "integer", options: ["default" => 0])]
+    #[ORM\Column(name: 'value', type: 'integer', options: ['default' => 0])]
     private int $value = 0;
 
     public function getUnixDate(): ?int

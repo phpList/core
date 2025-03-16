@@ -11,30 +11,30 @@ use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 
 #[ORM\Entity]
-#[ORM\Table(name: "phplist_user_user_history")]
-#[ORM\Index(name: "dateidx", columns: ["date"])]
-#[ORM\Index(name: "userididx", columns: ["userid"])]
+#[ORM\Table(name: 'phplist_user_user_history')]
+#[ORM\Index(name: 'dateidx', columns: ['date'])]
+#[ORM\Index(name: 'userididx', columns: ['userid'])]
 class SubscriberHistory implements DomainModel, Identity
 {
     use IdentityTrait;
 
     #[ORM\ManyToOne(targetEntity: Subscriber::class)]
-    #[ORM\JoinColumn(name: "userid", referencedColumnName: "id", nullable: false, onDelete: "CASCADE")]
+    #[ORM\JoinColumn(name: 'userid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private Subscriber $subscriber;
 
-    #[ORM\Column(name: "ip", type: "string", length: 255, nullable: true)]
+    #[ORM\Column(name: 'ip', type: 'string', length: 255, nullable: true)]
     private ?string $ip = null;
 
-    #[ORM\Column(name: "date", type: "datetime", nullable: true)]
+    #[ORM\Column(name: 'date', type: 'datetime', nullable: true)]
     private ?DateTime $date = null;
 
-    #[ORM\Column(name: "summary", type: "string", length: 255, nullable: true)]
+    #[ORM\Column(name: 'summary', type: 'string', length: 255, nullable: true)]
     private ?string $summary = null;
 
-    #[ORM\Column(name: "detail", type: "text", nullable: true)]
+    #[ORM\Column(name: 'detail', type: 'text', nullable: true)]
     private ?string $detail = null;
 
-    #[ORM\Column(name: "systeminfo", type: "text", nullable: true)]
+    #[ORM\Column(name: 'systeminfo', type: 'text', nullable: true)]
     private ?string $systemInfo = null;
 
     public function getSubscriber(): Subscriber

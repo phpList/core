@@ -10,18 +10,18 @@ use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 
 #[ORM\Entity]
-#[ORM\Table(name: "phplist_subscribepage")]
+#[ORM\Table(name: 'phplist_subscribepage')]
 class SubscribePage implements DomainModel, Identity
 {
     use IdentityTrait;
 
-    #[ORM\Column(name: "title", type: "string", length: 255)]
+    #[ORM\Column(name: 'title', type: 'string', length: 255)]
     private string $title;
 
-    #[ORM\Column(name: "active", type: "boolean", options: ["default" => 0])]
+    #[ORM\Column(name: 'active', type: 'boolean', options: ['default' => 0])]
     private bool $active = false;
 
-    #[ORM\Column(name: "owner", type: "integer", nullable: true)]
+    #[ORM\Column(name: 'owner', type: 'integer', nullable: true)]
     private ?int $owner = null;
 
     public function getTitle(): string

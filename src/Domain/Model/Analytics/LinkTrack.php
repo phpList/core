@@ -11,38 +11,38 @@ use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Repository\Analytics\LinkTrackRepository;
 
 #[ORM\Entity(repositoryClass: LinkTrackRepository::class)]
-#[ORM\Table(name: "phplist_linktrack")]
-#[ORM\UniqueConstraint(name: "miduidurlindex", columns: ["messageid", "userid", "url"])]
-#[ORM\Index(name: "midindex", columns: ["messageid"])]
-#[ORM\Index(name: "miduidindex", columns: ["messageid", "userid"])]
-#[ORM\Index(name: "uidindex", columns: ["userid"])]
-#[ORM\Index(name: "urlindex", columns: ["url"])]
+#[ORM\Table(name: 'phplist_linktrack')]
+#[ORM\UniqueConstraint(name: 'miduidurlindex', columns: ['messageid', 'userid', 'url'])]
+#[ORM\Index(name: 'midindex', columns: ['messageid'])]
+#[ORM\Index(name: 'miduidindex', columns: ['messageid', 'userid'])]
+#[ORM\Index(name: 'uidindex', columns: ['userid'])]
+#[ORM\Index(name: 'urlindex', columns: ['url'])]
 class LinkTrack implements DomainModel, Identity
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name:'linkid', type: "integer")]
+    #[ORM\Column(name:'linkid', type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'messageid', type: "integer")]
+    #[ORM\Column(name: 'messageid', type: 'integer')]
     private int $messageId;
 
-    #[ORM\Column(name: 'userid', type: "integer")]
+    #[ORM\Column(name: 'userid', type: 'integer')]
     private int $userId;
 
-    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $url = null;
 
-    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $forward = null;
 
-    #[ORM\Column(name: 'firstclick', type: "datetime", nullable: true)]
+    #[ORM\Column(name: 'firstclick', type: 'datetime', nullable: true)]
     private ?DateTimeInterface $firstClick = null;
 
-    #[ORM\Column(name: 'latestclick', type: "datetime", nullable: true, options: ["default" => "CURRENT_TIMESTAMP"])]
+    #[ORM\Column(name: 'latestclick', type: 'datetime', nullable: true, options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?DateTimeInterface $latestClick = null;
 
-    #[ORM\Column(type: "integer", nullable: true, options: ["default" => 0])]
+    #[ORM\Column(type: 'integer', nullable: true, options: ['default' => 0])]
     private int $clicked = 0;
 
     public function getId(): int

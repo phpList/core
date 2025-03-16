@@ -10,37 +10,37 @@ use DateTime;
 #[ORM\Embeddable]
 class MessageOptions
 {
-    #[ORM\Column(name: 'fromfield', type: "string", length: 255, nullable: false, options: ["default" => ""])]
+    #[ORM\Column(name: 'fromfield', type: 'string', length: 255, nullable: false, options: ['default' => ''])]
     private string $fromField;
 
-    #[ORM\Column(name: 'tofield', type: "string", length: 255, nullable: false, options: ["default" => ""])]
+    #[ORM\Column(name: 'tofield', type: 'string', length: 255, nullable: false, options: ['default' => ''])]
     private string $toField;
 
-    #[ORM\Column(name: 'replyto', type: "string", length: 255, nullable: false, options: ["default" => ""])]
+    #[ORM\Column(name: 'replyto', type: 'string', length: 255, nullable: false, options: ['default' => ''])]
     private string $replyTo;
 
-    #[ORM\Column(type: "datetime", nullable: true)]
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private ?DateTime $embargo;
 
-    #[ORM\Column(name: "userselection", type: "text", nullable: true)]
+    #[ORM\Column(name: 'userselection', type: 'text', nullable: true)]
     private ?string $userSelection;
 
-    #[ORM\Column(type: "integer", nullable: true)]
+    #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $template;
 
-    #[ORM\Column(name: "sendstart", type: "datetime", nullable: true)]
+    #[ORM\Column(name: 'sendstart', type: 'datetime', nullable: true)]
     private ?DateTime $sendStart;
 
-    #[ORM\Column(name: "rsstemplate", type: "string", length: 100, nullable: true)]
+    #[ORM\Column(name: 'rsstemplate', type: 'string', length: 100, nullable: true)]
     private ?string $rssTemplate;
 
-    #[ORM\Column(type: "integer", nullable: true)]
+    #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $owner;
 
     public function __construct(
-        string $fromField = "",
-        string $toField = "",
-        string $replyTo = "",
+        string $fromField = '',
+        string $toField = '',
+        string $replyTo = '',
         ?DateTime $embargo = null,
         ?string $userSelection = null,
         ?int $template = null,
@@ -104,4 +104,3 @@ class MessageOptions
         return $this->owner;
     }
 }
-

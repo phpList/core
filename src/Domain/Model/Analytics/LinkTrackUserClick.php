@@ -10,33 +10,33 @@ use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Repository\Analytics\LinkTrackUserClickRepository;
 
 #[ORM\Entity(repositoryClass: LinkTrackUserClickRepository::class)]
-#[ORM\Table(name: "phplist_linktrack_userclick")]
-#[ORM\Index(name: "linkindex", columns: ["linkid"])]
-#[ORM\Index(name: "linkuserindex", columns: ["linkid", "userid"])]
-#[ORM\Index(name: "linkusermessageindex", columns: ["linkid", "userid", "messageid"])]
-#[ORM\Index(name: "midindex", columns: ["messageid"])]
-#[ORM\Index(name: "uidindex", columns: ["userid"])]
+#[ORM\Table(name: 'phplist_linktrack_userclick')]
+#[ORM\Index(name: 'linkindex', columns: ['linkid'])]
+#[ORM\Index(name: 'linkuserindex', columns: ['linkid', 'userid'])]
+#[ORM\Index(name: 'linkusermessageindex', columns: ['linkid', 'userid', 'messageid'])]
+#[ORM\Index(name: 'midindex', columns: ['messageid'])]
+#[ORM\Index(name: 'uidindex', columns: ['userid'])]
 class LinkTrackUserClick implements DomainModel
 {
     #[ORM\Id]
-    #[ORM\Column(name: "linkid", type: "integer")]
+    #[ORM\Column(name: 'linkid', type: 'integer')]
     private int $linkId;
 
     #[ORM\Id]
-    #[ORM\Column(name: "userid", type: "integer")]
+    #[ORM\Column(name: 'userid', type: 'integer')]
     private int $userId;
 
     #[ORM\Id]
-    #[ORM\Column(name: "messageid", type: "integer")]
+    #[ORM\Column(name: 'messageid', type: 'integer')]
     private int $messageId;
 
-    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $name = null;
 
-    #[ORM\Column(type: "text", nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $data = null;
 
-    #[ORM\Column(type: "datetime", nullable: true)]
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private ?DateTimeInterface $date = null;
 
     public function getLinkId(): int

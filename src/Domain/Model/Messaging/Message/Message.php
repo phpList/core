@@ -14,30 +14,30 @@ use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 use PhpList\Core\Domain\Repository\Messaging\MessageRepository;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
-#[ORM\Table(name: "phplist_message")]
-#[ORM\Index(name: "uuididx", columns: ["uuid"])]
+#[ORM\Table(name: 'phplist_message')]
+#[ORM\Index(name: 'uuididx', columns: ['uuid'])]
 #[ORM\HasLifecycleCallbacks]
 class Message implements DomainModel, Identity, ModificationDate
 {
     use IdentityTrait;
     use ModificationDateTrait;
 
-    #[ORM\Embedded(class: "MessageFormat")]
+    #[ORM\Embedded(class: 'MessageFormat')]
     private MessageFormat $format;
 
-    #[ORM\Embedded(class: "MessageSchedule")]
+    #[ORM\Embedded(class: 'MessageSchedule')]
     private MessageSchedule $schedule;
 
-    #[ORM\Embedded(class: "MessageMetadata")]
+    #[ORM\Embedded(class: 'MessageMetadata')]
     private MessageMetadata $metadata;
 
-    #[ORM\Embedded(class: "MessageContent")]
+    #[ORM\Embedded(class: 'MessageContent')]
     private MessageContent $content;
 
-    #[ORM\Embedded(class: "MessageOptions")]
+    #[ORM\Embedded(class: 'MessageOptions')]
     private MessageOptions $options;
 
-    #[ORM\Column(type: "string", length: 36, nullable: true, options: ["default" => ""])]
+    #[ORM\Column(type: 'string', length: 36, nullable: true, options: ['default' => ''])]
     private ?string $uuid = '';
 
     public function __construct(

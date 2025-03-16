@@ -8,18 +8,18 @@ use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 
 #[ORM\Entity]
-#[ORM\Table(name: "phplist_subscribepage_data")]
+#[ORM\Table(name: 'phplist_subscribepage_data')]
 class SubscribePageData implements DomainModel
 {
     #[ORM\Id]
-    #[ORM\Column(name: "id", type: "integer")]
+    #[ORM\Column(name: 'id', type: 'integer')]
     private int $id;
 
     #[ORM\Id]
-    #[ORM\Column(name: "name", type: "string", length: 100)]
+    #[ORM\Column(name: 'name', type: 'string', length: 100)]
     private string $name;
 
-    #[ORM\Column(name: "data", type: "text", nullable: true)]
+    #[ORM\Column(name: 'data', type: 'text', nullable: true)]
     private ?string $data = null;
 
     public function getId(): int

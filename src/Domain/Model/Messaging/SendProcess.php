@@ -13,23 +13,23 @@ use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 
 #[ORM\Entity]
-#[ORM\Table(name: "phplist_sendprocess")]
+#[ORM\Table(name: 'phplist_sendprocess')]
 #[ORM\HasLifecycleCallbacks]
 class SendProcess implements DomainModel, Identity, ModificationDate
 {
     use IdentityTrait;
     use ModificationDateTrait;
 
-    #[ORM\Column(name: "started", type: "datetime", nullable: true)]
+    #[ORM\Column(name: 'started', type: 'datetime', nullable: true)]
     private ?DateTime $started = null;
 
-    #[ORM\Column(name: "alive", type: "integer", nullable: true, options: ["default" => 1])]
+    #[ORM\Column(name: 'alive', type: 'integer', nullable: true, options: ['default' => 1])]
     private ?int $alive = 1;
 
-    #[ORM\Column(name: "ipaddress", type: "string", length: 50, nullable: true)]
+    #[ORM\Column(name: 'ipaddress', type: 'string', length: 50, nullable: true)]
     private ?string $ipAddress = null;
 
-    #[ORM\Column(name: "page", type: "string", length: 100, nullable: true)]
+    #[ORM\Column(name: 'page', type: 'string', length: 100, nullable: true)]
     private ?string $page = null;
 
     public function getStartedDate(): ?DateTime

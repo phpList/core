@@ -10,28 +10,28 @@ use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 
 #[ORM\Entity]
-#[ORM\Table(name: "phplist_templateimage")]
-#[ORM\Index(name: "templateidx", columns: ["template"])]
+#[ORM\Table(name: 'phplist_templateimage')]
+#[ORM\Index(name: 'templateidx', columns: ['template'])]
 class TemplateImage implements DomainModel, Identity
 {
     use IdentityTrait;
     #[ORM\ManyToOne(targetEntity: Template::class)]
-    #[ORM\JoinColumn(name: "template", referencedColumnName: "id", nullable: false, onDelete: "CASCADE")]
+    #[ORM\JoinColumn(name: 'template', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private Template $template;
 
-    #[ORM\Column(name: "mimetype", type: "string", length: 100, nullable: true)]
+    #[ORM\Column(name: 'mimetype', type: 'string', length: 100, nullable: true)]
     private ?string $mimeType = null;
 
-    #[ORM\Column(name: "filename", type: "string", length: 100, nullable: true)]
+    #[ORM\Column(name: 'filename', type: 'string', length: 100, nullable: true)]
     private ?string $filename = null;
 
-    #[ORM\Column(name: "data", type: "blob", nullable: true)]
+    #[ORM\Column(name: 'data', type: 'blob', nullable: true)]
     private ?string $data = null;
 
-    #[ORM\Column(name: "width", type: "integer", nullable: true)]
+    #[ORM\Column(name: 'width', type: 'integer', nullable: true)]
     private ?int $width = null;
 
-    #[ORM\Column(name: "height", type: "integer", nullable: true)]
+    #[ORM\Column(name: 'height', type: 'integer', nullable: true)]
     private ?int $height = null;
 
     public function getTemplate(): ?Template

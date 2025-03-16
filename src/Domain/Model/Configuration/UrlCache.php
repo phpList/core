@@ -11,22 +11,22 @@ use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 
 #[ORM\Entity]
-#[ORM\Table(name: "phplist_urlcache")]
-#[ORM\Index(name: "urlindex", columns: ["url"])]
+#[ORM\Table(name: 'phplist_urlcache')]
+#[ORM\Index(name: 'urlindex', columns: ['url'])]
 class UrlCache implements DomainModel, Identity
 {
     use IdentityTrait;
 
-    #[ORM\Column(name: "url", type: "string", length: 2083)]
+    #[ORM\Column(name: 'url', type: 'string', length: 2083)]
     private string $url;
 
-    #[ORM\Column(name: "lastmodified", type: "integer", nullable: true)]
+    #[ORM\Column(name: 'lastmodified', type: 'integer', nullable: true)]
     private ?int $lastModified = null;
 
-    #[ORM\Column(name: "added", type: "datetime", nullable: true)]
+    #[ORM\Column(name: 'added', type: 'datetime', nullable: true)]
     private ?DateTime $added = null;
 
-    #[ORM\Column(name: "content", type: "blob", nullable: true)]
+    #[ORM\Column(name: 'content', type: 'blob', nullable: true)]
     private ?string $content = null;
 
     public function getUrl(): string

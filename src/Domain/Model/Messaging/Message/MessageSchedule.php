@@ -10,17 +10,16 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Embeddable]
 class MessageSchedule
 {
-
-    #[ORM\Column(name: "repeatinterval", type: "integer", nullable: true, options: ["default" => 0])]
+    #[ORM\Column(name: 'repeatinterval', type: 'integer', nullable: true, options: ['default' => 0])]
     private ?int $repeatInterval;
 
-    #[ORM\Column(name: "repeatuntil", type: "datetime", nullable: true)]
+    #[ORM\Column(name: 'repeatuntil', type: 'datetime', nullable: true)]
     private ?DateTime $repeatUntil;
 
-    #[ORM\Column(name: "requeueinterval", type: "integer", nullable: true, options: ["default" => 0])]
+    #[ORM\Column(name: 'requeueinterval', type: 'integer', nullable: true, options: ['default' => 0])]
     private ?int $requeueInterval;
 
-    #[ORM\Column(name: "requeueuntil", type: "datetime", nullable: true)]
+    #[ORM\Column(name: 'requeueuntil', type: 'datetime', nullable: true)]
     private ?DateTime $requeueUntil;
 
     public function __construct(
@@ -55,4 +54,3 @@ class MessageSchedule
         return $this->requeueUntil;
     }
 }
-

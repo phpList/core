@@ -10,22 +10,22 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Embeddable]
 class MessageMetadata
 {
-    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $status = null;
 
-    #[ORM\Column(type: "integer", options: ["unsigned" => true, "default" => 0])]
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true, 'default' => 0])]
     private int $processed;
 
-    #[ORM\Column(type: "integer", options: ["default" => 0])]
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
     private int $viewed;
 
-    #[ORM\Column(name: "bouncecount", type: "integer", options: ["default" => 0])]
+    #[ORM\Column(name: 'bouncecount', type: 'integer', options: ['default' => 0])]
     private int $bounceCount;
 
-    #[ORM\Column(type: "datetime", nullable: true)]
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private ?DateTime $entered;
 
-    #[ORM\Column(type: "datetime", nullable: true)]
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private ?DateTime $sent;
 
     public function __construct(
@@ -80,4 +80,3 @@ class MessageMetadata
         return $this->sent;
     }
 }
-

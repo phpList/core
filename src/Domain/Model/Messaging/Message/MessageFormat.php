@@ -9,25 +9,25 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Embeddable]
 class MessageFormat
 {
-    #[ORM\Column(type: "boolean", options: ["default" => false])]
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $htmlFormatted = false;
 
-    #[ORM\Column(name: "sendformat", type: "string", length: 20, nullable: true)]
+    #[ORM\Column(name: 'sendformat', type: 'string', length: 20, nullable: true)]
     private ?string $sendFormat = null;
 
-    #[ORM\Column(name: "astext", type: "integer", options: ["default" => 0])]
+    #[ORM\Column(name: 'astext', type: 'integer', options: ['default' => 0])]
     private int $asText = 0;
 
-    #[ORM\Column(name: "ashtml", type: "integer", options: ["default" => 0])]
+    #[ORM\Column(name: 'ashtml', type: 'integer', options: ['default' => 0])]
     private int $asHtml = 0;
 
-    #[ORM\Column(name: "astextandhtml", type: "integer", options: ["default" => 0])]
+    #[ORM\Column(name: 'astextandhtml', type: 'integer', options: ['default' => 0])]
     private int $asTextAndHtml = 0;
 
-    #[ORM\Column(name: "aspdf", type: "integer", options: ["default" => 0])]
+    #[ORM\Column(name: 'aspdf', type: 'integer', options: ['default' => 0])]
     private int $asPdf = 0;
 
-    #[ORM\Column(name: "astextandpdf", type: "integer", options: ["default" => 0])]
+    #[ORM\Column(name: 'astextandpdf', type: 'integer', options: ['default' => 0])]
     private int $asTextAndPdf = 0;
 
     public function __construct(bool $htmlFormatted, ?string $sendFormat)
@@ -77,4 +77,3 @@ class MessageFormat
         return $this;
     }
 }
-

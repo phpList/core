@@ -8,22 +8,22 @@ use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 
 #[ORM\Entity]
-#[ORM\Table(name: "phplist_user_user_attribute")]
-#[ORM\Index(name: "attindex", columns: ["attributeid"])]
-#[ORM\Index(name: "attuserid", columns: ["userid", "attributeid"])]
-#[ORM\Index(name: "userindex", columns: ["userid"])]
+#[ORM\Table(name: 'phplist_user_user_attribute')]
+#[ORM\Index(name: 'attindex', columns: ['attributeid'])]
+#[ORM\Index(name: 'attuserid', columns: ['userid', 'attributeid'])]
+#[ORM\Index(name: 'userindex', columns: ['userid'])]
 class SubscriberAttribute implements DomainModel
 {
     #[ORM\Id]
-    #[ORM\Column(name: "attributeid", type: "integer", nullable: false)]
+    #[ORM\Column(name: 'attributeid', type: 'integer', nullable: false)]
     private int $id;
 
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: Subscriber::class)]
-    #[ORM\JoinColumn(name: "userid", referencedColumnName: "id", nullable: false, onDelete: "CASCADE")]
+    #[ORM\JoinColumn(name: 'userid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private Subscriber $subscriber;
 
-    #[ORM\Column(name: "value", type: "text", nullable: true)]
+    #[ORM\Column(name: 'value', type: 'text', nullable: true)]
     private ?string $value = null;
 
     public function __construct(int $id, Subscriber $subscriber)
