@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Subscription\Subscription;
+use PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use PhpList\Core\Domain\Model\Identity\Administrator;
@@ -27,7 +28,7 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
  * selected lists (as the owner), send campaigns to these lists and edit subscribers.
  * @author Oliver Klee <oliver@phplist.com>
  */
-#[ORM\Entity(repositoryClass: 'PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository')]
+#[ORM\Entity(repositoryClass: SubscriberListRepository::class)]
 #[ORM\Table(name: 'phplist_list')]
 #[ORM\Index(name: 'nameidx', columns: ['name'])]
 #[ORM\Index(name: 'listorderidx', columns: ['listorder'])]
@@ -52,10 +53,6 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     #[SerializedName('creation_date')]
     #[Groups(['SubscriberList'])]
     protected ?DateTime $creationDate = null;
-
-    #[ORM\Column(name: 'modified', type: 'datetime')]
-    #[Ignore]
-    protected ?DateTime $modificationDate = null;
 
     #[ORM\Column(name: 'listorder', type: 'integer', nullable: true)]
     #[SerializedName('list_position')]

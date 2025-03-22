@@ -8,6 +8,7 @@ use DateTime;
 use DateTimeZone;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Persistence\Proxy;
+use PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use PhpList\Core\Domain\Model\Interfaces\CreationDate;
@@ -19,7 +20,7 @@ use PhpList\Core\Domain\Model\Traits\IdentityTrait;
  * This class represents an API authentication token for an administrator.
  * @author Oliver Klee <oliver@phplist.com>
  */
-#[ORM\Entity(repositoryClass: 'PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository')]
+#[ORM\Entity(repositoryClass: AdministratorTokenRepository::class)]
 #[ORM\Table(name: 'phplist_admintoken')]
 #[ORM\HasLifecycleCallbacks]
 class AdministratorToken implements DomainModel, Identity, CreationDate
@@ -40,7 +41,7 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
     #[SerializedName('key')]
     private string $key = '';
 
-    #[ORM\ManyToOne(targetEntity: 'PhpList\Core\Domain\Model\Identity\Administrator')]
+    #[ORM\ManyToOne(targetEntity: Administrator::class)]
     #[ORM\JoinColumn(name: 'adminid')]
     #[Ignore]
     private ?Administrator $administrator = null;
