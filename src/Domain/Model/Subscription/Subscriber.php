@@ -9,7 +9,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Repository\Subscription\SubscriberRepository;
-use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use PhpList\Core\Domain\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
@@ -24,6 +23,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
  * This class represents subscriber who can subscribe to multiple subscriber lists and can receive email messages from
  * campaigns for those subscriber lists.
  * @author Oliver Klee <oliver@phplist.com>
+ * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 #[ORM\Entity(repositoryClass: SubscriberRepository::class)]
 #[ORM\Table(name: 'phplist_user_user')]
@@ -83,16 +83,28 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     private ?string $extraData;
 
     #[ORM\OneToMany(
-        targetEntity: 'PhpList\Core\Domain\Model\Subscription\Subscription',
+        targetEntity: Subscription::class,
         mappedBy: 'subscriber',
         cascade: ['remove'],
         orphanRemoval: true,
     )]
     private Collection $subscriptions;
 
+    /**
+     * @var Collection<int, SubscriberAttribute>
+     */
+    #[ORM\OneToMany(
+        targetEntity: SubscriberAttribute::class,
+        mappedBy: 'subscriber',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    private Collection $attributes;
+
     public function __construct()
     {
         $this->subscriptions = new ArrayCollection();
+        $this->attributes = new ArrayCollection();
         $this->extraData = '';
     }
 
@@ -222,5 +234,25 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         }
 
         return $result;
+    }
+
+    public function getAttributes(): Collection
+    {
+        return $this->attributes;
+    }
+
+    public function addAttribute(SubscriberAttribute $attribute): self
+    {
+        if (!$this->attributes->contains($attribute)) {
+            $this->attributes[] = $attribute;
+        }
+
+        return $this;
+    }
+
+    public function removeAttribute(SubscriberAttribute $attribute): self
+    {
+        $this->attributes->removeElement($attribute);
+        return $this;
     }
 }

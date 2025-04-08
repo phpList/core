@@ -15,8 +15,9 @@ use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 class SubscriberAttribute implements DomainModel
 {
     #[ORM\Id]
-    #[ORM\Column(name: 'attributeid', type: 'integer', nullable: false)]
-    private int $id;
+    #[ORM\ManyToOne(targetEntity: SubscriberAttributeDefinition::class)]
+    #[ORM\JoinColumn(name: 'attributeid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    private SubscriberAttributeDefinition $attributeDefinition;
 
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: Subscriber::class)]
@@ -26,15 +27,15 @@ class SubscriberAttribute implements DomainModel
     #[ORM\Column(name: 'value', type: 'text', nullable: true)]
     private ?string $value = null;
 
-    public function __construct(int $id, Subscriber $subscriber)
+    public function __construct(SubscriberAttributeDefinition $attributeDefinition, Subscriber $subscriber)
     {
-        $this->id = $id;
+        $this->attributeDefinition = $attributeDefinition;
         $this->subscriber = $subscriber;
     }
 
-    public function getId(): int
+    public function getAttributeDefinition(): SubscriberAttributeDefinition
     {
-        return $this->id;
+        return $this->attributeDefinition;
     }
 
     public function getSubscriber(): Subscriber

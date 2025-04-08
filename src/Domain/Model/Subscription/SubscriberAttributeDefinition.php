@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Model\Identity;
+namespace PhpList\Core\Domain\Model\Subscription;
 
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
@@ -13,7 +13,7 @@ use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 #[ORM\Table(name: 'phplist_user_attribute')]
 #[ORM\Index(name: 'idnameindex', columns: ['id', 'name'])]
 #[ORM\Index(name: 'nameindex', columns: ['name'])]
-class UserAttribute implements DomainModel, Identity
+class SubscriberAttributeDefinition implements DomainModel, Identity
 {
     use IdentityTrait;
 
