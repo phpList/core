@@ -86,33 +86,45 @@ class AdminAttribute implements DomainModel, Identity
         return $this->tableName;
     }
 
-    public function setName(string $name): void
+    public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
     }
 
-    public function setType(?string $type): void
+    public function setType(?string $type): self
     {
         $this->type = $type;
+
+        return $this;
     }
 
-    public function setListOrder(?int $listOrder): void
+    public function setListOrder(?int $listOrder): self
     {
         $this->listOrder = $listOrder;
+
+        return $this;
     }
 
-    public function setDefaultValue(?string $defaultValue): void
+    public function setDefaultValue(?string $defaultValue): self
     {
         $this->defaultValue = $defaultValue;
+
+        return $this;
     }
 
-    public function setRequired(?bool $required): void
+    public function setRequired(?bool $required): self
     {
         $this->required = $required;
+
+        return $this;
     }
 
-    public function setTableName(?string $tableName): void
+    public function setTableName(?string $tableName): self
     {
         $this->tableName = $tableName;
+
+        return $this;
     }
 }

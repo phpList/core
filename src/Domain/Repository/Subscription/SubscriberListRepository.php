@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Repository\Messaging;
+namespace PhpList\Core\Domain\Repository\Subscription;
 
 use PhpList\Core\Domain\Model\Identity\Administrator;
-use PhpList\Core\Domain\Model\Messaging\SubscriberList;
+use PhpList\Core\Domain\Model\Subscription\SubscriberList;
 use PhpList\Core\Domain\Repository\AbstractRepository;
 
 /**

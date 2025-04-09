@@ -6,8 +6,8 @@ namespace PhpList\Core\Tests\Unit\Domain\Model\Subscription;
 
 use DateTime;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
-use PhpList\Core\Domain\Model\Messaging\SubscriberList;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
+use PhpList\Core\Domain\Model\Subscription\SubscriberList;
 use PhpList\Core\Domain\Model\Subscription\Subscription;
 use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
 use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;

@@ -20,6 +20,7 @@ use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
  * selected lists (as the owner), send campaigns to these lists and edit subscribers.
  *
  * @author Oliver Klee <oliver@phplist.com>
+ * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 #[ORM\Entity(repositoryClass: AdministratorRepository::class)]
 #[ORM\Table(name: 'phplist_admin')]
@@ -76,9 +77,11 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->loginName;
     }
 
-    public function setLoginName(string $loginName): void
+    public function setLoginName(string $loginName): self
     {
         $this->loginName = $loginName;
+
+        return $this;
     }
 
     public function getEmailAddress(): string
@@ -86,9 +89,11 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->emailAddress;
     }
 
-    public function setEmailAddress(string $emailAddress): void
+    public function setEmailAddress(string $emailAddress): self
     {
         $this->emailAddress = $emailAddress;
+
+        return $this;
     }
 
     public function getPasswordHash(): string
@@ -96,10 +101,12 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->passwordHash;
     }
 
-    public function setPasswordHash(string $passwordHash): void
+    public function setPasswordHash(string $passwordHash): self
     {
         $this->passwordHash = $passwordHash;
         $this->setPasswordChangeDate(new DateTime());
+
+        return $this;
     }
 
     public function getPasswordChangeDate(): ?DateTime
@@ -107,9 +114,11 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->passwordChangeDate;
     }
 
-    private function setPasswordChangeDate(DateTime $changeDate): void
+    private function setPasswordChangeDate(DateTime $changeDate): self
     {
         $this->passwordChangeDate = $changeDate;
+
+        return $this;
     }
 
     public function isDisabled(): bool
@@ -117,9 +126,11 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->disabled;
     }
 
-    public function setDisabled(bool $disabled): void
+    public function setDisabled(bool $disabled): self
     {
         $this->disabled = $disabled;
+
+        return $this;
     }
 
     public function isSuperUser(): bool
@@ -127,14 +138,18 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->superUser;
     }
 
-    public function setSuperUser(bool $superUser): void
+    public function setSuperUser(bool $superUser): self
     {
         $this->superUser = $superUser;
+
+        return $this;
     }
 
-    public function setNameLc(string $nameLc): void
+    public function setNameLc(string $nameLc): self
     {
         $this->namelc = $nameLc;
+
+        return $this;
     }
 
     public function getNameLc(): string
@@ -142,9 +157,11 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->namelc;
     }
 
-    public function setPrivileges(string $privileges): void
+    public function setPrivileges(string $privileges): self
     {
         $this->privileges = $privileges;
+
+        return $this;
     }
 
     public function getPrivileges(): string

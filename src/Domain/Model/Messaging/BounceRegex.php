@@ -71,9 +71,10 @@ class BounceRegex implements DomainModel, Identity
         return $this->regex;
     }
 
-    public function setRegex(?string $regex): void
+    public function setRegex(?string $regex): self
     {
         $this->regex = $regex;
+        return $this;
     }
 
     public function getRegexHash(): ?string
@@ -81,9 +82,10 @@ class BounceRegex implements DomainModel, Identity
         return $this->regexHash;
     }
 
-    public function setRegexHash(?string $regexHash): void
+    public function setRegexHash(?string $regexHash): self
     {
         $this->regexHash = $regexHash;
+        return $this;
     }
 
     public function getAction(): ?string
@@ -91,9 +93,10 @@ class BounceRegex implements DomainModel, Identity
         return $this->action;
     }
 
-    public function setAction(?string $action): void
+    public function setAction(?string $action): self
     {
         $this->action = $action;
+        return $this;
     }
 
     public function getListOrder(): ?int
@@ -101,9 +104,10 @@ class BounceRegex implements DomainModel, Identity
         return $this->listOrder;
     }
 
-    public function setListOrder(?int $listOrder): void
+    public function setListOrder(?int $listOrder): self
     {
         $this->listOrder = $listOrder;
+        return $this;
     }
 
     public function getAdmin(): ?int
@@ -111,9 +115,10 @@ class BounceRegex implements DomainModel, Identity
         return $this->admin;
     }
 
-    public function setAdmin(?int $admin): void
+    public function setAdmin(?int $admin): self
     {
         $this->admin = $admin;
+        return $this;
     }
 
     public function getComment(): ?string
@@ -121,9 +126,10 @@ class BounceRegex implements DomainModel, Identity
         return $this->comment;
     }
 
-    public function setComment(?string $comment): void
+    public function setComment(?string $comment): self
     {
         $this->comment = $comment;
+        return $this;
     }
 
     public function getStatus(): ?string
@@ -131,9 +137,10 @@ class BounceRegex implements DomainModel, Identity
         return $this->status;
     }
 
-    public function setStatus(?string $status): void
+    public function setStatus(?string $status): self
     {
         $this->status = $status;
+        return $this;
     }
 
     public function getCount(): ?int
@@ -141,8 +148,9 @@ class BounceRegex implements DomainModel, Identity
         return $this->count;
     }
 
-    public function setCount(?int $count): void
+    public function setCount(?int $count): self
     {
         $this->count = $count;
+        return $this;
     }
 }

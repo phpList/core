@@ -7,22 +7,23 @@ namespace PhpList\Core\Domain\Model\Subscription;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Persistence\Proxy;
-use Symfony\Component\Serializer\Annotation\Ignore;
-use Symfony\Component\Serializer\Annotation\SerializedName;
 use PhpList\Core\Domain\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
-use PhpList\Core\Domain\Model\Messaging\SubscriberList;
 use PhpList\Core\Domain\Model\Traits\CreationDateTrait;
 use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
+use PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository;
+use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
  * This class represents subscriber who can subscribe to multiple subscriber lists and can receive email messages from
  * campaigns for those subscriber lists.
  * @author Oliver Klee <oliver@phplist.com>
+ * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
-#[ORM\Entity(repositoryClass: 'PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository')]
+#[ORM\Entity(repositoryClass: SubscriptionRepository::class)]
 #[ORM\Table(name: 'phplist_listuser')]
 #[ORM\Index(name: 'userenteredidx', columns: ['userid', 'entered'])]
 #[ORM\Index(name: 'userlistenteredidx', columns: ['userid', 'entered', 'listid'])]
@@ -40,7 +41,7 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
 
     #[ORM\Id]
     #[ORM\ManyToOne(
-        targetEntity: 'PhpList\Core\Domain\Model\Subscription\Subscriber',
+        targetEntity: Subscriber::class,
         inversedBy: 'subscriptions'
     )]
     #[ORM\JoinColumn(name: 'userid')]
@@ -49,7 +50,7 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
 
     #[ORM\Id]
     #[ORM\ManyToOne(
-        targetEntity: 'PhpList\Core\Domain\Model\Messaging\SubscriberList',
+        targetEntity: SubscriberList::class,
         inversedBy: 'subscriptions'
     )]
     #[ORM\JoinColumn(name: 'listid', onDelete: 'CASCADE')]
@@ -62,9 +63,10 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
         return $this->subscriber;
     }
 
-    public function setSubscriber(?Subscriber $subscriber): void
+    public function setSubscriber(?Subscriber $subscriber): self
     {
         $this->subscriber = $subscriber;
+        return $this;
     }
 
     public function getSubscriberList(): ?SubscriberList
@@ -72,8 +74,9 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
         return $this->subscriberList;
     }
 
-    public function setSubscriberList(?SubscriberList $subscriberList): void
+    public function setSubscriberList(?SubscriberList $subscriberList): self
     {
         $this->subscriberList = $subscriberList;
+        return $this;
     }
 }

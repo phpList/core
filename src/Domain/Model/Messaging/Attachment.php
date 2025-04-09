@@ -50,9 +50,10 @@ class Attachment implements DomainModel, Identity
         return $this->filename;
     }
 
-    public function setFilename(?string $filename): void
+    public function setFilename(?string $filename): self
     {
         $this->filename = $filename;
+        return $this;
     }
 
     public function getRemoteFile(): ?string
@@ -60,9 +61,10 @@ class Attachment implements DomainModel, Identity
         return $this->remoteFile;
     }
 
-    public function setRemoteFile(?string $remoteFile): void
+    public function setRemoteFile(?string $remoteFile): self
     {
         $this->remoteFile = $remoteFile;
+        return $this;
     }
 
     public function getMimeType(): ?string
@@ -70,9 +72,10 @@ class Attachment implements DomainModel, Identity
         return $this->mimeType;
     }
 
-    public function setMimeType(?string $mimeType): void
+    public function setMimeType(?string $mimeType): self
     {
         $this->mimeType = $mimeType;
+        return $this;
     }
 
     public function getDescription(): ?string
@@ -80,9 +83,10 @@ class Attachment implements DomainModel, Identity
         return $this->description;
     }
 
-    public function setDescription(?string $description): void
+    public function setDescription(?string $description): self
     {
         $this->description = $description;
+        return $this;
     }
 
     public function getSize(): ?int
@@ -90,8 +94,9 @@ class Attachment implements DomainModel, Identity
         return $this->size;
     }
 
-    public function setSize(?int $size): void
+    public function setSize(?int $size): self
     {
         $this->size = $size;
+        return $this;
     }
 }

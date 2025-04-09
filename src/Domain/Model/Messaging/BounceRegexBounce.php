@@ -31,9 +31,10 @@ class BounceRegexBounce implements DomainModel
         return $this->regex;
     }
 
-    public function setRegex(int $regex): void
+    public function setRegex(int $regex): self
     {
         $this->regex = $regex;
+        return $this;
     }
 
     public function getBounce(): int
@@ -41,8 +42,9 @@ class BounceRegexBounce implements DomainModel
         return $this->bounce;
     }
 
-    public function setBounce(int $bounce): void
+    public function setBounce(int $bounce): self
     {
         $this->bounce = $bounce;
+        return $this;
     }
 }

@@ -11,10 +11,10 @@ services:
         arguments:
             - PhpList\Core\Domain\Model\Identity\AdministratorToken
 
-    PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository:
+    PhpList\Core\Domain\Repository\Subscription\SubscriberListRepository:
         parent: PhpList\Core\Domain\Repository
         arguments:
-            - PhpList\Core\Domain\Model\Messaging\SubscriberList
+            - PhpList\Core\Domain\Model\Subscription\SubscriberList
 
     PhpList\Core\Domain\Repository\Subscription\SubscriberRepository:
         parent: PhpList\Core\Domain\Repository

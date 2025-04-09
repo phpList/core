@@ -58,9 +58,10 @@ class Bounce implements DomainModel, Identity
         return $this->date;
     }
 
-    public function setDate(?DateTime $date): void
+    public function setDate(?DateTime $date): self
     {
         $this->date = $date;
+        return $this;
     }
 
     public function getHeader(): ?string
@@ -68,9 +69,10 @@ class Bounce implements DomainModel, Identity
         return $this->header;
     }
 
-    public function setHeader(?string $header): void
+    public function setHeader(?string $header): self
     {
         $this->header = $header;
+        return $this;
     }
 
     public function getData(): ?string
@@ -78,9 +80,10 @@ class Bounce implements DomainModel, Identity
         return $this->data;
     }
 
-    public function setData(?string $data): void
+    public function setData(?string $data): self
     {
         $this->data = $data;
+        return $this;
     }
 
     public function getStatus(): ?string
@@ -88,9 +91,10 @@ class Bounce implements DomainModel, Identity
         return $this->status;
     }
 
-    public function setStatus(?string $status): void
+    public function setStatus(?string $status): self
     {
         $this->status = $status;
+        return $this;
     }
 
     public function getComment(): ?string
@@ -98,8 +102,9 @@ class Bounce implements DomainModel, Identity
         return $this->comment;
     }
 
-    public function setComment(?string $comment): void
+    public function setComment(?string $comment): self
     {
         $this->comment = $comment;
+        return $this;
     }
 }

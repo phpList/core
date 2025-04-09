@@ -2,16 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Model\Messaging;
+namespace PhpList\Core\Domain\Model\Subscription;
 
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use PhpList\Core\Domain\Model\Subscription\Subscription;
-use PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository;
-use Symfony\Component\Serializer\Annotation\Ignore;
-use Symfony\Component\Serializer\Annotation\SerializedName;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
@@ -20,6 +16,9 @@ use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
 use PhpList\Core\Domain\Model\Traits\CreationDateTrait;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberListRepository;
+use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\MaxDepth;
 
@@ -27,6 +26,7 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
  * This class represents an administrator who can log to the system, is allowed to administer
  * selected lists (as the owner), send campaigns to these lists and edit subscribers.
  * @author Oliver Klee <oliver@phplist.com>
+ * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 #[ORM\Entity(repositoryClass: SubscriberListRepository::class)]
 #[ORM\Table(name: 'phplist_list')]
@@ -74,13 +74,13 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     #[Groups(['SubscriberList'])]
     private string $category;
 
-    #[ORM\ManyToOne(targetEntity: 'PhpList\Core\Domain\Model\Identity\Administrator')]
+    #[ORM\ManyToOne(targetEntity: Administrator::class)]
     #[ORM\JoinColumn(name: 'owner')]
     #[Ignore]
     private ?Administrator $owner = null;
 
     #[ORM\OneToMany(
-        targetEntity: 'PhpList\Core\Domain\Model\Subscription\Subscription',
+        targetEntity: Subscription::class,
         mappedBy: 'subscriberList',
         cascade: ['remove'],
         orphanRemoval: true,
@@ -102,9 +102,11 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this->name;
     }
 
-    public function setName(string $name): void
+    public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
     }
 
     public function getDescription(): string
@@ -112,9 +114,11 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this->description;
     }
 
-    public function setDescription(string $description): void
+    public function setDescription(string $description): self
     {
         $this->description = $description;
+
+        return $this;
     }
 
     public function getListPosition(): ?int
@@ -132,9 +136,11 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this->subjectPrefix;
     }
 
-    public function setSubjectPrefix(string $subjectPrefix): void
+    public function setSubjectPrefix(string $subjectPrefix): self
     {
         $this->subjectPrefix = $subjectPrefix;
+
+        return $this;
     }
 
     public function isPublic(): bool
@@ -142,9 +148,11 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this->public ?? false;
     }
 
-    public function setPublic(bool $public): void
+    public function setPublic(bool $public): self
     {
         $this->public = $public;
+
+        return $this;
     }
 
     public function getCategory(): string
@@ -152,9 +160,11 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this->category;
     }
 
-    public function setCategory(string $category): void
+    public function setCategory(string $category): self
     {
         $this->category = $category;
+
+        return $this;
     }
 
     public function getOwner(): ?Administrator
@@ -162,9 +172,11 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this->owner;
     }
 
-    public function setOwner(Administrator $owner): void
+    public function setOwner(Administrator $owner): self
     {
         $this->owner = $owner;
+
+        return $this;
     }
 
     public function getSubscriptions(): Collection

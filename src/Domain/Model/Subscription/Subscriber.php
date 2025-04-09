@@ -113,9 +113,11 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->confirmed;
     }
 
-    public function setConfirmed(bool $confirmed): void
+    public function setConfirmed(bool $confirmed): self
     {
         $this->confirmed = $confirmed;
+
+        return $this;
     }
 
     public function isBlacklisted(): bool
@@ -123,9 +125,11 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->blacklisted;
     }
 
-    public function setBlacklisted(bool $blacklisted): void
+    public function setBlacklisted(bool $blacklisted): self
     {
         $this->blacklisted = $blacklisted;
+
+        return $this;
     }
 
     public function getBounceCount(): int
@@ -133,14 +137,18 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->bounceCount;
     }
 
-    public function setBounceCount(int $bounceCount): void
+    public function setBounceCount(int $bounceCount): self
     {
         $this->bounceCount = $bounceCount;
+
+        return $this;
     }
 
-    public function addToBounceCount(int $delta): void
+    public function addToBounceCount(int $delta): self
     {
         $this->setBounceCount($this->getBounceCount() + $delta);
+
+        return $this;
     }
 
     public function getUniqueId(): string
@@ -148,9 +156,11 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->uniqueId;
     }
 
-    public function setUniqueId(string $uniqueId): void
+    public function setUniqueId(string $uniqueId): self
     {
         $this->uniqueId = $uniqueId;
+
+        return $this;
     }
 
     #[ORM\PrePersist]
@@ -164,9 +174,11 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->email;
     }
 
-    public function setEmail(string $email): void
+    public function setEmail(string $email): self
     {
         $this->email = $email;
+
+        return $this;
     }
 
     public function hasHtmlEmail(): bool
@@ -174,9 +186,11 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->htmlEmail;
     }
 
-    public function setHtmlEmail(bool $htmlEmail): void
+    public function setHtmlEmail(bool $htmlEmail): self
     {
         $this->htmlEmail = $htmlEmail;
+
+        return $this;
     }
 
     public function isDisabled(): bool
@@ -184,9 +198,11 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->disabled;
     }
 
-    public function setDisabled(bool $disabled): void
+    public function setDisabled(bool $disabled): self
     {
         $this->disabled = $disabled;
+
+        return $this;
     }
 
     public function getExtraData(): string
@@ -194,9 +210,11 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->extraData;
     }
 
-    public function setExtraData(string $extraData): void
+    public function setExtraData(string $extraData): self
     {
         $this->extraData = $extraData;
+
+        return $this;
     }
 
     /**

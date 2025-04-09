@@ -63,9 +63,11 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
         return $date;
     }
 
-    private function setCreationDate(DateTime $creationDate): void
+    private function setCreationDate(DateTime $creationDate): self
     {
         $this->creationDate = $creationDate->getTimestamp();
+
+        return $this;
     }
 
     #[ORM\PrePersist]
@@ -79,14 +81,18 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
         return $this->expiry;
     }
 
-    private function setExpiry(DateTime $expiry): void
+    private function setExpiry(DateTime $expiry): self
     {
         $this->expiry = $expiry;
+
+        return $this;
     }
 
-    public function generateExpiry(): void
+    public function generateExpiry(): self
     {
         $this->setExpiry(new DateTime(static::DEFAULT_EXPIRY));
+
+        return $this;
     }
 
     public function getKey(): string
@@ -94,15 +100,19 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
         return $this->key;
     }
 
-    public function setKey(string $key): void
+    public function setKey(string $key): self
     {
         $this->key = $key;
+
+        return $this;
     }
 
-    public function generateKey(): void
+    public function generateKey(): self
     {
         $key = md5(random_bytes(256));
         $this->setKey($key);
+
+        return $this;
     }
 
     public function getAdministrator(): Administrator|Proxy|null
@@ -110,8 +120,9 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
         return $this->administrator;
     }
 
-    public function setAdministrator(Administrator $administrator): void
+    public function setAdministrator(Administrator $administrator): self
     {
         $this->administrator = $administrator;
+        return $this;
     }
 }
