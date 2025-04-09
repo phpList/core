@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Model\Traits;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 
 /**
  * This trait provides an automatic modification date for models.
@@ -27,15 +28,18 @@ trait ModificationDateTrait
         return $this->modificationDate;
     }
 
-    private function setModificationDate(DateTime $modificationDate): void
+    private function setModificationDate(DateTime $modificationDate): DomainModel
     {
         $this->modificationDate = $modificationDate;
+        return $this;
     }
 
     #[ORM\PrePersist]
     #[ORM\PreUpdate]
-    public function updateModificationDate(): void
+    public function updateModificationDate(): DomainModel
     {
         $this->setModificationDate(new DateTime());
+
+        return $this;
     }
 }

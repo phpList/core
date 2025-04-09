@@ -71,9 +71,10 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
     }
 
     #[ORM\PrePersist]
-    public function updateCreationDate(): void
+    public function updateCreationDate(): DomainModel
     {
         $this->setCreationDate(new DateTime());
+        return $this;
     }
 
     public function getExpiry(): DateTime

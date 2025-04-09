@@ -27,7 +27,7 @@ interface ModificationDate
      * @Mapping\PrePersist
      * @Mapping\PreUpdate
      *
-     * @return void
+     * @return DomainModel
      */
-    public function updateModificationDate(): void;
+    public function updateModificationDate(): DomainModel;
 }

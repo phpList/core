@@ -126,9 +126,10 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this->listPosition;
     }
 
-    public function setListPosition(int $listPosition): void
+    public function setListPosition(int $listPosition): self
     {
         $this->listPosition = $listPosition;
+        return $this;
     }
 
     public function getSubjectPrefix(): ?string

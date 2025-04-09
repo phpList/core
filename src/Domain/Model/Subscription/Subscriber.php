@@ -164,9 +164,10 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     }
 
     #[ORM\PrePersist]
-    public function generateUniqueId(): void
+    public function generateUniqueId(): self
     {
         $this->setUniqueId(bin2hex(random_bytes(16)));
+        return $this;
     }
 
     public function getEmail(): string

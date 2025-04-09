@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping\PrePersist;
  * The CreationDateTrait is the default implementation.
  *
  * @author Oliver Klee <oliver@phplist.com>
+ * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 interface CreationDate
 {
@@ -26,7 +27,7 @@ interface CreationDate
      *
      * @PrePersist
      *
-     * @return void
+     * @return DomainModel
      */
-    public function updateCreationDate(): void;
+    public function updateCreationDate(): DomainModel;
 }
