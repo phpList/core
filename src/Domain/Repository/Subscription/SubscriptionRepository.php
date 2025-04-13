@@ -34,4 +34,23 @@ class SubscriptionRepository extends AbstractRepository
             ]
         );
     }
+
+    /**
+     * @param int $listId
+     * @param string $email
+     *
+     * @return Subscription|null
+     */
+    public function findOneBySubscriberEmailAndListId(int $listId, string $email): ?Subscription
+    {
+        return $this->createQueryBuilder('subscription')
+            ->join('subscription.subscriber', 'subscriber')
+            ->join('subscription.subscriberList', 'list')
+            ->where('subscriber.email = :email')
+            ->andWhere('list.id = :listId')
+            ->setParameter('email', $email)
+            ->setParameter('listId', $listId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

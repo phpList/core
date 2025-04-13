@@ -212,4 +212,26 @@ class SubscriptionRepositoryTest extends KernelTestCase
         self::assertSame($subscriberList, $result->getSubscriberList());
         self::assertSame($subscriber, $result->getSubscriber());
     }
+
+    public function testFindOneByListIdAndSubscriberEmailForNeitherMatchingReturnsNull()
+    {
+        $this->loadFixtures([SubscriberFixture::class, SubscriberListFixture::class, SubscriptionFixture::class]);
+
+        $result = $this->subscriptionRepository->findOneBySubscriberEmailAndListId(3, 'some@random.mail');
+
+        self::assertNull($result);
+    }
+
+    public function testFindOneByListIdAndSubscriberEmailForBothMatchingReturnsMatch()
+    {
+        $this->loadFixtures([SubscriberFixture::class, SubscriberListFixture::class, SubscriptionFixture::class]);
+
+        $subscriberList = $this->subscriberListRepository->find(2);
+        $subscriber = $this->subscriberRepository->find(1);
+        $result = $this->subscriptionRepository->findOneBySubscriberEmailAndListId(2, $subscriber->getEmail());
+
+        self::assertInstanceOf(Subscription::class, $result);
+        self::assertSame($subscriberList, $result->getSubscriberList());
+        self::assertSame($subscriber, $result->getSubscriber());
+    }
 }
