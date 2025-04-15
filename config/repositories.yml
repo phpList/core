@@ -25,3 +25,8 @@ services:
         parent: PhpList\Core\Domain\Repository
         arguments:
             - PhpList\Core\Domain\Model\Subscription\Subscription
+
+    PhpList\Core\Domain\Repository\Messaging\MessageRepository:
+        parent: PhpList\Core\Domain\Repository
+        arguments:
+            - PPhpList\Core\Domain\Model\Messaging\Message

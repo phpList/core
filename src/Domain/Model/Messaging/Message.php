@@ -2,13 +2,18 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Model\Messaging\Message;
+namespace PhpList\Core\Domain\Model\Messaging;
 
-use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
+use PhpList\Core\Domain\Model\Messaging\Message\MessageContent;
+use PhpList\Core\Domain\Model\Messaging\Message\MessageFormat;
+use PhpList\Core\Domain\Model\Messaging\Message\MessageMetadata;
+use PhpList\Core\Domain\Model\Messaging\Message\MessageOptions;
+use PhpList\Core\Domain\Model\Messaging\Message\MessageSchedule;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 use PhpList\Core\Domain\Repository\Messaging\MessageRepository;
@@ -22,30 +27,35 @@ class Message implements DomainModel, Identity, ModificationDate
     use IdentityTrait;
     use ModificationDateTrait;
 
-    #[ORM\Embedded(class: 'MessageFormat')]
+    #[ORM\Embedded(class: MessageFormat::class)]
     private MessageFormat $format;
 
-    #[ORM\Embedded(class: 'MessageSchedule')]
+    #[ORM\Embedded(class: MessageSchedule::class)]
     private MessageSchedule $schedule;
 
-    #[ORM\Embedded(class: 'MessageMetadata')]
+    #[ORM\Embedded(class: MessageMetadata::class)]
     private MessageMetadata $metadata;
 
-    #[ORM\Embedded(class: 'MessageContent')]
+    #[ORM\Embedded(class: MessageContent::class)]
     private MessageContent $content;
 
-    #[ORM\Embedded(class: 'MessageOptions')]
+    #[ORM\Embedded(class: MessageOptions::class)]
     private MessageOptions $options;
 
     #[ORM\Column(type: 'string', length: 36, nullable: true, options: ['default' => ''])]
     private ?string $uuid = '';
+
+    #[ORM\ManyToOne(targetEntity: Administrator::class)]
+    #[ORM\JoinColumn(name: 'owner', referencedColumnName: 'id', nullable: true)]
+    private ?Administrator $owner;
 
     public function __construct(
         MessageFormat $format,
         MessageSchedule $schedule,
         MessageMetadata $metadata,
         MessageContent $content,
-        MessageOptions $options
+        MessageOptions $options,
+        ?Administrator $owner = null
     ) {
         $this->format = $format;
         $this->schedule = $schedule;
@@ -53,6 +63,7 @@ class Message implements DomainModel, Identity, ModificationDate
         $this->content = $content;
         $this->options = $options;
         $this->uuid = bin2hex(random_bytes(18));
+        $this->owner = $owner;
     }
 
     public function getFormat(): MessageFormat
@@ -83,5 +94,10 @@ class Message implements DomainModel, Identity, ModificationDate
     public function getUuid(): ?string
     {
         return $this->uuid;
+    }
+
+    public function getOwner(): ?Administrator
+    {
+        return $this->owner;
     }
 }

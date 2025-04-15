@@ -30,7 +30,7 @@ class MessageFormat
     #[ORM\Column(name: 'astextandpdf', type: 'integer', options: ['default' => 0])]
     private int $asTextAndPdf = 0;
 
-    public function __construct(bool $htmlFormatted, ?string $sendFormat)
+    public function __construct(bool $htmlFormatted, ?string $sendFormat = null)
     {
         $this->htmlFormatted = $htmlFormatted;
         $this->sendFormat = $sendFormat;

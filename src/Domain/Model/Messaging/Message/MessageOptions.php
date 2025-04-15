@@ -34,9 +34,6 @@ class MessageOptions
     #[ORM\Column(name: 'rsstemplate', type: 'string', length: 100, nullable: true)]
     private ?string $rssTemplate;
 
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $owner;
-
     public function __construct(
         string $fromField = '',
         string $toField = '',
@@ -45,8 +42,7 @@ class MessageOptions
         ?string $userSelection = null,
         ?int $template = null,
         ?DateTime $sendStart = null,
-        ?string $rssTemplate = null,
-        ?int $owner = null
+        ?string $rssTemplate = null
     ) {
         $this->fromField = $fromField;
         $this->toField = $toField;
@@ -56,7 +52,6 @@ class MessageOptions
         $this->template = $template;
         $this->sendStart = $sendStart;
         $this->rssTemplate = $rssTemplate;
-        $this->owner = $owner;
     }
 
     public function getFromField(): string
@@ -97,10 +92,5 @@ class MessageOptions
     public function getRssTemplate(): ?string
     {
         return $this->rssTemplate;
-    }
-
-    public function getOwner(): ?int
-    {
-        return $this->owner;
     }
 }

@@ -7,7 +7,6 @@ namespace PhpList\Core\Domain\Model\Messaging;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
-use PhpList\Core\Domain\Model\Messaging\Message\Message;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
 
 #[ORM\Entity]
