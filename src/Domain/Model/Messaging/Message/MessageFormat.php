@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Embeddable]
 class MessageFormat
 {
-    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[ORM\Column(name: 'htmlformatted', type: 'boolean', options: ['default' => false])]
     private bool $htmlFormatted = false;
 
     #[ORM\Column(name: 'sendformat', type: 'string', length: 20, nullable: true)]
