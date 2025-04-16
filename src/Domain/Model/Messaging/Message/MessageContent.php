@@ -12,7 +12,7 @@ class MessageContent
     #[ORM\Column(type: 'string', length: 255, nullable: false, options: ['default' => '(no subject)'])]
     private string $subject;
 
-    #[ORM\Column(type: 'text', nullable: true)]
+    #[ORM\Column(name:'message', type: 'text', nullable: true)]
     private ?string $text = null;
 
     #[ORM\Column(name: 'textmessage', type: 'text', nullable: true)]

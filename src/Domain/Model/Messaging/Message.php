@@ -27,19 +27,19 @@ class Message implements DomainModel, Identity, ModificationDate
     use IdentityTrait;
     use ModificationDateTrait;
 
-    #[ORM\Embedded(class: MessageFormat::class)]
+    #[ORM\Embedded(class: MessageFormat::class, columnPrefix: false)]
     private MessageFormat $format;
 
-    #[ORM\Embedded(class: MessageSchedule::class)]
+    #[ORM\Embedded(class: MessageSchedule::class, columnPrefix: false)]
     private MessageSchedule $schedule;
 
-    #[ORM\Embedded(class: MessageMetadata::class)]
+    #[ORM\Embedded(class: MessageMetadata::class, columnPrefix: false)]
     private MessageMetadata $metadata;
 
-    #[ORM\Embedded(class: MessageContent::class)]
+    #[ORM\Embedded(class: MessageContent::class, columnPrefix: false)]
     private MessageContent $content;
 
-    #[ORM\Embedded(class: MessageOptions::class)]
+    #[ORM\Embedded(class: MessageOptions::class, columnPrefix: false)]
     private MessageOptions $options;
 
     #[ORM\Column(type: 'string', length: 36, nullable: true, options: ['default' => ''])]
