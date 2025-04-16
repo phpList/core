@@ -16,24 +16,36 @@ class MessageFormat
     private ?string $sendFormat = null;
 
     #[ORM\Column(name: 'astext', type: 'integer', options: ['default' => 0])]
-    private int $asText = 0;
+    private int $asText;
 
     #[ORM\Column(name: 'ashtml', type: 'integer', options: ['default' => 0])]
-    private int $asHtml = 0;
-
-    #[ORM\Column(name: 'astextandhtml', type: 'integer', options: ['default' => 0])]
-    private int $asTextAndHtml = 0;
+    private int $asHtml;
 
     #[ORM\Column(name: 'aspdf', type: 'integer', options: ['default' => 0])]
-    private int $asPdf = 0;
+    private int $asPdf;
+
+    #[ORM\Column(name: 'astextandhtml', type: 'integer', options: ['default' => 0])]
+    private int $asTextAndHtml;
 
     #[ORM\Column(name: 'astextandpdf', type: 'integer', options: ['default' => 0])]
-    private int $asTextAndPdf = 0;
+    private int $asTextAndPdf;
 
-    public function __construct(bool $htmlFormatted, ?string $sendFormat = null)
-    {
+    public function __construct(
+        bool $htmlFormatted,
+        string $sendFormat = null,
+        int $asText = 0,
+        int $asHtml = 0,
+        int $asPdf = 0,
+        int $asTextAndHtml = 0,
+        int $asTextAndPdf = 0,
+    ) {
         $this->htmlFormatted = $htmlFormatted;
         $this->sendFormat = $sendFormat;
+        $this->asText = $asText;
+        $this->asHtml = $asHtml;
+        $this->asPdf = $asPdf;
+        $this->asTextAndHtml = $asTextAndHtml;
+        $this->asTextAndPdf = $asTextAndPdf;
     }
 
     public function isHtmlFormatted(): bool

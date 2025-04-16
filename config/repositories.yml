@@ -29,4 +29,4 @@ services:
     PhpList\Core\Domain\Repository\Messaging\MessageRepository:
         parent: PhpList\Core\Domain\Repository
         arguments:
-            - PPhpList\Core\Domain\Model\Messaging\Message
+            - PhpList\Core\Domain\Model\Messaging\Message

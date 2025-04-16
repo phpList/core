@@ -1,0 +1,21 @@
+id,uuid,subject,fromfield,tofield,replyto,message,textmessage,footer,entered,modified,embargo,repeatinterval,repeatuntil,requeueinterval,requeueuntil,status,userselection,sent,htmlformatted,sendformat,template,processed,astext,ashtml,astextandhtml,aspdf,astextandpdf,viewed,bouncecount,sendstart,rsstemplate,owner
+1,2df6b147-8470-45ed-8e4e-86aa01af400d,Do you want to continue receiving our messages?, My Name <my@email.com>,"","","<p>Hi [FIRST NAME%%there], remember us? You first signed up for our email newsletter on&nbsp;[ENTERED] &ndash; please click here to confirm you&#39;re happy to continue receiving our messages:</p>
+
+<p><strong><a href=""[CONFIRMATIONURL]"" title=""Confirm subscription"">Continue receiving messages</a></strong>&nbsp; <u>(If you do not confirm using this link, then you won&#39;t hear from us again</u>)</p>
+
+<p>While you&#39;re at it, you can also update your preferences, including your email address or other details, by clicking here:</p>
+
+<p><strong><a href=""[PREFERENCESURL]"">Update preferences</a></strong></p>
+
+<p>By confirming your membership and keeping your details up to date, you&#39;re helping us to manage and protect your data in accordance with best practices.</p>
+
+<p>Thank you!</p>","","--
+
+    <div class=""footer"" style=""text-align:left; font-size: 75%;"">
+      <p>This message was sent to [EMAIL] by [FROMEMAIL].</p>
+      <p>To forward this message, please do not use the forward button of your email application, because this message was made specifically for you only. Instead use the <a href=""[FORWARDURL]"">forward page</a> in our newsletter system.<br/>
+      To change your details and to choose which lists to be subscribed to, visit your personal <a href=""[PREFERENCESURL]"">preferences page</a>.<br/>
+      Or you can <a href=""[UNSUBSCRIBEURL]"">opt-out completely</a> from all future mailings.</p>
+    </div>
+
+  ",2024-11-10 16:57:46,2024-11-14 08:32:15,2024-11-14 08:32:00,0,2024-11-14 08:32:00,0,2024-11-14 08:32:00,sent,,2024-11-14 08:32:15,1,invite,0,0,0,0,0,0,0,0,0,2024-11-14 08:32:15,,1
