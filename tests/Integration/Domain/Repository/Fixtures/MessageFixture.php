@@ -48,11 +48,11 @@ class MessageFixture extends Fixture
             $format = new MessageFormat(
                 $row['htmlformatted'],
                 $row['sendformat'],
-                $row['astext'],
-                $row['ashtml'],
-                $row['aspdf'],
-                $row['astextandhtml'],
-                $row['astextandpdf']
+                (bool)$row['astext'],
+                (bool)$row['ashtml'],
+                (bool)$row['aspdf'],
+                (bool)$row['astextandhtml'],
+                (bool)$row['astextandpdf']
             );
 
             $schedule = new MessageSchedule(

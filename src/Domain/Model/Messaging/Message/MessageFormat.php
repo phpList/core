@@ -16,28 +16,28 @@ class MessageFormat
     private ?string $sendFormat = null;
 
     #[ORM\Column(name: 'astext', type: 'integer', options: ['default' => 0])]
-    private int $asText;
+    private bool $asText;
 
     #[ORM\Column(name: 'ashtml', type: 'integer', options: ['default' => 0])]
-    private int $asHtml;
+    private bool $asHtml;
 
     #[ORM\Column(name: 'aspdf', type: 'integer', options: ['default' => 0])]
-    private int $asPdf;
+    private bool $asPdf;
 
     #[ORM\Column(name: 'astextandhtml', type: 'integer', options: ['default' => 0])]
-    private int $asTextAndHtml;
+    private bool $asTextAndHtml;
 
     #[ORM\Column(name: 'astextandpdf', type: 'integer', options: ['default' => 0])]
-    private int $asTextAndPdf;
+    private bool $asTextAndPdf;
 
     public function __construct(
         bool $htmlFormatted,
         string $sendFormat = null,
-        int $asText = 0,
-        int $asHtml = 0,
-        int $asPdf = 0,
-        int $asTextAndHtml = 0,
-        int $asTextAndPdf = 0,
+        bool $asText = false,
+        bool $asHtml = false,
+        bool $asPdf = false,
+        bool $asTextAndHtml = false,
+        bool $asTextAndPdf = false,
     ) {
         $this->htmlFormatted = $htmlFormatted;
         $this->sendFormat = $sendFormat;
@@ -58,27 +58,27 @@ class MessageFormat
         return $this->sendFormat;
     }
 
-    public function getAsText(): int
+    public function isAsText(): bool
     {
         return $this->asText;
     }
 
-    public function getAsHtml(): int
+    public function isAsHtml(): bool
     {
         return $this->asHtml;
     }
 
-    public function getAsTextAndHtml(): int
+    public function isAsTextAndHtml(): bool
     {
         return $this->asTextAndHtml;
     }
 
-    public function getAsPdf(): int
+    public function isAsPdf(): bool
     {
         return $this->asPdf;
     }
 
-    public function getAsTextAndPdf(): int
+    public function isAsTextAndPdf(): bool
     {
         return $this->asTextAndPdf;
     }
@@ -86,6 +86,36 @@ class MessageFormat
     public function setSendFormat(?string $sendFormat): self
     {
         $this->sendFormat = $sendFormat;
+        return $this;
+    }
+
+    public function setAsText(bool $asText): self
+    {
+        $this->asText = $asText;
+        return $this;
+    }
+
+    public function setAsHtml(bool $asHtml): self
+    {
+        $this->asHtml = $asHtml;
+        return $this;
+    }
+
+    public function setAsPdf(bool $asPdf): self
+    {
+        $this->asPdf = $asPdf;
+        return $this;
+    }
+
+    public function setAsTextAndHtml(bool $asTextAndHtml): self
+    {
+        $this->asTextAndHtml = $asTextAndHtml;
+        return $this;
+    }
+
+    public function setAsTextAndPdf(bool $asTextAndPdf): self
+    {
+        $this->asTextAndPdf = $asTextAndPdf;
         return $this;
     }
 }

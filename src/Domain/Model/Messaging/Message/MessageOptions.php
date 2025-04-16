@@ -64,7 +64,7 @@ class MessageOptions
         return $this->toField;
     }
 
-    public function getReplyToO(): string
+    public function getReplyTo(): string
     {
         return $this->replyTo;
     }
