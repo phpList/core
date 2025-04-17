@@ -25,9 +25,6 @@ class MessageOptions
     #[ORM\Column(name: 'userselection', type: 'text', nullable: true)]
     private ?string $userSelection;
 
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $template;
-
     #[ORM\Column(name: 'sendstart', type: 'datetime', nullable: true)]
     private ?DateTime $sendStart;
 
@@ -40,7 +37,6 @@ class MessageOptions
         string $replyTo = '',
         ?DateTime $embargo = null,
         ?string $userSelection = null,
-        ?int $template = null,
         ?DateTime $sendStart = null,
         ?string $rssTemplate = null
     ) {
@@ -49,7 +45,6 @@ class MessageOptions
         $this->replyTo = $replyTo;
         $this->embargo = $embargo;
         $this->userSelection = $userSelection;
-        $this->template = $template;
         $this->sendStart = $sendStart;
         $this->rssTemplate = $rssTemplate;
     }
@@ -77,11 +72,6 @@ class MessageOptions
     public function getUserSelection(): ?string
     {
         return $this->userSelection;
-    }
-
-    public function getTemplate(): ?int
-    {
-        return $this->template;
     }
 
     public function getSendStart(): ?DateTime

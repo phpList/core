@@ -14,6 +14,7 @@ use PhpList\Core\Domain\Model\Messaging\Message\MessageFormat;
 use PhpList\Core\Domain\Model\Messaging\Message\MessageMetadata;
 use PhpList\Core\Domain\Model\Messaging\Message\MessageOptions;
 use PhpList\Core\Domain\Model\Messaging\Message\MessageSchedule;
+use PhpList\Core\Domain\Model\Messaging\Template;
 use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
 use RuntimeException;
 
@@ -36,6 +37,7 @@ class MessageFixture extends Fixture
 
         $headers = fgetcsv($handle);
         $adminRepository = $manager->getRepository(Administrator::class);
+        $templateRepository = $manager->getRepository(Template::class);
 
         do {
             $data = fgetcsv($handle);
@@ -44,15 +46,16 @@ class MessageFixture extends Fixture
             }
             $row = array_combine($headers, $data);
             $admin = $adminRepository->find($row['owner']);
+            $template = $templateRepository->find($row['template']);
 
             $format = new MessageFormat(
                 $row['htmlformatted'],
                 $row['sendformat'],
-                (bool)$row['astext'],
-                (bool)$row['ashtml'],
-                (bool)$row['aspdf'],
-                (bool)$row['astextandhtml'],
-                (bool)$row['astextandpdf']
+                array_keys(array_filter([
+                    MessageFormat::FORMAT_TEXT => $row['astext'],
+                    MessageFormat::FORMAT_HTML => $row['ashtml'],
+                    MessageFormat::FORMAT_PDF => $row['aspdf'],
+                ]))
             );
 
             $schedule = new MessageSchedule(
@@ -63,12 +66,12 @@ class MessageFixture extends Fixture
             );
             $metadata = new MessageMetadata(
                 $row['status'],
-                $row['processed'],
-                $row['viewed'],
                 $row['bouncecount'],
                 $row['entered'],
                 $row['sent']
             );
+            $metadata->setProcessed((bool) $row['processed']);
+            $metadata->setViews($row['viewed']);
             $content = new MessageContent(
                 $row['subject'],
                 $row['message'],
@@ -81,7 +84,6 @@ class MessageFixture extends Fixture
                 $row['replyto'],
                 $row['embargo'],
                 $row['userselection'],
-                $row['template'],
                 $row['sendstart'],
                 $row['rsstemplate'],
             );
@@ -93,6 +95,7 @@ class MessageFixture extends Fixture
                 $content,
                 $options,
                 $admin,
+                $template,
             );
             $this->setSubjectId($message, (int)$row['id']);
             $this->setSubjectProperty($message, 'uuid', $row['uuid']);

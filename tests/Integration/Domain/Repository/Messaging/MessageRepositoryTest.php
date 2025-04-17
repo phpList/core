@@ -46,7 +46,7 @@ class MessageRepositoryTest extends KernelTestCase
         $this->entityManager->persist($admin);
 
         $message = new Message(
-            new MessageFormat(true),
+            new MessageFormat(true, 'text'),
             new MessageSchedule(1, null, 3, null),
             new MessageMetadata('done'),
             new MessageContent('Hello world!'),
@@ -75,7 +75,7 @@ class MessageRepositoryTest extends KernelTestCase
         $this->entityManager->persist($admin2);
 
         $msg1 = new Message(
-            new MessageFormat(true),
+            new MessageFormat(true, MessageFormat::FORMAT_TEXT),
             new MessageSchedule(1, null, 3, null),
             new MessageMetadata('done'),
             new MessageContent('Owned by Admin 1!'),
@@ -84,7 +84,7 @@ class MessageRepositoryTest extends KernelTestCase
         );
 
         $msg2 = new Message(
-            new MessageFormat(true),
+            new MessageFormat(true, MessageFormat::FORMAT_TEXT),
             new MessageSchedule(1, null, 3, null),
             new MessageMetadata(null),
             new MessageContent('Owned by Admin 2!'),
@@ -93,7 +93,7 @@ class MessageRepositoryTest extends KernelTestCase
         );
 
         $msg3 = new Message(
-            new MessageFormat(true),
+            new MessageFormat(true, MessageFormat::FORMAT_TEXT),
             new MessageSchedule(1, null, 3, null),
             new MessageMetadata(null),
             new MessageContent('Hello world!'),
@@ -118,7 +118,7 @@ class MessageRepositoryTest extends KernelTestCase
         $expectedDate = new DateTime();
 
         $message = new Message(
-            new MessageFormat(true),
+            new MessageFormat(true, MessageFormat::FORMAT_TEXT),
             new MessageSchedule(1, null, 3, null),
             new MessageMetadata(null),
             new MessageContent('Hello world!'),

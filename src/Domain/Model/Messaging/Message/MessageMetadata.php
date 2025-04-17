@@ -13,11 +13,11 @@ class MessageMetadata
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $status = null;
 
-    #[ORM\Column(type: 'integer', options: ['unsigned' => true, 'default' => 0])]
-    private int $processed;
+    #[ORM\Column(type: 'boolean', options: ['unsigned' => true, 'default' => false])]
+    private bool $processed;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
-    private int $viewed;
+    private int $viewed = 0;
 
     #[ORM\Column(name: 'bouncecount', type: 'integer', options: ['default' => 0])]
     private int $bounceCount;
@@ -30,15 +30,13 @@ class MessageMetadata
 
     public function __construct(
         ?string $status = null,
-        int $processed = 0,
-        int $viewed = 0,
         int $bounceCount = 0,
         ?DateTime $entered = null,
         ?DateTime $sent = null,
     ) {
         $this->status = $status;
-        $this->processed = $processed;
-        $this->viewed = $viewed;
+        $this->processed = false;
+        $this->viewed = 0;
         $this->bounceCount = $bounceCount;
         $this->entered = $entered ?? new DateTime();
         $this->sent = $sent;
@@ -49,18 +47,24 @@ class MessageMetadata
         return $this->status;
     }
 
-    public function getProcessed(): int
+    public function isProcessed(): bool
     {
         return $this->processed;
     }
 
-    public function setProcessed(int $processed): self
+    public function setProcessed(bool $processed): self
     {
         $this->processed = $processed;
         return $this;
     }
 
-    public function getViewed(): int
+    public function setViews(int $viewed): self
+    {
+        $this->viewed = $viewed;
+        return $this;
+    }
+
+    public function getViews(): int
     {
         return $this->viewed;
     }

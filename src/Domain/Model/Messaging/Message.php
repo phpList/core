@@ -49,13 +49,18 @@ class Message implements DomainModel, Identity, ModificationDate
     #[ORM\JoinColumn(name: 'owner', referencedColumnName: 'id', nullable: true)]
     private ?Administrator $owner;
 
+    #[ORM\ManyToOne(targetEntity: Template::class)]
+    #[ORM\JoinColumn(name: 'template', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?Template $template = null;
+
     public function __construct(
         MessageFormat $format,
         MessageSchedule $schedule,
         MessageMetadata $metadata,
         MessageContent $content,
         MessageOptions $options,
-        ?Administrator $owner = null
+        ?Administrator $owner,
+        ?Template $template = null,
     ) {
         $this->format = $format;
         $this->schedule = $schedule;
@@ -64,6 +69,7 @@ class Message implements DomainModel, Identity, ModificationDate
         $this->options = $options;
         $this->uuid = bin2hex(random_bytes(18));
         $this->owner = $owner;
+        $this->template = $template;
     }
 
     public function getFormat(): MessageFormat
@@ -99,5 +105,10 @@ class Message implements DomainModel, Identity, ModificationDate
     public function getOwner(): ?Administrator
     {
         return $this->owner;
+    }
+
+    public function getTemplate(): ?Template
+    {
+        return $this->template;
     }
 }

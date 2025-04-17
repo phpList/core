@@ -22,10 +22,10 @@ class Template implements DomainModel, Identity
     private string $title;
 
     #[ORM\Column(name: 'template', type: 'blob', nullable: true)]
-    private ?string $template = null;
+    private mixed $template;
 
     #[ORM\Column(name: 'template_text', type: 'blob', nullable: true)]
-    private ?string $templateText = null;
+    private mixed $templateText;
 
     #[ORM\Column(name: 'listorder', type: 'integer', nullable: true)]
     private ?int $listOrder = null;
@@ -50,12 +50,12 @@ class Template implements DomainModel, Identity
 
     public function getTemplate(): ?string
     {
-        return $this->template;
+        return is_resource($this->template) ? stream_get_contents($this->template) : $this->template;
     }
 
     public function getTemplateText(): ?string
     {
-        return $this->templateText;
+        return is_resource($this->templateText) ? stream_get_contents($this->templateText) : $this->templateText;
     }
 
     public function getListOrder(): ?int
@@ -76,13 +76,14 @@ class Template implements DomainModel, Identity
 
     public function setTemplate(?string $template): self
     {
-        $this->template = $template;
+        $this->template = $template !== null ? fopen('data://text/plain,' . $template, 'r') : null;
         return $this;
     }
 
+
     public function setTemplateText(?string $templateText): self
     {
-        $this->templateText = $templateText;
+        $this->templateText = $templateText !== null ? fopen('data://text/plain,' . $templateText, 'r') : null;
         return $this;
     }
 

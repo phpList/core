@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Model\Messaging\Message;
 
 use Doctrine\ORM\Mapping as ORM;
+use InvalidArgumentException;
 
 #[ORM\Embeddable]
 class MessageFormat
@@ -16,36 +17,43 @@ class MessageFormat
     private ?string $sendFormat = null;
 
     #[ORM\Column(name: 'astext', type: 'integer', options: ['default' => 0])]
-    private bool $asText;
+    private bool $asText = false;
 
     #[ORM\Column(name: 'ashtml', type: 'integer', options: ['default' => 0])]
-    private bool $asHtml;
+    private bool $asHtml = false;
 
     #[ORM\Column(name: 'aspdf', type: 'integer', options: ['default' => 0])]
-    private bool $asPdf;
+    private bool $asPdf = false;
 
     #[ORM\Column(name: 'astextandhtml', type: 'integer', options: ['default' => 0])]
-    private bool $asTextAndHtml;
+    private bool $asTextAndHtml = false;
 
     #[ORM\Column(name: 'astextandpdf', type: 'integer', options: ['default' => 0])]
-    private bool $asTextAndPdf;
+    private bool $asTextAndPdf = false;
+
+    public const FORMAT_TEXT = 'text';
+    public const FORMAT_HTML = 'html';
+    public const FORMAT_PDF = 'pdf';
 
     public function __construct(
         bool $htmlFormatted,
-        string $sendFormat = null,
-        bool $asText = false,
-        bool $asHtml = false,
-        bool $asPdf = false,
-        bool $asTextAndHtml = false,
-        bool $asTextAndPdf = false,
+        ?string $sendFormat,
+        array $formatOptions = []
     ) {
         $this->htmlFormatted = $htmlFormatted;
         $this->sendFormat = $sendFormat;
-        $this->asText = $asText;
-        $this->asHtml = $asHtml;
-        $this->asPdf = $asPdf;
-        $this->asTextAndHtml = $asTextAndHtml;
-        $this->asTextAndPdf = $asTextAndPdf;
+
+        foreach ($formatOptions as $option) {
+            match ($option) {
+                self::FORMAT_TEXT => $this->asText = true,
+                self::FORMAT_HTML => $this->asHtml = true,
+                self::FORMAT_PDF => $this->asPdf = true,
+                default => throw new InvalidArgumentException('Invalid format option: ' . $option)
+            };
+        }
+
+        $this->asTextAndHtml = $this->asText && $this->asHtml;
+        $this->asTextAndPdf = $this->asText && $this->asPdf;
     }
 
     public function isHtmlFormatted(): bool
