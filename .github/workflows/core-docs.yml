@@ -3,7 +3,7 @@ on: [push, pull_request]
 jobs:
   make-restapi-docs:
     name: Checkout phpList core and generate docs using `phpDocumentor`
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -41,7 +41,7 @@ jobs:
           path: phpdocumentor.zip
   deploy-docs:
     name: Deploy Core Docs
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: make-restapi-docs
     steps:
       - name: Checkout phplist/core-docs
