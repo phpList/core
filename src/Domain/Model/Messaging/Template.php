@@ -39,8 +39,9 @@ class Template implements DomainModel, Identity
     )]
     private Collection $images;
 
-    public function __construct()
+    public function __construct(string $title)
     {
+        $this->title = $title;
         $this->images = new ArrayCollection();
     }
 

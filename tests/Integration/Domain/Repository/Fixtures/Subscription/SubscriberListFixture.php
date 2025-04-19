@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Integration\Domain\Repository\Fixtures;
+namespace PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Subscription;
 
 use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
