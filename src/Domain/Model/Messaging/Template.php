@@ -10,8 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
+use PhpList\Core\Domain\Repository\Messaging\TemplateRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: TemplateRepository::class)]
 #[ORM\Table(name: 'phplist_template')]
 #[ORM\UniqueConstraint(name: 'title', columns: ['title'])]
 class Template implements DomainModel, Identity
