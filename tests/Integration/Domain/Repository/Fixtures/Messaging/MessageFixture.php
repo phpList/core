@@ -49,7 +49,7 @@ class MessageFixture extends Fixture
             $template = $templateRepository->find($row['template']);
 
             $format = new MessageFormat(
-                $row['htmlformatted'],
+                (bool)$row['htmlformatted'],
                 $row['sendformat'],
                 array_keys(array_filter([
                     MessageFormat::FORMAT_TEXT => $row['astext'],
@@ -59,17 +59,17 @@ class MessageFixture extends Fixture
             );
 
             $schedule = new MessageSchedule(
-                $row['repeatinterval'],
-                $row['repeatuntil'],
-                $row['requeueinterval'],
-                $row['requeueuntil'],
-                $row['embargo'],
+                (int)$row['repeatinterval'],
+                new DateTime($row['repeatuntil']),
+                (int)$row['requeueinterval'],
+                new DateTime($row['requeueuntil']),
+                new DateTime($row['embargo']),
             );
             $metadata = new MessageMetadata(
                 $row['status'],
-                $row['bouncecount'],
-                $row['entered'],
-                $row['sent']
+                (int)$row['bouncecount'],
+                new DateTime($row['entered']),
+                new DateTime($row['sent'])
             );
             $metadata->setProcessed((bool) $row['processed']);
             $metadata->setViews($row['viewed']);
@@ -84,7 +84,7 @@ class MessageFixture extends Fixture
                 $row['tofield'],
                 $row['replyto'],
                 $row['userselection'],
-                $row['sendstart'],
+                new DateTime($row['sendstart']),
                 $row['rsstemplate'],
             );
 
