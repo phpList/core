@@ -43,17 +43,7 @@ class MessageFormat
         $this->htmlFormatted = $htmlFormatted;
         $this->sendFormat = $sendFormat;
 
-        foreach ($formatOptions as $option) {
-            match ($option) {
-                self::FORMAT_TEXT => $this->asText = true,
-                self::FORMAT_HTML => $this->asHtml = true,
-                self::FORMAT_PDF => $this->asPdf = true,
-                default => throw new InvalidArgumentException('Invalid format option: ' . $option)
-            };
-        }
-
-        $this->asTextAndHtml = $this->asText && $this->asHtml;
-        $this->asTextAndPdf = $this->asText && $this->asPdf;
+        $this->setFormatOptions($formatOptions);
     }
 
     public function isHtmlFormatted(): bool
@@ -61,9 +51,21 @@ class MessageFormat
         return $this->htmlFormatted;
     }
 
+    public function setHtmlFormatted(bool $htmlFormatted): self
+    {
+        $this->htmlFormatted = $htmlFormatted;
+        return $this;
+    }
+
     public function getSendFormat(): ?string
     {
         return $this->sendFormat;
+    }
+
+    public function setSendFormat(?string $sendFormat): self
+    {
+        $this->sendFormat = $sendFormat;
+        return $this;
     }
 
     public function isAsText(): bool
@@ -91,39 +93,29 @@ class MessageFormat
         return $this->asTextAndPdf;
     }
 
-    public function setSendFormat(?string $sendFormat): self
+    public function getFormatOptions(): array
     {
-        $this->sendFormat = $sendFormat;
-        return $this;
+        return array_values(array_filter([
+            $this->asText ? self::FORMAT_TEXT : null,
+            $this->asHtml ? self::FORMAT_HTML : null,
+            $this->asPdf ? self::FORMAT_PDF : null,
+        ]));
     }
 
-    public function setAsText(bool $asText): self
+    public function setFormatOptions(array $formatOptions): self
     {
-        $this->asText = $asText;
-        return $this;
-    }
+        foreach ($formatOptions as $option) {
+            match ($option) {
+                self::FORMAT_TEXT => $this->asText = true,
+                self::FORMAT_HTML => $this->asHtml = true,
+                self::FORMAT_PDF => $this->asPdf = true,
+                default => throw new InvalidArgumentException('Invalid format option: ' . $option)
+            };
+        }
 
-    public function setAsHtml(bool $asHtml): self
-    {
-        $this->asHtml = $asHtml;
-        return $this;
-    }
+        $this->asTextAndHtml = $this->asText && $this->asHtml;
+        $this->asTextAndPdf = $this->asText && $this->asPdf;
 
-    public function setAsPdf(bool $asPdf): self
-    {
-        $this->asPdf = $asPdf;
-        return $this;
-    }
-
-    public function setAsTextAndHtml(bool $asTextAndHtml): self
-    {
-        $this->asTextAndHtml = $asTextAndHtml;
-        return $this;
-    }
-
-    public function setAsTextAndPdf(bool $asTextAndPdf): self
-    {
-        $this->asTextAndPdf = $asTextAndPdf;
         return $this;
     }
 }

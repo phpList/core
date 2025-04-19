@@ -30,7 +30,7 @@ class MessageTest extends TestCase
     protected function setUp(): void
     {
         $this->format = new MessageFormat(true, MessageFormat::FORMAT_TEXT);
-        $this->schedule = new MessageSchedule(1, new DateTime(), 2, new DateTime());
+        $this->schedule = new MessageSchedule(1, new DateTime(), 2, new DateTime(), null);
         $this->metadata = new MessageMetadata();
         $this->content = new MessageContent('This is the body');
         $this->options = new MessageOptions();

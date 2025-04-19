@@ -47,7 +47,7 @@ class MessageRepositoryTest extends KernelTestCase
 
         $message = new Message(
             new MessageFormat(true, 'text'),
-            new MessageSchedule(1, null, 3, null),
+            new MessageSchedule(1, null, 3, null, null),
             new MessageMetadata('done'),
             new MessageContent('Hello world!'),
             new MessageOptions(),
@@ -76,7 +76,7 @@ class MessageRepositoryTest extends KernelTestCase
 
         $msg1 = new Message(
             new MessageFormat(true, MessageFormat::FORMAT_TEXT),
-            new MessageSchedule(1, null, 3, null),
+            new MessageSchedule(1, null, 3, null, null),
             new MessageMetadata('done'),
             new MessageContent('Owned by Admin 1!'),
             new MessageOptions(),
@@ -85,7 +85,7 @@ class MessageRepositoryTest extends KernelTestCase
 
         $msg2 = new Message(
             new MessageFormat(true, MessageFormat::FORMAT_TEXT),
-            new MessageSchedule(1, null, 3, null),
+            new MessageSchedule(1, null, 3, null, null),
             new MessageMetadata(null),
             new MessageContent('Owned by Admin 2!'),
             new MessageOptions(),
@@ -94,7 +94,7 @@ class MessageRepositoryTest extends KernelTestCase
 
         $msg3 = new Message(
             new MessageFormat(true, MessageFormat::FORMAT_TEXT),
-            new MessageSchedule(1, null, 3, null),
+            new MessageSchedule(1, null, 3, null, null),
             new MessageMetadata(null),
             new MessageContent('Hello world!'),
             new MessageOptions(),
@@ -119,7 +119,7 @@ class MessageRepositoryTest extends KernelTestCase
 
         $message = new Message(
             new MessageFormat(true, MessageFormat::FORMAT_TEXT),
-            new MessageSchedule(1, null, 3, null),
+            new MessageSchedule(1, null, 3, null, null),
             new MessageMetadata(null),
             new MessageContent('Hello world!'),
             new MessageOptions(),

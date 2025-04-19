@@ -62,7 +62,8 @@ class MessageFixture extends Fixture
                 $row['repeatinterval'],
                 $row['repeatuntil'],
                 $row['requeueinterval'],
-                $row['requeueuntil']
+                $row['requeueuntil'],
+                $row['embargo'],
             );
             $metadata = new MessageMetadata(
                 $row['status'],
@@ -82,7 +83,6 @@ class MessageFixture extends Fixture
                 $row['fromfield'],
                 $row['tofield'],
                 $row['replyto'],
-                $row['embargo'],
                 $row['userselection'],
                 $row['sendstart'],
                 $row['rsstemplate'],

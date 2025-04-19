@@ -47,6 +47,12 @@ class MessageMetadata
         return $this->status;
     }
 
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+        return $this;
+    }
+
     public function isProcessed(): bool
     {
         return $this->processed;
@@ -82,5 +88,23 @@ class MessageMetadata
     public function getSent(): ?DateTime
     {
         return $this->sent;
+    }
+
+    public function setBounceCount(int $bounceCount): self
+    {
+        $this->bounceCount = $bounceCount;
+        return $this;
+    }
+
+    public function setEntered(?DateTime $entered): self
+    {
+        $this->entered = $entered;
+        return $this;
+    }
+
+    public function setSent(?DateTime $sent): self
+    {
+        $this->sent = $sent;
+        return $this;
     }
 }

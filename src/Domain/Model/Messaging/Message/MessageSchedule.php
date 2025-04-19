@@ -22,16 +22,21 @@ class MessageSchedule
     #[ORM\Column(name: 'requeueuntil', type: 'datetime', nullable: true)]
     private ?DateTime $requeueUntil;
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?DateTime $embargo;
+
     public function __construct(
         ?int $repeatInterval,
         ?DateTime $repeatUntil,
         ?int $requeueInterval,
-        ?DateTime $requeueUntil
+        ?DateTime $requeueUntil,
+        ?DateTime $embargo
     ) {
         $this->repeatInterval = $repeatInterval;
         $this->repeatUntil = $repeatUntil;
         $this->requeueInterval = $requeueInterval;
         $this->requeueUntil = $requeueUntil;
+        $this->embargo = $embargo;
     }
 
     public function getRepeatInterval(): ?int
@@ -52,5 +57,40 @@ class MessageSchedule
     public function getRequeueUntil(): ?DateTime
     {
         return $this->requeueUntil;
+    }
+
+    public function getEmbargo(): ?DateTime
+    {
+        return $this->embargo;
+    }
+
+    public function setRepeatInterval(?int $repeatInterval): self
+    {
+        $this->repeatInterval = $repeatInterval;
+        return $this;
+    }
+
+    public function setRepeatUntil(?DateTime $repeatUntil): self
+    {
+        $this->repeatUntil = $repeatUntil;
+        return $this;
+    }
+
+    public function setRequeueInterval(?int $requeueInterval): self
+    {
+        $this->requeueInterval = $requeueInterval;
+        return $this;
+    }
+
+    public function setRequeueUntil(?DateTime $requeueUntil): self
+    {
+        $this->requeueUntil = $requeueUntil;
+        return $this;
+    }
+
+    public function setEmbargo(?DateTime $embargo): self
+    {
+        $this->embargo = $embargo;
+        return $this;
     }
 }

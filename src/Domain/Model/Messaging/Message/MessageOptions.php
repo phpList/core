@@ -19,9 +19,6 @@ class MessageOptions
     #[ORM\Column(name: 'replyto', type: 'string', length: 255, nullable: false, options: ['default' => ''])]
     private string $replyTo;
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?DateTime $embargo;
-
     #[ORM\Column(name: 'userselection', type: 'text', nullable: true)]
     private ?string $userSelection;
 
@@ -35,7 +32,6 @@ class MessageOptions
         string $fromField = '',
         string $toField = '',
         string $replyTo = '',
-        ?DateTime $embargo = null,
         ?string $userSelection = null,
         ?DateTime $sendStart = null,
         ?string $rssTemplate = null
@@ -43,7 +39,6 @@ class MessageOptions
         $this->fromField = $fromField;
         $this->toField = $toField;
         $this->replyTo = $replyTo;
-        $this->embargo = $embargo;
         $this->userSelection = $userSelection;
         $this->sendStart = $sendStart;
         $this->rssTemplate = $rssTemplate;
@@ -64,11 +59,6 @@ class MessageOptions
         return $this->replyTo;
     }
 
-    public function getEmbargo(): ?DateTime
-    {
-        return $this->embargo;
-    }
-
     public function getUserSelection(): ?string
     {
         return $this->userSelection;
@@ -82,5 +72,41 @@ class MessageOptions
     public function getRssTemplate(): ?string
     {
         return $this->rssTemplate;
+    }
+
+    public function setFromField(string $fromField): self
+    {
+        $this->fromField = $fromField;
+        return $this;
+    }
+
+    public function setToField(string $toField): self
+    {
+        $this->toField = $toField;
+        return $this;
+    }
+
+    public function setReplyTo(string $replyTo): self
+    {
+        $this->replyTo = $replyTo;
+        return $this;
+    }
+
+    public function setUserSelection(?string $userSelection): self
+    {
+        $this->userSelection = $userSelection;
+        return $this;
+    }
+
+    public function setSendStart(?DateTime $sendStart): self
+    {
+        $this->sendStart = $sendStart;
+        return $this;
+    }
+
+    public function setRssTemplate(?string $rssTemplate): self
+    {
+        $this->rssTemplate = $rssTemplate;
+        return $this;
     }
 }

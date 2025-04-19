@@ -60,8 +60,20 @@ class MessageContent
         return $this->textMessage;
     }
 
+    public function setTextMessage(?string $textMessage): self
+    {
+        $this->textMessage = $textMessage;
+        return $this;
+    }
+
     public function getFooter(): ?string
     {
         return $this->footer;
+    }
+
+    public function setFooter(?string $footer): self
+    {
+        $this->footer = $footer;
+        return $this;
     }
 }

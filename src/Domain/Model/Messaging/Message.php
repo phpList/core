@@ -107,6 +107,12 @@ class Message implements DomainModel, Identity, ModificationDate
         return $this->owner;
     }
 
+    public function setOwner(?Administrator $owner): self
+    {
+        $this->owner = $owner;
+        return $this;
+    }
+
     public function getTemplate(): ?Template
     {
         return $this->template;
