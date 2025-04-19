@@ -52,12 +52,22 @@ class Template implements DomainModel, Identity
 
     public function getTemplate(): ?string
     {
-        return is_resource($this->template) ? stream_get_contents($this->template) : $this->template;
+        if (is_resource($this->template)) {
+            rewind($this->template);
+            return stream_get_contents($this->template);
+        }
+
+        return $this->template;
     }
 
     public function getTemplateText(): ?string
     {
-        return is_resource($this->templateText) ? stream_get_contents($this->templateText) : $this->templateText;
+        if (is_resource($this->templateText)) {
+            rewind($this->templateText);
+            return stream_get_contents($this->templateText);
+        }
+
+        return $this->templateText;
     }
 
     public function getListOrder(): ?int

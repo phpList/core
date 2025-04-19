@@ -30,3 +30,8 @@ services:
         parent: PhpList\Core\Domain\Repository
         arguments:
             - PhpList\Core\Domain\Model\Messaging\Message
+
+    PhpList\Core\Domain\Repository\Messaging\TemplateRepository:
+        parent: PhpList\Core\Domain\Repository
+        arguments:
+            - PhpList\Core\Domain\Model\Messaging\Template
