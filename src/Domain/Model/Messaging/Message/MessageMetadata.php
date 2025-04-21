@@ -28,11 +28,15 @@ class MessageMetadata
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?DateTime $sent;
 
+    #[ORM\Column(name: 'sendstart', type: 'datetime', nullable: true)]
+    private ?DateTime $sendStart;
+
     public function __construct(
         ?string $status = null,
         int $bounceCount = 0,
         ?DateTime $entered = null,
         ?DateTime $sent = null,
+        ?DateTime $sendStart = null,
     ) {
         $this->status = $status;
         $this->processed = false;
@@ -40,6 +44,7 @@ class MessageMetadata
         $this->bounceCount = $bounceCount;
         $this->entered = $entered ?? new DateTime();
         $this->sent = $sent;
+        $this->sendStart = $sendStart;
     }
 
     public function getStatus(): ?string
@@ -105,6 +110,17 @@ class MessageMetadata
     public function setSent(?DateTime $sent): self
     {
         $this->sent = $sent;
+        return $this;
+    }
+
+    public function getSendStart(): ?DateTime
+    {
+        return $this->sendStart;
+    }
+
+    public function setSendStart(?DateTime $sendStart): self
+    {
+        $this->sendStart = $sendStart;
         return $this;
     }
 }

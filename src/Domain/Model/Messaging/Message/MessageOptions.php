@@ -22,9 +22,6 @@ class MessageOptions
     #[ORM\Column(name: 'userselection', type: 'text', nullable: true)]
     private ?string $userSelection;
 
-    #[ORM\Column(name: 'sendstart', type: 'datetime', nullable: true)]
-    private ?DateTime $sendStart;
-
     #[ORM\Column(name: 'rsstemplate', type: 'string', length: 100, nullable: true)]
     private ?string $rssTemplate;
 
@@ -33,14 +30,12 @@ class MessageOptions
         string $toField = '',
         string $replyTo = '',
         ?string $userSelection = null,
-        ?DateTime $sendStart = null,
         ?string $rssTemplate = null
     ) {
         $this->fromField = $fromField;
         $this->toField = $toField;
         $this->replyTo = $replyTo;
         $this->userSelection = $userSelection;
-        $this->sendStart = $sendStart;
         $this->rssTemplate = $rssTemplate;
     }
 
@@ -62,11 +57,6 @@ class MessageOptions
     public function getUserSelection(): ?string
     {
         return $this->userSelection;
-    }
-
-    public function getSendStart(): ?DateTime
-    {
-        return $this->sendStart;
     }
 
     public function getRssTemplate(): ?string
@@ -95,12 +85,6 @@ class MessageOptions
     public function setUserSelection(?string $userSelection): self
     {
         $this->userSelection = $userSelection;
-        return $this;
-    }
-
-    public function setSendStart(?DateTime $sendStart): self
-    {
-        $this->sendStart = $sendStart;
         return $this;
     }
 
