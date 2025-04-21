@@ -117,4 +117,40 @@ class Message implements DomainModel, Identity, ModificationDate
     {
         return $this->template;
     }
+
+    public function setTemplate(?Template $template): self
+    {
+        $this->template = $template;
+        return $this;
+    }
+
+    public function setFormat(MessageFormat $format): self
+    {
+        $this->format = $format;
+        return $this;
+    }
+
+    public function setSchedule(MessageSchedule $schedule): self
+    {
+        $this->schedule = $schedule;
+        return $this;
+    }
+
+    public function setMetadata(MessageMetadata $metadata): self
+    {
+        $this->metadata = $metadata;
+        return $this;
+    }
+
+    public function setContent(MessageContent $content): self
+    {
+        $this->content = $content;
+        return $this;
+    }
+
+    public function setOptions(MessageOptions $options): self
+    {
+        $this->options = $options;
+        return $this;
+    }
 }
