@@ -6,9 +6,10 @@ namespace PhpList\Core\Domain\Model\Messaging\Message;
 
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
+use PhpList\Core\Domain\Model\Interfaces\EmbeddableInterface;
 
 #[ORM\Embeddable]
-class MessageFormat
+class MessageFormat implements EmbeddableInterface
 {
     #[ORM\Column(name: 'htmlformatted', type: 'boolean', options: ['default' => false])]
     private bool $htmlFormatted = false;

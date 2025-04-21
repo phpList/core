@@ -6,9 +6,10 @@ namespace PhpList\Core\Domain\Model\Messaging\Message;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use PhpList\Core\Domain\Model\Interfaces\EmbeddableInterface;
 
 #[ORM\Embeddable]
-class MessageMetadata
+class MessageMetadata implements EmbeddableInterface
 {
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $status = null;

@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Model\Messaging\Message;
 
 use Doctrine\ORM\Mapping as ORM;
+use PhpList\Core\Domain\Model\Interfaces\EmbeddableInterface;
 
 #[ORM\Embeddable]
-class MessageContent
+class MessageContent implements EmbeddableInterface
 {
     #[ORM\Column(type: 'string', length: 255, nullable: false, options: ['default' => '(no subject)'])]
     private string $subject;

@@ -6,9 +6,10 @@ namespace PhpList\Core\Domain\Model\Messaging\Message;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use PhpList\Core\Domain\Model\Interfaces\EmbeddableInterface;
 
 #[ORM\Embeddable]
-class MessageSchedule
+class MessageSchedule implements EmbeddableInterface
 {
     #[ORM\Column(name: 'repeatinterval', type: 'integer', nullable: true, options: ['default' => 0])]
     private ?int $repeatInterval;

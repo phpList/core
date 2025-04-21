@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Model\Messaging\Message;
 
 use Doctrine\ORM\Mapping as ORM;
-use DateTime;
+use PhpList\Core\Domain\Model\Interfaces\EmbeddableInterface;
 
 #[ORM\Embeddable]
-class MessageOptions
+class MessageOptions implements EmbeddableInterface
 {
     #[ORM\Column(name: 'fromfield', type: 'string', length: 255, nullable: false, options: ['default' => ''])]
     private string $fromField;
