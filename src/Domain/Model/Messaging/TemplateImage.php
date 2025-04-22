@@ -26,7 +26,7 @@ class TemplateImage implements DomainModel, Identity
     private ?string $filename = null;
 
     #[ORM\Column(name: 'data', type: 'blob', nullable: true)]
-    private ?string $data = null;
+    private mixed $data = null;
 
     #[ORM\Column(name: 'width', type: 'integer', nullable: true)]
     private ?int $width = null;
@@ -51,6 +51,11 @@ class TemplateImage implements DomainModel, Identity
 
     public function getData(): ?string
     {
+        if (is_resource($this->data)) {
+            rewind($this->data);
+            return stream_get_contents($this->data);
+        }
+
         return $this->data;
     }
 
@@ -84,7 +89,7 @@ class TemplateImage implements DomainModel, Identity
 
     public function setData(?string $data): self
     {
-        $this->data = $data;
+        $this->data = $data !== null ? fopen('data://text/plain,' . $data, 'r') : null;
         return $this;
     }
 
