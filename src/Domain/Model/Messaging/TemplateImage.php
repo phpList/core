@@ -8,8 +8,9 @@ use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Traits\IdentityTrait;
+use PhpList\Core\Domain\Repository\Messaging\TemplateImageRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: TemplateImageRepository::class)]
 #[ORM\Table(name: 'phplist_templateimage')]
 #[ORM\Index(name: 'templateidx', columns: ['template'])]
 class TemplateImage implements DomainModel, Identity
