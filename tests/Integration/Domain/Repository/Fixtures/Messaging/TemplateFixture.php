@@ -37,8 +37,8 @@ class TemplateFixture extends Fixture
             $row = array_combine($headers, $data);
 
             $template = new Template($row['title']);
-            $template->setTemplate($row['template']);
-            $template->setTemplateText($row['template_text']);
+            $template->setContent($row['template']);
+            $template->setText($row['template_text']);
             $template->setListOrder((int)$row['listorder']);
 
             $this->setSubjectId($template, (int)$row['id']);

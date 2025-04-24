@@ -56,8 +56,8 @@ class TemplateRepositoryTest extends KernelTestCase
 
         self::assertInstanceOf(Template::class, $fetched);
         self::assertSame('Newsletter Template', $fetched->getTitle());
-        self::assertSame('<html><body><h1>Welcome</h1></body></html>', $fetched->getTemplate());
-        self::assertSame('', $fetched->getTemplateText());
+        self::assertSame('<html><body><h1>Welcome</h1></body></html>', $fetched->getContent());
+        self::assertSame('', $fetched->getText());
         self::assertSame(1, $fetched->getListOrder());
     }
 

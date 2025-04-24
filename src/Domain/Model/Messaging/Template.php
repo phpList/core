@@ -23,10 +23,10 @@ class Template implements DomainModel, Identity
     private string $title;
 
     #[ORM\Column(name: 'template', type: 'blob', nullable: true)]
-    private mixed $template;
+    private mixed $content;
 
     #[ORM\Column(name: 'template_text', type: 'blob', nullable: true)]
-    private mixed $templateText;
+    private mixed $text;
 
     #[ORM\Column(name: 'listorder', type: 'integer', nullable: true)]
     private ?int $listOrder = null;
@@ -50,24 +50,24 @@ class Template implements DomainModel, Identity
         return $this->title;
     }
 
-    public function getTemplate(): ?string
+    public function getContent(): ?string
     {
-        if (is_resource($this->template)) {
-            rewind($this->template);
-            return stream_get_contents($this->template);
+        if (is_resource($this->content)) {
+            rewind($this->content);
+            return stream_get_contents($this->content);
         }
 
-        return $this->template;
+        return $this->content;
     }
 
-    public function getTemplateText(): ?string
+    public function getText(): ?string
     {
-        if (is_resource($this->templateText)) {
-            rewind($this->templateText);
-            return stream_get_contents($this->templateText);
+        if (is_resource($this->text)) {
+            rewind($this->text);
+            return stream_get_contents($this->text);
         }
 
-        return $this->templateText;
+        return $this->text;
     }
 
     public function getListOrder(): ?int
@@ -86,16 +86,16 @@ class Template implements DomainModel, Identity
         return $this;
     }
 
-    public function setTemplate(?string $template): self
+    public function setContent(?string $content): self
     {
-        $this->template = $template !== null ? fopen('data://text/plain,' . $template, 'r') : null;
+        $this->content = $content !== null ? fopen('data://text/plain,' . $content, 'r') : null;
         return $this;
     }
 
 
-    public function setTemplateText(?string $templateText): self
+    public function setText(?string $text): self
     {
-        $this->templateText = $templateText !== null ? fopen('data://text/plain,' . $templateText, 'r') : null;
+        $this->text = $text !== null ? fopen('data://text/plain,' . $text, 'r') : null;
         return $this;
     }
 
