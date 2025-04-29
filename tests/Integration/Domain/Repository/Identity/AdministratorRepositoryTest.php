@@ -51,7 +51,7 @@ class AdministratorRepositoryTest extends KernelTestCase
         $this->assertSame($actual->getLoginName(), $actual->getLoginName());
         $this->assertEqualsWithDelta(
             (new DateTime())->getTimestamp(),
-            $actual->getModificationDate()->getTimestamp(),
+            $actual->getUpdatedAt()->getTimestamp(),
             1
         );
         $this->assertSame('john@example.com', $actual->getEmail());
@@ -59,26 +59,28 @@ class AdministratorRepositoryTest extends KernelTestCase
             '1491a3c7e7b23b9a6393323babbb095dee0d7d81b2199617b487bd0fb5236f3c',
             $actual->getPasswordHash()
         );
-        $this->assertEquals(new DateTime('2017-06-22 15:01:17'), $actual->getCreationDate());
+        $this->assertEquals(new DateTime('2017-06-22 15:01:17'), $actual->getCreatedat());
         $this->assertEquals(new DateTime('2017-06-28'), $actual->getPasswordChangeDate());
     }
 
     public function testCreationDateOfExistingModelStaysUnchangedOnUpdate(): void
     {
         $id = 1;
+        /** @var Administrator $model */
         $model = $this->repository->find($id);
         $this->assertNotNull($model);
-        $originalCreationDate = $model->getCreationDate();
+        $originalCreationDate = $model->getCreatedAt();
         $model->setLoginName('mel');
 
         $this->entityManager->flush();
 
-        $this->assertSame($originalCreationDate, $model->getCreationDate());
+        $this->assertSame($originalCreationDate, $model->getCreatedAt());
     }
 
     public function testModificationDateOfExistingModelGetsUpdatedOnUpdate(): void
     {
         $id = 1;
+        /** @var Administrator $model */
         $model = $this->repository->find($id);
         $this->assertNotNull($model);
 
@@ -86,7 +88,7 @@ class AdministratorRepositoryTest extends KernelTestCase
         $this->entityManager->flush();
 
         $expectedModificationDate = new DateTime();
-        $this->assertEqualsWithDelta($expectedModificationDate, $model->getModificationDate(), 5);
+        $this->assertEqualsWithDelta($expectedModificationDate, $model->getUpdatedAt(), 5);
     }
 
     public function testCreationDateOfNewModelIsSetToNowOnPersist()
@@ -97,7 +99,7 @@ class AdministratorRepositoryTest extends KernelTestCase
         $this->entityManager->flush();
 
         $expectedCreationDate = new DateTime();
-        $this->assertEqualsWithDelta($expectedCreationDate, $model->getCreationDate(), 1);
+        $this->assertEqualsWithDelta($expectedCreationDate, $model->getCreatedAt(), 1);
     }
 
     public function testModificationDateOfNewModelIsSetToNowOnPersist()
@@ -108,7 +110,7 @@ class AdministratorRepositoryTest extends KernelTestCase
         $this->entityManager->flush();
 
         $expectedCreationDate = new DateTime();
-        $this->assertEqualsWithDelta($expectedCreationDate, $model->getModificationDate(), 1);
+        $this->assertEqualsWithDelta($expectedCreationDate, $model->getUpdatedAt(), 1);
     }
 
     /**

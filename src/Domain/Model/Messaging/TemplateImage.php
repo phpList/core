@@ -7,7 +7,6 @@ namespace PhpList\Core\Domain\Model\Messaging;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Repository\Messaging\TemplateImageRepository;
 
 #[ORM\Entity(repositoryClass: TemplateImageRepository::class)]
@@ -15,7 +14,11 @@ use PhpList\Core\Domain\Repository\Messaging\TemplateImageRepository;
 #[ORM\Index(name: 'templateidx', columns: ['template'])]
 class TemplateImage implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
+
     #[ORM\ManyToOne(targetEntity: Template::class)]
     #[ORM\JoinColumn(name: 'template', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private Template $template;
@@ -34,6 +37,11 @@ class TemplateImage implements DomainModel, Identity
 
     #[ORM\Column(name: 'height', type: 'integer', nullable: true)]
     private ?int $height = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getTemplate(): ?Template
     {

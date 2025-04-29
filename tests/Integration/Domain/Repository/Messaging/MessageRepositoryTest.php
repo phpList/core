@@ -128,6 +128,6 @@ class MessageRepositoryTest extends KernelTestCase
 
         $this->entityManager->persist($message);
 
-        self::assertSimilarDates($expectedDate, $message->getModificationDate());
+        self::assertSimilarDates($expectedDate, $message->getUpdatedAt());
     }
 }

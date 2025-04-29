@@ -7,15 +7,19 @@ namespace PhpList\Core\Domain\Model\Identity;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Repository\Identity\AdminAttributeRepository;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: AdminAttributeRepository::class)]
 #[ORM\Table(name: 'phplist_admin_attribute')]
 #[ORM\HasLifecycleCallbacks]
 class AdminAttribute implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'name', type: 'string', length: 255)]
     private string $name;
@@ -51,7 +55,7 @@ class AdminAttribute implements DomainModel, Identity
         $this->tableName = $tableName;
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }

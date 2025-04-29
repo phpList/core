@@ -101,7 +101,7 @@ class MessageFixture extends Fixture
             $this->setSubjectProperty($message, 'uuid', $row['uuid']);
 
             $manager->persist($message);
-            $this->setSubjectProperty($message, 'modificationDate', new DateTime($row['modified']));
+            $this->setSubjectProperty($message, 'updatedAt', new DateTime($row['modified']));
         } while (true);
 
         fclose($handle);

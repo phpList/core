@@ -9,7 +9,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Repository\Messaging\TemplateRepository;
 
 #[ORM\Entity(repositoryClass: TemplateRepository::class)]
@@ -17,7 +16,10 @@ use PhpList\Core\Domain\Repository\Messaging\TemplateRepository;
 #[ORM\UniqueConstraint(name: 'title', columns: ['title'])]
 class Template implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'title', type: 'string', length: 255, unique: true)]
     private string $title;
@@ -43,6 +45,11 @@ class Template implements DomainModel, Identity
     {
         $this->title = $title;
         $this->images = new ArrayCollection();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     public function getTitle(): string

@@ -45,28 +45,23 @@ class SubscriberListTest extends TestCase
         self::assertSame($id, $this->subscriberList->getId());
     }
 
-    public function testGetCreationDateInitiallyReturnsNull(): void
-    {
-        self::assertNull($this->subscriberList->getCreationDate());
-    }
-
     public function testUpdateCreationDateSetsCreationDateToNow(): void
     {
-        $this->subscriberList->updateCreationDate();
+        $this->subscriberList->setCategory('test');
 
-        self::assertSimilarDates(new DateTime(), $this->subscriberList->getCreationDate());
+        self::assertSimilarDates(new DateTime(), $this->subscriberList->getCreatedAt());
     }
 
-    public function testGetModificationDateInitiallyReturnsNull(): void
+    public function testgetUpdatedAtInitiallyReturnsNull(): void
     {
-        self::assertNull($this->subscriberList->getModificationDate());
+        self::assertNull($this->subscriberList->getUpdatedAt());
     }
 
     public function testUpdateModificationDateSetsModificationDateToNow(): void
     {
-        $this->subscriberList->updateModificationDate();
+        $this->subscriberList->updateUpdatedAt();
 
-        self::assertSimilarDates(new DateTime(), $this->subscriberList->getModificationDate());
+        self::assertSimilarDates(new DateTime(), $this->subscriberList->getUpdatedAt());
     }
 
     public function testGetNameInitiallyReturnsEmptyString(): void

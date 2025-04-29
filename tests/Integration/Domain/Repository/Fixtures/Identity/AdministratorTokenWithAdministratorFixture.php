@@ -49,7 +49,7 @@ class AdministratorTokenWithAdministratorFixture extends Fixture
             $this->setSubjectId($adminToken, (int)$row['id']);
             $adminToken->setKey($row['value']);
             $this->setSubjectProperty($adminToken, 'expiry', new DateTime($row['expires']));
-            $this->setSubjectProperty($adminToken, 'creationDate', (bool) $row['entered']);
+            $this->setSubjectProperty($adminToken, 'createdAt', (bool) $row['entered']);
             $adminToken->setAdministrator($admin);
             $manager->persist($adminToken);
         } while (true);

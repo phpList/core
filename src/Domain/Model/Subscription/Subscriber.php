@@ -14,9 +14,6 @@ use PhpList\Core\Domain\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
-use PhpList\Core\Domain\Model\Traits\CreationDateTrait;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
-use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
@@ -34,14 +31,19 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\HasLifecycleCallbacks]
 class Subscriber implements DomainModel, Identity, CreationDate, ModificationDate
 {
-    use IdentityTrait;
-    use CreationDateTrait;
-    use ModificationDateTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
     #[SerializedName('creation_date')]
     #[Groups(['SubscriberListMembers'])]
-    protected ?DateTime $creationDate = null;
+    protected ?DateTime $createdAt = null;
+
+    #[ORM\Column(name: 'modified', type: 'datetime')]
+    private ?DateTime $updatedAt = null;
 
     #[ORM\Column(unique: true)]
     #[SerializedName('email')]
@@ -106,6 +108,31 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         $this->subscriptions = new ArrayCollection();
         $this->attributes = new ArrayCollection();
         $this->extraData = '';
+        $this->createdAt = new DateTime();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getCreatedAt(): ?DateTime
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): ?DateTime
+    {
+        return $this->updatedAt;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateUpdatedAt(): DomainModel
+    {
+        $this->updatedAt = new DateTime();
+
+        return $this;
     }
 
     public function isConfirmed(): bool

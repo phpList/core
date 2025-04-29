@@ -8,8 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Repository\Messaging\BounceRepository;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: BounceRepository::class)]
 #[ORM\Table(name: 'phplist_bounce')]
@@ -17,7 +17,11 @@ use PhpList\Core\Domain\Repository\Messaging\BounceRepository;
 #[ORM\Index(name: 'statusidx', columns: ['status'])]
 class Bounce implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
+    private ?int $id = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?DateTime $date;
@@ -48,7 +52,7 @@ class Bounce implements DomainModel, Identity
         $this->comment = $comment;
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }

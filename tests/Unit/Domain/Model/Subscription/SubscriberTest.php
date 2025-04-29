@@ -44,28 +44,28 @@ class SubscriberTest extends TestCase
         self::assertSame($id, $this->subscriber->getId());
     }
 
-    public function testGetCreationDateInitiallyReturnsNull(): void
+    public function testGetCreatedAtInitiallyReturnsNull(): void
     {
-        self::assertNull($this->subscriber->getCreationDate());
+        self::assertSimilarDates(new \DateTime(), $this->subscriber->getCreatedAt());
     }
 
     public function testUpdateCreationDateSetsCreationDateToNow(): void
     {
-        $this->subscriber->updateCreationDate();
+        $this->subscriber->updateUpdatedAt();
 
-        self::assertSimilarDates(new \DateTime(), $this->subscriber->getCreationDate());
+        self::assertSimilarDates(new \DateTime(), $this->subscriber->getCreatedAt());
     }
 
-    public function testGetModificationDateInitiallyReturnsNull(): void
+    public function testgetUpdatedAtInitiallyReturnsNull(): void
     {
-        self::assertNull($this->subscriber->getModificationDate());
+        self::assertNull($this->subscriber->getUpdatedAt());
     }
 
     public function testUpdateModificationDateSetsModificationDateToNow(): void
     {
-        $this->subscriber->updateModificationDate();
+        $this->subscriber->updateUpdatedAt();
 
-        self::assertSimilarDates(new \DateTime(), $this->subscriber->getModificationDate());
+        self::assertSimilarDates(new \DateTime(), $this->subscriber->getUpdatedAt());
     }
 
     public function testGetEmailInitiallyReturnsEmptyString(): void

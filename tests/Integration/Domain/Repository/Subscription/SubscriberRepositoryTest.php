@@ -65,8 +65,8 @@ class SubscriberRepositoryTest extends KernelTestCase
         $model = $this->subscriberRepository->find($id);
 
         self::assertSame($id, $model->getId());
-        self::assertSimilarDates($creationDate, $model->getCreationDate());
-        self::assertSimilarDates($modificationDate, $model->getModificationDate());
+        self::assertSimilarDates($creationDate, $model->getCreatedAt());
+        self::assertSimilarDates($modificationDate, $model->getUpdatedAt());
         self::assertEquals('oliver@example.com', $model->getEmail());
         self::assertTrue($model->isConfirmed());
         self::assertTrue($model->isBlacklisted());
@@ -85,7 +85,7 @@ class SubscriberRepositoryTest extends KernelTestCase
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
+        self::assertSimilarDates($expectedCreationDate, $model->getCreatedAt());
     }
 
     public function testModificationDateOfNewModelIsSetToNowOnPersist()
@@ -96,7 +96,7 @@ class SubscriberRepositoryTest extends KernelTestCase
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
+        self::assertSimilarDates($expectedModificationDate, $model->getUpdatedAt());
     }
 
     public function testSavePersistsAndFlushesModel()

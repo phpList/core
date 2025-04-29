@@ -13,9 +13,6 @@ use PhpList\Core\Domain\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
-use PhpList\Core\Domain\Model\Traits\CreationDateTrait;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
-use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 use PhpList\Core\Domain\Repository\Subscription\SubscriberListRepository;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Annotation\SerializedName;
@@ -35,9 +32,11 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
 #[ORM\HasLifecycleCallbacks]
 class SubscriberList implements DomainModel, Identity, CreationDate, ModificationDate
 {
-    use IdentityTrait;
-    use CreationDateTrait;
-    use ModificationDateTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
+    private ?int $id = null;
 
     #[ORM\Column]
     #[SerializedName('name')]
@@ -52,7 +51,10 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
     #[SerializedName('creation_date')]
     #[Groups(['SubscriberList'])]
-    protected ?DateTime $creationDate = null;
+    protected ?DateTime $createdAt = null;
+
+    #[ORM\Column(name: 'modified', type: 'datetime')]
+    private ?DateTime $updatedAt = null;
 
     #[ORM\Column(name: 'listorder', type: 'integer', nullable: true)]
     #[SerializedName('list_position')]
@@ -91,10 +93,16 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     public function __construct()
     {
         $this->subscriptions = new ArrayCollection();
+        $this->createdAt = new DateTime();
         $this->listPosition = 0;
         $this->subjectPrefix = '';
         $this->category = '';
         $this->public = false;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     public function getName(): string
@@ -212,5 +220,24 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         }
 
         return $result;
+    }
+
+    public function getCreatedAt(): ?DateTime
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): ?DateTime
+    {
+        return $this->updatedAt;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateUpdatedAt(): DomainModel
+    {
+        $this->updatedAt = new DateTime();
+
+        return $this;
     }
 }

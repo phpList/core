@@ -8,8 +8,8 @@ use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Repository\Configuration\EventLogRepository;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: EventLogRepository::class)]
 #[ORM\Table(name: 'phplist_eventlog')]
@@ -17,7 +17,11 @@ use PhpList\Core\Domain\Repository\Configuration\EventLogRepository;
 #[ORM\Index(name: 'pageidx', columns: ['page'])]
 class EventLog implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
+    private ?int $id = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?DateTimeInterface $entered = null;
@@ -28,7 +32,7 @@ class EventLog implements DomainModel, Identity
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $entry = null;
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }

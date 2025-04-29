@@ -64,8 +64,8 @@ class SubscriptionRepositoryTest extends KernelTestCase
 
         $model = $result[0];
         self::assertInstanceOf(Subscription::class, $model);
-        self::assertEquals($creationDate, $model->getCreationDate());
-        self::assertEquals($modificationDate, $model->getModificationDate());
+        self::assertEquals($creationDate, $model->getCreatedAt());
+        self::assertEquals($modificationDate, $model->getUpdatedAt());
     }
 
     public function testCreationDateOfNewModelIsSetToNowOnPersist()
@@ -83,7 +83,7 @@ class SubscriptionRepositoryTest extends KernelTestCase
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
+        self::assertSimilarDates($expectedCreationDate, $model->getCreatedAt());
     }
 
     public function testModificationDateOfNewModelIsSetToNowOnPersist()
@@ -101,7 +101,7 @@ class SubscriptionRepositoryTest extends KernelTestCase
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
+        self::assertSimilarDates($expectedModificationDate, $model->getUpdatedAt());
     }
 
     public function testFindBySubscriberFindsSubscriptionOnlyWithTheGivenSubscriber()

@@ -7,15 +7,19 @@ namespace PhpList\Core\Domain\Model\Identity;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Repository\Identity\AdminLoginRepository;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: AdminLoginRepository::class)]
 #[ORM\Table(name: 'phplist_admin_login')]
 #[ORM\HasLifecycleCallbacks]
 class AdminLogin implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'adminid', type: 'integer', options: ['unsigned' => true])]
     private int $adminId;
@@ -47,6 +51,11 @@ class AdminLogin implements DomainModel, Identity
         $this->remoteIp4 = $remoteIp4;
         $this->remoteIp6 = $remoteIp6;
         $this->sessionId = $sessionId;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     public function setActive(bool $active): self

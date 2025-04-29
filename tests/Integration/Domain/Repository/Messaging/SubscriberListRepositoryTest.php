@@ -59,8 +59,8 @@ class SubscriberListRepositoryTest extends KernelTestCase
         $this->loadFixtures([SubscriberListFixture::class]);
 
         $id = 1;
-        $creationDate = new DateTime();
-        $modificationDate = new DateTime();
+        $creationDate = new DateTime('2016-06-22 15:01:17');
+        $modificationDate = new DateTime('2016-06-23 19:50:43');
         $name = 'News';
         $description = 'News (and some fun stuff)';
         $listPosition = 12;
@@ -71,8 +71,8 @@ class SubscriberListRepositoryTest extends KernelTestCase
         $model = $this->subscriberListRepository->find($id);
 
         self::assertSame($id, $model->getId());
-        self::assertSimilarDates($creationDate, $model->getCreationDate());
-        self::assertSimilarDates($modificationDate, $model->getModificationDate());
+        self::assertSimilarDates($creationDate, $model->getCreatedAt());
+        self::assertSimilarDates($modificationDate, $model->getUpdatedAt());
         self::assertSame($name, $model->getName());
         self::assertSame($description, $model->getDescription());
         self::assertSame($listPosition, $model->getListPosition());
@@ -88,7 +88,7 @@ class SubscriberListRepositoryTest extends KernelTestCase
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
+        self::assertSimilarDates($expectedCreationDate, $model->getCreatedAt());
     }
 
     public function testModificationDateOfNewModelIsSetToNowOnPersist()
@@ -98,7 +98,7 @@ class SubscriberListRepositoryTest extends KernelTestCase
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
+        self::assertSimilarDates($expectedModificationDate, $model->getUpdatedAt());
     }
 
     public function testSavePersistsAndFlushesModel()

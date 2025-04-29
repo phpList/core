@@ -8,7 +8,6 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'phplist_user_message_forward')]
@@ -17,7 +16,10 @@ use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 #[ORM\Index(name: 'usermessageidx', columns: ['user', 'message'])]
 class UserMessageForward implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'user', type: 'integer')]
     private int $user;
@@ -33,6 +35,11 @@ class UserMessageForward implements DomainModel, Identity
 
     #[ORM\Column(name: 'time', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private DateTime $time;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getUser(): int
     {

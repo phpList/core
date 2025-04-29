@@ -8,7 +8,6 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'phplist_user_message_bounce')]
@@ -19,7 +18,10 @@ use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 #[ORM\HasLifecycleCallbacks]
 class UserMessageBounce implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'user', type: 'integer')]
     private int $user;
@@ -36,6 +38,11 @@ class UserMessageBounce implements DomainModel, Identity
     public function __construct()
     {
         $this->time = new DateTime();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     public function getUser(): int

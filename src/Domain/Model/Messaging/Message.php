@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Model\Messaging;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
@@ -14,9 +15,8 @@ use PhpList\Core\Domain\Model\Messaging\Message\MessageFormat;
 use PhpList\Core\Domain\Model\Messaging\Message\MessageMetadata;
 use PhpList\Core\Domain\Model\Messaging\Message\MessageOptions;
 use PhpList\Core\Domain\Model\Messaging\Message\MessageSchedule;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
-use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 use PhpList\Core\Domain\Repository\Messaging\MessageRepository;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\Table(name: 'phplist_message')]
@@ -24,8 +24,14 @@ use PhpList\Core\Domain\Repository\Messaging\MessageRepository;
 #[ORM\HasLifecycleCallbacks]
 class Message implements DomainModel, Identity, ModificationDate
 {
-    use IdentityTrait;
-    use ModificationDateTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
+    private ?int $id = null;
+
+    #[ORM\Column(name: 'modified', type: 'datetime')]
+    private ?DateTime $updatedAt = null;
 
     #[ORM\Embedded(class: MessageFormat::class, columnPrefix: false)]
     private MessageFormat $format;
@@ -70,6 +76,25 @@ class Message implements DomainModel, Identity, ModificationDate
         $this->uuid = bin2hex(random_bytes(18));
         $this->owner = $owner;
         $this->template = $template;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getUpdatedAt(): ?DateTime
+    {
+        return $this->updatedAt;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateUpdatedAt(): DomainModel
+    {
+        $this->updatedAt = new DateTime();
+
+        return $this;
     }
 
     public function getFormat(): MessageFormat

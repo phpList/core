@@ -50,8 +50,6 @@ class SubscriberListFixture extends Fixture
             $this->setSubjectId($subscriberList, (int)$row['id']);
             $subscriberList->setName($row['name']);
             $subscriberList->setDescription($row['description']);
-            $this->setSubjectProperty($subscriberList, 'creationDate', new DateTime($row['entered']));
-            $this->setSubjectProperty($subscriberList, 'modificationDate', new DateTime($row['modified']));
             $subscriberList->setListPosition((int)$row['listorder']);
             $subscriberList->setSubjectPrefix($row['prefix']);
             $subscriberList->setPublic((bool) $row['active']);
@@ -59,6 +57,9 @@ class SubscriberListFixture extends Fixture
             $subscriberList->setOwner($admin);
 
             $manager->persist($subscriberList);
+
+            $this->setSubjectProperty($subscriberList, 'createdAt', new DateTime($row['entered']));
+            $this->setSubjectProperty($subscriberList, 'updatedAt', new DateTime($row['modified']));
         } while (true);
 
         fclose($handle);

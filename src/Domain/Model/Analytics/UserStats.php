@@ -7,7 +7,7 @@ namespace PhpList\Core\Domain\Model\Analytics;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'phplist_userstats')]
@@ -18,7 +18,11 @@ use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 #[ORM\Index(name: 'listindex', columns: ['listid'])]
 class UserStats implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'unixdate', type: 'integer', nullable: true)]
     private ?int $unixDate = null;
@@ -31,6 +35,11 @@ class UserStats implements DomainModel, Identity
 
     #[ORM\Column(name: 'value', type: 'integer', options: ['default' => 0])]
     private int $value = 0;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getUnixDate(): ?int
     {

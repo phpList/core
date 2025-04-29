@@ -61,27 +61,20 @@ class SubscriptionTest extends TestCase
         self::assertSame($model, $this->subject->getSubscriberList());
     }
 
-    public function testGetCreationDateInitiallyReturnsNull(): void
+    public function testGetCreatedAtInitiallyReturnsCurrentTime(): void
     {
-        self::assertNull($this->subject->getCreationDate());
+        self::assertSimilarDates(new DateTime(), $this->subject->getCreatedAt());
     }
 
-    public function testUpdateCreationDateSetsCreationDateToNow(): void
+    public function testGetUpdatedAtInitiallyReturnsNull(): void
     {
-        $this->subject->updateCreationDate();
-
-        self::assertSimilarDates(new DateTime(), $this->subject->getCreationDate());
-    }
-
-    public function testGetModificationDateInitiallyReturnsNull(): void
-    {
-        self::assertNull($this->subject->getModificationDate());
+        self::assertNull($this->subject->getUpdatedAt());
     }
 
     public function testUpdateModificationDateSetsModificationDateToNow(): void
     {
-        $this->subject->updateModificationDate();
+        $this->subject->updateUpdatedAt();
 
-        self::assertSimilarDates(new DateTime(), $this->subject->getModificationDate());
+        self::assertSimilarDates(new DateTime(), $this->subject->getUpdatedAt());
     }
 }

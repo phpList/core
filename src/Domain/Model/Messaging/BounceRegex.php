@@ -7,15 +7,19 @@ namespace PhpList\Core\Domain\Model\Messaging;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Repository\Messaging\BounceRegexRepository;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: BounceRegexRepository::class)]
 #[ORM\Table(name: 'phplist_bounceregex')]
 #[ORM\UniqueConstraint(name: 'regex', columns: ['regexhash'])]
 class BounceRegex implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
+    private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 2083, nullable: true)]
     private ?string $regex;
@@ -61,7 +65,7 @@ class BounceRegex implements DomainModel, Identity
         $this->count = $count;
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }

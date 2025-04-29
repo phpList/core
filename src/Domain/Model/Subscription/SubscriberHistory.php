@@ -8,7 +8,7 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'phplist_user_user_history')]
@@ -16,7 +16,11 @@ use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 #[ORM\Index(name: 'userididx', columns: ['userid'])]
 class SubscriberHistory implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
+    private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Subscriber::class)]
     #[ORM\JoinColumn(name: 'userid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
@@ -36,6 +40,11 @@ class SubscriberHistory implements DomainModel, Identity
 
     #[ORM\Column(name: 'systeminfo', type: 'text', nullable: true)]
     private ?string $systemInfo = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getSubscriber(): Subscriber
     {

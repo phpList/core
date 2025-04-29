@@ -10,10 +10,8 @@ use PhpList\Core\Domain\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
-use PhpList\Core\Domain\Model\Traits\CreationDateTrait;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
-use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
  * This class represents an administrator who can log to the system, is allowed to administer
@@ -27,9 +25,17 @@ use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
 #[ORM\HasLifecycleCallbacks]
 class Administrator implements DomainModel, Identity, CreationDate, ModificationDate
 {
-    use IdentityTrait;
-    use CreationDateTrait;
-    use ModificationDateTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
+    private ?int $id = null;
+
+    #[ORM\Column(name: 'created', type: 'datetime')]
+    protected DateTime $createdAt;
+
+    #[ORM\Column(name: 'modified', type: 'datetime')]
+    private ?DateTime $updatedAt;
 
     #[ORM\Column(name: 'loginname')]
     private string $loginName;
@@ -39,9 +45,6 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
 
     #[ORM\Column(name: 'email')]
     private string $email;
-
-    #[ORM\Column(name: 'created', type: 'datetime')]
-    protected ?DateTime $creationDate = null;
 
     #[ORM\Column(name: 'modifiedby', type: 'string', length: 66, nullable: true)]
     protected ?string $modifiedBy;
@@ -68,7 +71,8 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         $this->passwordChangeDate = null;
         $this->loginName = '';
         $this->passwordHash = '';
-        $this->modificationDate = null;
+        $this->createdAt = new DateTime();
+        $this->updatedAt = null;
         $this->email = '';
     }
 
@@ -104,7 +108,7 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     public function setPasswordHash(string $passwordHash): self
     {
         $this->passwordHash = $passwordHash;
-        $this->setPasswordChangeDate(new DateTime());
+        $this->passwordChangeDate = new DateTime();
 
         return $this;
     }
@@ -112,13 +116,6 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     public function getPasswordChangeDate(): ?DateTime
     {
         return $this->passwordChangeDate;
-    }
-
-    private function setPasswordChangeDate(DateTime $changeDate): self
-    {
-        $this->passwordChangeDate = $changeDate;
-
-        return $this;
     }
 
     public function isDisabled(): bool
@@ -167,5 +164,29 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     public function getPrivileges(): string
     {
         return $this->privileges;
+    }
+
+    public function getCreatedAt(): ?DateTime
+    {
+        return $this->createdAt;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getUpdatedAt(): ?DateTime
+    {
+        return $this->updatedAt;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateUpdatedAt(): DomainModel
+    {
+        $this->updatedAt = new DateTime();
+
+        return $this;
     }
 }

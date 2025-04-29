@@ -7,14 +7,18 @@ namespace PhpList\Core\Domain\Model\Messaging;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Repository\Messaging\AttachmentRepository;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: AttachmentRepository::class)]
 #[ORM\Table(name: 'phplist_attachment')]
 class Attachment implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
+    private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $filename;
@@ -43,6 +47,11 @@ class Attachment implements DomainModel, Identity
         $this->mimeType = $mimeType;
         $this->description = $description;
         $this->size = $size;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     public function getFilename(): ?string

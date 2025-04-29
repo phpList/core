@@ -14,7 +14,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 use PhpList\Core\Domain\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
  * This class represents an API authentication token for an administrator.
@@ -25,13 +25,17 @@ use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 #[ORM\HasLifecycleCallbacks]
 class AdministratorToken implements DomainModel, Identity, CreationDate
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
+    private ?int $id = null;
 
     public const DEFAULT_EXPIRY = '+1 hour';
 
     #[ORM\Column(name: 'entered', type: 'integer')]
     #[Ignore]
-    protected int $creationDate = 0;
+    protected int $createdAt = 0;
 
     #[ORM\Column(name: 'expires', type: 'datetime')]
     #[SerializedName('expiry_date')]
@@ -51,29 +55,34 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
         $this->setExpiry(new DateTime());
     }
 
-    public function getCreationDate(): ?DateTime
+    public function getId(): ?int
     {
-        if ($this->creationDate === 0) {
+        return $this->id;
+    }
+
+    public function getCreatedAt(): ?DateTime
+    {
+        if ($this->createdAt === 0) {
             return null;
         }
 
         $date = new DateTime();
-        $date->setTimestamp($this->creationDate);
+        $date->setTimestamp($this->createdAt);
         $date->setTimezone(new DateTimeZone('UTC'));
         return $date;
     }
 
-    private function setCreationDate(DateTime $creationDate): self
+    private function setCreatedAt(DateTime $createdAt): self
     {
-        $this->creationDate = $creationDate->getTimestamp();
+        $this->createdAt = $createdAt->getTimestamp();
 
         return $this;
     }
 
     #[ORM\PrePersist]
-    public function updateCreationDate(): DomainModel
+    public function updateCreatedAt(): DomainModel
     {
-        $this->setCreationDate(new DateTime());
+        $this->setCreatedAt(new DateTime());
         return $this;
     }
 

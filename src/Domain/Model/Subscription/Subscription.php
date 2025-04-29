@@ -10,8 +10,6 @@ use Doctrine\Persistence\Proxy;
 use PhpList\Core\Domain\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
-use PhpList\Core\Domain\Model\Traits\CreationDateTrait;
-use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 use PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Annotation\SerializedName;
@@ -32,12 +30,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\HasLifecycleCallbacks]
 class Subscription implements DomainModel, CreationDate, ModificationDate
 {
-    use CreationDateTrait;
-    use ModificationDateTrait;
-
     #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
     #[SerializedName('creation_date')]
-    protected ?DateTime $creationDate = null;
+    protected ?DateTime $createdAt = null;
+
+    #[ORM\Column(name: 'modified', type: 'datetime')]
+    private ?DateTime $updatedAt = null;
 
     #[ORM\Id]
     #[ORM\ManyToOne(
@@ -58,6 +56,11 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
     #[Groups(['SubscriberListMembers'])]
     private ?SubscriberList $subscriberList = null;
 
+    public function __construct()
+    {
+        $this->createdAt = new DateTime();
+    }
+
     public function getSubscriber(): Subscriber|Proxy|null
     {
         return $this->subscriber;
@@ -77,6 +80,25 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
     public function setSubscriberList(?SubscriberList $subscriberList): self
     {
         $this->subscriberList = $subscriberList;
+        return $this;
+    }
+
+    public function getCreatedAt(): ?DateTime
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): ?DateTime
+    {
+        return $this->updatedAt;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateUpdatedAt(): DomainModel
+    {
+        $this->updatedAt = new DateTime();
+
         return $this;
     }
 }

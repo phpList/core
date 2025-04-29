@@ -66,28 +66,16 @@ class AdministratorTest extends TestCase
         self::assertSame($value, $this->subject->getEmail());
     }
 
-    public function testGetCreationDateInitiallyReturnsNull(): void
+    public function testGetUpdatedAtInitiallyReturnsNull(): void
     {
-        self::assertNull($this->subject->getCreationDate());
-    }
-
-    public function testUpdateCreationDateSetsCreationDateToNow(): void
-    {
-        $this->subject->updateCreationDate();
-
-        self::assertSimilarDates(new \DateTime(), $this->subject->getCreationDate());
-    }
-
-    public function testGetModificationDateInitiallyReturnsNull(): void
-    {
-        self::assertNull($this->subject->getModificationDate());
+        self::assertNull($this->subject->getUpdatedAt());
     }
 
     public function testUpdateModificationDateSetsModificationDateToNow(): void
     {
-        $this->subject->updateModificationDate();
+        $this->subject->updateUpdatedAt();
 
-        self::assertSimilarDates(new \DateTime(), $this->subject->getModificationDate());
+        self::assertSimilarDates(new \DateTime(), $this->subject->getUpdatedAt());
     }
 
     public function testGetPasswordHashInitiallyReturnsEmptyString(): void
