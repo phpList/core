@@ -54,7 +54,7 @@ class AdministratorRepositoryTest extends KernelTestCase
             $actual->getModificationDate()->getTimestamp(),
             1
         );
-        $this->assertSame('john@example.com', $actual->getEmailAddress());
+        $this->assertSame('john@example.com', $actual->getEmail());
         $this->assertSame(
             '1491a3c7e7b23b9a6393323babbb095dee0d7d81b2199617b487bd0fb5236f3c',
             $actual->getPasswordHash()

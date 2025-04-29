@@ -39,7 +39,7 @@ class AdministratorFixture extends Fixture
             $admin = new Administrator();
             $this->setSubjectId($admin, (int)$row['id']);
             $admin->setLoginName($row['loginname']);
-            $admin->setEmailAddress($row['email']);
+            $admin->setEmail($row['email']);
             $admin->setPasswordHash($row['password']);
             $admin->setDisabled((bool) $row['disabled']);
             $admin->setSuperUser((bool) $row['superuser']);

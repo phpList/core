@@ -38,7 +38,7 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     private string $namelc;
 
     #[ORM\Column(name: 'email')]
-    private string $emailAddress;
+    private string $email;
 
     #[ORM\Column(name: 'created', type: 'datetime')]
     protected ?DateTime $creationDate = null;
@@ -69,7 +69,7 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         $this->loginName = '';
         $this->passwordHash = '';
         $this->modificationDate = null;
-        $this->emailAddress = '';
+        $this->email = '';
     }
 
     public function getLoginName(): string
@@ -84,14 +84,14 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this;
     }
 
-    public function getEmailAddress(): string
+    public function getEmail(): string
     {
-        return $this->emailAddress;
+        return $this->email;
     }
 
-    public function setEmailAddress(string $emailAddress): self
+    public function setEmail(string $email): self
     {
-        $this->emailAddress = $emailAddress;
+        $this->email = $email;
 
         return $this;
     }

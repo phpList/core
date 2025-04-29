@@ -55,15 +55,15 @@ class AdministratorTest extends TestCase
 
     public function testGetEmailAddressInitiallyReturnsEmptyString(): void
     {
-        self::assertSame('', $this->subject->getEmailAddress());
+        self::assertSame('', $this->subject->getEmail());
     }
 
     public function testSetEmailAddressSetsEmailAddress(): void
     {
         $value = 'oliver@example.com';
-        $this->subject->setEmailAddress($value);
+        $this->subject->setEmail($value);
 
-        self::assertSame($value, $this->subject->getEmailAddress());
+        self::assertSame($value, $this->subject->getEmail());
     }
 
     public function testGetCreationDateInitiallyReturnsNull(): void
