@@ -45,7 +45,7 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     private string $email;
 
     #[ORM\Column(name: 'modifiedby', type: 'string', length: 66, nullable: true)]
-    protected ?string $modifiedBy;
+    private ?string $modifiedBy;
 
     #[ORM\Column(name: 'password')]
     private string $passwordHash;
@@ -186,5 +186,16 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         $this->updatedAt = new DateTime();
 
         return $this;
+    }
+
+    public function setModifiedBy(?string $modifiedBy): self
+    {
+        $this->modifiedBy = $modifiedBy;
+        return $this;
+    }
+
+    public function getModifiedBy(): ?string
+    {
+        return $this->modifiedBy;
     }
 }
