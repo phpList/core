@@ -6,8 +6,9 @@ namespace PhpList\Core\Domain\Model\Identity;
 
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
+use PhpList\Core\Domain\Repository\Identity\UserBlacklistDataRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UserBlacklistDataRepository::class)]
 #[ORM\Table(name: 'phplist_user_blacklist_data')]
 #[ORM\Index(name: 'emailidx', columns: ['email'])]
 #[ORM\Index(name: 'emailnameidx', columns: ['email', 'name'])]

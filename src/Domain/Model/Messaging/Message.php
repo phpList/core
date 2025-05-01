@@ -16,7 +16,6 @@ use PhpList\Core\Domain\Model\Messaging\Message\MessageMetadata;
 use PhpList\Core\Domain\Model\Messaging\Message\MessageOptions;
 use PhpList\Core\Domain\Model\Messaging\Message\MessageSchedule;
 use PhpList\Core\Domain\Repository\Messaging\MessageRepository;
-use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\Table(name: 'phplist_message')]
@@ -27,7 +26,6 @@ class Message implements DomainModel, Identity, ModificationDate
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column(name: 'modified', type: 'datetime')]

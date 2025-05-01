@@ -7,9 +7,9 @@ namespace PhpList\Core\Domain\Model\Analytics;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use Symfony\Component\Serializer\Attribute\Groups;
+use PhpList\Core\Domain\Repository\Analytics\UserStatsRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UserStatsRepository::class)]
 #[ORM\Table(name: 'phplist_userstats')]
 #[ORM\UniqueConstraint(name: 'entry', columns: ['unixdate', 'item', 'listid'])]
 #[ORM\Index(name: 'dateindex', columns: ['unixdate'])]
@@ -21,7 +21,6 @@ class UserStats implements DomainModel, Identity
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column(name: 'unixdate', type: 'integer', nullable: true)]

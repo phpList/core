@@ -9,7 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Repository\Configuration\EventLogRepository;
-use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: EventLogRepository::class)]
 #[ORM\Table(name: 'phplist_eventlog')]
@@ -20,7 +19,6 @@ class EventLog implements DomainModel, Identity
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]

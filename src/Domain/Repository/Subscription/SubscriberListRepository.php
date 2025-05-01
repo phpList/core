@@ -7,6 +7,7 @@ namespace PhpList\Core\Domain\Repository\Subscription;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Subscription\SubscriberList;
 use PhpList\Core\Domain\Repository\AbstractRepository;
+use PhpList\Core\Domain\Repository\CursorPaginationTrait;
 
 /**
  * Repository for SubscriberList models.
@@ -14,9 +15,12 @@ use PhpList\Core\Domain\Repository\AbstractRepository;
  * @method SubscriberList[] findByOwner(Administrator $owner)
  *
  * @author Oliver Klee <oliver@phplist.com>
+ * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 class SubscriberListRepository extends AbstractRepository
 {
+    use CursorPaginationTrait;
+
     public function findWithSubscription($id)
     {
         return $this->createQueryBuilder('sl')

@@ -6,9 +6,9 @@ namespace PhpList\Core\Domain\Model\Messaging;
 
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
-use PhpList\Core\Domain\Repository\Messaging\BounceRepository;
+use PhpList\Core\Domain\Repository\Messaging\BounceRegexBounceRepository;
 
-#[ORM\Entity(repositoryClass: BounceRepository::class)]
+#[ORM\Entity(repositoryClass: BounceRegexBounceRepository::class)]
 #[ORM\Table(name: 'phplist_bounceregex_bounce')]
 class BounceRegexBounce implements DomainModel
 {

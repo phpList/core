@@ -8,9 +8,9 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use Symfony\Component\Serializer\Attribute\Groups;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberHistoryRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: SubscriberHistoryRepository::class)]
 #[ORM\Table(name: 'phplist_user_user_history')]
 #[ORM\Index(name: 'dateidx', columns: ['date'])]
 #[ORM\Index(name: 'userididx', columns: ['userid'])]
@@ -19,7 +19,6 @@ class SubscriberHistory implements DomainModel, Identity
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Subscriber::class)]
@@ -30,7 +29,7 @@ class SubscriberHistory implements DomainModel, Identity
     private ?string $ip = null;
 
     #[ORM\Column(name: 'date', type: 'datetime', nullable: true)]
-    private ?DateTime $date = null;
+    private ?DateTime $createdAt = null;
 
     #[ORM\Column(name: 'summary', type: 'string', length: 255, nullable: true)]
     private ?string $summary = null;
@@ -40,6 +39,12 @@ class SubscriberHistory implements DomainModel, Identity
 
     #[ORM\Column(name: 'systeminfo', type: 'text', nullable: true)]
     private ?string $systemInfo = null;
+
+    public function __construct(Subscriber $subscriber)
+    {
+        $this->subscriber = $subscriber;
+        $this->createdAt = new DateTime();
+    }
 
     public function getId(): ?int
     {
@@ -56,9 +61,9 @@ class SubscriberHistory implements DomainModel, Identity
         return $this->ip;
     }
 
-    public function getDate(): ?DateTime
+    public function getCreatedAt(): ?DateTime
     {
-        return $this->date;
+        return $this->createdAt;
     }
 
     public function getSummary(): ?string
@@ -85,12 +90,6 @@ class SubscriberHistory implements DomainModel, Identity
     public function setIp(?string $ip): self
     {
         $this->ip = $ip;
-        return $this;
-    }
-
-    public function setDate(?DateTime $date): self
-    {
-        $this->date = $date;
         return $this;
     }
 

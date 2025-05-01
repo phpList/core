@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Repository\Identity;
+namespace PhpList\Core\Domain\Repository\Messaging;
 
 use PhpList\Core\Domain\Repository\AbstractRepository;
 use PhpList\Core\Domain\Repository\CursorPaginationTrait;
 
-class AdminPasswordRequestRepository extends AbstractRepository
+class MessageAttachmentRepository extends AbstractRepository
 {
     use CursorPaginationTrait;
 }

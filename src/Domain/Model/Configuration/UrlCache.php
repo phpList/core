@@ -8,9 +8,9 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use Symfony\Component\Serializer\Attribute\Groups;
+use PhpList\Core\Domain\Repository\Configuration\UrlCacheRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UrlCacheRepository::class)]
 #[ORM\Table(name: 'phplist_urlcache')]
 #[ORM\Index(name: 'urlindex', columns: ['url'])]
 class UrlCache implements DomainModel, Identity
@@ -18,7 +18,6 @@ class UrlCache implements DomainModel, Identity
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column(name: 'url', type: 'string', length: 2083)]

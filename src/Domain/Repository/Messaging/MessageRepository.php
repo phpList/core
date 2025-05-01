@@ -6,9 +6,12 @@ namespace PhpList\Core\Domain\Repository\Messaging;
 
 use PhpList\Core\Domain\Model\Messaging\Message;
 use PhpList\Core\Domain\Repository\AbstractRepository;
+use PhpList\Core\Domain\Repository\CursorPaginationTrait;
 
 class MessageRepository extends AbstractRepository
 {
+    use CursorPaginationTrait;
+
     /** @return Message[] */
     public function getByOwnerId(int $ownerId): array
     {

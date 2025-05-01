@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Repository\Identity;
 
 use PhpList\Core\Domain\Repository\AbstractRepository;
-use PhpList\Core\Domain\Repository\CursorPaginationTrait;
 
-class AdminLoginRepository extends AbstractRepository
+class UserBlacklistRepository extends AbstractRepository
 {
-    use CursorPaginationTrait;
 }

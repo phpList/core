@@ -6,9 +6,9 @@ namespace PhpList\Core\Domain\Model\Messaging;
 
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use Symfony\Component\Serializer\Attribute\Groups;
+use PhpList\Core\Domain\Repository\Messaging\MessageAttachmentRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: MessageAttachmentRepository::class)]
 #[ORM\Table(name: 'phplist_message_attachment')]
 #[ORM\Index(name: 'messageattidx', columns: ['messageid', 'attachmentid'])]
 #[ORM\Index(name: 'messageidx', columns: ['messageid'])]
@@ -17,7 +17,6 @@ class MessageAttachment implements Identity
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column(name: 'messageid', type: 'integer')]

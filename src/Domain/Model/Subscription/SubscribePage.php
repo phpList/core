@@ -7,16 +7,15 @@ namespace PhpList\Core\Domain\Model\Subscription;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use Symfony\Component\Serializer\Attribute\Groups;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberPageRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: SubscriberPageRepository::class)]
 #[ORM\Table(name: 'phplist_subscribepage')]
 class SubscribePage implements DomainModel, Identity
 {
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column(name: 'title', type: 'string', length: 255)]

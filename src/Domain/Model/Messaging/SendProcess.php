@@ -9,9 +9,9 @@ use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
-use Symfony\Component\Serializer\Attribute\Groups;
+use PhpList\Core\Domain\Repository\Messaging\SendProcessRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: SendProcessRepository::class)]
 #[ORM\Table(name: 'phplist_sendprocess')]
 #[ORM\HasLifecycleCallbacks]
 class SendProcess implements DomainModel, Identity, ModificationDate
@@ -19,7 +19,6 @@ class SendProcess implements DomainModel, Identity, ModificationDate
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column(name: 'modified', type: 'datetime')]

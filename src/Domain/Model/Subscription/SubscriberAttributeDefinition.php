@@ -7,9 +7,9 @@ namespace PhpList\Core\Domain\Model\Subscription;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use Symfony\Component\Serializer\Attribute\Groups;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeDefinitionRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: SubscriberAttributeDefinitionRepository::class)]
 #[ORM\Table(name: 'phplist_user_attribute')]
 #[ORM\Index(name: 'idnameindex', columns: ['id', 'name'])]
 #[ORM\Index(name: 'nameindex', columns: ['name'])]
@@ -18,7 +18,6 @@ class SubscriberAttributeDefinition implements DomainModel, Identity
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column(name: 'name', type: 'string', length: 255)]

@@ -8,7 +8,6 @@ use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Repository\Messaging\BounceRegexRepository;
-use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: BounceRegexRepository::class)]
 #[ORM\Table(name: 'phplist_bounceregex')]
@@ -18,7 +17,6 @@ class BounceRegex implements DomainModel, Identity
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 2083, nullable: true)]

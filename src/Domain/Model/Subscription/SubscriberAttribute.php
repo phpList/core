@@ -6,8 +6,9 @@ namespace PhpList\Core\Domain\Model\Subscription;
 
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: SubscriberAttributeRepository::class)]
 #[ORM\Table(name: 'phplist_user_user_attribute')]
 #[ORM\Index(name: 'attindex', columns: ['attributeid'])]
 #[ORM\Index(name: 'attuserid', columns: ['userid', 'attributeid'])]

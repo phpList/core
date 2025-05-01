@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Repository\Subscription;
 
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
 use PhpList\Core\Domain\Repository\AbstractRepository;
+use PhpList\Core\Domain\Repository\CursorPaginationTrait;
 
 /**
  * Repository for Subscriber models.
@@ -13,9 +14,12 @@ use PhpList\Core\Domain\Repository\AbstractRepository;
  * @method Subscriber|null findOneByEmail(string $email)
  *
  * @author Oliver Klee <oliver@phplist.com>
+ * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 class SubscriberRepository extends AbstractRepository
 {
+    use CursorPaginationTrait;
+
     public function findSubscribersBySubscribedList(int $listId): ?Subscriber
     {
         return $this->createQueryBuilder('s')

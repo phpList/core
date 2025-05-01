@@ -16,15 +16,10 @@ use PhpList\Core\Domain\Repository\AbstractRepository;
  * @method Subscription[] findBySubscriberList(SubscriberList $list)
  *
  * @author Oliver Klee <oliver@phplist.com>
+ * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 class SubscriptionRepository extends AbstractRepository
 {
-    /**
-     * @param SubscriberList $list
-     * @param Subscriber $subscriber
-     *
-     * @return Subscription|null
-     */
     public function findOneBySubscriberListAndSubscriber(SubscriberList $list, Subscriber $subscriber): ?Subscription
     {
         return $this->findOneBy(
@@ -35,12 +30,6 @@ class SubscriptionRepository extends AbstractRepository
         );
     }
 
-    /**
-     * @param int $listId
-     * @param string $email
-     *
-     * @return Subscription|null
-     */
     public function findOneBySubscriberEmailAndListId(int $listId, string $email): ?Subscription
     {
         return $this->createQueryBuilder('subscription')

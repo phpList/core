@@ -8,7 +8,6 @@ use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Repository\Analytics\LinkTrackForwardRepository;
-use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: LinkTrackForwardRepository::class)]
 #[ORM\Table(name: 'phplist_linktrack_forward')]
@@ -20,7 +19,6 @@ class LinkTrackForward implements DomainModel, Identity
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 2083, nullable: true)]

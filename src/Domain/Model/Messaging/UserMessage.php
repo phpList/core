@@ -8,8 +8,9 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
+use PhpList\Core\Domain\Repository\Messaging\UserMessageRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UserMessageRepository::class)]
 #[ORM\Table(name: 'phplist_usermessage')]
 #[ORM\Index(name: 'enteredindex', columns: ['entered'])]
 #[ORM\Index(name: 'messageidindex', columns: ['messageid'])]
@@ -29,13 +30,20 @@ class UserMessage implements DomainModel
     private Message $message;
 
     #[ORM\Column(name: 'entered', type: 'datetime')]
-    private DateTime $entered;
+    private DateTime $createdAt;
 
     #[ORM\Column(name: 'viewed', type: 'datetime', nullable: true)]
     private ?DateTime $viewed = null;
 
     #[ORM\Column(name: 'status', type: 'string', length: 255, nullable: true)]
     private ?string $status = null;
+
+    public function __construct(Subscriber $user, Message $message)
+    {
+        $this->user = $user;
+        $this->message = $message;
+        $this->createdAt = new DateTime();
+    }
 
     public function getUser(): Subscriber
     {
@@ -47,9 +55,9 @@ class UserMessage implements DomainModel
         return $this->message;
     }
 
-    public function getEntered(): DateTime
+    public function getCreatedAt(): DateTime
     {
-        return $this->entered;
+        return $this->createdAt;
     }
 
     public function getViewed(): ?DateTime
@@ -60,24 +68,6 @@ class UserMessage implements DomainModel
     public function getStatus(): ?string
     {
         return $this->status;
-    }
-
-    public function setUser(Subscriber $user): self
-    {
-        $this->user = $user;
-        return $this;
-    }
-
-    public function setMessage(Message $message): self
-    {
-        $this->message = $message;
-        return $this;
-    }
-
-    public function setEntered(DateTime $entered): self
-    {
-        $this->entered = $entered;
-        return $this;
     }
 
     public function setViewed(?DateTime $viewed): self

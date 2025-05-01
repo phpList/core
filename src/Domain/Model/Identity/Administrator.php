@@ -11,7 +11,6 @@ use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
 use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
-use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
  * This class represents an administrator who can log to the system, is allowed to administer
@@ -28,7 +27,6 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column(name: 'created', type: 'datetime')]

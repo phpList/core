@@ -8,9 +8,9 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use Symfony\Component\Serializer\Attribute\Groups;
+use PhpList\Core\Domain\Repository\Analytics\UserMessageViewRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UserMessageViewRepository::class)]
 #[ORM\Table(name: 'phplist_user_message_view')]
 #[ORM\Index(name: 'msgidx', columns: ['messageid'])]
 #[ORM\Index(name: 'useridx', columns: ['userid'])]
@@ -20,7 +20,6 @@ class UserMessageView implements DomainModel, Identity
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column(name: 'messageid', type: 'integer')]

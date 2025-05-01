@@ -6,8 +6,9 @@ namespace PhpList\Core\Domain\Model\Messaging;
 
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
+use PhpList\Core\Domain\Repository\Messaging\MessageDataRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: MessageDataRepository::class)]
 #[ORM\Table(name: 'phplist_messagedata')]
 class MessageData implements DomainModel
 {

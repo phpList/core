@@ -9,12 +9,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Repository\Subscription\SubscriberRepository;
-use Symfony\Component\Serializer\Annotation\SerializedName;
 use PhpList\Core\Domain\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
-use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
  * This class represents subscriber who can subscribe to multiple subscriber lists and can receive email messages from
@@ -34,54 +32,36 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
-    #[SerializedName('creation_date')]
-    #[Groups(['SubscriberListMembers'])]
     protected ?DateTime $createdAt = null;
 
     #[ORM\Column(name: 'modified', type: 'datetime')]
     private ?DateTime $updatedAt = null;
 
     #[ORM\Column(unique: true)]
-    #[SerializedName('email')]
-    #[Groups(['SubscriberListMembers'])]
     private string $email = '';
 
     #[ORM\Column(type: 'boolean')]
-    #[SerializedName('confirmed')]
-    #[Groups(['SubscriberListMembers'])]
     private bool $confirmed = false;
 
     #[ORM\Column(type: 'boolean')]
-    #[SerializedName('blacklisted')]
-    #[Groups(['SubscriberListMembers'])]
     private bool $blacklisted = false;
 
     #[ORM\Column(name: 'bouncecount', type: 'integer')]
-    #[SerializedName('bounce_count')]
-    #[Groups(['SubscriberListMembers'])]
     private int $bounceCount = 0;
 
     #[ORM\Column(name: 'uniqid', unique: true)]
-    #[SerializedName('unique_id')]
-    #[Groups(['SubscriberListMembers'])]
     private string $uniqueId = '';
 
     #[ORM\Column(name: 'htmlemail', type: 'boolean')]
-    #[SerializedName('html_email')]
-    #[Groups(['SubscriberListMembers'])]
     private bool $htmlEmail = false;
 
     #[ORM\Column(type: 'boolean')]
-    #[SerializedName('disabled')]
-    #[Groups(['SubscriberListMembers'])]
     private bool $disabled = false;
 
     #[ORM\Column(name: 'extradata', type: 'text')]
-    #[SerializedName('extra_data')]
     private ?string $extraData;
 
     #[ORM\OneToMany(

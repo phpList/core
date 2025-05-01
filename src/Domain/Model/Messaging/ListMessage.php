@@ -11,7 +11,6 @@ use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
 use PhpList\Core\Domain\Repository\Messaging\ListMessageRepository;
-use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ListMessageRepository::class)]
 #[ORM\Table(name: 'phplist_listmessage')]
@@ -23,7 +22,6 @@ class ListMessage implements DomainModel, Identity, ModificationDate
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column(name: 'messageid', type: 'integer')]

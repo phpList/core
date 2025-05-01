@@ -14,9 +14,6 @@ use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
 use PhpList\Core\Domain\Repository\Subscription\SubscriberListRepository;
-use Symfony\Component\Serializer\Annotation\Ignore;
-use Symfony\Component\Serializer\Annotation\SerializedName;
-use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\MaxDepth;
 
 /**
@@ -35,50 +32,34 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column]
-    #[SerializedName('name')]
-    #[Groups(['SubscriberList'])]
     private string $name = '';
 
     #[ORM\Column]
-    #[SerializedName('description')]
-    #[Groups(['SubscriberList'])]
     private string $description = '';
 
     #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
-    #[SerializedName('creation_date')]
-    #[Groups(['SubscriberList'])]
     protected ?DateTime $createdAt = null;
 
     #[ORM\Column(name: 'modified', type: 'datetime')]
     private ?DateTime $updatedAt = null;
 
     #[ORM\Column(name: 'listorder', type: 'integer', nullable: true)]
-    #[SerializedName('list_position')]
-    #[Groups(['SubscriberList'])]
     private ?int $listPosition;
 
     #[ORM\Column(name: 'prefix')]
-    #[SerializedName('subject_prefix')]
-    #[Groups(['SubscriberList'])]
     private ?string $subjectPrefix;
 
     #[ORM\Column(name: 'active', type: 'boolean')]
-    #[SerializedName('public')]
-    #[Groups(['SubscriberList'])]
     private bool $public;
 
     #[ORM\Column]
-    #[SerializedName('category')]
-    #[Groups(['SubscriberList'])]
     private string $category;
 
     #[ORM\ManyToOne(targetEntity: Administrator::class)]
     #[ORM\JoinColumn(name: 'owner')]
-    #[Ignore]
     private ?Administrator $owner = null;
 
     #[ORM\OneToMany(

@@ -10,14 +10,18 @@ use DateTimeZone;
 use Doctrine\Common\Collections\Criteria;
 use PhpList\Core\Domain\Model\Identity\AdministratorToken;
 use PhpList\Core\Domain\Repository\AbstractRepository;
+use PhpList\Core\Domain\Repository\CursorPaginationTrait;
 
 /**
  * Repository for AdministratorToken models.
  *
  * @author Oliver Klee <oliver@phplist.com>
+ * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 class AdministratorTokenRepository extends AbstractRepository
 {
+    use CursorPaginationTrait;
+
     /**
      * Finds one unexpired token by the given key. Returns null if there is no match.
      *

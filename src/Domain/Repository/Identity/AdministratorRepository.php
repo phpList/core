@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Repository\AbstractRepository;
+use PhpList\Core\Domain\Repository\CursorPaginationTrait;
 use PhpList\Core\Security\HashGenerator;
 
 /**
@@ -17,6 +18,8 @@ use PhpList\Core\Security\HashGenerator;
  */
 class AdministratorRepository extends AbstractRepository
 {
+    use CursorPaginationTrait;
+
     private HashGenerator $hashGenerator;
 
     public function __construct(

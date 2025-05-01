@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Repository\Messaging;
 
 use PhpList\Core\Domain\Repository\AbstractRepository;
-use PhpList\Core\Domain\Repository\CursorPaginationTrait;
 
-class TemplateImageRepository extends AbstractRepository
+class UserMessageRepository extends AbstractRepository
 {
-    use CursorPaginationTrait;
 }

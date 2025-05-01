@@ -9,7 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Repository\Analytics\LinkTrackUmlClickRepository;
-use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: LinkTrackUmlClickRepository::class)]
 #[ORM\Table(name: 'phplist_linktrack_uml_click')]
@@ -22,7 +21,6 @@ class LinkTrackUmlClick implements DomainModel, Identity
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
-    #[Groups(['SubscriberList', 'SubscriberListMembers'])]
     private ?int $id = null;
 
     #[ORM\Column(name: 'messageid', type: 'integer')]
