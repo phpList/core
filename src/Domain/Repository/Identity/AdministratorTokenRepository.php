@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\Criteria;
 use PhpList\Core\Domain\Model\Identity\AdministratorToken;
 use PhpList\Core\Domain\Repository\AbstractRepository;
 use PhpList\Core\Domain\Repository\CursorPaginationTrait;
+use PhpList\Core\Domain\Repository\Interfaces\PaginatableRepositoryInterface;
 
 /**
  * Repository for AdministratorToken models.
@@ -18,7 +19,7 @@ use PhpList\Core\Domain\Repository\CursorPaginationTrait;
  * @author Oliver Klee <oliver@phplist.com>
  * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
-class AdministratorTokenRepository extends AbstractRepository
+class AdministratorTokenRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
     use CursorPaginationTrait;
 

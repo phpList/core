@@ -7,8 +7,9 @@ namespace PhpList\Core\Domain\Repository\Messaging;
 use PhpList\Core\Domain\Model\Messaging\Message;
 use PhpList\Core\Domain\Repository\AbstractRepository;
 use PhpList\Core\Domain\Repository\CursorPaginationTrait;
+use PhpList\Core\Domain\Repository\Interfaces\PaginatableRepositoryInterface;
 
-class MessageRepository extends AbstractRepository
+class MessageRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
     use CursorPaginationTrait;
 

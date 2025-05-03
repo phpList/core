@@ -7,6 +7,7 @@ namespace PhpList\Core\Domain\Repository\Subscription;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
 use PhpList\Core\Domain\Repository\AbstractRepository;
 use PhpList\Core\Domain\Repository\CursorPaginationTrait;
+use PhpList\Core\Domain\Repository\Interfaces\PaginatableRepositoryInterface;
 
 /**
  * Repository for Subscriber models.
@@ -16,7 +17,7 @@ use PhpList\Core\Domain\Repository\CursorPaginationTrait;
  * @author Oliver Klee <oliver@phplist.com>
  * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
-class SubscriberRepository extends AbstractRepository
+class SubscriberRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
     use CursorPaginationTrait;
 

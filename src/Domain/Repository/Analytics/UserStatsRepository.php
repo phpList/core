@@ -6,8 +6,9 @@ namespace PhpList\Core\Domain\Repository\Analytics;
 
 use PhpList\Core\Domain\Repository\AbstractRepository;
 use PhpList\Core\Domain\Repository\CursorPaginationTrait;
+use PhpList\Core\Domain\Repository\Interfaces\PaginatableRepositoryInterface;
 
-class UserStatsRepository extends AbstractRepository
+class UserStatsRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
     use CursorPaginationTrait;
 }

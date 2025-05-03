@@ -6,8 +6,9 @@ namespace PhpList\Core\Domain\Repository\Configuration;
 
 use PhpList\Core\Domain\Repository\AbstractRepository;
 use PhpList\Core\Domain\Repository\CursorPaginationTrait;
+use PhpList\Core\Domain\Repository\Interfaces\PaginatableRepositoryInterface;
 
-class UrlCacheRepository extends AbstractRepository
+class UrlCacheRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
     use CursorPaginationTrait;
 }
