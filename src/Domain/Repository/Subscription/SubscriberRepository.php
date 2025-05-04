@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Repository\Subscription;
 
+use InvalidArgumentException;
+use PhpList\Core\Domain\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Filter\SubscriberFilter;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
 use PhpList\Core\Domain\Repository\AbstractRepository;
-use PhpList\Core\Domain\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Repository\Interfaces\PaginatableRepositoryInterface;
 
 /**
@@ -19,8 +21,6 @@ use PhpList\Core\Domain\Repository\Interfaces\PaginatableRepositoryInterface;
  */
 class SubscriberRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
-    use CursorPaginationTrait;
-
     public function findSubscribersBySubscribedList(int $listId): ?Subscriber
     {
         return $this->createQueryBuilder('s')
@@ -40,6 +40,33 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->innerJoin('subscription.subscriberList', 'list')
             ->where('list.id = :listId')
             ->setParameter('listId', $listId)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return Subscriber[]
+     * @throws InvalidArgumentException
+     */
+    public function getFilteredAfterId(int $lastId, int $limit, ?FilterRequestInterface $filter = null): array
+    {
+        if (!$filter instanceof SubscriberFilter) {
+            throw new InvalidArgumentException('Expected SubscriberFilterRequest.');
+        }
+
+        $queryBuilder = $this->createQueryBuilder('s')
+            ->innerJoin('s.subscriptions', 'subscription')
+            ->innerJoin('subscription.subscriberList', 'list');
+
+        if ($filter->getListId() !== null) {
+            $queryBuilder->where('list.id = :listId')
+                ->setParameter('listId', $filter->getListId());
+        }
+
+        return $queryBuilder->andWhere('s.id > :lastId')
+            ->setParameter('lastId', $lastId)
+            ->orderBy('s.id', 'ASC')
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
     }

@@ -39,7 +39,7 @@ final class CursorPaginationTraitTest extends TestCase
             ->method('getResult')
             ->willReturn($expected);
 
-        $result = $this->repo->getAfterId($this->qb, 10, 2);
+        $result = $this->repo->getAfterId(10, 2);
 
         self::assertSame($expected, $result);
     }

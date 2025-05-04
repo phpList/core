@@ -18,6 +18,11 @@ class DummyRepository
     {
     }
 
+    public function getAlias(): string
+    {
+        return 'dummy';
+    }
+
     /** Doctrine normally injects the QB through $this->createQueryBuilder(). */
     protected function createQueryBuilder(string $alias): QueryBuilder
     {
