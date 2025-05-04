@@ -24,7 +24,7 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
     /** @return Message[] */
     public function getFilteredAfterId(int $lastId, int $limit, ?FilterRequestInterface $filter = null): array
     {
-        $queryBuilder = $this->createQueryBuilder($this->getAlias());
+        $queryBuilder = $this->createQueryBuilder('m');
 
         if ($filter instanceof MessageFilter && $filter->getOwner() !== null) {
             $queryBuilder->andWhere('IDENTITY(m.owner) = :ownerId')

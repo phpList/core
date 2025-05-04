@@ -19,8 +19,8 @@ class TemplateImage implements DomainModel, Identity
     #[ORM\GeneratedValue]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Template::class)]
-    #[ORM\JoinColumn(name: 'template', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\ManyToOne(targetEntity: Template::class, inversedBy: 'images')]
+    #[ORM\JoinColumn(name: 'template', referencedColumnName: 'id', nullable: false)]
     private Template $template;
 
     #[ORM\Column(name: 'mimetype', type: 'string', length: 100, nullable: true)]

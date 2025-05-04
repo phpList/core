@@ -21,7 +21,7 @@ class SubscriberAttribute implements DomainModel
     private SubscriberAttributeDefinition $attributeDefinition;
 
     #[ORM\Id]
-    #[ORM\ManyToOne(targetEntity: Subscriber::class)]
+    #[ORM\ManyToOne(targetEntity: Subscriber::class, inversedBy: 'attributes')]
     #[ORM\JoinColumn(name: 'userid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private Subscriber $subscriber;
 
