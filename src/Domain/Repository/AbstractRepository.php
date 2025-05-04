@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use LogicException;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 
 /**
@@ -48,14 +47,5 @@ abstract class AbstractRepository extends EntityRepository
     {
         $this->getEntityManager()->remove($model);
         $this->getEntityManager()->flush();
-    }
-
-    public function getAlias(): string
-    {
-        if (!$this->alias) {
-            throw new LogicException('Alias not set in repository: ' . static::class);
-        }
-
-        return $this->alias;
     }
 }
