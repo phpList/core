@@ -8,9 +8,9 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
+use PhpList\Core\Domain\Repository\Messaging\UserMessageBounceRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UserMessageBounceRepository::class)]
 #[ORM\Table(name: 'phplist_user_message_bounce')]
 #[ORM\Index(name: 'bounceidx', columns: ['bounce'])]
 #[ORM\Index(name: 'msgidx', columns: ['message'])]
@@ -19,7 +19,10 @@ use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 #[ORM\HasLifecycleCallbacks]
 class UserMessageBounce implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'user', type: 'integer')]
     private int $user;
@@ -31,11 +34,16 @@ class UserMessageBounce implements DomainModel, Identity
     private int $bounce;
 
     #[ORM\Column(name: 'time', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
-    private DateTime $time;
+    private DateTime $createdAt;
 
     public function __construct()
     {
-        $this->time = new DateTime();
+        $this->createdAt = new DateTime();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     public function getUser(): int
@@ -53,9 +61,9 @@ class UserMessageBounce implements DomainModel, Identity
         return $this->bounce;
     }
 
-    public function getTime(): DateTime
+    public function getCreatedAt(): DateTime
     {
-        return $this->time;
+        return $this->createdAt;
     }
 
     public function setUser(int $user): self

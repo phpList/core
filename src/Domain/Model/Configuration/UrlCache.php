@@ -8,14 +8,17 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
+use PhpList\Core\Domain\Repository\Configuration\UrlCacheRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UrlCacheRepository::class)]
 #[ORM\Table(name: 'phplist_urlcache')]
 #[ORM\Index(name: 'urlindex', columns: ['url'])]
 class UrlCache implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'url', type: 'string', length: 2083)]
     private string $url;
@@ -28,6 +31,11 @@ class UrlCache implements DomainModel, Identity
 
     #[ORM\Column(name: 'content', type: 'blob', nullable: true)]
     private ?string $content = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getUrl(): string
     {

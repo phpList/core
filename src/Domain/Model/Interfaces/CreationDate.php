@@ -13,20 +13,12 @@ use Doctrine\ORM\Mapping\PrePersist;
  * The CreationDateTrait is the default implementation.
  *
  * @author Oliver Klee <oliver@phplist.com>
+ * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 interface CreationDate
 {
     /**
      * @return DateTime|null
      */
-    public function getCreationDate(): ?DateTime;
-
-    /**
-     * Updates the creation date to now.
-     *
-     * @PrePersist
-     *
-     * @return void
-     */
-    public function updateCreationDate(): void;
+    public function getCreatedAt(): ?DateTime;
 }

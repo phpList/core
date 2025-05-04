@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Model\Identity;
 
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Repository\Identity\AdminLoginRepository;
 
 #[ORM\Entity(repositoryClass: AdminLoginRepository::class)]
@@ -15,10 +16,14 @@ use PhpList\Core\Domain\Repository\Identity\AdminLoginRepository;
 #[ORM\HasLifecycleCallbacks]
 class AdminLogin implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
-    #[ORM\Column(name: 'adminid', type: 'integer', options: ['unsigned' => true])]
-    private int $adminId;
+    #[ORM\ManyToOne(targetEntity: Administrator::class)]
+    #[ORM\JoinColumn(name: 'adminid', referencedColumnName: 'id', nullable: false)]
+    private Administrator $administrator;
 
     #[ORM\Column(name: 'moment', type: 'bigint')]
     private int $moment;
@@ -26,43 +31,53 @@ class AdminLogin implements DomainModel, Identity
     #[ORM\Column(name: 'remote_ip4', type: 'string', length: 32)]
     private string $remoteIp4;
 
-    #[ORM\Column(name: 'remote_ip6', type: 'string', length:50)]
+    #[ORM\Column(name: 'remote_ip6', type: 'string', length: 50)]
     private string $remoteIp6;
 
-    #[ORM\Column(name: 'sessionid', type: 'string', length:50)]
+    #[ORM\Column(name: 'sessionid', type: 'string', length: 50)]
     private string $sessionId;
 
     #[ORM\Column(name: 'active', type: 'boolean')]
     private bool $active = false;
 
     public function __construct(
-        int $adminId,
-        int $moment,
+        Administrator $administrator,
+        DateTimeInterface $createdAt,
         string $remoteIp4,
         string $remoteIp6,
         string $sessionId,
     ) {
-        $this->adminId = $adminId;
-        $this->moment = $moment;
+        $this->administrator = $administrator;
+        $this->moment = $createdAt->getTimestamp();
         $this->remoteIp4 = $remoteIp4;
         $this->remoteIp6 = $remoteIp6;
         $this->sessionId = $sessionId;
     }
 
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
+
     public function setActive(bool $active): self
     {
         $this->active = $active;
-
         return $this;
     }
-    public function getAdminId(): int
+
+    public function getAdministrator(): Administrator
     {
-        return $this->adminId;
+        return $this->administrator;
     }
 
-    public function getMoment(): int
+    public function getCreatedAt(): DateTimeInterface
     {
-        return $this->moment;
+        return (new DateTimeImmutable())->setTimestamp($this->moment);
     }
 
     public function getRemoteIp4(): string
@@ -78,10 +93,5 @@ class AdminLogin implements DomainModel, Identity
     public function getSessionId(): string
     {
         return $this->sessionId;
-    }
-
-    public function isActive(): bool
-    {
-        return $this->active;
     }
 }

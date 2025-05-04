@@ -7,7 +7,6 @@ namespace PhpList\Core\Domain\Model\Analytics;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Repository\Analytics\LinkTrackForwardRepository;
 
 #[ORM\Entity(repositoryClass: LinkTrackForwardRepository::class)]
@@ -17,7 +16,10 @@ use PhpList\Core\Domain\Repository\Analytics\LinkTrackForwardRepository;
 #[ORM\Index(name: 'uuididx', columns: ['uuid'])]
 class LinkTrackForward implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 2083, nullable: true)]
     private ?string $url = null;
@@ -30,6 +32,11 @@ class LinkTrackForward implements DomainModel, Identity
 
     #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => 0])]
     private bool $personalise = false;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getUrl(): ?string
     {

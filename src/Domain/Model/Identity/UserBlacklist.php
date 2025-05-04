@@ -7,8 +7,9 @@ namespace PhpList\Core\Domain\Model\Identity;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
+use PhpList\Core\Domain\Repository\Identity\UserBlacklistRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UserBlacklistRepository::class)]
 #[ORM\Table(name: 'phplist_user_blacklist')]
 #[ORM\Index(name: 'emailidx', columns: ['email'])]
 class UserBlacklist implements DomainModel

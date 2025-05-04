@@ -23,16 +23,17 @@ class AdminPasswordRequest implements DomainModel, Identity
     #[ORM\Column(name: 'date', type: 'datetime', nullable: true)]
     private ?DateTime $date;
 
-    #[ORM\Column(name: 'admin', type: 'integer', nullable: true, options: ['unsigned' => true])]
-    private ?int $adminId;
+    #[ORM\ManyToOne(targetEntity: Administrator::class)]
+    #[ORM\JoinColumn(name: 'admin', referencedColumnName: 'id', nullable: true)]
+    private Administrator $administrator;
 
     #[ORM\Column(name: 'key_value', type: 'string', length: 32)]
     private string $keyValue;
 
-    public function __construct(?DateTime $date, ?int $adminId, string $keyValue)
+    public function __construct(?DateTime $date, Administrator $admin, string $keyValue)
     {
         $this->date = $date;
-        $this->adminId = $adminId;
+        $this->administrator = $admin;
         $this->keyValue = $keyValue;
     }
 
@@ -46,9 +47,9 @@ class AdminPasswordRequest implements DomainModel, Identity
         return $this->date;
     }
 
-    public function getAdminId(): int
+    public function getAdmin(): Administrator
     {
-        return $this->adminId;
+        return $this->administrator;
     }
 
     public function getKeyValue(): string

@@ -11,10 +11,10 @@ services:
         arguments:
             - PhpList\Core\Domain\Model\Identity\AdministratorToken
 
-    PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository:
+    PhpList\Core\Domain\Repository\Subscription\SubscriberListRepository:
         parent: PhpList\Core\Domain\Repository
         arguments:
-            - PhpList\Core\Domain\Model\Messaging\SubscriberList
+            - PhpList\Core\Domain\Model\Subscription\SubscriberList
 
     PhpList\Core\Domain\Repository\Subscription\SubscriberRepository:
         parent: PhpList\Core\Domain\Repository
@@ -25,3 +25,18 @@ services:
         parent: PhpList\Core\Domain\Repository
         arguments:
             - PhpList\Core\Domain\Model\Subscription\Subscription
+
+    PhpList\Core\Domain\Repository\Messaging\MessageRepository:
+        parent: PhpList\Core\Domain\Repository
+        arguments:
+            - PhpList\Core\Domain\Model\Messaging\Message
+
+    PhpList\Core\Domain\Repository\Messaging\TemplateRepository:
+        parent: PhpList\Core\Domain\Repository
+        arguments:
+            - PhpList\Core\Domain\Model\Messaging\Template
+
+    PhpList\Core\Domain\Repository\Messaging\TemplateImageRepository:
+        parent: PhpList\Core\Domain\Repository
+        arguments:
+            - PhpList\Core\Domain\Model\Messaging\TemplateImage

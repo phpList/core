@@ -2,20 +2,23 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Model\Identity;
+namespace PhpList\Core\Domain\Model\Subscription;
 
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeDefinitionRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: SubscriberAttributeDefinitionRepository::class)]
 #[ORM\Table(name: 'phplist_user_attribute')]
 #[ORM\Index(name: 'idnameindex', columns: ['id', 'name'])]
 #[ORM\Index(name: 'nameindex', columns: ['name'])]
-class UserAttribute implements DomainModel, Identity
+class SubscriberAttributeDefinition implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'name', type: 'string', length: 255)]
     private string $name;
@@ -34,6 +37,11 @@ class UserAttribute implements DomainModel, Identity
 
     #[ORM\Column(name: 'tablename', type: 'string', length: 255, nullable: true)]
     private ?string $tableName = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getName(): string
     {

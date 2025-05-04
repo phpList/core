@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Integration\Domain\Repository\Fixtures;
+namespace PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Subscription;
 
 use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
-use PhpList\Core\Domain\Model\Messaging\SubscriberList;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
+use PhpList\Core\Domain\Model\Subscription\SubscriberList;
 use PhpList\Core\Domain\Model\Subscription\Subscription;
 use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
 use RuntimeException;
@@ -51,8 +51,8 @@ class SubscriptionFixture extends Fixture
 
             $manager->persist($subscription);
 
-            $this->setSubjectProperty($subscription, 'creationDate', new DateTime($row['entered']));
-            $this->setSubjectProperty($subscription, 'modificationDate', new DateTime($row['modified']));
+            $this->setSubjectProperty($subscription, 'createdAt', new DateTime($row['entered']));
+            $this->setSubjectProperty($subscription, 'updatedAt', new DateTime($row['modified']));
         } while (true);
 
         fclose($handle);

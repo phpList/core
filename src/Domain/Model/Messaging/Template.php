@@ -9,23 +9,26 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
+use PhpList\Core\Domain\Repository\Messaging\TemplateRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: TemplateRepository::class)]
 #[ORM\Table(name: 'phplist_template')]
 #[ORM\UniqueConstraint(name: 'title', columns: ['title'])]
 class Template implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'title', type: 'string', length: 255, unique: true)]
     private string $title;
 
     #[ORM\Column(name: 'template', type: 'blob', nullable: true)]
-    private ?string $template = null;
+    private mixed $content;
 
     #[ORM\Column(name: 'template_text', type: 'blob', nullable: true)]
-    private ?string $templateText = null;
+    private mixed $text;
 
     #[ORM\Column(name: 'listorder', type: 'integer', nullable: true)]
     private ?int $listOrder = null;
@@ -38,9 +41,15 @@ class Template implements DomainModel, Identity
     )]
     private Collection $images;
 
-    public function __construct()
+    public function __construct(string $title)
     {
+        $this->title = $title;
         $this->images = new ArrayCollection();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     public function getTitle(): string
@@ -48,14 +57,24 @@ class Template implements DomainModel, Identity
         return $this->title;
     }
 
-    public function getTemplate(): ?string
+    public function getContent(): ?string
     {
-        return $this->template;
+        if (is_resource($this->content)) {
+            rewind($this->content);
+            return stream_get_contents($this->content);
+        }
+
+        return $this->content;
     }
 
-    public function getTemplateText(): ?string
+    public function getText(): ?string
     {
-        return $this->templateText;
+        if (is_resource($this->text)) {
+            rewind($this->text);
+            return stream_get_contents($this->text);
+        }
+
+        return $this->text;
     }
 
     public function getListOrder(): ?int
@@ -74,15 +93,16 @@ class Template implements DomainModel, Identity
         return $this;
     }
 
-    public function setTemplate(?string $template): self
+    public function setContent(?string $content): self
     {
-        $this->template = $template;
+        $this->content = $content !== null ? fopen('data://text/plain,' . $content, 'r') : null;
         return $this;
     }
 
-    public function setTemplateText(?string $templateText): self
+
+    public function setText(?string $text): self
     {
-        $this->templateText = $templateText;
+        $this->text = $text !== null ? fopen('data://text/plain,' . $text, 'r') : null;
         return $this;
     }
 

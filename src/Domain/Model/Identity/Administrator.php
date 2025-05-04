@@ -10,9 +10,6 @@ use PhpList\Core\Domain\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
-use PhpList\Core\Domain\Model\Traits\CreationDateTrait;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
-use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
 
 /**
@@ -20,15 +17,23 @@ use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
  * selected lists (as the owner), send campaigns to these lists and edit subscribers.
  *
  * @author Oliver Klee <oliver@phplist.com>
+ * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 #[ORM\Entity(repositoryClass: AdministratorRepository::class)]
 #[ORM\Table(name: 'phplist_admin')]
 #[ORM\HasLifecycleCallbacks]
 class Administrator implements DomainModel, Identity, CreationDate, ModificationDate
 {
-    use IdentityTrait;
-    use CreationDateTrait;
-    use ModificationDateTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
+
+    #[ORM\Column(name: 'created', type: 'datetime')]
+    protected DateTime $createdAt;
+
+    #[ORM\Column(name: 'modified', type: 'datetime')]
+    private ?DateTime $updatedAt;
 
     #[ORM\Column(name: 'loginname')]
     private string $loginName;
@@ -37,13 +42,10 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     private string $namelc;
 
     #[ORM\Column(name: 'email')]
-    private string $emailAddress;
-
-    #[ORM\Column(name: 'created', type: 'datetime')]
-    protected ?DateTime $creationDate = null;
+    private string $email;
 
     #[ORM\Column(name: 'modifiedby', type: 'string', length: 66, nullable: true)]
-    protected ?string $modifiedBy;
+    private ?string $modifiedBy;
 
     #[ORM\Column(name: 'password')]
     private string $passwordHash;
@@ -67,8 +69,9 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         $this->passwordChangeDate = null;
         $this->loginName = '';
         $this->passwordHash = '';
-        $this->modificationDate = null;
-        $this->emailAddress = '';
+        $this->createdAt = new DateTime();
+        $this->updatedAt = null;
+        $this->email = '';
     }
 
     public function getLoginName(): string
@@ -76,19 +79,23 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->loginName;
     }
 
-    public function setLoginName(string $loginName): void
+    public function setLoginName(string $loginName): self
     {
         $this->loginName = $loginName;
+
+        return $this;
     }
 
-    public function getEmailAddress(): string
+    public function getEmail(): string
     {
-        return $this->emailAddress;
+        return $this->email;
     }
 
-    public function setEmailAddress(string $emailAddress): void
+    public function setEmail(string $email): self
     {
-        $this->emailAddress = $emailAddress;
+        $this->email = $email;
+
+        return $this;
     }
 
     public function getPasswordHash(): string
@@ -96,10 +103,12 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->passwordHash;
     }
 
-    public function setPasswordHash(string $passwordHash): void
+    public function setPasswordHash(string $passwordHash): self
     {
         $this->passwordHash = $passwordHash;
-        $this->setPasswordChangeDate(new DateTime());
+        $this->passwordChangeDate = new DateTime();
+
+        return $this;
     }
 
     public function getPasswordChangeDate(): ?DateTime
@@ -107,19 +116,16 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->passwordChangeDate;
     }
 
-    private function setPasswordChangeDate(DateTime $changeDate): void
-    {
-        $this->passwordChangeDate = $changeDate;
-    }
-
     public function isDisabled(): bool
     {
         return $this->disabled;
     }
 
-    public function setDisabled(bool $disabled): void
+    public function setDisabled(bool $disabled): self
     {
         $this->disabled = $disabled;
+
+        return $this;
     }
 
     public function isSuperUser(): bool
@@ -127,14 +133,18 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->superUser;
     }
 
-    public function setSuperUser(bool $superUser): void
+    public function setSuperUser(bool $superUser): self
     {
         $this->superUser = $superUser;
+
+        return $this;
     }
 
-    public function setNameLc(string $nameLc): void
+    public function setNameLc(string $nameLc): self
     {
         $this->namelc = $nameLc;
+
+        return $this;
     }
 
     public function getNameLc(): string
@@ -142,13 +152,50 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->namelc;
     }
 
-    public function setPrivileges(string $privileges): void
+    public function setPrivileges(string $privileges): self
     {
         $this->privileges = $privileges;
+
+        return $this;
     }
 
     public function getPrivileges(): string
     {
         return $this->privileges;
+    }
+
+    public function getCreatedAt(): ?DateTime
+    {
+        return $this->createdAt;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getUpdatedAt(): ?DateTime
+    {
+        return $this->updatedAt;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateUpdatedAt(): DomainModel
+    {
+        $this->updatedAt = new DateTime();
+
+        return $this;
+    }
+
+    public function setModifiedBy(?string $modifiedBy): self
+    {
+        $this->modifiedBy = $modifiedBy;
+        return $this;
+    }
+
+    public function getModifiedBy(): ?string
+    {
+        return $this->modifiedBy;
     }
 }

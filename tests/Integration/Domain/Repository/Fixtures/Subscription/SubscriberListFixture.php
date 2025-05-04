@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Integration\Domain\Repository\Fixtures;
+namespace PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Subscription;
 
 use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use PhpList\Core\Domain\Model\Identity\Administrator;
-use PhpList\Core\Domain\Model\Messaging\SubscriberList;
+use PhpList\Core\Domain\Model\Subscription\SubscriberList;
 use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
 use RuntimeException;
 
@@ -50,8 +50,6 @@ class SubscriberListFixture extends Fixture
             $this->setSubjectId($subscriberList, (int)$row['id']);
             $subscriberList->setName($row['name']);
             $subscriberList->setDescription($row['description']);
-            $this->setSubjectProperty($subscriberList, 'creationDate', new DateTime($row['entered']));
-            $this->setSubjectProperty($subscriberList, 'modificationDate', new DateTime($row['modified']));
             $subscriberList->setListPosition((int)$row['listorder']);
             $subscriberList->setSubjectPrefix($row['prefix']);
             $subscriberList->setPublic((bool) $row['active']);
@@ -59,6 +57,9 @@ class SubscriberListFixture extends Fixture
             $subscriberList->setOwner($admin);
 
             $manager->persist($subscriberList);
+
+            $this->setSubjectProperty($subscriberList, 'createdAt', new DateTime($row['entered']));
+            $this->setSubjectProperty($subscriberList, 'updatedAt', new DateTime($row['modified']));
         } while (true);
 
         fclose($handle);

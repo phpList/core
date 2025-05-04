@@ -13,8 +13,5 @@ namespace PhpList\Core\Domain\Model\Interfaces;
  */
 interface Identity
 {
-    /**
-     * @return int
-     */
-    public function getId(): int;
+    public function getId(): ?int;
 }

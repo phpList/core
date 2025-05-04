@@ -7,7 +7,6 @@ namespace PhpList\Core\Domain\Model\Identity;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Repository\Identity\AdminAttributeRepository;
 
 #[ORM\Entity(repositoryClass: AdminAttributeRepository::class)]
@@ -15,7 +14,10 @@ use PhpList\Core\Domain\Repository\Identity\AdminAttributeRepository;
 #[ORM\HasLifecycleCallbacks]
 class AdminAttribute implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'name', type: 'string', length: 255)]
     private string $name;
@@ -51,7 +53,7 @@ class AdminAttribute implements DomainModel, Identity
         $this->tableName = $tableName;
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -86,33 +88,45 @@ class AdminAttribute implements DomainModel, Identity
         return $this->tableName;
     }
 
-    public function setName(string $name): void
+    public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
     }
 
-    public function setType(?string $type): void
+    public function setType(?string $type): self
     {
         $this->type = $type;
+
+        return $this;
     }
 
-    public function setListOrder(?int $listOrder): void
+    public function setListOrder(?int $listOrder): self
     {
         $this->listOrder = $listOrder;
+
+        return $this;
     }
 
-    public function setDefaultValue(?string $defaultValue): void
+    public function setDefaultValue(?string $defaultValue): self
     {
         $this->defaultValue = $defaultValue;
+
+        return $this;
     }
 
-    public function setRequired(?bool $required): void
+    public function setRequired(?bool $required): self
     {
         $this->required = $required;
+
+        return $this;
     }
 
-    public function setTableName(?string $tableName): void
+    public function setTableName(?string $tableName): self
     {
         $this->tableName = $tableName;
+
+        return $this;
     }
 }

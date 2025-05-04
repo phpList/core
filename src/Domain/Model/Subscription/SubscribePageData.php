@@ -6,8 +6,9 @@ namespace PhpList\Core\Domain\Model\Subscription;
 
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberPageDataRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: SubscriberPageDataRepository::class)]
 #[ORM\Table(name: 'phplist_subscribepage_data')]
 class SubscribePageData implements DomainModel
 {

@@ -6,9 +6,9 @@ namespace PhpList\Core\Domain\Model\Messaging;
 
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
-use PhpList\Core\Domain\Repository\Messaging\BounceRepository;
+use PhpList\Core\Domain\Repository\Messaging\BounceRegexBounceRepository;
 
-#[ORM\Entity(repositoryClass: BounceRepository::class)]
+#[ORM\Entity(repositoryClass: BounceRegexBounceRepository::class)]
 #[ORM\Table(name: 'phplist_bounceregex_bounce')]
 class BounceRegexBounce implements DomainModel
 {
@@ -31,9 +31,10 @@ class BounceRegexBounce implements DomainModel
         return $this->regex;
     }
 
-    public function setRegex(int $regex): void
+    public function setRegex(int $regex): self
     {
         $this->regex = $regex;
+        return $this;
     }
 
     public function getBounce(): int
@@ -41,8 +42,9 @@ class BounceRegexBounce implements DomainModel
         return $this->bounce;
     }
 
-    public function setBounce(int $bounce): void
+    public function setBounce(int $bounce): self
     {
         $this->bounce = $bounce;
+        return $this;
     }
 }

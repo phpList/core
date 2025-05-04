@@ -8,16 +8,19 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
+use PhpList\Core\Domain\Repository\Analytics\UserMessageViewRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UserMessageViewRepository::class)]
 #[ORM\Table(name: 'phplist_user_message_view')]
 #[ORM\Index(name: 'msgidx', columns: ['messageid'])]
 #[ORM\Index(name: 'useridx', columns: ['userid'])]
 #[ORM\Index(name: 'usermsgidx', columns: ['userid', 'messageid'])]
 class UserMessageView implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'messageid', type: 'integer')]
     private int $messageId;
@@ -33,6 +36,11 @@ class UserMessageView implements DomainModel, Identity
 
     #[ORM\Column(name: 'data', type: 'text', nullable: true)]
     private ?string $data = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getMessageId(): int
     {

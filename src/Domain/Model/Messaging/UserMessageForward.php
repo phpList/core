@@ -8,16 +8,19 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
+use PhpList\Core\Domain\Repository\Messaging\UserMessageForwardRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UserMessageForwardRepository::class)]
 #[ORM\Table(name: 'phplist_user_message_forward')]
 #[ORM\Index(name: 'messageidx', columns: ['message'])]
 #[ORM\Index(name: 'useridx', columns: ['user'])]
 #[ORM\Index(name: 'usermessageidx', columns: ['user', 'message'])]
 class UserMessageForward implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'user', type: 'integer')]
     private int $user;
@@ -32,7 +35,17 @@ class UserMessageForward implements DomainModel, Identity
     private ?string $status = null;
 
     #[ORM\Column(name: 'time', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
-    private DateTime $time;
+    private DateTime $createdAt;
+
+    public function __construct()
+    {
+        $this->createdAt = new DateTime();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getUser(): int
     {
@@ -54,9 +67,9 @@ class UserMessageForward implements DomainModel, Identity
         return $this->status;
     }
 
-    public function getTime(): DateTime
+    public function getCreatedAt(): DateTime
     {
-        return $this->time;
+        return $this->createdAt;
     }
 
     public function setUser(int $user): self
@@ -80,12 +93,6 @@ class UserMessageForward implements DomainModel, Identity
     public function setStatus(?string $status): self
     {
         $this->status = $status;
-        return $this;
-    }
-
-    public function setTime(DateTime $time): self
-    {
-        $this->time = $time;
         return $this;
     }
 }

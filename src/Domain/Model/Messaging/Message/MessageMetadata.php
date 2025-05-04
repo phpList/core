@@ -6,18 +6,19 @@ namespace PhpList\Core\Domain\Model\Messaging\Message;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use PhpList\Core\Domain\Model\Interfaces\EmbeddableInterface;
 
 #[ORM\Embeddable]
-class MessageMetadata
+class MessageMetadata implements EmbeddableInterface
 {
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $status = null;
 
-    #[ORM\Column(type: 'integer', options: ['unsigned' => true, 'default' => 0])]
-    private int $processed;
+    #[ORM\Column(type: 'boolean', options: ['unsigned' => true, 'default' => false])]
+    private bool $processed;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
-    private int $viewed;
+    private int $viewed = 0;
 
     #[ORM\Column(name: 'bouncecount', type: 'integer', options: ['default' => 0])]
     private int $bounceCount;
@@ -28,20 +29,23 @@ class MessageMetadata
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?DateTime $sent;
 
+    #[ORM\Column(name: 'sendstart', type: 'datetime', nullable: true)]
+    private ?DateTime $sendStart;
+
     public function __construct(
         ?string $status = null,
-        int $processed = 0,
-        int $viewed = 0,
         int $bounceCount = 0,
         ?DateTime $entered = null,
         ?DateTime $sent = null,
+        ?DateTime $sendStart = null,
     ) {
         $this->status = $status;
-        $this->processed = $processed;
-        $this->viewed = $viewed;
+        $this->processed = false;
+        $this->viewed = 0;
         $this->bounceCount = $bounceCount;
         $this->entered = $entered ?? new DateTime();
         $this->sent = $sent;
+        $this->sendStart = $sendStart;
     }
 
     public function getStatus(): ?string
@@ -49,18 +53,30 @@ class MessageMetadata
         return $this->status;
     }
 
-    public function getProcessed(): int
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+        return $this;
+    }
+
+    public function isProcessed(): bool
     {
         return $this->processed;
     }
 
-    public function setProcessed(int $processed): self
+    public function setProcessed(bool $processed): self
     {
         $this->processed = $processed;
         return $this;
     }
 
-    public function getViewed(): int
+    public function setViews(int $viewed): self
+    {
+        $this->viewed = $viewed;
+        return $this;
+    }
+
+    public function getViews(): int
     {
         return $this->viewed;
     }
@@ -78,5 +94,34 @@ class MessageMetadata
     public function getSent(): ?DateTime
     {
         return $this->sent;
+    }
+
+    public function setBounceCount(int $bounceCount): self
+    {
+        $this->bounceCount = $bounceCount;
+        return $this;
+    }
+
+    public function setEntered(?DateTime $entered): self
+    {
+        $this->entered = $entered;
+        return $this;
+    }
+
+    public function setSent(?DateTime $sent): self
+    {
+        $this->sent = $sent;
+        return $this;
+    }
+
+    public function getSendStart(): ?DateTime
+    {
+        return $this->sendStart;
+    }
+
+    public function setSendStart(?DateTime $sendStart): self
+    {
+        $this->sendStart = $sendStart;
+        return $this;
     }
 }

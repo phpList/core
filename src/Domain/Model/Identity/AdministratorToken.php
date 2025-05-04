@@ -9,29 +9,30 @@ use DateTimeZone;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Persistence\Proxy;
 use PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository;
-use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use PhpList\Core\Domain\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 
 /**
  * This class represents an API authentication token for an administrator.
  * @author Oliver Klee <oliver@phplist.com>
+ * @author Tateik Grigoryan <tatevik@phplist.com>
  */
 #[ORM\Entity(repositoryClass: AdministratorTokenRepository::class)]
 #[ORM\Table(name: 'phplist_admintoken')]
 #[ORM\HasLifecycleCallbacks]
 class AdministratorToken implements DomainModel, Identity, CreationDate
 {
-    use IdentityTrait;
-
     public const DEFAULT_EXPIRY = '+1 hour';
 
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
+
     #[ORM\Column(name: 'entered', type: 'integer')]
-    #[Ignore]
-    protected int $creationDate = 0;
+    protected int $createdAt = 0;
 
     #[ORM\Column(name: 'expires', type: 'datetime')]
     #[SerializedName('expiry_date')]
@@ -43,7 +44,6 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
 
     #[ORM\ManyToOne(targetEntity: Administrator::class)]
     #[ORM\JoinColumn(name: 'adminid')]
-    #[Ignore]
     private ?Administrator $administrator = null;
 
     public function __construct()
@@ -51,27 +51,28 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
         $this->setExpiry(new DateTime());
     }
 
-    public function getCreationDate(): ?DateTime
+    public function getId(): ?int
     {
-        if ($this->creationDate === 0) {
+        return $this->id;
+    }
+
+    public function getCreatedAt(): ?DateTime
+    {
+        if ($this->createdAt === 0) {
             return null;
         }
 
         $date = new DateTime();
-        $date->setTimestamp($this->creationDate);
+        $date->setTimestamp($this->createdAt);
         $date->setTimezone(new DateTimeZone('UTC'));
         return $date;
     }
 
-    private function setCreationDate(DateTime $creationDate): void
-    {
-        $this->creationDate = $creationDate->getTimestamp();
-    }
-
     #[ORM\PrePersist]
-    public function updateCreationDate(): void
+    public function updateCreatedAt(): DomainModel
     {
-        $this->setCreationDate(new DateTime());
+        $this->createdAt = (new DateTime())->getTimestamp();
+        return $this;
     }
 
     public function getExpiry(): DateTime
@@ -84,9 +85,11 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
         $this->expiry = $expiry;
     }
 
-    public function generateExpiry(): void
+    public function generateExpiry(): self
     {
         $this->setExpiry(new DateTime(static::DEFAULT_EXPIRY));
+
+        return $this;
     }
 
     public function getKey(): string
@@ -94,15 +97,19 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
         return $this->key;
     }
 
-    public function setKey(string $key): void
+    public function setKey(string $key): self
     {
         $this->key = $key;
+
+        return $this;
     }
 
-    public function generateKey(): void
+    public function generateKey(): self
     {
         $key = md5(random_bytes(256));
         $this->setKey($key);
+
+        return $this;
     }
 
     public function getAdministrator(): Administrator|Proxy|null
@@ -110,8 +117,9 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
         return $this->administrator;
     }
 
-    public function setAdministrator(Administrator $administrator): void
+    public function setAdministrator(Administrator $administrator): self
     {
         $this->administrator = $administrator;
+        return $this;
     }
 }

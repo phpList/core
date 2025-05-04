@@ -7,7 +7,8 @@ namespace PhpList\Core\Tests\Unit\Domain\Repository\Messaging;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository;
+use PhpList\Core\Domain\Model\Subscription\SubscriberList;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberListRepository;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -24,7 +25,7 @@ class SubscriberListRepositoryTest extends TestCase
         $entityManager = $this->createMock(EntityManager::class);
 
         $classMetadata = $this->createMock(ClassMetadata::class);
-        $classMetadata->name = 'PhpList\Core\Domain\Model\Messaging\SubscriberList';
+        $classMetadata->name = SubscriberList::class;
 
         $this->subject = new SubscriberListRepository($entityManager, $classMetadata);
     }

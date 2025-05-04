@@ -5,35 +5,46 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Model\Messaging\Message;
 
 use Doctrine\ORM\Mapping as ORM;
+use InvalidArgumentException;
+use PhpList\Core\Domain\Model\Interfaces\EmbeddableInterface;
 
 #[ORM\Embeddable]
-class MessageFormat
+class MessageFormat implements EmbeddableInterface
 {
-    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[ORM\Column(name: 'htmlformatted', type: 'boolean', options: ['default' => false])]
     private bool $htmlFormatted = false;
 
     #[ORM\Column(name: 'sendformat', type: 'string', length: 20, nullable: true)]
     private ?string $sendFormat = null;
 
     #[ORM\Column(name: 'astext', type: 'integer', options: ['default' => 0])]
-    private int $asText = 0;
+    private bool $asText = false;
 
     #[ORM\Column(name: 'ashtml', type: 'integer', options: ['default' => 0])]
-    private int $asHtml = 0;
-
-    #[ORM\Column(name: 'astextandhtml', type: 'integer', options: ['default' => 0])]
-    private int $asTextAndHtml = 0;
+    private bool $asHtml = false;
 
     #[ORM\Column(name: 'aspdf', type: 'integer', options: ['default' => 0])]
-    private int $asPdf = 0;
+    private bool $asPdf = false;
+
+    #[ORM\Column(name: 'astextandhtml', type: 'integer', options: ['default' => 0])]
+    private bool $asTextAndHtml = false;
 
     #[ORM\Column(name: 'astextandpdf', type: 'integer', options: ['default' => 0])]
-    private int $asTextAndPdf = 0;
+    private bool $asTextAndPdf = false;
 
-    public function __construct(bool $htmlFormatted, ?string $sendFormat)
-    {
+    public const FORMAT_TEXT = 'text';
+    public const FORMAT_HTML = 'html';
+    public const FORMAT_PDF = 'pdf';
+
+    public function __construct(
+        bool $htmlFormatted,
+        ?string $sendFormat,
+        array $formatOptions = []
+    ) {
         $this->htmlFormatted = $htmlFormatted;
         $this->sendFormat = $sendFormat;
+
+        $this->setFormatOptions($formatOptions);
     }
 
     public function isHtmlFormatted(): bool
@@ -41,39 +52,71 @@ class MessageFormat
         return $this->htmlFormatted;
     }
 
+    public function setHtmlFormatted(bool $htmlFormatted): self
+    {
+        $this->htmlFormatted = $htmlFormatted;
+        return $this;
+    }
+
     public function getSendFormat(): ?string
     {
         return $this->sendFormat;
     }
 
-    public function getAsText(): int
+    public function setSendFormat(?string $sendFormat): self
+    {
+        $this->sendFormat = $sendFormat;
+        return $this;
+    }
+
+    public function isAsText(): bool
     {
         return $this->asText;
     }
 
-    public function getAsHtml(): int
+    public function isAsHtml(): bool
     {
         return $this->asHtml;
     }
 
-    public function getAsTextAndHtml(): int
+    public function isAsTextAndHtml(): bool
     {
         return $this->asTextAndHtml;
     }
 
-    public function getAsPdf(): int
+    public function isAsPdf(): bool
     {
         return $this->asPdf;
     }
 
-    public function getAsTextAndPdf(): int
+    public function isAsTextAndPdf(): bool
     {
         return $this->asTextAndPdf;
     }
 
-    public function setSendFormat(?string $sendFormat): self
+    public function getFormatOptions(): array
     {
-        $this->sendFormat = $sendFormat;
+        return array_values(array_filter([
+            $this->asText ? self::FORMAT_TEXT : null,
+            $this->asHtml ? self::FORMAT_HTML : null,
+            $this->asPdf ? self::FORMAT_PDF : null,
+        ]));
+    }
+
+    public function setFormatOptions(array $formatOptions): self
+    {
+        foreach ($formatOptions as $option) {
+            match ($option) {
+                self::FORMAT_TEXT => $this->asText = true,
+                self::FORMAT_HTML => $this->asHtml = true,
+                self::FORMAT_PDF => $this->asPdf = true,
+                default => throw new InvalidArgumentException('Invalid format option: ' . $option)
+            };
+        }
+
+        $this->asTextAndHtml = $this->asText && $this->asHtml;
+        $this->asTextAndPdf = $this->asText && $this->asPdf;
+
         return $this;
     }
 }

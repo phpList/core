@@ -9,21 +9,16 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Repository\Subscription\SubscriberRepository;
-use Symfony\Component\Serializer\Annotation\Ignore;
-use Symfony\Component\Serializer\Annotation\SerializedName;
 use PhpList\Core\Domain\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
-use PhpList\Core\Domain\Model\Traits\CreationDateTrait;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
-use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
-use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
  * This class represents subscriber who can subscribe to multiple subscriber lists and can receive email messages from
  * campaigns for those subscriber lists.
  * @author Oliver Klee <oliver@phplist.com>
+ * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 #[ORM\Entity(repositoryClass: SubscriberRepository::class)]
 #[ORM\Table(name: 'phplist_user_user')]
@@ -34,66 +29,90 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\HasLifecycleCallbacks]
 class Subscriber implements DomainModel, Identity, CreationDate, ModificationDate
 {
-    use IdentityTrait;
-    use CreationDateTrait;
-    use ModificationDateTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
-    #[SerializedName('creation_date')]
-    #[Groups(['SubscriberListMembers'])]
-    protected ?DateTime $creationDate = null;
+    protected ?DateTime $createdAt = null;
+
+    #[ORM\Column(name: 'modified', type: 'datetime')]
+    private ?DateTime $updatedAt = null;
 
     #[ORM\Column(unique: true)]
-    #[SerializedName('email')]
-    #[Groups(['SubscriberListMembers'])]
     private string $email = '';
 
     #[ORM\Column(type: 'boolean')]
-    #[SerializedName('confirmed')]
-    #[Groups(['SubscriberListMembers'])]
     private bool $confirmed = false;
 
     #[ORM\Column(type: 'boolean')]
-    #[SerializedName('blacklisted')]
-    #[Groups(['SubscriberListMembers'])]
     private bool $blacklisted = false;
 
     #[ORM\Column(name: 'bouncecount', type: 'integer')]
-    #[SerializedName('bounce_count')]
-    #[Groups(['SubscriberListMembers'])]
     private int $bounceCount = 0;
 
     #[ORM\Column(name: 'uniqid', unique: true)]
-    #[SerializedName('unique_id')]
-    #[Groups(['SubscriberListMembers'])]
     private string $uniqueId = '';
 
     #[ORM\Column(name: 'htmlemail', type: 'boolean')]
-    #[SerializedName('html_email')]
-    #[Groups(['SubscriberListMembers'])]
     private bool $htmlEmail = false;
 
     #[ORM\Column(type: 'boolean')]
-    #[SerializedName('disabled')]
-    #[Groups(['SubscriberListMembers'])]
     private bool $disabled = false;
 
     #[ORM\Column(name: 'extradata', type: 'text')]
-    #[SerializedName('extra_data')]
     private ?string $extraData;
 
     #[ORM\OneToMany(
-        targetEntity: 'PhpList\Core\Domain\Model\Subscription\Subscription',
+        targetEntity: Subscription::class,
         mappedBy: 'subscriber',
         cascade: ['remove'],
         orphanRemoval: true,
     )]
     private Collection $subscriptions;
 
+    /**
+     * @var Collection<int, SubscriberAttribute>
+     */
+    #[ORM\OneToMany(
+        targetEntity: SubscriberAttribute::class,
+        mappedBy: 'subscriber',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    private Collection $attributes;
+
     public function __construct()
     {
         $this->subscriptions = new ArrayCollection();
+        $this->attributes = new ArrayCollection();
         $this->extraData = '';
+        $this->createdAt = new DateTime();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getCreatedAt(): ?DateTime
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): ?DateTime
+    {
+        return $this->updatedAt;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateUpdatedAt(): DomainModel
+    {
+        $this->updatedAt = new DateTime();
+
+        return $this;
     }
 
     public function isConfirmed(): bool
@@ -101,9 +120,11 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->confirmed;
     }
 
-    public function setConfirmed(bool $confirmed): void
+    public function setConfirmed(bool $confirmed): self
     {
         $this->confirmed = $confirmed;
+
+        return $this;
     }
 
     public function isBlacklisted(): bool
@@ -111,9 +132,11 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->blacklisted;
     }
 
-    public function setBlacklisted(bool $blacklisted): void
+    public function setBlacklisted(bool $blacklisted): self
     {
         $this->blacklisted = $blacklisted;
+
+        return $this;
     }
 
     public function getBounceCount(): int
@@ -121,14 +144,18 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->bounceCount;
     }
 
-    public function setBounceCount(int $bounceCount): void
+    public function setBounceCount(int $bounceCount): self
     {
         $this->bounceCount = $bounceCount;
+
+        return $this;
     }
 
-    public function addToBounceCount(int $delta): void
+    public function addToBounceCount(int $delta): self
     {
         $this->setBounceCount($this->getBounceCount() + $delta);
+
+        return $this;
     }
 
     public function getUniqueId(): string
@@ -136,15 +163,18 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->uniqueId;
     }
 
-    public function setUniqueId(string $uniqueId): void
+    public function setUniqueId(string $uniqueId): self
     {
         $this->uniqueId = $uniqueId;
+
+        return $this;
     }
 
     #[ORM\PrePersist]
-    public function generateUniqueId(): void
+    public function generateUniqueId(): self
     {
         $this->setUniqueId(bin2hex(random_bytes(16)));
+        return $this;
     }
 
     public function getEmail(): string
@@ -152,9 +182,11 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->email;
     }
 
-    public function setEmail(string $email): void
+    public function setEmail(string $email): self
     {
         $this->email = $email;
+
+        return $this;
     }
 
     public function hasHtmlEmail(): bool
@@ -162,9 +194,11 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->htmlEmail;
     }
 
-    public function setHtmlEmail(bool $htmlEmail): void
+    public function setHtmlEmail(bool $htmlEmail): self
     {
         $this->htmlEmail = $htmlEmail;
+
+        return $this;
     }
 
     public function isDisabled(): bool
@@ -172,9 +206,11 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->disabled;
     }
 
-    public function setDisabled(bool $disabled): void
+    public function setDisabled(bool $disabled): self
     {
         $this->disabled = $disabled;
+
+        return $this;
     }
 
     public function getExtraData(): string
@@ -182,9 +218,11 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->extraData;
     }
 
-    public function setExtraData(string $extraData): void
+    public function setExtraData(string $extraData): self
     {
         $this->extraData = $extraData;
+
+        return $this;
     }
 
     /**
@@ -222,5 +260,25 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         }
 
         return $result;
+    }
+
+    public function getAttributes(): Collection
+    {
+        return $this->attributes;
+    }
+
+    public function addAttribute(SubscriberAttribute $attribute): self
+    {
+        if (!$this->attributes->contains($attribute)) {
+            $this->attributes[] = $attribute;
+        }
+
+        return $this;
+    }
+
+    public function removeAttribute(SubscriberAttribute $attribute): self
+    {
+        $this->attributes->removeElement($attribute);
+        return $this;
     }
 }

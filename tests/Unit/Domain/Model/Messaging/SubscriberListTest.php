@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Model\Messaging;
 
 use DateTime;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use PhpList\Core\Domain\Model\Identity\Administrator;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
-use PhpList\Core\Domain\Model\Messaging\SubscriberList;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
+use PhpList\Core\Domain\Model\Subscription\SubscriberList;
 use PhpList\Core\Domain\Model\Subscription\Subscription;
 use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
 use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
@@ -46,28 +45,23 @@ class SubscriberListTest extends TestCase
         self::assertSame($id, $this->subscriberList->getId());
     }
 
-    public function testGetCreationDateInitiallyReturnsNull(): void
-    {
-        self::assertNull($this->subscriberList->getCreationDate());
-    }
-
     public function testUpdateCreationDateSetsCreationDateToNow(): void
     {
-        $this->subscriberList->updateCreationDate();
+        $this->subscriberList->setCategory('test');
 
-        self::assertSimilarDates(new DateTime(), $this->subscriberList->getCreationDate());
+        self::assertSimilarDates(new DateTime(), $this->subscriberList->getCreatedAt());
     }
 
-    public function testGetModificationDateInitiallyReturnsNull(): void
+    public function testgetUpdatedAtInitiallyReturnsNull(): void
     {
-        self::assertNull($this->subscriberList->getModificationDate());
+        self::assertNull($this->subscriberList->getUpdatedAt());
     }
 
     public function testUpdateModificationDateSetsModificationDateToNow(): void
     {
-        $this->subscriberList->updateModificationDate();
+        $this->subscriberList->updateUpdatedAt();
 
-        self::assertSimilarDates(new DateTime(), $this->subscriberList->getModificationDate());
+        self::assertSimilarDates(new DateTime(), $this->subscriberList->getUpdatedAt());
     }
 
     public function testGetNameInitiallyReturnsEmptyString(): void

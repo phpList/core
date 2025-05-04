@@ -9,16 +9,20 @@ use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
-use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
+use PhpList\Core\Domain\Repository\Messaging\SendProcessRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: SendProcessRepository::class)]
 #[ORM\Table(name: 'phplist_sendprocess')]
 #[ORM\HasLifecycleCallbacks]
 class SendProcess implements DomainModel, Identity, ModificationDate
 {
-    use IdentityTrait;
-    use ModificationDateTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
+
+    #[ORM\Column(name: 'modified', type: 'datetime')]
+    private ?DateTime $updatedAt = null;
 
     #[ORM\Column(name: 'started', type: 'datetime', nullable: true)]
     private ?DateTime $started = null;
@@ -31,6 +35,25 @@ class SendProcess implements DomainModel, Identity, ModificationDate
 
     #[ORM\Column(name: 'page', type: 'string', length: 100, nullable: true)]
     private ?string $page = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getUpdatedAt(): ?DateTime
+    {
+        return $this->updatedAt;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateUpdatedAt(): DomainModel
+    {
+        $this->updatedAt = new DateTime();
+
+        return $this;
+    }
 
     public function getStartedDate(): ?DateTime
     {

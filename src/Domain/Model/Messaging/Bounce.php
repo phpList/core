@@ -8,7 +8,6 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Repository\Messaging\BounceRepository;
 
 #[ORM\Entity(repositoryClass: BounceRepository::class)]
@@ -17,7 +16,10 @@ use PhpList\Core\Domain\Repository\Messaging\BounceRepository;
 #[ORM\Index(name: 'statusidx', columns: ['status'])]
 class Bounce implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?DateTime $date;
@@ -48,7 +50,7 @@ class Bounce implements DomainModel, Identity
         $this->comment = $comment;
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -58,9 +60,10 @@ class Bounce implements DomainModel, Identity
         return $this->date;
     }
 
-    public function setDate(?DateTime $date): void
+    public function setDate(?DateTime $date): self
     {
         $this->date = $date;
+        return $this;
     }
 
     public function getHeader(): ?string
@@ -68,9 +71,10 @@ class Bounce implements DomainModel, Identity
         return $this->header;
     }
 
-    public function setHeader(?string $header): void
+    public function setHeader(?string $header): self
     {
         $this->header = $header;
+        return $this;
     }
 
     public function getData(): ?string
@@ -78,9 +82,10 @@ class Bounce implements DomainModel, Identity
         return $this->data;
     }
 
-    public function setData(?string $data): void
+    public function setData(?string $data): self
     {
         $this->data = $data;
+        return $this;
     }
 
     public function getStatus(): ?string
@@ -88,9 +93,10 @@ class Bounce implements DomainModel, Identity
         return $this->status;
     }
 
-    public function setStatus(?string $status): void
+    public function setStatus(?string $status): self
     {
         $this->status = $status;
+        return $this;
     }
 
     public function getComment(): ?string
@@ -98,8 +104,9 @@ class Bounce implements DomainModel, Identity
         return $this->comment;
     }
 
-    public function setComment(?string $comment): void
+    public function setComment(?string $comment): self
     {
         $this->comment = $comment;
+        return $this;
     }
 }

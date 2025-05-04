@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Model\Messaging\Message;
 
 use Doctrine\ORM\Mapping as ORM;
-use DateTime;
+use PhpList\Core\Domain\Model\Interfaces\EmbeddableInterface;
 
 #[ORM\Embeddable]
-class MessageOptions
+class MessageOptions implements EmbeddableInterface
 {
     #[ORM\Column(name: 'fromfield', type: 'string', length: 255, nullable: false, options: ['default' => ''])]
     private string $fromField;
@@ -19,44 +19,24 @@ class MessageOptions
     #[ORM\Column(name: 'replyto', type: 'string', length: 255, nullable: false, options: ['default' => ''])]
     private string $replyTo;
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?DateTime $embargo;
-
     #[ORM\Column(name: 'userselection', type: 'text', nullable: true)]
     private ?string $userSelection;
 
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $template;
-
-    #[ORM\Column(name: 'sendstart', type: 'datetime', nullable: true)]
-    private ?DateTime $sendStart;
-
     #[ORM\Column(name: 'rsstemplate', type: 'string', length: 100, nullable: true)]
     private ?string $rssTemplate;
-
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $owner;
 
     public function __construct(
         string $fromField = '',
         string $toField = '',
         string $replyTo = '',
-        ?DateTime $embargo = null,
         ?string $userSelection = null,
-        ?int $template = null,
-        ?DateTime $sendStart = null,
-        ?string $rssTemplate = null,
-        ?int $owner = null
+        ?string $rssTemplate = null
     ) {
         $this->fromField = $fromField;
         $this->toField = $toField;
         $this->replyTo = $replyTo;
-        $this->embargo = $embargo;
         $this->userSelection = $userSelection;
-        $this->template = $template;
-        $this->sendStart = $sendStart;
         $this->rssTemplate = $rssTemplate;
-        $this->owner = $owner;
     }
 
     public function getFromField(): string
@@ -69,14 +49,9 @@ class MessageOptions
         return $this->toField;
     }
 
-    public function getReplyToO(): string
+    public function getReplyTo(): string
     {
         return $this->replyTo;
-    }
-
-    public function getEmbargo(): ?DateTime
-    {
-        return $this->embargo;
     }
 
     public function getUserSelection(): ?string
@@ -84,23 +59,38 @@ class MessageOptions
         return $this->userSelection;
     }
 
-    public function getTemplate(): ?int
-    {
-        return $this->template;
-    }
-
-    public function getSendStart(): ?DateTime
-    {
-        return $this->sendStart;
-    }
-
     public function getRssTemplate(): ?string
     {
         return $this->rssTemplate;
     }
 
-    public function getOwner(): ?int
+    public function setFromField(string $fromField): self
     {
-        return $this->owner;
+        $this->fromField = $fromField;
+        return $this;
+    }
+
+    public function setToField(string $toField): self
+    {
+        $this->toField = $toField;
+        return $this;
+    }
+
+    public function setReplyTo(string $replyTo): self
+    {
+        $this->replyTo = $replyTo;
+        return $this;
+    }
+
+    public function setUserSelection(?string $userSelection): self
+    {
+        $this->userSelection = $userSelection;
+        return $this;
+    }
+
+    public function setRssTemplate(?string $rssTemplate): self
+    {
+        $this->rssTemplate = $rssTemplate;
+        return $this;
     }
 }

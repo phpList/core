@@ -8,7 +8,6 @@ use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
 use PhpList\Core\Domain\Repository\Analytics\LinkTrackUmlClickRepository;
 
 #[ORM\Entity(repositoryClass: LinkTrackUmlClickRepository::class)]
@@ -19,7 +18,10 @@ use PhpList\Core\Domain\Repository\Analytics\LinkTrackUmlClickRepository;
 #[ORM\Index(name: 'uidindex', columns: ['userid'])]
 class LinkTrackUmlClick implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'messageid', type: 'integer')]
     private int $messageId;
@@ -44,6 +46,11 @@ class LinkTrackUmlClick implements DomainModel, Identity
 
     #[ORM\Column(name: 'textclicked', type: 'integer', nullable: true, options: ['default' => 0])]
     private ?int $textClicked = 0;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getMessageId(): int
     {

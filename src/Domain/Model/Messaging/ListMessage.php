@@ -10,8 +10,6 @@ use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Model\Interfaces\ModificationDate;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
-use PhpList\Core\Domain\Model\Traits\ModificationDateTrait;
 use PhpList\Core\Domain\Repository\Messaging\ListMessageRepository;
 
 #[ORM\Entity(repositoryClass: ListMessageRepository::class)]
@@ -21,8 +19,10 @@ use PhpList\Core\Domain\Repository\Messaging\ListMessageRepository;
 #[ORM\HasLifecycleCallbacks]
 class ListMessage implements DomainModel, Identity, ModificationDate
 {
-    use IdentityTrait;
-    use ModificationDateTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'messageid', type: 'integer')]
     private int $messageId;
@@ -30,8 +30,16 @@ class ListMessage implements DomainModel, Identity, ModificationDate
     #[ORM\Column(name: 'listid', type: 'integer')]
     private int $listId;
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
     private ?DateTimeInterface $entered = null;
+
+    #[ORM\Column(name: 'modified', type: 'datetime')]
+    private ?DateTime $updatedAt = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getMessageId(): int
     {
@@ -63,6 +71,20 @@ class ListMessage implements DomainModel, Identity, ModificationDate
     public function setEntered(?DateTimeInterface $entered): self
     {
         $this->entered = $entered;
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?DateTime
+    {
+        return $this->updatedAt;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateUpdatedAt(): DomainModel
+    {
+        $this->updatedAt = new DateTime();
+
         return $this;
     }
 }

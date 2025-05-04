@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Integration\Domain\Repository\Fixtures;
+namespace PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Subscription;
 
 use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -51,8 +51,8 @@ class SubscriberFixture extends Fixture
             $manager->persist($subscriber);
             // avoid pre-persist
             $subscriber->setUniqueId($row['uniqueid']);
-            $this->setSubjectProperty($subscriber, 'creationDate', new DateTime($row['entered']));
-            $this->setSubjectProperty($subscriber, 'modificationDate', new DateTime($row['modified']));
+            $this->setSubjectProperty($subscriber, 'createdAt', new DateTime($row['entered']));
+            $this->setSubjectProperty($subscriber, 'updatedAt', new DateTime($row['modified']));
         } while (true);
 
         fclose($handle);

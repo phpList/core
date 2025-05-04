@@ -7,13 +7,16 @@ namespace PhpList\Core\Domain\Model\Subscription;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberPageRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: SubscriberPageRepository::class)]
 #[ORM\Table(name: 'phplist_subscribepage')]
 class SubscribePage implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
     #[ORM\Column(name: 'title', type: 'string', length: 255)]
     private string $title;
@@ -23,6 +26,11 @@ class SubscribePage implements DomainModel, Identity
 
     #[ORM\Column(name: 'owner', type: 'integer', nullable: true)]
     private ?int $owner = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getTitle(): string
     {

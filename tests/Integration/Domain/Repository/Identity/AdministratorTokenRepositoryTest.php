@@ -12,10 +12,8 @@ use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
 use PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository;
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
-use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\AdministratorFixture;
-use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\AdministratorTokenWithAdministratorFixture;
-use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\DetachedAdministratorTokenFixture;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Identity\AdministratorFixture;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Identity\DetachedAdministratorTokenFixture;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
@@ -58,7 +56,7 @@ class AdministratorTokenRepositoryTest extends WebTestCase
 
         self::assertInstanceOf(AdministratorToken::class, $model);
         self::assertSame($id, $model->getId());
-        self::assertEqualsWithDelta($creationDate, $model->getCreationDate(), 1);
+        self::assertEqualsWithDelta($creationDate, $model->getCreatedAt(), 1);
         self::assertEquals($expiry, $model->getExpiry());
         self::assertSame($key, $model->getKey());
     }
@@ -70,12 +68,12 @@ class AdministratorTokenRepositoryTest extends WebTestCase
         $id = 1;
         /** @var AdministratorToken $model */
         $model = $this->repository->find($id);
-        $creationDate = $model->getCreationDate();
+        $creationDate = $model->getCreatedAt();
 
         $model->setKey('asdfasd');
         $this->entityManager->flush();
 
-        self::assertEquals($creationDate, $model->getCreationDate());
+        self::assertEquals($creationDate, $model->getCreatedAt());
     }
 
     public function testCreationDateOfNewModelIsSetToNowOnPersist()
@@ -85,7 +83,7 @@ class AdministratorTokenRepositoryTest extends WebTestCase
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
+        self::assertSimilarDates($expectedCreationDate, $model->getCreatedAt());
     }
 
     public function testFindOneUnexpiredByKeyFindsUnexpiredTokenWithMatchingKey()

@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Integration\Domain\Repository\Fixtures;
+namespace PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Identity;
 
 use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
-use PhpList\Core\Domain\Model\Identity\Administrator;
+use PhpList\Core\Domain\Model\Identity\AdministratorToken;
 use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
 use RuntimeException;
 
-class AdministratorFixture extends Fixture
+class DetachedAdministratorTokenFixture extends Fixture
 {
     use ModelTestTrait;
     public function load(ObjectManager $manager): void
     {
-        $csvFile = __DIR__ . '/Administrator.csv';
+        $csvFile = __DIR__ . '/DetachedAdministratorTokens.csv';
 
         if (!file_exists($csvFile)) {
             throw new RuntimeException(sprintf('Fixture file "%s" not found.', $csvFile));
@@ -36,17 +36,14 @@ class AdministratorFixture extends Fixture
             }
             $row = array_combine($headers, $data);
 
-            $admin = new Administrator();
-            $this->setSubjectId($admin, (int)$row['id']);
-            $admin->setLoginName($row['loginname']);
-            $admin->setEmailAddress($row['email']);
-            $admin->setPasswordHash($row['password']);
-            $admin->setDisabled((bool) $row['disabled']);
-            $admin->setSuperUser((bool) $row['superuser']);
+            $adminToken = new AdministratorToken();
+            $this->setSubjectId($adminToken, (int)$row['id']);
+            $adminToken->setKey($row['value']);
 
-            $manager->persist($admin);
-            $this->setSubjectProperty($admin, 'creationDate', new DateTime($row['created']));
-            $this->setSubjectProperty($admin, 'passwordChangeDate', new DateTime($row['passwordchanged']));
+            $manager->persist($adminToken);
+
+            $this->setSubjectProperty($adminToken, 'expiry', new DateTime($row['expires']));
+            $this->setSubjectProperty($adminToken, 'createdAt', $row['entered']);
         } while (true);
 
         fclose($handle);

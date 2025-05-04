@@ -19,15 +19,15 @@ interface ModificationDate
     /**
      * @return DateTime|null
      */
-    public function getModificationDate(): ?DateTime;
+    public function getUpdatedAt(): ?DateTime;
 
     /**
-     * Updates the modification date to now.
+     * Updates the modification date to be now.
      *
      * @Mapping\PrePersist
      * @Mapping\PreUpdate
      *
-     * @return void
+     * @return DomainModel
      */
-    public function updateModificationDate(): void;
+    public function updateUpdatedAt(): DomainModel;
 }

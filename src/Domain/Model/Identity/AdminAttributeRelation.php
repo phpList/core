@@ -46,8 +46,10 @@ class AdminAttributeRelation implements DomainModel
         return $this->value;
     }
 
-    public function setValue(?string $value): void
+    public function setValue(?string $value): self
     {
         $this->value = $value;
+
+        return $this;
     }
 }

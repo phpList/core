@@ -6,20 +6,19 @@ namespace PhpList\Core\Tests\Integration\Domain\Repository\Messaging;
 
 use DateTime;
 use Doctrine\ORM\Tools\SchemaTool;
-use PhpList\Core\Domain\Model\Identity\Administrator;
-use PhpList\Core\Domain\Model\Messaging\SubscriberList;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
+use PhpList\Core\Domain\Model\Subscription\SubscriberList;
 use PhpList\Core\Domain\Model\Subscription\Subscription;
 use PhpList\Core\Domain\Repository\Identity\AdministratorRepository;
-use PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberListRepository;
 use PhpList\Core\Domain\Repository\Subscription\SubscriberRepository;
 use PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository;
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
-use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\AdministratorFixture;
-use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriberFixture;
-use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriberListFixture;
-use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriptionFixture;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Identity\AdministratorFixture;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Subscription\SubscriberFixture;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Subscription\SubscriberListFixture;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Subscription\SubscriptionFixture;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
@@ -60,8 +59,8 @@ class SubscriberListRepositoryTest extends KernelTestCase
         $this->loadFixtures([SubscriberListFixture::class]);
 
         $id = 1;
-        $creationDate = new DateTime();
-        $modificationDate = new DateTime();
+        $creationDate = new DateTime('2016-06-22 15:01:17');
+        $modificationDate = new DateTime('2016-06-23 19:50:43');
         $name = 'News';
         $description = 'News (and some fun stuff)';
         $listPosition = 12;
@@ -72,8 +71,8 @@ class SubscriberListRepositoryTest extends KernelTestCase
         $model = $this->subscriberListRepository->find($id);
 
         self::assertSame($id, $model->getId());
-        self::assertSimilarDates($creationDate, $model->getCreationDate());
-        self::assertSimilarDates($modificationDate, $model->getModificationDate());
+        self::assertSimilarDates($creationDate, $model->getCreatedAt());
+        self::assertSimilarDates($modificationDate, $model->getUpdatedAt());
         self::assertSame($name, $model->getName());
         self::assertSame($description, $model->getDescription());
         self::assertSame($listPosition, $model->getListPosition());
@@ -89,7 +88,7 @@ class SubscriberListRepositoryTest extends KernelTestCase
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
+        self::assertSimilarDates($expectedCreationDate, $model->getCreatedAt());
     }
 
     public function testModificationDateOfNewModelIsSetToNowOnPersist()
@@ -99,7 +98,7 @@ class SubscriberListRepositoryTest extends KernelTestCase
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
+        self::assertSimilarDates($expectedModificationDate, $model->getUpdatedAt());
     }
 
     public function testSavePersistsAndFlushesModel()

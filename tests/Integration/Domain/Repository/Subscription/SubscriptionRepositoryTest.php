@@ -6,17 +6,17 @@ namespace PhpList\Core\Tests\Integration\Domain\Repository\Subscription;
 
 use DateTime;
 use Doctrine\ORM\Tools\SchemaTool;
-use PhpList\Core\Domain\Model\Messaging\SubscriberList;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
+use PhpList\Core\Domain\Model\Subscription\SubscriberList;
 use PhpList\Core\Domain\Model\Subscription\Subscription;
-use PhpList\Core\Domain\Repository\Messaging\SubscriberListRepository;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberListRepository;
 use PhpList\Core\Domain\Repository\Subscription\SubscriberRepository;
 use PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository;
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
-use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriberFixture;
-use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriberListFixture;
-use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\SubscriptionFixture;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Subscription\SubscriberFixture;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Subscription\SubscriberListFixture;
+use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Subscription\SubscriptionFixture;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
@@ -64,8 +64,8 @@ class SubscriptionRepositoryTest extends KernelTestCase
 
         $model = $result[0];
         self::assertInstanceOf(Subscription::class, $model);
-        self::assertEquals($creationDate, $model->getCreationDate());
-        self::assertEquals($modificationDate, $model->getModificationDate());
+        self::assertEquals($creationDate, $model->getCreatedAt());
+        self::assertEquals($modificationDate, $model->getUpdatedAt());
     }
 
     public function testCreationDateOfNewModelIsSetToNowOnPersist()
@@ -83,7 +83,7 @@ class SubscriptionRepositoryTest extends KernelTestCase
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedCreationDate, $model->getCreationDate());
+        self::assertSimilarDates($expectedCreationDate, $model->getCreatedAt());
     }
 
     public function testModificationDateOfNewModelIsSetToNowOnPersist()
@@ -101,7 +101,7 @@ class SubscriptionRepositoryTest extends KernelTestCase
 
         $this->entityManager->persist($model);
 
-        self::assertSimilarDates($expectedModificationDate, $model->getModificationDate());
+        self::assertSimilarDates($expectedModificationDate, $model->getUpdatedAt());
     }
 
     public function testFindBySubscriberFindsSubscriptionOnlyWithTheGivenSubscriber()
@@ -207,6 +207,28 @@ class SubscriptionRepositoryTest extends KernelTestCase
         $subscriberList = $this->subscriberListRepository->find(2);
         $subscriber = $this->subscriberRepository->find(1);
         $result = $this->subscriptionRepository->findOneBySubscriberListAndSubscriber($subscriberList, $subscriber);
+
+        self::assertInstanceOf(Subscription::class, $result);
+        self::assertSame($subscriberList, $result->getSubscriberList());
+        self::assertSame($subscriber, $result->getSubscriber());
+    }
+
+    public function testFindOneByListIdAndSubscriberEmailForNeitherMatchingReturnsNull()
+    {
+        $this->loadFixtures([SubscriberFixture::class, SubscriberListFixture::class, SubscriptionFixture::class]);
+
+        $result = $this->subscriptionRepository->findOneBySubscriberEmailAndListId(3, 'some@random.mail');
+
+        self::assertNull($result);
+    }
+
+    public function testFindOneByListIdAndSubscriberEmailForBothMatchingReturnsMatch()
+    {
+        $this->loadFixtures([SubscriberFixture::class, SubscriberListFixture::class, SubscriptionFixture::class]);
+
+        $subscriberList = $this->subscriberListRepository->find(2);
+        $subscriber = $this->subscriberRepository->find(1);
+        $result = $this->subscriptionRepository->findOneBySubscriberEmailAndListId(2, $subscriber->getEmail());
 
         self::assertInstanceOf(Subscription::class, $result);
         self::assertSame($subscriberList, $result->getSubscriberList());

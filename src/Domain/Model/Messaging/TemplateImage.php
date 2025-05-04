@@ -7,14 +7,18 @@ namespace PhpList\Core\Domain\Model\Messaging;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Model\Traits\IdentityTrait;
+use PhpList\Core\Domain\Repository\Messaging\TemplateImageRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: TemplateImageRepository::class)]
 #[ORM\Table(name: 'phplist_templateimage')]
 #[ORM\Index(name: 'templateidx', columns: ['template'])]
 class TemplateImage implements DomainModel, Identity
 {
-    use IdentityTrait;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
+
     #[ORM\ManyToOne(targetEntity: Template::class)]
     #[ORM\JoinColumn(name: 'template', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private Template $template;
@@ -26,13 +30,18 @@ class TemplateImage implements DomainModel, Identity
     private ?string $filename = null;
 
     #[ORM\Column(name: 'data', type: 'blob', nullable: true)]
-    private ?string $data = null;
+    private mixed $data = null;
 
     #[ORM\Column(name: 'width', type: 'integer', nullable: true)]
     private ?int $width = null;
 
     #[ORM\Column(name: 'height', type: 'integer', nullable: true)]
     private ?int $height = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getTemplate(): ?Template
     {
@@ -51,6 +60,11 @@ class TemplateImage implements DomainModel, Identity
 
     public function getData(): ?string
     {
+        if (is_resource($this->data)) {
+            rewind($this->data);
+            return stream_get_contents($this->data);
+        }
+
         return $this->data;
     }
 
@@ -84,7 +98,7 @@ class TemplateImage implements DomainModel, Identity
 
     public function setData(?string $data): self
     {
-        $this->data = $data;
+        $this->data = $data !== null ? fopen('data://text/plain,' . $data, 'r') : null;
         return $this;
     }
 
