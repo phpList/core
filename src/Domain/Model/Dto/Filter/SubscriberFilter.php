@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Filter;
+namespace PhpList\Core\Domain\Model\Dto\Filter;
 
 class SubscriberFilter implements FilterRequestInterface
 {

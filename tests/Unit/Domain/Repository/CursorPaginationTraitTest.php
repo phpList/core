@@ -6,7 +6,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Repository;
 
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
-use PhpList\Core\Domain\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Model\Dto\Filter\FilterRequestInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;

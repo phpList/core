@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Repository\Messaging;
 
-use PhpList\Core\Domain\Filter\FilterRequestInterface;
-use PhpList\Core\Domain\Filter\MessageFilter;
+use PhpList\Core\Domain\Model\Dto\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Model\Dto\Filter\MessageFilter;
 use PhpList\Core\Domain\Model\Messaging\Message;
 use PhpList\Core\Domain\Repository\AbstractRepository;
 use PhpList\Core\Domain\Repository\Interfaces\PaginatableRepositoryInterface;

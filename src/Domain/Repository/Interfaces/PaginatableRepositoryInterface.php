@@ -4,7 +4,7 @@ namespace PhpList\Core\Domain\Repository\Interfaces;
 
 namespace PhpList\Core\Domain\Repository\Interfaces;
 
-use PhpList\Core\Domain\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Model\Dto\Filter\FilterRequestInterface;
 
 interface PaginatableRepositoryInterface
 {

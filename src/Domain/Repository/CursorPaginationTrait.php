@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Repository;
 
-use PhpList\Core\Domain\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Model\Dto\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use RuntimeException;
 

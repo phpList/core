@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace PhpList\Core\Domain\Model\Identity\Dto;
+
+final class CreateAdministratorDto
+{
+    public function __construct(
+        public readonly string $loginName,
+        public readonly string $password,
+        public readonly string $email,
+        public readonly bool $superUser = false,
+    ) {}
+}
