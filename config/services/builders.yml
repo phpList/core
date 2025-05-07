@@ -1,0 +1,25 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  PhpList\Core\Domain\Service\Builder\MessageBuilder:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Service\Builder\MessageFormatBuilder:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Service\Builder\MessageScheduleBuilder:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Service\Builder\MessageContentBuilder:
+    autowire: true
+    autoconfigure: true
+
+  PhpListPhpList\Core\Domain\Service\Builder\MessageOptionsBuilder:
+    autowire: true
+    autoconfigure: true

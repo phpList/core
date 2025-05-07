@@ -10,7 +10,7 @@ use PhpList\Core\Domain\Model\Messaging\Dto\Message\MessageMetadataDto;
 use PhpList\Core\Domain\Model\Messaging\Dto\Message\MessageOptionsDto;
 use PhpList\Core\Domain\Model\Messaging\Dto\Message\MessageScheduleDto;
 
-final class UpdateMessageDto implements MessageDtoInterface
+class UpdateMessageDto implements MessageDtoInterface
 {
     public function __construct(
         public readonly int $messageId,

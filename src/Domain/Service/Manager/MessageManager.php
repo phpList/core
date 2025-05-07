@@ -6,8 +6,7 @@ namespace PhpList\Core\Domain\Service\Manager;
 
 use PhpList\Core\Domain\Model\Dto\MessageContext;
 use PhpList\Core\Domain\Model\Identity\Administrator;
-use PhpList\Core\Domain\Model\Messaging\Dto\CreateMessageDto;
-use PhpList\Core\Domain\Model\Messaging\Dto\UpdateMessageDto;
+use PhpList\Core\Domain\Model\Messaging\Dto\MessageDtoInterface;
 use PhpList\Core\Domain\Model\Messaging\Message;
 use PhpList\Core\Domain\Repository\Messaging\MessageRepository;
 use PhpList\Core\Domain\Service\Builder\MessageBuilder;
@@ -23,7 +22,7 @@ class MessageManager
         $this->messageBuilder = $messageBuilder;
     }
 
-    public function createMessage(CreateMessageDto $createMessageDto, Administrator $authUser): Message
+    public function createMessage(MessageDtoInterface $createMessageDto, Administrator $authUser): Message
     {
         $context = new MessageContext($authUser);
         $message = $this->messageBuilder->build($createMessageDto, $context);
@@ -33,7 +32,7 @@ class MessageManager
     }
 
     public function updateMessage(
-        UpdateMessageDto $updateMessageDto,
+        MessageDtoInterface $updateMessageDto,
         Message $message,
         Administrator $authUser
     ): Message {

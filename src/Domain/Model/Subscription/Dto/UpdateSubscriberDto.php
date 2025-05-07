@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Model\Subscription\Dto;
 
-final class UpdateSubscriberDto
+class UpdateSubscriberDto
 {
     public function __construct(
         public readonly int $subscriberId,
