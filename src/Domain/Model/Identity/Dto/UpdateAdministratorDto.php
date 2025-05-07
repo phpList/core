@@ -12,5 +12,6 @@ final class UpdateAdministratorDto
         public readonly ?string $password = null,
         public readonly ?string $email = null,
         public readonly ?bool $superAdmin = null,
-    ) {}
+    ) {
+    }
 }

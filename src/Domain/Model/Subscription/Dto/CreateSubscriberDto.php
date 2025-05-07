@@ -10,5 +10,6 @@ final class CreateSubscriberDto
         public readonly string $email,
         public readonly ?bool $requestConfirmation = null,
         public readonly ?bool $htmlEmail = null,
-    ) {}
+    ) {
+    }
 }

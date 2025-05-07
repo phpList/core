@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Model\Messaging\Dto;
 
-namespace PhpList\Core\Domain\Model\Messaging\Dto;
-
 use PhpList\Core\Domain\Model\Messaging\Dto\Message\MessageContentDto;
 use PhpList\Core\Domain\Model\Messaging\Dto\Message\MessageFormatDto;
 use PhpList\Core\Domain\Model\Messaging\Dto\Message\MessageMetadataDto;
@@ -21,4 +19,3 @@ interface MessageDtoInterface
     public function getSchedule(): MessageScheduleDto;
     public function getTemplateId(): ?int;
 }
-

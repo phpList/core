@@ -27,7 +27,7 @@ class SubscriberListManager
             ->setOwner($authUser)
             ->setDescription($subscriberListDto->description)
             ->setListPosition($subscriberListDto->listPosition)
-            ->setPublic($subscriberListDto->public);
+            ->setPublic($subscriberListDto->isPublic);
 
         $this->subscriberListRepository->save($subscriberList);
 

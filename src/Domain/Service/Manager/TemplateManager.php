@@ -47,9 +47,9 @@ class TemplateManager
         }
 
         $context = (new ValidationContext())
-            ->set('checkLinks', $createTemplateDto->checkLinks)
-            ->set('checkImages', $createTemplateDto->checkImages)
-            ->set('checkExternalImages', $createTemplateDto->checkExternalImages);
+            ->set('checkLinks', $createTemplateDto->shouldCheckLinks)
+            ->set('checkImages', $createTemplateDto->shouldCheckImages)
+            ->set('checkExternalImages', $createTemplateDto->shouldCheckExternalImages);
 
         $this->templateLinkValidator->validate($template->getContent() ?? '', $context);
 

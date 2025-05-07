@@ -22,7 +22,7 @@ class SessionManager
         $this->administratorRepository = $administratorRepository;
     }
 
-    public function createSession(string $loginName,  string $password): AdministratorToken
+    public function createSession(string $loginName, string $password): AdministratorToken
     {
         $administrator = $this->administratorRepository->findOneByLoginCredentials($loginName, $password);
         if ($administrator === null) {

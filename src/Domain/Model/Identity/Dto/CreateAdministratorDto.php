@@ -6,10 +6,14 @@ namespace PhpList\Core\Domain\Model\Identity\Dto;
 
 final class CreateAdministratorDto
 {
+    /**
+     * @SuppressWarnings("BooleanArgumentFlag")
+     */
     public function __construct(
         public readonly string $loginName,
         public readonly string $password,
         public readonly string $email,
-        public readonly bool $superUser = false,
-    ) {}
+        public readonly bool $isSuperUser = false,
+    ) {
+    }
 }

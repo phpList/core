@@ -26,7 +26,7 @@ class AdministratorManager
         $administrator = new Administrator();
         $administrator->setLoginName($dto->loginName);
         $administrator->setEmail($dto->email);
-        $administrator->setSuperUser($dto->superUser);
+        $administrator->setSuperUser($dto->isSuperUser);
         $hashedPassword = $this->hashGenerator->createPasswordHash($dto->password);
         $administrator->setPasswordHash($hashedPassword);
 

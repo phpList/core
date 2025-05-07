@@ -14,5 +14,6 @@ final class UpdateSubscriberDto
         public readonly bool $htmlEmail,
         public readonly bool $disabled,
         public readonly string $additionalData,
-    ) {}
+    ) {
+    }
 }
