@@ -6,10 +6,16 @@ namespace PhpList\Core\Domain\Model\Subscription\Dto;
 
 class AttributeDefinitionDto
 {
-    public string $name;
-    public ?string $type = null;
-    public ?int $listOrder = null;
-    public ?string $defaultValue = null;
-    public ?bool $required = null;
-    public ?string $tableName = null;
+    /**
+     * @SuppressWarnings("BooleanArgumentFlag")
+     */
+    public function __construct(
+        public readonly string $name,
+        public readonly ?string $type = null,
+        public readonly ?int $listOrder = null,
+        public readonly ?string $defaultValue = null,
+        public readonly ?bool $required = false,
+        public readonly ?string $tableName = null,
+    ) {
+    }
 }

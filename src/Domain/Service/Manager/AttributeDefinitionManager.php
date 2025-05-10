@@ -11,16 +11,16 @@ use PhpList\Core\Domain\Repository\Subscription\AttributeDefinitionRepository;
 
 class AttributeDefinitionManager
 {
-    private AttributeDefinitionRepository $attributeDefinitionRepository;
+    private AttributeDefinitionRepository $definitionRepository;
 
-    public function __construct(AttributeDefinitionRepository $attributeDefinitionRepository)
+    public function __construct(AttributeDefinitionRepository $definitionRepository)
     {
-        $this->attributeDefinitionRepository = $attributeDefinitionRepository;
+        $this->definitionRepository = $definitionRepository;
     }
 
     public function create(AttributeDefinitionDto $attributeDefinitionDto): AttributeDefinition
     {
-        $existingAttribute = $this->attributeDefinitionRepository->findOneByName($attributeDefinitionDto->name);
+        $existingAttribute = $this->definitionRepository->findOneByName($attributeDefinitionDto->name);
         if ($existingAttribute) {
             throw new AttributeDefinitionCreationException('Attribute definition already exists', 409);
         }
@@ -33,7 +33,7 @@ class AttributeDefinitionManager
             ->setDefaultValue($attributeDefinitionDto->defaultValue)
             ->setTableName($attributeDefinitionDto->tableName);
 
-        $this->attributeDefinitionRepository->save($attributeDefinition);
+        $this->definitionRepository->save($attributeDefinition);
 
         return $attributeDefinition;
     }
@@ -42,7 +42,7 @@ class AttributeDefinitionManager
         AttributeDefinition $attributeDefinition,
         AttributeDefinitionDto $attributeDefinitionDto
     ): AttributeDefinition {
-        $existingAttribute = $this->attributeDefinitionRepository->findOneByName($attributeDefinitionDto->name);
+        $existingAttribute = $this->definitionRepository->findOneByName($attributeDefinitionDto->name);
         if ($existingAttribute && $existingAttribute->getId() !== $attributeDefinition->getId()) {
             throw new AttributeDefinitionCreationException('Another attribute with this name already exists.', 409);
         }
@@ -55,23 +55,23 @@ class AttributeDefinitionManager
             ->setDefaultValue($attributeDefinitionDto->defaultValue)
             ->setTableName($attributeDefinitionDto->tableName);
 
-        $this->attributeDefinitionRepository->save($attributeDefinition);
+        $this->definitionRepository->save($attributeDefinition);
 
         return $attributeDefinition;
     }
 
     public function delete(AttributeDefinition $attributeDefinition): void
     {
-        $this->attributeDefinitionRepository->remove($attributeDefinition);
+        $this->definitionRepository->remove($attributeDefinition);
     }
 
     public function getTotalCount(): int
     {
-        return $this->attributeDefinitionRepository->count();
+        return $this->definitionRepository->count();
     }
 
     public function getAttributesAfterId(int $afterId, int $limit): array
     {
-        return $this->attributeDefinitionRepository->getAfterId($afterId, $limit);
+        return $this->definitionRepository->getAfterId($afterId, $limit);
     }
 }

@@ -9,10 +9,12 @@ use PhpList\Core\Domain\Repository\AbstractRepository;
 use PhpList\Core\Domain\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Repository\Interfaces\PaginatableRepositoryInterface;
 
-/**
- * @method AttributeDefinition|null findOneByName(string $name)
- */
 class AttributeDefinitionRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
     use CursorPaginationTrait;
+
+    public function findOneByName(string $name): ?AttributeDefinition
+    {
+        return $this->findOneBy(['name' => $name]);
+    }
 }
