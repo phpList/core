@@ -35,3 +35,11 @@ services:
   PhpList\Core\Domain\Service\Manager\AdministratorManager:
     autowire: true
     autoconfigure: true
+
+  PhpList\Core\Domain\Service\Manager\AttributeDefinitionManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Service\Manager\SubscriberAttributeManager:
+    autowire: true
+    autoconfigure: true

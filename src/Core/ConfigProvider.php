@@ -20,4 +20,3 @@ class ConfigProvider
         return $this->config;
     }
 }
-
