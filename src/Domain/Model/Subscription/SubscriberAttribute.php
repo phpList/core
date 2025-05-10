@@ -16,9 +16,9 @@ use PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeRepository;
 class SubscriberAttribute implements DomainModel
 {
     #[ORM\Id]
-    #[ORM\ManyToOne(targetEntity: SubscriberAttributeDefinition::class)]
+    #[ORM\ManyToOne(targetEntity: AttributeDefinition::class)]
     #[ORM\JoinColumn(name: 'attributeid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
-    private SubscriberAttributeDefinition $attributeDefinition;
+    private AttributeDefinition $attributeDefinition;
 
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: Subscriber::class, inversedBy: 'attributes')]
@@ -28,13 +28,13 @@ class SubscriberAttribute implements DomainModel
     #[ORM\Column(name: 'value', type: 'text', nullable: true)]
     private ?string $value = null;
 
-    public function __construct(SubscriberAttributeDefinition $attributeDefinition, Subscriber $subscriber)
+    public function __construct(AttributeDefinition $attributeDefinition, Subscriber $subscriber)
     {
         $this->attributeDefinition = $attributeDefinition;
         $this->subscriber = $subscriber;
     }
 
-    public function getAttributeDefinition(): SubscriberAttributeDefinition
+    public function getAttributeDefinition(): AttributeDefinition
     {
         return $this->attributeDefinition;
     }
