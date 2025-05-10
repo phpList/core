@@ -1,0 +1,10 @@
+app:
+  config:
+    message_from_address: 'news@example.com'
+    admin_address: 'admin@example.com'
+    default_message_age: 15768000
+    message_footer: 'Thanks for reading'
+    forward_footer: 'Forwarded message'
+    notify_start_default: 'start@example.com'
+    notify_end_default: 'end@example.com'
+    always_add_google_tracking: true

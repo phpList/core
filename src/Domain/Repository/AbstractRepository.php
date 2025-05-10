@@ -15,8 +15,6 @@ use PhpList\Core\Domain\Model\Interfaces\DomainModel;
  */
 abstract class AbstractRepository extends EntityRepository
 {
-    protected ?string $alias = null;
-
     /**
      * Persists $model and flushes the entity manager change list.
      *
