@@ -73,10 +73,10 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     private Collection $subscriptions;
 
     /**
-     * @var Collection<int, SubscriberAttribute>
+     * @var Collection<int, SubscriberAttributeValue>
      */
     #[ORM\OneToMany(
-        targetEntity: SubscriberAttribute::class,
+        targetEntity: SubscriberAttributeValue::class,
         mappedBy: 'subscriber',
         cascade: ['persist', 'remove'],
         orphanRemoval: true
@@ -267,7 +267,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->attributes;
     }
 
-    public function addAttribute(SubscriberAttribute $attribute): self
+    public function addAttribute(SubscriberAttributeValue $attribute): self
     {
         if (!$this->attributes->contains($attribute)) {
             $this->attributes[] = $attribute;
@@ -276,7 +276,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this;
     }
 
-    public function removeAttribute(SubscriberAttribute $attribute): self
+    public function removeAttribute(SubscriberAttributeValue $attribute): self
     {
         $this->attributes->removeElement($attribute);
         return $this;

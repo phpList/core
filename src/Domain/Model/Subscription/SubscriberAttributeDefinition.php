@@ -7,13 +7,13 @@ namespace PhpList\Core\Domain\Model\Subscription;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Model\Interfaces\Identity;
-use PhpList\Core\Domain\Repository\Subscription\AttributeDefinitionRepository;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeDefinitionRepository;
 
-#[ORM\Entity(repositoryClass: AttributeDefinitionRepository::class)]
+#[ORM\Entity(repositoryClass: SubscriberAttributeDefinitionRepository::class)]
 #[ORM\Table(name: 'phplist_user_attribute')]
 #[ORM\Index(name: 'idnameindex', columns: ['id', 'name'])]
 #[ORM\Index(name: 'nameindex', columns: ['name'])]
-class AttributeDefinition implements DomainModel, Identity
+class SubscriberAttributeDefinition implements DomainModel, Identity
 {
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]

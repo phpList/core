@@ -6,12 +6,12 @@ namespace PhpList\Core\Domain\Model\Identity;
 
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
-use PhpList\Core\Domain\Repository\Identity\AdminAttributeRelationRepository;
+use PhpList\Core\Domain\Repository\Identity\AdminAttributeValueRepository;
 
-#[ORM\Entity(repositoryClass: AdminAttributeRelationRepository::class)]
+#[ORM\Entity(repositoryClass: AdminAttributeValueRepository::class)]
 #[ORM\Table(name: 'phplist_admin_attribute')]
 #[ORM\HasLifecycleCallbacks]
-class AdminAttributeRelation implements DomainModel
+class AdminAttributeValue implements DomainModel
 {
     #[ORM\Id]
     #[ORM\Column(name: 'adminattributeid', type: 'integer', options: ['unsigned' => true])]

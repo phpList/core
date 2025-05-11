@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Service\Manager;
 
 use PhpList\Core\Domain\Exception\SubscriberAttributeCreationException;
-use PhpList\Core\Domain\Model\Subscription\AttributeDefinition;
+use PhpList\Core\Domain\Model\Subscription\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Model\Subscription\Dto\SubscriberAttributeDto;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
-use PhpList\Core\Domain\Model\Subscription\SubscriberAttribute;
-use PhpList\Core\Domain\Repository\Subscription\AttributeDefinitionRepository;
-use PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeRepository;
+use PhpList\Core\Domain\Model\Subscription\SubscriberAttributeValue;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeDefinitionRepository;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeValueRepository;
 use PhpList\Core\Domain\Repository\Subscription\SubscriberRepository;
 use PhpList\Core\Domain\Service\Manager\SubscriberAttributeManager;
 use PHPUnit\Framework\TestCase;
@@ -20,7 +20,7 @@ class SubscriberAttributeManagerTest extends TestCase
     public function testCreateNewSubscriberAttribute(): void
     {
         $subscriber = new Subscriber();
-        $definition = new AttributeDefinition();
+        $definition = new SubscriberAttributeDefinition();
 
         $dto = new SubscriberAttributeDto(
             subscriberId: 1,
@@ -29,8 +29,8 @@ class SubscriberAttributeManagerTest extends TestCase
         );
 
         $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $attributeDefRepo = $this->createMock(AttributeDefinitionRepository::class);
-        $subscriberAttrRepo = $this->createMock(SubscriberAttributeRepository::class);
+        $attributeDefRepo = $this->createMock(SubscriberAttributeDefinitionRepository::class);
+        $subscriberAttrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
 
         $subscriberRepo->expects(self::once())
             ->method('find')
@@ -49,30 +49,30 @@ class SubscriberAttributeManagerTest extends TestCase
 
         $subscriberAttrRepo->expects(self::once())
             ->method('save')
-            ->with(self::callback(function (SubscriberAttribute $attr) {
+            ->with(self::callback(function (SubscriberAttributeValue $attr) {
                 return $attr->getValue() === 'US';
             }));
 
         $manager = new SubscriberAttributeManager($attributeDefRepo, $subscriberAttrRepo, $subscriberRepo);
         $attribute = $manager->createOrUpdate($dto);
 
-        self::assertInstanceOf(SubscriberAttribute::class, $attribute);
+        self::assertInstanceOf(SubscriberAttributeValue::class, $attribute);
         self::assertSame('US', $attribute->getValue());
     }
 
     public function testUpdateExistingSubscriberAttribute(): void
     {
         $subscriber = new Subscriber();
-        $definition = new AttributeDefinition();
+        $definition = new SubscriberAttributeDefinition();
 
-        $existing = new SubscriberAttribute($definition, $subscriber);
+        $existing = new SubscriberAttributeValue($definition, $subscriber);
         $existing->setValue('Old');
 
         $dto = new SubscriberAttributeDto(1, 2, 'Updated');
 
         $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $attributeDefRepo = $this->createMock(AttributeDefinitionRepository::class);
-        $subscriberAttrRepo = $this->createMock(SubscriberAttributeRepository::class);
+        $attributeDefRepo = $this->createMock(SubscriberAttributeDefinitionRepository::class);
+        $subscriberAttrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
 
         $subscriberRepo->method('find')->willReturn($subscriber);
         $attributeDefRepo->method('find')->willReturn($definition);
@@ -93,8 +93,8 @@ class SubscriberAttributeManagerTest extends TestCase
     public function testCreateFailsIfSubscriberNotFound(): void
     {
         $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $attributeDefRepo = $this->createMock(AttributeDefinitionRepository::class);
-        $subscriberAttrRepo = $this->createMock(SubscriberAttributeRepository::class);
+        $attributeDefRepo = $this->createMock(SubscriberAttributeDefinitionRepository::class);
+        $subscriberAttrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
 
         $subscriberRepo->method('find')->willReturn(null);
 
@@ -113,8 +113,8 @@ class SubscriberAttributeManagerTest extends TestCase
         $subscriber = new Subscriber();
 
         $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $attributeDefRepo = $this->createMock(AttributeDefinitionRepository::class);
-        $subscriberAttrRepo = $this->createMock(SubscriberAttributeRepository::class);
+        $attributeDefRepo = $this->createMock(SubscriberAttributeDefinitionRepository::class);
+        $subscriberAttrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
 
         $subscriberRepo->method('find')->willReturn($subscriber);
         $attributeDefRepo->method('find')->willReturn(null);
@@ -131,11 +131,11 @@ class SubscriberAttributeManagerTest extends TestCase
 
     public function testGetSubscriberAttribute(): void
     {
-        $expected = new SubscriberAttribute(new AttributeDefinition(), new Subscriber());
+        $expected = new SubscriberAttributeValue(new SubscriberAttributeDefinition(), new Subscriber());
 
         $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $attributeDefRepo = $this->createMock(AttributeDefinitionRepository::class);
-        $subscriberAttrRepo = $this->createMock(SubscriberAttributeRepository::class);
+        $attributeDefRepo = $this->createMock(SubscriberAttributeDefinitionRepository::class);
+        $subscriberAttrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
 
         $subscriberAttrRepo->expects(self::once())
             ->method('findOneBySubscriberIdAndAttributeId')
@@ -152,10 +152,10 @@ class SubscriberAttributeManagerTest extends TestCase
     public function testDeleteSubscriberAttribute(): void
     {
         $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $attributeDefRepo = $this->createMock(AttributeDefinitionRepository::class);
-        $subscriberAttrRepo = $this->createMock(SubscriberAttributeRepository::class);
+        $attributeDefRepo = $this->createMock(SubscriberAttributeDefinitionRepository::class);
+        $subscriberAttrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
 
-        $attribute = $this->createMock(SubscriberAttribute::class);
+        $attribute = $this->createMock(SubscriberAttributeValue::class);
 
         $attributeDefRepo->expects(self::once())->method('remove')->with($attribute);
 

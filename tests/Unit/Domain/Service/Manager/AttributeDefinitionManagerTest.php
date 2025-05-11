@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Service\Manager;
 
 use PhpList\Core\Domain\Exception\AttributeDefinitionCreationException;
-use PhpList\Core\Domain\Model\Subscription\AttributeDefinition;
+use PhpList\Core\Domain\Model\Subscription\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Model\Subscription\Dto\AttributeDefinitionDto;
-use PhpList\Core\Domain\Repository\Subscription\AttributeDefinitionRepository;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Service\Manager\AttributeDefinitionManager;
 use PHPUnit\Framework\TestCase;
 
@@ -15,7 +15,7 @@ class AttributeDefinitionManagerTest extends TestCase
 {
     public function testCreateAttributeDefinition(): void
     {
-        $repository = $this->createMock(AttributeDefinitionRepository::class);
+        $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $manager = new AttributeDefinitionManager($repository);
 
         $dto = new AttributeDefinitionDto(
@@ -36,7 +36,7 @@ class AttributeDefinitionManagerTest extends TestCase
 
         $attribute = $manager->create($dto);
 
-        $this->assertInstanceOf(AttributeDefinition::class, $attribute);
+        $this->assertInstanceOf(SubscriberAttributeDefinition::class, $attribute);
         $this->assertSame('Country', $attribute->getName());
         $this->assertSame('checkbox', $attribute->getType());
         $this->assertSame(1, $attribute->getListOrder());
@@ -47,7 +47,7 @@ class AttributeDefinitionManagerTest extends TestCase
 
     public function testCreateThrowsWhenAttributeAlreadyExists(): void
     {
-        $repository = $this->createMock(AttributeDefinitionRepository::class);
+        $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $manager = new AttributeDefinitionManager($repository);
 
         $dto = new AttributeDefinitionDto(
@@ -59,7 +59,7 @@ class AttributeDefinitionManagerTest extends TestCase
             tableName: 'user_attribute'
         );
 
-        $existing = $this->createMock(AttributeDefinition::class);
+        $existing = $this->createMock(SubscriberAttributeDefinition::class);
 
         $repository->expects($this->once())
             ->method('findOneByName')
@@ -73,10 +73,10 @@ class AttributeDefinitionManagerTest extends TestCase
 
     public function testUpdateAttributeDefinition(): void
     {
-        $repository = $this->createMock(AttributeDefinitionRepository::class);
+        $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $manager = new AttributeDefinitionManager($repository);
 
-        $attribute = new AttributeDefinition();
+        $attribute = new SubscriberAttributeDefinition();
         $attribute->setName('Old');
 
         $dto = new AttributeDefinitionDto(
@@ -107,7 +107,7 @@ class AttributeDefinitionManagerTest extends TestCase
 
     public function testUpdateThrowsWhenAnotherAttributeWithSameNameExists(): void
     {
-        $repository = $this->createMock(AttributeDefinitionRepository::class);
+        $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $manager = new AttributeDefinitionManager($repository);
 
         $dto = new AttributeDefinitionDto(
@@ -119,10 +119,10 @@ class AttributeDefinitionManagerTest extends TestCase
             tableName: 'custom_attrs'
         );
 
-        $current = new AttributeDefinition();
+        $current = new SubscriberAttributeDefinition();
         $current->setName('Old');
 
-        $other = $this->createMock(AttributeDefinition::class);
+        $other = $this->createMock(SubscriberAttributeDefinition::class);
         $other->method('getId')->willReturn(999);
 
         $repository->expects($this->once())
@@ -137,10 +137,10 @@ class AttributeDefinitionManagerTest extends TestCase
 
     public function testDeleteAttributeDefinition(): void
     {
-        $repository = $this->createMock(AttributeDefinitionRepository::class);
+        $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $manager = new AttributeDefinitionManager($repository);
 
-        $attribute = new AttributeDefinition();
+        $attribute = new SubscriberAttributeDefinition();
 
         $repository->expects($this->once())->method('remove')->with($attribute);
 

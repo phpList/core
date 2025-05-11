@@ -21,15 +21,15 @@ services:
         arguments:
             - PhpList\Core\Domain\Model\Subscription\Subscriber
 
-    PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeRepository:
+    PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeValueRepository:
         parent: PhpList\Core\Domain\Repository
         arguments:
-            - PhpList\Core\Domain\Model\Subscription\SubscriberAttribute
+            - PhpList\Core\Domain\Model\Subscription\SubscriberAttributeValue
 
-    PhpList\Core\Domain\Repository\Subscription\AttributeDefinitionRepository:
+    PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeDefinitionRepository:
         parent: PhpList\Core\Domain\Repository
         arguments:
-            - PhpList\Core\Domain\Model\Subscription\AttributeDefinition
+            - PhpList\Core\Domain\Model\Subscription\SubscriberAttributeDefinition
 
     PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository:
         parent: PhpList\Core\Domain\Repository

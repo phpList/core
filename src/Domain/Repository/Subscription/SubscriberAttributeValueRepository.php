@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Repository\Subscription;
 
-use PhpList\Core\Domain\Model\Subscription\AttributeDefinition;
+use PhpList\Core\Domain\Model\Subscription\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Model\Subscription\Subscriber;
-use PhpList\Core\Domain\Model\Subscription\SubscriberAttribute;
+use PhpList\Core\Domain\Model\Subscription\SubscriberAttributeValue;
 use PhpList\Core\Domain\Repository\AbstractRepository;
 
-class SubscriberAttributeRepository extends AbstractRepository
+class SubscriberAttributeValueRepository extends AbstractRepository
 {
     public function findOneBySubscriberAndAttribute(
         Subscriber $subscriber,
-        AttributeDefinition $attributeDefinition
-    ): ?SubscriberAttribute {
+        SubscriberAttributeDefinition $attributeDefinition
+    ): ?SubscriberAttributeValue {
         return $this->findOneBy([
             'subscriber' => $subscriber,
             'attributeDefinition' => $attributeDefinition,
@@ -24,7 +24,7 @@ class SubscriberAttributeRepository extends AbstractRepository
     public function findOneBySubscriberIdAndAttributeId(
         int $subscriberId,
         int $attributeDefinitionId
-    ): ?SubscriberAttribute {
+    ): ?SubscriberAttributeValue {
         return $this->createQueryBuilder('sa')
             ->join('sa.subscriber', 's')
             ->join('sa.attributeDefinition', 'ad')

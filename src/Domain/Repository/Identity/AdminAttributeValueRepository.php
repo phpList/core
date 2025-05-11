@@ -6,6 +6,6 @@ namespace PhpList\Core\Domain\Repository\Identity;
 
 use PhpList\Core\Domain\Repository\AbstractRepository;
 
-class AdminAttributeRelationRepository extends AbstractRepository
+class AdminAttributeValueRepository extends AbstractRepository
 {
 }

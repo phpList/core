@@ -6,19 +6,19 @@ namespace PhpList\Core\Domain\Model\Subscription;
 
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Model\Interfaces\DomainModel;
-use PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeRepository;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeValueRepository;
 
-#[ORM\Entity(repositoryClass: SubscriberAttributeRepository::class)]
+#[ORM\Entity(repositoryClass: SubscriberAttributeValueRepository::class)]
 #[ORM\Table(name: 'phplist_user_user_attribute')]
 #[ORM\Index(name: 'attindex', columns: ['attributeid'])]
 #[ORM\Index(name: 'attuserid', columns: ['userid', 'attributeid'])]
 #[ORM\Index(name: 'userindex', columns: ['userid'])]
-class SubscriberAttribute implements DomainModel
+class SubscriberAttributeValue implements DomainModel
 {
     #[ORM\Id]
-    #[ORM\ManyToOne(targetEntity: AttributeDefinition::class)]
+    #[ORM\ManyToOne(targetEntity: SubscriberAttributeDefinition::class)]
     #[ORM\JoinColumn(name: 'attributeid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
-    private AttributeDefinition $attributeDefinition;
+    private SubscriberAttributeDefinition $attributeDefinition;
 
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: Subscriber::class, inversedBy: 'attributes')]
@@ -28,13 +28,13 @@ class SubscriberAttribute implements DomainModel
     #[ORM\Column(name: 'value', type: 'text', nullable: true)]
     private ?string $value = null;
 
-    public function __construct(AttributeDefinition $attributeDefinition, Subscriber $subscriber)
+    public function __construct(SubscriberAttributeDefinition $attributeDefinition, Subscriber $subscriber)
     {
         $this->attributeDefinition = $attributeDefinition;
         $this->subscriber = $subscriber;
     }
 
-    public function getAttributeDefinition(): AttributeDefinition
+    public function getAttributeDefinition(): SubscriberAttributeDefinition
     {
         return $this->attributeDefinition;
     }

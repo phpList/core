@@ -8,7 +8,7 @@ use PhpList\Core\Domain\Repository\AbstractRepository;
 use PhpList\Core\Domain\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Repository\Interfaces\PaginatableRepositoryInterface;
 
-class AdminAttributeRepository extends AbstractRepository implements PaginatableRepositoryInterface
+class AdminAttributeDefinitionRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
     use CursorPaginationTrait;
 }

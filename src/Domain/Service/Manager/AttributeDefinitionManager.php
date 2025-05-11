@@ -5,27 +5,27 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Service\Manager;
 
 use PhpList\Core\Domain\Exception\AttributeDefinitionCreationException;
-use PhpList\Core\Domain\Model\Subscription\AttributeDefinition;
+use PhpList\Core\Domain\Model\Subscription\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Model\Subscription\Dto\AttributeDefinitionDto;
-use PhpList\Core\Domain\Repository\Subscription\AttributeDefinitionRepository;
+use PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeDefinitionRepository;
 
 class AttributeDefinitionManager
 {
-    private AttributeDefinitionRepository $definitionRepository;
+    private SubscriberAttributeDefinitionRepository $definitionRepository;
 
-    public function __construct(AttributeDefinitionRepository $definitionRepository)
+    public function __construct(SubscriberAttributeDefinitionRepository $definitionRepository)
     {
         $this->definitionRepository = $definitionRepository;
     }
 
-    public function create(AttributeDefinitionDto $attributeDefinitionDto): AttributeDefinition
+    public function create(AttributeDefinitionDto $attributeDefinitionDto): SubscriberAttributeDefinition
     {
         $existingAttribute = $this->definitionRepository->findOneByName($attributeDefinitionDto->name);
         if ($existingAttribute) {
             throw new AttributeDefinitionCreationException('Attribute definition already exists', 409);
         }
 
-        $attributeDefinition = (new AttributeDefinition())
+        $attributeDefinition = (new SubscriberAttributeDefinition())
             ->setName($attributeDefinitionDto->name)
             ->setType($attributeDefinitionDto->type)
             ->setListOrder($attributeDefinitionDto->listOrder)
@@ -39,9 +39,9 @@ class AttributeDefinitionManager
     }
 
     public function update(
-        AttributeDefinition $attributeDefinition,
-        AttributeDefinitionDto $attributeDefinitionDto
-    ): AttributeDefinition {
+        SubscriberAttributeDefinition $attributeDefinition,
+        AttributeDefinitionDto        $attributeDefinitionDto
+    ): SubscriberAttributeDefinition {
         $existingAttribute = $this->definitionRepository->findOneByName($attributeDefinitionDto->name);
         if ($existingAttribute && $existingAttribute->getId() !== $attributeDefinition->getId()) {
             throw new AttributeDefinitionCreationException('Another attribute with this name already exists.', 409);
@@ -60,7 +60,7 @@ class AttributeDefinitionManager
         return $attributeDefinition;
     }
 
-    public function delete(AttributeDefinition $attributeDefinition): void
+    public function delete(SubscriberAttributeDefinition $attributeDefinition): void
     {
         $this->definitionRepository->remove($attributeDefinition);
     }
