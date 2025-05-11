@@ -4,42 +4,42 @@ services:
     autoconfigure: true
     public: false
 
-  PhpList\Core\Domain\Service\Manager\SubscriberManager:
+  PhpList\Core\Domain\Subscription\Service\SubscriberManager:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Service\Manager\SessionManager:
+  PhpList\Core\Domain\Identity\Service\SessionManager:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Service\Manager\SubscriberListManager:
+  PhpList\Core\Domain\Subscription\Service\SubscriberListManager:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Service\Manager\SubscriptionManager:
+  PhpList\Core\Domain\Subscription\Service\SubscriptionManager:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Service\Manager\MessageManager:
+  PhpList\Core\Domain\Messaging\Service\MessageManager:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Service\Manager\TemplateManager:
+  PhpList\Core\Domain\Messaging\Service\TemplateManager:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Service\Manager\TemplateImageManager:
+  PhpList\Core\Domain\Messaging\Service\TemplateImageManager:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Service\Manager\AdministratorManager:
+  PhpList\Core\Domain\Identity\Service\AdministratorManager:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Service\Manager\AttributeDefinitionManager:
+  PhpList\Core\Domain\Subscription\Service\AttributeDefinitionManager:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Service\Manager\SubscriberAttributeManager:
+  PhpList\Core\Domain\Subscription\Service\SubscriberAttributeManager:
     autowire: true
     autoconfigure: true

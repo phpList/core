@@ -23,7 +23,7 @@ services:
     PhpList\Core\Routing\ExtraLoader:
         tags: [routing.loader]
 
-    PhpList\Core\Domain\Repository:
+    PhpList\Core\Domain\Common\Repository\AbstractRepository:
         abstract: true
         autowire: true
         autoconfigure: false

@@ -1,52 +1,52 @@
 services:
-    PhpList\Core\Domain\Repository\Identity\AdministratorRepository:
-        parent: PhpList\Core\Domain\Repository
+    PhpList\Core\Domain\Identity\Repository\AdministratorRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
         arguments:
-            - PhpList\Core\Domain\Model\Identity\Administrator
+            - PhpList\Core\Domain\Identity\Model\Administrator
             - Doctrine\ORM\Mapping\ClassMetadata\ClassMetadata
             - PhpList\Core\Security\HashGenerator
 
-    PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository:
-        parent: PhpList\Core\Domain\Repository
+    PhpList\Core\Domain\Identity\Repository\AdministratorTokenRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
         arguments:
-            - PhpList\Core\Domain\Model\Identity\AdministratorToken
+            - PhpList\Core\Domain\Identity\Model\AdministratorToken
 
-    PhpList\Core\Domain\Repository\Subscription\SubscriberListRepository:
-        parent: PhpList\Core\Domain\Repository
+    PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
         arguments:
-            - PhpList\Core\Domain\Model\Subscription\SubscriberList
+            - PhpList\Core\Domain\Subscription\Model\SubscriberList
 
-    PhpList\Core\Domain\Repository\Subscription\SubscriberRepository:
-        parent: PhpList\Core\Domain\Repository
+    PhpList\Core\Domain\Subscription\Repository\SubscriberRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
         arguments:
-            - PhpList\Core\Domain\Model\Subscription\Subscriber
+            - PhpList\Core\Domain\Subscription\Model\Subscriber
 
-    PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeValueRepository:
-        parent: PhpList\Core\Domain\Repository
+    PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
         arguments:
-            - PhpList\Core\Domain\Model\Subscription\SubscriberAttributeValue
+            - PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue
 
-    PhpList\Core\Domain\Repository\Subscription\SubscriberAttributeDefinitionRepository:
-        parent: PhpList\Core\Domain\Repository
+    PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
         arguments:
-            - PhpList\Core\Domain\Model\Subscription\SubscriberAttributeDefinition
+            - PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition
 
-    PhpList\Core\Domain\Repository\Subscription\SubscriptionRepository:
-        parent: PhpList\Core\Domain\Repository
+    PhpList\Core\Domain\Subscription\Repository\SubscriptionRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
         arguments:
-            - PhpList\Core\Domain\Model\Subscription\Subscription
+            - PhpList\Core\Domain\Subscription\Model\Subscription
 
-    PhpList\Core\Domain\Repository\Messaging\MessageRepository:
-        parent: PhpList\Core\Domain\Repository
+    PhpList\Core\Domain\Messaging\Repository\MessageRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
         arguments:
-            - PhpList\Core\Domain\Model\Messaging\Message
+            - PhpList\Core\Domain\Messaging\Model\Message
 
-    PhpList\Core\Domain\Repository\Messaging\TemplateRepository:
-        parent: PhpList\Core\Domain\Repository
+    PhpList\Core\Domain\Messaging\Repository\TemplateRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
         arguments:
-            - PhpList\Core\Domain\Model\Messaging\Template
+            - PhpList\Core\Domain\Messaging\Model\Template
 
-    PhpList\Core\Domain\Repository\Messaging\TemplateImageRepository:
-        parent: PhpList\Core\Domain\Repository
+    PhpList\Core\Domain\Messaging\Repository\TemplateImageRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
         arguments:
-            - PhpList\Core\Domain\Model\Messaging\TemplateImage
+            - PhpList\Core\Domain\Messaging\Model\TemplateImage

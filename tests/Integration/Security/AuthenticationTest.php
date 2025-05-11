@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Integration\Security;
 
 use Doctrine\ORM\Tools\SchemaTool;
-use PhpList\Core\Domain\Model\Identity\Administrator;
+use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Security\Authentication;
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
-use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Identity\AdministratorFixture;
-use PhpList\Core\Tests\Integration\Domain\Repository\Fixtures\Identity\AdministratorTokenWithAdministratorFixture;
+use PhpList\Core\Tests\Integration\Domain\Identity\Fixtures\AdministratorFixture;
+use PhpList\Core\Tests\Integration\Domain\Identity\Fixtures\AdministratorTokenWithAdministratorFixture;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
