@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service;
 
 use PhpList\Core\Domain\Subscription\Exception\SubscriberAttributeCreationException;
-use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberAttributeDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;
-use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
-use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\SubscriberAttributeManager;
 use PHPUnit\Framework\TestCase;
 
@@ -22,25 +19,7 @@ class SubscriberAttributeManagerTest extends TestCase
         $subscriber = new Subscriber();
         $definition = new SubscriberAttributeDefinition();
 
-        $dto = new SubscriberAttributeDto(
-            subscriberId: 1,
-            attributeDefinitionId: 2,
-            value: 'US'
-        );
-
-        $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $attributeDefRepo = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $subscriberAttrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
-
-        $subscriberRepo->expects(self::once())
-            ->method('find')
-            ->with(1)
-            ->willReturn($subscriber);
-
-        $attributeDefRepo->expects(self::once())
-            ->method('find')
-            ->with(2)
-            ->willReturn($definition);
 
         $subscriberAttrRepo->expects(self::once())
             ->method('findOneBySubscriberAndAttribute')
@@ -53,8 +32,8 @@ class SubscriberAttributeManagerTest extends TestCase
                 return $attr->getValue() === 'US';
             }));
 
-        $manager = new SubscriberAttributeManager($attributeDefRepo, $subscriberAttrRepo, $subscriberRepo);
-        $attribute = $manager->createOrUpdate($dto);
+        $manager = new SubscriberAttributeManager($subscriberAttrRepo);
+        $attribute = $manager->createOrUpdate($subscriber, $definition, 'US');
 
         self::assertInstanceOf(SubscriberAttributeValue::class, $attribute);
         self::assertSame('US', $attribute->getValue());
@@ -64,86 +43,52 @@ class SubscriberAttributeManagerTest extends TestCase
     {
         $subscriber = new Subscriber();
         $definition = new SubscriberAttributeDefinition();
-
         $existing = new SubscriberAttributeValue($definition, $subscriber);
         $existing->setValue('Old');
 
-        $dto = new SubscriberAttributeDto(1, 2, 'Updated');
-
-        $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $attributeDefRepo = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $subscriberAttrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
-
-        $subscriberRepo->method('find')->willReturn($subscriber);
-        $attributeDefRepo->method('find')->willReturn($definition);
-
         $subscriberAttrRepo->expects(self::once())
             ->method('findOneBySubscriberAndAttribute')
             ->with($subscriber, $definition)
             ->willReturn($existing);
 
-        $subscriberAttrRepo->expects(self::once())->method('save')->with($existing);
+        $subscriberAttrRepo->expects(self::once())
+            ->method('save')
+            ->with($existing);
 
-        $manager = new SubscriberAttributeManager($attributeDefRepo, $subscriberAttrRepo, $subscriberRepo);
-        $result = $manager->createOrUpdate($dto);
+        $manager = new SubscriberAttributeManager($subscriberAttrRepo);
+        $result = $manager->createOrUpdate($subscriber, $definition, 'Updated');
 
         self::assertSame('Updated', $result->getValue());
     }
 
-    public function testCreateFailsIfSubscriberNotFound(): void
-    {
-        $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $attributeDefRepo = $this->createMock(SubscriberAttributeDefinitionRepository::class);
-        $subscriberAttrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
-
-        $subscriberRepo->method('find')->willReturn(null);
-
-        $dto = new SubscriberAttributeDto(1, 2, 'US');
-
-        $manager = new SubscriberAttributeManager($attributeDefRepo, $subscriberAttrRepo, $subscriberRepo);
-
-        $this->expectException(SubscriberAttributeCreationException::class);
-        $this->expectExceptionMessage('Subscriber does not exist');
-
-        $manager->createOrUpdate($dto);
-    }
-
-    public function testCreateFailsIfAttributeDefinitionNotFound(): void
+    public function testCreateFailsWhenValueAndDefaultAreNull(): void
     {
         $subscriber = new Subscriber();
+        $definition = new SubscriberAttributeDefinition();
 
-        $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $attributeDefRepo = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $subscriberAttrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
+        $subscriberAttrRepo->method('findOneBySubscriberAndAttribute')->willReturn(null);
 
-        $subscriberRepo->method('find')->willReturn($subscriber);
-        $attributeDefRepo->method('find')->willReturn(null);
-
-        $dto = new SubscriberAttributeDto(1, 2, 'US');
-
-        $manager = new SubscriberAttributeManager($attributeDefRepo, $subscriberAttrRepo, $subscriberRepo);
+        $manager = new SubscriberAttributeManager($subscriberAttrRepo);
 
         $this->expectException(SubscriberAttributeCreationException::class);
-        $this->expectExceptionMessage('Attribute definition does not exist');
+        $this->expectExceptionMessage('Value is required');
 
-        $manager->createOrUpdate($dto);
+        $manager->createOrUpdate($subscriber, $definition, null);
     }
 
     public function testGetSubscriberAttribute(): void
     {
-        $expected = new SubscriberAttributeValue(new SubscriberAttributeDefinition(), new Subscriber());
-
-        $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $attributeDefRepo = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $subscriberAttrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
+        $expected = new SubscriberAttributeValue(new SubscriberAttributeDefinition(), new Subscriber());
 
         $subscriberAttrRepo->expects(self::once())
             ->method('findOneBySubscriberIdAndAttributeId')
             ->with(5, 10)
             ->willReturn($expected);
 
-        $manager = new SubscriberAttributeManager($attributeDefRepo, $subscriberAttrRepo, $subscriberRepo);
-
+        $manager = new SubscriberAttributeManager($subscriberAttrRepo);
         $result = $manager->getSubscriberAttribute(5, 10);
 
         self::assertSame($expected, $result);
@@ -151,15 +96,14 @@ class SubscriberAttributeManagerTest extends TestCase
 
     public function testDeleteSubscriberAttribute(): void
     {
-        $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $attributeDefRepo = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $subscriberAttrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
-
         $attribute = $this->createMock(SubscriberAttributeValue::class);
 
-        $attributeDefRepo->expects(self::once())->method('remove')->with($attribute);
+        $subscriberAttrRepo->expects(self::once())
+            ->method('remove')
+            ->with($attribute);
 
-        $manager = new SubscriberAttributeManager($attributeDefRepo, $subscriberAttrRepo, $subscriberRepo);
+        $manager = new SubscriberAttributeManager($subscriberAttrRepo);
         $manager->delete($attribute);
 
         self::assertTrue(true);
