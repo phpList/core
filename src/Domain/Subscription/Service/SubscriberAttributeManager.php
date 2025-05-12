@@ -19,8 +19,8 @@ class SubscriberAttributeManager
 
     public function __construct(
         SubscriberAttributeDefinitionRepository $definitionRepository,
-        SubscriberAttributeValueRepository      $attributeRepository,
-        SubscriberRepository                    $subscriberRepository,
+        SubscriberAttributeValueRepository$attributeRepository,
+        SubscriberRepository $subscriberRepository,
     ) {
         $this->definitionRepository = $definitionRepository;
         $this->attributeRepository = $attributeRepository;
@@ -46,7 +46,12 @@ class SubscriberAttributeManager
             $subscriberAttribute = new SubscriberAttributeValue($attributeDefinition, $subscriber);
         }
 
-        $subscriberAttribute->setValue($dto->value);
+        $value = $dto->value ?? $attributeDefinition->getDefaultValue();
+        if ($value === null) {
+            throw new SubscriberAttributeCreationException('Value is required', 400);
+        }
+
+        $subscriberAttribute->setValue($value);
         $this->attributeRepository->save($subscriberAttribute);
 
         return $subscriberAttribute;

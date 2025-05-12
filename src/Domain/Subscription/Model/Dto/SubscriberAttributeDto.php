@@ -9,7 +9,7 @@ class SubscriberAttributeDto
     public function __construct(
         public readonly int $subscriberId,
         public readonly int $attributeDefinitionId,
-        public readonly string $value,
+        public readonly ?string $value = null,
     ) {
     }
 }
