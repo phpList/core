@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Validator;
 
 use PhpList\Core\Domain\Common\Model\ValidationContext;
-use PhpList\Core\Domain\Subscription\Validator\TemplateLinkValidator;
+use PhpList\Core\Domain\Messaging\Validator\TemplateLinkValidator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Exception\ValidatorException;
 

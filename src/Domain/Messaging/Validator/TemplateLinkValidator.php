@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Subscription\Validator;
+namespace PhpList\Core\Domain\Messaging\Validator;
 
 use DOMDocument;
 use PhpList\Core\Domain\Common\Model\ValidationContext;

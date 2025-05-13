@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Subscription\Validator;
+namespace PhpList\Core\Domain\Messaging\Validator;
 
 use GuzzleHttp\ClientInterface;
 use InvalidArgumentException;

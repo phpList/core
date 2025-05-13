@@ -42,7 +42,7 @@ class SubscriberAttributeManager
         return $subscriberAttribute;
     }
 
-    public function getSubscriberAttribute(int $subscriberId, int $attributeDefinitionId): SubscriberAttributeValue
+    public function getSubscriberAttribute(int $subscriberId, int $attributeDefinitionId): ?SubscriberAttributeValue
     {
         return $this->attributeRepository->findOneBySubscriberIdAndAttributeId($subscriberId, $attributeDefinitionId);
     }

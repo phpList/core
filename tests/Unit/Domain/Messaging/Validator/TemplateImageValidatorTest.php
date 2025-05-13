@@ -9,7 +9,7 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Response;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\ValidationContext;
-use PhpList\Core\Domain\Subscription\Validator\TemplateImageValidator;
+use PhpList\Core\Domain\Messaging\Validator\TemplateImageValidator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Exception\ValidatorException;

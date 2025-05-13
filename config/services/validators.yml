@@ -1,8 +1,8 @@
 services:
-  PhpList\Core\Domain\Subscription\Validator\TemplateLinkValidator:
+  PhpList\Core\Domain\Messaging\Validator\TemplateLinkValidator:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Subscription\Validator\TemplateImageValidator:
+  PhpList\Core\Domain\Messaging\Validator\TemplateImageValidator:
     autowire: true
     autoconfigure: true

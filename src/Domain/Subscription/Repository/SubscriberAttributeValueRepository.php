@@ -59,7 +59,7 @@ class SubscriberAttributeValueRepository extends AbstractRepository implements P
             $query->andWhere('s.id = :subscriberId')
                 ->setParameter('subscriberId', $filter->getSubscriberId());
         }
-        return $query->orderBy('sa.id', 'ASC')
+        return $query->orderBy('ad.id', 'ASC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();

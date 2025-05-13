@@ -9,10 +9,10 @@ use PhpList\Core\Domain\Common\Model\ValidationContext;
 use PhpList\Core\Domain\Messaging\Model\Dto\CreateTemplateDto;
 use PhpList\Core\Domain\Messaging\Model\Template;
 use PhpList\Core\Domain\Messaging\Repository\TemplateRepository;
+use PhpList\Core\Domain\Messaging\Validator\TemplateImageValidator;
+use PhpList\Core\Domain\Messaging\Validator\TemplateLinkValidator;
 use PhpList\Core\Domain\Subscription\Model\Dto\UpdateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
-use PhpList\Core\Domain\Subscription\Validator\TemplateImageValidator;
-use PhpList\Core\Domain\Subscription\Validator\TemplateLinkValidator;
 
 class TemplateManager
 {
