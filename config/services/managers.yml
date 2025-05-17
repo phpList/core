@@ -36,6 +36,14 @@ services:
     autowire: true
     autoconfigure: true
 
+  PhpList\Core\Domain\Identity\Service\AdminAttributeDefinitionManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Identity\Service\AdminAttributeManager:
+    autowire: true
+    autoconfigure: true
+
   PhpList\Core\Domain\Subscription\Service\AttributeDefinitionManager:
     autowire: true
     autoconfigure: true
