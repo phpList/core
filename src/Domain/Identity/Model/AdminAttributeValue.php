@@ -14,31 +14,36 @@ use PhpList\Core\Domain\Identity\Repository\AdminAttributeValueRepository;
 class AdminAttributeValue implements DomainModel
 {
     #[ORM\Id]
-    #[ORM\Column(name: 'adminattributeid', type: 'integer', options: ['unsigned' => true])]
-    private int $adminAttributeId;
+    #[ORM\ManyToOne(targetEntity: AdminAttributeDefinition::class)]
+    #[ORM\JoinColumn(name: 'adminattributeid', referencedColumnName: 'id', nullable: false)]
+    private AdminAttributeDefinition $attributeDefinition;
 
     #[ORM\Id]
-    #[ORM\Column(name: 'adminid', type: 'integer', options: ['unsigned' => true])]
-    private int $adminId;
+    #[ORM\ManyToOne(targetEntity: Administrator::class)]
+    #[ORM\JoinColumn(name: 'adminid', referencedColumnName: 'id', nullable: false)]
+    private Administrator $administrator;
 
     #[ORM\Column(name: 'value', type: 'string', length: 255, nullable: true)]
     private ?string $value;
 
-    public function __construct(int $adminAttributeId, int $adminId, ?string $value = null)
-    {
-        $this->adminAttributeId = $adminAttributeId;
-        $this->adminId = $adminId;
+    public function __construct(
+        AdminAttributeDefinition $attributeDefinition,
+        Administrator $administrator,
+        ?string $value = null
+    ) {
+        $this->attributeDefinition = $attributeDefinition;
+        $this->administrator = $administrator;
         $this->value = $value;
     }
 
-    public function getAdminAttributeId(): int
+    public function getAttributeDefinition(): AdminAttributeDefinition
     {
-        return $this->adminAttributeId;
+        return $this->attributeDefinition;
     }
 
-    public function getAdminId(): int
+    public function getAdministrator(): Administrator
     {
-        return $this->adminId;
+        return $this->administrator;
     }
 
     public function getValue(): ?string
