@@ -51,3 +51,8 @@ services:
   PhpList\Core\Domain\Subscription\Service\SubscriberAttributeManager:
     autowire: true
     autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\SubscriberCsvManager:
+    autowire: true
+    autoconfigure: true
+    public: true

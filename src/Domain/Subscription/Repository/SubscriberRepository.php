@@ -14,13 +14,16 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 /**
  * Repository for Subscriber models.
  *
- * @method Subscriber|null findOneByEmail(string $email)
- *
  * @author Oliver Klee <oliver@phplist.com>
  * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 class SubscriberRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
+    public function findOneByEmail(string $email): ?Subscriber
+    {
+        return $this->findOneBy(['email' => $email]);
+    }
+
     public function findSubscribersBySubscribedList(int $listId): ?Subscriber
     {
         return $this->createQueryBuilder('s')
