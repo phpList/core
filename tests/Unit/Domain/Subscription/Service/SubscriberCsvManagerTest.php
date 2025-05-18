@@ -126,12 +126,12 @@ class SubscriberCsvManagerTest extends TestCase
             ->expects($this->once())
             ->method('updateSubscriber')
             ->with($this->callback(function (UpdateSubscriberDto $dto) {
-                return $dto->subscriberId === 1 
-                    && $dto->email === 'existing@example.com' 
-                    && $dto->confirmed === true 
-                    && $dto->htmlEmail === true 
-                    && $dto->blacklisted === false 
-                    && $dto->disabled === false 
+                return $dto->subscriberId === 1
+                    && $dto->email === 'existing@example.com'
+                    && $dto->confirmed === true
+                    && $dto->htmlEmail === true
+                    && $dto->blacklisted === false
+                    && $dto->disabled === false
                     && $dto->additionalData === 'Updated data';
             }))
             ->willReturn($updatedSubscriber);

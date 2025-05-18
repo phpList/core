@@ -172,7 +172,7 @@ class SubscriberCsvManagerTest extends KernelTestCase
         $response->sendContent();
         $content = ob_get_clean();
 
-        echo "CSV Content: " . $content . "\n";
+        echo 'CSV Content: ' . $content . "\n";
 
         self::assertStringContainsString('email,confirmed,blacklisted,html_email,disabled,extra_data', $content);
     }
