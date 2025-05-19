@@ -52,7 +52,12 @@ services:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Subscription\Service\SubscriberCsvManager:
+  PhpList\Core\Domain\Subscription\Service\SubscriberCsvExportManager:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  PhpList\Core\Domain\Subscription\Service\SubscriberCsvImportManager:
     autowire: true
     autoconfigure: true
     public: true
