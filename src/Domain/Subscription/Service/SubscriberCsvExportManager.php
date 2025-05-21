@@ -8,9 +8,9 @@ use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberFilter;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Service for importing and exporting subscribers from/to CSV files.
@@ -36,7 +36,7 @@ class SubscriberCsvExportManager
      *
      * @param SubscriberFilter|null $filter Optional filter to apply
      * @param int $batchSize Number of subscribers to process in each batch
-     * @return Response A streamed response with the CSV file
+     * @return Response A response with the CSV file for download
      */
     public function exportToCsv(?SubscriberFilter $filter = null, int $batchSize = 1000): Response
     {
@@ -44,9 +44,10 @@ class SubscriberCsvExportManager
             $filter = new SubscriberFilter();
         }
 
-        $response = new StreamedResponse(function () use ($filter, $batchSize) {
-            $this->generateCsvContent($filter, $batchSize);
-        });
+        $tempFilePath = tempnam(sys_get_temp_dir(), 'subscribers_export_');
+        $this->generateCsvContent($filter, $batchSize, $tempFilePath);
+
+        $response = new BinaryFileResponse($tempFilePath);
 
         return $this->configureResponse($response);
     }
@@ -56,10 +57,11 @@ class SubscriberCsvExportManager
      *
      * @param SubscriberFilter $filter Filter to apply
      * @param int $batchSize Batch size for processing
+     * @param string $filePath Path to the file where CSV content will be written
      */
-    private function generateCsvContent(SubscriberFilter $filter, int $batchSize): void
+    private function generateCsvContent(SubscriberFilter $filter, int $batchSize, string $filePath): void
     {
-        $handle = fopen('php://output', 'w');
+        $handle = fopen($filePath, 'w');
         $attributeDefinitions = $this->definitionRepository->findAll();
 
         $headers = $this->getExportHeaders($attributeDefinitions);
@@ -159,10 +161,10 @@ class SubscriberCsvExportManager
     /**
      * Configure the response for CSV download.
      *
-     * @param StreamedResponse $response The response
+     * @param BinaryFileResponse $response The response
      * @return Response The configured response
      */
-    private function configureResponse(StreamedResponse $response): Response
+    private function configureResponse(BinaryFileResponse $response): Response
     {
         $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
         $disposition = $response->headers->makeDisposition(
@@ -170,6 +172,7 @@ class SubscriberCsvExportManager
             'subscribers_export_' . date('Y-m-d') . '.csv'
         );
         $response->headers->set('Content-Disposition', $disposition);
+        $response->deleteFileAfterSend();
 
         return $response;
     }
