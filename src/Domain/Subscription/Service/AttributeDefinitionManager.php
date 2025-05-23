@@ -40,7 +40,7 @@ class AttributeDefinitionManager
 
     public function update(
         SubscriberAttributeDefinition $attributeDefinition,
-        AttributeDefinitionDto        $attributeDefinitionDto
+        AttributeDefinitionDto $attributeDefinitionDto
     ): SubscriberAttributeDefinition {
         $existingAttribute = $this->definitionRepository->findOneByName($attributeDefinitionDto->name);
         if ($existingAttribute && $existingAttribute->getId() !== $attributeDefinition->getId()) {

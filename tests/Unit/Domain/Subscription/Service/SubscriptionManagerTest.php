@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 use PhpList\Core\Domain\Subscription\Model\Subscription;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriptionRepository;
 use PhpList\Core\Domain\Subscription\Service\SubscriptionManager;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -24,7 +25,8 @@ class SubscriptionManagerTest extends TestCase
     {
         $this->subscriptionRepository = $this->createMock(SubscriptionRepository::class);
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
-        $this->manager = new SubscriptionManager($this->subscriptionRepository, $this->subscriberRepository);
+        $subscriberListRepository = $this->createMock(SubscriberListRepository::class);
+        $this->manager = new SubscriptionManager($this->subscriptionRepository, $this->subscriberRepository, $subscriberListRepository);
     }
 
     public function testCreateSubscriptionWhenSubscriberExists(): void

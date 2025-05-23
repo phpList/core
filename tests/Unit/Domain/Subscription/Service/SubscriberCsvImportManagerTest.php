@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service;
 
+use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
 use PhpList\Core\Domain\Subscription\Model\Dto\UpdateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Subscription\Service\CsvImporter;
 use PhpList\Core\Domain\Subscription\Service\SubscriberAttributeManager;
 use PhpList\Core\Domain\Subscription\Service\SubscriberCsvImportManager;
 use PhpList\Core\Domain\Subscription\Service\SubscriberManager;
+use PhpList\Core\Domain\Subscription\Service\SubscriptionManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -21,7 +24,9 @@ class SubscriberCsvImportManagerTest extends TestCase
 {
     private SubscriberManager&MockObject $subscriberManagerMock;
     private SubscriberAttributeManager&MockObject $attributeManagerMock;
+    private SubscriptionManager&MockObject $subscriptionManagerMock;
     private SubscriberRepository&MockObject $subscriberRepositoryMock;
+    private CsvImporter&MockObject $csvImporterMock;
     private SubscriberAttributeDefinitionRepository&MockObject $attributeDefinitionRepositoryMock;
     private SubscriberCsvImportManager $subject;
 
@@ -29,13 +34,17 @@ class SubscriberCsvImportManagerTest extends TestCase
     {
         $this->subscriberManagerMock = $this->createMock(SubscriberManager::class);
         $this->attributeManagerMock = $this->createMock(SubscriberAttributeManager::class);
+        $this->subscriptionManagerMock = $this->createMock(SubscriptionManager::class);
         $this->subscriberRepositoryMock = $this->createMock(SubscriberRepository::class);
+        $this->csvImporterMock = $this->createMock(CsvImporter::class);
         $this->attributeDefinitionRepositoryMock = $this->createMock(SubscriberAttributeDefinitionRepository::class);
 
         $this->subject = new SubscriberCsvImportManager(
             $this->subscriberManagerMock,
             $this->attributeManagerMock,
+            $this->subscriptionManagerMock,
             $this->subscriberRepositoryMock,
+            $this->csvImporterMock,
             $this->attributeDefinitionRepositoryMock
         );
     }
@@ -50,15 +59,15 @@ class SubscriberCsvImportManagerTest extends TestCase
         file_put_contents($tempFile, $csvContent);
 
         $uploadedFile = $this->createMock(UploadedFile::class);
-        $uploadedFile->method('getPathname')->willReturn($tempFile);
+        $uploadedFile->method('getRealPath')->willReturn($tempFile);
 
         $attributeDefinition = $this->createMock(SubscriberAttributeDefinition::class);
         $attributeDefinition->method('getName')->willReturn('first_name');
         $attributeDefinition->method('getId')->willReturn(1);
 
         $this->attributeDefinitionRepositoryMock
-            ->method('findOneBy')
-            ->with(['name' => 'first_name'])
+            ->method('findOneByName')
+            ->with('first_name')
             ->willReturn($attributeDefinition);
 
         $subscriber1 = $this->createMock(Subscriber::class);
@@ -71,9 +80,37 @@ class SubscriberCsvImportManagerTest extends TestCase
             ->method('findOneByEmail')
             ->willReturn(null);
 
+        $importDto1 = new ImportSubscriberDto(
+            email: 'test@example.com',
+            confirmed: true,
+            blacklisted: false,
+            htmlEmail: true,
+            disabled: false,
+        );
+        $importDto1->extraData = 'Some extra data';
+        $importDto1->extraAttributes = ['first_name' => 'John'];
+
+        $importDto2 = new ImportSubscriberDto(
+            email: 'another@example.com',
+            confirmed: false,
+            blacklisted: true,
+            htmlEmail: false,
+            disabled: true
+        );
+        $importDto2->extraData = 'More data';
+        $importDto2->extraAttributes = ['first_name' => 'Jane'];
+
+        $this->csvImporterMock
+            ->method('import')
+            ->with($tempFile)
+            ->willReturn([
+                'valid' => [$importDto1, $importDto2],
+                'errors' => []
+            ]);
+
         $this->subscriberManagerMock
             ->expects($this->exactly(2))
-            ->method('createSubscriber')
+            ->method('createFromImport')
             ->willReturnOnConsecutiveCalls($subscriber1, $subscriber2);
 
         $this->attributeManagerMock
@@ -104,15 +141,10 @@ class SubscriberCsvImportManagerTest extends TestCase
         file_put_contents($tempFile, $csvContent);
 
         $uploadedFile = $this->createMock(UploadedFile::class);
-        $uploadedFile->method('getPathname')->willReturn($tempFile);
+        $uploadedFile->method('getRealPath')->willReturn($tempFile);
 
         $existingSubscriber = $this->createMock(Subscriber::class);
         $existingSubscriber->method('getId')->willReturn(1);
-        $existingSubscriber->method('isConfirmed')->willReturn(false);
-        $existingSubscriber->method('hasHtmlEmail')->willReturn(false);
-        $existingSubscriber->method('isBlacklisted')->willReturn(true);
-        $existingSubscriber->method('isDisabled')->willReturn(true);
-        $existingSubscriber->method('getExtraData')->willReturn('Old data');
 
         $this->subscriberRepositoryMock
             ->method('findOneByEmail')
@@ -121,18 +153,28 @@ class SubscriberCsvImportManagerTest extends TestCase
 
         $updatedSubscriber = $this->createMock(Subscriber::class);
 
+        $importDto = new ImportSubscriberDto(
+            email: 'existing@example.com',
+            confirmed: true,
+            blacklisted: false,
+            htmlEmail: true,
+            disabled: false,
+        );
+        $importDto->extraData = 'Updated data';
+        $importDto->extraAttributes = [];
+
+        $this->csvImporterMock
+            ->method('import')
+            ->with($tempFile)
+            ->willReturn([
+                'valid' => [$importDto],
+                'errors' => []
+            ]);
+
         $this->subscriberManagerMock
             ->expects($this->once())
-            ->method('updateSubscriber')
-            ->with($this->callback(function (UpdateSubscriberDto $dto) {
-                return $dto->subscriberId === 1
-                    && $dto->email === 'existing@example.com'
-                    && $dto->confirmed === true
-                    && $dto->htmlEmail === true
-                    && $dto->blacklisted === false
-                    && $dto->disabled === false
-                    && $dto->additionalData === 'Updated data';
-            }))
+            ->method('updateFromImport')
+            ->with($existingSubscriber, $importDto)
             ->willReturn($updatedSubscriber);
 
         $options = new SubscriberImportOptions(updateExisting: true);

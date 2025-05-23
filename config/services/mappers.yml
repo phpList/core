@@ -1,0 +1,13 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  PhpList\Core\Domain\Subscription\Service\CsvRowToDtoMapper:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\CsvImporter:
+    autowire: true
+    autoconfigure: true
