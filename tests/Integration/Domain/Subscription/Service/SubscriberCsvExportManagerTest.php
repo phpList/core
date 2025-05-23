@@ -58,7 +58,7 @@ class SubscriberCsvExportManagerTest extends KernelTestCase
         $savedSubscribers = $this->subscriberRepository->findAll();
         self::assertCount(2, $savedSubscribers);
 
-        $filter = new SubscriberFilter();
+        $filter = new SubscriberFilter(columns: ['email', 'confirmed', 'blacklisted', 'disabled', 'extraData']);
 
         $response = $this->subscriberCsvExportManager->exportToCsv($filter);
 
@@ -73,6 +73,6 @@ class SubscriberCsvExportManagerTest extends KernelTestCase
         $response->sendContent();
         $content = ob_get_clean();
 
-        self::assertStringContainsString('email,confirmed,blacklisted,html_email,disabled,extra_data', $content);
+        self::assertStringContainsString('email,confirmed,blacklisted,disabled,extraData', $content);
     }
 }

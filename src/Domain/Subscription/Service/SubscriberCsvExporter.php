@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Subscription\Service;
 
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberFilter;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
+use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
@@ -46,7 +47,7 @@ class SubscriberCsvExporter
         }
 
         $tempFilePath = tempnam(sys_get_temp_dir(), 'subscribers_export_');
-        $this->generateCsvContent($filter, $batchSize, $tempFilePath);
+        $this->generateCsvContent($filter, $batchSize, $tempFilePath, $filter->getColumns());
 
         $response = new BinaryFileResponse($tempFilePath);
 
@@ -60,15 +61,20 @@ class SubscriberCsvExporter
      * @param int $batchSize Batch size for processing
      * @param string $filePath Path to the file where CSV content will be written
      */
-    private function generateCsvContent(SubscriberFilter $filter, int $batchSize, string $filePath): void
-    {
+    private function generateCsvContent(
+        SubscriberFilter $filter,
+        int $batchSize,
+        string $filePath,
+        array $columns
+    ): void {
         $handle = fopen($filePath, 'w');
+        /** @var SubscriberAttributeDefinition[] $attributeDefinitions */
         $attributeDefinitions = $this->definitionRepository->findAll();
 
-        $headers = $this->getExportHeaders($attributeDefinitions);
+        $headers = $this->getExportHeaders($attributeDefinitions, $columns);
         fputcsv($handle, $headers);
 
-        $this->exportSubscribers($handle, $filter, $batchSize, $attributeDefinitions);
+        $this->exportSubscribers($handle, $filter, $batchSize, $attributeDefinitions, $headers);
 
         fclose($handle);
     }
@@ -76,25 +82,27 @@ class SubscriberCsvExporter
     /**
      * Get headers for the export CSV.
      *
-     * @param array $attributeDefinitions Attribute definitions
+     * @param SubscriberAttributeDefinition[] $attributeDefinitions Attribute definitions
      * @return array Headers
      */
-    private function getExportHeaders(array $attributeDefinitions): array
+    private function getExportHeaders(array $attributeDefinitions, array $columns): array
     {
         $headers = [
             'email',
             'confirmed',
             'blacklisted',
-            'html_email',
+            'htmlEmail',
             'disabled',
-            'extra_data',
+            'extraData',
         ];
 
         foreach ($attributeDefinitions as $definition) {
             $headers[] = $definition->getName();
         }
 
-        return $headers;
+        $headers = array_filter($headers, fn($header) => in_array($header, $columns, true));
+
+        return array_values($headers);
     }
 
     /**
@@ -103,13 +111,14 @@ class SubscriberCsvExporter
      * @param resource $handle File handle
      * @param SubscriberFilter $filter Filter to apply
      * @param int $batchSize Batch size
-     * @param array $attributeDefinitions Attribute definitions
+     * @param SubscriberAttributeDefinition[] $attributeDefinitions Attribute definitions
      */
     private function exportSubscribers(
         $handle,
         SubscriberFilter $filter,
         int $batchSize,
-        array $attributeDefinitions
+        array $attributeDefinitions,
+        array $headers
     ): void {
         $lastId = 0;
 
@@ -121,7 +130,7 @@ class SubscriberCsvExporter
             );
 
             foreach ($subscribers as $subscriber) {
-                $row = $this->getSubscriberRow($subscriber, $attributeDefinitions);
+                $row = $this->getSubscriberRow($subscriber, $attributeDefinitions, $headers);
                 fputcsv($handle, $row);
                 $lastId = $subscriber->getId();
             }
@@ -134,18 +143,19 @@ class SubscriberCsvExporter
      * Get a row of data for a subscriber.
      *
      * @param Subscriber $subscriber The subscriber
-     * @param array $attributeDefinitions Attribute definitions
+     * @param SubscriberAttributeDefinition[] $attributeDefinitions Attribute definitions
      * @return array Row data
      */
-    private function getSubscriberRow(Subscriber $subscriber, array $attributeDefinitions): array
+    private function getSubscriberRow(Subscriber $subscriber, array $attributeDefinitions, array $headers): array
     {
         $row = [
-            $subscriber->getEmail(),
-            $subscriber->isConfirmed() ? '1' : '0',
-            $subscriber->isBlacklisted() ? '1' : '0',
-            $subscriber->hasHtmlEmail() ? '1' : '0',
-            $subscriber->isDisabled() ? '1' : '0',
-            $subscriber->getExtraData(),
+            'id' => $subscriber->getId(),
+            'email' => $subscriber->getEmail(),
+            'confirmed' => $subscriber->isConfirmed() ? '1' : '0',
+            'blacklisted' => $subscriber->isBlacklisted() ? '1' : '0',
+            'htmlEmail' => $subscriber->hasHtmlEmail() ? '1' : '0',
+            'disabled' => $subscriber->isDisabled() ? '1' : '0',
+            'extraData' => $subscriber->getExtraData(),
         ];
 
         foreach ($attributeDefinitions as $definition) {
@@ -153,10 +163,17 @@ class SubscriberCsvExporter
                 subscriberId: $subscriber->getId(),
                 attributeDefinitionId: $definition->getId()
             );
-            $row[] = $attributeValue ? $attributeValue->getValue() : '';
+            $row[$definition->getName()] = $attributeValue ? $attributeValue->getValue() : '';
         }
 
-        return $row;
+        $row = array_intersect_key($row, array_flip($headers));
+
+        $filteredRow = [];
+        foreach ($headers as $key) {
+            $filteredRow[] = $row[$key] ?? '';
+        }
+
+        return $filteredRow;
     }
 
     /**
