@@ -50,6 +50,7 @@ class SubscriberCsvImporter
      * @param UploadedFile $file The uploaded CSV file
      * @param SubscriberImportOptions $options
      * @return array Import statistics
+     * @throws RuntimeException When the uploaded file cannot be read or for any other errors during import
      */
     public function importFromCsv(UploadedFile $file, SubscriberImportOptions $options): array
     {
@@ -81,7 +82,6 @@ class SubscriberCsvImporter
                 $stats['errors'][] = 'Line ' . $line . ': ' . implode('; ', $messages);
                 $stats['skipped']++;
             }
-
         } catch (Throwable $e) {
             $stats['errors'][] = 'General import error: ' . $e->getMessage();
         }
@@ -155,7 +155,8 @@ class SubscriberCsvImporter
     private function processAttributes(Subscriber $subscriber, ImportSubscriberDto $dto): void
     {
         foreach ($dto->extraAttributes as $key => $value) {
-            if ($attributeDefinition = $this->attrDefinitionRepository->findOneByName($key)) {
+            $attributeDefinition = $this->attrDefinitionRepository->findOneByName($key);
+            if ($attributeDefinition !== null) {
                 $this->attributeManager->createOrUpdate(
                     $subscriber,
                     $attributeDefinition,

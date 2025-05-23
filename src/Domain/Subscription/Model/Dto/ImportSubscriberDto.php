@@ -12,16 +12,16 @@ class ImportSubscriberDto
     #[Assert\Email]
     public string $email;
 
-    #[Assert\Type("bool")]
+    #[Assert\Type('bool')]
     public bool $confirmed;
 
-    #[Assert\Type("bool")]
+    #[Assert\Type('bool')]
     public bool $blacklisted;
 
-    #[Assert\Type("bool")]
+    #[Assert\Type('bool')]
     public bool $htmlEmail;
 
-    #[Assert\Type("bool")]
+    #[Assert\Type('bool')]
     public bool $disabled;
 
     public ?string $extraData = null;

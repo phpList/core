@@ -15,7 +15,8 @@ class CsvImporter
     public function __construct(
         private readonly CsvRowToDtoMapper $rowMapper,
         private readonly ValidatorInterface $validator,
-    ) {}
+    ) {
+    }
 
     /**
      * @param string $csvFilePath

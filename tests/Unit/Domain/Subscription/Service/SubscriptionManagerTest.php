@@ -26,7 +26,11 @@ class SubscriptionManagerTest extends TestCase
         $this->subscriptionRepository = $this->createMock(SubscriptionRepository::class);
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
         $subscriberListRepository = $this->createMock(SubscriberListRepository::class);
-        $this->manager = new SubscriptionManager($this->subscriptionRepository, $this->subscriberRepository, $subscriberListRepository);
+        $this->manager = new SubscriptionManager(
+            $this->subscriptionRepository,
+            $this->subscriberRepository,
+            $subscriberListRepository
+        );
     }
 
     public function testCreateSubscriptionWhenSubscriberExists(): void
