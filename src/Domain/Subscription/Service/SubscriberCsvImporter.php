@@ -9,6 +9,9 @@ use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriptionManager;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Throwable;
@@ -16,14 +19,14 @@ use Throwable;
 /**
  * Service for importing subscribers from a CSV file.
  */
-class SubscriberCsvImportManager
+class SubscriberCsvImporter
 {
     private SubscriberManager $subscriberManager;
     private SubscriberAttributeManager $attributeManager;
     private SubscriptionManager $subscriptionManager;
     private SubscriberRepository $subscriberRepository;
     private CsvImporter $csvImporter;
-    private SubscriberAttributeDefinitionRepository $subscriberAttributeDefinitionRepository;
+    private SubscriberAttributeDefinitionRepository $attrDefinitionRepository;
 
     public function __construct(
         SubscriberManager $subscriberManager,
@@ -31,14 +34,14 @@ class SubscriberCsvImportManager
         SubscriptionManager $subscriptionManager,
         SubscriberRepository $subscriberRepository,
         CsvImporter $csvImporter,
-        SubscriberAttributeDefinitionRepository $subscriberAttributeDefinitionRepository
+        SubscriberAttributeDefinitionRepository $attrDefinitionRepository
     ) {
         $this->subscriberManager = $subscriberManager;
         $this->attributeManager = $attributeManager;
         $this->subscriptionManager = $subscriptionManager;
         $this->subscriberRepository = $subscriberRepository;
         $this->csvImporter = $csvImporter;
-        $this->subscriberAttributeDefinitionRepository = $subscriberAttributeDefinitionRepository;
+        $this->attrDefinitionRepository = $attrDefinitionRepository;
     }
 
     /**
@@ -152,7 +155,7 @@ class SubscriberCsvImportManager
     private function processAttributes(Subscriber $subscriber, ImportSubscriberDto $dto): void
     {
         foreach ($dto->extraAttributes as $key => $value) {
-            if ($attributeDefinition = $this->subscriberAttributeDefinitionRepository->findOneByName($key)) {
+            if ($attributeDefinition = $this->attrDefinitionRepository->findOneByName($key)) {
                 $this->attributeManager->createOrUpdate(
                     $subscriber,
                     $attributeDefinition,

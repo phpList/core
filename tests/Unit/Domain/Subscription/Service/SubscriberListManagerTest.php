@@ -8,7 +8,7 @@ use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Subscription\Model\Dto\CreateSubscriberListDto;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
-use PhpList\Core\Domain\Subscription\Service\SubscriberListManager;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberListManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 

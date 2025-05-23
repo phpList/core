@@ -8,6 +8,7 @@ use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberFilter;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -15,7 +16,7 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 /**
  * Service for importing and exporting subscribers from/to CSV files.
  */
-class SubscriberCsvExportManager
+class SubscriberCsvExporter
 {
     private SubscriberAttributeManager $attributeManager;
     private SubscriberRepository $subscriberRepository;

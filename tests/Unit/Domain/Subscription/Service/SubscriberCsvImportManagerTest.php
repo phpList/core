@@ -6,16 +6,15 @@ namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service;
 
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
-use PhpList\Core\Domain\Subscription\Model\Dto\UpdateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\CsvImporter;
-use PhpList\Core\Domain\Subscription\Service\SubscriberAttributeManager;
-use PhpList\Core\Domain\Subscription\Service\SubscriberCsvImportManager;
-use PhpList\Core\Domain\Subscription\Service\SubscriberManager;
-use PhpList\Core\Domain\Subscription\Service\SubscriptionManager;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriptionManager;
+use PhpList\Core\Domain\Subscription\Service\SubscriberCsvImporter;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -28,7 +27,7 @@ class SubscriberCsvImportManagerTest extends TestCase
     private SubscriberRepository&MockObject $subscriberRepositoryMock;
     private CsvImporter&MockObject $csvImporterMock;
     private SubscriberAttributeDefinitionRepository&MockObject $attributeDefinitionRepositoryMock;
-    private SubscriberCsvImportManager $subject;
+    private SubscriberCsvImporter $subject;
 
     protected function setUp(): void
     {
@@ -39,7 +38,7 @@ class SubscriberCsvImportManagerTest extends TestCase
         $this->csvImporterMock = $this->createMock(CsvImporter::class);
         $this->attributeDefinitionRepositoryMock = $this->createMock(SubscriberAttributeDefinitionRepository::class);
 
-        $this->subject = new SubscriberCsvImportManager(
+        $this->subject = new SubscriberCsvImporter(
             $this->subscriberManagerMock,
             $this->attributeManagerMock,
             $this->subscriptionManagerMock,

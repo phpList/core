@@ -7,7 +7,7 @@ namespace PhpList\Core\Tests\Integration\Domain\Subscription\Service;
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberFilter;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
-use PhpList\Core\Domain\Subscription\Service\SubscriberCsvExportManager;
+use PhpList\Core\Domain\Subscription\Service\SubscriberCsvExporter;
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -21,7 +21,7 @@ class SubscriberCsvExportManagerTest extends KernelTestCase
     use DatabaseTestTrait;
     use SimilarDatesAssertionTrait;
 
-    private ?SubscriberCsvExportManager $subscriberCsvExportManager = null;
+    private ?SubscriberCsvExporter $subscriberCsvExportManager = null;
     private ?SubscriberRepository $subscriberRepository = null;
 
     protected function setUp(): void
@@ -29,7 +29,7 @@ class SubscriberCsvExportManagerTest extends KernelTestCase
         parent::setUp();
         $this->loadSchema();
 
-        $this->subscriberCsvExportManager = self::getContainer()->get(SubscriberCsvExportManager::class);
+        $this->subscriberCsvExportManager = self::getContainer()->get(SubscriberCsvExporter::class);
         $this->subscriberRepository = self::getContainer()->get(SubscriberRepository::class);
     }
 

@@ -8,7 +8,7 @@ use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
-use PhpList\Core\Domain\Subscription\Service\SubscriberCsvImportManager;
+use PhpList\Core\Domain\Subscription\Service\SubscriberCsvImporter;
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -22,7 +22,7 @@ class SubscriberCsvImportManagerTest extends KernelTestCase
     use DatabaseTestTrait;
     use SimilarDatesAssertionTrait;
 
-    private ?SubscriberCsvImportManager $subscriberCsvImportManager = null;
+    private ?SubscriberCsvImporter $subscriberCsvImportManager = null;
     private ?SubscriberRepository $subscriberRepository = null;
 
     protected function setUp(): void
@@ -30,7 +30,7 @@ class SubscriberCsvImportManagerTest extends KernelTestCase
         parent::setUp();
         $this->loadSchema();
 
-        $this->subscriberCsvImportManager = self::getContainer()->get(SubscriberCsvImportManager::class);
+        $this->subscriberCsvImportManager = self::getContainer()->get(SubscriberCsvImporter::class);
         $this->subscriberRepository = self::getContainer()->get(SubscriberRepository::class);
     }
 

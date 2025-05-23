@@ -4,7 +4,7 @@ services:
     autoconfigure: true
     public: false
 
-  PhpList\Core\Domain\Subscription\Service\SubscriberManager:
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager:
     autowire: true
     autoconfigure: true
 
@@ -12,11 +12,11 @@ services:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Subscription\Service\SubscriberListManager:
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberListManager:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Subscription\Service\SubscriptionManager:
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscriptionManager:
     autowire: true
     autoconfigure: true
 
@@ -44,20 +44,20 @@ services:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Subscription\Service\AttributeDefinitionManager:
+  PhpList\Core\Domain\Subscription\Service\Manager\AttributeDefinitionManager:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Subscription\Service\SubscriberAttributeManager:
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Subscription\Service\SubscriberCsvExportManager:
+  PhpList\Core\Domain\Subscription\Service\SubscriberCsvExporter:
     autowire: true
     autoconfigure: true
     public: true
 
-  PhpList\Core\Domain\Subscription\Service\SubscriberCsvImportManager:
+  PhpList\Core\Domain\Subscription\Service\SubscriberCsvImporter:
     autowire: true
     autoconfigure: true
     public: true

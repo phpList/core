@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Subscription\Model\Dto\CreateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
-use PhpList\Core\Domain\Subscription\Service\SubscriberManager;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use PHPUnit\Framework\TestCase;
 
 class SubscriberManagerTest extends TestCase

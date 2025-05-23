@@ -9,7 +9,7 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
-use PhpList\Core\Domain\Subscription\Service\SubscriberAttributeManager;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use PHPUnit\Framework\TestCase;
 
 class SubscriberAttributeManagerTest extends TestCase

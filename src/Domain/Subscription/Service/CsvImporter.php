@@ -26,7 +26,6 @@ class CsvImporter
     {
         $reader = Reader::createFromPath($csvFilePath, 'r');
         $reader->setHeaderOffset(0);
-
         $records = $reader->getRecords();
         $validDtos = [];
         $errors = [];

@@ -8,7 +8,7 @@ use PhpList\Core\Domain\Subscription\Exception\AttributeDefinitionCreationExcept
 use PhpList\Core\Domain\Subscription\Model\Dto\AttributeDefinitionDto;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
-use PhpList\Core\Domain\Subscription\Service\AttributeDefinitionManager;
+use PhpList\Core\Domain\Subscription\Service\Manager\AttributeDefinitionManager;
 use PHPUnit\Framework\TestCase;
 
 class AttributeDefinitionManagerTest extends TestCase

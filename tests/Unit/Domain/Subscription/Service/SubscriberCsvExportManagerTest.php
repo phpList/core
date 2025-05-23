@@ -10,8 +10,8 @@ use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
-use PhpList\Core\Domain\Subscription\Service\SubscriberAttributeManager;
-use PhpList\Core\Domain\Subscription\Service\SubscriberCsvExportManager;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
+use PhpList\Core\Domain\Subscription\Service\SubscriberCsvExporter;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,7 +21,7 @@ class SubscriberCsvExportManagerTest extends TestCase
     private SubscriberAttributeManager&MockObject $attributeManagerMock;
     private SubscriberRepository&MockObject $subscriberRepositoryMock;
     private SubscriberAttributeDefinitionRepository&MockObject $attributeDefinitionRepositoryMock;
-    private SubscriberCsvExportManager $subject;
+    private SubscriberCsvExporter $subject;
 
     protected function setUp(): void
     {
@@ -29,7 +29,7 @@ class SubscriberCsvExportManagerTest extends TestCase
         $this->subscriberRepositoryMock = $this->createMock(SubscriberRepository::class);
         $this->attributeDefinitionRepositoryMock = $this->createMock(SubscriberAttributeDefinitionRepository::class);
 
-        $this->subject = new SubscriberCsvExportManager(
+        $this->subject = new SubscriberCsvExporter(
             $this->attributeManagerMock,
             $this->subscriberRepositoryMock,
             $this->attributeDefinitionRepositoryMock
