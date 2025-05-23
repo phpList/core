@@ -8,6 +8,7 @@ use PhpList\Core\Domain\Subscription\Exception\SubscriptionCreationException;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 use PhpList\Core\Domain\Subscription\Model\Subscription;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriptionRepository;
 
@@ -15,13 +16,37 @@ class SubscriptionManager
 {
     private SubscriptionRepository $subscriptionRepository;
     private SubscriberRepository $subscriberRepository;
+    private SubscriberListRepository $subscriberListRepository;
 
     public function __construct(
         SubscriptionRepository $subscriptionRepository,
-        SubscriberRepository $subscriberRepository
+        SubscriberRepository $subscriberRepository,
+        SubscriberListRepository $subscriberListRepository
     ) {
         $this->subscriptionRepository = $subscriptionRepository;
         $this->subscriberRepository = $subscriberRepository;
+        $this->subscriberListRepository = $subscriberListRepository;
+    }
+
+    public function addSubscriberToAList(Subscriber $subscriber, int $listId): Subscription
+    {
+        $existingSubscription = $this->subscriptionRepository
+            ->findOneBySubscriberEmailAndListId($listId, $subscriber->getEmail());
+        if ($existingSubscription) {
+            return $existingSubscription;
+        }
+        $subscriberList = $this->subscriberListRepository->find($listId);
+        if (!$subscriberList) {
+            throw new SubscriptionCreationException('Subscriber list not found.', 404);
+        }
+
+        $subscription = new Subscription();
+        $subscription->setSubscriber($subscriber);
+        $subscription->setSubscriberList($subscriberList);
+
+        $this->subscriptionRepository->save($subscription);
+
+        return $subscription;
     }
 
     /** @return Subscription[] */

@@ -15,23 +15,26 @@ use RuntimeException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
- * Service for importing and exporting subscribers from/to CSV files.
+ * Service for importing subscribers from a CSV file.
  */
 class SubscriberCsvImportManager
 {
     private SubscriberManager $subscriberManager;
     private SubscriberAttributeManager $attributeManager;
+    private SubscriptionManager $subscriptionManager;
     private SubscriberRepository $subscriberRepository;
     private SubscriberAttributeDefinitionRepository $definitionRepository;
 
     public function __construct(
         SubscriberManager $subscriberManager,
         SubscriberAttributeManager $attributeManager,
+        SubscriptionManager $subscriptionManager,
         SubscriberRepository $subscriberRepository,
         SubscriberAttributeDefinitionRepository $definitionRepository
     ) {
         $this->subscriberManager = $subscriberManager;
         $this->attributeManager = $attributeManager;
+        $this->subscriptionManager = $subscriptionManager;
         $this->subscriberRepository = $subscriberRepository;
         $this->definitionRepository = $definitionRepository;
     }
@@ -80,14 +83,14 @@ class SubscriberCsvImportManager
     }
 
     /**
-     * Import subscribers with update strategy.
+     * Import subscribers with an update strategy.
      *
      * @param UploadedFile $file The uploaded CSV file
      * @return array Import statistics
      */
-    public function importAndUpdateFromCsv(UploadedFile $file): array
+    public function importAndUpdateFromCsv(UploadedFile $file, ?array $listIds = []): array
     {
-        return $this->importFromCsv($file, new SubscriberImportOptions(updateExisting: true));
+        return $this->importFromCsv($file, new SubscriberImportOptions(updateExisting: true, listIds: $listIds));
     }
 
     /**
@@ -96,9 +99,9 @@ class SubscriberCsvImportManager
      * @param UploadedFile $file The uploaded CSV file
      * @return array Import statistics
      */
-    public function importNewFromCsv(UploadedFile $file): array
+    public function importNewFromCsv(UploadedFile $file, ?array $listIds = []): array
     {
-        return $this->importFromCsv($file, new SubscriberImportOptions());
+        return $this->importFromCsv($file, new SubscriberImportOptions(listIds: $listIds));
     }
 
     /**
@@ -106,7 +109,7 @@ class SubscriberCsvImportManager
      *
      * @param UploadedFile $file The uploaded CSV file
      * @return array [file handle, headers, attribute definitions]
-     * @throws RuntimeException If file cannot be opened or is invalid
+     * @throws RuntimeException If a file cannot be opened or is invalid
      */
     private function prepareImport(UploadedFile $file): array
     {
@@ -189,14 +192,20 @@ class SubscriberCsvImportManager
         }
 
         $subscriber = $this->createOrUpdateSubscriber(
-            $email,
-            $data,
-            $headers,
-            $existingSubscriber,
-            $stats
+            email: $email,
+            data: $data,
+            headers: $headers,
+            existingSubscriber: $existingSubscriber,
+            stats: $stats
         );
 
         $this->processAttributes($subscriber, $data, $attributeDefinitions);
+
+        if (count($options->listIds) > 0) {
+            foreach ($options->listIds as $listId) {
+                $this->subscriptionManager->addSubscriberToAList($subscriber, $listId);
+            }
+        }
     }
 
     /**
@@ -247,7 +256,7 @@ class SubscriberCsvImportManager
      * @param string $email Subscriber email
      * @param array $data Row data
      * @param array $headers CSV headers
-     * @param int|false $confirmedIndex Index of confirmed column
+     * @param bool|int $confirmedIndex Index of confirmed column
      * @return Subscriber The updated subscriber
      */
     private function updateExistingSubscriber(
@@ -255,7 +264,7 @@ class SubscriberCsvImportManager
         string $email,
         array $data,
         array $headers,
-        $confirmedIndex
+        bool|int $confirmedIndex
     ): Subscriber {
         $confirmed = $this->isBooleanTrue($data, $confirmedIndex, $existingSubscriber->isConfirmed());
 
@@ -276,13 +285,13 @@ class SubscriberCsvImportManager
         }
 
         $dto = new UpdateSubscriberDto(
-            $existingSubscriber->getId(),
-            $email,
-            $confirmed,
-            $blacklisted,
-            $htmlEmail,
-            $disabled,
-            $additionalData
+            subscriberId: $existingSubscriber->getId(),
+            email: $email,
+            confirmed: $confirmed,
+            blacklisted: $blacklisted,
+            htmlEmail: $htmlEmail,
+            disabled: $disabled,
+            additionalData: $additionalData
         );
 
         return $this->subscriberManager->updateSubscriber($dto);
@@ -294,14 +303,14 @@ class SubscriberCsvImportManager
      * @param string $email Subscriber email
      * @param array $data Row data
      * @param array $headers CSV headers
-     * @param int|false $confirmedIndex Index of confirmed column
+     * @param bool|int $confirmedIndex Index of confirmed column
      * @return Subscriber The created subscriber
      */
     private function createNewSubscriber(
         string $email,
         array $data,
         array $headers,
-        $confirmedIndex
+        bool|int $confirmedIndex
     ): Subscriber {
         $requestConfirmation = !($confirmedIndex !== false && isset($data[$confirmedIndex]) &&
             filter_var($data[$confirmedIndex], FILTER_VALIDATE_BOOLEAN));
@@ -311,9 +320,9 @@ class SubscriberCsvImportManager
             filter_var($data[$htmlEmailIndex], FILTER_VALIDATE_BOOLEAN);
 
         $dto = new CreateSubscriberDto(
-            $email,
-            $requestConfirmation,
-            $htmlEmail
+            email: $email,
+            requestConfirmation: $requestConfirmation,
+            htmlEmail: $htmlEmail
         );
 
         $subscriber = $this->subscriberManager->createSubscriber($dto);
@@ -327,6 +336,7 @@ class SubscriberCsvImportManager
         }
 
         $this->subscriberRepository->save($subscriber);
+
         return $subscriber;
     }
 
@@ -356,11 +366,11 @@ class SubscriberCsvImportManager
      * Check if a boolean value is true in data, with fallback.
      *
      * @param array $data Row data
-     * @param int|false $index Index of the column
+     * @param bool|int $index Index of the column
      * @param bool $default Default value if not found
      * @return bool The boolean value
      */
-    private function isBooleanTrue(array $data, $index, bool $default): bool
+    private function isBooleanTrue(array $data, bool|int $index, bool $default): bool
     {
         return $index !== false && isset($data[$index]) ? filter_var($data[$index], FILTER_VALIDATE_BOOLEAN) : $default;
     }
