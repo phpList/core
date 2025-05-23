@@ -11,4 +11,14 @@ use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterf
 class UserMessageBounceRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
     use CursorPaginationTrait;
+
+    public function getCountByMessageId(int $messageId): int
+    {
+        return (int) $this->createQueryBuilder('umb')
+            ->select('COUNT(umb.id)')
+            ->where('IDENTITY(umb.message) = :messageId')
+            ->setParameter('messageId', $messageId)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

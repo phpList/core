@@ -56,8 +56,7 @@ class SubscriberCsvExportManagerTest extends TestCase
         $subscriber2->method('isDisabled')->willReturn(true);
         $subscriber2->method('getExtraData')->willReturn('More data');
 
-        $filter = new SubscriberFilter();
-        $filter->setListId(1);
+        $filter = new SubscriberFilter(1);
 
         $this->subscriberRepositoryMock
             ->expects($this->exactly(2))

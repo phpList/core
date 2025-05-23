@@ -57,18 +57,42 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             throw new InvalidArgumentException('Expected SubscriberFilterRequest.');
         }
 
-        $queryBuilder = $this->createQueryBuilder('s')
-            ->innerJoin('s.subscriptions', 'subscription')
+        $queryBuilder = $this->createQueryBuilder('subscriber')
+            ->innerJoin('subscriber.subscriptions', 'subscription')
             ->innerJoin('subscription.subscriberList', 'list');
 
         if ($filter->getListId() !== null) {
             $queryBuilder->where('list.id = :listId')
                 ->setParameter('listId', $filter->getListId());
+            if ($filter->getSubscribedDateFrom() !== null) {
+                $queryBuilder->where('subscription.createdAt > :subscribedAtFrom')
+                    ->setParameter('subscribedAtFrom', $filter->getSubscribedDateFrom());
+            }
+            if ($filter->getSubscribedDateTo() !== null) {
+                $queryBuilder->where('subscription.createdAt < :subscribedAtTo')
+                    ->setParameter('subscribedAtTo', $filter->getSubscribedDateTo());
+            }
+        }
+        if ($filter->getCreatedDateFrom() !== null) {
+            $queryBuilder->where('subscriber.createdAt > :createdAtFrom')
+                ->setParameter('createdAtFrom', $filter->getCreatedDateFrom());
+        }
+        if ($filter->getCreatedDateTo() !== null) {
+            $queryBuilder->where('subscriber.createdAt < :createdAtTo')
+                ->setParameter('createdAtTo', $filter->getCreatedDateTo());
+        }
+        if ($filter->getUpdatedDateFrom() !== null) {
+            $queryBuilder->where('subscriber.updatedAt > :updatedAtFrom')
+                ->setParameter('updatedAtFrom', $filter->getUpdatedDateFrom());
+        }
+        if ($filter->getUpdatedDateTo() !== null) {
+            $queryBuilder->where('subscriber.updatedAt < :updatedAtTo')
+                ->setParameter('updatedAtTo', $filter->getUpdatedDateTo());
         }
 
-        return $queryBuilder->andWhere('s.id > :lastId')
+        return $queryBuilder->andWhere('subscriber.id > :lastId')
             ->setParameter('lastId', $lastId)
-            ->orderBy('s.id', 'ASC')
+            ->orderBy('subscriber.id', 'ASC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
