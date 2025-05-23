@@ -1,0 +1,63 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Identity\Service\SessionManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberListManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscriptionManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\MessageManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\TemplateManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\TemplateImageManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Identity\Service\AdministratorManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Identity\Service\AdminAttributeDefinitionManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Identity\Service\AdminAttributeManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\Manager\AttributeDefinitionManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\SubscriberCsvExporter:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  PhpList\Core\Domain\Subscription\Service\SubscriberCsvImporter:
+    autowire: true
+    autoconfigure: true
+    public: true

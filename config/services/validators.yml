@@ -1,0 +1,8 @@
+services:
+  PhpList\Core\Domain\Messaging\Validator\TemplateLinkValidator:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Validator\TemplateImageValidator:
+    autowire: true
+    autoconfigure: true

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace PhpList\Core\Security;
 
 use Doctrine\ORM\EntityNotFoundException;
-use PhpList\Core\Domain\Model\Identity\Administrator;
-use PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository;
+use PhpList\Core\Domain\Identity\Repository\AdministratorTokenRepository;
+use PhpList\Core\Domain\Identity\Model\Administrator;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
