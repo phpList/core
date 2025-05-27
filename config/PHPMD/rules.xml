@@ -17,6 +17,7 @@
                       \PHPUnit\DbUnit\Operation\Factory,
                       \Symfony\Component\Debug\Debug,
                       \Symfony\Component\Yaml\Yaml,
+                      \League\Csv\Reader,
             "/>
         </properties>
     </rule>

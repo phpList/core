@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Security;
 
-use PhpList\Core\Domain\Model\Identity\Administrator;
-use PhpList\Core\Domain\Model\Identity\AdministratorToken;
-use PhpList\Core\Domain\Repository\Identity\AdministratorTokenRepository;
+use PhpList\Core\Domain\Identity\Repository\AdministratorTokenRepository;
+use PhpList\Core\Domain\Identity\Model\Administrator;
+use PhpList\Core\Domain\Identity\Model\AdministratorToken;
 use PhpList\Core\Security\Authentication;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

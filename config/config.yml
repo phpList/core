@@ -1,6 +1,5 @@
 imports:
     - { resource: services.yml }
-    - { resource: repositories.yml }
     - { resource: doctrine.yml }
 
 # Put parameters here that don't need to change on each machine where the app is deployed

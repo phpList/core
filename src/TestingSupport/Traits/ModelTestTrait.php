@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\TestingSupport\Traits;
 
-use PhpList\Core\Domain\Model\Interfaces\DomainModel;
+use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use ReflectionObject;
 
 /**

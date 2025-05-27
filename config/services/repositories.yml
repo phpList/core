@@ -1,0 +1,62 @@
+services:
+    PhpList\Core\Domain\Identity\Repository\AdministratorRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Identity\Model\Administrator
+            - Doctrine\ORM\Mapping\ClassMetadata\ClassMetadata
+            - PhpList\Core\Security\HashGenerator
+
+    PhpList\Core\Domain\Identity\Repository\AdminAttributeValueRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Identity\Model\AdminAttributeValue
+
+    PhpList\Core\Domain\Identity\Repository\AdminAttributeDefinitionRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Identity\Model\AdminAttributeDefinition
+
+    PhpList\Core\Domain\Identity\Repository\AdministratorTokenRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Identity\Model\AdministratorToken
+
+    PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Subscription\Model\SubscriberList
+
+    PhpList\Core\Domain\Subscription\Repository\SubscriberRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Subscription\Model\Subscriber
+
+    PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue
+
+    PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition
+
+    PhpList\Core\Domain\Subscription\Repository\SubscriptionRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Subscription\Model\Subscription
+
+    PhpList\Core\Domain\Messaging\Repository\MessageRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Messaging\Model\Message
+
+    PhpList\Core\Domain\Messaging\Repository\TemplateRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Messaging\Model\Template
+
+    PhpList\Core\Domain\Messaging\Repository\TemplateImageRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Messaging\Model\TemplateImage

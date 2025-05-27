@@ -105,6 +105,7 @@ class ApplicationKernel extends Kernel
     protected function build(ContainerBuilder $container): void
     {
         $container->setParameter('kernel.application_dir', $this->getApplicationDir());
+        $container->addCompilerPass(new DoctrineMappingPass());
     }
 
     /**

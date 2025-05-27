@@ -1,13 +1,15 @@
+imports:
+    - { resource: 'services/*.yml' }
+
 services:
-    # default configuration for services in *this* file
     _defaults:
-        # automatically injects dependencies in your services
         autowire: true
-        # automatically registers your services as commands, event subscribers, etc.
         autoconfigure: true
-        # this means you cannot fetch services directly from the container via $container->get()
-        # if you need to do this, you can override this setting on individual services
         public: false
+
+    PhpList\Core\Core\ConfigProvider:
+        arguments:
+            $config: '%app.config%'
 
     PhpList\Core\Core\ApplicationStructure:
         public: true
@@ -21,7 +23,7 @@ services:
     PhpList\Core\Routing\ExtraLoader:
         tags: [routing.loader]
 
-    PhpList\Core\Domain\Repository:
+    PhpList\Core\Domain\Common\Repository\AbstractRepository:
         abstract: true
         autowire: true
         autoconfigure: false
