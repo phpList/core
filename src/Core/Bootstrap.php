@@ -7,6 +7,7 @@ namespace PhpList\Core\Core;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use RuntimeException;
+use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\ErrorHandler\ErrorHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,6 +36,7 @@ class Bootstrap
     private ?ApplicationKernel $applicationKernel = null;
     private ApplicationStructure $applicationStructure;
     private ErrorHandler $errorHandler;
+    private bool $envLoaded = false;
 
     /**
      * Protected constructor to avoid direct instantiation of this class.
@@ -45,6 +47,33 @@ class Bootstrap
     {
         $this->applicationStructure = new ApplicationStructure();
         $this->errorHandler = new ErrorHandler();
+        $this->loadEnvironmentVariables();
+    }
+
+    /**
+     * Loads environment variables from .env files.
+     *
+     * @return void fluent interface
+     */
+    private function loadEnvironmentVariables(): void
+    {
+        if ($this->envLoaded) {
+            return;
+        }
+
+        $dotenv = new Dotenv();
+        $rootDir = $this->getApplicationRoot();
+
+        if (file_exists($rootDir . '/.env')) {
+            $dotenv->load($rootDir . '/.env');
+
+            if (file_exists($rootDir . '/.env.local')) {
+                $dotenv->load($rootDir . '/.env.local');
+            }
+
+            $this->envLoaded = true;
+        }
+
     }
 
     /**
@@ -89,6 +118,10 @@ class Bootstrap
      */
     public function setEnvironment(string $environment): Bootstrap
     {
+        if ($environment === Environment::DEFAULT_ENVIRONMENT && isset($_ENV['APP_ENV'])) {
+            $environment = $_ENV['APP_ENV'];
+        }
+
         Environment::validateEnvironment($environment);
         $this->environment = $environment;
 
@@ -102,11 +135,19 @@ class Bootstrap
 
     private function isSymfonyDebugModeEnabled(): bool
     {
+        if (isset($_ENV['APP_DEBUG'])) {
+            return $_ENV['APP_DEBUG'] === '1' || $_ENV['APP_DEBUG'] === 'true';
+        }
+
         return $this->environment !== Environment::PRODUCTION;
     }
 
     private function isDebugEnabled(): bool
     {
+        if (isset($_ENV['APP_DEBUG'])) {
+            return $_ENV['APP_DEBUG'] === '1' || $_ENV['APP_DEBUG'] === 'true';
+        }
+
         return $this->environment !== Environment::PRODUCTION;
     }
 
@@ -138,7 +179,7 @@ class Bootstrap
     }
 
     /**
-     * Main entry point called at every request usually from global scope. Checks if everything is correct
+     * The main entry point called at every request usually from global scope. Checks if everything is correct
      * and loads the configuration.
      *
      * @return Bootstrap fluent interface

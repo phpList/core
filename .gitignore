@@ -16,3 +16,5 @@
 .vagrant
 .phpdoc/
 .phpunit.result.cache
+/.env
+/.env.local

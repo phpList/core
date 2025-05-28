@@ -63,7 +63,40 @@ this code.
 The phpList application is configured so that the built-in PHP web server can
 run in development and testing mode, while Apache can run in production mode.
 
-Please first set the database credentials in `config/parameters.yml`.
+Please first set the database credentials in `config/parameters.yml` or in the `.env` file (see below).
+
+## Environment Variables
+
+phpList now supports loading environment variables from `.env` files. This allows you to configure your application without modifying any code or configuration files.
+
+### Usage
+
+1. Copy the `.env.example` file to `.env` in the project root:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit the `.env` file and customize the variables according to your environment:
+   ```
+   # Application environment (dev, test, prod)
+   APP_ENV=dev
+
+   # Debug mode (1 for enabled, 0 for disabled)
+   APP_DEBUG=1
+
+   # Database configuration
+   DATABASE_URL=mysql://db_user:db_password@localhost:3306/db_name
+
+   # Mailer configuration
+   MAILER_DSN=smtp://localhost:25
+
+   # Secret key for security
+   APP_SECRET=change_this_to_a_secret_value
+   ```
+
+3. For local overrides, you can create a `.env.local` file which will be loaded after `.env`.
+
+Note: The `.env` and `.env.local` files are excluded from version control to prevent sensitive information from being committed.
 
 ### Development
 
