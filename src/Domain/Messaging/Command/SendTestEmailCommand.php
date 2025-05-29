@@ -15,7 +15,7 @@ use Symfony\Component\Mime\Email;
 
 class SendTestEmailCommand extends Command
 {
-    protected static $defaultName = 'app:send-test-email';
+    protected static $defaultName = 'phplist:test-email';
     protected static $defaultDescription = 'Send a test email to verify email configuration';
 
     private EmailService $emailService;
@@ -30,7 +30,8 @@ class SendTestEmailCommand extends Command
     {
         $this
             ->setDescription(self::$defaultDescription)
-            ->addArgument('recipient', InputArgument::OPTIONAL, 'Recipient email address');
+            ->addArgument('recipient', InputArgument::OPTIONAL, 'Recipient email address')
+            ->addOption('sync', null, InputArgument::OPTIONAL, 'Send email synchronously instead of queuing it', false);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -49,7 +50,13 @@ class SendTestEmailCommand extends Command
         }
 
         try {
-            $output->writeln('Sending test email to ' . $recipient);
+            $syncMode = $input->getOption('sync');
+
+            if ($syncMode) {
+                $output->writeln('Sending test email synchronously to ' . $recipient);
+            } else {
+                $output->writeln('Queuing test email for ' . $recipient);
+            }
 
             $email = (new Email())
                 ->from(new Address('admin@example.com', 'Admin Team'))
@@ -57,9 +64,14 @@ class SendTestEmailCommand extends Command
                 ->subject('Test Email from phpList')
                 ->text('This is a test email sent from phpList Email Service.')
                 ->html('<h1>Test</h1><p>This is a <strong>test email</strong> sent from phpList Email Service</p>');
-            
-            $this->emailService->sendEmail($email);
-            $output->writeln('Test email sent successfully!');
+
+            if ($syncMode) {
+                $this->emailService->sendEmailSync($email);
+                $output->writeln('Test email sent successfully!');
+            } else {
+                $this->emailService->sendEmail($email);
+                $output->writeln('Test email queued successfully! It will be sent asynchronously.');
+            }
 
             return Command::SUCCESS;
         } catch (Exception $e) {

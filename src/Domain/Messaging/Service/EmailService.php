@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service;
 
+use PhpList\Core\Domain\Messaging\Message\AsyncEmailMessage;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mime\Address;
 
@@ -13,15 +15,20 @@ class EmailService
 {
     private MailerInterface $mailer;
     private string $defaultFromEmail;
+    private MessageBusInterface $messageBus;
 
-    public function __construct(MailerInterface $mailer, string $defaultFromEmail)
-    {
+    public function __construct(
+        MailerInterface $mailer,
+        string $defaultFromEmail,
+        MessageBusInterface $messageBus
+    ) {
         $this->mailer = $mailer;
         $this->defaultFromEmail = $defaultFromEmail;
+        $this->messageBus = $messageBus;
     }
 
     /**
-     * Send a simple email
+     * Send a simple email asynchronously
      *
      * @param Email $email
      * @param array $cc
@@ -29,7 +36,6 @@ class EmailService
      * @param array $replyTo
      * @param array $attachments
      * @return void
-     * @throws TransportExceptionInterface
      */
     public function sendEmail(
         Email $email,
@@ -41,7 +47,33 @@ class EmailService
         if (count($email->getFrom()) === 0) {
             $email->from($this->defaultFromEmail);
         }
-        
+
+        $message = new AsyncEmailMessage($email, $cc, $bcc, $replyTo, $attachments);
+        $this->messageBus->dispatch($message);
+    }
+
+    /**
+     * Send a simple email synchronously
+     *
+     * @param Email $email
+     * @param array $cc
+     * @param array $bcc
+     * @param array $replyTo
+     * @param array $attachments
+     * @return void
+     * @throws TransportExceptionInterface
+     */
+    public function sendEmailSync(
+        Email $email,
+        array $cc = [],
+        array $bcc = [],
+        array $replyTo = [],
+        array $attachments = []
+    ): void {
+        if (count($email->getFrom()) === 0) {
+            $email->from($this->defaultFromEmail);
+        }
+
         foreach ($cc as $ccAddress) {
             $email->addCc($ccAddress);
         }
@@ -62,7 +94,7 @@ class EmailService
     }
 
     /**
-     * Email multiple recipients
+     * Email multiple recipients asynchronously
      *
      * @param array $toAddresses Array of recipient email addresses
      * @param string $subject Email subject
@@ -73,7 +105,6 @@ class EmailService
      * @param array $attachments Array of file paths to attach (optional)
      *
      * @return void
-     * @throws TransportExceptionInterface
      */
     public function sendBulkEmail(
         array $toAddresses,
@@ -98,6 +129,46 @@ class EmailService
             $email->to($recipient);
 
             $this->sendEmail($email, [], [], [], $attachments);
+        }
+    }
+
+    /**
+     * Email multiple recipients synchronously
+     *
+     * @param array $toAddresses Array of recipient email addresses
+     * @param string $subject Email subject
+     * @param string $text Plain text content
+     * @param string $html HTML content (optional)
+     * @param string|null $from Sender email address (optional, uses default if not provided)
+     * @param string|null $fromName Sender name (optional)
+     * @param array $attachments Array of file paths to attach (optional)
+     *
+     * @return void
+     * @throws TransportExceptionInterface
+     */
+    public function sendBulkEmailSync(
+        array $toAddresses,
+        string $subject,
+        string $text,
+        string $html = '',
+        ?string $from = null,
+        ?string $fromName = null,
+        array $attachments = []
+    ): void {
+        $baseEmail = (new Email())
+            ->subject($subject)
+            ->text($text)
+            ->html($html);
+
+        if ($from) {
+            $baseEmail->from($fromName ? new Address($from, $fromName) : $from);
+        }
+
+        foreach ($toAddresses as $recipient) {
+            $email = clone $baseEmail;
+            $email->to($recipient);
+
+            $this->sendEmailSync($email, [], [], [], $attachments);
         }
     }
 }
