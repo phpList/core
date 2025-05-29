@@ -65,7 +65,6 @@
         "symfony/amazon-mailer": "^6.4",
         "symfony/mailchimp-mailer": "^6.4",
         "symfony/sendgrid-mailer": "^6.4",
-        "symfony/dotenv": "^6.4",
         "symfony/twig-bundle": "^6.4",
         "symfony/messenger": "^6.4"
     },

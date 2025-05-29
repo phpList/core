@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Command;
 
 use Exception;
-use PhpList\Core\Domain\Messaging\Model\Dto\EmailMessage;
 use PhpList\Core\Domain\Messaging\Service\EmailService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

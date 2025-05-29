@@ -7,28 +7,15 @@ use PhpList\Core\Core\Bootstrap;
 use PhpList\Core\Core\Environment;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
-use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\ErrorHandler\ErrorHandler;
 
 set_time_limit(0);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// Load environment variables from .env file
-$dotenv = new Dotenv();
-$rootDir = dirname(__DIR__);
-if (file_exists($rootDir . '/.env')) {
-    $dotenv->load($rootDir . '/.env');
-    // Load .env.local if it exists (for local overrides)
-    if (file_exists($rootDir . '/.env.local')) {
-        $dotenv->load($rootDir . '/.env.local');
-    }
-}
-
 $input = new ArgvInput();
-$environment = $input->getParameterOption(['--env', '-e'], $_ENV['APP_ENV'] ?? getenv('SYMFONY_ENV') ?: Environment::DEVELOPMENT);
-$debug = (isset($_ENV['APP_DEBUG']) ? $_ENV['APP_DEBUG'] !== '0' : getenv('SYMFONY_DEBUG') !== '0') 
-    && !$input->hasParameterOption(['--no-debug', ''])
+$environment = $input->getParameterOption(['--env', '-e'], getenv('SYMFONY_ENV') ?: Environment::DEVELOPMENT);
+$debug = getenv('SYMFONY_DEBUG') !== '0' && !$input->hasParameterOption(['--no-debug', ''])
     && $environment !== Environment::PRODUCTION;
 
 if ($debug) {
