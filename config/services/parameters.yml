@@ -1,5 +1,5 @@
-app:
-  config:
+parameters:
+  app.config:
     message_from_address: 'news@example.com'
     admin_address: 'admin@example.com'
     default_message_age: 15768000

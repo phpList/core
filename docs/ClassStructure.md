@@ -21,7 +21,7 @@ database access code in these classes.
 
 ### Repository/
 
-These classes are reponsible for reading domain models from the database,
+These classes are responsible for reading domain models from the database,
 for writing them there, and for other database queries.
 
 

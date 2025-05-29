@@ -53,9 +53,11 @@ this code.
 ## Structure
 
 * [Class Docs][docs/phpdoc/]
+* [Mailer Transports](docs/mailer-transports.md) - How to use different email providers (Gmail, Amazon SES, Mailchimp, SendGrid)
 * [Class structure overview](docs/ClassStructure.md)
 * [Graphic domain model](docs/DomainModel/DomainModel.svg) and
   a [description of the domain entities](docs/DomainModel/Entities.md)
+* [Mailer Transports](docs/mailer-transports.md) - How to use different email providers (Gmail, Amazon SES, Mailchimp, SendGrid)
 
 
 ## Running the web server
@@ -203,6 +205,17 @@ To access the phpList data from a third-party application (i.e., not from a
 phpList module), please use the
 [REST API](https://github.com/phpList/rest-api).
 
+
+## Email Configuration
+
+phpList supports multiple email transport providers through Symfony Mailer. The following transports are included:
+
+* Gmail
+* Amazon SES
+* Mailchimp Transactional (Mandrill)
+* SendGrid
+
+For detailed configuration instructions, see the [Mailer Transports documentation](docs/mailer-transports.md).
 
 ## Copyright
 
