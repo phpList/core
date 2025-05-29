@@ -40,3 +40,5 @@ framework:
     serializer:
         enabled: true
         enable_attributes: true
+    mailer:
+        dsn: '%app.mailer_dsn%'

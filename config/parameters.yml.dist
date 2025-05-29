@@ -25,3 +25,8 @@ parameters:
     # A secret key that's used to generate certain security-related tokens
     secret: '%%env(PHPLIST_SECRET)%%'
     env(PHPLIST_SECRET): %1$s
+
+    app.mailer_from: '%env(MAILER_FROM)%'
+    env(MAILER_FROM): 'noreply@phplist.com'
+    app.mailer_dsn: '%env(MAILER_DSN)%'
+    env(MAILER_DSN): 'smtp://username:password@smtp.mailtrap.io:2525'
