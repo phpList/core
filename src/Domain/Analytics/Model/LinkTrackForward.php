@@ -21,7 +21,9 @@ class LinkTrackForward implements DomainModel, Identity
     #[ORM\GeneratedValue]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 2083, nullable: true)]
+    // Defined as string(255) due to MySQL limitation (actual max URL length is 2083):
+    // TEXT can't be indexed without a prefix, which Doctrine doesn't support.
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $url = null;
 
     #[ORM\Column(name: 'urlhash', type: 'string', length: 32, nullable: true)]

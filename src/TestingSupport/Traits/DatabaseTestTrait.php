@@ -83,12 +83,9 @@ trait DatabaseTestTrait
         $schemaTool = new SchemaTool($this->entityManager);
         $metadata = $this->entityManager->getMetadataFactory()->getAllMetadata();
 
-        // Create all tables at once to handle dependencies properly
         try {
             $schemaTool->createSchema($metadata);
         } catch (ToolsException $e) {
-            // If creating all tables at once fails, try to create them one by one
-            // This is a fallback mechanism
             $connection = $this->entityManager->getConnection();
             $schemaManager = $connection->createSchemaManager();
 
@@ -96,12 +93,7 @@ trait DatabaseTestTrait
                 $tableName = $classMetadata->getTableName();
 
                 if (!$schemaManager->tablesExist([$tableName])) {
-                    try {
-                        $schemaTool->createSchema([$classMetadata]);
-                    } catch (ToolsException $e) {
-                        // Log the error but continue with other tables
-                        echo $e->getMessage() . PHP_EOL;
-                    }
+                    $schemaTool->createSchema([$classMetadata]);
                 }
             }
         }
