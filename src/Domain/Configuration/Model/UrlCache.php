@@ -20,7 +20,9 @@ class UrlCache implements DomainModel, Identity
     #[ORM\GeneratedValue]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'url', type: 'string', length: 2083)]
+    // Defined as string(255) due to MySQL limitation (actual max URL length is 2083):
+    // TEXT can't be indexed without a prefix, which Doctrine doesn't support.
+    #[ORM\Column(name: 'url', type: 'string', length: 255)]
     private string $url;
 
     #[ORM\Column(name: 'lastmodified', type: 'integer', nullable: true)]

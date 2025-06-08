@@ -18,8 +18,10 @@ class I18n implements DomainModel
     #[ORM\Column(type: 'string', length: 10)]
     private string $lan;
 
+    // Defined as string with length due to MySQL limitation:
+    // TEXT columns can't be indexed without a prefix length, which Doctrine doesn't support.
     #[ORM\Id]
-    #[ORM\Column(type: 'text')]
+    #[ORM\Column(type: 'string', length: 255)]
     private string $original;
 
     #[ORM\Column(type: 'text')]

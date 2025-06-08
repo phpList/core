@@ -83,18 +83,17 @@ trait DatabaseTestTrait
         $schemaTool = new SchemaTool($this->entityManager);
         $metadata = $this->entityManager->getMetadataFactory()->getAllMetadata();
 
-        $connection = $this->entityManager->getConnection();
-        $schemaManager = $connection->createSchemaManager();
+        try {
+            $schemaTool->createSchema($metadata);
+        } catch (ToolsException $e) {
+            $connection = $this->entityManager->getConnection();
+            $schemaManager = $connection->createSchemaManager();
 
-        foreach ($metadata as $classMetadata) {
-            $tableName = $classMetadata->getTableName();
+            foreach ($metadata as $classMetadata) {
+                $tableName = $classMetadata->getTableName();
 
-            if (!$schemaManager->tablesExist([$tableName])) {
-                try {
+                if (!$schemaManager->tablesExist([$tableName])) {
                     $schemaTool->createSchema([$classMetadata]);
-                } catch (ToolsException $e) {
-                    // nothing to do
-                    echo $e->getMessage();
                 }
             }
         }
