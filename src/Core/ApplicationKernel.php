@@ -122,6 +122,7 @@ class ApplicationKernel extends Kernel
         $loader->load($this->getApplicationDir() . '/config/parameters.yml');
         $loader->load($this->getRootDir() . '/config/config_' . $this->getEnvironment() . '.yml');
         $loader->load($this->getApplicationDir() . '/config/config_modules.yml');
+        $loader->load($this->getApplicationDir() . '/config/packages/twig.yaml');
     }
 
     /**

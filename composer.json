@@ -65,6 +65,7 @@
         "symfony/amazon-mailer": "^6.4",
         "symfony/mailchimp-mailer": "^6.4",
         "symfony/sendgrid-mailer": "^6.4",
+        "symfony/twig-bundle": "^6.4",
         "symfony/messenger": "^6.4"
     },
     "require-dev": {
@@ -133,6 +134,7 @@
             "bundles": [
                 "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
                 "Symfony\\Bundle\\MonologBundle\\MonologBundle",
+                "Symfony\\Bundle\\TwigBundle\\TwigBundle",
                 "Doctrine\\Bundle\\DoctrineBundle\\DoctrineBundle",
                 "Doctrine\\Bundle\\MigrationsBundle\\DoctrineMigrationsBundle",
                 "PhpList\\Core\\EmptyStartPageBundle\\EmptyStartPageBundle"
