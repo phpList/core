@@ -11,6 +11,8 @@ framework:
 
 doctrine:
     dbal:
+#        driver: 'pdo_sqlite'
+#        memory: true
         driver: 'pdo_mysql'
         host: '%database_host%'
         port: '%database_port%'

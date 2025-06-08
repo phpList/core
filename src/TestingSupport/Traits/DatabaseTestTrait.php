@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\TestingSupport\Traits;
 
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\ToolsException;
@@ -83,6 +84,15 @@ trait DatabaseTestTrait
         $schemaTool = new SchemaTool($this->entityManager);
         $metadata = $this->entityManager->getMetadataFactory()->getAllMetadata();
 
+        if ($this->entityManager->getConnection()->getDatabasePlatform() instanceof SqlitePlatform) {
+            $this->runForSqlite($metadata, $schemaTool);
+        } else {
+            $this->runForMySql($metadata, $schemaTool);
+        }
+    }
+
+    private function runForMySql($metadata, $schemaTool): void
+    {
         try {
             $schemaTool->createSchema($metadata);
         } catch (ToolsException $e) {
@@ -94,6 +104,24 @@ trait DatabaseTestTrait
 
                 if (!$schemaManager->tablesExist([$tableName])) {
                     $schemaTool->createSchema([$classMetadata]);
+                }
+            }
+        }
+    }
+
+    private function runForSqlite($metadata, $schemaTool): void
+    {
+        $connection = $this->entityManager->getConnection();
+        $schemaManager = $connection->createSchemaManager();
+
+        foreach ($metadata as $classMetadata) {
+            $tableName = $classMetadata->getTableName();
+
+            if (!$schemaManager->tablesExist([$tableName])) {
+                try {
+                    $schemaTool->createSchema([$classMetadata]);
+                } catch (ToolsException $e) {
+                    echo $e->getMessage();
                 }
             }
         }

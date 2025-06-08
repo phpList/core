@@ -87,6 +87,7 @@ More about generatings docs in [PHPDOC.md](PHPDOC.md)
 
 ### Testing
 
+Create test db with name phplist in your mysql DB or uncomment sqlite part in config_test.yml file to use in memory DB or functional tests
 To run the server in testing mode (which normally will only be needed for the
 automated tests, provide the `--env` option:
 

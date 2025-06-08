@@ -58,7 +58,8 @@
         "doctrine/instantiator": "^2.0",
         "masterminds/html5": "^2.9",
         "ext-dom": "*",
-        "league/csv": "^9.23.0"
+        "league/csv": "^9.23.0",
+        "doctrine/doctrine-migrations-bundle": "^3.4"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
@@ -127,6 +128,7 @@
                 "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
                 "Symfony\\Bundle\\MonologBundle\\MonologBundle",
                 "Doctrine\\Bundle\\DoctrineBundle\\DoctrineBundle",
+                "Doctrine\\Bundle\\MigrationsBundle\\DoctrineMigrationsBundle",
                 "PhpList\\Core\\EmptyStartPageBundle\\EmptyStartPageBundle"
             ],
             "routes": {
