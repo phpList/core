@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Identity\Model;
 
+use DateTime;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Identity\Model\Administrator;
+use PhpList\Core\Domain\Identity\Model\Privileges;
+use PhpList\Core\Domain\Identity\Model\PrivilegeFlag;
 use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
 use PhpList\Core\TestingSupport\Traits\SimilarDatesAssertionTrait;
 use PHPUnit\Framework\TestCase;
@@ -75,7 +78,7 @@ class AdministratorTest extends TestCase
     {
         $this->subject->updateUpdatedAt();
 
-        self::assertSimilarDates(new \DateTime(), $this->subject->getUpdatedAt());
+        self::assertSimilarDates(new DateTime(), $this->subject->getUpdatedAt());
     }
 
     public function testGetPasswordHashInitiallyReturnsEmptyString(): void
@@ -98,7 +101,7 @@ class AdministratorTest extends TestCase
 
     public function testSetPasswordHashSetsPasswordChangeDateToNow(): void
     {
-        $date = new \DateTime();
+        $date = new DateTime();
         $this->subject->setPasswordHash('Zaphod Beeblebrox');
 
         self::assertSimilarDates($date, $this->subject->getPasswordChangeDate());
@@ -126,5 +129,43 @@ class AdministratorTest extends TestCase
         $this->subject->setSuperUser(true);
 
         self::assertTrue($this->subject->isSuperUser());
+    }
+
+    public function testGetPrivilegesInitiallyReturnsEmptyPrivileges(): void
+    {
+        $privileges = $this->subject->getPrivileges();
+
+        self::assertInstanceOf(Privileges::class, $privileges);
+
+        foreach (PrivilegeFlag::cases() as $flag) {
+            self::assertFalse($privileges->has($flag));
+        }
+    }
+
+    public function testSetPrivilegesSetsPrivileges(): void
+    {
+        $privileges = Privileges::fromSerialized('');
+        $privileges = $privileges->grant(PrivilegeFlag::Subscribers);
+
+        $this->subject->setPrivileges($privileges);
+
+        $retrievedPrivileges = $this->subject->getPrivileges();
+        self::assertTrue($retrievedPrivileges->has(PrivilegeFlag::Subscribers));
+        self::assertFalse($retrievedPrivileges->has(PrivilegeFlag::Campaigns));
+    }
+
+    public function testSetPrivilegesWithMultiplePrivileges(): void
+    {
+        $privileges = Privileges::fromSerialized('');
+        $privileges = $privileges
+            ->grant(PrivilegeFlag::Subscribers)
+            ->grant(PrivilegeFlag::Campaigns);
+
+        $this->subject->setPrivileges($privileges);
+
+        $retrievedPrivileges = $this->subject->getPrivileges();
+        self::assertTrue($retrievedPrivileges->has(PrivilegeFlag::Subscribers));
+        self::assertTrue($retrievedPrivileges->has(PrivilegeFlag::Campaigns));
+        self::assertFalse($retrievedPrivileges->has(PrivilegeFlag::Statistics));
     }
 }

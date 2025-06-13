@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Identity\Model;
 
+use InvalidArgumentException;
+use UnexpectedValueException;
+
 class Privileges
 {
     /**
@@ -14,7 +17,7 @@ class Privileges
     /**
      * @SuppressWarnings(PHPMD.StaticAccess)
      */
-    private function __construct(array $flags = [])
+    public function __construct(?array $flags = [])
     {
         foreach (PrivilegeFlag::cases() as $flag) {
             $key = $flag->value;
@@ -28,9 +31,18 @@ class Privileges
             return new self();
         }
 
-        $data = @unserialize($serialized);
+        set_error_handler(function () {
+            throw new InvalidArgumentException('Invalid serialized privileges string.');
+        });
+
+        try {
+            $data = unserialize($serialized);
+        } finally {
+            restore_error_handler();
+        }
+
         if (!is_array($data)) {
-            return new self();
+            throw new UnexpectedValueException('Privileges must deserialize to an array.');
         }
 
         return new self($data);
@@ -65,4 +77,3 @@ class Privileges
         return $this->flags;
     }
 }
-
