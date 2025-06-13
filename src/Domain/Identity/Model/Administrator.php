@@ -152,16 +152,19 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->namelc;
     }
 
-    public function setPrivileges(string $privileges): self
+    public function setPrivileges(Privileges $privileges): self
     {
-        $this->privileges = $privileges;
+        $this->privileges = $privileges->toSerialized();
 
         return $this;
     }
 
-    public function getPrivileges(): string
+    /**
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     */
+    public function getPrivileges(): Privileges
     {
-        return $this->privileges;
+        return Privileges::fromSerialized($this->privileges);
     }
 
     public function getCreatedAt(): ?DateTime
