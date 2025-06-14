@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Identity\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Identity\Model\Dto\CreateAdministratorDto;
 use PhpList\Core\Domain\Identity\Model\Dto\UpdateAdministratorDto;
+use PhpList\Core\Domain\Identity\Model\PrivilegeFlag;
+use PhpList\Core\Domain\Identity\Model\Privileges;
 use PhpList\Core\Security\HashGenerator;
 
 class AdministratorManager
@@ -29,6 +32,7 @@ class AdministratorManager
         $administrator->setSuperUser($dto->isSuperUser);
         $hashedPassword = $this->hashGenerator->createPasswordHash($dto->password);
         $administrator->setPasswordHash($hashedPassword);
+        $administrator->setPrivilegesFromArray($dto->privileges);
 
         $this->entityManager->persist($administrator);
         $this->entityManager->flush();
@@ -51,6 +55,7 @@ class AdministratorManager
             $hashedPassword = $this->hashGenerator->createPasswordHash($dto->password);
             $administrator->setPasswordHash($hashedPassword);
         }
+        $administrator->setPrivilegesFromArray($dto->privileges);
 
         $this->entityManager->flush();
     }
