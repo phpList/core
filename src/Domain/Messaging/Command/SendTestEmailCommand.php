@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Messaging\Command;
 
 use Exception;
 use PhpList\Core\Domain\Messaging\Service\EmailService;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,11 +14,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
+#[AsCommand(
+    name: 'phplist:test-email',
+    description: 'Send a test email to verify email configuration'
+)]
 class SendTestEmailCommand extends Command
 {
-    protected static $defaultName = 'phplist:test-email';
-    protected static $defaultDescription = 'Send a test email to verify email configuration';
-
     private EmailService $emailService;
 
     public function __construct(EmailService $emailService)
@@ -29,9 +31,17 @@ class SendTestEmailCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription(self::$defaultDescription)
-            ->addArgument('recipient', InputArgument::OPTIONAL, 'Recipient email address')
-            ->addOption('sync', null, InputArgument::OPTIONAL, 'Send email synchronously instead of queuing it', false);
+            ->addArgument(
+                name: 'recipient',
+                mode: InputArgument::OPTIONAL,
+                description: 'Recipient email address'
+            )
+            ->addOption(
+                name: 'sync',
+                mode: InputArgument::OPTIONAL,
+                description: 'Send email synchronously instead of queuing it',
+                default: false
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
