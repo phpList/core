@@ -1,0 +1,10 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  PhpList\Core\Domain\Messaging\Command\:
+    resource: '../../src/Domain/Messaging/Command'
+    tags: ['console.command']
+
