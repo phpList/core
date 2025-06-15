@@ -8,14 +8,19 @@ use PhpList\Core\Domain\Identity\Model\AdminAttributeDefinition;
 use PhpList\Core\Domain\Identity\Model\Dto\AdminAttributeDefinitionDto;
 use PhpList\Core\Domain\Identity\Repository\AdminAttributeDefinitionRepository;
 use PhpList\Core\Domain\Identity\Exception\AttributeDefinitionCreationException;
+use PhpList\Core\Domain\Subscription\Validator\AttributeTypeValidator;
 
 class AdminAttributeDefinitionManager
 {
     private AdminAttributeDefinitionRepository $definitionRepository;
+    private AttributeTypeValidator $attributeTypeValidator;
 
-    public function __construct(AdminAttributeDefinitionRepository $definitionRepository)
-    {
+    public function __construct(
+        AdminAttributeDefinitionRepository $definitionRepository,
+        AttributeTypeValidator $attributeTypeValidator
+    ) {
         $this->definitionRepository = $definitionRepository;
+        $this->attributeTypeValidator = $attributeTypeValidator;
     }
 
     public function create(AdminAttributeDefinitionDto $attributeDefinitionDto): AdminAttributeDefinition
@@ -24,6 +29,7 @@ class AdminAttributeDefinitionManager
         if ($existingAttribute) {
             throw new AttributeDefinitionCreationException('Attribute definition already exists', 409);
         }
+        $this->attributeTypeValidator->validate($attributeDefinitionDto->type);
 
         $attributeDefinition = (new AdminAttributeDefinition($attributeDefinitionDto->name))
             ->setType($attributeDefinitionDto->type)
@@ -45,6 +51,7 @@ class AdminAttributeDefinitionManager
         if ($existingAttribute && $existingAttribute->getId() !== $attributeDefinition->getId()) {
             throw new AttributeDefinitionCreationException('Another attribute with this name already exists.', 409);
         }
+        $this->attributeTypeValidator->validate($attributeDefinitionDto->type);
 
         $attributeDefinition
             ->setName($attributeDefinitionDto->name)
