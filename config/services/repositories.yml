@@ -65,3 +65,23 @@ services:
         parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
         arguments:
             - PhpList\Core\Domain\Configuration\Model\Config
+
+    PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Messaging\Model\UserMessageBounce
+
+    PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Messaging\Model\UserMessageForward
+
+    PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Analytics\Model\LinkTrack
+
+    PhpList\Core\Domain\Analytics\Repository\UserMessageViewRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Analytics\Model\UserMessageView
