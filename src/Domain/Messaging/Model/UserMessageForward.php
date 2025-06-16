@@ -26,7 +26,7 @@ class UserMessageForward implements DomainModel, Identity
     private int $user;
 
     #[ORM\Column(name: 'message', type: 'integer')]
-    private int $message;
+    private int $messageId;
 
     #[ORM\Column(name: 'forward', type: 'string', length: 255, nullable: true)]
     private ?string $forward = null;
@@ -52,9 +52,9 @@ class UserMessageForward implements DomainModel, Identity
         return $this->user;
     }
 
-    public function getMessage(): int
+    public function getMessageId(): int
     {
-        return $this->message;
+        return $this->messageId;
     }
 
     public function getForward(): ?string
@@ -78,9 +78,9 @@ class UserMessageForward implements DomainModel, Identity
         return $this;
     }
 
-    public function setMessage(int $message): self
+    public function setMessageId(int $messageId): self
     {
-        $this->message = $message;
+        $this->messageId = $messageId;
         return $this;
     }
 

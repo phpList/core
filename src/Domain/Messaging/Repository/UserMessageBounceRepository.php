@@ -16,7 +16,7 @@ class UserMessageBounceRepository extends AbstractRepository implements Paginata
     {
         return (int) $this->createQueryBuilder('umb')
             ->select('COUNT(umb.id)')
-            ->where('IDENTITY(umb.message) = :messageId')
+            ->where('umb.messageId = :messageId')
             ->setParameter('messageId', $messageId)
             ->getQuery()
             ->getSingleScalarResult();
