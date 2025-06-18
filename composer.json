@@ -137,7 +137,8 @@
                 "Symfony\\Bundle\\TwigBundle\\TwigBundle",
                 "Doctrine\\Bundle\\DoctrineBundle\\DoctrineBundle",
                 "Doctrine\\Bundle\\MigrationsBundle\\DoctrineMigrationsBundle",
-                "PhpList\\Core\\EmptyStartPageBundle\\EmptyStartPageBundle"
+                "PhpList\\Core\\EmptyStartPageBundle\\EmptyStartPageBundle",
+                "FOS\\RestBundle\\FOSRestBundle"
             ],
             "routes": {
                 "homepage": {
