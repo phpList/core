@@ -7,6 +7,8 @@ services:
   PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager:
     autowire: true
     autoconfigure: true
+    arguments:
+      $confirmationUrl: '%app.confirmation_url%'
 
   PhpList\Core\Domain\Identity\Service\SessionManager:
     autowire: true
