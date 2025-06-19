@@ -37,11 +37,6 @@ services:
         public: true
         tags: [controller.service_arguments]
 
-    # Register message handlers for Symfony Messenger
-    PhpList\Core\Domain\Messaging\MessageHandler\:
-        resource: '../src/Domain/Messaging/MessageHandler'
-        tags: ['messenger.message_handler']
-
     doctrine.orm.metadata.annotation_reader:
         alias: doctrine.annotation_reader
 

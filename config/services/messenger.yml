@@ -1,0 +1,12 @@
+services:
+    # Register message handlers for Symfony Messenger
+    PhpList\Core\Domain\Messaging\MessageHandler\:
+        resource: '../../src/Domain/Messaging/MessageHandler'
+        tags: [ 'messenger.message_handler' ]
+
+    PhpList\Core\Domain\Messaging\MessageHandler\SubscriberConfirmationMessageHandler:
+        autowire: true
+        autoconfigure: true
+        tags: [ 'messenger.message_handler' ]
+        arguments:
+            $confirmationUrl: '%app.confirmation_url%'
