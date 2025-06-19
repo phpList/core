@@ -122,5 +122,4 @@ class EmailService
             $this->sendEmailSync($email, [], [], [], $attachments);
         }
     }
-
 }

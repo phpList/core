@@ -21,7 +21,7 @@ class SubscriberManager
     private MessageBusInterface $messageBus;
 
     public function __construct(
-        SubscriberRepository $subscriberRepository, 
+        SubscriberRepository $subscriberRepository,
         EntityManagerInterface $entityManager,
         MessageBusInterface $messageBus
     ) {

@@ -35,14 +35,14 @@ class SubscriberConfirmationMessageHandler
         $textContent = "Thank you for subscribing!\n\n"
             . "Please confirm your subscription by clicking the link below:\n"
             . $confirmationLink . "\n\n"
-            . "If you did not request this subscription, please ignore this email.";
+            . 'If you did not request this subscription, please ignore this email.';
 
         $htmlContent = '';
         if ($message->hasHtmlEmail()) {
-            $htmlContent = "<p>Thank you for subscribing!</p>"
-                . "<p>Please confirm your subscription by clicking the link below:</p>"
-                . "<p><a href=\"" . $confirmationLink . "\">Confirm Subscription</a></p>"
-                . "<p>If you did not request this subscription, please ignore this email.</p>";
+            $htmlContent = '<p>Thank you for subscribing!</p>'
+                . '<p>Please confirm your subscription by clicking the link below:</p>'
+                . '<p><a href="' . $confirmationLink . '">Confirm Subscription</a></p>'
+                . '<p>If you did not request this subscription, please ignore this email.</p>';
         }
 
         $email = (new Email())

@@ -27,11 +27,11 @@ parameters:
     env(MAILER_FROM): 'noreply@phplist.com'
     app.mailer_dsn: '%%env(MAILER_DSN)%%'
     env(MAILER_DSN): 'smtp://username:password@smtp.mailtrap.io:2525'
-    app.confirmation_url: '%env(CONFIRMATION_URL)%'
+    app.confirmation_url: '%%env(CONFIRMATION_URL)%%'
     env(CONFIRMATION_URL): 'https://example.com/confirm/'
 
     # Messenger configuration for asynchronous processing
-    app.messenger_transport_dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+    app.messenger_transport_dsn: '%%env(MESSENGER_TRANSPORT_DSN)%%'
     env(MESSENGER_TRANSPORT_DSN): 'doctrine://default?auto_setup=true'
 
     # A secret key that's used to generate certain security-related tokens

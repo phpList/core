@@ -34,13 +34,13 @@ class SubscriberConfirmationMessageHandlerTest extends TestCase
             ->with($this->callback(function (Email $email) use ($subscriberEmail, $uniqueId) {
                 $this->assertEquals([$subscriberEmail], $this->getEmailAddresses($email->getTo()));
                 $this->assertEquals('Please confirm your subscription', $email->getSubject());
-                
+
                 $textContent = $email->getTextBody();
                 $this->assertStringContainsString('Thank you for subscribing', $textContent);
                 $this->assertStringContainsString($this->confirmationUrl . $uniqueId, $textContent);
-                
+
                 $this->assertEmpty($email->getHtmlBody());
-                
+
                 return true;
             }));
 
@@ -58,15 +58,16 @@ class SubscriberConfirmationMessageHandlerTest extends TestCase
             ->with($this->callback(function (Email $email) use ($subscriberEmail, $uniqueId) {
                 $this->assertEquals([$subscriberEmail], $this->getEmailAddresses($email->getTo()));
                 $this->assertEquals('Please confirm your subscription', $email->getSubject());
-                
+
                 $textContent = $email->getTextBody();
                 $this->assertStringContainsString('Thank you for subscribing', $textContent);
                 $this->assertStringContainsString($this->confirmationUrl . $uniqueId, $textContent);
-                
+
                 $htmlContent = $email->getHtmlBody();
                 $this->assertStringContainsString('<p>Thank you for subscribing!</p>', $htmlContent);
-                $this->assertStringContainsString('<a href="' . $this->confirmationUrl . $uniqueId . '">', $htmlContent);
-                
+                $linkStart = '<a href="' . $this->confirmationUrl . $uniqueId . '">';
+                $this->assertStringContainsString($linkStart, $htmlContent);
+
                 return true;
             }));
 
