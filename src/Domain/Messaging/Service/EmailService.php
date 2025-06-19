@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service;
 
 use PhpList\Core\Domain\Messaging\Message\AsyncEmailMessage;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Mime\Email;
@@ -27,16 +26,6 @@ class EmailService
         $this->messageBus = $messageBus;
     }
 
-    /**
-     * Send a simple email asynchronously
-     *
-     * @param Email $email
-     * @param array $cc
-     * @param array $bcc
-     * @param array $replyTo
-     * @param array $attachments
-     * @return void
-     */
     public function sendEmail(
         Email $email,
         array $cc = [],
@@ -52,17 +41,6 @@ class EmailService
         $this->messageBus->dispatch($message);
     }
 
-    /**
-     * Send a simple email synchronously
-     *
-     * @param Email $email
-     * @param array $cc
-     * @param array $bcc
-     * @param array $replyTo
-     * @param array $attachments
-     * @return void
-     * @throws TransportExceptionInterface
-     */
     public function sendEmailSync(
         Email $email,
         array $cc = [],
@@ -93,19 +71,6 @@ class EmailService
         $this->mailer->send($email);
     }
 
-    /**
-     * Email multiple recipients asynchronously
-     *
-     * @param array $toAddresses Array of recipient email addresses
-     * @param string $subject Email subject
-     * @param string $text Plain text content
-     * @param string $html HTML content (optional)
-     * @param string|null $from Sender email address (optional, uses default if not provided)
-     * @param string|null $fromName Sender name (optional)
-     * @param array $attachments Array of file paths to attach (optional)
-     *
-     * @return void
-     */
     public function sendBulkEmail(
         array $toAddresses,
         string $subject,
@@ -132,20 +97,6 @@ class EmailService
         }
     }
 
-    /**
-     * Email multiple recipients synchronously
-     *
-     * @param array $toAddresses Array of recipient email addresses
-     * @param string $subject Email subject
-     * @param string $text Plain text content
-     * @param string $html HTML content (optional)
-     * @param string|null $from Sender email address (optional, uses default if not provided)
-     * @param string|null $fromName Sender name (optional)
-     * @param array $attachments Array of file paths to attach (optional)
-     *
-     * @return void
-     * @throws TransportExceptionInterface
-     */
     public function sendBulkEmailSync(
         array $toAddresses,
         string $subject,
@@ -171,4 +122,5 @@ class EmailService
             $this->sendEmailSync($email, [], [], [], $attachments);
         }
     }
+
 }

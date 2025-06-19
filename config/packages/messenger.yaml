@@ -24,3 +24,4 @@ framework:
         routing:
             # Route your messages to the transports
             'PhpList\Core\Domain\Messaging\Message\AsyncEmailMessage': async_email
+            'PhpList\Core\Domain\Messaging\Message\SubscriberConfirmationMessage': async_email
