@@ -85,3 +85,18 @@ services:
         parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
         arguments:
             - PhpList\Core\Domain\Analytics\Model\UserMessageView
+
+    PhpList\Core\Domain\Analytics\Repository\LinkTrackUmlClickRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Analytics\Model\LinkTrackUmlClick
+
+    PhpList\Core\Domain\Messaging\Repository\UserMessageRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Messaging\Model\UserMessage
+
+    PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Subscription\Model\SubscriberHistory

@@ -23,7 +23,7 @@ class UserMessageForward implements DomainModel, Identity
     private ?int $id = null;
 
     #[ORM\Column(name: 'user', type: 'integer')]
-    private int $user;
+    private int $userId;
 
     #[ORM\Column(name: 'message', type: 'integer')]
     private int $messageId;
@@ -47,9 +47,9 @@ class UserMessageForward implements DomainModel, Identity
         return $this->id;
     }
 
-    public function getUser(): int
+    public function getUserId(): int
     {
-        return $this->user;
+        return $this->userId;
     }
 
     public function getMessageId(): int
@@ -72,9 +72,9 @@ class UserMessageForward implements DomainModel, Identity
         return $this->createdAt;
     }
 
-    public function setUser(int $user): self
+    public function setUserId(int $userId): self
     {
-        $this->user = $user;
+        $this->userId = $userId;
         return $this;
     }
 
