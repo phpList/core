@@ -11,30 +11,60 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use PHPUnit\Framework\MockObject\MockObject;
+use PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class SubscriberManagerTest extends TestCase
 {
-    private SubscriberRepository&MockObject $subscriberRepository;
-    private MessageBusInterface&MockObject $messageBus;
+    private SubscriberRepository|MockObject $subscriberRepository;
+    private EntityManagerInterface|MockObject $entityManager;
+    private MessageBusInterface|MockObject $messageBus;
+    private SubscriberDeletionService|MockObject $subscriberDeletionService;
     private SubscriberManager $subscriberManager;
 
     protected function setUp(): void
     {
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
-        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->messageBus = $this->createMock(MessageBusInterface::class);
+        $this->subscriberDeletionService = $this->createMock(SubscriberDeletionService::class);
 
         $this->subscriberManager = new SubscriberManager(
             $this->subscriberRepository,
-            $entityManager,
-            $this->messageBus
+            $this->entityManager,
+            $this->messageBus,
+            $this->subscriberDeletionService
         );
     }
 
     public function testCreateSubscriberPersistsAndReturnsProperlyInitializedEntity(): void
+    {
+        $this->subscriberRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($this->callback(function (Subscriber $sub): bool {
+                return $sub->getEmail() === 'foo@bar.com'
+                    && $sub->isConfirmed() === true
+                    && $sub->isBlacklisted() === false
+                    && $sub->hasHtmlEmail() === true
+                    && $sub->isDisabled() === false;
+            }));
+
+        $dto = new CreateSubscriberDto(email: 'foo@bar.com', requestConfirmation: false, htmlEmail: true);
+
+        $result = $this->subscriberManager->createSubscriber($dto);
+
+        $this->assertInstanceOf(Subscriber::class, $result);
+        $this->assertSame('foo@bar.com', $result->getEmail());
+        $this->assertTrue($result->isConfirmed());
+        $this->assertFalse($result->isBlacklisted());
+        $this->assertTrue($result->hasHtmlEmail());
+        $this->assertFalse($result->isDisabled());
+    }
+
+    public function testCreateSubscriberPersistsAndSendsEmail(): void
     {
         $this->subscriberRepository
             ->expects($this->once())
@@ -51,7 +81,9 @@ class SubscriberManagerTest extends TestCase
         $this->messageBus
             ->expects($this->once())
             ->method('dispatch')
-            ->willReturn(new Envelope(new SubscriberConfirmationMessage('foo@bar.com', 'test-unique-id-456')));
+            ->willReturnCallback(function ($message) {
+                return new Envelope($message);
+            });
 
         $dto = new CreateSubscriberDto(email: 'foo@bar.com', requestConfirmation: true, htmlEmail: true);
 
@@ -85,7 +117,9 @@ class SubscriberManagerTest extends TestCase
                 $this->assertTrue($message->hasHtmlEmail());
                 return true;
             }))
-            ->willReturn(new Envelope(new SubscriberConfirmationMessage('foo@bar.com', 'test-unique-id-456')));
+            ->willReturnCallback(function ($message) {
+                return new Envelope($message);
+            });
 
         $dto = new CreateSubscriberDto(email: 'test@example.com', requestConfirmation: true, htmlEmail: true);
         $this->subscriberManager->createSubscriber($dto);

@@ -55,12 +55,12 @@ class SubscriberDeletionServiceTest extends KernelTestCase
         $this->entityManager->persist($admin);
 
         $msg = new Message(
-            new MessageFormat(true, MessageFormat::FORMAT_TEXT),
-            new MessageSchedule(1, null, 3, null, null),
-            new MessageMetadata('done'),
-            new MessageContent('Owned by Admin 1!'),
-            new MessageOptions(),
-            $admin
+            format: new MessageFormat(true, MessageFormat::FORMAT_TEXT),
+            schedule: new MessageSchedule(1, null, 3, null, null),
+            metadata: new MessageMetadata('done'),
+            content: new MessageContent('Owned by Admin 1!'),
+            options: new MessageOptions(),
+            owner: $admin
         );
         $this->entityManager->persist($msg);
 
@@ -119,27 +119,31 @@ class SubscriberDeletionServiceTest extends KernelTestCase
             $this->fail('Exception was thrown: ' . $e->getMessage());
         }
 
-        // Verify the subscriber was deleted
         $deletedSubscriber = $this->entityManager->getRepository(Subscriber::class)->find($subscriberId);
         $this->assertNull($deletedSubscriber, 'Subscriber should be deleted');
 
-        // Verify related entities were deleted
-        $subscriptions = $this->entityManager->getRepository(Subscription::class)->findBy(['subscriber' => $subscriber]);
+        $subscriptionRepo = $this->entityManager->getRepository(Subscription::class);
+        $subscriptions = $subscriptionRepo->findBy(['subscriber' => $subscriber]);
         $this->assertEmpty($subscriptions, 'Subscriptions should be deleted');
 
-        $linkTrackUmlClicks = $this->entityManager->getRepository(LinkTrackUmlClick::class)->findBy(['userId' => $subscriberId]);
+        $linkTrackRepo = $this->entityManager->getRepository(LinkTrackUmlClick::class);
+        $linkTrackUmlClicks = $linkTrackRepo->findBy(['userId' => $subscriberId]);
         $this->assertEmpty($linkTrackUmlClicks, 'LinkTrackUmlClicks should be deleted');
 
-        $userMessages = $this->entityManager->getRepository(UserMessage::class)->findBy(['user' => $subscriber]);
+        $userMessageRepo = $this->entityManager->getRepository(UserMessage::class);
+        $userMessages = $userMessageRepo->findBy(['user' => $subscriber]);
         $this->assertEmpty($userMessages, 'UserMessages should be deleted');
 
-        $userMessageBounces = $this->entityManager->getRepository(UserMessageBounce::class)->findBy(['userId' => $subscriberId]);
+        $bounceRepo = $this->entityManager->getRepository(UserMessageBounce::class);
+        $userMessageBounces = $bounceRepo->findBy(['userId' => $subscriberId]);
         $this->assertEmpty($userMessageBounces, 'UserMessageBounces should be deleted');
 
-        $userMessageForwards = $this->entityManager->getRepository(UserMessageForward::class)->findBy(['userId' => $subscriberId]);
+        $forwardRepo = $this->entityManager->getRepository(UserMessageForward::class);
+        $userMessageForwards = $forwardRepo->findBy(['userId' => $subscriberId]);
         $this->assertEmpty($userMessageForwards, 'UserMessageForwards should be deleted');
 
-        $userMessageViews = $this->entityManager->getRepository(UserMessageView::class)->findBy(['userId' => $subscriberId]);
+        $viewRepo = $this->entityManager->getRepository(UserMessageView::class);
+        $userMessageViews = $viewRepo->findBy(['userId' => $subscriberId]);
         $this->assertEmpty($userMessageViews, 'UserMessageViews should be deleted');
     }
 }

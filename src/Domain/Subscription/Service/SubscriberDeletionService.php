@@ -17,80 +17,61 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriptionRepository;
 
 class SubscriberDeletionService
 {
-    private LinkTrackUmlClickRepository $linkTrackUmlClickRepository;
+    private LinkTrackUmlClickRepository $linkTrackUmlClickRepo;
     private EntityManagerInterface $entityManager;
-    private UserMessageRepository $userMessageRepository;
-    private SubscriberAttributeValueRepository $subscriberAttributeValueRepository;
-    private SubscriberHistoryRepository $subscriberHistoryRepository;
-    private UserMessageBounceRepository $userMessageBounceRepository;
-    private UserMessageForwardRepository $userMessageForwardRepository;
-    private UserMessageViewRepository $userMessageViewRepository;
-    private SubscriptionRepository $subscriptionRepository;
+    private UserMessageRepository $userMessageRepo;
+    private SubscriberAttributeValueRepository $subscriberAttrValueRepo;
+    private SubscriberHistoryRepository $subscriberHistoryRepo;
+    private UserMessageBounceRepository $userMessageBounceRepo;
+    private UserMessageForwardRepository $userMessageForwardRepo;
+    private UserMessageViewRepository $userMessageViewRepo;
+    private SubscriptionRepository $subscriptionRepo;
 
     public function __construct(
-        LinkTrackUmlClickRepository $linkTrackUmlClickRepository,
+        LinkTrackUmlClickRepository $linkTrackUmlClickRepo,
         EntityManagerInterface $entityManager,
-        UserMessageRepository $userMessageRepository,
-        SubscriberAttributeValueRepository $subscriberAttributeValueRepository,
-        SubscriberHistoryRepository $subscriberHistoryRepository,
-        UserMessageBounceRepository $userMessageBounceRepository,
-        UserMessageForwardRepository $userMessageForwardRepository,
-        UserMessageViewRepository $userMessageViewRepository,
-        SubscriptionRepository $subscriptionRepository
+        UserMessageRepository $userMessageRepo,
+        SubscriberAttributeValueRepository $subscriberAttrValueRepo,
+        SubscriberHistoryRepository $subscriberHistoryRepo,
+        UserMessageBounceRepository $userMessageBounceRepo,
+        UserMessageForwardRepository $userMessageForwardRepo,
+        UserMessageViewRepository $userMessageViewRepo,
+        SubscriptionRepository $subscriptionRepo,
     ) {
-        $this->linkTrackUmlClickRepository = $linkTrackUmlClickRepository;
+        $this->linkTrackUmlClickRepo = $linkTrackUmlClickRepo;
         $this->entityManager = $entityManager;
-        $this->userMessageRepository = $userMessageRepository;
-        $this->subscriberAttributeValueRepository = $subscriberAttributeValueRepository;
-        $this->subscriberHistoryRepository = $subscriberHistoryRepository;
-        $this->userMessageBounceRepository = $userMessageBounceRepository;
-        $this->userMessageForwardRepository = $userMessageForwardRepository;
-        $this->userMessageViewRepository = $userMessageViewRepository;
-        $this->subscriptionRepository = $subscriptionRepository;
+        $this->userMessageRepo = $userMessageRepo;
+        $this->subscriberAttrValueRepo = $subscriberAttrValueRepo;
+        $this->subscriberHistoryRepo = $subscriberHistoryRepo;
+        $this->userMessageBounceRepo = $userMessageBounceRepo;
+        $this->userMessageForwardRepo = $userMessageForwardRepo;
+        $this->userMessageViewRepo = $userMessageViewRepo;
+        $this->subscriptionRepo = $subscriptionRepo;
     }
 
     public function deleteLeavingBlacklist(Subscriber $subscriber): void
     {
-        $linkTrackUmlClick = $this->linkTrackUmlClickRepository->findBy(['userId' => $subscriber->getId()]);
-        foreach ($linkTrackUmlClick as $click) {
-            $this->entityManager->remove($click);
-        }
-
-        $subscriptions = $this->subscriptionRepository->findBy(['subscriber' => $subscriber]);
-        foreach ($subscriptions as $subscription) {
-            $this->entityManager->remove($subscription);
-        }
-
-        $userMessages = $this->userMessageRepository->findBy(['user' => $subscriber]);
-        foreach ($userMessages as $message) {
-            $this->entityManager->remove($message);
-        }
-
-        $subscriberAttributes = $this->subscriberAttributeValueRepository->findBy(['subscriber' => $subscriber]);
-        foreach ($subscriberAttributes as $attribute) {
-            $this->entityManager->remove($attribute);
-        }
-
-        $subscriberHistory = $this->subscriberHistoryRepository->findBy(['subscriber' => $subscriber]);
-        foreach ($subscriberHistory as $history) {
-            $this->entityManager->remove($history);
-        }
-
-        $userMessageBounces = $this->userMessageBounceRepository->findBy(['userId' => $subscriber->getId()]);
-        foreach ($userMessageBounces as $bounce) {
-            $this->entityManager->remove($bounce);
-        }
-
-        $userMessageForwards = $this->userMessageForwardRepository->findBy(['userId' => $subscriber->getId()]);
-        foreach ($userMessageForwards as $forward) {
-            $this->entityManager->remove($forward);
-        }
-
-        $userMessageViews = $this->userMessageViewRepository->findBy(['userId' => $subscriber->getId()]);
-        foreach ($userMessageViews as $view) {
-            $this->entityManager->remove($view);
-        }
+        $this->removeEntities($this->linkTrackUmlClickRepo->findBy(['userId' => $subscriber->getId()]));
+        $this->removeEntities($this->subscriptionRepo->findBy(['subscriber' => $subscriber]));
+        $this->removeEntities($this->userMessageRepo->findBy(['user' => $subscriber]));
+        $this->removeEntities($this->subscriberAttrValueRepo->findBy(['subscriber' => $subscriber]));
+        $this->removeEntities($this->subscriberHistoryRepo->findBy(['subscriber' => $subscriber]));
+        $this->removeEntities($this->userMessageBounceRepo->findBy(['userId' => $subscriber->getId()]));
+        $this->removeEntities($this->userMessageForwardRepo->findBy(['userId' => $subscriber->getId()]));
+        $this->removeEntities($this->userMessageViewRepo->findBy(['userId' => $subscriber->getId()]));
 
         $this->entityManager->remove($subscriber);
+    }
+
+    /**
+     * Remove a collection of entities
+     *
+     * @param array $entities
+     */
+    private function removeEntities(array $entities): void
+    {
+        foreach ($entities as $entity) {
+            $this->entityManager->remove($entity);
+        }
     }
 }
