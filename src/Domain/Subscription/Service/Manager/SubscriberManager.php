@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\UpdateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 
@@ -19,15 +20,18 @@ class SubscriberManager
     private SubscriberRepository $subscriberRepository;
     private EntityManagerInterface $entityManager;
     private MessageBusInterface $messageBus;
+    private SubscriberDeletionService $subscriberDeletionService;
 
     public function __construct(
         SubscriberRepository $subscriberRepository,
         EntityManagerInterface $entityManager,
-        MessageBusInterface $messageBus
+        MessageBusInterface $messageBus,
+        SubscriberDeletionService $subscriberDeletionService
     ) {
         $this->subscriberRepository = $subscriberRepository;
         $this->entityManager = $entityManager;
         $this->messageBus = $messageBus;
+        $this->subscriberDeletionService = $subscriberDeletionService;
     }
 
     public function createSubscriber(CreateSubscriberDto $subscriberDto): Subscriber
@@ -90,7 +94,7 @@ class SubscriberManager
 
     public function deleteSubscriber(Subscriber $subscriber): void
     {
-        $this->subscriberRepository->remove($subscriber);
+        $this->subscriberDeletionService->deleteLeavingBlacklist($subscriber);
     }
 
     public function createFromImport(ImportSubscriberDto $subscriberDto): Subscriber
