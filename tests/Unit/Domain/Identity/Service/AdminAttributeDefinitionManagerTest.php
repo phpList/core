@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Identity\Model\Dto\AdminAttributeDefinitionDto;
 use PhpList\Core\Domain\Identity\Repository\AdminAttributeDefinitionRepository;
 use PhpList\Core\Domain\Identity\Service\AdminAttributeDefinitionManager;
 use PhpList\Core\Domain\Identity\Exception\AttributeDefinitionCreationException;
+use PhpList\Core\Domain\Subscription\Validator\AttributeTypeValidator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -20,7 +21,8 @@ class AdminAttributeDefinitionManagerTest extends TestCase
     protected function setUp(): void
     {
         $this->repository = $this->createMock(AdminAttributeDefinitionRepository::class);
-        $this->subject = new AdminAttributeDefinitionManager($this->repository);
+        $attributeTypeValidator = $this->createMock(AttributeTypeValidator::class);
+        $this->subject = new AdminAttributeDefinitionManager($this->repository, $attributeTypeValidator);
     }
 
     public function testCreateCreatesNewAttributeDefinition(): void

@@ -13,8 +13,8 @@ use PhpList\Core\Domain\Configuration\Repository\ConfigRepository;
 class Config implements DomainModel
 {
     #[ORM\Id]
-    #[ORM\Column(type: 'string', length: 35)]
-    private string $item;
+    #[ORM\Column(name: 'item', type: 'string', length: 35)]
+    private string $key;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $value = null;
@@ -25,14 +25,14 @@ class Config implements DomainModel
     #[ORM\Column(type: 'string', length: 25, nullable: true)]
     private ?string $type = null;
 
-    public function getItem(): string
+    public function getKey(): string
     {
-        return $this->item;
+        return $this->key;
     }
 
-    public function setItem(string $item): self
+    public function setKey(string $key): self
     {
-        $this->item = $item;
+        $this->key = $key;
         return $this;
     }
 
