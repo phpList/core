@@ -19,6 +19,18 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
  */
 class SubscriberRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
+    /**
+     * @return Subscriber[]
+     */
+    public function findSubscribersWithoutUuid(): array
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.uniqueId IS NULL OR s.uniqueId = :emptyString')
+            ->setParameter('emptyString', '')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findOneByEmail(string $email): ?Subscriber
     {
         return $this->findOneBy(['email' => $email]);
