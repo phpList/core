@@ -1,0 +1,4 @@
+services:
+  PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider:
+    autowire: true
+    autoconfigure: true
