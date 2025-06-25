@@ -76,7 +76,8 @@ class ProcessQueueCommand extends Command
     private function processCampaign(Message $campaign, OutputInterface $output): void
     {
         $subscribers = $this->subscriberProvider->getSubscribersForMessage($campaign);
-        // todo: check $ISPrestrictions logic
+        // phpcs:ignore Generic.Commenting.Todo
+        // @todo check $ISPrestrictions logic
         foreach ($subscribers as $subscriber) {
             if (!filter_var($subscriber->getEmail(), FILTER_VALIDATE_EMAIL)) {
                 continue;
@@ -92,7 +93,8 @@ class ProcessQueueCommand extends Command
             try {
                 $this->mailer->send($email);
 
-                // todo: log somewhere that this subscriber got email
+                // phpcs:ignore Generic.Commenting.Todo
+                // @todo log somewhere that this subscriber got email
             } catch (Throwable $e) {
                 $output->writeln('Failed to send to: ' . $subscriber->getEmail());
             }

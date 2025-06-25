@@ -103,7 +103,7 @@ class SubscriberProviderTest extends TestCase
         $this->assertSame($subscriber2, $result[1]);
     }
 
-    public function testGetSubscribersForMessageWithMultipleListsAndOverlappingSubscribersReturnsUniqueSubscribers(): void
+    public function testGetSubscribersForMessageWithMultipleListsReturnsUniqueSubscribers(): void
     {
         $message = $this->createMock(Message::class);
         $message->method('getId')->willReturn(123);
@@ -133,7 +133,7 @@ class SubscriberProviderTest extends TestCase
 
         $this->assertIsArray($result);
         $this->assertCount(3, $result);
-        
+
         $this->assertContains($subscriber1, $result);
         $this->assertContains($subscriber2, $result);
         $this->assertContains($subscriber3, $result);

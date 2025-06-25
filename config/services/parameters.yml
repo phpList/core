@@ -9,3 +9,5 @@ parameters:
     notify_end_default: 'end@example.com'
     always_add_google_tracking: true
     click_track: true
+    graylog_host: 'graylog.example.com'
+    graylog_port: 12201

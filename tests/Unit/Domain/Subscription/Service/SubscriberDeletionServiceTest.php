@@ -61,7 +61,7 @@ class SubscriberDeletionServiceTest extends TestCase
             $this->userMessageBounceRepository,
             $this->userMessageForwardRepository,
             $this->userMessageViewRepository,
-            $this->subscriptionRepository
+            $this->subscriptionRepository,
         );
     }
 
