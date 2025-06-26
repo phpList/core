@@ -43,7 +43,7 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
     private string $key = '';
 
     #[ORM\ManyToOne(targetEntity: Administrator::class)]
-    #[ORM\JoinColumn(name: 'adminid')]
+    #[ORM\JoinColumn(name: 'adminid', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?Administrator $administrator = null;
 
     public function __construct()

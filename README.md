@@ -16,7 +16,7 @@ phpList is an open source newsletter manager. This project is a rewrite of the
 
 ## About this package
 
-This is the core module of the successor to phpList 3. It will have the 
+This is the core module of the successor to phpList 3. It will have the
 following responsibilities:
 
 * provide access to the DB via Doctrine models and repositories (and raw SQL
@@ -41,7 +41,7 @@ Since this package is only a service required to run a full installation of **ph
 
 ## Contributing to this package
 
-Contributions to phpList repositories are highly welcomed! To get started please take a look at the [contribution guide](.github/CONTRIBUTING.md). It contains everything you would need to make your first contribution including how to run local style checks and run tests. 
+Contributions to phpList repositories are highly welcomed! To get started please take a look at the [contribution guide](.github/CONTRIBUTING.md). It contains everything you would need to make your first contribution including how to run local style checks and run tests.
 
 ### Code of Conduct
 
@@ -53,9 +53,11 @@ this code.
 ## Structure
 
 * [Class Docs][docs/phpdoc/]
+* [Mailer Transports](docs/mailer-transports.md) - How to use different email providers (Gmail, Amazon SES, Mailchimp, SendGrid)
 * [Class structure overview](docs/ClassStructure.md)
 * [Graphic domain model](docs/DomainModel/DomainModel.svg) and
   a [description of the domain entities](docs/DomainModel/Entities.md)
+* [Mailer Transports](docs/mailer-transports.md) - How to use different email providers (Gmail, Amazon SES, Mailchimp, SendGrid)
 
 
 ## Running the web server
@@ -79,9 +81,9 @@ already in use, on the next free port after 8000).
 
 You can stop the server with CTRL + C.
 
-#### Development and Documentation 
+#### Development and Documentation
 
-We use `phpDocumentor` to automatically generate documentation for classes. To make this process efficient and easier, you are required to properly "document" your  `classes`,`properties`, `methods` ... by annotating them with [docblocks](https://docs.phpdoc.org/latest/guide/guides/docblocks.html). 
+We use `phpDocumentor` to automatically generate documentation for classes. To make this process efficient and easier, you are required to properly "document" your  `classes`,`properties`, `methods` ... by annotating them with [docblocks](https://docs.phpdoc.org/latest/guide/guides/docblocks.html).
 
 More about generatings docs in [PHPDOC.md](PHPDOC.md)
 
@@ -124,12 +126,12 @@ listed in the `extra` section of the module's `composer.json` like this:
 
 ```json
 "extra": {
-    "phplist/core": {
-        "bundles": [
-            "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
-            "PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle"
-        ]
-    }
+  "phplist/core": {
+    "bundles": [
+      "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
+      "PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle"
+    ]
+  }
 }
 ```
 
@@ -144,14 +146,14 @@ the `extra` section of the module's `composer.json` like this:
 
 ```json
 "extra": {
-    "phplist/core": {
-        "routes": {
-            "homepage": {
-                "resource": "@PhpListEmptyStartPageBundle/Controller/",
-                "type": "annotation"
-            }
-        }
+  "phplist/core": {
+    "routes": {
+      "homepage": {
+        "resource": "@PhpListEmptyStartPageBundle/Controller/",
+        "type": "annotation"
+      }
     }
+  }
 }
 ```
 
@@ -159,17 +161,17 @@ You can also provide system configuration for your module:
 
 ```json
 "extra": {
-    "phplist/core": {
-        "configuration": {
-            "framework": {
-                "templating": {
-                    "engines": [
-                        "twig"
-                    ]
-                }
-            }
+  "phplist/core": {
+    "configuration": {
+      "framework": {
+        "templating": {
+          "engines": [
+            "twig"
+          ]
         }
+      }
     }
+  }
 }
 ```
 
@@ -203,6 +205,17 @@ To access the phpList data from a third-party application (i.e., not from a
 phpList module), please use the
 [REST API](https://github.com/phpList/rest-api).
 
+
+## Email Configuration
+
+phpList supports multiple email transport providers through Symfony Mailer. The following transports are included:
+
+* Gmail
+* Amazon SES
+* Mailchimp Transactional (Mandrill)
+* SendGrid
+
+For detailed configuration instructions, see the [Mailer Transports documentation](docs/mailer-transports.md).
 
 ## Copyright
 

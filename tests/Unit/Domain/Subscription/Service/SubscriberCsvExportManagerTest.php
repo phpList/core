@@ -14,6 +14,7 @@ use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use PhpList\Core\Domain\Subscription\Service\SubscriberCsvExporter;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 class SubscriberCsvExportManagerTest extends TestCase
@@ -32,7 +33,8 @@ class SubscriberCsvExportManagerTest extends TestCase
         $this->subject = new SubscriberCsvExporter(
             $this->attributeManagerMock,
             $this->subscriberRepositoryMock,
-            $this->attributeDefinitionRepositoryMock
+            $this->attributeDefinitionRepositoryMock,
+            $this->createMock(LoggerInterface::class)
         );
     }
 

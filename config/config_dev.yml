@@ -14,6 +14,14 @@ monolog:
             path: '%kernel.logs_dir%/%kernel.environment%.log'
             level: debug
             channels: ['!event']
+        # Graylog handler disabled for development environment - using local logging only
+        # graylog:
+        #     type: gelf
+        #     publisher:
+        #         hostname: '%app.config.graylog_host%'
+        #         port: '%app.config.graylog_port%'
+        #     level: debug
+        #     channels: ['!event']
         console:
             type: console
             process_psr_3_messages: false

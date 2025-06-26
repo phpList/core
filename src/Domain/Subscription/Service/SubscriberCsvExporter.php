@@ -10,6 +10,7 @@ use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -22,15 +23,18 @@ class SubscriberCsvExporter
     private SubscriberAttributeManager $attributeManager;
     private SubscriberRepository $subscriberRepository;
     private SubscriberAttributeDefinitionRepository $definitionRepository;
+    private LoggerInterface $logger;
 
     public function __construct(
         SubscriberAttributeManager $attributeManager,
         SubscriberRepository $subscriberRepository,
-        SubscriberAttributeDefinitionRepository $definitionRepository
+        SubscriberAttributeDefinitionRepository $definitionRepository,
+        LoggerInterface $logger
     ) {
         $this->attributeManager = $attributeManager;
         $this->subscriberRepository = $subscriberRepository;
         $this->definitionRepository = $definitionRepository;
+        $this->logger = $logger;
     }
 
     /**
@@ -42,16 +46,30 @@ class SubscriberCsvExporter
      */
     public function exportToCsv(?SubscriberFilter $filter = null, int $batchSize = 1000): Response
     {
+        $this->logger->info('Starting subscriber CSV export', [
+            'batch_size' => $batchSize,
+            'filter' => $filter ? get_class($filter) : 'null'
+        ]);
+
         if ($filter === null) {
             $filter = new SubscriberFilter();
+            $this->logger->debug('No filter provided, using default filter');
         }
 
         $tempFilePath = tempnam(sys_get_temp_dir(), 'subscribers_export_');
+        $this->logger->debug('Created temporary file for export', ['path' => $tempFilePath]);
+
         $this->generateCsvContent($filter, $batchSize, $tempFilePath, $filter->getColumns());
 
         $response = new BinaryFileResponse($tempFilePath);
+        $response = $this->configureResponse($response);
 
-        return $this->configureResponse($response);
+        $this->logger->info('Subscriber CSV export completed', [
+            'file_size' => filesize($tempFilePath),
+            'temp_file' => $tempFilePath
+        ]);
+
+        return $response;
     }
 
     /**
@@ -121,13 +139,34 @@ class SubscriberCsvExporter
         array $headers
     ): void {
         $lastId = 0;
+        $totalExported = 0;
+        $batchNumber = 0;
+
+        $this->logger->debug('Starting batch export of subscribers', [
+            'batch_size' => $batchSize,
+            'attribute_definitions_count' => count($attributeDefinitions),
+            'headers_count' => count($headers)
+        ]);
 
         do {
+            $batchNumber++;
+            $this->logger->debug('Processing subscriber batch', [
+                'batch_number' => $batchNumber,
+                'last_id' => $lastId,
+                'batch_size' => $batchSize
+            ]);
+
             $subscribers = $this->subscriberRepository->getFilteredAfterId(
                 lastId: $lastId,
                 limit: $batchSize,
                 filter: $filter
             );
+
+            $subscriberCount = count($subscribers);
+            $this->logger->debug('Retrieved subscribers for batch', [
+                'batch_number' => $batchNumber,
+                'count' => $subscriberCount
+            ]);
 
             foreach ($subscribers as $subscriber) {
                 $row = $this->getSubscriberRow($subscriber, $attributeDefinitions, $headers);
@@ -135,8 +174,20 @@ class SubscriberCsvExporter
                 $lastId = $subscriber->getId();
             }
 
-            $subscriberCount = count($subscribers);
+            $totalExported += $subscriberCount;
+
+            $this->logger->debug('Completed batch processing', [
+                'batch_number' => $batchNumber,
+                'processed_in_batch' => $subscriberCount,
+                'total_exported' => $totalExported,
+                'last_id' => $lastId
+            ]);
         } while ($subscriberCount === $batchSize);
+
+        $this->logger->info('Completed exporting all subscribers', [
+            'total_batches' => $batchNumber,
+            'total_subscribers' => $totalExported
+        ]);
     }
 
     /**

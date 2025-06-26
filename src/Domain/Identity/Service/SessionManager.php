@@ -29,6 +29,10 @@ class SessionManager
             throw new UnauthorizedHttpException('', 'Not authorized', null, 1500567098);
         }
 
+        if ($administrator->isDisabled()) {
+            throw new UnauthorizedHttpException('', 'Not authorized', null, 1500567099);
+        }
+
         $token = new AdministratorToken();
         $token->setAdministrator($administrator);
         $token->generateExpiry();

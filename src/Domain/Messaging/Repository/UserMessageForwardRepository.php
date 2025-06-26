@@ -16,7 +16,7 @@ class UserMessageForwardRepository extends AbstractRepository implements Paginat
     {
         return (int) $this->createQueryBuilder('umf')
             ->select('COUNT(umf.id)')
-            ->where('IDENTITY(umf.message) = :messageId')
+            ->where('umf.messageId = :messageId')
             ->setParameter('messageId', $messageId)
             ->getQuery()
             ->getSingleScalarResult();

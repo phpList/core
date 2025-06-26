@@ -125,6 +125,12 @@ class Message implements DomainModel, Identity, ModificationDate
         return $this->uuid;
     }
 
+    public function setUuid(string $uuid): self
+    {
+        $this->uuid = $uuid;
+        return $this;
+    }
+
     public function getOwner(): ?Administrator
     {
         return $this->owner;

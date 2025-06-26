@@ -31,4 +31,13 @@ class LinkTrackRepository extends AbstractRepository implements PaginatableRepos
 
         return $query->getQuery()->getResult();
     }
+
+    public function findByUrlUserIdAndMessageId(string $url, int $userId, int $messageId): ?LinkTrack
+    {
+        return $this->findOneBy([
+            'url' => $url,
+            'userId' => $userId,
+            'messageId' => $messageId,
+        ]);
+    }
 }

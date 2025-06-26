@@ -12,6 +12,18 @@ use PhpList\Core\Domain\Messaging\Model\Message;
 
 class MessageRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
+    /**
+     * @return Message[]
+     */
+    public function findCampaignsWithoutUuid(): array
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.uuid IS NULL OR m.uuid = :emptyString')
+            ->setParameter('emptyString', '')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function getByOwnerId(int $ownerId): array
     {
         return $this->createQueryBuilder('m')

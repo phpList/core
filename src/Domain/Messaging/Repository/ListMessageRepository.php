@@ -11,4 +11,15 @@ use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterf
 class ListMessageRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
     use CursorPaginationTrait;
+
+    /** @return int[] */
+    public function getListIdsByMessageId(int $messageId): array
+    {
+        return $this->createQueryBuilder('lm')
+            ->select('IDENTITY(lm.list)')
+            ->where('lm.messageId = :messageId')
+            ->setParameter('messageId', $messageId)
+            ->getQuery()
+            ->getSingleColumnResult();
+    }
 }

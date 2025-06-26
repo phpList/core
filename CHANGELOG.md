@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ## x.y.z (next release)
 
 ### Added
+- Graylog integration for centralized logging (#TBD)
 
 ### Changed
 
