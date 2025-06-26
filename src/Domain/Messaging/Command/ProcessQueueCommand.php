@@ -26,15 +26,15 @@ class ProcessQueueCommand extends Command
     private LockFactory $lockFactory;
     private EntityManagerInterface $entityManager;
     private SubscriberProvider $subscriberProvider;
-    private MessageProcessingPreparator $messageProcessingPreparator;
+    private MessageProcessingPreparator $messagePreparator;
 
     public function __construct(
         MessageRepository $messageRepository,
-        MailerInterface   $mailer,
-        LockFactory       $lockFactory,
+        MailerInterface $mailer,
+        LockFactory $lockFactory,
         EntityManagerInterface $entityManager,
         SubscriberProvider $subscriberProvider,
-        MessageProcessingPreparator $messageProcessingPreparator
+        MessageProcessingPreparator $messagePreparator
     ) {
         parent::__construct();
         $this->messageRepository = $messageRepository;
@@ -42,7 +42,7 @@ class ProcessQueueCommand extends Command
         $this->lockFactory = $lockFactory;
         $this->entityManager = $entityManager;
         $this->subscriberProvider = $subscriberProvider;
-        $this->messageProcessingPreparator = $messageProcessingPreparator;
+        $this->messagePreparator = $messagePreparator;
     }
 
     /**
@@ -58,8 +58,8 @@ class ProcessQueueCommand extends Command
         }
 
         try {
-            $this->messageProcessingPreparator->ensureSubscribersHaveUuid($output);
-            $this->messageProcessingPreparator->ensureCampaignsHaveUuid($output);
+            $this->messagePreparator->ensureSubscribersHaveUuid($output);
+            $this->messagePreparator->ensureCampaignsHaveUuid($output);
 
             $campaigns = $this->messageRepository->findBy(['status' => 'submitted']);
 
@@ -82,7 +82,7 @@ class ProcessQueueCommand extends Command
             if (!filter_var($subscriber->getEmail(), FILTER_VALIDATE_EMAIL)) {
                 continue;
             }
-
+            $this->messagePreparator->processMessageLinks($campaign, $subscriber->getId());
             $email = (new Email())
                 ->from('news@example.com')
                 ->to($subscriber->getEmail())

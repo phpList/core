@@ -37,3 +37,6 @@ parameters:
     # A secret key that's used to generate certain security-related tokens
     secret: '%%env(PHPLIST_SECRET)%%'
     env(PHPLIST_SECRET): %1$s
+
+    graylog_host: 'graylog.example.com'
+    graylog_port: 12201

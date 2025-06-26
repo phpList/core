@@ -149,6 +149,10 @@ class ProcessQueueCommandTest extends TestCase
         $subscriber->expects($this->any())
             ->method('getEmail')
             ->willReturn('test@example.com');
+        $subscriber->expects($this->any())
+            ->method('getId')
+            ->willReturn(1);
+
 
         $this->messageRepository->expects($this->once())
             ->method('findBy')
@@ -278,6 +282,9 @@ class ProcessQueueCommandTest extends TestCase
         $subscriber->expects($this->any())
             ->method('getEmail')
             ->willReturn('test@example.com');
+        $subscriber->expects($this->any())
+            ->method('getId')
+            ->willReturn(1);
 
         $this->messageRepository->expects($this->once())
             ->method('findBy')
