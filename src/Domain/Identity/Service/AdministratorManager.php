@@ -29,6 +29,7 @@ class AdministratorManager
         $administrator->setSuperUser($dto->isSuperUser);
         $hashedPassword = $this->hashGenerator->createPasswordHash($dto->password);
         $administrator->setPasswordHash($hashedPassword);
+        $administrator->setPrivilegesFromArray($dto->privileges);
 
         $this->entityManager->persist($administrator);
         $this->entityManager->flush();
@@ -51,6 +52,7 @@ class AdministratorManager
             $hashedPassword = $this->hashGenerator->createPasswordHash($dto->password);
             $administrator->setPasswordHash($hashedPassword);
         }
+        $administrator->setPrivilegesFromArray($dto->privileges);
 
         $this->entityManager->flush();
     }

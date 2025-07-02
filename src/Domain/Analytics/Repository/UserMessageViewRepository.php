@@ -16,7 +16,7 @@ class UserMessageViewRepository extends AbstractRepository implements Paginatabl
     {
         return (int) $this->createQueryBuilder('umv')
             ->select('COUNT(umv.id)')
-            ->where('umv.message_id = :messageId')
+            ->where('umv.messageId = :messageId')
             ->setParameter('messageId', $messageId)
             ->getQuery()
             ->getSingleScalarResult();

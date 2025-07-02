@@ -3,6 +3,14 @@ imports:
 
 monolog:
     handlers:
+        # Primary handler for production is Graylog
+        graylog:
+            type: gelf
+            publisher:
+                hostname: '%app.config.graylog_host%'
+                port: '%app.config.graylog_port%'
+            level: error
+        # Local file logging as backup
         main:
             type: fingers_crossed
             action_level: error

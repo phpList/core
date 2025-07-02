@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Subscription\Model\Dto\AttributeDefinitionDto;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\AttributeDefinitionManager;
+use PhpList\Core\Domain\Subscription\Validator\AttributeTypeValidator;
 use PHPUnit\Framework\TestCase;
 
 class AttributeDefinitionManagerTest extends TestCase
@@ -16,7 +17,8 @@ class AttributeDefinitionManagerTest extends TestCase
     public function testCreateAttributeDefinition(): void
     {
         $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
-        $manager = new AttributeDefinitionManager($repository);
+        $validator = $this->createMock(AttributeTypeValidator::class);
+        $manager = new AttributeDefinitionManager($repository, $validator);
 
         $dto = new AttributeDefinitionDto(
             name: 'Country',
@@ -48,7 +50,8 @@ class AttributeDefinitionManagerTest extends TestCase
     public function testCreateThrowsWhenAttributeAlreadyExists(): void
     {
         $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
-        $manager = new AttributeDefinitionManager($repository);
+        $validator = $this->createMock(AttributeTypeValidator::class);
+        $manager = new AttributeDefinitionManager($repository, $validator);
 
         $dto = new AttributeDefinitionDto(
             name: 'Country',
@@ -74,7 +77,8 @@ class AttributeDefinitionManagerTest extends TestCase
     public function testUpdateAttributeDefinition(): void
     {
         $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
-        $manager = new AttributeDefinitionManager($repository);
+        $validator = $this->createMock(AttributeTypeValidator::class);
+        $manager = new AttributeDefinitionManager($repository, $validator);
 
         $attribute = new SubscriberAttributeDefinition();
         $attribute->setName('Old');
@@ -108,7 +112,8 @@ class AttributeDefinitionManagerTest extends TestCase
     public function testUpdateThrowsWhenAnotherAttributeWithSameNameExists(): void
     {
         $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
-        $manager = new AttributeDefinitionManager($repository);
+        $validator = $this->createMock(AttributeTypeValidator::class);
+        $manager = new AttributeDefinitionManager($repository, $validator);
 
         $dto = new AttributeDefinitionDto(
             name: 'Existing',
@@ -138,7 +143,8 @@ class AttributeDefinitionManagerTest extends TestCase
     public function testDeleteAttributeDefinition(): void
     {
         $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
-        $manager = new AttributeDefinitionManager($repository);
+        $validator = $this->createMock(AttributeTypeValidator::class);
+        $manager = new AttributeDefinitionManager($repository, $validator);
 
         $attribute = new SubscriberAttributeDefinition();
 

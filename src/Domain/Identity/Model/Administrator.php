@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Identity\Model;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
@@ -72,6 +73,7 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         $this->createdAt = new DateTime();
         $this->updatedAt = null;
         $this->email = '';
+        $this->privileges = null;
     }
 
     public function getLoginName(): string
@@ -152,16 +154,37 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->namelc;
     }
 
-    public function setPrivileges(string $privileges): self
+    public function setPrivileges(Privileges $privileges): self
     {
-        $this->privileges = $privileges;
+        $this->privileges = $privileges->toSerialized();
 
         return $this;
     }
 
-    public function getPrivileges(): string
+    /**
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     * @throws InvalidArgumentException
+     */
+    public function setPrivilegesFromArray(array $privilegesData): void
     {
-        return $this->privileges;
+        $privileges = new Privileges();
+        foreach ($privilegesData as $key => $value) {
+            $flag = PrivilegeFlag::tryFrom($key);
+            if (!$flag) {
+                throw new InvalidArgumentException('Unknown privilege key: '. $key);
+            }
+
+            $privileges = $value ? $privileges->grant($flag) : $privileges->revoke($flag);
+        }
+        $this->setPrivileges($privileges);
+    }
+
+    /**
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     */
+    public function getPrivileges(): Privileges
+    {
+        return Privileges::fromSerialized($this->privileges);
     }
 
     public function getCreatedAt(): ?DateTime

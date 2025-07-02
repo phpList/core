@@ -14,6 +14,7 @@ final class CreateAdministratorDto
         public readonly string $password,
         public readonly string $email,
         public readonly bool $isSuperUser = false,
+        public readonly array $privileges = [],
     ) {
     }
 }

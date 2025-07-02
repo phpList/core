@@ -25,10 +25,10 @@ class UserMessageBounce implements DomainModel, Identity
     private ?int $id = null;
 
     #[ORM\Column(name: 'user', type: 'integer')]
-    private int $user;
+    private int $userId;
 
     #[ORM\Column(name: 'message', type: 'integer')]
-    private int $message;
+    private int $messageId;
 
     #[ORM\Column(name: 'bounce', type: 'integer')]
     private int $bounce;
@@ -36,8 +36,9 @@ class UserMessageBounce implements DomainModel, Identity
     #[ORM\Column(name: 'time', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private DateTime $createdAt;
 
-    public function __construct()
+    public function __construct(int $bounce)
     {
+        $this->bounce = $bounce;
         $this->createdAt = new DateTime();
     }
 
@@ -46,14 +47,14 @@ class UserMessageBounce implements DomainModel, Identity
         return $this->id;
     }
 
-    public function getUser(): int
+    public function getUserId(): int
     {
-        return $this->user;
+        return $this->userId;
     }
 
-    public function getMessage(): int
+    public function getMessageId(): int
     {
-        return $this->message;
+        return $this->messageId;
     }
 
     public function getBounce(): int
@@ -66,15 +67,15 @@ class UserMessageBounce implements DomainModel, Identity
         return $this->createdAt;
     }
 
-    public function setUser(int $user): self
+    public function setUserId(int $userId): self
     {
-        $this->user = $user;
+        $this->userId = $userId;
         return $this;
     }
 
-    public function setMessage(int $message): self
+    public function setMessageId(int $messageId): self
     {
-        $this->message = $message;
+        $this->messageId = $messageId;
         return $this;
     }
 

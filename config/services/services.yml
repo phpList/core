@@ -1,0 +1,31 @@
+services:
+    PhpList\Core\Domain\Subscription\Service\SubscriberCsvExporter:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+    PhpList\Core\Domain\Subscription\Service\SubscriberCsvImporter:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+    PhpList\Core\Domain\Messaging\Service\EmailService:
+        autowire: true
+        autoconfigure: true
+        arguments:
+            $defaultFromEmail: '%app.mailer_from%'
+
+    PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+    PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+    PhpList\Core\Domain\Analytics\Service\LinkTrackService:
+        autowire: true
+        autoconfigure: true
+        public: true

@@ -138,7 +138,7 @@ class Bootstrap
     }
 
     /**
-     * Main entry point called at every request usually from global scope. Checks if everything is correct
+     * The main entry point called at every request usually from global scope. Checks if everything is correct
      * and loads the configuration.
      *
      * @return Bootstrap fluent interface
