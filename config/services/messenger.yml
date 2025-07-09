@@ -10,3 +10,8 @@ services:
         tags: [ 'messenger.message_handler' ]
         arguments:
             $confirmationUrl: '%app.confirmation_url%'
+
+    PhpList\Core\Domain\Messaging\MessageHandler\AsyncEmailMessageHandler:
+        autowire: true
+        autoconfigure: true
+        tags: [ 'messenger.message_handler' ]
