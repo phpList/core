@@ -20,7 +20,9 @@ framework:
     validation:
         enable_attributes: true
         email_validation_mode: html5
-    #serializer: { enable_annotations: true }
+    serializer:
+        enabled: true
+        name_converter: 'serializer.name_converter.camel_case_to_snake_case'
     #templating:
         #engines: ['twig']
     default_locale: '%locale%'
@@ -37,8 +39,5 @@ framework:
     assets: ~
     php_errors:
         log: true
-    serializer:
-        enabled: true
-        enable_attributes: true
     mailer:
         dsn: '%app.mailer_dsn%'
