@@ -29,3 +29,8 @@ services:
         autowire: true
         autoconfigure: true
         public: true
+
+    PhpList\Core\Domain\Messaging\Service\CampaignProcessor:
+        autowire: true
+        autoconfigure: true
+        public: true

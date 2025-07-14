@@ -29,7 +29,7 @@ class SubscriberCsvExporter
         SubscriberAttributeManager $attributeManager,
         SubscriberRepository $subscriberRepository,
         SubscriberAttributeDefinitionRepository $definitionRepository,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         $this->attributeManager = $attributeManager;
         $this->subscriberRepository = $subscriberRepository;

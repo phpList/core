@@ -4,42 +4,33 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Command;
 
-use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use PhpList\Core\Domain\Messaging\Command\ProcessQueueCommand;
 use PhpList\Core\Domain\Messaging\Model\Message;
-use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
-use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
+use PhpList\Core\Domain\Messaging\Service\CampaignProcessor;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
-use PhpList\Core\Domain\Subscription\Model\Subscriber;
-use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\LockInterface;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
 
 class ProcessQueueCommandTest extends TestCase
 {
     private MessageRepository&MockObject $messageRepository;
-    private MailerInterface&MockObject $mailer;
-    private EntityManagerInterface&MockObject $entityManager;
-    private SubscriberProvider&MockObject $subscriberProvider;
     private MessageProcessingPreparator&MockObject $messageProcessingPreparator;
+    private CampaignProcessor&MockObject $campaignProcessor;
     private LockInterface&MockObject $lock;
     private CommandTester $commandTester;
 
     protected function setUp(): void
     {
         $this->messageRepository = $this->createMock(MessageRepository::class);
-        $this->mailer = $this->createMock(MailerInterface::class);
         $lockFactory = $this->createMock(LockFactory::class);
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->subscriberProvider = $this->createMock(SubscriberProvider::class);
         $this->messageProcessingPreparator = $this->createMock(MessageProcessingPreparator::class);
+        $this->campaignProcessor = $this->createMock(CampaignProcessor::class);
         $this->lock = $this->createMock(LockInterface::class);
 
         $lockFactory->method('createLock')
@@ -48,11 +39,9 @@ class ProcessQueueCommandTest extends TestCase
 
         $command = new ProcessQueueCommand(
             $this->messageRepository,
-            $this->mailer,
             $lockFactory,
-            $this->entityManager,
-            $this->subscriberProvider,
-            $this->messageProcessingPreparator
+            $this->messageProcessingPreparator,
+            $this->campaignProcessor
         );
 
         $application = new Application();
@@ -97,6 +86,9 @@ class ProcessQueueCommandTest extends TestCase
             ->with(['status' => 'submitted'])
             ->willReturn([]);
 
+        $this->campaignProcessor->expects($this->never())
+            ->method('process');
+
         $this->commandTester->execute([]);
 
         $this->assertEquals(0, $this->commandTester->getStatusCode());
@@ -118,79 +110,23 @@ class ProcessQueueCommandTest extends TestCase
             ->method('ensureCampaignsHaveUuid');
 
         $campaign = $this->createMock(Message::class);
-        $metadata = $this->createMock(MessageMetadata::class);
-        $content = $this->createMock(MessageContent::class);
-
-        $campaign->expects($this->any())
-            ->method('getMetadata')
-            ->willReturn($metadata);
-
-        $campaign->expects($this->any())
-            ->method('getContent')
-            ->willReturn($content);
-
-        $content->expects($this->any())
-            ->method('getSubject')
-            ->willReturn('Test Subject');
-
-        $content->expects($this->any())
-            ->method('getTextMessage')
-            ->willReturn('Test Text Message');
-
-        $content->expects($this->any())
-            ->method('getText')
-            ->willReturn('<h1>Test HTML Message</h1>');
-
-        $metadata->expects($this->once())
-            ->method('setStatus')
-            ->with('sent');
-
-        $subscriber = $this->createMock(Subscriber::class);
-        $subscriber->expects($this->any())
-            ->method('getEmail')
-            ->willReturn('test@example.com');
-        $subscriber->expects($this->any())
-            ->method('getId')
-            ->willReturn(1);
-
 
         $this->messageRepository->expects($this->once())
             ->method('findBy')
             ->with(['status' => 'submitted'])
             ->willReturn([$campaign]);
 
-        $this->subscriberProvider->expects($this->once())
-            ->method('getSubscribersForMessage')
-            ->with($campaign)
-            ->willReturn([$subscriber]);
-
-        $this->mailer->expects($this->once())
-            ->method('send')
-            ->with($this->callback(function (Email $email) {
-                $this->assertEquals('Test Subject', $email->getSubject());
-                $this->assertEquals('Test Text Message', $email->getTextBody());
-                $this->assertEquals('<h1>Test HTML Message</h1>', $email->getHtmlBody());
-
-                $toAddresses = $email->getTo();
-                $this->assertCount(1, $toAddresses);
-                $this->assertEquals('test@example.com', $toAddresses[0]->getAddress());
-
-                $fromAddresses = $email->getFrom();
-                $this->assertCount(1, $fromAddresses);
-                $this->assertEquals('news@example.com', $fromAddresses[0]->getAddress());
-
-                return true;
-            }));
-
-        $this->entityManager->expects($this->once())
-            ->method('flush');
+        $this->campaignProcessor->expects($this->once())
+            ->method('process')
+            ->with($campaign, $this->anything());
 
         $this->commandTester->execute([]);
 
         $this->assertEquals(0, $this->commandTester->getStatusCode());
     }
 
-    public function testExecuteWithInvalidSubscriberEmail(): void
+
+    public function testExecuteWithMultipleCampaigns(): void
     {
         $this->lock->expects($this->once())
             ->method('acquire')
@@ -199,49 +135,33 @@ class ProcessQueueCommandTest extends TestCase
         $this->lock->expects($this->once())
             ->method('release');
 
-        $campaign = $this->createMock(Message::class);
-        $metadata = $this->createMock(MessageMetadata::class);
-        $content = $this->createMock(MessageContent::class);
+        $this->messageProcessingPreparator->expects($this->once())
+            ->method('ensureSubscribersHaveUuid');
 
-        $campaign->expects($this->any())
-            ->method('getMetadata')
-            ->willReturn($metadata);
+        $this->messageProcessingPreparator->expects($this->once())
+            ->method('ensureCampaignsHaveUuid');
 
-        $campaign->expects($this->any())
-            ->method('getContent')
-            ->willReturn($content);
-
-        $metadata->expects($this->once())
-            ->method('setStatus')
-            ->with('sent');
-
-        $invalidSubscriber = $this->createMock(Subscriber::class);
-        $invalidSubscriber->expects($this->any())
-            ->method('getEmail')
-            ->willReturn('invalid-email');
+        $campaign1 = $this->createMock(Message::class);
+        $campaign2 = $this->createMock(Message::class);
 
         $this->messageRepository->expects($this->once())
             ->method('findBy')
             ->with(['status' => 'submitted'])
-            ->willReturn([$campaign]);
+            ->willReturn([$campaign1, $campaign2]);
 
-        $this->subscriberProvider->expects($this->once())
-            ->method('getSubscribersForMessage')
-            ->with($campaign)
-            ->willReturn([$invalidSubscriber]);
-
-        $this->mailer->expects($this->never())
-            ->method('send');
-
-        $this->entityManager->expects($this->once())
-            ->method('flush');
+        $this->campaignProcessor->expects($this->exactly(2))
+            ->method('process')
+            ->withConsecutive(
+                [$campaign1, $this->anything()],
+                [$campaign2, $this->anything()]
+            );
 
         $this->commandTester->execute([]);
 
         $this->assertEquals(0, $this->commandTester->getStatusCode());
     }
 
-    public function testExecuteWithMailerException(): void
+    public function testExecuteWithProcessorException(): void
     {
         $this->lock->expects($this->once())
             ->method('acquire')
@@ -250,63 +170,26 @@ class ProcessQueueCommandTest extends TestCase
         $this->lock->expects($this->once())
             ->method('release');
 
+        $this->messageProcessingPreparator->expects($this->once())
+            ->method('ensureSubscribersHaveUuid');
+
+        $this->messageProcessingPreparator->expects($this->once())
+            ->method('ensureCampaignsHaveUuid');
+
         $campaign = $this->createMock(Message::class);
-        $metadata = $this->createMock(MessageMetadata::class);
-        $content = $this->createMock(MessageContent::class);
-
-        $campaign->expects($this->any())
-            ->method('getMetadata')
-            ->willReturn($metadata);
-
-        $campaign->expects($this->any())
-            ->method('getContent')
-            ->willReturn($content);
-
-        $content->expects($this->any())
-            ->method('getSubject')
-            ->willReturn('Test Subject');
-
-        $content->expects($this->any())
-            ->method('getTextMessage')
-            ->willReturn('Test Text Message');
-
-        $content->expects($this->any())
-            ->method('getText')
-            ->willReturn('<h1>Test HTML Message</h1>');
-
-        $metadata->expects($this->once())
-            ->method('setStatus')
-            ->with('sent');
-
-        $subscriber = $this->createMock(Subscriber::class);
-        $subscriber->expects($this->any())
-            ->method('getEmail')
-            ->willReturn('test@example.com');
-        $subscriber->expects($this->any())
-            ->method('getId')
-            ->willReturn(1);
 
         $this->messageRepository->expects($this->once())
             ->method('findBy')
             ->with(['status' => 'submitted'])
             ->willReturn([$campaign]);
 
-        $this->subscriberProvider->expects($this->once())
-            ->method('getSubscribersForMessage')
-            ->with($campaign)
-            ->willReturn([$subscriber]);
-
-        $this->mailer->expects($this->once())
-            ->method('send')
-            ->willThrowException(new \Exception('Failed to send email'));
-
-        $this->entityManager->expects($this->once())
-            ->method('flush');
+        $this->campaignProcessor->expects($this->once())
+            ->method('process')
+            ->with($campaign, $this->anything())
+            ->willThrowException(new Exception('Test exception'));
 
         $this->commandTester->execute([]);
 
-        $output = $this->commandTester->getDisplay();
-        $this->assertStringContainsString('Failed to send to: test@example.com', $output);
-        $this->assertEquals(0, $this->commandTester->getStatusCode());
+        $this->assertEquals(1, $this->commandTester->getStatusCode());
     }
 }
