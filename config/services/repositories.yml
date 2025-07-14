@@ -104,4 +104,4 @@ services:
     PhpList\Core\Domain\Messaging\Repository\ListMessageRepository:
         parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
         arguments:
-            - PhpList\Core\Domain\Subscription\Model\ListMessage
+            - PhpList\Core\Domain\Messaging\Model\ListMessage
