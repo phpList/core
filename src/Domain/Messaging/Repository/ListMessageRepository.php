@@ -16,7 +16,7 @@ class ListMessageRepository extends AbstractRepository implements PaginatableRep
     public function getListIdsByMessageId(int $messageId): array
     {
         return $this->createQueryBuilder('lm')
-            ->select('IDENTITY(lm.list)')
+            ->select('lm.listId')
             ->where('lm.messageId = :messageId')
             ->setParameter('messageId', $messageId)
             ->getQuery()
