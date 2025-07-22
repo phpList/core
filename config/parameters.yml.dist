@@ -26,7 +26,7 @@ parameters:
     app.mailer_from: '%%env(MAILER_FROM)%%'
     env(MAILER_FROM): 'noreply@phplist.com'
     app.mailer_dsn: '%%env(MAILER_DSN)%%'
-    env(MAILER_DSN): 'smtp://username:password@smtp.mailtrap.io:2525'
+    env(MAILER_DSN): 'null://null'
     app.confirmation_url: '%%env(CONFIRMATION_URL)%%'
     env(CONFIRMATION_URL): 'https://example.com/confirm/'
 
