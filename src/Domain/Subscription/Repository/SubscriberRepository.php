@@ -36,6 +36,11 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
         return $this->findOneBy(['email' => $email]);
     }
 
+    public function findOneByUniqueId(string $uniqueId): ?Subscriber
+    {
+        return $this->findOneBy(['uniqueId' => $uniqueId]);
+    }
+
     public function findSubscribersBySubscribedList(int $listId): ?Subscriber
     {
         return $this->createQueryBuilder('s')

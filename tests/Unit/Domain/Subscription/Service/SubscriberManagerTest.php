@@ -21,7 +21,6 @@ class SubscriberManagerTest extends TestCase
     private SubscriberRepository|MockObject $subscriberRepository;
     private EntityManagerInterface|MockObject $entityManager;
     private MessageBusInterface|MockObject $messageBus;
-    private SubscriberDeletionService|MockObject $subscriberDeletionService;
     private SubscriberManager $subscriberManager;
 
     protected function setUp(): void
@@ -29,13 +28,13 @@ class SubscriberManagerTest extends TestCase
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->messageBus = $this->createMock(MessageBusInterface::class);
-        $this->subscriberDeletionService = $this->createMock(SubscriberDeletionService::class);
+        $subscriberDeletionService = $this->createMock(SubscriberDeletionService::class);
 
         $this->subscriberManager = new SubscriberManager(
-            $this->subscriberRepository,
-            $this->entityManager,
-            $this->messageBus,
-            $this->subscriberDeletionService
+            subscriberRepository: $this->subscriberRepository,
+            entityManager: $this->entityManager,
+            messageBus: $this->messageBus,
+            subscriberDeletionService: $subscriberDeletionService
         );
     }
 
@@ -142,5 +141,30 @@ class SubscriberManagerTest extends TestCase
 
         $dto = new CreateSubscriberDto(email: 'test@example.com', requestConfirmation: false, htmlEmail: true);
         $this->subscriberManager->createSubscriber($dto);
+    }
+
+    public function testMarkAsConfirmedByUniqueIdConfirmsSubscriber(): void
+    {
+        $uniqueId = 'some-unique-id-789';
+        $subscriber = $this->createMock(Subscriber::class);
+
+        $this->subscriberRepository
+            ->expects($this->once())
+            ->method('findOneByUniqueId')
+            ->with($uniqueId)
+            ->willReturn($subscriber);
+
+        $subscriber
+            ->expects($this->once())
+            ->method('setConfirmed')
+            ->with(true);
+
+        $this->entityManager
+            ->expects($this->once())
+            ->method('flush');
+
+        $result = $this->subscriberManager->markAsConfirmedByUniqueId($uniqueId);
+
+        $this->assertSame($subscriber, $result);
     }
 }

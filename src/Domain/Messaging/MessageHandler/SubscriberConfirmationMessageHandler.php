@@ -62,6 +62,6 @@ class SubscriberConfirmationMessageHandler
      */
     private function generateConfirmationLink(string $uniqueId): string
     {
-        return $this->confirmationUrl . $uniqueId;
+        return $this->confirmationUrl . '?uniqueId=' . urlencode($uniqueId);
     }
 }

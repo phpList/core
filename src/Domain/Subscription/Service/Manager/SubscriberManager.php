@@ -92,6 +92,19 @@ class SubscriberManager
         return $subscriber;
     }
 
+    public function markAsConfirmedByUniqueId(string $uniqueId): Subscriber
+    {
+        $subscriber = $this->subscriberRepository->findOneByUniqueId($uniqueId);
+        if (!$subscriber) {
+            throw new NotFoundHttpException('Subscriber not found');
+        }
+
+        $subscriber->setConfirmed(true);
+        $this->entityManager->flush();
+
+        return $subscriber;
+    }
+
     public function deleteSubscriber(Subscriber $subscriber): void
     {
         $this->subscriberDeletionService->deleteLeavingBlacklist($subscriber);

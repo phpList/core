@@ -15,7 +15,7 @@ class SubscriberConfirmationMessageHandlerTest extends TestCase
 {
     private SubscriberConfirmationMessageHandler $handler;
     private EmailService&MockObject $emailService;
-    private string $confirmationUrl = 'https://example.com/confirm/';
+    private string $confirmationUrl = 'https://example.com/confirm';
 
     protected function setUp(): void
     {
@@ -37,7 +37,7 @@ class SubscriberConfirmationMessageHandlerTest extends TestCase
 
                 $textContent = $email->getTextBody();
                 $this->assertStringContainsString('Thank you for subscribing', $textContent);
-                $this->assertStringContainsString($this->confirmationUrl . $uniqueId, $textContent);
+                $this->assertStringContainsString($this->confirmationUrl . '?uniqueId=' . $uniqueId, $textContent);
 
                 $this->assertEmpty($email->getHtmlBody());
 
@@ -61,11 +61,11 @@ class SubscriberConfirmationMessageHandlerTest extends TestCase
 
                 $textContent = $email->getTextBody();
                 $this->assertStringContainsString('Thank you for subscribing', $textContent);
-                $this->assertStringContainsString($this->confirmationUrl . $uniqueId, $textContent);
+                $this->assertStringContainsString($this->confirmationUrl . '?uniqueId=' . $uniqueId, $textContent);
 
                 $htmlContent = $email->getHtmlBody();
                 $this->assertStringContainsString('<p>Thank you for subscribing!</p>', $htmlContent);
-                $linkStart = '<a href="' . $this->confirmationUrl . $uniqueId . '">';
+                $linkStart = '<a href="' . $this->confirmationUrl . '?uniqueId=' . $uniqueId . '">';
                 $this->assertStringContainsString($linkStart, $htmlContent);
 
                 return true;
