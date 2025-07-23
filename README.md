@@ -1,5 +1,4 @@
-# phpList core module
-
+# phpList Core Module
 
 [![Build Status](https://github.com/phpList/core/workflows/phpList%20Core%20Build/badge.svg)](https://github.com/phpList/core/actions)
 [![Latest Stable Version](https://poser.pugx.org/phplist/core/v/stable.svg)](https://packagist.org/packages/phpList/core)
@@ -7,37 +6,39 @@
 [![Latest Unstable Version](https://poser.pugx.org/phplist/core/v/unstable.svg)](https://packagist.org/packages/phpList/core)
 [![License](https://poser.pugx.org/phplist/core/license.svg)](https://packagist.org/packages/phpList/core)
 
-
 ## About phpList
 
 phpList is an open source newsletter manager. This project is a rewrite of the
 [original phpList](https://github.com/phpList/phplist3).
 
-
 ## About this package
 
-This is the core module of the successor to phpList 3. It will have the
-following responsibilities:
+This is the core module of phpList 4, currently in alpha stage. It provides the following functionality:
 
-* provide access to the DB via Doctrine models and repositories (and raw SQL
-  for performance-critical parts that do not need the models)
-* routing (which the web frontend and REST API will use)
-* authentication (which the web frontend and REST API will use)
-* logging
-* a script for tasks to be called from the command line (or a cron job)
-* tasks to create and update the DB schema
+* Database access via Doctrine models and repositories (and raw SQL for performance-critical parts)
+* Routing (which the web frontend and REST API use)
+* Authentication (which the web frontend and REST API use)
+* Logging (including Graylog integration for centralized logging)
+* Command line interface for maintenance tasks
+* Database schema creation and updates
+* Asynchronous email sending using Symfony Messenger
 
 Please note that this module does not provide a web frontend or a REST API.
-There are the separate modules [`phpList/web-frontend`](https://github.com/phpList/web-frontend) and [`phpList/rest-api`](https://github.com/phpList/rest-api)
-for these tasks.
+There are separate modules for these purposes:
+* [`phpList/web-frontend`](https://github.com/phpList/web-frontend)
+* [`phpList/rest-api`](https://github.com/phpList/rest-api)
 
 This module should not be modified locally. It should be updated via Composer.
 
+## Requirements
+
+* PHP 8.1 or higher
+* Symfony 6.4 components
+* Doctrine ORM 3.3
 
 ## Installation
 
-Since this package is only a service required to run a full installation of **phpList 4**, the recommended way of installing this package is to run `composer install` from within the [phpList base distribution](https://github.com/phpList/base-distribution) which requires this package. [`phpList/base-distribution`](https://github.com/phpList/base-distribution) containrs detailed installation instructions in its [README](https://github.com/phpList/base-distribution/blob/master/README.md).
-
+Since this package is only a service required to run a full installation of **phpList 4**, the recommended way of installing this package is to run `composer install` from within the [phpList base distribution](https://github.com/phpList/base-distribution) which requires this package. [`phpList/base-distribution`](https://github.com/phpList/base-distribution) contains detailed installation instructions in its [README](https://github.com/phpList/base-distribution/blob/master/README.md).
 
 ## Contributing to this package
 
@@ -49,16 +50,13 @@ This project adheres to a [Contributor Code of Conduct](CODE_OF_CONDUCT.md).
 By participating in this project and its community, you are expected to uphold
 this code.
 
+## Documentation
 
-## Structure
-
-* [Class Docs][docs/phpdoc/]
-* [Mailer Transports](docs/mailer-transports.md) - How to use different email providers (Gmail, Amazon SES, Mailchimp, SendGrid)
+* [Class Docs](docs/phpdoc/)
 * [Class structure overview](docs/ClassStructure.md)
-* [Graphic domain model](docs/DomainModel/DomainModel.svg) and
-  a [description of the domain entities](docs/DomainModel/Entities.md)
+* [Graphic domain model](docs/DomainModel/DomainModel.svg) and [description of the domain entities](docs/DomainModel/Entities.md)
 * [Mailer Transports](docs/mailer-transports.md) - How to use different email providers (Gmail, Amazon SES, Mailchimp, SendGrid)
-
+* [Asynchronous Email Sending](docs/AsyncEmailSending.md) - How to use asynchronous email sending with Symfony Messenger
 
 ## Running the web server
 
@@ -85,11 +83,11 @@ You can stop the server with CTRL + C.
 
 We use `phpDocumentor` to automatically generate documentation for classes. To make this process efficient and easier, you are required to properly "document" your  `classes`,`properties`, `methods` ... by annotating them with [docblocks](https://docs.phpdoc.org/latest/guide/guides/docblocks.html).
 
-More about generatings docs in [PHPDOC.md](PHPDOC.md)
+More about generating docs in [PHPDOC.md](PHPDOC.md)
 
 ### Testing
 
-Create test db with name phplist in your mysql DB or uncomment sqlite part in config_test.yml file to use in memory DB or functional tests
+Create test db with name phplist in your mysql DB or uncomment sqlite part in config_test.yml file to use in memory DB for functional tests.
 To run the server in testing mode (which normally will only be needed for the
 automated tests, provide the `--env` option:
 
@@ -103,7 +101,6 @@ For documentation on running the application in production mode using Apache,
 please see the
 [phpList base distribution README](https://github.com/phpList/base-distribution).
 
-
 ## Changing the database schema
 
 Any changes to the database schema must always be done both in phpList 3 and
@@ -112,7 +109,6 @@ later versions so that both versions always have the same schema.
 For changing the database schema, please edit `resources/Database/Schema.sql`
 and adapt the corresponding domain model classes and repository classes
 accordingly.
-
 
 ## Developing phpList modules (plugins)
 
@@ -198,13 +194,11 @@ need a mode or a repository method that still is missing, please
 [submit a pull request](https://github.com/phpList/core/pulls) or
 [file an issue](https://github.com/phpList/core/issues).
 
-
 ## Accessing the phpList data from third-party applications
 
 To access the phpList data from a third-party application (i.e., not from a
 phpList module), please use the
 [REST API](https://github.com/phpList/rest-api).
-
 
 ## Email Configuration
 
@@ -219,4 +213,4 @@ For detailed configuration instructions, see the [Mailer Transports documentatio
 
 ## Copyright
 
-phpList is copyright (C) 2000-2021 [phpList Ltd](https://www.phplist.com/).
+phpList is copyright (C) 2000-2025 [phpList Ltd](https://www.phplist.com/).

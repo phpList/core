@@ -23,4 +23,3 @@ Run : `composer run-php-documentor`
 *Note : `composer generate docs` would only work if you installed `phpDocumentor` globally, if you did not run : `custom/path/phpDocumentor -d 'src,tests' -t docs/phpdoc` to generate docs*
 
 *Where `custom/path/`  is the location where you downloaded `phpDocumentor`*
-
