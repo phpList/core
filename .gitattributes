@@ -1,0 +1,3 @@
+# Exclude tests and development stuff from archives
+/tests          export-ignore
+/.github        export-ignore
