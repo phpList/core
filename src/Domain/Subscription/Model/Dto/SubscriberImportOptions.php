@@ -12,6 +12,7 @@ class SubscriberImportOptions
     public function __construct(
         public readonly bool $updateExisting = false,
         public readonly array $listIds = [],
+        public readonly bool $dryRun = false,
     ) {
     }
 }

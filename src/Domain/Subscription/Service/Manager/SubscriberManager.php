@@ -120,7 +120,7 @@ class SubscriberManager
         $subscriber->setDisabled($subscriberDto->disabled);
         $subscriber->setExtraData($subscriberDto->extraData);
 
-        $this->subscriberRepository->save($subscriber);
+        $this->entityManager->persist($subscriber);
 
         return $subscriber;
     }

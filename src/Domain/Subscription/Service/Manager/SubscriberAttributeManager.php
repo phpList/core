@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Subscription\Exception\SubscriberAttributeCreationException;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
@@ -13,10 +14,14 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueReposito
 class SubscriberAttributeManager
 {
     private SubscriberAttributeValueRepository $attributeRepository;
+    private EntityManagerInterface $entityManager;
 
-    public function __construct(SubscriberAttributeValueRepository $attributeRepository)
-    {
+    public function __construct(
+        SubscriberAttributeValueRepository $attributeRepository,
+        EntityManagerInterface $entityManager,
+    ) {
         $this->attributeRepository = $attributeRepository;
+        $this->entityManager = $entityManager;
     }
 
     public function createOrUpdate(
@@ -37,7 +42,7 @@ class SubscriberAttributeManager
         }
 
         $subscriberAttribute->setValue($value);
-        $this->attributeRepository->save($subscriberAttribute);
+        $this->entityManager->persist($subscriberAttribute);
 
         return $subscriberAttribute;
     }
