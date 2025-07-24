@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Service;
 
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -18,6 +19,7 @@ use Throwable;
 
 /**
  * Service for importing subscribers from a CSV file.
+ * @SuppressWarnings("CouplingBetweenObjects")
  */
 class SubscriberCsvImporter
 {
@@ -27,6 +29,7 @@ class SubscriberCsvImporter
     private SubscriberRepository $subscriberRepository;
     private CsvImporter $csvImporter;
     private SubscriberAttributeDefinitionRepository $attrDefinitionRepository;
+    private EntityManagerInterface $entityManager;
 
     public function __construct(
         SubscriberManager $subscriberManager,
@@ -34,7 +37,8 @@ class SubscriberCsvImporter
         SubscriptionManager $subscriptionManager,
         SubscriberRepository $subscriberRepository,
         CsvImporter $csvImporter,
-        SubscriberAttributeDefinitionRepository $attrDefinitionRepository
+        SubscriberAttributeDefinitionRepository $attrDefinitionRepository,
+        EntityManagerInterface $entityManager
     ) {
         $this->subscriberManager = $subscriberManager;
         $this->attributeManager = $attributeManager;
@@ -42,6 +46,7 @@ class SubscriberCsvImporter
         $this->subscriberRepository = $subscriberRepository;
         $this->csvImporter = $csvImporter;
         $this->attrDefinitionRepository = $attrDefinitionRepository;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -72,6 +77,9 @@ class SubscriberCsvImporter
             foreach ($result['valid'] as $dto) {
                 try {
                     $this->processRow($dto, $options, $stats);
+                    if (!$options->dryRun) {
+                        $this->entityManager->flush();
+                    }
                 } catch (Throwable $e) {
                     $stats['errors'][] = 'Error processing ' . $dto->email . ': ' . $e->getMessage();
                     $stats['skipped']++;
@@ -91,24 +99,30 @@ class SubscriberCsvImporter
 
     /**
      * Import subscribers with an update strategy.
-     *
+     * @SuppressWarnings("BooleanArgumentFlag")
      * @param UploadedFile $file The uploaded CSV file
      * @return array Import statistics
      */
-    public function importAndUpdateFromCsv(UploadedFile $file, ?array $listIds = []): array
+    public function importAndUpdateFromCsv(UploadedFile $file, ?array $listIds = [], bool $dryRun = false): array
     {
-        return $this->importFromCsv($file, new SubscriberImportOptions(updateExisting: true, listIds: $listIds));
+        return $this->importFromCsv(
+            file: $file,
+            options: new SubscriberImportOptions(updateExisting: true, listIds: $listIds, dryRun: $dryRun)
+        );
     }
 
     /**
      * Import subscribers without updating existing ones.
-     *
+     * @SuppressWarnings("BooleanArgumentFlag")
      * @param UploadedFile $file The uploaded CSV file
      * @return array Import statistics
      */
-    public function importNewFromCsv(UploadedFile $file, ?array $listIds = []): array
+    public function importNewFromCsv(UploadedFile $file, ?array $listIds = [], bool $dryRun = false): array
     {
-        return $this->importFromCsv($file, new SubscriberImportOptions(listIds: $listIds));
+        return $this->importFromCsv(
+            file: $file,
+            options: new SubscriberImportOptions(listIds: $listIds, dryRun: $dryRun)
+        );
     }
 
     /**
@@ -158,9 +172,9 @@ class SubscriberCsvImporter
             $attributeDefinition = $this->attrDefinitionRepository->findOneByName($key);
             if ($attributeDefinition !== null) {
                 $this->attributeManager->createOrUpdate(
-                    $subscriber,
-                    $attributeDefinition,
-                    $value
+                    subscriber: $subscriber,
+                    definition: $attributeDefinition,
+                    value: $value
                 );
             }
         }

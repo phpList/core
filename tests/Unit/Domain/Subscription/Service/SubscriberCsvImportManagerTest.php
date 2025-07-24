@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service;
 
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -27,6 +28,7 @@ class SubscriberCsvImportManagerTest extends TestCase
     private SubscriberRepository&MockObject $subscriberRepositoryMock;
     private CsvImporter&MockObject $csvImporterMock;
     private SubscriberAttributeDefinitionRepository&MockObject $attributeDefinitionRepositoryMock;
+    private EntityManagerInterface $entityManager;
     private SubscriberCsvImporter $subject;
 
     protected function setUp(): void
@@ -37,14 +39,16 @@ class SubscriberCsvImportManagerTest extends TestCase
         $this->subscriberRepositoryMock = $this->createMock(SubscriberRepository::class);
         $this->csvImporterMock = $this->createMock(CsvImporter::class);
         $this->attributeDefinitionRepositoryMock = $this->createMock(SubscriberAttributeDefinitionRepository::class);
+        $this->entityManager = $this->createMock(EntityManagerInterface::class);
 
         $this->subject = new SubscriberCsvImporter(
-            $this->subscriberManagerMock,
-            $this->attributeManagerMock,
-            $this->subscriptionManagerMock,
-            $this->subscriberRepositoryMock,
-            $this->csvImporterMock,
-            $this->attributeDefinitionRepositoryMock
+            subscriberManager: $this->subscriberManagerMock,
+            attributeManager: $this->attributeManagerMock,
+            subscriptionManager: $this->subscriptionManagerMock,
+            subscriberRepository: $this->subscriberRepositoryMock,
+            csvImporter: $this->csvImporterMock,
+            attrDefinitionRepository: $this->attributeDefinitionRepositoryMock,
+            entityManager: $this->entityManager,
         );
     }
 
