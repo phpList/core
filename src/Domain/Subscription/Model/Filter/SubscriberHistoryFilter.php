@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 
-class SubscriptionHistoryFilter implements FilterRequestInterface
+class SubscriberHistoryFilter implements FilterRequestInterface
 {
     private ?Subscriber $subscriber;
     private ?string $ip;

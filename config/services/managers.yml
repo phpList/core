@@ -48,6 +48,10 @@ services:
     autowire: true
     autoconfigure: true
 
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager:
+    autowire: true
+    autoconfigure: true
+
   PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager:
     autowire: true
     autoconfigure: true

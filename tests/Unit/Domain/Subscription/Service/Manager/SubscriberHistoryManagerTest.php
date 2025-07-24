@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service;
+namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 
-use PhpList\Core\Domain\Subscription\Model\Filter\SubscriptionHistoryFilter;
+use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberHistoryFilter;
 use PhpList\Core\Domain\Subscription\Model\SubscriberHistory;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryRepository;
-use PhpList\Core\Domain\Subscription\Service\SubscriptionHistoryService;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class SubscriptionHistoryServiceTest extends TestCase
+class SubscriberHistoryManagerTest extends TestCase
 {
     private SubscriberHistoryRepository|MockObject $subscriberHistoryRepository;
-    private SubscriptionHistoryService $subscriptionHistoryService;
+    private SubscriberHistoryManager $subscriptionHistoryService;
 
     protected function setUp(): void
     {
         $this->subscriberHistoryRepository = $this->createMock(SubscriberHistoryRepository::class);
-        $this->subscriptionHistoryService = new SubscriptionHistoryService(
+        $this->subscriptionHistoryService = new SubscriberHistoryManager(
             repository: $this->subscriberHistoryRepository
         );
     }
@@ -28,7 +28,7 @@ class SubscriptionHistoryServiceTest extends TestCase
     {
         $lastId = 10;
         $limit = 20;
-        $filter = $this->createMock(SubscriptionHistoryFilter::class);
+        $filter = $this->createMock(SubscriberHistoryFilter::class);
         $expectedResult = [$this->createMock(SubscriberHistory::class)];
 
         $this->subscriberHistoryRepository
@@ -46,7 +46,7 @@ class SubscriptionHistoryServiceTest extends TestCase
     {
         $lastId = 10;
         $limit = 20;
-        $filter = $this->createMock(SubscriptionHistoryFilter::class);
+        $filter = $this->createMock(SubscriberHistoryFilter::class);
         $expectedResult = [];
 
         $this->subscriberHistoryRepository

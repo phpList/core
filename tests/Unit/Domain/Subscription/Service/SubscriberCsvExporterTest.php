@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
-class SubscriberCsvExportManagerTest extends TestCase
+class SubscriberCsvExporterTest extends TestCase
 {
     private SubscriberAttributeManager&MockObject $attributeManagerMock;
     private SubscriberRepository&MockObject $subscriberRepositoryMock;

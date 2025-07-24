@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Subscription\Service;
+namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
-use PhpList\Core\Domain\Subscription\Model\Filter\SubscriptionHistoryFilter;
+use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberHistoryFilter;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryRepository;
 
-class SubscriptionHistoryService
+class SubscriberHistoryManager
 {
     private SubscriberHistoryRepository $repository;
 
@@ -16,7 +16,7 @@ class SubscriptionHistoryService
         $this->repository = $repository;
     }
 
-    public function getHistory(int $lastId, int $limit, SubscriptionHistoryFilter $filter): array
+    public function getHistory(int $lastId, int $limit, SubscriberHistoryFilter $filter): array
     {
         return $this->repository->getFilteredAfterId($lastId, $limit, $filter);
     }

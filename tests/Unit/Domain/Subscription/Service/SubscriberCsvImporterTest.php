@@ -20,7 +20,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-class SubscriberCsvImportManagerTest extends TestCase
+class SubscriberCsvImporterTest extends TestCase
 {
     private SubscriberManager&MockObject $subscriberManagerMock;
     private SubscriberAttributeManager&MockObject $attributeManagerMock;

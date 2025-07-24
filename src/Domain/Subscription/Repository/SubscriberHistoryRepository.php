@@ -9,7 +9,7 @@ use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
-use PhpList\Core\Domain\Subscription\Model\Filter\SubscriptionHistoryFilter;
+use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberHistoryFilter;
 use PhpList\Core\Domain\Subscription\Model\SubscriberHistory;
 
 class SubscriberHistoryRepository extends AbstractRepository implements PaginatableRepositoryInterface
@@ -24,7 +24,7 @@ class SubscriberHistoryRepository extends AbstractRepository implements Paginata
     {
         $queryBuilder = $this->createQueryBuilder('sh');
 
-        if (!$filter instanceof SubscriptionHistoryFilter) {
+        if (!$filter instanceof SubscriberHistoryFilter) {
             throw new InvalidArgumentException('Expected SubscriptionHistoryFilter.');
         }
 
