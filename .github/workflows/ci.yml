@@ -59,7 +59,7 @@ jobs:
       - name: Linting all php files
         run: find src/ tests/ public/ -name ''*.php'' -print0 | xargs -0 -n 1 -P 4 php -l; php -l bin/*;
       - name: Run units tests with phpunit
-        run: vendor/bin/phpunit tests/Unit/
+        run: vendor/bin/phpunit tests/Unit/ --testdox
       - name: Run integration tests with phpunit
         run: |
           export PHPLIST_DATABASE_NAME=${{ env.DB_DATABASE }}
@@ -69,7 +69,7 @@ jobs:
           export PHPLIST_DATABASE_HOST=127.0.0.1
           vendor/bin/phpunit tests/Integration/
       - name: Running the system tests
-        run: vendor/bin/phpunit tests/System/;
+        run: vendor/bin/phpunit tests/System/ --testdox;
       - name: Running static analysis
         run: vendor/bin/phpstan analyse -c phpstan.neon;
       - name: Running PHPMD
