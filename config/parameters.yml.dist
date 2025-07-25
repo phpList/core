@@ -29,6 +29,8 @@ parameters:
     env(MAILER_DSN): 'null://null'
     app.confirmation_url: '%%env(CONFIRMATION_URL)%%'
     env(CONFIRMATION_URL): 'https://example.com/confirm/'
+    app.password_reset_url: '%%env(PASSWORD_RESET_URL)%%'
+    env(PASSWORD_RESET_URL): 'https://example.com/reset/'
 
     # Messenger configuration for asynchronous processing
     app.messenger_transport_dsn: '%%env(MESSENGER_TRANSPORT_DSN)%%'

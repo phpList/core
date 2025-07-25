@@ -15,3 +15,10 @@ services:
         autowire: true
         autoconfigure: true
         tags: [ 'messenger.message_handler' ]
+
+    PhpList\Core\Domain\Messaging\MessageHandler\PasswordResetMessageHandler:
+        autowire: true
+        autoconfigure: true
+        tags: [ 'messenger.message_handler' ]
+        arguments:
+            $passwordResetUrl: '%app.password_reset_url%'
