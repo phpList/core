@@ -21,6 +21,11 @@ services:
         arguments:
             - PhpList\Core\Domain\Identity\Model\AdministratorToken
 
+    PhpList\Core\Domain\Identity\Repository\AdminPasswordRequestRepository:
+        parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+        arguments:
+            - PhpList\Core\Domain\Identity\Model\AdminPasswordRequest
+
     PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository:
         parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
         arguments:
