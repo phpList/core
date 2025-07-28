@@ -8,3 +8,6 @@ services:
     resource: '../../src/Domain/Messaging/Command'
     tags: ['console.command']
 
+  PhpList\Core\Domain\Identity\Command\:
+    resource: '../../src/Domain/Identity/Command'
+    tags: ['console.command']
