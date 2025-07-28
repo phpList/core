@@ -122,6 +122,10 @@ class SubscriberManager
 
         $this->entityManager->persist($subscriber);
 
+        if (!$subscriberDto->confirmed) {
+            $this->sendConfirmationEmail($subscriber);
+        }
+
         return $subscriber;
     }
 

@@ -13,6 +13,7 @@ class SubscriberImportOptions
         public readonly bool $updateExisting = false,
         public readonly array $listIds = [],
         public readonly bool $dryRun = false,
+        public readonly bool $skipInvalidEmail = true,
     ) {
     }
 }

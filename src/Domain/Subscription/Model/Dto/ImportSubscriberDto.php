@@ -9,7 +9,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 class ImportSubscriberDto
 {
     #[Assert\NotBlank]
-    #[Assert\Email]
     public string $email;
 
     #[Assert\Type('bool')]

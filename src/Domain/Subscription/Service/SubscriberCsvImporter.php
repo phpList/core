@@ -137,6 +137,14 @@ class SubscriberCsvImporter
         SubscriberImportOptions $options,
         array &$stats,
     ): void {
+        if (!filter_var($dto->email, FILTER_VALIDATE_EMAIL)) {
+            if ($options->skipInvalidEmail) {
+                $stats['skipped']++;
+                return;
+            } else {
+                $dto->email = 'invalid_' . $dto->email;
+            }
+        }
         $subscriber = $this->subscriberRepository->findOneByEmail($dto->email);
 
         if ($subscriber && !$options->updateExisting) {
