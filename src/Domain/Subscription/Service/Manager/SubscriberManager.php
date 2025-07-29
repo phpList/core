@@ -118,11 +118,11 @@ class SubscriberManager
         $subscriber->setBlacklisted($subscriberDto->blacklisted);
         $subscriber->setHtmlEmail($subscriberDto->htmlEmail);
         $subscriber->setDisabled($subscriberDto->disabled);
-        $subscriber->setExtraData($subscriberDto->extraData);
+        $subscriber->setExtraData($subscriberDto->extraData ?? '');
 
         $this->entityManager->persist($subscriber);
 
-        if (!$subscriberDto->confirmed) {
+        if ($subscriberDto->sendConfirmation) {
             $this->sendConfirmationEmail($subscriber);
         }
 
