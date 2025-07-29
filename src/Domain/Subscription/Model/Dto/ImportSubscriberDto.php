@@ -28,6 +28,8 @@ class ImportSubscriberDto
     /** @var array<string, string|int|bool|null> */
     public array $extraAttributes = [];
 
+    public bool $sendConfirmation;
+
     public function __construct(
         string $email,
         bool $confirmed,
@@ -39,6 +41,7 @@ class ImportSubscriberDto
     ) {
         $this->email = $email;
         $this->confirmed = $confirmed;
+        $this->sendConfirmation = !$confirmed;
         $this->blacklisted = $blacklisted;
         $this->htmlEmail = $htmlEmail;
         $this->disabled = $disabled;

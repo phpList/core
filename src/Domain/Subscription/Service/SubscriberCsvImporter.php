@@ -143,6 +143,7 @@ class SubscriberCsvImporter
                 return;
             } else {
                 $dto->email = 'invalid_' . $dto->email;
+                $dto->sendConfirmation = false;
             }
         }
         $subscriber = $this->subscriberRepository->findOneByEmail($dto->email);
