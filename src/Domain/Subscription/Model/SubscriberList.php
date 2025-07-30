@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Common\Model\Interfaces\ModificationDate;
 use PhpList\Core\Domain\Identity\Model\Administrator;
+use PhpList\Core\Domain\Messaging\Model\ListMessage;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use Symfony\Component\Serializer\Attribute\MaxDepth;
 
@@ -71,9 +72,13 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     #[MaxDepth(1)]
     private Collection $subscriptions;
 
+    #[ORM\OneToMany(targetEntity: ListMessage::class, mappedBy: 'subscriberList')]
+    private Collection $listMessages;
+
     public function __construct()
     {
         $this->subscriptions = new ArrayCollection();
+        $this->listMessages = new ArrayCollection();
         $this->createdAt = new DateTime();
         $this->listPosition = 0;
         $this->subjectPrefix = '';
@@ -220,5 +225,17 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         $this->updatedAt = new DateTime();
 
         return $this;
+    }
+
+    public function getListMessages(): Collection
+    {
+        return $this->listMessages;
+    }
+
+    public function getMessages(): Collection
+    {
+        return $this->listMessages->map(
+            fn(ListMessage $lm) => $lm->getMessage()
+        );
     }
 }

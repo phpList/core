@@ -8,64 +8,44 @@ use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Messaging\Model\ListMessage;
+use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 
 class ListMessageRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
     use CursorPaginationTrait;
 
-    /** @return int[] */
-    public function getListIdsByMessageId(int $messageId): array
-    {
-        return $this->createQueryBuilder('lm')
-            ->select('lm.listId')
-            ->where('lm.messageId = :messageId')
-            ->setParameter('messageId', $messageId)
-            ->getQuery()
-            ->getSingleColumnResult();
-    }
-
-    /** @return int[] */
-    public function getMessageIdsByListId(int $listId): array
-    {
-        return $this->createQueryBuilder('lm')
-            ->select('lm.messageId')
-            ->where('lm.listId = :listId')
-            ->setParameter('listId', $listId)
-            ->getQuery()
-            ->getSingleColumnResult();
-    }
-
-    public function isMessageAssociatedWithList(int $messageId, int $listId): bool
+    public function isMessageAssociatedWithList(Message $message, SubscriberList $list): bool
     {
         $count = $this->createQueryBuilder('lm')
             ->select('COUNT(lm.id)')
-            ->where('lm.messageId = :messageId')
-            ->andWhere('lm.listId = :listId')
-            ->setParameter('messageId', $messageId)
-            ->setParameter('listId', $listId)
+            ->where('lm.message = :message')
+            ->andWhere('lm.list = :list')
+            ->setParameter('message', $message)
+            ->setParameter('list', $list)
             ->getQuery()
             ->getSingleScalarResult();
 
         return $count > 0;
     }
 
-    public function getByMessageIdAndListId(int $messageId, int $listId): ?ListMessage
+    public function getByMessageAndList(Message $message, SubscriberList $list): ?ListMessage
     {
         return $this->createQueryBuilder('lm')
-            ->where('lm.messageId = :messageId')
-            ->andWhere('lm.listId = :listId')
-            ->setParameter('messageId', $messageId)
-            ->setParameter('listId', $listId)
+            ->where('lm.message = :message')
+            ->andWhere('lm.list = :list')
+            ->setParameter('messageId', $message)
+            ->setParameter('list', $list)
             ->getQuery()
             ->getOneOrNullResult();
     }
 
-    public function removeAllListAssociationsForMessage(int $messageId): void
+    public function removeAllListAssociationsForMessage(Message $message): void
     {
         $this->createQueryBuilder('lm')
             ->delete()
-            ->where('lm.messageId = :messageId')
-            ->setParameter('messageId', $messageId)
+            ->where('lm.message = :message')
+            ->setParameter('message', $message)
             ->getQuery()
             ->execute();
     }

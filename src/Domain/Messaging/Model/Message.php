@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Model;
 
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
@@ -57,6 +59,9 @@ class Message implements DomainModel, Identity, ModificationDate
     #[ORM\JoinColumn(name: 'template', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Template $template = null;
 
+    #[ORM\OneToMany(targetEntity: ListMessage::class, mappedBy: 'message')]
+    private Collection $listMessages;
+
     public function __construct(
         MessageFormat $format,
         MessageSchedule $schedule,
@@ -74,6 +79,7 @@ class Message implements DomainModel, Identity, ModificationDate
         $this->uuid = bin2hex(random_bytes(18));
         $this->owner = $owner;
         $this->template = $template;
+        $this->listMessages = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -181,5 +187,17 @@ class Message implements DomainModel, Identity, ModificationDate
     {
         $this->options = $options;
         return $this;
+    }
+
+    public function getListMessages(): Collection
+    {
+        return $this->listMessages;
+    }
+
+    public function getSubscriberLists(): Collection
+    {
+        return $this->listMessages->map(
+            fn(ListMessage $lm) => $lm->getList()
+        );
     }
 }

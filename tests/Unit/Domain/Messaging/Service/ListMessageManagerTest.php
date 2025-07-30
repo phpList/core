@@ -42,8 +42,8 @@ class ListMessageManagerTest extends TestCase
         $this->entityManager->expects($this->once())
             ->method('persist')
             ->with($this->callback(function (ListMessage $listMessage) {
-                return $listMessage->getMessageId() === 1
-                    && $listMessage->getListId() === 2
+                return $listMessage->getMessage()->getId() === 1
+                    && $listMessage->getList()->getId() === 2
                     && $listMessage->getEntered() instanceof DateTime;
             }));
             
@@ -53,8 +53,8 @@ class ListMessageManagerTest extends TestCase
         $result = $this->manager->associateMessageWithList($message, $subscriberList);
         
         $this->assertInstanceOf(ListMessage::class, $result);
-        $this->assertEquals(1, $result->getMessageId());
-        $this->assertEquals(2, $result->getListId());
+        $this->assertEquals(1, $result->getMessage()->getId());
+        $this->assertEquals(2, $result->getList()->getId());
         $this->assertInstanceOf(DateTime::class, $result->getEntered());
     }
     
@@ -68,8 +68,8 @@ class ListMessageManagerTest extends TestCase
         $subscriberList->method('getId')->willReturn(2);
         
         $this->listMessageRepository->expects($this->once())
-            ->method('getByMessageIdAndListId')
-            ->with(1, 2)
+            ->method('getByMessageAndList')
+            ->with($message, $subscriberList)
             ->willReturn($listMessage);
             
         $this->entityManager->expects($this->once())
@@ -77,36 +77,6 @@ class ListMessageManagerTest extends TestCase
             ->with($listMessage);
             
         $this->manager->removeAssociation($message, $subscriberList);
-    }
-    
-    public function testGetListIdsByMessage(): void
-    {
-        $message = $this->createMock(Message::class);
-        $message->method('getId')->willReturn(1);
-        
-        $this->listMessageRepository->expects($this->once())
-            ->method('getListIdsByMessageId')
-            ->with(1)
-            ->willReturn([2, 3, 4]);
-            
-        $result = $this->manager->getListIdsByMessage($message);
-        
-        $this->assertEquals([2, 3, 4], $result);
-    }
-    
-    public function testGetMessageIdsByList(): void
-    {
-        $subscriberList = $this->createMock(SubscriberList::class);
-        $subscriberList->method('getId')->willReturn(2);
-        
-        $this->listMessageRepository->expects($this->once())
-            ->method('getMessageIdsByListId')
-            ->with(2)
-            ->willReturn([1, 3, 5]);
-            
-        $result = $this->manager->getMessageIdsByList($subscriberList);
-        
-        $this->assertEquals([1, 3, 5], $result);
     }
     
     public function testIsMessageAssociatedWithList(): void
@@ -119,7 +89,7 @@ class ListMessageManagerTest extends TestCase
         
         $this->listMessageRepository->expects($this->once())
             ->method('isMessageAssociatedWithList')
-            ->with(1, 2)
+            ->with($message, $subscriberList)
             ->willReturn(true);
             
         $result = $this->manager->isMessageAssociatedWithList($message, $subscriberList);
@@ -141,8 +111,8 @@ class ListMessageManagerTest extends TestCase
         $this->entityManager->expects($this->exactly(2))
             ->method('persist')
             ->with($this->callback(function (ListMessage $listMessage) {
-                return $listMessage->getMessageId() === 1
-                    && ($listMessage->getListId() === 2 || $listMessage->getListId() === 3)
+                return $listMessage->getMessage()->getId() === 1
+                    && ($listMessage->getList()->getId() === 2 || $listMessage->getList()->getId() === 3)
                     && $listMessage->getEntered() instanceof DateTime;
             }));
             
@@ -159,7 +129,7 @@ class ListMessageManagerTest extends TestCase
         
         $this->listMessageRepository->expects($this->once())
             ->method('removeAllListAssociationsForMessage')
-            ->with(1);
+            ->with($message);
             
         $this->manager->removeAllListAssociationsForMessage($message);
     }

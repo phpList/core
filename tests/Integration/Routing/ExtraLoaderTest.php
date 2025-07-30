@@ -12,6 +12,7 @@ use PhpList\Core\Routing\ExtraLoader;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\Routing\AttributeRouteControllerLoader;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Config\Loader\Loader;
 use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\Routing\Loader\AttributeDirectoryLoader;
 use Symfony\Component\Routing\Loader\YamlFileLoader;
@@ -67,5 +68,20 @@ class ExtraLoaderTest extends TestCase
 
         self::assertInstanceOf(RouteCollection::class, $routeCollection);
         self::assertNotNull($routeCollection->get('empty_start_page'));
+    }
+
+    public function testClassIsLoader(): void
+    {
+        self::assertInstanceOf(Loader::class, $this->subject);
+    }
+
+    public function testSupportsExtraType(): void
+    {
+        self::assertTrue($this->subject->supports('', 'extra'));
+    }
+
+    public function testNotSupportsOtherType(): void
+    {
+        self::assertFalse($this->subject->supports('', 'foo'));
     }
 }

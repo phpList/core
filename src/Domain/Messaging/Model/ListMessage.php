@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Common\Model\Interfaces\ModificationDate;
 use PhpList\Core\Domain\Messaging\Repository\ListMessageRepository;
+use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 
 #[ORM\Entity(repositoryClass: ListMessageRepository::class)]
 #[ORM\Table(name: 'phplist_listmessage')]
@@ -24,11 +25,13 @@ class ListMessage implements DomainModel, Identity, ModificationDate
     #[ORM\GeneratedValue]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'messageid', type: 'integer')]
-    private int $messageId;
+    #[ORM\ManyToOne(targetEntity: Message::class, inversedBy: 'listMessages')]
+    #[ORM\JoinColumn(name: 'messageid', referencedColumnName: 'id', nullable: false)]
+    private ?Message $message = null;
 
-    #[ORM\Column(name: 'listid', type: 'integer')]
-    private int $listId;
+    #[ORM\ManyToOne(targetEntity: SubscriberList::class, inversedBy: 'listMessages')]
+    #[ORM\JoinColumn(name: 'listid', referencedColumnName: 'id', nullable: false)]
+    private ?SubscriberList $subscriberList = null;
 
     #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
     private ?DateTimeInterface $entered = null;
@@ -41,25 +44,25 @@ class ListMessage implements DomainModel, Identity, ModificationDate
         return $this->id;
     }
 
-    public function getMessageId(): int
+    public function getMessage(): ?Message
     {
-        return $this->messageId;
+        return $this->message;
     }
 
-    public function setMessageId(int $messageId): self
+    public function setMessage(?Message $message): self
     {
-        $this->messageId = $messageId;
+        $this->message = $message;
         return $this;
     }
 
-    public function getListId(): int
+    public function getList(): ?SubscriberList
     {
-        return $this->listId;
+        return $this->subscriberList;
     }
 
-    public function setListId(int $listId): self
+    public function setList(?SubscriberList $subscriberList): self
     {
-        $this->listId = $listId;
+        $this->subscriberList = $subscriberList;
         return $this;
     }
 

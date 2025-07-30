@@ -5,20 +5,16 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Service\Provider;
 
 use PhpList\Core\Domain\Messaging\Model\Message;
-use PhpList\Core\Domain\Messaging\Repository\ListMessageRepository;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
+use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 
 class SubscriberProvider
 {
-    private ListMessageRepository $listMessageRepository;
     private SubscriberRepository $subscriberRepository;
 
-    public function __construct(
-        ListMessageRepository $listMessageRepository,
-        SubscriberRepository $subscriberRepository
-    ) {
-        $this->listMessageRepository = $listMessageRepository;
+    public function __construct(SubscriberRepository $subscriberRepository)
+    {
         $this->subscriberRepository = $subscriberRepository;
     }
 
@@ -30,7 +26,9 @@ class SubscriberProvider
      */
     public function getSubscribersForMessage(Message $message): array
     {
-        $listIds = $this->listMessageRepository->getListIdsByMessageId($message->getId());
+        $listIds = $message->getSubscriberLists()
+            ->map(fn(SubscriberList $list) => $list->getId())
+            ->toArray();
 
         $subscribers = [];
         foreach ($listIds as $listId) {

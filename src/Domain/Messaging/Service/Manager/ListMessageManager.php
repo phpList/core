@@ -30,8 +30,8 @@ class ListMessageManager
     public function associateMessageWithList(Message $message, SubscriberList $subscriberList): ListMessage
     {
         $listMessage = new ListMessage();
-        $listMessage->setMessageId($message->getId());
-        $listMessage->setListId($subscriberList->getId());
+        $listMessage->setMessage($message);
+        $listMessage->setList($subscriberList);
         $listMessage->setEntered(new DateTime());
 
         $this->entityManager->persist($listMessage);
@@ -45,28 +45,8 @@ class ListMessageManager
      */
     public function removeAssociation(Message $message, SubscriberList $subscriberList): void
     {
-        $relation = $this->listMessageRepository->getByMessageIdAndListId($message->getId(), $subscriberList->getId());
+        $relation = $this->listMessageRepository->getByMessageAndList($message, $subscriberList);
         $this->entityManager->remove($relation);
-    }
-
-    /**
-     * Gets all subscriber lists associated with a message
-     *
-     * @return int[]
-     */
-    public function getListIdsByMessage(Message $message): array
-    {
-        return $this->listMessageRepository->getListIdsByMessageId($message->getId());
-    }
-
-    /**
-     * Gets all messages associated with a subscriber list
-     *
-     * @return int[]
-     */
-    public function getMessageIdsByList(SubscriberList $subscriberList): array
-    {
-        return $this->listMessageRepository->getMessageIdsByListId($subscriberList->getId());
     }
 
     /**
@@ -74,7 +54,7 @@ class ListMessageManager
      */
     public function isMessageAssociatedWithList(Message $message, SubscriberList $subscriberList): bool
     {
-        return $this->listMessageRepository->isMessageAssociatedWithList($message->getId(), $subscriberList->getId());
+        return $this->listMessageRepository->isMessageAssociatedWithList($message, $subscriberList);
     }
 
     /**
@@ -94,6 +74,6 @@ class ListMessageManager
      */
     public function removeAllListAssociationsForMessage(Message $message): void
     {
-        $this->listMessageRepository->removeAllListAssociationsForMessage($message->getId());
+        $this->listMessageRepository->removeAllListAssociationsForMessage($message);
     }
 }
