@@ -99,7 +99,6 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     public function setName(string $name): self
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -146,7 +145,6 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     public function setPublic(bool $public): self
     {
         $this->public = $public;
-
         return $this;
     }
 
@@ -158,7 +156,6 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     public function setCategory(string $category): self
     {
         $this->category = $category;
-
         return $this;
     }
 
@@ -170,7 +167,6 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     public function setOwner(Administrator $owner): self
     {
         $this->owner = $owner;
-
         return $this;
     }
 
@@ -223,19 +219,11 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     public function updateUpdatedAt(): DomainModel
     {
         $this->updatedAt = new DateTime();
-
         return $this;
     }
 
     public function getListMessages(): Collection
     {
         return $this->listMessages;
-    }
-
-    public function getMessages(): Collection
-    {
-        return $this->listMessages->map(
-            fn(ListMessage $lm) => $lm->getMessage()
-        );
     }
 }

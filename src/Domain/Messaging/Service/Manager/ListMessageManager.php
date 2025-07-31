@@ -9,18 +9,26 @@ use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\ListMessage;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Repository\ListMessageRepository;
+use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 
 class ListMessageManager
 {
     private ListMessageRepository $listMessageRepository;
+    private MessageRepository $messageRepository;
+    private SubscriberListRepository $subscriberListRepository;
     private EntityManagerInterface $entityManager;
 
     public function __construct(
         ListMessageRepository $listMessageRepository,
-        EntityManagerInterface $entityManager
+        MessageRepository $messageRepository,
+        SubscriberListRepository $subscriberListRepository,
+        EntityManagerInterface $entityManager,
     ) {
         $this->listMessageRepository = $listMessageRepository;
+        $this->messageRepository = $messageRepository;
+        $this->subscriberListRepository = $subscriberListRepository;
         $this->entityManager = $entityManager;
     }
 
@@ -75,5 +83,15 @@ class ListMessageManager
     public function removeAllListAssociationsForMessage(Message $message): void
     {
         $this->listMessageRepository->removeAllListAssociationsForMessage($message);
+    }
+
+    public function getMessagesByList(SubscriberList $list): array
+    {
+        return $this->messageRepository->getMessagesByList($list);
+    }
+
+    public function getListByMessage(Message $message): array
+    {
+        return $this->subscriberListRepository->getListsByMessage($message);
     }
 }

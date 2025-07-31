@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Messaging\Model\Filter\MessageFilter;
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 
 class MessageRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
@@ -47,6 +48,18 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->setParameter('lastId', $lastId)
             ->orderBy('m.id', 'ASC')
             ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** @return Message[] */
+    public function getMessagesByList(SubscriberList $list): array
+    {
+        return $this->createQueryBuilder('m')
+            ->join('m.listMessages', 'lm')
+            ->join('lm.subscriberList', 'l')
+            ->where('l = :list')
+            ->setParameter('list', $list)
             ->getQuery()
             ->getResult();
     }

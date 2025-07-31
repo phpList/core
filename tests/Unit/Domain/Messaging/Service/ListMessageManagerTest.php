@@ -9,8 +9,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\ListMessage;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Repository\ListMessageRepository;
+use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Manager\ListMessageManager;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -26,8 +28,10 @@ class ListMessageManagerTest extends TestCase
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
 
         $this->manager = new ListMessageManager(
-            $this->listMessageRepository,
-            $this->entityManager
+            listMessageRepository: $this->listMessageRepository,
+            messageRepository: $this->createMock(MessageRepository::class),
+            subscriberListRepository: $this->createMock(SubscriberListRepository::class),
+            entityManager: $this->entityManager
         );
     }
 
