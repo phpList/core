@@ -193,11 +193,4 @@ class Message implements DomainModel, Identity, ModificationDate
     {
         return $this->listMessages;
     }
-
-    public function getSubscriberLists(): Collection
-    {
-        return $this->listMessages->map(
-            fn(ListMessage $lm) => $lm->getList()
-        );
-    }
 }

@@ -8,6 +8,7 @@ use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
+use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 
 /**
@@ -31,5 +32,17 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
             ->setParameter('id', $id)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /** @return SubscriberList[] */
+    public function getListsByMessage(Message $message): array
+    {
+        return $this->createQueryBuilder('l')
+            ->join('l.listMessages', 'lm')
+            ->join('lm.message', 'm')
+            ->where('m = :message')
+            ->setParameter('message', $message)
+            ->getQuery()
+            ->getResult();
     }
 }

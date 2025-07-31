@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -15,21 +16,26 @@ use PHPUnit\Framework\TestCase;
 
 class SubscriberProviderTest extends TestCase
 {
-    private SubscriberRepository|MockObject $subscriberRepository;
+    private SubscriberRepository&MockObject $subscriberRepository;
+    private SubscriberListRepository&MockObject $subscriberListRepository;
     private SubscriberProvider $subscriberProvider;
 
     protected function setUp(): void
     {
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
+        $this->subscriberListRepository = $this->createMock(SubscriberListRepository::class);
 
-        $this->subscriberProvider = new SubscriberProvider($this->subscriberRepository);
+        $this->subscriberProvider = new SubscriberProvider(
+            $this->subscriberRepository,
+            $this->subscriberListRepository,
+        );
     }
 
     public function testGetSubscribersForMessageWithNoListsReturnsEmptyArray(): void
     {
         $message = $this->createMock(Message::class);
         $message->method('getId')->willReturn(123);
-        $message->method('getSubscriberLists')->willReturn(new ArrayCollection());
+        $this->subscriberListRepository->method('getListsByMessage')->willReturn([]);
 
         $this->subscriberRepository
             ->expects($this->never())
@@ -48,7 +54,9 @@ class SubscriberProviderTest extends TestCase
 
         $subscriberList = $this->createMock(SubscriberList::class);
         $subscriberList->method('getId')->willReturn(456);
-        $message->method('getSubscriberLists')->willReturn(new ArrayCollection([$subscriberList]));
+        $this->subscriberListRepository
+            ->method('getListsByMessage')
+            ->willReturn([$subscriberList]);
 
         $this->subscriberRepository
             ->expects($this->once())
@@ -69,7 +77,9 @@ class SubscriberProviderTest extends TestCase
 
         $subscriberList = $this->createMock(SubscriberList::class);
         $subscriberList->method('getId')->willReturn(456);
-        $message->method('getSubscriberLists')->willReturn(new ArrayCollection([$subscriberList]));
+        $this->subscriberListRepository
+            ->method('getListsByMessage')
+            ->willReturn([$subscriberList]);
 
         $subscriber1 = $this->createMock(Subscriber::class);
         $subscriber1->method('getId')->willReturn(1);
@@ -99,7 +109,9 @@ class SubscriberProviderTest extends TestCase
         $subscriberList1->method('getId')->willReturn(456);
         $subscriberList2 = $this->createMock(SubscriberList::class);
         $subscriberList2->method('getId')->willReturn(789);
-        $message->method('getSubscriberLists')->willReturn(new ArrayCollection([$subscriberList1, $subscriberList2]));
+        $this->subscriberListRepository
+            ->method('getListsByMessage')
+            ->willReturn([$subscriberList1, $subscriberList2]);
 
         $subscriber1 = $this->createMock(Subscriber::class);
         $subscriber1->method('getId')->willReturn(1);
