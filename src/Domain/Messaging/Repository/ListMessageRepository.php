@@ -20,7 +20,7 @@ class ListMessageRepository extends AbstractRepository implements PaginatableRep
         $count = $this->createQueryBuilder('lm')
             ->select('COUNT(lm.id)')
             ->where('lm.message = :message')
-            ->andWhere('lm.list = :list')
+            ->andWhere('lm.subscriberList = :list')
             ->setParameter('message', $message)
             ->setParameter('list', $list)
             ->getQuery()
@@ -33,8 +33,8 @@ class ListMessageRepository extends AbstractRepository implements PaginatableRep
     {
         return $this->createQueryBuilder('lm')
             ->where('lm.message = :message')
-            ->andWhere('lm.list = :list')
-            ->setParameter('messageId', $message)
+            ->andWhere('lm.subscriberList = :list')
+            ->setParameter('message', $message)
             ->setParameter('list', $list)
             ->getQuery()
             ->getOneOrNullResult();
