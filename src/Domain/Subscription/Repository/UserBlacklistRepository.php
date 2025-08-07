@@ -12,16 +12,16 @@ class UserBlacklistRepository extends AbstractRepository
 {
     public function findBlacklistInfoByEmail(string $email): ?UserBlacklist
     {
-        $qb = $this->getEntityManager()->createQueryBuilder();
+        $queryBuilder = $this->getEntityManager()->createQueryBuilder();
 
-        $qb->select('ub.email, ub.added, ubd.data AS reason')
+        $queryBuilder->select('ub.email, ub.added, ubd.data AS reason')
             ->from(UserBlacklist::class, 'ub')
             ->innerJoin(UserBlacklistData::class, 'ubd', 'WITH', 'ub.email = ubd.email')
             ->where('ub.email = :email')
             ->setParameter('email', $email)
             ->setMaxResults(1);
 
-        return $qb->getQuery()->getOneOrNullResult();
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 
     public function findOneByEmail(string $email): ?UserBlacklist
