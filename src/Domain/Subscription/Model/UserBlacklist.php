@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Identity\Model;
+namespace PhpList\Core\Domain\Subscription\Model;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
-use PhpList\Core\Domain\Identity\Repository\UserBlacklistRepository;
+use PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository;
 
 #[ORM\Entity(repositoryClass: UserBlacklistRepository::class)]
 #[ORM\Table(name: 'phplist_user_blacklist')]
@@ -20,6 +20,9 @@ class UserBlacklist implements DomainModel
 
     #[ORM\Column(name: 'added', type: 'datetime', nullable: true)]
     private ?DateTime $added = null;
+
+    #[ORM\OneToOne(targetEntity: UserBlacklistData::class, mappedBy: 'email')]
+    private ?UserBlacklistData $blacklistData = null;
 
     public function getEmail(): string
     {
@@ -41,5 +44,10 @@ class UserBlacklist implements DomainModel
     {
         $this->added = $added;
         return $this;
+    }
+
+    public function getBlacklistData(): ?UserBlacklistData
+    {
+        return $this->blacklistData;
     }
 }

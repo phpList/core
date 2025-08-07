@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Identity\Repository;
+namespace PhpList\Core\Domain\Subscription\Repository;
 
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Identity\Model;
+namespace PhpList\Core\Domain\Subscription\Model;
 
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
-use PhpList\Core\Domain\Identity\Repository\UserBlacklistDataRepository;
+use PhpList\Core\Domain\Subscription\Repository\UserBlacklistDataRepository;
 
 #[ORM\Entity(repositoryClass: UserBlacklistDataRepository::class)]
 #[ORM\Table(name: 'phplist_user_blacklist_data')]
