@@ -74,6 +74,11 @@ class SubscriberBlacklistManagerTest extends TestCase
             ->with('already@blacklisted.com')
             ->willReturn(true);
 
+        $this->userBlacklistRepository
+            ->expects($this->once())
+            ->method('findBlacklistInfoByEmail')
+            ->willReturn($this->createMock(UserBlacklist::class));
+
         $this->entityManager
             ->expects($this->never())
             ->method('persist');

@@ -31,12 +31,12 @@ class SubscriberBlacklistManager
     {
         return $this->userBlacklistRepository->findBlacklistInfoByEmail($email);
     }
-// 095-38-25-55
-    public function addEmailToBlacklist(string $email, ?string $reasonData = null): void
+
+    public function addEmailToBlacklist(string $email, ?string $reasonData = null): UserBlacklist
     {
         $existing = $this->subscriberRepository->isEmailBlacklisted($email);
         if ($existing) {
-            return;
+            return $this->getBlacklistInfo($email);
         }
 
         $blacklistEntry = new UserBlacklist();
@@ -54,6 +54,8 @@ class SubscriberBlacklistManager
         }
 
         $this->entityManager->flush();
+
+        return $blacklistEntry;
     }
 
     public function removeEmailFromBlacklist(string $email): void
