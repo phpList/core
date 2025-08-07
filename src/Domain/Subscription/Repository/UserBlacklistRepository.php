@@ -10,7 +10,7 @@ use PhpList\Core\Domain\Subscription\Model\UserBlacklistData;
 
 class UserBlacklistRepository extends AbstractRepository
 {
-    public function getBlacklistInfoByEmail(string $email): ?array
+    public function findBlacklistInfoByEmail(string $email): ?UserBlacklist
     {
         $qb = $this->getEntityManager()->createQueryBuilder();
 
@@ -22,5 +22,12 @@ class UserBlacklistRepository extends AbstractRepository
             ->setMaxResults(1);
 
         return $qb->getQuery()->getOneOrNullResult();
+    }
+
+    public function findOneByEmail(string $email): ?UserBlacklist
+    {
+        return $this->findOneBy([
+            'email' => $email,
+        ]);
     }
 }

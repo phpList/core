@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
-use PhpList\Core\Domain\Subscription\Model\Subscriber;
+use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Subscription\Model\UserBlacklist;
 use PhpList\Core\Domain\Subscription\Model\UserBlacklistData;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Subscription\Repository\UserBlacklistDataRepository;
 use PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository;
 
 class SubscriberBlacklistManager
@@ -15,6 +17,8 @@ class SubscriberBlacklistManager
     public function __construct(
         private readonly SubscriberRepository $subscriberRepository,
         private readonly UserBlacklistRepository $userBlacklistRepository,
+        private readonly UserBlacklistDataRepository $blacklistDataRepository,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -23,64 +27,58 @@ class SubscriberBlacklistManager
         return $this->subscriberRepository->isEmailBlacklisted($email);
     }
 
-    public function getBlacklistInfo(string $email): ?Subscriber
+    public function getBlacklistInfo(string $email): ?UserBlacklist
     {
-        return $this->userBlacklistRepository->findBlacklistedByEmail($email);
+        return $this->userBlacklistRepository->findBlacklistInfoByEmail($email);
     }
 // 095-38-25-55
     public function addEmailToBlacklist(string $email, ?string $reasonData = null): void
     {
-        $existing = $this->getBlacklistInfo($email);
+        $existing = $this->subscriberRepository->isEmailBlacklisted($email);
         if ($existing) {
             return;
         }
 
         $blacklistEntry = new UserBlacklist();
         $blacklistEntry->setEmail($email);
-        $blacklistEntry->setAdded(new \DateTime());
+        $blacklistEntry->setAdded(new DateTime());
 
-        $entityManager->persist($blacklistEntry);
+        $this->entityManager->persist($blacklistEntry);
 
         if ($reasonData !== null) {
             $blacklistData = new UserBlacklistData();
             $blacklistData->setEmail($email);
-            $blacklistData->setName('reason'); // or a relevant name
+            $blacklistData->setName('reason');
             $blacklistData->setData($reasonData);
-            $entityManager->persist($blacklistData);
+            $this->entityManager->persist($blacklistData);
         }
 
-        $entityManager->flush();
+        $this->entityManager->flush();
     }
 
-    public function removeEmailFromBlacklist(string $email)
+    public function removeEmailFromBlacklist(string $email): void
     {
-        $entityManager = $this->entityManager;
-
-        $blacklistEntry = $entityManager->getRepository(UserBlacklist::class)->find($email);
+        $blacklistEntry = $this->userBlacklistRepository->findOneByEmail($email);
         if ($blacklistEntry) {
-            $entityManager->remove($blacklistEntry);
+            $this->entityManager->remove($blacklistEntry);
         }
 
-        $blacklistData = $entityManager->getRepository(UserBlacklistData::class)->find($email);
+        $blacklistData = $this->blacklistDataRepository->findOneByEmail($email);
         if ($blacklistData) {
-            $entityManager->remove($blacklistData);
+            $this->entityManager->remove($blacklistData);
         }
 
-        // Also, update the user record
-        $userRepo = $entityManager->getRepository(Subscriber::class);
-        $user = $userRepo->findOneBy(['email' => $email]);
-        if ($user) {
-            $user->setBlacklisted(false);
+        $subscriber = $this->subscriberRepository->findOneByEmail($email);
+        if ($subscriber) {
+            $subscriber->setBlacklisted(false);
         }
 
-        $entityManager->flush();
+        $this->entityManager->flush();
     }
 
     public function getBlacklistReason(string $email): ?string
     {
-        $repository = $this->entityManager->getRepository(UserBlacklistData::class);
-        $data = $repository->findOneBy(['email' => $email]);
+        $data = $this->blacklistDataRepository->findOneByEmail($email);
         return $data ? $data->getData() : null;
     }
-
 }
