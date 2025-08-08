@@ -127,4 +127,18 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function isEmailBlacklisted(string $email): bool
+    {
+        $queryBuilder = $this->getEntityManager()->createQueryBuilder();
+
+        $queryBuilder->select('u.email')
+            ->from(Subscriber::class, 'u')
+            ->where('u.email = :email')
+            ->andWhere('u.blacklisted = 1')
+            ->setParameter('email', $email)
+            ->setMaxResults(1);
+
+        return !($queryBuilder->getQuery()->getOneOrNullResult() === null);
+    }
 }

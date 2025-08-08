@@ -110,3 +110,13 @@ services:
         parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
         arguments:
             - PhpList\Core\Domain\Messaging\Model\ListMessage
+
+    PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository:
+      parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+      arguments:
+        - PhpList\Core\Domain\Subscription\Model\UserBlacklist
+
+    PhpList\Core\Domain\Subscription\Repository\UserBlacklistDataRepository:
+      parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+      arguments:
+        - PhpList\Core\Domain\Subscription\Model\UserBlacklistData

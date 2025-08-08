@@ -67,3 +67,7 @@ services:
   PhpList\Core\Domain\Messaging\Service\Manager\ListMessageManager:
     autowire: true
     autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberBlacklistManager:
+    autowire: true
+    autoconfigure: true
