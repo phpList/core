@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Subscription\Model\SubscribePage;
 use PhpList\Core\Domain\Subscription\Model\SubscribePageData;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberPageDataRepository;
@@ -20,7 +21,7 @@ class SubscribePageManager
     ) {
     }
 
-    public function createPage(string $title, bool $active = false, ?int $owner = null): SubscribePage
+    public function createPage(string $title, bool $active = false, ?Administrator $owner = null): SubscribePage
     {
         $page = new SubscribePage();
         $page->setTitle($title)
@@ -43,8 +44,12 @@ class SubscribePageManager
         return $page;
     }
 
-    public function updatePage(SubscribePage $page, ?string $title = null, ?bool $active = null, ?int $owner = null): SubscribePage
-    {
+    public function updatePage(
+        SubscribePage $page,
+        ?string $title = null,
+        ?bool $active = null,
+        ?Administrator $owner = null
+    ): SubscribePage {
         if ($title !== null) {
             $page->setTitle($title);
         }
@@ -74,14 +79,14 @@ class SubscribePageManager
     public function getPageData(SubscribePage $page, string $name): ?string
     {
         /** @var SubscribePageData|null $data */
-        $data = $this->pageDataRepository->findOneBy(['id' => $page->getId(), 'name' => $name]);
+        $data = $this->pageDataRepository->findByPageAndName($page, $name);
         return $data?->getData();
     }
 
     public function setPageData(SubscribePage $page, string $name, ?string $value): SubscribePageData
     {
         /** @var SubscribePageData|null $data */
-        $data = $this->pageDataRepository->findOneBy(['id' => $page->getId(), 'name' => $name]);
+        $data = $this->pageDataRepository->findByPageAndName($page, $name);
 
         if (!$data) {
             $data = (new SubscribePageData())
