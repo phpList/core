@@ -79,11 +79,10 @@ class SubscribePageManager
         $this->pageRepository->remove($page);
     }
 
-    public function getPageData(SubscribePage $page, string $name): ?string
+    /** @return SubscribePageData[] */
+    public function getPageData(SubscribePage $page): array
     {
-        /** @var SubscribePageData|null $data */
-        $data = $this->pageDataRepository->findByPageAndName($page, $name);
-        return $data?->getData();
+        return $this->pageDataRepository->getByPage($page,);
     }
 
     public function setPageData(SubscribePage $page, string $name, ?string $value): SubscribePageData

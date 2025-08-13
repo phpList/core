@@ -18,4 +18,10 @@ class SubscriberPageDataRepository extends AbstractRepository implements Paginat
     {
         return $this->findOneBy(['id' => $page->getId(), 'name' => $name]);
     }
+
+    /** @return SubscribePageData[] */
+    public function getByPage(SubscribePage $page): array
+    {
+        return $this->findBy(['id' => $page->getId()]);
+    }
 }

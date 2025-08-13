@@ -153,12 +153,13 @@ class SubscribePageManagerTest extends TestCase
 
         $this->pageDataRepository
             ->expects($this->once())
-            ->method('findByPageAndName')
-            ->with($page, 'key')
-            ->willReturn($data);
+            ->method('getByPage')
+            ->with($page)
+            ->willReturn([$data]);
 
-        $result = $this->manager->getPageData($page, 'key');
-        $this->assertSame('value', $result);
+        $result = $this->manager->getPageData($page);
+        $this->assertIsArray($result);
+        $this->assertSame('value', $result[0]->getData());
     }
 
     public function testGetPageDataReturnsNullWhenNotFound(): void
@@ -167,12 +168,12 @@ class SubscribePageManagerTest extends TestCase
 
         $this->pageDataRepository
             ->expects($this->once())
-            ->method('findByPageAndName')
-            ->with($page, 'missing')
-            ->willReturn(null);
+            ->method('getByPage')
+            ->with($page)
+            ->willReturn([]);
 
-        $result = $this->manager->getPageData($page, 'missing');
-        $this->assertNull($result);
+        $result = $this->manager->getPageData($page);
+        $this->assertEmpty($result);
     }
 
     public function testSetPageDataUpdatesExistingDataAndFlushes(): void
