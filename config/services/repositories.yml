@@ -130,3 +130,8 @@ services:
       parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
       arguments:
         - PhpList\Core\Domain\Subscription\Model\SubscribePageData
+
+    PhpList\Core\Domain\Messaging\Repository\BounceRegexRepository:
+      parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+      arguments:
+        - PhpList\Core\Domain\Messaging\Model\BounceRegex
