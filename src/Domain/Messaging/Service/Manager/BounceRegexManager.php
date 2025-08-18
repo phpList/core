@@ -30,7 +30,7 @@ class BounceRegexManager
         string $regex,
         ?string $action = null,
         ?int $listOrder = 0,
-        ?int $admin = null,
+        ?int $adminId = null,
         ?string $comment = null,
         ?string $status = null
     ): BounceRegex {
@@ -42,7 +42,7 @@ class BounceRegexManager
             $existing->setRegex($regex)
                 ->setAction($action ?? $existing->getAction())
                 ->setListOrder($listOrder ?? $existing->getListOrder())
-                ->setAdmin($admin ?? $existing->getAdmin())
+                ->setAdminId($adminId ?? $existing->getAdminId())
                 ->setComment($comment ?? $existing->getComment())
                 ->setStatus($status ?? $existing->getStatus());
 
@@ -56,7 +56,7 @@ class BounceRegexManager
             regexHash: $regexHash,
             action: $action,
             listOrder: $listOrder,
-            admin: $admin,
+            adminId: $adminId,
             comment: $comment,
             status: $status,
             count: 0

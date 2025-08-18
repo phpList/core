@@ -49,7 +49,7 @@ class BounceRegexManagerTest extends TestCase
             regex: $pattern,
             action: 'delete',
             listOrder: 5,
-            admin: 1,
+            adminId: 1,
             comment: 'test',
             status: 'active'
         );
@@ -59,7 +59,7 @@ class BounceRegexManagerTest extends TestCase
         $this->assertSame($expectedHash, $regex->getRegexHash());
         $this->assertSame('delete', $regex->getAction());
         $this->assertSame(5, $regex->getListOrder());
-        $this->assertSame(1, $regex->getAdmin());
+        $this->assertSame(1, $regex->getAdminId());
         $this->assertSame('test', $regex->getComment());
         $this->assertSame('active', $regex->getStatus());
     }
@@ -74,7 +74,7 @@ class BounceRegexManagerTest extends TestCase
             regexHash: $hash,
             action: 'keep',
             listOrder: 0,
-            admin: null,
+            adminId: null,
             comment: null,
             status: 'inactive',
             count: 3
@@ -93,14 +93,14 @@ class BounceRegexManagerTest extends TestCase
             regex: $pattern,
             action: 'delete',
             listOrder: 10,
-            admin: 2,
+            adminId: 2,
             comment: 'upd',
             status: 'active'
         );
 
         $this->assertSame('delete', $updated->getAction());
         $this->assertSame(10, $updated->getListOrder());
-        $this->assertSame(2, $updated->getAdmin());
+        $this->assertSame(2, $updated->getAdminId());
         $this->assertSame('upd', $updated->getComment());
         $this->assertSame('active', $updated->getStatus());
         $this->assertSame($hash, $updated->getRegexHash());
