@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Messaging\Service;
+namespace PhpList\Core\Domain\Messaging\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
 use DOMDocument;

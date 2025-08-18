@@ -4,31 +4,7 @@ services:
     autoconfigure: true
     public: false
 
-  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager:
-    autowire: true
-    autoconfigure: true
-
   PhpList\Core\Domain\Identity\Service\SessionManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberListManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Subscription\Service\Manager\SubscriptionManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\MessageManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\TemplateManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\TemplateImageManager:
     autowire: true
     autoconfigure: true
 
@@ -44,6 +20,22 @@ services:
     autowire: true
     autoconfigure: true
 
+  PhpList\Core\Domain\Identity\Service\PasswordManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberListManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscriptionManager:
+    autowire: true
+    autoconfigure: true
+
   PhpList\Core\Domain\Subscription\Service\Manager\AttributeDefinitionManager:
     autowire: true
     autoconfigure: true
@@ -56,18 +48,6 @@ services:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Configuration\Service\Manager\ConfigManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Identity\Service\PasswordManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\Manager\ListMessageManager:
-    autowire: true
-    autoconfigure: true
-
   PhpList\Core\Domain\Subscription\Service\Manager\SubscriberBlacklistManager:
     autowire: true
     autoconfigure: true
@@ -76,6 +56,26 @@ services:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Messaging\Service\BounceRegexManager:
+  PhpList\Core\Domain\Messaging\Service\Manager\MessageManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\Manager\TemplateManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\Manager\TemplateImageManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\Manager\BounceRegexManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\Manager\ListMessageManager:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Configuration\Service\Manager\ConfigManager:
     autowire: true
     autoconfigure: true

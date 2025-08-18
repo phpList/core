@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
+namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Model\BounceRegex;
 use PhpList\Core\Domain\Messaging\Model\BounceRegexBounce;
 use PhpList\Core\Domain\Messaging\Repository\BounceRegexRepository;
-use PhpList\Core\Domain\Messaging\Service\BounceRegexManager;
+use PhpList\Core\Domain\Messaging\Service\Manager\BounceRegexManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
