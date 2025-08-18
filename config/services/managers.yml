@@ -71,3 +71,7 @@ services:
   PhpList\Core\Domain\Subscription\Service\Manager\SubscriberBlacklistManager:
     autowire: true
     autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscribePageManager:
+    autowire: true
+    autoconfigure: true
