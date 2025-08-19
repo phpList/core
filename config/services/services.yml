@@ -14,6 +14,7 @@ services:
         autoconfigure: true
         arguments:
             $defaultFromEmail: '%app.mailer_from%'
+            $bounceEmail: '%imap_bounce.email%'
 
     PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService:
         autowire: true

@@ -32,6 +32,18 @@ parameters:
     app.password_reset_url: '%%env(PASSWORD_RESET_URL)%%'
     env(PASSWORD_RESET_URL): 'https://example.com/reset/'
 
+    # bounce email settings
+    imap_bounce.email: '%%env(BOUNCE_EMAIL)%%'
+    env(BOUNCE_EMAIL): 'bounce@phplist.com'
+    imap_bounce.password: '%%env(BOUNCE_IMAP_PASS)%%'
+    env(BOUNCE_IMAP_PASS): 'bounce@phplist.com'
+    imap_bounce.host: '%%env(BOUNCE_IMAP_HOST)%%'
+    env(BOUNCE_IMAP_HOST): 'imap.phplist.com'
+    imap_bounce.port: '%%env(BOUNCE_IMAP_PORT)%%'
+    env(BOUNCE_IMAP_PORT): 993
+    imap_bounce.encryption: '%%env(BOUNCE_IMAP_ENCRYPTION)%%'
+    env(BOUNCE_IMAP_ENCRYPTION): 'ssl'
+
     # Messenger configuration for asynchronous processing
     app.messenger_transport_dsn: '%%env(MESSENGER_TRANSPORT_DSN)%%'
     env(MESSENGER_TRANSPORT_DSN): 'doctrine://default?auto_setup=true'
