@@ -72,6 +72,10 @@ services:
     autowire: true
     autoconfigure: true
 
+  PhpList\Core\Domain\Messaging\Service\Manager\BounceManager:
+    autowire: true
+    autoconfigure: true
+
   PhpList\Core\Domain\Messaging\Service\Manager\ListMessageManager:
     autowire: true
     autoconfigure: true

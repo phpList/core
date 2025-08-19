@@ -135,3 +135,8 @@ services:
       parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
       arguments:
         - PhpList\Core\Domain\Messaging\Model\BounceRegex
+
+    PhpList\Core\Domain\Messaging\Repository\BounceRepository:
+      parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+      arguments:
+        - PhpList\Core\Domain\Messaging\Model\Bounce
