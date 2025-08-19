@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
+namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\Dto\CreateTemplateDto;
 use PhpList\Core\Domain\Messaging\Model\Template;
 use PhpList\Core\Domain\Messaging\Repository\TemplateRepository;
-use PhpList\Core\Domain\Messaging\Service\TemplateImageManager;
-use PhpList\Core\Domain\Messaging\Service\TemplateManager;
+use PhpList\Core\Domain\Messaging\Service\Manager\TemplateImageManager;
+use PhpList\Core\Domain\Messaging\Service\Manager\TemplateManager;
 use PhpList\Core\Domain\Messaging\Validator\TemplateImageValidator;
 use PhpList\Core\Domain\Messaging\Validator\TemplateLinkValidator;
 use PHPUnit\Framework\MockObject\MockObject;

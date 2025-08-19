@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
+namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Manager;
 
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Dto\CreateMessageDto;
@@ -15,7 +15,7 @@ use PhpList\Core\Domain\Messaging\Model\Dto\UpdateMessageDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\MessageBuilder;
-use PhpList\Core\Domain\Messaging\Service\MessageManager;
+use PhpList\Core\Domain\Messaging\Service\Manager\MessageManager;
 use PHPUnit\Framework\TestCase;
 
 class MessageManagerTest extends TestCase

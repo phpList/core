@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
+namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\Template;
 use PhpList\Core\Domain\Messaging\Model\TemplateImage;
 use PhpList\Core\Domain\Messaging\Repository\TemplateImageRepository;
-use PhpList\Core\Domain\Messaging\Service\TemplateImageManager;
+use PhpList\Core\Domain\Messaging\Service\Manager\TemplateImageManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 

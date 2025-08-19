@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
+namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Manager;
 
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
