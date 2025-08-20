@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Messaging\Service;
+namespace PhpList\Core\Domain\Messaging\Service\Processor;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
