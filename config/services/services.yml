@@ -31,7 +31,15 @@ services:
         autoconfigure: true
         public: true
 
-    PhpList\Core\Domain\Messaging\Service\CampaignProcessor:
+    PhpList\Core\Domain\Messaging\Service\Processor\CampaignProcessor:
         autowire: true
         autoconfigure: true
         public: true
+
+    PhpList\Core\Domain\Common\ClientIpResolver:
+        autowire: true
+        autoconfigure: true
+
+    PhpList\Core\Domain\Common\SystemInfoCollector:
+      autowire: true
+      autoconfigure: true
