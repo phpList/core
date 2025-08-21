@@ -13,38 +13,38 @@ use PhpList\Core\Domain\Messaging\Repository\BounceRegexBounceRepository;
 class BounceRegexBounce implements DomainModel
 {
     #[ORM\Id]
-    #[ORM\Column(type: 'integer')]
-    private int $regex;
+    #[ORM\Column(name: 'regex', type: 'integer')]
+    private int $regexId;
 
     #[ORM\Id]
-    #[ORM\Column(type: 'integer')]
-    private int $bounce;
+    #[ORM\Column(name: 'bounce', type: 'integer')]
+    private int $bounceId;
 
-    public function __construct(int $regex, int $bounce)
+    public function __construct(int $regexId, int $bounceId)
     {
-        $this->regex = $regex;
-        $this->bounce = $bounce;
+        $this->regexId = $regexId;
+        $this->bounceId = $bounceId;
     }
 
-    public function getRegex(): int
+    public function getRegexId(): int
     {
-        return $this->regex;
+        return $this->regexId;
     }
 
-    public function setRegex(int $regex): self
+    public function setRegexId(int $regexId): self
     {
-        $this->regex = $regex;
+        $this->regexId = $regexId;
         return $this;
     }
 
-    public function getBounce(): int
+    public function getBounceId(): int
     {
-        return $this->bounce;
+        return $this->bounceId;
     }
 
-    public function setBounce(int $bounce): self
+    public function setBounceId(int $bounceId): self
     {
-        $this->bounce = $bounce;
+        $this->bounceId = $bounceId;
         return $this;
     }
 }

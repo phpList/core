@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\UpdateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService;
 use PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -21,17 +22,20 @@ class SubscriberManager
     private EntityManagerInterface $entityManager;
     private MessageBusInterface $messageBus;
     private SubscriberDeletionService $subscriberDeletionService;
+    private SubscriberBlacklistService $blacklistService;
 
     public function __construct(
         SubscriberRepository $subscriberRepository,
         EntityManagerInterface $entityManager,
         MessageBusInterface $messageBus,
-        SubscriberDeletionService $subscriberDeletionService
+        SubscriberDeletionService $subscriberDeletionService,
+        SubscriberBlacklistService $blacklistService
     ) {
         $this->subscriberRepository = $subscriberRepository;
         $this->entityManager = $entityManager;
         $this->messageBus = $messageBus;
         $this->subscriberDeletionService = $subscriberDeletionService;
+        $this->blacklistService = $blacklistService;
     }
 
     public function createSubscriber(CreateSubscriberDto $subscriberDto): Subscriber
@@ -73,6 +77,35 @@ class SubscriberManager
         }
 
         return $subscriber;
+    }
+
+    public function getSubscriberById(int $subscriberId): ?Subscriber
+    {
+        return $this->subscriberRepository->find($subscriberId);
+    }
+
+    public function markUnconfirmed(int $subscriberId): void
+    {
+        $this->subscriberRepository->createQueryBuilder('s')
+            ->update()
+            ->set('s.confirmed', ':confirmed')
+            ->where('s.id = :id')
+            ->setParameter('confirmed', false)
+            ->setParameter('id', $subscriberId)
+            ->getQuery()
+            ->execute();
+    }
+
+    public function markConfirmed(int $subscriberId): void
+    {
+        $this->subscriberRepository->createQueryBuilder('s')
+            ->update()
+            ->set('s.confirmed', ':confirmed')
+            ->where('s.id = :id')
+            ->setParameter('confirmed', true)
+            ->setParameter('id', $subscriberId)
+            ->getQuery()
+            ->execute();
     }
 
     public function updateSubscriber(UpdateSubscriberDto $subscriberDto): Subscriber
@@ -139,5 +172,16 @@ class SubscriberManager
         $existingSubscriber->setExtraData($subscriberDto->extraData);
 
         return $existingSubscriber;
+    }
+
+    public function blacklist(Subscriber $subscriber, string $reason): void
+    {
+        $this->blacklistService->blacklist($subscriber, $reason);
+    }
+
+    public function decrementBounceCount(Subscriber $subscriber): void
+    {
+        $subscriber->addToBounceCount(-1);
+        $this->entityManager->flush();
     }
 }

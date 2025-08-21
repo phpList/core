@@ -17,4 +17,16 @@ class BounceRegexRepository extends AbstractRepository implements PaginatableRep
     {
         return $this->findOneBy(['regexHash' => $regexHash]);
     }
+
+    /** @return BounceRegex[] */
+    public function fetchAllOrdered(): array
+    {
+        return $this->findBy([],  ['listOrder' => 'ASC']);
+    }
+
+    /** @return BounceRegex[] */
+    public function fetchActiveOrdered(): array
+    {
+        return $this->findBy(['active' => true],  ['listOrder' => 'ASC']);
+    }
 }

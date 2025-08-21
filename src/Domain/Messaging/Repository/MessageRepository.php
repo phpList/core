@@ -63,4 +63,15 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->getQuery()
             ->getResult();
     }
+
+    public function incrementBounceCount(int $messageId): void
+    {
+        $this->createQueryBuilder('m')
+            ->update()
+            ->set('m.bounceCount', 'm.bounceCount + 1')
+            ->where('m.id = :messageId')
+            ->setParameter('messageId', $messageId)
+            ->getQuery()
+            ->execute();
+    }
 }

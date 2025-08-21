@@ -141,4 +141,15 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
 
         return !($queryBuilder->getQuery()->getOneOrNullResult() === null);
     }
+
+    public function incrementBounceCount(int $subscriberId): void
+    {
+        $this->createQueryBuilder('s')
+            ->update()
+            ->set('s.bounceCount', 's.bounceCount + 1')
+            ->where('s.id = :subscriberId')
+            ->setParameter('subscriberId', $subscriberId)
+            ->getQuery()
+            ->execute();
+    }
 }
