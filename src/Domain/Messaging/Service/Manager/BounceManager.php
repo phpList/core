@@ -7,9 +7,11 @@ namespace PhpList\Core\Domain\Messaging\Service\Manager;
 use DateTime;
 use DateTimeImmutable;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
+use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
 use PhpList\Core\Domain\Messaging\Repository\BounceRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
+use PhpList\Core\Domain\Subscription\Model\Subscriber;
 
 class BounceManager
 {
@@ -102,8 +104,17 @@ class BounceManager
 
     /**
      * @return array<int, array{umb: UserMessageBounce, bounce: Bounce}>
-     */    public function fetchUserMessageBounceBatch(int $fromId, int $batchSize): array
+     */
+    public function fetchUserMessageBounceBatch(int $fromId, int $batchSize): array
     {
         return $this->userMessageBounceRepository->getPaginatedWithJoinNoRelation($fromId, $batchSize);
+    }
+
+    /**
+     * @return array<int, array{um: UserMessage, umb: UserMessageBounce|null, b: Bounce|null}>
+     */
+    public function getUserMessageHistoryWithBounces(Subscriber $subscriber): array
+    {
+        return $this->userMessageBounceRepository->getUserMessageHistoryWithBounces($subscriber);
     }
 }

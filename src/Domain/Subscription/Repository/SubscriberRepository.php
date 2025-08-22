@@ -152,4 +152,16 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->getQuery()
             ->execute();
     }
+
+    /** @return Subscriber[] */
+    public function distinctUsersWithBouncesConfirmedNotBlacklisted(): array
+    {
+        return $this->createQueryBuilder('s')
+            ->select('s.id')
+            ->where('s.bounceCount > 0')
+            ->andWhere('s.confirmed = 1')
+            ->andWhere('s.blacklisted = 0')
+            ->getQuery()
+            ->getScalarResult();
+    }
 }

@@ -7,6 +7,8 @@ namespace PhpList\Core\Domain\Messaging\Command;
 use DateTimeImmutable;
 use Exception;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
+use PhpList\Core\Domain\Messaging\Model\UserMessage;
+use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\LockService;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
@@ -35,8 +37,8 @@ class ProcessBouncesCommand extends Command
             ->addOption('password', null, InputOption::VALUE_OPTIONAL, 'Mailbox password')
             ->addOption('mailbox', null, InputOption::VALUE_OPTIONAL, 'Mailbox name(s) for POP (comma separated) or mbox file path', 'INBOX')
             ->addOption('maximum', null, InputOption::VALUE_OPTIONAL, 'Max messages to process per run', '1000')
-            ->addOption('purge', null, InputOption::VALUE_NONE, 'Delete processed messages from mailbox')
-            ->addOption('purge-unprocessed', null, InputOption::VALUE_NONE, 'Delete unprocessed messages from mailbox')
+            ->addOption('purge', null, InputOption::VALUE_NONE, 'Delete/remove processed messages from mailbox')
+            ->addOption('purge-unprocessed', null, InputOption::VALUE_NONE, 'Delete/remove unprocessed messages from mailbox')
             ->addOption('rules-batch-size', null, InputOption::VALUE_OPTIONAL, 'Advanced rules batch size', '1000')
             ->addOption('unsubscribe-threshold', null, InputOption::VALUE_OPTIONAL, 'Consecutive bounces threshold to unconfirm user', '3')
             ->addOption('blacklist-threshold', null, InputOption::VALUE_OPTIONAL, 'Consecutive bounces threshold to blacklist email (0 to disable)', '0')
@@ -53,6 +55,7 @@ class ProcessBouncesCommand extends Command
         private readonly LoggerInterface $logger,
         private readonly SubscriberManager $subscriberManager,
         private readonly SubscriberHistoryManager $subscriberHistoryManager,
+        private readonly SubscriberRepository $subscriberRepository,
     ) {
         parent::__construct();
     }
@@ -441,45 +444,53 @@ class ProcessBouncesCommand extends Command
         $io->writeln(sprintf('%d bounces were not matched by advanced processing rules', $notmatched));
     }
 
-    // --- Consecutive bounces logic (mirrors final section) ---
     private function handleConsecutiveBounces(SymfonyStyle $io, int $unsubscribeThreshold, int $blacklistThreshold): void
     {
         $io->section('Identifying consecutive bounces');
-        $userIds = $this->bounces->distinctUsersWithBouncesConfirmedNotBlacklisted();
-        $total = \count($userIds);
+        $users = $this->subscriberRepository->distinctUsersWithBouncesConfirmedNotBlacklisted();
+        $total = count($users);
         if ($total === 0) {
             $io->writeln('Nothing to do');
             return;
         }
         $usercnt = 0;
-        foreach ($userIds as $userId) {
+        foreach ($users as $user) {
             $usercnt++;
-            $history = $this->bounces->userMessageHistoryWithBounces($userId); // ordered desc, includes bounce status/comment
+            $history = $this->bounceManager->getUserMessageHistoryWithBounces($user);
             $cnt = 0; $removed = false; $msgokay = false; $unsubscribed = false;
             foreach ($history as $bounce) {
-                if (stripos($bounce->status ?? '', 'duplicate') === false && stripos($bounce->comment ?? '', 'duplicate') === false) {
-                    if ($bounce->bounceId) { // there is a bounce
+                /** @var $bounce array{um: UserMessage, umb: UserMessageBounce|null, b: Bounce|null} */
+                if (
+                    stripos($bounce['b']->getStatus() ?? '', 'duplicate') === false
+                    && stripos($bounce['b']->getComment() ?? '', 'duplicate') === false
+                ) {
+                    if ($bounce['b']->getId()) {
                         $cnt++;
                         if ($cnt >= $unsubscribeThreshold) {
                             if (!$unsubscribed) {
-                                $email = $this->users->emailById($userId);
-                                $this->users->markUnconfirmed($userId);
-                                $this->users->addHistory($email, 'Auto Unconfirmed', sprintf('Subscriber auto unconfirmed for %d consecutive bounces', $cnt));
+                                $this->subscriberManager->markUnconfirmed($user->getId());
+                                $this->subscriberHistoryManager->addHistory(
+                                    subscriber: $user,
+                                    message: 'Auto Unconfirmed',
+                                    details: sprintf('Subscriber auto unconfirmed for %d consecutive bounces', $cnt)
+                                );
                                 $unsubscribed = true;
                             }
                             if ($blacklistThreshold > 0 && $cnt >= $blacklistThreshold) {
-                                $email = $this->users->emailById($userId);
-                                $this->users->blacklistByEmail($email, sprintf('%d consecutive bounces, threshold reached', $cnt));
+                                $this->subscriberManager->blacklist(
+                                    subscriber: $user,
+                                    reason: sprintf('%d consecutive bounces, threshold reached', $cnt)
+                                );
                                 $removed = true;
                             }
                         }
-                    } else { // empty bounce means message received ok
-                        $cnt = 0;
-                        $msgokay = true;
+                    } else {
                         break;
                     }
                 }
-                if ($removed || $msgokay) { break; }
+                if ($removed || $msgokay) {
+                    break;
+                }
             }
             if ($usercnt % 5 === 0) {
                 $io->writeln(sprintf('processed %d out of %d subscribers', $usercnt, $total));
@@ -488,25 +499,17 @@ class ProcessBouncesCommand extends Command
         $io->writeln(sprintf('total of %d subscribers processed', $total));
     }
 
-    // --- Helpers: decoding and parsing ---
     private function decodeBody(string $header, string $body): string
     {
         $transferEncoding = '';
         if (preg_match('/Content-Transfer-Encoding: ([\w-]+)/i', $header, $regs)) {
             $transferEncoding = strtolower($regs[1]);
         }
-        $decoded = null;
-        switch ($transferEncoding) {
-            case 'quoted-printable':
-                $decoded = quoted_printable_decode($body);
-                break;
-            case 'base64':
-                $decoded = base64_decode($body) ?: '';
-                break;
-            default:
-                $decoded = $body;
-        }
-        return $decoded;
+        return match ($transferEncoding) {
+            'quoted-printable' => quoted_printable_decode($body),
+            'base64' => base64_decode($body) ?: '',
+            default => $body,
+        };
     }
 
     private function findMessageId(string $text): string|int|null
