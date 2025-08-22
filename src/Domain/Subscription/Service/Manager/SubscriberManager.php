@@ -79,6 +79,11 @@ class SubscriberManager
         return $subscriber;
     }
 
+    public function getSubscriberByEmail(string $mail): ?Subscriber
+    {
+        return $this->subscriberRepository->findOneByEmail($mail);
+    }
+
     public function getSubscriberById(int $subscriberId): ?Subscriber
     {
         return $this->subscriberRepository->find($subscriberId);
