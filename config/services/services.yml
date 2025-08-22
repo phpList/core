@@ -43,3 +43,5 @@ services:
     PhpList\Core\Domain\Common\SystemInfoCollector:
       autowire: true
       autoconfigure: true
+
+    PhpList\Core\Domain\Messaging\Service\ConsecutiveBounceHandler: ~
