@@ -9,3 +9,5 @@ services:
 
   PhpList\Core\Domain\Messaging\Service\Processor\MboxBounceProcessor:
     tags: ['phplist.bounce_protocol_processor']
+
+  PhpList\Core\Domain\Messaging\Service\Processor\AdvancedBounceRulesProcessor: ~
