@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Command;
 
-use DateTimeImmutable;
 use Exception;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
-use PhpList\Core\Domain\Messaging\Service\BounceProcessingService;
 use PhpList\Core\Domain\Messaging\Service\Processor\BounceProtocolProcessor;
 use PhpList\Core\Domain\Messaging\Service\Processor\AdvancedBounceRulesProcessor;
+use PhpList\Core\Domain\Messaging\Service\Processor\UnidentifiedBounceReprocessor;
 use PhpList\Core\Domain\Messaging\Service\LockService;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -54,10 +53,10 @@ class ProcessBouncesCommand extends Command
         private readonly SubscriberManager $subscriberManager,
         private readonly SubscriberHistoryManager $subscriberHistoryManager,
         private readonly SubscriberRepository $subscriberRepository,
-        private readonly BounceProcessingService $processingService,
         /** @var iterable<BounceProtocolProcessor> */
         private readonly iterable $protocolProcessors,
         private readonly AdvancedBounceRulesProcessor $advancedRulesProcessor,
+        private readonly UnidentifiedBounceReprocessor $unidentifiedBounceReprocessor,
     ) {
         parent::__construct();
     }
@@ -102,9 +101,7 @@ class ProcessBouncesCommand extends Command
             }
 
             $downloadReport .= $processor->process($input, $io);
-
-            $this->reprocessUnidentified($io);
-
+            $this->unidentifiedBounceReprocessor->process($io);
             $this->advancedRulesProcessor->process($io, (int)$input->getOption('rules-batch-size'));
 
             $this->handleConsecutiveBounces(
@@ -126,32 +123,6 @@ class ProcessBouncesCommand extends Command
         } finally {
             $this->lockService->release($lock);
         }
-    }
-
-    private function reprocessUnidentified(SymfonyStyle $io): void
-    {
-        $io->section('Reprocessing unidentified bounces');
-        $bounces = $this->bounceManager->findByStatus('unidentified bounce');
-        $total = count($bounces);
-        $io->writeln(sprintf('%d bounces to reprocess', $total));
-        $count = 0; $reparsed = 0; $reidentified = 0;
-        foreach ($bounces as $bounce) {
-            $count++;
-            if ($count % 25 === 0) {
-                $io->writeln(sprintf('%d out of %d processed', $count, $total));
-            }
-            $decodedBody = $this->processingService->decodeBody($bounce->getHeader(), $bounce->getData());
-            $userId = $this->processingService->findUserId($decodedBody);
-            $messageId = $this->processingService->findMessageId($decodedBody);
-            if ($userId || $messageId) {
-                $reparsed++;
-                if ($this->processingService->processBounceData($bounce, $messageId, $userId, new DateTimeImmutable())) {
-                    $reidentified++;
-                }
-            }
-        }
-        $io->writeln(sprintf('%d out of %d processed', $count, $total));
-        $io->writeln(sprintf('%d bounces were re-processed and %d bounces were re-identified', $reparsed, $reidentified));
     }
 
     private function handleConsecutiveBounces(SymfonyStyle $io, int $unsubscribeThreshold, int $blacklistThreshold): void
