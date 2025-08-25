@@ -25,17 +25,8 @@ class ProcessBouncesCommand extends Command
     {
         $this
             ->addOption('protocol', null, InputOption::VALUE_REQUIRED, 'Mailbox protocol: pop or mbox', 'pop')
-            ->addOption('host', null, InputOption::VALUE_OPTIONAL, 'POP host (without braces) e.g. mail.example.com')
-            ->addOption('port', null, InputOption::VALUE_OPTIONAL, 'POP port/options, e.g. 110/pop3/notls', '110/pop3/notls')
-            ->addOption('user', null, InputOption::VALUE_OPTIONAL, 'Mailbox username')
-            ->addOption('password', null, InputOption::VALUE_OPTIONAL, 'Mailbox password')
-            ->addOption('mailbox', null, InputOption::VALUE_OPTIONAL, 'Mailbox name(s) for POP (comma separated) or mbox file path', 'INBOX')
-            ->addOption('maximum', null, InputOption::VALUE_OPTIONAL, 'Max messages to process per run', '1000')
-            ->addOption('purge', null, InputOption::VALUE_NONE, 'Delete/remove processed messages from mailbox')
             ->addOption('purge-unprocessed', null, InputOption::VALUE_NONE, 'Delete/remove unprocessed messages from mailbox')
             ->addOption('rules-batch-size', null, InputOption::VALUE_OPTIONAL, 'Advanced rules batch size', '1000')
-            ->addOption('unsubscribe-threshold', null, InputOption::VALUE_OPTIONAL, 'Consecutive bounces threshold to unconfirm user', '3')
-            ->addOption('blacklist-threshold', null, InputOption::VALUE_OPTIONAL, 'Consecutive bounces threshold to blacklist email (0 to disable)', '0')
             ->addOption('test', 't', InputOption::VALUE_NONE, 'Test mode: do not delete from mailbox')
             ->addOption('force', 'f', InputOption::VALUE_NONE, 'Force run: kill other processes if locked');
     }
@@ -74,8 +65,6 @@ class ProcessBouncesCommand extends Command
         try {
             $io->title('Processing bounces');
             $protocol = (string)$input->getOption('protocol');
-            $unsubscribeThreshold = (int)$input->getOption('unsubscribe-threshold');
-            $blacklistThreshold = (int)$input->getOption('blacklist-threshold');
 
             $downloadReport = '';
 
@@ -96,7 +85,7 @@ class ProcessBouncesCommand extends Command
             $downloadReport .= $processor->process($input, $io);
             $this->unidentifiedBounceReprocessor->process($io);
             $this->advancedRulesProcessor->process($io, (int)$input->getOption('rules-batch-size'));
-            $this->consecutiveBounceHandler->handle($io, $unsubscribeThreshold, $blacklistThreshold);
+            $this->consecutiveBounceHandler->handle($io);
 
             $this->logger->info('Bounce processing completed', ['downloadReport' => $downloadReport]);
             $io->success('Bounce processing completed.');

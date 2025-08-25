@@ -15,15 +15,30 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ConsecutiveBounceHandler
 {
+    private BounceManager $bounceManager;
+    private SubscriberRepository $subscriberRepository;
+    private SubscriberManager $subscriberManager;
+    private SubscriberHistoryManager $subscriberHistoryManager;
+    private int $unsubscribeThreshold;
+    private int $blacklistThreshold;
+
     public function __construct(
-        private readonly BounceManager $bounceManager,
-        private readonly SubscriberRepository $subscriberRepository,
-        private readonly SubscriberManager $subscriberManager,
-        private readonly SubscriberHistoryManager $subscriberHistoryManager,
+        BounceManager $bounceManager,
+        SubscriberRepository $subscriberRepository,
+        SubscriberManager $subscriberManager,
+        SubscriberHistoryManager $subscriberHistoryManager,
+        int $unsubscribeThreshold,
+        int $blacklistThreshold,
     ) {
+        $this->bounceManager = $bounceManager;
+        $this->subscriberRepository = $subscriberRepository;
+        $this->subscriberManager = $subscriberManager;
+        $this->subscriberHistoryManager = $subscriberHistoryManager;
+        $this->unsubscribeThreshold = $unsubscribeThreshold;
+        $this->blacklistThreshold = $blacklistThreshold;
     }
 
-    public function handle(SymfonyStyle $io, int $unsubscribeThreshold, int $blacklistThreshold): void
+    public function handle(SymfonyStyle $io): void
     {
         $io->section('Identifying consecutive bounces');
         $users = $this->subscriberRepository->distinctUsersWithBouncesConfirmedNotBlacklisted();
@@ -45,7 +60,7 @@ class ConsecutiveBounceHandler
                 ) {
                     if ($bounce['b']->getId()) {
                         $cnt++;
-                        if ($cnt >= $unsubscribeThreshold) {
+                        if ($cnt >= $this->unsubscribeThreshold) {
                             if (!$unsubscribed) {
                                 $this->subscriberManager->markUnconfirmed($user->getId());
                                 $this->subscriberHistoryManager->addHistory(
@@ -55,7 +70,7 @@ class ConsecutiveBounceHandler
                                 );
                                 $unsubscribed = true;
                             }
-                            if ($blacklistThreshold > 0 && $cnt >= $blacklistThreshold) {
+                            if ($this->blacklistThreshold > 0 && $cnt >= $this->blacklistThreshold) {
                                 $this->subscriberManager->blacklist(
                                     subscriber: $user,
                                     reason: sprintf('%d consecutive bounces, threshold reached', $cnt)

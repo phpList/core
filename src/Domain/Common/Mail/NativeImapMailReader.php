@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use IMAP\Connection;
 use RuntimeException;
 
-class NativeImapMailReader implements MailReaderInterface
+class NativeImapMailReader
 {
     public function open(string $mailbox, ?string $user = null, ?string $password = null, int $options = 0): Connection
     {
