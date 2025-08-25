@@ -12,28 +12,33 @@ use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Throwable;
-use Webklex\PHPIMAP\ClientManager;
 
-class WebklexBounceProcessingService
+class WebklexBounceProcessingService implements BounceProcessingServiceInterface
 {
     private BounceManager $bounceManager;
     private LoggerInterface $logger;
     private MessageParser $messageParser;
-    private ClientManager $clientManager;
+    private WebklexImapClientFactory $clientFactory;
     private BounceDataProcessor $bounceDataProcessor;
+    private bool $purgeProcessed;
+    private bool $purgeUnprocessed;
 
     public function __construct(
         BounceManager $bounceManager,
         LoggerInterface $logger,
         MessageParser $messageParser,
-        ClientManager $clientManager,
+        WebklexImapClientFactory $clientFactory,
         BounceDataProcessor $bounceDataProcessor,
+        bool $purgeProcessed,
+        bool $purgeUnprocessed
     ) {
         $this->bounceManager = $bounceManager;
         $this->logger = $logger;
         $this->messageParser = $messageParser;
-        $this->clientManager = $clientManager;
+        $this->clientFactory = $clientFactory;
         $this->bounceDataProcessor = $bounceDataProcessor;
+        $this->purgeProcessed = $purgeProcessed;
+        $this->purgeUnprocessed = $purgeUnprocessed;
     }
 
     /**
@@ -44,24 +49,10 @@ class WebklexBounceProcessingService
     public function processMailbox(
         SymfonyStyle $io,
         string $mailbox,
-        string $user,
-        string $password,
         int $max,
-        bool $purgeProcessed,
-        bool $purgeUnprocessed,
         bool $testMode
     ): string {
-        [$host, $folderName] = $this->parseMailbox($mailbox);
-
-        $client = $this->clientManager->make([
-            'host'          => $host,
-            'port'          => 993,
-            'encryption'    => 'ssl',
-            'validate_cert' => true,
-            'username'      => $user,
-            'password'      => $password,
-            'protocol'      => 'imap',
-        ]);
+        $client = $this->clientFactory->makeForMailbox();
 
         try {
             $client->connect();
@@ -71,15 +62,13 @@ class WebklexBounceProcessingService
         }
 
         try {
-            $folder = $client->getFolder($folderName);
-
-            // Pull unseen messages (optionally you can add .since(...) if you want time-bounded scans)
+            $folder = $client->getFolder($this->clientFactory->getFolderName());
             $query = $folder->query()->unseen()->limit($max);
 
             $messages = $query->get();
             $num = $messages->count();
 
-            $io->writeln(sprintf('%d bounces to fetch from the mailbox %s/%s', $num, $host, $folderName));
+            $io->writeln(sprintf('%d bounces to fetch from the mailbox', $num));
             if ($num === 0) {
                 return '';
             }
@@ -96,7 +85,7 @@ class WebklexBounceProcessingService
                 $body = $this->messageParser->decodeBody($header, $body);
 
                 if (\preg_match('/Action: delayed\s+Status: 4\.4\.7/im', $body)) {
-                    if (!$testMode && $purgeProcessed) {
+                    if (!$testMode && $this->purgeProcessed) {
                         $this->safeDelete($message);
                     }
                     continue;
@@ -111,9 +100,9 @@ class WebklexBounceProcessingService
                 $processed = $this->bounceDataProcessor->process($bounce, $msgId, $userId, $bounceDate);
 
                 if (!$testMode) {
-                    if ($processed && $purgeProcessed) {
+                    if ($processed && $this->purgeProcessed) {
                         $this->safeDelete($message);
-                    } elseif (!$processed && $purgeUnprocessed) {
+                    } elseif (!$processed && $this->purgeUnprocessed) {
                         $this->safeDelete($message);
                     }
                 }
@@ -142,17 +131,6 @@ class WebklexBounceProcessingService
         }
     }
 
-    private function parseMailbox(string $mailbox): array
-    {
-        if (str_contains($mailbox, '#')) {
-            [$host, $folder] = explode('#', $mailbox, 2);
-            $host = trim($host);
-            $folder = trim($folder) ?: 'INBOX';
-            return [$host, $folder];
-        }
-        return [trim($mailbox), 'INBOX'];
-    }
-
     private function headerToStringSafe($message): string
     {
         // Prefer raw header string if available:
@@ -165,7 +143,7 @@ class WebklexBounceProcessingService
                         return $raw;
                     }
                 }
-            } catch (Throwable) {
+            } catch (Throwable $e) {
                 // fall back below
             }
         }
@@ -174,7 +152,7 @@ class WebklexBounceProcessingService
         $subj  = $message->getSubject() ?? '';
         $from  = $this->addrFirstToString($message->getFrom());
         $to    = $this->addrManyToString($message->getTo());
-        $date  = $this->extractDate($message)?->format(\DATE_RFC2822);
+        $date  = $this->extractDate($message)->format(\DATE_RFC2822);
 
         if ($subj !== '') { $lines[] = 'Subject: '.$subj; }
         if ($from !== '') { $lines[] = 'From: '.$from; }

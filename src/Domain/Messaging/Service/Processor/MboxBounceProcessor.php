@@ -4,22 +4,18 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Processor;
 
-use PhpList\Core\Domain\Messaging\Service\NativeBounceProcessingService;
+use PhpList\Core\Domain\Messaging\Service\BounceProcessingServiceInterface;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class MboxBounceProcessor implements BounceProtocolProcessor
 {
-    private $processingService;
-    private string $user;
-    private string $pass;
+    private BounceProcessingServiceInterface $processingService;
 
-    public function __construct(NativeBounceProcessingService $processingService, string $user, string $pass)
+    public function __construct(BounceProcessingServiceInterface $processingService)
     {
         $this->processingService = $processingService;
-        $this->user = $user;
-        $this->pass = $pass;
     }
 
     public function getProtocol(): string
@@ -31,8 +27,6 @@ class MboxBounceProcessor implements BounceProtocolProcessor
     {
         $testMode = (bool)$input->getOption('test');
         $max = (int)$input->getOption('maximum');
-        $purgeProcessed = $input->getOption('purge') && !$testMode;
-        $purgeUnprocessed = $input->getOption('purge-unprocessed') && !$testMode;
 
         $file = (string)$input->getOption('mailbox');
         if (!$file) {
@@ -45,11 +39,7 @@ class MboxBounceProcessor implements BounceProtocolProcessor
         return $this->processingService->processMailbox(
             $io,
             $file,
-            $this->user,
-            $this->pass,
             $max,
-            $purgeProcessed,
-            $purgeUnprocessed,
             $testMode
         );
     }

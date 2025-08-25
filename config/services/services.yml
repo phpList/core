@@ -45,16 +45,41 @@ services:
       autoconfigure: true
 
     PhpList\Core\Domain\Messaging\Service\ConsecutiveBounceHandler:
-      autowire: true
-      autoconfigure: true
-      arguments:
-        $unsubscribeThreshold: '%app.unsubscribe_threshold%'
-        $blacklistThreshold: '%app.blacklist_threshold%'
+        autowire: true
+        autoconfigure: true
+        arguments:
+            $unsubscribeThreshold: '%imap_bounce.unsubscribe_threshold%'
+            $blacklistThreshold: '%imap_bounce.blacklist_threshold%'
 
     Webklex\PHPIMAP\ClientManager: ~
 
+    PhpList\Core\Domain\Messaging\Service\WebklexImapClientFactory:
+        autowire: true
+        autoconfigure: true
+        arguments:
+            $mailbox: '%imap_bounce.mailbox%'#  e.g. "{imap.example.com:993/imap/ssl}INBOX" or "/var/mail/user"
+            $host: '%imap_bounce.host%'
+            $port: '%imap_bounce.port%'
+            $encryption: '%imap_bounce.encryption%'
+            $username: '%imap_bounce.email%'
+            $password: '%imap_bounce.password%'
+            $protocol: '%imap_bounce.protocol%'
+
     PhpList\Core\Domain\Common\Mail\NativeImapMailReader:
-      arguments:
-        $mailbox: '%env(IMAP_MAILBOX)%' #  e.g. "{imap.example.com:993/imap/ssl}INBOX" or "/var/mail/user"
-        $user: '%imap_bounce.email%'
-        $pass: '%imap_bounce.password%'
+        arguments:
+            $username: '%imap_bounce.email%'
+            $password: '%imap_bounce.password%'
+
+    PhpList\Core\Domain\Messaging\Service\NativeBounceProcessingService:
+        autowire: true
+        autoconfigure: true
+        arguments:
+            $purgeProcessed: '%imap_bounce.purge%'
+            $purgeUnprocessed: '%imap_bounce.purge_unprocessed%'
+
+    PhpList\Core\Domain\Messaging\Service\WebklexBounceProcessingService:
+        autowire: true
+        autoconfigure: true
+        arguments:
+            $purgeProcessed: '%imap_bounce.purge%'
+            $purgeUnprocessed: '%imap_bounce.purge_unprocessed%'

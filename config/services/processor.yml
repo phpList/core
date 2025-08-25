@@ -5,6 +5,10 @@ services:
     public: false
 
   PhpList\Core\Domain\Messaging\Service\Processor\PopBounceProcessor:
+    arguments:
+      $host: '%imap_bounce.host%'
+      $port: '%imap_bounce.port%'
+      $mailboxNames: '%imap_bounce.mailbox_name%'
     tags: ['phplist.bounce_protocol_processor']
 
   PhpList\Core\Domain\Messaging\Service\Processor\MboxBounceProcessor:

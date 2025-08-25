@@ -11,37 +11,39 @@ use RuntimeException;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Throwable;
 
-class NativeBounceProcessingService
+class NativeBounceProcessingService implements BounceProcessingServiceInterface
 {
     private BounceManager $bounceManager;
     private NativeImapMailReader $mailReader;
     private MessageParser $messageParser;
     private BounceDataProcessor $bounceDataProcessor;
+    private bool $purgeProcessed;
+    private bool $purgeUnprocessed;
 
     public function __construct(
         BounceManager $bounceManager,
         NativeImapMailReader $mailReader,
         MessageParser $messageParser,
         BounceDataProcessor $bounceDataProcessor,
+        bool $purgeProcessed,
+        bool $purgeUnprocessed
     ) {
         $this->bounceManager = $bounceManager;
         $this->mailReader = $mailReader;
         $this->messageParser = $messageParser;
         $this->bounceDataProcessor = $bounceDataProcessor;
+        $this->purgeProcessed = $purgeProcessed;
+        $this->purgeUnprocessed = $purgeUnprocessed;
     }
 
     public function processMailbox(
         SymfonyStyle $io,
         string $mailbox,
-        string $user,
-        string $password,
         int $max,
-        bool $purgeProcessed,
-        bool $purgeUnprocessed,
         bool $testMode
     ): string {
         try {
-            $link = $this->mailReader->open($mailbox, $user, $password, $testMode ? 0 : CL_EXPUNGE);
+            $link = $this->mailReader->open($mailbox, $testMode ? 0 : CL_EXPUNGE);
         } catch (Throwable $e) {
             $io->error('Cannot open mailbox file: '.$e->getMessage());
             throw new RuntimeException('Cannot open mbox file');
@@ -66,11 +68,11 @@ class NativeBounceProcessingService
             $header = $this->mailReader->fetchHeader($link, $x);
             $processed = $this->processImapBounce($link, $x, $header, $io);
             if ($processed) {
-                if (!$testMode && $purgeProcessed) {
+                if (!$testMode && $this->purgeProcessed) {
                     $this->mailReader->delete($link, $x);
                 }
             } else {
-                if (!$testMode && $purgeUnprocessed) {
+                if (!$testMode && $this->purgeUnprocessed) {
                     $this->mailReader->delete($link, $x);
                 }
             }
