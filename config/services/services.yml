@@ -45,3 +45,25 @@ services:
       autoconfigure: true
 
     PhpList\Core\Domain\Messaging\Service\ConsecutiveBounceHandler: ~
+
+    PhpList\Core\Domain\Common\Mail\MailReaderInterface: '@PhpList\Core\Domain\Common\Mail\NativeImapMailReader'
+
+    Webklex\PHPIMAP\ClientManager: ~
+
+    PhpList\Core\Domain\Common\Mail\WebklexMailReader:
+      arguments:
+        $cm: '@Webklex\PHPIMAP\ClientManager'
+        $config:
+          host: '%imap_bounce.host%'
+          port: '%imap_bounce.port%'
+          encryption: '%imap_bounce.encryption%'
+          validate_cert: true
+          username: '%imap_bounce.email%'
+          password: '%imap_bounce.password%'
+          protocol: 'imap'
+
+    PhpList\Core\Domain\Common\Mail\NativeImapMailReader:
+      arguments:
+        $mailbox: '%env(IMAP_MAILBOX)%' #  e.g. "{imap.example.com:993/imap/ssl}INBOX" or "/var/mail/user"
+        $user: '%imap_bounce.email%'
+        $pass: '%imap_bounce.password%'

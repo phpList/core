@@ -68,7 +68,9 @@
         "symfony/sendgrid-mailer": "^6.4",
         "symfony/twig-bundle": "^6.4",
         "symfony/messenger": "^6.4",
-        "symfony/lock": "^6.4"
+        "symfony/lock": "^6.4",
+        "webklex/php-imap": "^6.2",
+        "ext-imap": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",

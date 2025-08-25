@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service;
 
 use DateTimeImmutable;
-use IMAP\Connection;
+use PhpList\Core\Domain\Common\Mail\MailReaderInterface;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
@@ -13,12 +13,11 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Throwable;
 
-/**
- * Contains the core bounce processing logic shared across protocols.
- */
-class BounceProcessingService
+class NativeBounceProcessingService
 {
     public function __construct(
         private readonly BounceManager $bounceManager,
@@ -27,21 +26,32 @@ class BounceProcessingService
         private readonly LoggerInterface $logger,
         private readonly SubscriberManager $subscriberManager,
         private readonly SubscriberHistoryManager $subscriberHistoryManager,
+        private readonly MailReaderInterface $mailReader,
+        private readonly MessageParser $messageParser,
     ) {
     }
 
     public function processMailbox(
         SymfonyStyle $io,
-        Connection $link,
+        string $mailbox,
+        string $user,
+        string $password,
         int $max,
         bool $purgeProcessed,
         bool $purgeUnprocessed,
         bool $testMode
     ): string {
-        $num = imap_num_msg($link);
+        try {
+            $link = $this->mailReader->open($mailbox, $user, $password, $testMode ? 0 : CL_EXPUNGE);
+        } catch (Throwable $e) {
+            $io->error('Cannot open mailbox file: '.$e->getMessage());
+            throw new RuntimeException('Cannot open mbox file');
+        }
+
+        $num = $this->mailReader->numMessages($link);
         $io->writeln(sprintf('%d bounces to fetch from the mailbox', $num));
         if ($num === 0) {
-            imap_close($link);
+            $this->mailReader->close($link, false);
 
             return '';
         }
@@ -54,61 +64,51 @@ class BounceProcessingService
         $io->writeln($testMode ? 'Running in test mode, not deleting messages from mailbox' : 'Processed messages will be deleted from the mailbox');
 
         for ($x = 1; $x <= $num; $x++) {
-            $header = imap_fetchheader($link, $x);
+            $header = $this->mailReader->fetchHeader($link, $x);
             $processed = $this->processImapBounce($link, $x, $header, $io);
             if ($processed) {
                 if (!$testMode && $purgeProcessed) {
-                    imap_delete($link, (string)$x);
+                    $this->mailReader->delete($link, $x);
                 }
             } else {
                 if (!$testMode && $purgeUnprocessed) {
-                    imap_delete($link, (string)$x);
+                    $this->mailReader->delete($link, $x);
                 }
             }
         }
 
         $io->writeln('Closing mailbox, and purging messages');
         if (!$testMode) {
-            imap_close($link, CL_EXPUNGE);
+            $this->mailReader->close($link, true);
         } else {
-            imap_close($link);
+            $this->mailReader->close($link, false);
         }
 
         return '';
     }
 
-    private function processImapBounce($link, int $num, string $header, SymfonyStyle $io): bool
+    private function processImapBounce($link, int $num, string $header): bool
     {
-        $headerInfo = imap_headerinfo($link, $num);
-        $date = $headerInfo->date ?? null;
-        $bounceDate = $date ? new DateTimeImmutable($date) : new DateTimeImmutable();
-        $body = imap_body($link, $num);
-        $body = $this->decodeBody($header, $body);
+        $bounceDate = $this->mailReader->headerDate($link, $num);
+        $body = $this->mailReader->body($link, $num);
+        $body = $this->messageParser->decodeBody($header, $body);
 
         // Quick hack: ignore MsExchange delayed notices (as in original)
         if (preg_match('/Action: delayed\s+Status: 4\.4\.7/im', $body)) {
             return true;
         }
 
-        $msgId = $this->findMessageId($body);
-        $userId = $this->findUserId($body);
+        $msgId = $this->messageParser->findMessageId($body);
+        $userId = $this->messageParser->findUserId($body);
 
         $bounce = $this->bounceManager->create($bounceDate, $header, $body);
 
         return $this->processBounceData($bounce, $msgId, $userId, $bounceDate);
     }
 
-    public function processBounceData(
-        Bounce $bounce,
-        string|int|null $msgId,
-        ?int $userId,
-        DateTimeImmutable $bounceDate,
-    ): bool {
-        $msgId = $msgId ?: null;
-        $user = null;
-        if ($userId) {
-            $user = $this->subscriberManager->getSubscriberById($userId);
-        }
+    public function processBounceData(Bounce $bounce, ?string $msgId, ?int $userId, DateTimeImmutable $bounceDate): bool
+    {
+        $user = $userId ? $this->subscriberManager->getSubscriberById($userId) : null;
 
         if ($msgId === 'systemmessage' && $userId) {
             $this->bounceManager->update(
@@ -180,49 +180,5 @@ class BounceProcessingService
         $this->bounceManager->update($bounce, 'unidentified bounce', 'not processed');
 
         return false;
-    }
-
-    public function decodeBody(string $header, string $body): string
-    {
-        $transferEncoding = '';
-        if (preg_match('/Content-Transfer-Encoding: ([\w-]+)/i', $header, $regs)) {
-            $transferEncoding = strtolower($regs[1]);
-        }
-        return match ($transferEncoding) {
-            'quoted-printable' => quoted_printable_decode($body),
-            'base64' => base64_decode($body) ?: '',
-            default => $body,
-        };
-    }
-
-    public function findMessageId(string $text): string|int|null
-    {
-        if (preg_match('/(?:X-MessageId|X-Message): (.*)\r\n/iU', $text, $match)) {
-            return trim($match[1]);
-        }
-        return null;
-    }
-
-    public function findUserId(string $text): ?int
-    {
-        // Try X-ListMember / X-User first
-        if (preg_match('/(?:X-ListMember|X-User): (.*)\r\n/iU', $text, $match)) {
-            $user = trim($match[1]);
-            if (str_contains($user, '@')) {
-                return $this->subscriberManager->getSubscriberByEmail($user)?->getId();
-            } elseif (preg_match('/^\d+$/', $user)) {
-                return (int)$user;
-            } elseif ($user !== '') {
-                return $this->subscriberManager->getSubscriberByEmail($user)?->getId();
-            }
-        }
-        // Fallback: parse any email in the body and see if it is a subscriber
-        if (preg_match_all('/[._a-zA-Z0-9-]+@[.a-zA-Z0-9-]+/', $text, $regs)) {
-            foreach ($regs[0] as $email) {
-                $id = $this->subscriberManager->getSubscriberByEmail($email)?->getId();
-                if ($id) { return $id; }
-            }
-        }
-        return null;
     }
 }

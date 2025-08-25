@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service\Processor;
 
 use DateTimeImmutable;
-use PhpList\Core\Domain\Messaging\Service\BounceProcessingService;
+use PhpList\Core\Domain\Messaging\Service\NativeBounceProcessingService;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -13,7 +13,7 @@ class UnidentifiedBounceReprocessor
 {
     public function __construct(
         private readonly BounceManager $bounceManager,
-        private readonly BounceProcessingService $processingService,
+        private readonly NativeBounceProcessingService $processingService,
     ) {
     }
 

@@ -4,15 +4,22 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Processor;
 
-use PhpList\Core\Domain\Messaging\Service\BounceProcessingService;
+use PhpList\Core\Domain\Messaging\Service\NativeBounceProcessingService;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class MboxBounceProcessor implements BounceProtocolProcessor
 {
-    public function __construct(private readonly BounceProcessingService $processingService)
+    private $processingService;
+    private string $user;
+    private string $pass;
+
+    public function __construct(NativeBounceProcessingService $processingService, string $user, string $pass)
     {
+        $this->processingService = $processingService;
+        $this->user = $user;
+        $this->pass = $pass;
     }
 
     public function getProtocol(): string
@@ -34,15 +41,12 @@ class MboxBounceProcessor implements BounceProtocolProcessor
         }
 
         $io->section("Opening mbox $file");
-        $link = @imap_open($file, '', '', $testMode ? 0 : CL_EXPUNGE);
-        if (!$link) {
-            $io->error('Cannot open mailbox file: '.imap_last_error());
-            throw new RuntimeException('Cannot open mbox file');
-        }
 
         return $this->processingService->processMailbox(
             $io,
-            $link,
+            $file,
+            $this->user,
+            $this->pass,
             $max,
             $purgeProcessed,
             $purgeUnprocessed,

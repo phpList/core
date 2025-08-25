@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Processor;
 
-use PhpList\Core\Domain\Messaging\Service\BounceProcessingService;
+use PhpList\Core\Domain\Messaging\Service\NativeBounceProcessingService;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class PopBounceProcessor implements BounceProtocolProcessor
 {
-    public function __construct(private readonly BounceProcessingService $processingService)
+    private $processingService;
+
+    public function __construct(NativeBounceProcessingService $processingService)
     {
+        $this->processingService = $processingService;
     }
 
     public function getProtocol(): string
@@ -45,15 +48,11 @@ class PopBounceProcessor implements BounceProtocolProcessor
             $mailbox = sprintf('{%s:%s}%s', $host, $port, $mailboxName);
             $io->section("Connecting to $mailbox");
 
-            $link = @imap_open($mailbox, $user, $password);
-            if (!$link) {
-                $io->error('Cannot create connection to '.$mailbox.': '.imap_last_error());
-                throw new RuntimeException('Cannot connect to mailbox');
-            }
-
             $downloadReport .= $this->processingService->processMailbox(
                 $io,
-                $link,
+                $mailbox,
+                $user,
+                $password,
                 $max,
                 $purgeProcessed,
                 $purgeUnprocessed,
