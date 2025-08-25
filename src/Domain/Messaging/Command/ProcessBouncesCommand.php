@@ -48,9 +48,7 @@ class ProcessBouncesCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         if (!function_exists('imap_open')) {
-            $io->error('IMAP extension not available. Cannot continue.');
-
-            return Command::FAILURE;
+            $io->note('PHP IMAP extension not available. Falling back to Webklex IMAP where applicable.');
         }
 
         $force = (bool)$input->getOption('force');
