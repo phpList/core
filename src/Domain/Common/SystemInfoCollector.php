@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Common;
 
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Request;
 
 class SystemInfoCollector
 {
@@ -25,31 +26,20 @@ class SystemInfoCollector
 
     /**
      * Return key=>value pairs (already sanitized for safe logging/HTML display).
-     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      * @return array<string,string>
      */
     public function collect(): array
     {
-        $request = $this->requestStack->getCurrentRequest();
-
+        $request = $this->requestStack->getCurrentRequest() ?? Request::createFromGlobals();
         $data = [];
+        $headers = $request->headers;
 
-        if ($request) {
-            $headers = $request->headers;
-
-            $data['HTTP_USER_AGENT'] = (string) $headers->get('User-Agent', '');
-            $data['HTTP_REFERER'] = (string) $headers->get('Referer', '');
-            $data['HTTP_X_FORWARDED_FOR'] = (string) $headers->get('X-Forwarded-For', '');
-            $data['REQUEST_URI'] = $request->getRequestUri();
-            $data['REMOTE_ADDR'] = $request->getClientIp() ?? '';
-        } else {
-            $server = $_SERVER;
-            $data['HTTP_USER_AGENT'] = (string) ($server['HTTP_USER_AGENT'] ?? '');
-            $data['HTTP_REFERER'] = (string) ($server['HTTP_REFERER'] ?? '');
-            $data['HTTP_X_FORWARDED_FOR'] = (string) ($server['HTTP_X_FORWARDED_FOR'] ?? '');
-            $data['REQUEST_URI'] = (string) ($server['REQUEST_URI'] ?? '');
-            $data['REMOTE_ADDR'] = (string) ($server['REMOTE_ADDR'] ?? '');
-        }
+        $data['HTTP_USER_AGENT'] = (string) $headers->get('User-Agent', '');
+        $data['HTTP_REFERER'] = (string) $headers->get('Referer', '');
+        $data['HTTP_X_FORWARDED_FOR'] = (string) $headers->get('X-Forwarded-For', '');
+        $data['REQUEST_URI'] = $request->getRequestUri();
+        $data['REMOTE_ADDR'] = $request->getClientIp() ?? '';
 
         $keys = $this->configuredKeys ?: $this->defaultKeys;
 

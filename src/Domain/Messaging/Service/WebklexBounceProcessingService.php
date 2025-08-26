@@ -12,6 +12,7 @@ use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Throwable;
+use const DATE_RFC2822;
 
 class WebklexBounceProcessingService implements BounceProcessingServiceInterface
 {
@@ -47,7 +48,7 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
      * $mailbox: IMAP host; if you pass "host#FOLDER", FOLDER will be used instead of INBOX.
      */
     public function processMailbox(
-        SymfonyStyle $io,
+        SymfonyStyle $inputOutput,
         string $mailbox,
         int $max,
         bool $testMode
@@ -57,7 +58,7 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
         try {
             $client->connect();
         } catch (Throwable $e) {
-            $io->error('Cannot connect to mailbox: '.$e->getMessage());
+            $inputOutput->error('Cannot connect to mailbox: '.$e->getMessage());
             throw new RuntimeException('Cannot connect to IMAP server');
         }
 
@@ -68,13 +69,13 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
             $messages = $query->get();
             $num = $messages->count();
 
-            $io->writeln(sprintf('%d bounces to fetch from the mailbox', $num));
+            $inputOutput->writeln(sprintf('%d bounces to fetch from the mailbox', $num));
             if ($num === 0) {
                 return '';
             }
 
-            $io->writeln('Please do not interrupt this process');
-            $io->writeln($testMode
+            $inputOutput->writeln('Please do not interrupt this process');
+            $inputOutput->writeln($testMode
                 ? 'Running in test mode, not deleting messages from mailbox'
                 : 'Processed messages will be deleted from the mailbox'
             );
@@ -108,7 +109,7 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
                 }
             }
 
-            $io->writeln('Closing mailbox, and purging messages');
+            $inputOutput->writeln('Closing mailbox, and purging messages');
             if (!$testMode) {
                 try {
                     if (method_exists($folder, 'expunge')) {
@@ -150,18 +151,18 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
         $lines = [];
         $subj = $message->getSubject() ?? '';
         $from = $this->addrFirstToString($message->getFrom());
-        $to = $this->addrManyToString($message->getTo());
-        $date = $this->extractDate($message)->format(\DATE_RFC2822);
+        $messageTo = $this->addrManyToString($message->getTo());
+        $date = $this->extractDate($message)->format(DATE_RFC2822);
 
-        if ($subj !== '') { $lines[] = 'Subject: '.$subj; }
-        if ($from !== '') { $lines[] = 'From: '.$from; }
-        if ($to !== '') { $lines[] = 'To: '.$to; }
-        $lines[] = 'Date: '.$date;
+        if ($subj !== '') { $lines[] = 'Subject: ' . $subj; }
+        if ($from !== '') { $lines[] = 'From: ' . $from; }
+        if ($messageTo !== '') { $lines[] = 'To: ' . $messageTo; }
+        $lines[] = 'Date: ' . $date;
 
         $mid = $message->getMessageId() ?? '';
-        if ($mid !== '') { $lines[] = 'Message-ID: '.$mid; }
+        if ($mid !== '') { $lines[] = 'Message-ID: ' . $mid; }
 
-        return implode("\r\n", $lines)."\r\n";
+        return implode("\r\n", $lines) . "\r\n";
     }
 
     private function bodyBestEffort($message): string
@@ -180,15 +181,15 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
 
     private function extractDate(mixed $message): DateTimeImmutable
     {
-        $d = $message->getDate();
-        if ($d instanceof DateTimeInterface) {
-            return DateTimeImmutable::createFromInterface($d);
+        $date = $message->getDate();
+        if ($date instanceof DateTimeInterface) {
+            return new DateTimeImmutable($date->format('Y-m-d H:i:s'));
         }
 
         if (method_exists($message, 'getInternalDate')) {
-            $ts = (int) $message->getInternalDate();
-            if ($ts > 0) {
-                return new DateTimeImmutable('@'.$ts);
+            $internalDate = (int) $message->getInternalDate();
+            if ($internalDate > 0) {
+                return new DateTimeImmutable('@'.$internalDate);
             }
         }
 

@@ -26,12 +26,12 @@ class UnidentifiedBounceReprocessor
         $this->bounceDataProcessor = $bounceDataProcessor;
     }
 
-    public function process(SymfonyStyle $io): void
+    public function process(SymfonyStyle $inputOutput): void
     {
-        $io->section('Reprocessing unidentified bounces');
+        $inputOutput->section('Reprocessing unidentified bounces');
         $bounces = $this->bounceManager->findByStatus('unidentified bounce');
         $total = count($bounces);
-        $io->writeln(sprintf('%d bounces to reprocess', $total));
+        $inputOutput->writeln(sprintf('%d bounces to reprocess', $total));
 
         $count = 0;
         $reparsed = 0;
@@ -39,7 +39,7 @@ class UnidentifiedBounceReprocessor
         foreach ($bounces as $bounce) {
             $count++;
             if ($count % 25 === 0) {
-                $io->writeln(sprintf('%d out of %d processed', $count, $total));
+                $inputOutput->writeln(sprintf('%d out of %d processed', $count, $total));
             }
 
             $decodedBody = $this->messageParser->decodeBody($bounce->getHeader(), $bounce->getData());
@@ -59,8 +59,8 @@ class UnidentifiedBounceReprocessor
             }
         }
 
-        $io->writeln(sprintf('%d out of %d processed', $count, $total));
-        $io->writeln(sprintf(
+        $inputOutput->writeln(sprintf('%d out of %d processed', $count, $total));
+        $inputOutput->writeln(sprintf(
             '%d bounces were re-processed and %d bounces were re-identified',
             $reparsed, $reidentified
         ));

@@ -28,15 +28,15 @@ class UserMessageBounceRepository extends AbstractRepository implements Paginata
 
     public function existsByMessageIdAndUserId(int $messageId, int $subscriberId): bool
     {
-        $qb = $this->createQueryBuilder('umb')
+        return (bool) $this->createQueryBuilder('umb')
             ->select('1')
             ->where('umb.messageId = :messageId')
             ->andWhere('umb.userId = :userId')
             ->setParameter('messageId', $messageId)
             ->setParameter('userId', $subscriberId)
-            ->setMaxResults(1);
-
-        return (bool) $qb->getQuery()->getOneOrNullResult();
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     /**
@@ -66,7 +66,7 @@ class UserMessageBounceRepository extends AbstractRepository implements Paginata
      */
     public function getUserMessageHistoryWithBounces(Subscriber $subscriber): array
     {
-        $qb = $this->getEntityManager()
+        return $this->getEntityManager()
             ->createQueryBuilder()
             ->select('um', 'umb', 'b')
             ->from(UserMessage::class, 'um')
@@ -86,8 +86,8 @@ class UserMessageBounceRepository extends AbstractRepository implements Paginata
             ->andWhere('um.status = :status')
             ->setParameter('userId', $subscriber->getId())
             ->setParameter('status', 'sent')
-            ->orderBy('um.entered', 'DESC');
-
-        return $qb->getQuery()->getResult();
+            ->orderBy('um.entered', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 }

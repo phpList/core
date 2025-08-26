@@ -2,3 +2,7 @@ services:
   PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider:
     autowire: true
     autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\Provider\BounceActionProvider:
+    autowire: true
+    autoconfigure: true

@@ -14,7 +14,7 @@ class BounceRuleManager
 {
     public function __construct(
         private readonly BounceRegexRepository $repository,
-        private readonly BounceRegexBounceRepository $bounceRegexBounceRepository
+        private readonly BounceRegexBounceRepository $bounceRelationRepository
     ) {
     }
 
@@ -93,7 +93,7 @@ class BounceRuleManager
     public function linkRuleToBounce(BounceRegex $rule, Bounce $bounce): BounceregexBounce
     {
         $relation = new BounceRegexBounce($rule->getId(), $bounce->getId());
-        $this->bounceRegexBounceRepository->save($relation);
+        $this->bounceRelationRepository->save($relation);
 
         return $relation;
     }

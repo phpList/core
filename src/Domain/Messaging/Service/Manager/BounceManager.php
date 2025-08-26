@@ -16,14 +16,14 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 class BounceManager
 {
     private BounceRepository $bounceRepository;
-    private UserMessageBounceRepository $userMessageBounceRepository;
+    private UserMessageBounceRepository $userMessageBounceRepo;
 
     public function __construct(
         BounceRepository $bounceRepository,
-        UserMessageBounceRepository $userMessageBounceRepository
+        UserMessageBounceRepository $userMessageBounceRepo
     ) {
         $this->bounceRepository = $bounceRepository;
-        $this->userMessageBounceRepository = $userMessageBounceRepository;
+        $this->userMessageBounceRepo = $userMessageBounceRepo;
     }
 
     public function create(
@@ -34,7 +34,7 @@ class BounceManager
         ?string $comment = null
     ): Bounce {
         $bounce = new Bounce(
-            date: DateTime::createFromImmutable($date),
+            date: new DateTime($date->format('Y-m-d H:i:s')),
             header: $header,
             data: $data,
             status: $status,
@@ -79,7 +79,7 @@ class BounceManager
         int $subscriberId,
         ?int $messageId = -1
     ): UserMessageBounce {
-        $userMessageBounce = new UserMessageBounce($bounce->getId(), DateTime::createFromImmutable($date));
+        $userMessageBounce = new UserMessageBounce($bounce->getId(), new DateTime($date->format('Y-m-d H:i:s')));
         $userMessageBounce->setUserId($subscriberId);
         $userMessageBounce->setMessageId($messageId);
 
@@ -88,7 +88,7 @@ class BounceManager
 
     public function existsUserMessageBounce(int $subscriberId, int $messageId): bool
     {
-        return $this->userMessageBounceRepository->existsByMessageIdAndUserId($messageId, $subscriberId);
+        return $this->userMessageBounceRepo->existsByMessageIdAndUserId($messageId, $subscriberId);
     }
 
     /** @return Bounce[] */
@@ -99,7 +99,7 @@ class BounceManager
 
     public function getUserMessageBounceCount(): int
     {
-        return $this->userMessageBounceRepository->count();
+        return $this->userMessageBounceRepo->count();
     }
 
     /**
@@ -107,7 +107,7 @@ class BounceManager
      */
     public function fetchUserMessageBounceBatch(int $fromId, int $batchSize): array
     {
-        return $this->userMessageBounceRepository->getPaginatedWithJoinNoRelation($fromId, $batchSize);
+        return $this->userMessageBounceRepo->getPaginatedWithJoinNoRelation($fromId, $batchSize);
     }
 
     /**
@@ -115,6 +115,6 @@ class BounceManager
      */
     public function getUserMessageHistoryWithBounces(Subscriber $subscriber): array
     {
-        return $this->userMessageBounceRepository->getUserMessageHistoryWithBounces($subscriber);
+        return $this->userMessageBounceRepo->getUserMessageHistoryWithBounces($subscriber);
     }
 }

@@ -8,6 +8,7 @@ use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
+use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
@@ -41,55 +42,100 @@ class ConsecutiveBounceHandler
     public function handle(SymfonyStyle $io): void
     {
         $io->section('Identifying consecutive bounces');
+
         $users = $this->subscriberRepository->distinctUsersWithBouncesConfirmedNotBlacklisted();
         $total = count($users);
+
         if ($total === 0) {
             $io->writeln('Nothing to do');
             return;
         }
-        $usercnt = 0;
+
+        $processed = 0;
         foreach ($users as $user) {
-            $usercnt++;
-            $history = $this->bounceManager->getUserMessageHistoryWithBounces($user);
-            $cnt = 0; $removed = false; $unsubscribed = false;
-            foreach ($history as $bounce) {
-                /** @var $bounce array{um: UserMessage, umb: UserMessageBounce|null, b: Bounce|null} */
-                if (
-                    stripos($bounce['b']->getStatus() ?? '', 'duplicate') === false
-                    && stripos($bounce['b']->getComment() ?? '', 'duplicate') === false
-                ) {
-                    if ($bounce['b']->getId()) {
-                        $cnt++;
-                        if ($cnt >= $this->unsubscribeThreshold) {
-                            if (!$unsubscribed) {
-                                $this->subscriberManager->markUnconfirmed($user->getId());
-                                $this->subscriberHistoryManager->addHistory(
-                                    subscriber: $user,
-                                    message: 'Auto Unconfirmed',
-                                    details: sprintf('Subscriber auto unconfirmed for %d consecutive bounces', $cnt)
-                                );
-                                $unsubscribed = true;
-                            }
-                            if ($this->blacklistThreshold > 0 && $cnt >= $this->blacklistThreshold) {
-                                $this->subscriberManager->blacklist(
-                                    subscriber: $user,
-                                    reason: sprintf('%d consecutive bounces, threshold reached', $cnt)
-                                );
-                                $removed = true;
-                            }
-                        }
-                    } else {
-                        break;
-                    }
-                }
-                if ($removed) {
-                    break;
-                }
-            }
-            if ($usercnt % 5 === 0) {
-                $io->writeln(sprintf('processed %d out of %d subscribers', $usercnt, $total));
+            $this->processUser($user);
+            $processed++;
+
+            if ($processed % 5 === 0) {
+                $io->writeln(\sprintf('processed %d out of %d subscribers', $processed, $total));
             }
         }
-        $io->writeln(sprintf('total of %d subscribers processed', $total));
+
+        $io->writeln(\sprintf('total of %d subscribers processed', $total));
+    }
+
+    private function processUser(Subscriber $user): void
+    {
+        $history = $this->bounceManager->getUserMessageHistoryWithBounces($user);
+        if (count($history) === 0) {
+            return;
+        }
+
+        $consecutive = 0;
+        $unsubscribed = false;
+
+        foreach ($history as $row) {
+            /** @var array{um: UserMessage, umb: UserMessageBounce|null, b: Bounce|null} $row */
+            $bounce = $row['b'] ?? null;
+
+            if ($this->isDuplicate($bounce)) {
+                continue;
+            }
+
+            if (!$this->hasRealId($bounce)) {
+                break;
+            }
+
+            $consecutive++;
+
+            if ($this->applyThresholdActions($user, $consecutive, $unsubscribed)) {
+                break;
+            }
+
+            if (!$unsubscribed && $consecutive >= $this->unsubscribeThreshold) {
+                $unsubscribed = true;
+            }
+        }
+    }
+
+    private function isDuplicate(?Bounce $bounce): bool
+    {
+        if ($bounce === null) {
+            return false;
+        }
+        $status = strtolower($bounce->getStatus() ?? '');
+        $comment = strtolower($bounce->getComment() ?? '');
+
+        return str_contains($status, 'duplicate') || str_contains($comment, 'duplicate');
+    }
+
+    private function hasRealId(?Bounce $bounce): bool
+    {
+        return $bounce !== null && (int) $bounce->getId() > 0;
+    }
+
+    /**
+     * Returns true if processing should stop for this user (e.g., blacklisted).
+     */
+    private function applyThresholdActions($user, int $consecutive, bool $alreadyUnsubscribed): bool
+    {
+        if ($consecutive >= $this->unsubscribeThreshold && !$alreadyUnsubscribed) {
+            $this->subscriberManager->markUnconfirmed($user->getId());
+            $this->subscriberHistoryManager->addHistory(
+                subscriber: $user,
+                message: 'Auto Unconfirmed',
+                details: sprintf('Subscriber auto unconfirmed for %d consecutive bounces', $consecutive)
+            );
+        }
+
+        if ($this->blacklistThreshold > 0 && $consecutive >= $this->blacklistThreshold) {
+            $this->subscriberManager->blacklist(
+                subscriber: $user,
+                reason: sprintf('%d consecutive bounces, threshold reached', $consecutive)
+            );
+            return true;
+        }
+
+        return false;
     }
 }

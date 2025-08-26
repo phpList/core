@@ -32,7 +32,7 @@ class PopBounceProcessor implements BounceProtocolProcessor
         return 'pop';
     }
 
-    public function process(InputInterface $input, SymfonyStyle $io): string
+    public function process(InputInterface $input, SymfonyStyle $inputOutput): string
     {
         $testMode = (bool)$input->getOption('test');
         $max = (int)$input->getOption('maximum');
@@ -42,10 +42,10 @@ class PopBounceProcessor implements BounceProtocolProcessor
             $mailboxName = trim($mailboxName);
             if ($mailboxName === '') { $mailboxName = 'INBOX'; }
             $mailbox = sprintf('{%s:%s}%s', $this->host, $this->port, $mailboxName);
-            $io->section("Connecting to $mailbox");
+            $inputOutput->section("Connecting to $mailbox");
 
             $downloadReport .= $this->processingService->processMailbox(
-                $io,
+                $inputOutput,
                 $mailbox,
                 $max,
                 $testMode

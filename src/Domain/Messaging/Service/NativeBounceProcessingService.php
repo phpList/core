@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service;
 
+use IMAP\Connection;
 use PhpList\Core\Domain\Common\Mail\NativeImapMailReader;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Messaging\Service\Processor\BounceDataProcessor;
@@ -37,55 +38,90 @@ class NativeBounceProcessingService implements BounceProcessingServiceInterface
     }
 
     public function processMailbox(
-        SymfonyStyle $io,
+        SymfonyStyle $inputOutput,
         string $mailbox,
         int $max,
         bool $testMode
     ): string {
-        try {
-            $link = $this->mailReader->open($mailbox, $testMode ? 0 : CL_EXPUNGE);
-        } catch (Throwable $e) {
-            $io->error('Cannot open mailbox file: '.$e->getMessage());
-            throw new RuntimeException('Cannot open mbox file');
-        }
+        $link = $this->openOrFail($inputOutput, $mailbox, $testMode);
 
-        $num = $this->mailReader->numMessages($link);
-        $io->writeln(sprintf('%d bounces to fetch from the mailbox', $num));
+        $num = $this->prepareAndCapCount($inputOutput, $link, $max);
         if ($num === 0) {
             $this->mailReader->close($link, false);
 
             return '';
         }
 
-        $io->writeln('Please do not interrupt this process');
-        if ($num > $max) {
-            $io->writeln(sprintf('Processing first %d bounces', $max));
-            $num = $max;
-        }
-        $io->writeln($testMode ? 'Running in test mode, not deleting messages from mailbox' : 'Processed messages will be deleted from the mailbox');
+        $this->announceDeletionMode($inputOutput, $testMode);
 
-        for ($x = 1; $x <= $num; $x++) {
-            $header = $this->mailReader->fetchHeader($link, $x);
-            $processed = $this->processImapBounce($link, $x, $header);
-            if ($processed) {
-                if (!$testMode && $this->purgeProcessed) {
-                    $this->mailReader->delete($link, $x);
-                }
-            } else {
-                if (!$testMode && $this->purgeUnprocessed) {
-                    $this->mailReader->delete($link, $x);
-                }
-            }
+        for ($messageNumber = 1; $messageNumber <= $num; $messageNumber++) {
+            $this->handleMessage($link, $messageNumber, $testMode);
         }
 
-        $io->writeln('Closing mailbox, and purging messages');
-        if (!$testMode) {
-            $this->mailReader->close($link, true);
-        } else {
-            $this->mailReader->close($link, false);
-        }
+        $this->finalize($inputOutput, $link, $testMode);
 
         return '';
+    }
+
+    private function openOrFail(SymfonyStyle $io, string $mailbox, bool $testMode): Connection
+    {
+        try {
+            return $this->mailReader->open($mailbox, $testMode ? 0 : CL_EXPUNGE);
+        } catch (Throwable $e) {
+            $io->error('Cannot open mailbox file: '.$e->getMessage());
+            throw new RuntimeException('Cannot open mbox file');
+        }
+    }
+
+    private function prepareAndCapCount(SymfonyStyle $inputOutput, Connection $link, int $max): int
+    {
+        $num = $this->mailReader->numMessages($link);
+        $inputOutput->writeln(sprintf('%d bounces to fetch from the mailbox', $num));
+        if ($num === 0) {
+            return 0;
+        }
+
+        $inputOutput->writeln('Please do not interrupt this process');
+        if ($num > $max) {
+            $inputOutput->writeln(sprintf('Processing first %d bounces', $max));
+            $num = $max;
+        }
+
+        return $num;
+    }
+
+    private function announceDeletionMode(SymfonyStyle $io, bool $testMode): void
+    {
+        $io->writeln(
+            $testMode
+                ? 'Running in test mode, not deleting messages from mailbox'
+                : 'Processed messages will be deleted from the mailbox'
+        );
+    }
+
+    private function handleMessage(Connection $link, int $messageNumber, bool $testMode): void
+    {
+        $header = $this->mailReader->fetchHeader($link, $messageNumber);
+        $processed = $this->processImapBounce($link, $messageNumber, $header);
+
+        if ($testMode) {
+            return;
+        }
+
+        if ($processed && $this->purgeProcessed) {
+            $this->mailReader->delete($link, $messageNumber);
+            return;
+        }
+
+        if (!$processed && $this->purgeUnprocessed) {
+            $this->mailReader->delete($link, $messageNumber);
+        }
+    }
+
+    private function finalize(SymfonyStyle $io, Connection $link, bool $testMode): void
+    {
+        $io->writeln('Closing mailbox, and purging messages');
+        $this->mailReader->close($link, !$testMode);
     }
 
     private function processImapBounce($link, int $num, string $header): bool

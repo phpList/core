@@ -37,7 +37,7 @@ class ProcessBouncesCommand extends Command
         /** @var iterable<BounceProtocolProcessor> */
         private readonly iterable $protocolProcessors,
         private readonly AdvancedBounceRulesProcessor $advancedRulesProcessor,
-        private readonly UnidentifiedBounceReprocessor $unidentifiedBounceReprocessor,
+        private readonly UnidentifiedBounceReprocessor $unidentifiedReprocessor,
         private readonly ConsecutiveBounceHandler $consecutiveBounceHandler,
     ) {
         parent::__construct();
@@ -45,23 +45,23 @@ class ProcessBouncesCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $inputOutput = new SymfonyStyle($input, $output);
 
         if (!function_exists('imap_open')) {
-            $io->note('PHP IMAP extension not available. Falling back to Webklex IMAP where applicable.');
+            $inputOutput->note('PHP IMAP extension not available. Falling back to Webklex IMAP where applicable.');
         }
 
         $force = (bool)$input->getOption('force');
         $lock = $this->lockService->acquirePageLock('bounce_processor', $force);
 
         if (!$lock) {
-            $io->warning('Another bounce processing is already running. Aborting.');
+            $inputOutput->warning('Another bounce processing is already running. Aborting.');
 
             return Command::SUCCESS;
         }
 
         try {
-            $io->title('Processing bounces');
+            $inputOutput->title('Processing bounces');
             $protocol = (string)$input->getOption('protocol');
 
             $downloadReport = '';
@@ -75,23 +75,23 @@ class ProcessBouncesCommand extends Command
             }
 
             if ($processor === null) {
-                $io->error('Unsupported protocol: '.$protocol);
+                $inputOutput->error('Unsupported protocol: '.$protocol);
 
                 return Command::FAILURE;
             }
 
-            $downloadReport .= $processor->process($input, $io);
-            $this->unidentifiedBounceReprocessor->process($io);
-            $this->advancedRulesProcessor->process($io, (int)$input->getOption('rules-batch-size'));
-            $this->consecutiveBounceHandler->handle($io);
+            $downloadReport .= $processor->process($input, $inputOutput);
+            $this->unidentifiedReprocessor->process($inputOutput);
+            $this->advancedRulesProcessor->process($inputOutput, (int)$input->getOption('rules-batch-size'));
+            $this->consecutiveBounceHandler->handle($inputOutput);
 
             $this->logger->info('Bounce processing completed', ['downloadReport' => $downloadReport]);
-            $io->success('Bounce processing completed.');
+            $inputOutput->success('Bounce processing completed.');
 
             return Command::SUCCESS;
         } catch (Exception $e) {
             $this->logger->error('Bounce processing failed', ['exception' => $e]);
-            $io->error('Error: '.$e->getMessage());
+            $inputOutput->error('Error: '.$e->getMessage());
 
             return Command::FAILURE;
         } finally {

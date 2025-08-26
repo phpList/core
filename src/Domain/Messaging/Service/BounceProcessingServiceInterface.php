@@ -8,5 +8,5 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 interface BounceProcessingServiceInterface
 {
-    public function processMailbox(SymfonyStyle $io, string $mailbox, int $max, bool $testMode): string;
+    public function processMailbox(SymfonyStyle $inputOutput, string $mailbox, int $max, bool $testMode): string;
 }

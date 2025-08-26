@@ -95,3 +95,15 @@ services:
   PhpList\Core\Domain\Messaging\Service\MessageParser:
     autowire: true
     autoconfigure: true
+
+  _instanceof:
+    PhpList\Core\Domain\Messaging\Service\Handler\BounceActionHandlerInterface:
+      tags:
+        - { name: 'phplist.bounce_action_handler' }
+
+  PhpList\Core\Domain\Messaging\Service\Handler\:
+    resource: '../../src/Domain/Messaging/Service/Handler/*Handler.php'
+
+  PhpList\Core\Domain\Messaging\Service\BounceActionResolver:
+    arguments:
+      - !tagged_iterator { tag: 'phplist.bounce_action_handler', default_index_method: 'supports' }

@@ -23,21 +23,21 @@ class MboxBounceProcessor implements BounceProtocolProcessor
         return 'mbox';
     }
 
-    public function process(InputInterface $input, SymfonyStyle $io): string
+    public function process(InputInterface $input, SymfonyStyle $inputOutput): string
     {
         $testMode = (bool)$input->getOption('test');
         $max = (int)$input->getOption('maximum');
 
         $file = (string)$input->getOption('mailbox');
         if (!$file) {
-            $io->error('mbox file path must be provided with --mailbox.');
+            $inputOutput->error('mbox file path must be provided with --mailbox.');
             throw new RuntimeException('Missing --mailbox for mbox protocol');
         }
 
-        $io->section("Opening mbox $file");
+        $inputOutput->section("Opening mbox $file");
 
         return $this->processingService->processMailbox(
-            $io,
+            $inputOutput,
             $file,
             $max,
             $testMode

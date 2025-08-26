@@ -15,7 +15,7 @@ interface BounceProtocolProcessor
      *
      * @return string A textual report (reserved for future use)
      */
-    public function process(InputInterface $input, SymfonyStyle $io): string;
+    public function process(InputInterface $input, SymfonyStyle $inputOutput): string;
 
     /**
      * Returns a protocol name handled by this processor (e.g. "pop", "mbox").
