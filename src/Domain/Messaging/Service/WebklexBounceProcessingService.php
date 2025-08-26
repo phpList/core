@@ -91,13 +91,13 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
                     continue;
                 }
 
-                $msgId  = $this->messageParser->findMessageId($body."\r\n".$header);
+                $messageId  = $this->messageParser->findMessageId($body."\r\n".$header);
                 $userId = $this->messageParser->findUserId($body."\r\n".$header);
 
                 $bounceDate = $this->extractDate($message);
                 $bounce = $this->bounceManager->create($bounceDate, $header, $body);
 
-                $processed = $this->bounceDataProcessor->process($bounce, $msgId, $userId, $bounceDate);
+                $processed = $this->bounceDataProcessor->process($bounce, $messageId, $userId, $bounceDate);
 
                 if (!$testMode) {
                     if ($processed && $this->purgeProcessed) {
@@ -131,9 +131,8 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
         }
     }
 
-    private function headerToStringSafe($message): string
+    private function headerToStringSafe(mixed $message): string
     {
-        // Prefer raw header string if available:
         if (method_exists($message, 'getHeader')) {
             try {
                 $headerObj = $message->getHeader();
@@ -149,17 +148,17 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
         }
 
         $lines = [];
-        $subj  = $message->getSubject() ?? '';
-        $from  = $this->addrFirstToString($message->getFrom());
-        $to    = $this->addrManyToString($message->getTo());
-        $date  = $this->extractDate($message)->format(\DATE_RFC2822);
+        $subj = $message->getSubject() ?? '';
+        $from = $this->addrFirstToString($message->getFrom());
+        $to = $this->addrManyToString($message->getTo());
+        $date = $this->extractDate($message)->format(\DATE_RFC2822);
 
         if ($subj !== '') { $lines[] = 'Subject: '.$subj; }
         if ($from !== '') { $lines[] = 'From: '.$from; }
-        if ($to !== '')   { $lines[] = 'To: '.$to; }
-        if ($date)        { $lines[] = 'Date: '.$date; }
+        if ($to !== '') { $lines[] = 'To: '.$to; }
+        $lines[] = 'Date: '.$date;
 
-        $mid = (string) ($message->getMessageId() ?? '');
+        $mid = $message->getMessageId() ?? '';
         if ($mid !== '') { $lines[] = 'Message-ID: '.$mid; }
 
         return implode("\r\n", $lines)."\r\n";
@@ -175,22 +174,24 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
         if ($html !== '') {
             return trim(strip_tags($html));
         }
+
         return '';
     }
 
-    private function extractDate($message): DateTimeImmutable
+    private function extractDate(mixed $message): DateTimeImmutable
     {
         $d = $message->getDate();
         if ($d instanceof DateTimeInterface) {
             return DateTimeImmutable::createFromInterface($d);
         }
-        // fallback to internal date if exposed; else "now"
+
         if (method_exists($message, 'getInternalDate')) {
             $ts = (int) $message->getInternalDate();
             if ($ts > 0) {
                 return new DateTimeImmutable('@'.$ts);
             }
         }
+
         return new DateTimeImmutable();
     }
 
@@ -217,6 +218,7 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
             $name  = ($addr->personal ?? $addr->getName() ?? '');
             $out[] = $name !== '' ? sprintf('%s <%s>', $name, $email) : $email;
         }
+
         return $out;
     }
 

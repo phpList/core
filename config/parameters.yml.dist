@@ -40,7 +40,7 @@ parameters:
     imap_bounce.host: '%%env(BOUNCE_IMAP_HOST)%%'
     env(BOUNCE_IMAP_HOST): 'imap.phplist.com'
     imap_bounce.port: '%%env(BOUNCE_IMAP_PORT)%%'
-    env(BOUNCE_IMAP_PORT): 993
+    env(BOUNCE_IMAP_PORT): '993'
     imap_bounce.encryption: '%%env(BOUNCE_IMAP_ENCRYPTION)%%'
     env(BOUNCE_IMAP_ENCRYPTION): 'ssl'
     imap_bounce.mailbox: '%%env(BOUNCE_IMAP_MAILBOX)%%'
@@ -50,13 +50,13 @@ parameters:
     imap_bounce.protocol: '%%env(BOUNCE_IMAP_PROTOCOL)%%'
     env(BOUNCE_IMAP_PROTOCOL): 'imap'
     imap_bounce.unsubscribe_threshold: '%%env(BOUNCE_IMAP_UNSUBSCRIBE_THRESHOLD)%%'
-    env(BOUNCE_IMAP_UNSUBSCRIBE_THRESHOLD): 5
+    env(BOUNCE_IMAP_UNSUBSCRIBE_THRESHOLD): '5'
     imap_bounce.blacklist_threshold: '%%env(BOUNCE_IMAP_BLACKLIST_THRESHOLD)%%'
-    env(BOUNCE_IMAP_BLACKLIST_THRESHOLD): 3
+    env(BOUNCE_IMAP_BLACKLIST_THRESHOLD): '3'
     imap_bounce.purge: '%%env(BOUNCE_IMAP_PURGE)%%'
-    env(BOUNCE_IMAP_PURGE): 0
+    env(BOUNCE_IMAP_PURGE): '0'
     imap_bounce.purge_unprocessed: '%%env(BOUNCE_IMAP_PURGE_UNPROCESSED)%%'
-    env(BOUNCE_IMAP_PURGE_UNPROCESSED): 0
+    env(BOUNCE_IMAP_PURGE_UNPROCESSED): '0'
 
     # Messenger configuration for asynchronous processing
     app.messenger_transport_dsn: '%%env(MESSENGER_TRANSPORT_DSN)%%'

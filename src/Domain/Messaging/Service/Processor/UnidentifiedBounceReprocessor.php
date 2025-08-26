@@ -5,16 +5,25 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service\Processor;
 
 use DateTimeImmutable;
-use PhpList\Core\Domain\Messaging\Service\NativeBounceProcessingService;
+use PhpList\Core\Domain\Messaging\Service\MessageParser;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class UnidentifiedBounceReprocessor
 {
+    private BounceManager $bounceManager;
+    private MessageParser $messageParser;
+    private BounceDataProcessor $bounceDataProcessor;
+
+
     public function __construct(
-        private readonly BounceManager $bounceManager,
-        private readonly NativeBounceProcessingService $processingService,
+        BounceManager $bounceManager,
+        MessageParser $messageParser,
+        BounceDataProcessor $bounceDataProcessor,
     ) {
+        $this->bounceManager = $bounceManager;
+        $this->messageParser = $messageParser;
+        $this->bounceDataProcessor = $bounceDataProcessor;
     }
 
     public function process(SymfonyStyle $io): void
@@ -33,13 +42,13 @@ class UnidentifiedBounceReprocessor
                 $io->writeln(sprintf('%d out of %d processed', $count, $total));
             }
 
-            $decodedBody = $this->processingService->decodeBody($bounce->getHeader(), $bounce->getData());
-            $userId = $this->processingService->findUserId($decodedBody);
-            $messageId = $this->processingService->findMessageId($decodedBody);
+            $decodedBody = $this->messageParser->decodeBody($bounce->getHeader(), $bounce->getData());
+            $userId = $this->messageParser->findUserId($decodedBody);
+            $messageId = $this->messageParser->findMessageId($decodedBody);
 
             if ($userId || $messageId) {
                 $reparsed++;
-                if ($this->processingService->processBounceData(
+                if ($this->bounceDataProcessor->process(
                     $bounce,
                     $messageId,
                     $userId,

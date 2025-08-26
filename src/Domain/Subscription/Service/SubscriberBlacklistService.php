@@ -28,7 +28,7 @@ class SubscriberBlacklistService
     public function blacklist(Subscriber $subscriber, string $reason): void
     {
         $subscriber->setBlacklisted(true);
-        $this->entityManager->flush($subscriber);
+        $this->entityManager->flush();
         $this->blacklistManager->addEmailToBlacklist($subscriber->getEmail(), $reason);
 
         foreach (array('REMOTE_ADDR','HTTP_X_FORWARDED_FOR') as $item) {

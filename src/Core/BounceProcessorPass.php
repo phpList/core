@@ -14,7 +14,6 @@ class BounceProcessorPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
-        $iface = BounceProcessingServiceInterface::class;
         $native = NativeBounceProcessingService::class;
         $webklex = WebklexBounceProcessingService::class;
 
@@ -22,8 +21,8 @@ class BounceProcessorPass implements CompilerPassInterface
             return;
         }
 
-        $aliasTo = \extension_loaded('imap') ? $native : $webklex;
+        $aliasTo = extension_loaded('imap') ? $native : $webklex;
 
-        $container->setAlias($iface, $aliasTo)->setPublic(false);
+        $container->setAlias(BounceProcessingServiceInterface::class, $aliasTo)->setPublic(false);
     }
 }

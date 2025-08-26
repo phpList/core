@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Domain\Subscription\Service;
 
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Exception;
@@ -94,7 +95,7 @@ class SubscriberDeletionServiceTest extends KernelTestCase
         $userMessage->setStatus('sent');
         $this->entityManager->persist($userMessage);
 
-        $userMessageBounce = new UserMessageBounce(1);
+        $userMessageBounce = new UserMessageBounce(1, new DateTime());
         $userMessageBounce->setUserId($subscriberId);
         $userMessageBounce->setMessageId(1);
         $this->entityManager->persist($userMessageBounce);

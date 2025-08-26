@@ -17,3 +17,5 @@ services:
   PhpList\Core\Domain\Messaging\Service\Processor\AdvancedBounceRulesProcessor: ~
 
   PhpList\Core\Domain\Messaging\Service\Processor\UnidentifiedBounceReprocessor: ~
+
+  PhpList\Core\Domain\Messaging\Service\Processor\BounceDataProcessor: ~

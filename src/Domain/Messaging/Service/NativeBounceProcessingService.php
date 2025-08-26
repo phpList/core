@@ -66,7 +66,7 @@ class NativeBounceProcessingService implements BounceProcessingServiceInterface
 
         for ($x = 1; $x <= $num; $x++) {
             $header = $this->mailReader->fetchHeader($link, $x);
-            $processed = $this->processImapBounce($link, $x, $header, $io);
+            $processed = $this->processImapBounce($link, $x, $header);
             if ($processed) {
                 if (!$testMode && $this->purgeProcessed) {
                     $this->mailReader->delete($link, $x);

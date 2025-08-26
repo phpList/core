@@ -1,51 +1,51 @@
 imports:
-    - { resource: 'services/*.yml' }
+  - { resource: 'services/*.yml' }
 
 services:
-    _defaults:
-        autowire: true
-        autoconfigure: true
-        public: false
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
 
-    PhpList\Core\Core\ConfigProvider:
-        arguments:
-            $config: '%app.config%'
+  PhpList\Core\Core\ConfigProvider:
+    arguments:
+      $config: '%app.config%'
 
-    PhpList\Core\Core\ApplicationStructure:
-        public: true
+  PhpList\Core\Core\ApplicationStructure:
+    public: true
 
-    PhpList\Core\Security\Authentication:
-        public: true
+  PhpList\Core\Security\Authentication:
+    public: true
 
-    PhpList\Core\Security\HashGenerator:
-        public: true
+  PhpList\Core\Security\HashGenerator:
+    public: true
 
-    PhpList\Core\Routing\ExtraLoader:
-        tags: [routing.loader]
+  PhpList\Core\Routing\ExtraLoader:
+    tags: [routing.loader]
 
-    PhpList\Core\Domain\Common\Repository\AbstractRepository:
-        abstract: true
-        autowire: true
-        autoconfigure: false
-        public: true
-        factory: ['@doctrine.orm.entity_manager', getRepository]
+  PhpList\Core\Domain\Common\Repository\AbstractRepository:
+    abstract: true
+    autowire: true
+    autoconfigure: false
+    public: true
+    factory: ['@doctrine.orm.entity_manager', getRepository]
 
-    # controllers are imported separately to make sure they're public
-    # and have a tag that allows actions to type-hint services
-    PhpList\Core\EmptyStartPageBundle\Controller\:
-        resource: '../src/EmptyStartPageBundle/Controller'
-        public: true
-        tags: [controller.service_arguments]
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  PhpList\Core\EmptyStartPageBundle\Controller\:
+    resource: '../src/EmptyStartPageBundle/Controller'
+    public: true
+    tags: [controller.service_arguments]
 
-    doctrine.orm.metadata.annotation_reader:
-        alias: doctrine.annotation_reader
+  doctrine.orm.metadata.annotation_reader:
+    alias: doctrine.annotation_reader
 
-    doctrine.annotation_reader:
-        class: Doctrine\Common\Annotations\AnnotationReader
-        autowire: true
+  doctrine.annotation_reader:
+    class: Doctrine\Common\Annotations\AnnotationReader
+    autowire: true
 
-    doctrine.orm.default_annotation_metadata_driver:
-        class: Doctrine\ORM\Mapping\Driver\AnnotationDriver
-        arguments:
-            - '@annotation_reader'
-            - '%kernel.project_dir%/src/Domain/Model/'
+  doctrine.orm.default_annotation_metadata_driver:
+    class: Doctrine\ORM\Mapping\Driver\AnnotationDriver
+    arguments:
+      - '@annotation_reader'
+      - '%kernel.project_dir%/src/Domain/Model/'

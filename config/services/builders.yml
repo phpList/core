@@ -20,6 +20,6 @@ services:
     autowire: true
     autoconfigure: true
 
-  PhpListPhpList\Core\Domain\Messaging\Service\Builder\MessageOptionsBuilder:
+  PhpList\Core\Domain\Messaging\Service\Builder\MessageOptionsBuilder:
     autowire: true
     autoconfigure: true

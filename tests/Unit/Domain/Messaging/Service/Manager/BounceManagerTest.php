@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Manager;
 
-use DateTime;
+use DateTimeImmutable;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Repository\BounceRepository;
+use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -14,17 +15,19 @@ use PHPUnit\Framework\TestCase;
 class BounceManagerTest extends TestCase
 {
     private BounceRepository&MockObject $repository;
+    private UserMessageBounceRepository&MockObject $userMessageBounceRepository;
     private BounceManager $manager;
 
     protected function setUp(): void
     {
         $this->repository = $this->createMock(BounceRepository::class);
-        $this->manager = new BounceManager($this->repository);
+        $this->userMessageBounceRepository = $this->createMock(UserMessageBounceRepository::class);
+        $this->manager = new BounceManager($this->repository, $this->userMessageBounceRepository);
     }
 
     public function testCreatePersistsAndReturnsBounce(): void
     {
-        $date = new DateTime('2020-01-01 00:00:00');
+        $date = new DateTimeImmutable('2020-01-01 00:00:00');
         $header = 'X-Test: Header';
         $data = 'raw bounce';
         $status = 'new';
@@ -43,22 +46,11 @@ class BounceManagerTest extends TestCase
         );
 
         $this->assertInstanceOf(Bounce::class, $bounce);
-        $this->assertSame($date, $bounce->getDate());
+        $this->assertSame( $date->format('Y-m-d h:m:s'), $bounce->getDate()->format('Y-m-d h:m:s'));
         $this->assertSame($header, $bounce->getHeader());
         $this->assertSame($data, $bounce->getData());
         $this->assertSame($status, $bounce->getStatus());
         $this->assertSame($comment, $bounce->getComment());
-    }
-
-    public function testSaveDelegatesToRepository(): void
-    {
-        $model = new Bounce();
-
-        $this->repository->expects($this->once())
-            ->method('save')
-            ->with($model);
-
-        $this->manager->save($model);
     }
 
     public function testDeleteDelegatesToRepository(): void
