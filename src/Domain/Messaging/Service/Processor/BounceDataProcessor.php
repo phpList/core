@@ -43,9 +43,12 @@ class BounceDataProcessor
         $user = $userId ? $this->subscriberManager->getSubscriberById($userId) : null;
 
         if ($msgId === 'systemmessage') {
-            return $userId
-                ? $this->handleSystemMessageWithUser($bounce, $bounceDate, $userId, $user)
-                : $this->handleSystemMessageUnknownUser($bounce);
+            return $userId ? $this->handleSystemMessageWithUser(
+                $bounce,
+                $bounceDate,
+                $userId,
+                $user
+            ) : $this->handleSystemMessageUnknownUser($bounce);
         }
 
         if ($msgId && $userId) {

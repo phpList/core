@@ -61,7 +61,6 @@ class LockService
 
             if ($count >= $max) {
                 if ($this->tryStealIfStale($running)) {
-
                     continue;
                 }
 

@@ -49,6 +49,8 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
      * Process unseen messages from the given mailbox using Webklex.
      *
      * $mailbox: IMAP host; if you pass "host#FOLDER", FOLDER will be used instead of INBOX.
+     *
+     * @throws RuntimeException If connection to the IMAP server cannot be established.
      */
     public function processMailbox(
         string $mailbox,
@@ -76,10 +78,7 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
                 return '';
             }
 
-            $this->logger->info($testMode
-                ? 'Running in test mode, not deleting messages from mailbox'
-                : 'Processed messages will be deleted from the mailbox'
-            );
+            $this->bounceManager->announceDeletionMode($testMode);
 
             foreach ($messages as $message) {
                 $header = $this->headerToStringSafe($message);
@@ -112,7 +111,7 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
             try {
                 $client->disconnect();
             } catch (Throwable $e) {
-                // swallow
+                $this->logger->warning('Disconnect failed', ['error' => $e->getMessage()]);
             }
         }
     }
@@ -130,13 +129,21 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
         $messageTo = $this->addrManyToString($message->getTo());
         $date = $this->extractDate($message)->format(\DATE_RFC2822);
 
-        if ($subj !== '') { $lines[] = 'Subject: ' . $subj; }
-        if ($from !== '') { $lines[] = 'From: ' . $from; }
-        if ($messageTo !== '') { $lines[] = 'To: ' . $messageTo; }
+        if ($subj !== '') {
+            $lines[] = 'Subject: ' . $subj;
+        }
+        if ($from !== '') {
+            $lines[] = 'From: ' . $from;
+        }
+        if ($messageTo !== '') {
+            $lines[] = 'To: ' . $messageTo;
+        }
         $lines[] = 'Date: ' . $date;
 
         $mid = $message->getMessageId() ?? '';
-        if ($mid !== '') { $lines[] = 'Message-ID: ' . $mid; }
+        if ($mid !== '') {
+            $lines[] = 'Message-ID: ' . $mid;
+        }
 
         return implode("\r\n", $lines) . "\r\n";
     }

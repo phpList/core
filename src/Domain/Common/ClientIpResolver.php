@@ -8,7 +8,12 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class ClientIpResolver
 {
-    public function __construct(private readonly RequestStack $requestStack) {}
+    private RequestStack $requestStack;
+
+    public function __construct(RequestStack $requestStack)
+    {
+        $this->requestStack = $requestStack;
+    }
 
     public function resolve(): string
     {

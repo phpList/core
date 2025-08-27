@@ -34,7 +34,7 @@ class MboxBounceProcessor implements BounceProtocolProcessor
             throw new RuntimeException('Missing --mailbox for mbox protocol');
         }
 
-        $inputOutput->section("Opening mbox $file");
+        $inputOutput->section('Opening mbox ' . $file);
         $inputOutput->writeln('Please do not interrupt this process');
 
         return $this->processingService->processMailbox(

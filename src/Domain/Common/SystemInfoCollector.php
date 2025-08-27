@@ -70,7 +70,7 @@ class SystemInfoCollector
         }
         $lines = [];
         foreach ($pairs as $k => $v) {
-            $lines[] = sprintf("%s = %s", $k, $v);
+            $lines[] = sprintf('%s = %s', $k, $v);
         }
         return "\n" . implode("\n", $lines);
     }

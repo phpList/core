@@ -21,7 +21,8 @@ class NativeImapMailReader
 
     public function open(string $mailbox, int $options = 0): Connection
     {
-        $link = @imap_open($mailbox, $this->username, $this->password, $options);
+        $link = imap_open($mailbox, $this->username, $this->password, $options);
+
         if ($link === false) {
             throw new RuntimeException('Cannot open mailbox: '.(imap_last_error() ?: 'unknown error'));
         }

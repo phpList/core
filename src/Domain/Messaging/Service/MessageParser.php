@@ -40,24 +40,60 @@ class MessageParser
 
     public function findUserId(string $text): ?int
     {
-        // Try X-ListMember / X-User first
-        if (preg_match('/(?:X-ListMember|X-User): (.*)\r\n/iU', $text, $match)) {
-            $user = trim($match[1]);
-            if (str_contains($user, '@')) {
-                return $this->subscriberRepository->findOneByEmail($user)?->getId();
-            } elseif (preg_match('/^\d+$/', $user)) {
-                return (int)$user;
-            } elseif ($user !== '') {
-                return $this->subscriberRepository->findOneByEmail($user)?->getId();
+        $candidate = $this->extractUserHeader($text);
+        if ($candidate) {
+            $id = $this->resolveUserIdentifier($candidate);
+            if ($id) {
+                return $id;
             }
         }
-        // Fallback: parse any email in the body and see if it is a subscriber
-        if (preg_match_all('/[._a-zA-Z0-9-]+@[.a-zA-Z0-9-]+/', $text, $regs)) {
-            foreach ($regs[0] as $email) {
-                $id = $this->subscriberRepository->findOneByEmail($email)?->getId();
-                if ($id) {
-                    return $id;
-                }
+
+        $emails = $this->extractEmails($text);
+
+        return $this->findFirstSubscriberId($emails);
+    }
+
+    private function extractUserHeader(string $text): ?string
+    {
+        if (preg_match('/^(?:X-ListMember|X-User):\s*(?P<user>[^\r\n]+)/mi', $text, $matches)) {
+            $user = trim($matches['user']);
+
+            return $user !== '' ? $user : null;
+        }
+
+        return null;
+    }
+
+    private function resolveUserIdentifier(string $user): ?int
+    {
+        if (filter_var($user, FILTER_VALIDATE_EMAIL)) {
+            return $this->subscriberRepository->findOneByEmail($user)?->getId();
+        }
+
+        if (ctype_digit($user)) {
+            return (int) $user;
+        }
+
+        return $this->subscriberRepository->findOneByEmail($user)?->getId();
+    }
+
+    private function extractEmails(string $text): array
+    {
+        preg_match_all('/[A-Z0-9._%+\-]+@[A-Z0-9.\-]+/i', $text, $matches);
+        if (empty($matches[0])) {
+            return [];
+        }
+        $norm = array_map('strtolower', $matches[0]);
+
+        return array_values(array_unique($norm));
+    }
+
+    private function findFirstSubscriberId(array $emails): ?int
+    {
+        foreach ($emails as $email) {
+            $id = $this->subscriberRepository->findOneByEmail($email)?->getId();
+            if ($id !== null) {
+                return $id;
             }
         }
 

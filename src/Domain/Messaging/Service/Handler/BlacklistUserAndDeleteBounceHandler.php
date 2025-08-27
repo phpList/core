@@ -10,11 +10,19 @@ use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 
 class BlacklistUserAndDeleteBounceHandler implements BounceActionHandlerInterface
 {
+    private SubscriberHistoryManager $subscriberHistoryManager;
+    private SubscriberManager $subscriberManager;
+    private BounceManager $bounceManager;
+
     public function __construct(
-        private readonly SubscriberHistoryManager $subscriberHistoryManager,
-        private readonly SubscriberManager $subscriberManager,
-        private readonly BounceManager $bounceManager,
-    ) {}
+        SubscriberHistoryManager $subscriberHistoryManager,
+        SubscriberManager $subscriberManager,
+        BounceManager $bounceManager,
+    ) {
+        $this->subscriberHistoryManager = $subscriberHistoryManager;
+        $this->subscriberManager = $subscriberManager;
+        $this->bounceManager = $bounceManager;
+    }
 
     public function supports(string $action): bool
     {

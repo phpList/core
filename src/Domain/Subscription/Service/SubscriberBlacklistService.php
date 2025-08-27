@@ -38,7 +38,7 @@ class SubscriberBlacklistService
         $this->entityManager->flush();
         $this->blacklistManager->addEmailToBlacklist($subscriber->getEmail(), $reason);
 
-        foreach (array('REMOTE_ADDR','HTTP_X_FORWARDED_FOR') as $item) {
+        foreach (['REMOTE_ADDR','HTTP_X_FORWARDED_FOR'] as $item) {
             $request = $this->requestStack->getCurrentRequest();
             if (!$request) {
                 return;

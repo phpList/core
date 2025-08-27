@@ -49,8 +49,7 @@ class BounceRuleManager
             $action = $row->getAction();
             $id = $row->getId();
 
-            if (
-                !is_string($regex)
+            if (!is_string($regex)
                 || $regex === ''
                 || !is_string($action)
                 || $action === ''
@@ -72,15 +71,26 @@ class BounceRuleManager
     public function matchBounceRules(string $text, array $rules): ?BounceRegex
     {
         foreach ($rules as $pattern => $rule) {
-            $pattern = str_replace(' ', '\s+', $pattern);
-            if (@preg_match('/'.preg_quote($pattern).'/iUm', $text)) {
+            $quoted = '/'.preg_quote(str_replace(' ', '\s+', $pattern)).'/iUm';
+            if ($this->safePregMatch($quoted, $text)) {
                 return $rule;
-            } elseif (@preg_match('/'.$pattern.'/iUm', $text)) {
+            }
+            $raw = '/'.str_replace(' ', '\s+', $pattern).'/iUm';
+            if ($this->safePregMatch($raw, $text)) {
                 return $rule;
             }
         }
 
         return null;
+    }
+
+    private function safePregMatch(string $pattern, string $subject): bool
+    {
+        set_error_handler(static fn() => true);
+        $result = preg_match($pattern, $subject) === 1;
+        restore_error_handler();
+
+        return $result;
     }
 
     public function incrementCount(BounceRegex $rule): void

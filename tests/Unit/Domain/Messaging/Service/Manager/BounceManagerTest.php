@@ -11,18 +11,22 @@ use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class BounceManagerTest extends TestCase
 {
     private BounceRepository&MockObject $repository;
-    private UserMessageBounceRepository&MockObject $userMessageBounceRepository;
     private BounceManager $manager;
 
     protected function setUp(): void
     {
         $this->repository = $this->createMock(BounceRepository::class);
-        $this->userMessageBounceRepository = $this->createMock(UserMessageBounceRepository::class);
-        $this->manager = new BounceManager($this->repository, $this->userMessageBounceRepository);
+        $userMessageBounceRepository = $this->createMock(UserMessageBounceRepository::class);
+        $this->manager = new BounceManager(
+            bounceRepository: $this->repository,
+            userMessageBounceRepo: $userMessageBounceRepository,
+            logger: $this->createMock(LoggerInterface::class)
+        );
     }
 
     public function testCreatePersistsAndReturnsBounce(): void
@@ -46,7 +50,7 @@ class BounceManagerTest extends TestCase
         );
 
         $this->assertInstanceOf(Bounce::class, $bounce);
-        $this->assertSame( $date->format('Y-m-d h:m:s'), $bounce->getDate()->format('Y-m-d h:m:s'));
+        $this->assertSame($date->format('Y-m-d h:m:s'), $bounce->getDate()->format('Y-m-d h:m:s'));
         $this->assertSame($header, $bounce->getHeader());
         $this->assertSame($data, $bounce->getData());
         $this->assertSame($status, $bounce->getStatus());

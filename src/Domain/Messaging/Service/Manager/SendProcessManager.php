@@ -47,9 +47,7 @@ class SendProcessManager
         }
 
         $modified = $row->getUpdatedAt();
-        $age = $modified
-            ? max(0, time() - (int)$modified->format('U'))
-            : 0;
+        $age = $modified ? max(0, time() - (int)$modified->format('U')) : 0;
 
         return [
             'id'  => $row->getId(),

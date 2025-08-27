@@ -8,9 +8,12 @@ use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 
 class DeleteBounceHandler implements BounceActionHandlerInterface
 {
-    public function __construct(
-        private readonly BounceManager $bounceManager,
-    ) {}
+    private BounceManager $bounceManager;
+
+    public function __construct(BounceManager $bounceManager)
+    {
+        $this->bounceManager = $bounceManager;
+    }
 
     public function supports(string $action): bool
     {

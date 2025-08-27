@@ -9,10 +9,16 @@ use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 
 class BlacklistEmailHandler implements BounceActionHandlerInterface
 {
+    private SubscriberHistoryManager $subscriberHistoryManager;
+    private SubscriberManager $subscriberManager;
+
     public function __construct(
-        private readonly SubscriberHistoryManager $subscriberHistoryManager,
-        private readonly SubscriberManager $subscriberManager,
-    ) {}
+        SubscriberHistoryManager $subscriberHistoryManager,
+        SubscriberManager $subscriberManager,
+    ) {
+        $this->subscriberHistoryManager = $subscriberHistoryManager;
+        $this->subscriberManager = $subscriberManager;
+    }
 
     public function supports(string $action): bool
     {

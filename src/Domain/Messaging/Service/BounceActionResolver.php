@@ -41,7 +41,9 @@ class BounceActionResolver
             throw new RuntimeException(sprintf('No handler found for action "%s".', $action));
         }
 
-        return $this->cache[$action] = $handler;
+        $this->cache[$action] = $handler;
+
+        return $handler;
     }
 
     /** Convenience: resolve + execute */

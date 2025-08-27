@@ -9,10 +9,14 @@ use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 
 class DeleteUserAndBounceHandler implements BounceActionHandlerInterface
 {
-    public function __construct(
-        private readonly BounceManager $bounceManager,
-        private readonly SubscriberManager $subscriberManager,
-    ) {}
+    private BounceManager $bounceManager;
+    private SubscriberManager $subscriberManager;
+
+    public function __construct(BounceManager $bounceManager, SubscriberManager $subscriberManager,)
+    {
+        $this->bounceManager = $bounceManager;
+        $this->subscriberManager = $subscriberManager;
+    }
 
     public function supports(string $action): bool
     {

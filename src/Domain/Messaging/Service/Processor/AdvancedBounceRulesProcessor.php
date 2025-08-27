@@ -113,7 +113,7 @@ class AdvancedBounceRulesProcessor
             'bounce'     => $bounce,
             'userId'     => $userId,
             'confirmed'  => $confirmed,
-            'blacklisted'=> $blacklisted,
+            'blacklisted' => $blacklisted,
             'ruleId'     => $ruleId,
         ];
     }

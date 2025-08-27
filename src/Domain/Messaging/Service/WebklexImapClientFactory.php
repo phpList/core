@@ -28,8 +28,7 @@ class WebklexImapClientFactory
         string $protocol,
         int $port,
         string $encryption = 'ssl'
-    )
-    {
+    ) {
         $this->clientManager = $clientManager;
         $this->mailbox = $mailbox;
         $this->host = $host;
@@ -64,7 +63,6 @@ class WebklexImapClientFactory
 
     public function getFolderName(): string
     {
-        // todo: check if folder logic is correct
         return $this->parseMailbox($this->mailbox)[1];
     }
 

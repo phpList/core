@@ -25,7 +25,12 @@ class ProcessBouncesCommand extends Command
     {
         $this
             ->addOption('protocol', null, InputOption::VALUE_REQUIRED, 'Mailbox protocol: pop or mbox', 'pop')
-            ->addOption('purge-unprocessed', null, InputOption::VALUE_NONE, 'Delete/remove unprocessed messages from mailbox')
+            ->addOption(
+                'purge-unprocessed',
+                null,
+                InputOption::VALUE_NONE,
+                'Delete/remove unprocessed messages from mailbox'
+            )
             ->addOption('rules-batch-size', null, InputOption::VALUE_OPTIONAL, 'Advanced rules batch size', '1000')
             ->addOption('test', 't', InputOption::VALUE_NONE, 'Test mode: do not delete from mailbox')
             ->addOption('force', 'f', InputOption::VALUE_NONE, 'Force run: kill other processes if locked');

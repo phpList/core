@@ -40,9 +40,11 @@ class PopBounceProcessor implements BounceProtocolProcessor
         $downloadReport = '';
         foreach (explode(',', $this->mailboxNames) as $mailboxName) {
             $mailboxName = trim($mailboxName);
-            if ($mailboxName === '') { $mailboxName = 'INBOX'; }
+            if ($mailboxName === '') {
+                $mailboxName = 'INBOX';
+            }
             $mailbox = sprintf('{%s:%s}%s', $this->host, $this->port, $mailboxName);
-            $inputOutput->section("Connecting to $mailbox");
+            $inputOutput->section('Connecting to ' . $mailbox);
             $inputOutput->writeln('Please do not interrupt this process');
 
             $downloadReport .= $this->processingService->processMailbox(

@@ -9,10 +9,14 @@ use Psr\Log\LoggerInterface;
 
 class DeleteUserHandler implements BounceActionHandlerInterface
 {
-    public function __construct(
-        private readonly LoggerInterface $logger,
-        private readonly SubscriberManager $subscriberManager,
-    ) {}
+    private SubscriberManager $subscriberManager;
+    private LoggerInterface $logger;
+
+    public function __construct(SubscriberManager $subscriberManager, LoggerInterface $logger)
+    {
+        $this->subscriberManager = $subscriberManager;
+        $this->logger = $logger;
+    }
 
     public function supports(string $action): bool
     {

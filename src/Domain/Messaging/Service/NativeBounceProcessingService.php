@@ -47,14 +47,14 @@ class NativeBounceProcessingService implements BounceProcessingServiceInterface
     ): string {
         $link = $this->openOrFail($mailbox, $testMode);
 
-        $num = $this->prepareAndCapCount( $link, $max);
+        $num = $this->prepareAndCapCount($link, $max);
         if ($num === 0) {
             $this->mailReader->close($link, false);
 
             return '';
         }
 
-        $this->announceDeletionMode($testMode);
+        $this->bounceManager->announceDeletionMode($testMode);
 
         for ($messageNumber = 1; $messageNumber <= $num; $messageNumber++) {
             $this->handleMessage($link, $messageNumber, $testMode);
@@ -90,15 +90,6 @@ class NativeBounceProcessingService implements BounceProcessingServiceInterface
         }
 
         return $num;
-    }
-
-    private function announceDeletionMode(bool $testMode): void
-    {
-        $this->logger->info(
-            $testMode
-                ? 'Running in test mode, not deleting messages from mailbox'
-                : 'Processed messages will be deleted from the mailbox'
-        );
     }
 
     private function handleMessage(Connection $link, int $messageNumber, bool $testMode): void

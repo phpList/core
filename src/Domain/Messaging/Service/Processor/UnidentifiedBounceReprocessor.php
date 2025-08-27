@@ -52,7 +52,8 @@ class UnidentifiedBounceReprocessor
                     $bounce,
                     $messageId,
                     $userId,
-                    new DateTimeImmutable())
+                    new DateTimeImmutable()
+                )
                 ) {
                     $reidentified++;
                 }
@@ -62,7 +63,8 @@ class UnidentifiedBounceReprocessor
         $inputOutput->writeln(sprintf('%d out of %d processed', $count, $total));
         $inputOutput->writeln(sprintf(
             '%d bounces were re-processed and %d bounces were re-identified',
-            $reparsed, $reidentified
+            $reparsed,
+            $reidentified
         ));
     }
 }
