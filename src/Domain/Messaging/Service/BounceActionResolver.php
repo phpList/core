@@ -55,10 +55,11 @@ class BounceActionResolver
     private function find(string $action): ?BounceActionHandlerInterface
     {
         foreach ($this->handlers as $handler) {
-            if ($handler->supports($action)) {
+            if ($handler::supports($action)) {
                 return $handler;
             }
         }
+
         return null;
     }
 }

@@ -106,4 +106,4 @@ services:
 
   PhpList\Core\Domain\Messaging\Service\BounceActionResolver:
     arguments:
-      - !tagged_iterator { tag: 'phplist.bounce_action_handler', default_index_method: 'supports' }
+      - !tagged_iterator { tag: 'phplist.bounce_action_handler' }
