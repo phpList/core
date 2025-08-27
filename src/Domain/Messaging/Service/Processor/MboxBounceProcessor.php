@@ -35,12 +35,12 @@ class MboxBounceProcessor implements BounceProtocolProcessor
         }
 
         $inputOutput->section("Opening mbox $file");
+        $inputOutput->writeln('Please do not interrupt this process');
 
         return $this->processingService->processMailbox(
-            $inputOutput,
-            $file,
-            $max,
-            $testMode
+            mailbox: $file,
+            max: $max,
+            testMode: $testMode
         );
     }
 }

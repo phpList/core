@@ -153,6 +153,30 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->execute();
     }
 
+    public function markUnconfirmed(int $subscriberId): void
+    {
+        $this->createQueryBuilder('s')
+            ->update()
+            ->set('s.confirmed', ':confirmed')
+            ->where('s.id = :id')
+            ->setParameter('confirmed', false)
+            ->setParameter('id', $subscriberId)
+            ->getQuery()
+            ->execute();
+    }
+
+    public function markConfirmed(int $subscriberId): void
+    {
+        $this->createQueryBuilder('s')
+            ->update()
+            ->set('s.confirmed', ':confirmed')
+            ->where('s.id = :id')
+            ->setParameter('confirmed', true)
+            ->setParameter('id', $subscriberId)
+            ->getQuery()
+            ->execute();
+    }
+
     /** @return Subscriber[] */
     public function distinctUsersWithBouncesConfirmedNotBlacklisted(): array
     {

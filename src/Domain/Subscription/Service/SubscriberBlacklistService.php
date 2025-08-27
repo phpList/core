@@ -29,6 +29,9 @@ class SubscriberBlacklistService
         $this->requestStack = $requestStack;
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.Superglobals)
+     */
     public function blacklist(Subscriber $subscriber, string $reason): void
     {
         $subscriber->setBlacklisted(true);

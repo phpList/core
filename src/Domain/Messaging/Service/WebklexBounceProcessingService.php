@@ -10,10 +10,13 @@ use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Messaging\Service\Processor\BounceDataProcessor;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Throwable;
-use const DATE_RFC2822;
+use Webklex\PHPIMAP\Client;
+use Webklex\PHPIMAP\Folder;
 
+/**
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ */
 class WebklexBounceProcessingService implements BounceProcessingServiceInterface
 {
     private BounceManager $bounceManager;
@@ -48,7 +51,6 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
      * $mailbox: IMAP host; if you pass "host#FOLDER", FOLDER will be used instead of INBOX.
      */
     public function processMailbox(
-        SymfonyStyle $inputOutput,
         string $mailbox,
         int $max,
         bool $testMode
@@ -58,7 +60,7 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
         try {
             $client->connect();
         } catch (Throwable $e) {
-            $inputOutput->error('Cannot connect to mailbox: '.$e->getMessage());
+            $this->logger->error('Cannot connect to mailbox: '.$e->getMessage());
             throw new RuntimeException('Cannot connect to IMAP server');
         }
 
@@ -69,13 +71,12 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
             $messages = $query->get();
             $num = $messages->count();
 
-            $inputOutput->writeln(sprintf('%d bounces to fetch from the mailbox', $num));
+            $this->logger->info(sprintf('%d bounces to fetch from the mailbox', $num));
             if ($num === 0) {
                 return '';
             }
 
-            $inputOutput->writeln('Please do not interrupt this process');
-            $inputOutput->writeln($testMode
+            $this->logger->info($testMode
                 ? 'Running in test mode, not deleting messages from mailbox'
                 : 'Processed messages will be deleted from the mailbox'
             );
@@ -100,27 +101,11 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
 
                 $processed = $this->bounceDataProcessor->process($bounce, $messageId, $userId, $bounceDate);
 
-                if (!$testMode) {
-                    if ($processed && $this->purgeProcessed) {
-                        $this->safeDelete($message);
-                    } elseif (!$processed && $this->purgeUnprocessed) {
-                        $this->safeDelete($message);
-                    }
-                }
+                $this->processDelete($testMode, $processed, $message);
             }
 
-            $inputOutput->writeln('Closing mailbox, and purging messages');
-            if (!$testMode) {
-                try {
-                    if (method_exists($folder, 'expunge')) {
-                        $folder->expunge();
-                    } elseif (method_exists($client, 'expunge')) {
-                        $client->expunge();
-                    }
-                } catch (Throwable $e) {
-                    $this->logger->warning('EXPUNGE failed', ['error' => $e->getMessage()]);
-                }
-            }
+            $this->logger->info('Closing mailbox, and purging messages');
+            $this->processExpunge($testMode, $folder, $client);
 
             return '';
         } finally {
@@ -134,25 +119,16 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
 
     private function headerToStringSafe(mixed $message): string
     {
-        if (method_exists($message, 'getHeader')) {
-            try {
-                $headerObj = $message->getHeader();
-                if ($headerObj && method_exists($headerObj, 'toString')) {
-                    $raw = (string) $headerObj->toString();
-                    if ($raw !== '') {
-                        return $raw;
-                    }
-                }
-            } catch (Throwable $e) {
-                // fall back below
-            }
+        $raw = $this->tryRawHeader($message);
+        if ($raw !== null) {
+            return $raw;
         }
 
         $lines = [];
         $subj = $message->getSubject() ?? '';
         $from = $this->addrFirstToString($message->getFrom());
         $messageTo = $this->addrManyToString($message->getTo());
-        $date = $this->extractDate($message)->format(DATE_RFC2822);
+        $date = $this->extractDate($message)->format(\DATE_RFC2822);
 
         if ($subj !== '') { $lines[] = 'Subject: ' . $subj; }
         if ($from !== '') { $lines[] = 'From: ' . $from; }
@@ -163,6 +139,27 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
         if ($mid !== '') { $lines[] = 'Message-ID: ' . $mid; }
 
         return implode("\r\n", $lines) . "\r\n";
+    }
+
+    private function tryRawHeader(mixed $message): ?string
+    {
+        if (!method_exists($message, 'getHeader')) {
+            return null;
+        }
+
+        try {
+            $headerObj = $message->getHeader();
+            if ($headerObj && method_exists($headerObj, 'toString')) {
+                $raw = (string) $headerObj->toString();
+                if ($raw !== '') {
+                    return $raw;
+                }
+            }
+        } catch (Throwable $e) {
+            return null;
+        }
+
+        return null;
     }
 
     private function bodyBestEffort($message): string
@@ -223,6 +220,17 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
         return $out;
     }
 
+    private function processDelete(bool $testMode, bool $processed, mixed $message): void
+    {
+        if (!$testMode) {
+            if ($processed && $this->purgeProcessed) {
+                $this->safeDelete($message);
+            } elseif (!$processed && $this->purgeUnprocessed) {
+                $this->safeDelete($message);
+            }
+        }
+    }
+
     private function safeDelete($message): void
     {
         try {
@@ -233,6 +241,21 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
             }
         } catch (Throwable $e) {
             $this->logger->warning('Failed to delete message', ['error' => $e->getMessage()]);
+        }
+    }
+
+    private function processExpunge(bool $testMode, ?Folder $folder, Client $client): void
+    {
+        if (!$testMode) {
+            try {
+                if (method_exists($folder, 'expunge')) {
+                    $folder->expunge();
+                } elseif (method_exists($client, 'expunge')) {
+                    $client->expunge();
+                }
+            } catch (Throwable $e) {
+                $this->logger->warning('EXPUNGE failed', ['error' => $e->getMessage()]);
+            }
         }
     }
 }

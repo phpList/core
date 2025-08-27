@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service;
 
-use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 
 class MessageParser
 {
-    public function __construct(
-        private readonly SubscriberManager $subscriberManager,
-    ) {
+    private SubscriberRepository $subscriberRepository;
+
+    public function __construct(SubscriberRepository $subscriberRepository)
+    {
+        $this->subscriberRepository = $subscriberRepository;
     }
+
     public function decodeBody(string $header, string $body): string
     {
         $transferEncoding = '';
@@ -41,17 +44,17 @@ class MessageParser
         if (preg_match('/(?:X-ListMember|X-User): (.*)\r\n/iU', $text, $match)) {
             $user = trim($match[1]);
             if (str_contains($user, '@')) {
-                return $this->subscriberManager->getSubscriberByEmail($user)?->getId();
+                return $this->subscriberRepository->findOneByEmail($user)?->getId();
             } elseif (preg_match('/^\d+$/', $user)) {
                 return (int)$user;
             } elseif ($user !== '') {
-                return $this->subscriberManager->getSubscriberByEmail($user)?->getId();
+                return $this->subscriberRepository->findOneByEmail($user)?->getId();
             }
         }
         // Fallback: parse any email in the body and see if it is a subscriber
         if (preg_match_all('/[._a-zA-Z0-9-]+@[.a-zA-Z0-9-]+/', $text, $regs)) {
             foreach ($regs[0] as $email) {
-                $id = $this->subscriberManager->getSubscriberByEmail($email)?->getId();
+                $id = $this->subscriberRepository->findOneByEmail($email)?->getId();
                 if ($id) {
                     return $id;
                 }

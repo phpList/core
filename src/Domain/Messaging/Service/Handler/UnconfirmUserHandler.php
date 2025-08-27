@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Handler;
 
+use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
-use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 
 class UnconfirmUserHandler implements BounceActionHandlerInterface
 {
+    private SubscriberRepository $subscriberRepository;
+    private SubscriberHistoryManager $subscriberHistoryManager;
+
     public function __construct(
-        private readonly SubscriberManager $subscriberManager,
-        private readonly SubscriberHistoryManager $subscriberHistoryManager,
-    ) {}
+        SubscriberRepository $subscriberRepository,
+        SubscriberHistoryManager $subscriberHistoryManager,
+    ) {
+        $this->subscriberRepository = $subscriberRepository;
+        $this->subscriberHistoryManager = $subscriberHistoryManager;
+    }
 
     public function supports(string $action): bool
     {
@@ -22,7 +28,7 @@ class UnconfirmUserHandler implements BounceActionHandlerInterface
     public function handle(array $closureData): void
     {
         if (!empty($closureData['subscriber']) && $closureData['confirmed']) {
-            $this->subscriberManager->markUnconfirmed($closureData['userId']);
+            $this->subscriberRepository->markUnconfirmed($closureData['userId']);
             $this->subscriberHistoryManager->addHistory(
                 $closureData['subscriber'],
                 'Auto Unconfirmed',

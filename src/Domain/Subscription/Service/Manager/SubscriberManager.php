@@ -68,49 +68,9 @@ class SubscriberManager
         $this->messageBus->dispatch($message);
     }
 
-    public function getSubscriber(int $subscriberId): Subscriber
-    {
-        $subscriber = $this->subscriberRepository->findSubscriberWithSubscriptions($subscriberId);
-
-        if (!$subscriber) {
-            throw new NotFoundHttpException('Subscriber not found');
-        }
-
-        return $subscriber;
-    }
-
-    public function getSubscriberByEmail(string $mail): ?Subscriber
-    {
-        return $this->subscriberRepository->findOneByEmail($mail);
-    }
-
     public function getSubscriberById(int $subscriberId): ?Subscriber
     {
         return $this->subscriberRepository->find($subscriberId);
-    }
-
-    public function markUnconfirmed(int $subscriberId): void
-    {
-        $this->subscriberRepository->createQueryBuilder('s')
-            ->update()
-            ->set('s.confirmed', ':confirmed')
-            ->where('s.id = :id')
-            ->setParameter('confirmed', false)
-            ->setParameter('id', $subscriberId)
-            ->getQuery()
-            ->execute();
-    }
-
-    public function markConfirmed(int $subscriberId): void
-    {
-        $this->subscriberRepository->createQueryBuilder('s')
-            ->update()
-            ->set('s.confirmed', ':confirmed')
-            ->where('s.id = :id')
-            ->setParameter('confirmed', true)
-            ->setParameter('id', $subscriberId)
-            ->getQuery()
-            ->execute();
     }
 
     public function updateSubscriber(UpdateSubscriberDto $subscriberDto): Subscriber

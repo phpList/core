@@ -5,16 +5,24 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service\Handler;
 
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
-use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 
 class UnconfirmUserAndDeleteBounceHandler implements BounceActionHandlerInterface
 {
+    private SubscriberHistoryManager $subscriberHistoryManager;
+    private SubscriberRepository $subscriberRepository;
+    private BounceManager $bounceManager;
+
     public function __construct(
-        private readonly SubscriberHistoryManager $subscriberHistoryManager,
-        private readonly SubscriberManager $subscriberManager,
-        private readonly BounceManager $bounceManager,
-    ) {}
+        SubscriberHistoryManager $subscriberHistoryManager,
+        SubscriberRepository $subscriberRepository,
+        BounceManager $bounceManager,
+    ) {
+        $this->subscriberHistoryManager = $subscriberHistoryManager;
+        $this->subscriberRepository = $subscriberRepository;
+        $this->bounceManager = $bounceManager;
+    }
 
     public function supports(string $action): bool
     {
@@ -24,11 +32,11 @@ class UnconfirmUserAndDeleteBounceHandler implements BounceActionHandlerInterfac
     public function handle(array $closureData): void
     {
         if (!empty($closureData['subscriber']) && $closureData['confirmed']) {
-            $this->subscriberManager->markUnconfirmed($closureData['userId']);
+            $this->subscriberRepository->markUnconfirmed($closureData['userId']);
             $this->subscriberHistoryManager->addHistory(
-                $closureData['subscriber'],
-                'Auto unconfirmed',
-                'Subscriber auto unconfirmed for bounce rule '.$closureData['ruleId']
+                subscriber: $closureData['subscriber'],
+                message: 'Auto unconfirmed',
+                details: 'Subscriber auto unconfirmed for bounce rule '.$closureData['ruleId']
             );
         }
         $this->bounceManager->delete($closureData['bounce']);

@@ -15,14 +15,27 @@ use Psr\Log\LoggerInterface;
 
 class BounceDataProcessor
 {
+    private readonly BounceManager $bounceManager;
+    private readonly SubscriberRepository $subscriberRepository;
+    private readonly MessageRepository $messageRepository;
+    private readonly LoggerInterface $logger;
+    private readonly SubscriberManager $subscriberManager;
+    private readonly SubscriberHistoryManager $subscriberHistoryManager;
+
     public function __construct(
-        private readonly BounceManager $bounceManager,
-        private readonly SubscriberRepository $users,
-        private readonly MessageRepository $messages,
-        private readonly LoggerInterface $logger,
-        private readonly SubscriberManager $subscriberManager,
-        private readonly SubscriberHistoryManager $subscriberHistoryManager,
+        BounceManager $bounceManager,
+        SubscriberRepository $subscriberRepository,
+        MessageRepository $messageRepository,
+        LoggerInterface $logger,
+        SubscriberManager $subscriberManager,
+        SubscriberHistoryManager $subscriberHistoryManager,
     ) {
+        $this->bounceManager = $bounceManager;
+        $this->subscriberRepository = $subscriberRepository;
+        $this->messageRepository = $messageRepository;
+        $this->logger = $logger;
+        $this->subscriberManager = $subscriberManager;
+        $this->subscriberHistoryManager = $subscriberHistoryManager;
     }
 
     public function process(Bounce $bounce, ?string $msgId, ?int $userId, DateTimeImmutable $bounceDate): bool
@@ -64,7 +77,7 @@ class BounceDataProcessor
             comment: sprintf('%d marked unconfirmed', $userId)
         );
         $this->bounceManager->linkUserMessageBounce($bounce, $date, $userId);
-        $this->subscriberManager->markUnconfirmed($userId);
+        $this->subscriberRepository->markUnconfirmed($userId);
         $this->logger->info('system message bounced, user marked unconfirmed', ['userId' => $userId]);
 
         if ($userOrNull) {
@@ -99,8 +112,8 @@ class BounceDataProcessor
                 status: sprintf('bounced list message %d', $msgId),
                 comment: sprintf('%d bouncecount increased', $userId)
             );
-            $this->messages->incrementBounceCount($msgId);
-            $this->users->incrementBounceCount($userId);
+            $this->messageRepository->incrementBounceCount($msgId);
+            $this->subscriberRepository->incrementBounceCount($userId);
         } else {
             $this->bounceManager->linkUserMessageBounce($bounce, $date, $userId, $msgId);
             $this->bounceManager->update(
@@ -120,7 +133,7 @@ class BounceDataProcessor
             status: 'bounced unidentified message',
             comment: sprintf('%d bouncecount increased', $userId)
         );
-        $this->users->incrementBounceCount($userId);
+        $this->subscriberRepository->incrementBounceCount($userId);
 
         return true;
     }
@@ -128,11 +141,11 @@ class BounceDataProcessor
     private function handleMessageOnly(Bounce $bounce, int $msgId): bool
     {
         $this->bounceManager->update(
-            $bounce,
-            sprintf('bounced list message %d', $msgId),
-            'unknown user'
+            bounce: $bounce,
+            status: sprintf('bounced list message %d', $msgId),
+            comment: 'unknown user'
         );
-        $this->messages->incrementBounceCount($msgId);
+        $this->messageRepository->incrementBounceCount($msgId);
 
         return true;
     }

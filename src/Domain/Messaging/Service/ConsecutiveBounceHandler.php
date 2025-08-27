@@ -120,7 +120,7 @@ class ConsecutiveBounceHandler
     private function applyThresholdActions($user, int $consecutive, bool $alreadyUnsubscribed): bool
     {
         if ($consecutive >= $this->unsubscribeThreshold && !$alreadyUnsubscribed) {
-            $this->subscriberManager->markUnconfirmed($user->getId());
+            $this->subscriberRepository->markUnconfirmed($user->getId());
             $this->subscriberHistoryManager->addHistory(
                 subscriber: $user,
                 message: 'Auto Unconfirmed',
