@@ -10,7 +10,6 @@ use PhpList\Core\Domain\Subscription\Model\Dto\CreateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
-use PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService;
 use PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -36,7 +35,6 @@ class SubscriberManagerTest extends TestCase
             entityManager: $this->entityManager,
             messageBus: $this->messageBus,
             subscriberDeletionService: $subscriberDeletionService,
-            blacklistService: $this->createMock(SubscriberBlacklistService::class),
         );
     }
 

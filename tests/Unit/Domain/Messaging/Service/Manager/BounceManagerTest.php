@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Manager;
 
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Repository\BounceRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
@@ -25,7 +26,8 @@ class BounceManagerTest extends TestCase
         $this->manager = new BounceManager(
             bounceRepository: $this->repository,
             userMessageBounceRepo: $userMessageBounceRepository,
-            logger: $this->createMock(LoggerInterface::class)
+            entityManager: $this->createMock(EntityManagerInterface::class),
+            logger: $this->createMock(LoggerInterface::class),
         );
     }
 

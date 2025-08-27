@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Messaging\Service\Manager;
 
 use DateTime;
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
@@ -16,19 +17,23 @@ use Psr\Log\LoggerInterface;
 
 class BounceManager
 {
-    private BounceRepository $bounceRepository;
-    private UserMessageBounceRepository $userMessageBounceRepo;
-    private LoggerInterface $logger;
     private const TEST_MODE_MESSAGE = 'Running in test mode, not deleting messages from mailbox';
     private const LIVE_MODE_MESSAGE = 'Processed messages will be deleted from the mailbox';
+
+    private BounceRepository $bounceRepository;
+    private UserMessageBounceRepository $userMessageBounceRepo;
+    private EntityManagerInterface $entityManager;
+    private LoggerInterface $logger;
 
     public function __construct(
         BounceRepository $bounceRepository,
         UserMessageBounceRepository $userMessageBounceRepo,
-        LoggerInterface $logger
+        EntityManagerInterface $entityManager,
+        LoggerInterface $logger,
     ) {
         $this->bounceRepository = $bounceRepository;
         $this->userMessageBounceRepo = $userMessageBounceRepo;
+        $this->entityManager = $entityManager;
         $this->logger = $logger;
     }
 
@@ -88,6 +93,7 @@ class BounceManager
         $userMessageBounce = new UserMessageBounce($bounce->getId(), new DateTime($date->format('Y-m-d H:i:s')));
         $userMessageBounce->setUserId($subscriberId);
         $userMessageBounce->setMessageId($messageId);
+        $this->entityManager->flush();
 
         return $userMessageBounce;
     }

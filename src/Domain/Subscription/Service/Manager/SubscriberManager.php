@@ -22,20 +22,17 @@ class SubscriberManager
     private EntityManagerInterface $entityManager;
     private MessageBusInterface $messageBus;
     private SubscriberDeletionService $subscriberDeletionService;
-    private SubscriberBlacklistService $blacklistService;
 
     public function __construct(
         SubscriberRepository $subscriberRepository,
         EntityManagerInterface $entityManager,
         MessageBusInterface $messageBus,
         SubscriberDeletionService $subscriberDeletionService,
-        SubscriberBlacklistService $blacklistService
     ) {
         $this->subscriberRepository = $subscriberRepository;
         $this->entityManager = $entityManager;
         $this->messageBus = $messageBus;
         $this->subscriberDeletionService = $subscriberDeletionService;
-        $this->blacklistService = $blacklistService;
     }
 
     public function createSubscriber(CreateSubscriberDto $subscriberDto): Subscriber
@@ -137,11 +134,6 @@ class SubscriberManager
         $existingSubscriber->setExtraData($subscriberDto->extraData);
 
         return $existingSubscriber;
-    }
-
-    public function blacklist(Subscriber $subscriber, string $reason): void
-    {
-        $this->blacklistService->blacklist($subscriber, $reason);
     }
 
     public function decrementBounceCount(Subscriber $subscriber): void

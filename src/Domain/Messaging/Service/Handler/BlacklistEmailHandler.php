@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service\Handler;
 
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
-use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
+use PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService;
 
 class BlacklistEmailHandler implements BounceActionHandlerInterface
 {
     private SubscriberHistoryManager $subscriberHistoryManager;
-    private SubscriberManager $subscriberManager;
+    private SubscriberBlacklistService $blacklistService;
 
     public function __construct(
         SubscriberHistoryManager $subscriberHistoryManager,
-        SubscriberManager $subscriberManager,
+        SubscriberBlacklistService $blacklistService,
     ) {
         $this->subscriberHistoryManager = $subscriberHistoryManager;
-        $this->subscriberManager = $subscriberManager;
+        $this->blacklistService = $blacklistService;
     }
 
     public static function supports(string $action): bool
@@ -28,7 +28,7 @@ class BlacklistEmailHandler implements BounceActionHandlerInterface
     public function handle(array $closureData): void
     {
         if (!empty($closureData['subscriber'])) {
-            $this->subscriberManager->blacklist(
+            $this->blacklistService->blacklist(
                 $closureData['subscriber'],
                 'Email address auto blacklisted by bounce rule '.$closureData['ruleId']
             );

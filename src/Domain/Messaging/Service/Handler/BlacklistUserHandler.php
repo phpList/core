@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service\Handler;
 
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
-use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
+use PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService;
 
 class BlacklistUserHandler implements BounceActionHandlerInterface
 {
     private SubscriberHistoryManager $subscriberHistoryManager;
-    private SubscriberManager $subscriberManager;
+    private SubscriberBlacklistService $blacklistService;
 
     public function __construct(
         SubscriberHistoryManager $subscriberHistoryManager,
-        SubscriberManager $subscriberManager,
+        SubscriberBlacklistService $blacklistService,
     ) {
         $this->subscriberHistoryManager = $subscriberHistoryManager;
-        $this->subscriberManager = $subscriberManager;
+        $this->blacklistService = $blacklistService;
     }
 
     public static function supports(string $action): bool
@@ -28,14 +28,14 @@ class BlacklistUserHandler implements BounceActionHandlerInterface
     public function handle(array $closureData): void
     {
         if (!empty($closureData['subscriber']) && !$closureData['blacklisted']) {
-            $this->subscriberManager->blacklist(
-                $closureData['subscriber'],
-                'Subscriber auto blacklisted by bounce rule '.$closureData['ruleId']
+            $this->blacklistService->blacklist(
+                subscriber: $closureData['subscriber'],
+                reason: 'Subscriber auto blacklisted by bounce rule '.$closureData['ruleId']
             );
             $this->subscriberHistoryManager->addHistory(
-                $closureData['subscriber'],
-                'Auto Unsubscribed',
-                'User auto unsubscribed for bounce rule '.$closureData['ruleId']
+                subscriber: $closureData['subscriber'],
+                message: 'Auto Unsubscribed',
+                details: 'User auto unsubscribed for bounce rule '.$closureData['ruleId']
             );
         }
     }

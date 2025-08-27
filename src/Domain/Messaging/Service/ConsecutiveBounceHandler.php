@@ -11,30 +11,30 @@ use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
-use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
+use PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ConsecutiveBounceHandler
 {
     private BounceManager $bounceManager;
     private SubscriberRepository $subscriberRepository;
-    private SubscriberManager $subscriberManager;
     private SubscriberHistoryManager $subscriberHistoryManager;
+    private SubscriberBlacklistService $blacklistService;
     private int $unsubscribeThreshold;
     private int $blacklistThreshold;
 
     public function __construct(
         BounceManager $bounceManager,
         SubscriberRepository $subscriberRepository,
-        SubscriberManager $subscriberManager,
         SubscriberHistoryManager $subscriberHistoryManager,
+        SubscriberBlacklistService $blacklistService,
         int $unsubscribeThreshold,
         int $blacklistThreshold,
     ) {
         $this->bounceManager = $bounceManager;
         $this->subscriberRepository = $subscriberRepository;
-        $this->subscriberManager = $subscriberManager;
         $this->subscriberHistoryManager = $subscriberHistoryManager;
+        $this->blacklistService = $blacklistService;
         $this->unsubscribeThreshold = $unsubscribeThreshold;
         $this->blacklistThreshold = $blacklistThreshold;
     }
@@ -129,7 +129,7 @@ class ConsecutiveBounceHandler
         }
 
         if ($this->blacklistThreshold > 0 && $consecutive >= $this->blacklistThreshold) {
-            $this->subscriberManager->blacklist(
+            $this->blacklistService->blacklist(
                 subscriber: $user,
                 reason: sprintf('%d consecutive bounces, threshold reached', $consecutive)
             );
