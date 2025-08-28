@@ -18,7 +18,7 @@ class DeleteUserAndBounceHandler implements BounceActionHandlerInterface
         $this->subscriberManager = $subscriberManager;
     }
 
-    public static function supports(string $action): bool
+    public function supports(string $action): bool
     {
         return $action === 'deleteuserandbounce';
     }

@@ -24,7 +24,7 @@ class UnconfirmUserAndDeleteBounceHandler implements BounceActionHandlerInterfac
         $this->bounceManager = $bounceManager;
     }
 
-    public static function supports(string $action): bool
+    public function supports(string $action): bool
     {
         return $action === 'unconfirmuseranddeletebounce';
     }

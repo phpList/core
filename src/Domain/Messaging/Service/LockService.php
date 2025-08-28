@@ -68,11 +68,13 @@ class LockService
 
                 if ($isCli) {
                     $this->logger->info("Running commandline, quitting. We'll find out what to do in the next run.");
+
                     return null;
                 }
 
                 if (!$this->waitOrGiveUp($waited)) {
                     $this->logger->info('We have been waiting too long, I guess the other process is still going ok');
+
                     return null;
                 }
 

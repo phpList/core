@@ -15,7 +15,7 @@ class DeleteBounceHandler implements BounceActionHandlerInterface
         $this->bounceManager = $bounceManager;
     }
 
-    public static function supports(string $action): bool
+    public function supports(string $action): bool
     {
         return $action === 'deletebounce';
     }

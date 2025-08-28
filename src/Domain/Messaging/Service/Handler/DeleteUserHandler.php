@@ -18,7 +18,7 @@ class DeleteUserHandler implements BounceActionHandlerInterface
         $this->logger = $logger;
     }
 
-    public static function supports(string $action): bool
+    public function supports(string $action): bool
     {
         return $action === 'deleteuser';
     }

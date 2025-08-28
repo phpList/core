@@ -28,7 +28,7 @@ class DecreaseCountConfirmUserAndDeleteBounceHandler implements BounceActionHand
         $this->subscriberRepository = $subscriberRepository;
     }
 
-    public static function supports(string $action): bool
+    public function supports(string $action): bool
     {
         return $action === 'decreasecountconfirmuseranddeletebounce';
     }

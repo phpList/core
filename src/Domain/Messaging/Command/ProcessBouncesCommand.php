@@ -21,6 +21,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 #[AsCommand(name: 'phplist:bounces:process', description: 'Process bounce mailbox')]
 class ProcessBouncesCommand extends Command
 {
+    private const IMAP_NOT_AVAILABLE = 'PHP IMAP extension not available. Falling back to Webklex IMAP.';
+    private const FORCE_LOCK_FAILED = 'Could not apply force lock. Aborting.';
+    private const ALREADY_LOCKED = 'Another bounce processing is already running. Aborting.';
+
     protected function configure(): void
     {
         $this
@@ -53,16 +57,16 @@ class ProcessBouncesCommand extends Command
         $inputOutput = new SymfonyStyle($input, $output);
 
         if (!function_exists('imap_open')) {
-            $inputOutput->note('PHP IMAP extension not available. Falling back to Webklex IMAP where applicable.');
+            $inputOutput->note(self::IMAP_NOT_AVAILABLE);
         }
 
         $force = (bool)$input->getOption('force');
         $lock = $this->lockService->acquirePageLock('bounce_processor', $force);
 
-        if (!$lock) {
-            $inputOutput->warning('Another bounce processing is already running. Aborting.');
+        if (($lock ?? 0) === 0) {
+            $inputOutput->warning($force ? self::FORCE_LOCK_FAILED : self::ALREADY_LOCKED);
 
-            return Command::SUCCESS;
+            return $force ? Command::FAILURE : Command::SUCCESS;
         }
 
         try {
@@ -71,14 +75,7 @@ class ProcessBouncesCommand extends Command
 
             $downloadReport = '';
 
-            $processor = null;
-            foreach ($this->protocolProcessors as $p) {
-                if ($p->getProtocol() === $protocol) {
-                    $processor = $p;
-                    break;
-                }
-            }
-
+            $processor = $this->findProcessorFor($protocol);
             if ($processor === null) {
                 $inputOutput->error('Unsupported protocol: '.$protocol);
 
@@ -102,5 +99,16 @@ class ProcessBouncesCommand extends Command
         } finally {
             $this->lockService->release($lock);
         }
+    }
+
+    private function findProcessorFor(string $protocol): ?BounceProtocolProcessor
+    {
+        foreach ($this->protocolProcessors as $processor) {
+            if ($processor->getProtocol() === $protocol) {
+                return $processor;
+            }
+        }
+
+        return null;
     }
 }

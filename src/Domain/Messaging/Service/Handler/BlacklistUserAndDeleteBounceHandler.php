@@ -24,7 +24,7 @@ class BlacklistUserAndDeleteBounceHandler implements BounceActionHandlerInterfac
         $this->blacklistService = $blacklistService;
     }
 
-    public static function supports(string $action): bool
+    public function supports(string $action): bool
     {
         return $action === 'blacklistuseranddeletebounce';
     }

@@ -20,7 +20,7 @@ class UnconfirmUserHandler implements BounceActionHandlerInterface
         $this->subscriberHistoryManager = $subscriberHistoryManager;
     }
 
-    public static function supports(string $action): bool
+    public function supports(string $action): bool
     {
         return $action === 'unconfirmuser';
     }

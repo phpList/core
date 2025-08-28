@@ -6,6 +6,6 @@ namespace PhpList\Core\Domain\Messaging\Service\Handler;
 
 interface BounceActionHandlerInterface
 {
-    public static function supports(string $action): bool;
+    public function supports(string $action): bool;
     public function handle(array $closureData): void;
 }

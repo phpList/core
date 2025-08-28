@@ -20,7 +20,7 @@ class BlacklistEmailHandler implements BounceActionHandlerInterface
         $this->blacklistService = $blacklistService;
     }
 
-    public static function supports(string $action): bool
+    public function supports(string $action): bool
     {
         return $action === 'blacklistemail';
     }
