@@ -1,0 +1,76 @@
+<?php
+
+declare(strict_types=1);
+
+namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Processor;
+
+use PhpList\Core\Domain\Messaging\Service\BounceProcessingServiceInterface;
+use PhpList\Core\Domain\Messaging\Service\Processor\MboxBounceProcessor;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+use RuntimeException;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+
+class MboxBounceProcessorTest extends TestCase
+{
+    private BounceProcessingServiceInterface&MockObject $service;
+    private InputInterface&MockObject $input;
+    private SymfonyStyle&MockObject $io;
+
+    protected function setUp(): void
+    {
+        $this->service = $this->createMock(BounceProcessingServiceInterface::class);
+        $this->input = $this->createMock(InputInterface::class);
+        $this->io = $this->createMock(SymfonyStyle::class);
+    }
+
+    public function testGetProtocol(): void
+    {
+        $processor = new MboxBounceProcessor($this->service);
+        $this->assertSame('mbox', $processor->getProtocol());
+    }
+
+    public function testProcessThrowsWhenMailboxMissing(): void
+    {
+        $processor = new MboxBounceProcessor($this->service);
+
+        $this->input->method('getOption')->willReturnMap([
+            ['test', false],
+            ['maximum', 0],
+            ['mailbox', ''],
+        ]);
+
+        $this->io
+            ->expects($this->once())
+            ->method('error')
+            ->with('mbox file path must be provided with --mailbox.');
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Missing --mailbox for mbox protocol');
+
+        $processor->process($this->input, $this->io);
+    }
+
+    public function testProcessSuccess(): void
+    {
+        $processor = new MboxBounceProcessor($this->service);
+
+        $this->input->method('getOption')->willReturnMap([
+            ['test', true],
+            ['maximum', 50],
+            ['mailbox', '/var/mail/bounce.mbox'],
+        ]);
+
+        $this->io->expects($this->once())->method('section')->with('Opening mbox /var/mail/bounce.mbox');
+        $this->io->expects($this->once())->method('writeln')->with('Please do not interrupt this process');
+
+        $this->service->expects($this->once())
+            ->method('processMailbox')
+            ->with('/var/mail/bounce.mbox', 50, true)
+            ->willReturn('OK');
+
+        $result = $processor->process($this->input, $this->io);
+        $this->assertSame('OK', $result);
+    }
+}
