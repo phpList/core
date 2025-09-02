@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
+use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
@@ -40,12 +41,12 @@ class BounceDataProcessorTest extends TestCase
     private function makeProcessor(): BounceDataProcessor
     {
         return new BounceDataProcessor(
-            $this->bounceManager,
-            $this->subscriberRepository,
-            $this->messageRepository,
-            $this->logger,
-            $this->subscriberManager,
-            $this->historyManager,
+            bounceManager: $this->bounceManager,
+            subscriberRepository: $this->subscriberRepository,
+            messageRepository: $this->messageRepository,
+            logger: $this->logger,
+            subscriberManager: $this->subscriberManager,
+            subscriberHistoryManager: $this->historyManager,
         );
     }
 
@@ -70,12 +71,8 @@ class BounceDataProcessorTest extends TestCase
             ->method('info')
             ->with('system message bounced, user marked unconfirmed', ['userId' => 123]);
 
-        $subscriber = new class {
-            public function getId()
-            {
-                return 123;
-            }
-        };
+        $subscriber = $this->createMock(Subscriber::class);
+        $subscriber->method('getId')->willReturn(123);
         $this->subscriberManager->method('getSubscriberById')->with(123)->willReturn($subscriber);
         $this->historyManager
             ->expects($this->once())

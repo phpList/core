@@ -125,8 +125,8 @@ class BounceManagerTest extends TestCase
 
     public function testLinkUserMessageBounceFlushesAndSetsFields(): void
     {
-        $bounce = new Bounce();
-        $this->setId($bounce, 77);
+        $bounce = $this->createMock(Bounce::class);
+        $bounce->method('getId')->willReturn(77);
 
         $this->entityManager->expects($this->once())->method('flush');
 
@@ -201,11 +201,5 @@ class BounceManagerTest extends TestCase
 
         $this->manager->announceDeletionMode(true);
         $this->manager->announceDeletionMode(false);
-    }
-
-    private function setId(object $entity, int $id): void
-    {
-        $ref = new \ReflectionProperty($entity, 'id');
-        $ref->setValue($entity, $id);
     }
 }

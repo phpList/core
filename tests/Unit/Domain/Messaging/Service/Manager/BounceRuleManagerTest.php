@@ -23,22 +23,32 @@ class BounceRuleManagerTest extends TestCase
     {
         $this->regexRepository = $this->createMock(BounceRegexRepository::class);
         $this->relationRepository = $this->createMock(BounceRegexBounceRepository::class);
-        $this->manager = new BounceRuleManager($this->regexRepository, $this->relationRepository);
+        $this->manager = new BounceRuleManager(
+            repository: $this->regexRepository,
+            bounceRelationRepository: $this->relationRepository,
+        );
     }
 
     public function testLoadActiveRulesMapsRowsAndSkipsInvalid(): void
     {
-        $valid = new BounceRegex(regex: 'user unknown', regexHash: md5('user unknown'), action: 'delete');
-        // invalids: no regex, no action, no id
-        $noRegex = new BounceRegex(regex: '', regexHash: md5(''), action: 'delete');
-        $noAction = new BounceRegex(regex: 'pattern', regexHash: md5('pattern'), action: '');
-        $noId = new BounceRegex(regex: 'has no id', regexHash: md5('has no id'), action: 'keep');
+        $valid = $this->createMock(BounceRegex::class);
+        $valid->method('getId')->willReturn(1);
+        $valid->method('getAction')->willReturn('delete');
+        $valid->method('getRegex')->willReturn('user unknown');
+        $valid->method('getRegexHash')->willReturn(md5('user unknown'));
 
-        // Simulate id assignment for only some of them
-        $this->setId($valid, 1);
-        $this->setId($noRegex, 2);
-        $this->setId($noAction, 3);
-        // $noId intentionally left without id
+        $noRegex = $this->createMock(BounceRegex::class);
+        $noRegex->method('getId')->willReturn(2);
+
+        $noAction = $this->createMock(BounceRegex::class);
+        $noAction->method('getId')->willReturn(3);
+        $noAction->method('getRegex')->willReturn('pattern');
+        $noAction->method('getRegexHash')->willReturn(md5('pattern'));
+
+        $noId = $this->createMock(BounceRegex::class);
+        $noId->method('getRegex')->willReturn('has no id');
+        $noId->method('getRegexHash')->willReturn(md5('has no id'));
+        $noId->method('getAction')->willReturn('keep');
 
         $this->regexRepository->expects($this->once())
             ->method('fetchActiveOrdered')
@@ -51,33 +61,46 @@ class BounceRuleManagerTest extends TestCase
 
     public function testLoadAllRulesDelegatesToRepository(): void
     {
-        $r1 = new BounceRegex(regex: 'a', regexHash: md5('a'), action: 'keep');
-        $r2 = new BounceRegex(regex: 'b', regexHash: md5('b'), action: 'delete');
-        $this->setId($r1, 10);
-        $this->setId($r2, 11);
+        $rule1 = $this->createMock(BounceRegex::class);
+        $rule1->method('getId')->willReturn(10);
+        $rule1->method('getAction')->willReturn('keep');
+        $rule1->method('getRegex')->willReturn('a');
+        $rule1->method('getRegexHash')->willReturn(md5('a'));
+
+        $rule2 = $this->createMock(BounceRegex::class);
+        $rule2->method('getId')->willReturn(11);
+        $rule2->method('getAction')->willReturn('delete');
+        $rule2->method('getRegex')->willReturn('b');
+        $rule2->method('getRegexHash')->willReturn(md5('b'));
 
         $this->regexRepository->expects($this->once())
             ->method('fetchAllOrdered')
-            ->willReturn([$r1, $r2]);
+            ->willReturn([$rule1, $rule2]);
 
         $result = $this->manager->loadAllRules();
-        $this->assertSame(['a' => $r1, 'b' => $r2], $result);
+        $this->assertSame(['a' => $rule1, 'b' => $rule2], $result);
     }
 
     public function testMatchBounceRulesMatchesQuotedAndRawAndHandlesInvalidPatterns(): void
     {
-        $valid = new BounceRegex(regex: 'user unknown', regexHash: md5('user unknown'), action: 'delete');
-        $this->setId($valid, 1);
-        // invalid regex pattern that would break preg_match if not handled (unbalanced bracket)
-        $invalid = new BounceRegex(regex: '([a-z', regexHash: md5('([a-z'), action: 'keep');
-        $this->setId($invalid, 2);
+        $valid = $this->createMock(BounceRegex::class);
+        $valid->method('getId')->willReturn(1);
+        $valid->method('getAction')->willReturn('delete');
+        $valid->method('getRegex')->willReturn('user unknown');
+        $valid->method('getRegexHash')->willReturn(md5('user unknown'));
+
+        $invalid = $this->createMock(BounceRegex::class);
+        $invalid->method('getId')->willReturn(2);
+        $invalid->method('getAction')->willReturn('keep');
+        $invalid->method('getRegex')->willReturn('([a-z');
+        $invalid->method('getRegexHash')->willReturn(md5('([a-z'));
 
         $rules = ['user unknown' => $valid, '([a-z' => $invalid];
 
         $matched = $this->manager->matchBounceRules('Delivery failed: user    unknown at example', $rules);
         $this->assertSame($valid, $matched);
 
-        // Ensure invalid pattern does not throw and simply not match
+        // Ensure an invalid pattern does not throw and simply not match
         $matchedInvalid = $this->manager->matchBounceRules('something else', ['([a-z' => $invalid]);
         $this->assertNull($matchedInvalid);
     }
