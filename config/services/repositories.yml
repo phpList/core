@@ -1,4 +1,14 @@
 services:
+  PhpList\Core\Domain\Configuration\Repository\ConfigRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Configuration\Model\Config
+
+  PhpList\Core\Domain\Configuration\Repository\EventLogRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Configuration\Model\EventLog
+
   PhpList\Core\Domain\Identity\Repository\AdministratorRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
@@ -65,11 +75,6 @@ services:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Messaging\Model\TemplateImage
-
-  PhpList\Core\Domain\Configuration\Repository\ConfigRepository:
-    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
-    arguments:
-      - PhpList\Core\Domain\Configuration\Model\Config
 
   PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
