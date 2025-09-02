@@ -58,6 +58,16 @@ class SubscriberBlacklistManager
         return $blacklistEntry;
     }
 
+    public function addBlacklistData(string $email, string $name, string $data): void
+    {
+        $blacklistData = new UserBlacklistData();
+        $blacklistData->setEmail($email);
+        $blacklistData->setName($name);
+        $blacklistData->setData($data);
+        $this->entityManager->persist($blacklistData);
+        $this->entityManager->flush();
+    }
+
     public function removeEmailFromBlacklist(string $email): void
     {
         $blacklistEntry = $this->userBlacklistRepository->findOneByEmail($email);

@@ -31,15 +31,15 @@ class UserMessageBounce implements DomainModel, Identity
     private int $messageId;
 
     #[ORM\Column(name: 'bounce', type: 'integer')]
-    private int $bounce;
+    private int $bounceId;
 
     #[ORM\Column(name: 'time', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private DateTime $createdAt;
 
-    public function __construct(int $bounce)
+    public function __construct(int $bounceId, DateTime $createdAt)
     {
-        $this->bounce = $bounce;
-        $this->createdAt = new DateTime();
+        $this->bounceId = $bounceId;
+        $this->createdAt = $createdAt;
     }
 
     public function getId(): ?int
@@ -57,9 +57,9 @@ class UserMessageBounce implements DomainModel, Identity
         return $this->messageId;
     }
 
-    public function getBounce(): int
+    public function getBounceId(): int
     {
-        return $this->bounce;
+        return $this->bounceId;
     }
 
     public function getCreatedAt(): DateTime
@@ -79,9 +79,9 @@ class UserMessageBounce implements DomainModel, Identity
         return $this;
     }
 
-    public function setBounce(int $bounce): self
+    public function setBounceId(int $bounceId): self
     {
-        $this->bounce = $bounce;
+        $this->bounceId = $bounceId;
         return $this;
     }
 }

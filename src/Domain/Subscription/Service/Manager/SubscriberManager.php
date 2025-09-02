@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\UpdateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService;
 use PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -26,7 +27,7 @@ class SubscriberManager
         SubscriberRepository $subscriberRepository,
         EntityManagerInterface $entityManager,
         MessageBusInterface $messageBus,
-        SubscriberDeletionService $subscriberDeletionService
+        SubscriberDeletionService $subscriberDeletionService,
     ) {
         $this->subscriberRepository = $subscriberRepository;
         $this->entityManager = $entityManager;
@@ -64,15 +65,9 @@ class SubscriberManager
         $this->messageBus->dispatch($message);
     }
 
-    public function getSubscriber(int $subscriberId): Subscriber
+    public function getSubscriberById(int $subscriberId): ?Subscriber
     {
-        $subscriber = $this->subscriberRepository->findSubscriberWithSubscriptions($subscriberId);
-
-        if (!$subscriber) {
-            throw new NotFoundHttpException('Subscriber not found');
-        }
-
-        return $subscriber;
+        return $this->subscriberRepository->find($subscriberId);
     }
 
     public function updateSubscriber(UpdateSubscriberDto $subscriberDto): Subscriber
@@ -139,5 +134,11 @@ class SubscriberManager
         $existingSubscriber->setExtraData($subscriberDto->extraData);
 
         return $existingSubscriber;
+    }
+
+    public function decrementBounceCount(Subscriber $subscriber): void
+    {
+        $subscriber->addToBounceCount(-1);
+        $this->entityManager->flush();
     }
 }

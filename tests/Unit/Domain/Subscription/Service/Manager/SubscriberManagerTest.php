@@ -34,7 +34,7 @@ class SubscriberManagerTest extends TestCase
             subscriberRepository: $this->subscriberRepository,
             entityManager: $this->entityManager,
             messageBus: $this->messageBus,
-            subscriberDeletionService: $subscriberDeletionService
+            subscriberDeletionService: $subscriberDeletionService,
         );
     }
 

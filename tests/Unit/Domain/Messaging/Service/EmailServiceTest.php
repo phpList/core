@@ -19,12 +19,18 @@ class EmailServiceTest extends TestCase
     private MailerInterface&MockObject $mailer;
     private MessageBusInterface&MockObject $messageBus;
     private string $defaultFromEmail = 'default@example.com';
+    private string $bounceEmail = 'bounce@example.com';
 
     protected function setUp(): void
     {
         $this->mailer = $this->createMock(MailerInterface::class);
         $this->messageBus = $this->createMock(MessageBusInterface::class);
-        $this->emailService = new EmailService($this->mailer, $this->defaultFromEmail, $this->messageBus);
+        $this->emailService = new EmailService(
+            mailer: $this->mailer,
+            messageBus: $this->messageBus,
+            defaultFromEmail: $this->defaultFromEmail,
+            bounceEmail: $this->bounceEmail,
+        );
     }
 
     public function testSendEmailWithDefaultFrom(): void

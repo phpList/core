@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 
+use PhpList\Core\Domain\Common\ClientIpResolver;
+use PhpList\Core\Domain\Common\SystemInfoCollector;
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberHistoryFilter;
 use PhpList\Core\Domain\Subscription\Model\SubscriberHistory;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryRepository;
@@ -20,7 +22,9 @@ class SubscriberHistoryManagerTest extends TestCase
     {
         $this->subscriberHistoryRepository = $this->createMock(SubscriberHistoryRepository::class);
         $this->subscriptionHistoryService = new SubscriberHistoryManager(
-            repository: $this->subscriberHistoryRepository
+            repository: $this->subscriberHistoryRepository,
+            clientIpResolver: $this->createMock(ClientIpResolver::class),
+            systemInfoCollector: $this->createMock(SystemInfoCollector::class),
         );
     }
 

@@ -24,8 +24,8 @@ class TemplateImageManagerTest extends TestCase
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
 
         $this->manager = new TemplateImageManager(
-            $this->templateImageRepository,
-            $this->entityManager
+            templateImageRepository: $this->templateImageRepository,
+            entityManager: $this->entityManager
         );
     }
 

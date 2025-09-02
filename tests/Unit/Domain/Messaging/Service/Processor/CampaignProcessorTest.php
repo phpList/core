@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
+namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Processor;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
-use PhpList\Core\Domain\Messaging\Service\CampaignProcessor;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
+use PhpList\Core\Domain\Messaging\Service\Processor\CampaignProcessor;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use PHPUnit\Framework\MockObject\MockObject;

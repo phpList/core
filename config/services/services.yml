@@ -1,36 +1,109 @@
 services:
-    PhpList\Core\Domain\Subscription\Service\SubscriberCsvExporter:
-        autowire: true
-        autoconfigure: true
-        public: true
+  PhpList\Core\Domain\Subscription\Service\SubscriberCsvExporter:
+    autowire: true
+    autoconfigure: true
+    public: true
 
-    PhpList\Core\Domain\Subscription\Service\SubscriberCsvImporter:
-        autowire: true
-        autoconfigure: true
-        public: true
+  PhpList\Core\Domain\Subscription\Service\SubscriberCsvImporter:
+    autowire: true
+    autoconfigure: true
+    public: true
 
-    PhpList\Core\Domain\Messaging\Service\EmailService:
-        autowire: true
-        autoconfigure: true
-        arguments:
-            $defaultFromEmail: '%app.mailer_from%'
+  PhpList\Core\Domain\Messaging\Service\EmailService:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $defaultFromEmail: '%app.mailer_from%'
+      $bounceEmail: '%imap_bounce.email%'
 
-    PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService:
-        autowire: true
-        autoconfigure: true
-        public: true
+  PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService:
+    autowire: true
+    autoconfigure: true
+    public: true
 
-    PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator:
-        autowire: true
-        autoconfigure: true
-        public: true
+  PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator:
+    autowire: true
+    autoconfigure: true
+    public: true
 
-    PhpList\Core\Domain\Analytics\Service\LinkTrackService:
-        autowire: true
-        autoconfigure: true
-        public: true
+  PhpList\Core\Domain\Analytics\Service\LinkTrackService:
+    autowire: true
+    autoconfigure: true
+    public: true
 
-    PhpList\Core\Domain\Messaging\Service\CampaignProcessor:
-        autowire: true
-        autoconfigure: true
-        public: true
+  PhpList\Core\Domain\Messaging\Service\Processor\CampaignProcessor:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  PhpList\Core\Domain\Common\ClientIpResolver:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Common\SystemInfoCollector:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\ConsecutiveBounceHandler:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $unsubscribeThreshold: '%imap_bounce.unsubscribe_threshold%'
+      $blacklistThreshold: '%imap_bounce.blacklist_threshold%'
+
+  Webklex\PHPIMAP\ClientManager: ~
+
+  PhpList\Core\Domain\Messaging\Service\WebklexImapClientFactory:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $mailbox: '%imap_bounce.mailbox%'#  e.g. "{imap.example.com:993/imap/ssl}INBOX" or "/var/mail/user"
+      $host: '%imap_bounce.host%'
+      $port: '%imap_bounce.port%'
+      $encryption: '%imap_bounce.encryption%'
+      $username: '%imap_bounce.email%'
+      $password: '%imap_bounce.password%'
+      $protocol: '%imap_bounce.protocol%'
+
+  PhpList\Core\Domain\Common\Mail\NativeImapMailReader:
+    arguments:
+      $username: '%imap_bounce.email%'
+      $password: '%imap_bounce.password%'
+
+  PhpList\Core\Domain\Messaging\Service\NativeBounceProcessingService:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $purgeProcessed: '%imap_bounce.purge%'
+      $purgeUnprocessed: '%imap_bounce.purge_unprocessed%'
+
+  PhpList\Core\Domain\Messaging\Service\WebklexBounceProcessingService:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $purgeProcessed: '%imap_bounce.purge%'
+      $purgeUnprocessed: '%imap_bounce.purge_unprocessed%'
+
+  PhpList\Core\Domain\Messaging\Service\LockService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\MessageParser:
+    autowire: true
+    autoconfigure: true
+
+  _instanceof:
+    PhpList\Core\Domain\Messaging\Service\Handler\BounceActionHandlerInterface:
+      tags:
+        - { name: 'phplist.bounce_action_handler' }
+
+  PhpList\Core\Domain\Messaging\Service\Handler\:
+    resource: '../../src/Domain/Messaging/Service/Handler/*Handler.php'
+
+  PhpList\Core\Domain\Messaging\Service\BounceActionResolver:
+    arguments:
+      - !tagged_iterator { tag: 'phplist.bounce_action_handler' }

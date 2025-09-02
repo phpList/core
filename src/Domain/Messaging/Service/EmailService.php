@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Messaging\Service;
 
 use PhpList\Core\Domain\Messaging\Message\AsyncEmailMessage;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mime\Address;
@@ -13,17 +14,20 @@ use Symfony\Component\Mime\Address;
 class EmailService
 {
     private MailerInterface $mailer;
-    private string $defaultFromEmail;
     private MessageBusInterface $messageBus;
+    private string $defaultFromEmail;
+    private string $bounceEmail;
 
     public function __construct(
         MailerInterface $mailer,
+        MessageBusInterface $messageBus,
         string $defaultFromEmail,
-        MessageBusInterface $messageBus
+        string $bounceEmail,
     ) {
         $this->mailer = $mailer;
-        $this->defaultFromEmail = $defaultFromEmail;
         $this->messageBus = $messageBus;
+        $this->defaultFromEmail = $defaultFromEmail;
+        $this->bounceEmail = $bounceEmail;
     }
 
     public function sendEmail(
@@ -68,7 +72,12 @@ class EmailService
             $email->attachFromPath($attachment);
         }
 
-        $this->mailer->send($email);
+        $envelope = new Envelope(
+            sender: new Address($this->bounceEmail, 'PHPList Bounce'),
+            recipients: [new Address($email->getTo()[0]->getAddress())]
+        );
+
+        $this->mailer->send(message: $email, envelope: $envelope);
     }
 
     public function sendBulkEmail(

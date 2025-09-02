@@ -141,4 +141,51 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
 
         return !($queryBuilder->getQuery()->getOneOrNullResult() === null);
     }
+
+    public function incrementBounceCount(int $subscriberId): void
+    {
+        $this->createQueryBuilder('s')
+            ->update()
+            ->set('s.bounceCount', 's.bounceCount + 1')
+            ->where('s.id = :subscriberId')
+            ->setParameter('subscriberId', $subscriberId)
+            ->getQuery()
+            ->execute();
+    }
+
+    public function markUnconfirmed(int $subscriberId): void
+    {
+        $this->createQueryBuilder('s')
+            ->update()
+            ->set('s.confirmed', ':confirmed')
+            ->where('s.id = :id')
+            ->setParameter('confirmed', false)
+            ->setParameter('id', $subscriberId)
+            ->getQuery()
+            ->execute();
+    }
+
+    public function markConfirmed(int $subscriberId): void
+    {
+        $this->createQueryBuilder('s')
+            ->update()
+            ->set('s.confirmed', ':confirmed')
+            ->where('s.id = :id')
+            ->setParameter('confirmed', true)
+            ->setParameter('id', $subscriberId)
+            ->getQuery()
+            ->execute();
+    }
+
+    /** @return Subscriber[] */
+    public function distinctUsersWithBouncesConfirmedNotBlacklisted(): array
+    {
+        return $this->createQueryBuilder('s')
+            ->select('s.id')
+            ->where('s.bounceCount > 0')
+            ->andWhere('s.confirmed = 1')
+            ->andWhere('s.blacklisted = 0')
+            ->getQuery()
+            ->getScalarResult();
+    }
 }

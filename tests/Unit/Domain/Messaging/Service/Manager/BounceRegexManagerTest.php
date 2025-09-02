@@ -131,7 +131,7 @@ class BounceRegexManagerTest extends TestCase
             ->method('persist')
             ->with($this->callback(function ($entity) use ($regex) {
                 return $entity instanceof BounceRegexBounce
-                    && $entity->getRegex() === $regex->getId();
+                    && $entity->getRegexId() === $regex->getId();
             }));
 
         $this->entityManager->expects($this->once())
