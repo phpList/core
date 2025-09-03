@@ -1,0 +1,21 @@
+name: L10n Validate
+
+on:
+  pull_request:
+    paths:
+      - 'translations/**/*.xlf'
+
+jobs:
+  validate-xliff:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: php-actions/composer@v6
+      - name: Validate XLIFF XML
+        run: |
+          sudo apt-get update && sudo apt-get install -y libxml2-utils
+          find translations -name '*.xlf' -print0 | xargs -0 -n1 xmllint --noout
+      - name: Symfony translation sanity (extract dry-run)
+        run: |
+          composer install --no-interaction --no-progress
+          php bin/console translation:extract en --format=xlf --domain=messages --no-interaction
