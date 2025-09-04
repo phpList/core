@@ -107,3 +107,10 @@ services:
   PhpList\Core\Domain\Messaging\Service\BounceActionResolver:
     arguments:
       - !tagged_iterator { tag: 'phplist.bounce_action_handler' }
+
+  # I18n
+  PhpList\Core\Domain\Common\I18n\SimpleTranslator:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Common\I18n\TranslatorInterface: '@PhpList\Core\Domain\Common\I18n\SimpleTranslator'

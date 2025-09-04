@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
+use PhpList\Core\Domain\Common\I18n\Messages;
 use PhpList\Core\Domain\Subscription\Exception\SubscriptionCreationException;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
@@ -11,21 +12,25 @@ use PhpList\Core\Domain\Subscription\Model\Subscription;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriptionRepository;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SubscriptionManager
 {
     private SubscriptionRepository $subscriptionRepository;
     private SubscriberRepository $subscriberRepository;
     private SubscriberListRepository $subscriberListRepository;
+    private TranslatorInterface $translator;
 
     public function __construct(
         SubscriptionRepository $subscriptionRepository,
         SubscriberRepository $subscriberRepository,
-        SubscriberListRepository $subscriberListRepository
+        SubscriberListRepository $subscriberListRepository,
+        TranslatorInterface $translator
     ) {
         $this->subscriptionRepository = $subscriptionRepository;
         $this->subscriberRepository = $subscriberRepository;
         $this->subscriberListRepository = $subscriberListRepository;
+        $this->translator = $translator;
     }
 
     public function addSubscriberToAList(Subscriber $subscriber, int $listId): Subscription
@@ -37,7 +42,8 @@ class SubscriptionManager
         }
         $subscriberList = $this->subscriberListRepository->find($listId);
         if (!$subscriberList) {
-            throw new SubscriptionCreationException('Subscriber list not found.', 404);
+            $message = $this->translator->trans(Messages::SUBSCRIPTION_LIST_NOT_FOUND);
+            throw new SubscriptionCreationException($message, 404);
         }
 
         $subscription = new Subscription();
@@ -64,7 +70,8 @@ class SubscriptionManager
     {
         $subscriber = $this->subscriberRepository->findOneBy(['email' => $email]);
         if (!$subscriber) {
-            throw new SubscriptionCreationException('Subscriber does not exists.', 404);
+            $message = $this->translator->trans(Messages::SUBSCRIPTION_SUBSCRIBER_NOT_FOUND);
+            throw new SubscriptionCreationException($message, 404);
         }
 
         $existingSubscription = $this->subscriptionRepository
@@ -101,7 +108,8 @@ class SubscriptionManager
             ->findOneBySubscriberEmailAndListId($subscriberList->getId(), $email);
 
         if (!$subscription) {
-            throw new SubscriptionCreationException('Subscription not found for this subscriber and list.', 404);
+            $message = $this->translator->trans(Messages::SUBSCRIPTION_NOT_FOUND_FOR_LIST_AND_SUBSCRIBER);
+            throw new SubscriptionCreationException($message, 404);
         }
 
         $this->subscriptionRepository->remove($subscription);

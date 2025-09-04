@@ -14,11 +14,13 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriptionRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriptionManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SubscriptionManagerTest extends TestCase
 {
     private SubscriptionRepository&MockObject $subscriptionRepository;
     private SubscriberRepository&MockObject $subscriberRepository;
+    private TranslatorInterface&MockObject $translator;
     private SubscriptionManager $manager;
 
     protected function setUp(): void
@@ -26,10 +28,12 @@ class SubscriptionManagerTest extends TestCase
         $this->subscriptionRepository = $this->createMock(SubscriptionRepository::class);
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
         $subscriberListRepository = $this->createMock(SubscriberListRepository::class);
+        $this->translator = $this->createMock(TranslatorInterface::class);
         $this->manager = new SubscriptionManager(
-            $this->subscriptionRepository,
-            $this->subscriberRepository,
-            $subscriberListRepository
+            subscriptionRepository: $this->subscriptionRepository,
+            subscriberRepository: $this->subscriberRepository,
+            subscriberListRepository: $subscriberListRepository,
+            translator: $this->translator,
         );
     }
 
@@ -51,6 +55,7 @@ class SubscriptionManagerTest extends TestCase
 
     public function testCreateSubscriptionThrowsWhenSubscriberMissing(): void
     {
+        $this->translator->method('trans')->willReturn('Subscriber does not exists.');
         $this->expectException(SubscriptionCreationException::class);
         $this->expectExceptionMessage('Subscriber does not exists.');
 

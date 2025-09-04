@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Identity\Service;
 
 use DateTime;
+use PhpList\Core\Domain\Common\I18n\Messages;
 use PhpList\Core\Domain\Identity\Model\AdminPasswordRequest;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Identity\Repository\AdminPasswordRequestRepository;
@@ -13,6 +14,7 @@ use PhpList\Core\Domain\Messaging\Message\PasswordResetMessage;
 use PhpList\Core\Security\HashGenerator;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class PasswordManager
 {
@@ -22,17 +24,20 @@ class PasswordManager
     private AdministratorRepository $administratorRepository;
     private HashGenerator $hashGenerator;
     private MessageBusInterface $messageBus;
+    private TranslatorInterface $translator;
 
     public function __construct(
         AdminPasswordRequestRepository $passwordRequestRepository,
         AdministratorRepository $administratorRepository,
         HashGenerator $hashGenerator,
-        MessageBusInterface $messageBus
+        MessageBusInterface $messageBus,
+        TranslatorInterface $translator
     ) {
         $this->passwordRequestRepository = $passwordRequestRepository;
         $this->administratorRepository = $administratorRepository;
         $this->hashGenerator = $hashGenerator;
         $this->messageBus = $messageBus;
+        $this->translator = $translator;
     }
 
     /**
@@ -47,7 +52,8 @@ class PasswordManager
     {
         $administrator = $this->administratorRepository->findOneBy(['email' => $email]);
         if ($administrator === null) {
-            throw new NotFoundHttpException('Administrator not found', null, 1500567100);
+            $message = $this->translator->trans(Messages::IDENTITY_ADMIN_NOT_FOUND);
+            throw new NotFoundHttpException($message, null, 1500567100);
         }
 
         $existingRequests = $this->passwordRequestRepository->findByAdmin($administrator);
