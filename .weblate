@@ -8,10 +8,10 @@ projects:
         name: Messages
         files:
           # {language} is Weblate’s placeholder (e.g., fr, de, es)
-          - src: translations/messages.en.xlf
+          - src: resources/translations/messages.en.xlf
             template: true
             # Where localized files live (mirrors Symfony layout)
-            target: translations/messages.{language}.xlf
+            target: resources/translations/messages.{language}.xlf
         file_format: xliff
         language_code_style: bcp
         # Ensure placeholders like %name% are preserved
@@ -21,19 +21,3 @@ projects:
           - placeholders
           - urls
           - accelerated
-      - slug: validators
-        name: Validators
-        files:
-          - src: translations/validators.en.xlf
-            template: true
-            target: translations/validators.{language}.xlf
-        file_format: xliff
-        language_code_style: bcp
-      - slug: security
-        name: Security
-        files:
-          - src: translations/security.en.xlf
-            template: true
-            target: translations/security.{language}.xlf
-        file_format: xliff
-        language_code_style: bcp
