@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Identity\Service;
 
 use PhpList\Core\Domain\Common\I18n\Messages;
-use PhpList\Core\Domain\Common\I18n\TranslatorInterface;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Identity\Model\AdministratorToken;
 use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
@@ -13,6 +12,7 @@ use PhpList\Core\Domain\Identity\Repository\AdministratorTokenRepository;
 use PhpList\Core\Domain\Identity\Service\SessionManager;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SessionManagerTest extends TestCase
 {
@@ -34,7 +34,7 @@ class SessionManagerTest extends TestCase
 
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->expects(self::exactly(2))
-            ->method('translate')
+            ->method('trans')
             ->withConsecutive(
                 [Messages::AUTH_LOGIN_FAILED, ['login' => 'admin']],
                 [Messages::AUTH_NOT_AUTHORIZED, []]
