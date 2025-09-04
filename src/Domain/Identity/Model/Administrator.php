@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Common\Model\Interfaces\ModificationDate;
+use PhpList\Core\Domain\Common\Model\Interfaces\OwnableInterface;
 use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
 
 /**
@@ -220,5 +221,14 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     public function getModifiedBy(): ?string
     {
         return $this->modifiedBy;
+    }
+
+    public function owns(OwnableInterface $resource): bool
+    {
+        if ($this->getId() === null) {
+            return false;
+        }
+
+        return $resource->getOwner()->getId() === $this->getId();
     }
 }

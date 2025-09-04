@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Common\Model\Interfaces\ModificationDate;
+use PhpList\Core\Domain\Common\Model\Interfaces\OwnableInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\ListMessage;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
@@ -28,7 +29,7 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
 #[ORM\Index(name: 'nameidx', columns: ['name'])]
 #[ORM\Index(name: 'listorderidx', columns: ['listorder'])]
 #[ORM\HasLifecycleCallbacks]
-class SubscriberList implements DomainModel, Identity, CreationDate, ModificationDate
+class SubscriberList implements DomainModel, Identity, CreationDate, ModificationDate, OwnableInterface
 {
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]

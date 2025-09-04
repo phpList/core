@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Common\Model\Interfaces\ModificationDate;
+use PhpList\Core\Domain\Common\Model\Interfaces\OwnableInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageFormat;
@@ -23,7 +24,7 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 #[ORM\Table(name: 'phplist_message')]
 #[ORM\Index(name: 'uuididx', columns: ['uuid'])]
 #[ORM\HasLifecycleCallbacks]
-class Message implements DomainModel, Identity, ModificationDate
+class Message implements DomainModel, Identity, ModificationDate, OwnableInterface
 {
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
