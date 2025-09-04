@@ -15,6 +15,14 @@ final class Messages
     public const AUTH_LOGIN_FAILED = 'auth.login_failed';
     public const AUTH_LOGIN_DISABLED = 'auth.login_disabled';
 
+    // Identity
+    public const IDENTITY_ADMIN_NOT_FOUND = 'identity.admin_not_found';
+
+    // Subscription
+    public const SUBSCRIPTION_LIST_NOT_FOUND = 'subscription.list_not_found';
+    public const SUBSCRIPTION_SUBSCRIBER_NOT_FOUND = 'subscription.subscriber_not_found';
+    public const SUBSCRIPTION_NOT_FOUND_FOR_LIST_AND_SUBSCRIBER = 'subscription.not_found_for_list_and_subscriber';
+
     private function __construct()
     {
     }

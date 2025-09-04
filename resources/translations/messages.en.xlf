@@ -19,6 +19,26 @@
         <target>Login attempt for disabled admin '%login%'</target>
       </trans-unit>
 
+      <!-- Identity -->
+      <trans-unit id="identity.admin_not_found">
+        <source>Administrator not found</source>
+        <target>Administrator not found</target>
+      </trans-unit>
+
+      <!-- Subscription -->
+      <trans-unit id="subscription.list_not_found">
+        <source>Subscriber list not found.</source>
+        <target>Subscriber list not found.</target>
+      </trans-unit>
+      <trans-unit id="subscription.subscriber_not_found">
+        <source>Subscriber does not exists.</source>
+        <target>Subscriber does not exists.</target>
+      </trans-unit>
+      <trans-unit id="subscription.not_found_for_list_and_subscriber">
+        <source>Subscription not found for this subscriber and list.</source>
+        <target>Subscription not found for this subscriber and list.</target>
+      </trans-unit>
+
     </body>
   </file>
 </xliff>

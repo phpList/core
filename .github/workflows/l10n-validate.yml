@@ -3,7 +3,7 @@ name: L10n Validate
 on:
   pull_request:
     paths:
-      - 'translations/**/*.xlf'
+      - 'resources/translations/**/*.xlf'
 
 jobs:
   validate-xliff:
