@@ -4,71 +4,86 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Identity\Service;
 
-use PhpList\Core\Domain\Common\Model\Ability;
+use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\OwnableInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
+use PhpList\Core\Domain\Identity\Model\PrivilegeFlag;
+use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Subscription\Model\Subscriber;
+use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 
 class PermissionChecker
 {
-    public function isGranted(
-        Ability $ability,
-        Administrator $actor,
-        ?OwnableInterface $resource = null,
-    ): bool {
-        if ($this->isSuperAdmin($actor)) {
-            return true;
-        }
+    private const REQUIRED_PRIVILEGE_MAP = [
+        Subscriber::class => PrivilegeFlag::Subscribers,
+        SubscriberList::class => PrivilegeFlag::Subscribers,
+        Message::class => PrivilegeFlag::Campaigns,
+    ];
 
-        return match ($ability) {
-            Ability::VIEW => $resource && $this->isOwner($actor, $resource),
-            Ability::EDIT => $resource && $this->isOwner($actor, $resource),
-            Ability::CREATE => $this->canCreate($actor),
-        };
-    }
+    private const OWNERSHIP_MAP = [
+        Subscriber::class => SubscriberList::class,
+        Message::class => SubscriberList::class
+    ];
 
-    public function canView(Administrator $actor, OwnableInterface $resource): bool
-    {
-        if ($this->isSuperAdmin($actor)) {
-            return true;
-        }
-
-        return $this->isOwner($actor, $resource);
-    }
-
-    public function canEdit(Administrator $actor, OwnableInterface $resource): bool
-    {
-        if ($this->isSuperAdmin($actor)) {
-            return true;
-        }
-
-        return $this->isOwner($actor, $resource);
-    }
-
-    public function canCreate(Administrator $actor): bool
-    {
-        if ($this->isSuperAdmin($actor)) {
-            return true;
-        }
-
-        return $actor->getId() !== null;
-    }
-
-    private function isSuperAdmin(Administrator $actor): bool
+    public function canManage(Administrator $actor, DomainModel $resource): bool
     {
         if ($actor->isSuperUser()) {
             return true;
         }
 
-        return false;
+        $required = $this->resolveRequiredPrivilege($resource);
+        if ($required !== null && !$actor->getPrivileges()->has($required)) {
+            return false;
+        }
+
+        if ($resource instanceof OwnableInterface) {
+            return $actor->owns($resource);
+        }
+
+        $notRestricted = true;
+        foreach (self::OWNERSHIP_MAP as $resourceClass => $relatedClass) {
+            if ($resource instanceof $resourceClass) {
+                $related = $this->resolveRelatedEntity($resource, $relatedClass);
+                $notRestricted = $this->checkRelatedResources($related, $actor);
+            }
+        }
+
+        return $notRestricted;
     }
 
-    private function isOwner(Administrator $actor, OwnableInterface $resource): bool
+    private function resolveRequiredPrivilege(DomainModel $resource): ?PrivilegeFlag
     {
-        $owner = $resource->getOwner();
-        $myId  = $actor->getId();
+        foreach (self::REQUIRED_PRIVILEGE_MAP as $class => $flag) {
+            if ($resource instanceof $class) {
+                return $flag;
+            }
+        }
 
-        return $owner !== null
-            && $myId !== null
-            && $owner->getId() === $myId;
+        return null;
+    }
+
+    /** @return OwnableInterface[] */
+    private function resolveRelatedEntity(DomainModel $resource, string $relatedClass): array
+    {
+        if ($resource instanceof Subscriber && $relatedClass === SubscriberList::class) {
+            return $resource->getSubscribedLists()->toArray();
+        }
+
+        if ($resource instanceof Message && $relatedClass === SubscriberList::class) {
+            return $resource->getListMessages()->map(fn($lm) => $lm->getSubscriberList())->toArray();
+        }
+
+        return [];
+    }
+
+    private function checkRelatedResources(array $related, Administrator $actor): bool
+    {
+        foreach ($related as $relatedResource) {
+            if ($actor->owns($relatedResource)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
