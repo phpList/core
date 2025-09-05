@@ -108,9 +108,7 @@ services:
     arguments:
       - !tagged_iterator { tag: 'phplist.bounce_action_handler' }
 
-  # I18n
-  PhpList\Core\Domain\Common\I18n\SimpleTranslator:
+  PhpList\Core\Domain\Identity\Service\PermissionChecker:
     autowire: true
     autoconfigure: true
-
-  PhpList\Core\Domain\Common\I18n\TranslatorInterface: '@PhpList\Core\Domain\Common\I18n\SimpleTranslator'
+    public: true
