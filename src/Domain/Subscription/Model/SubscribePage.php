@@ -7,12 +7,13 @@ namespace PhpList\Core\Domain\Subscription\Model;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
+use PhpList\Core\Domain\Common\Model\Interfaces\OwnableInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberPageRepository;
 
 #[ORM\Entity(repositoryClass: SubscriberPageRepository::class)]
 #[ORM\Table(name: 'phplist_subscribepage')]
-class SubscribePage implements DomainModel, Identity
+class SubscribePage implements DomainModel, Identity, OwnableInterface
 {
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
