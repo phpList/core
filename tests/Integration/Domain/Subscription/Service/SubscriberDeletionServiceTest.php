@@ -58,7 +58,7 @@ class SubscriberDeletionServiceTest extends KernelTestCase
         $msg = new Message(
             format: new MessageFormat(true, MessageFormat::FORMAT_TEXT),
             schedule: new MessageSchedule(1, null, 3, null, null),
-            metadata: new MessageMetadata('done'),
+            metadata: new MessageMetadata(Message\MessageStatus::Sent),
             content: new MessageContent('Owned by Admin 1!'),
             options: new MessageOptions(),
             owner: $admin

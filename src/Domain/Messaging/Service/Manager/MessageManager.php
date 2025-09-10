@@ -43,6 +43,14 @@ class MessageManager
         return $message;
     }
 
+    public function updateStatus(Message $message, Message\MessageStatus $status): Message
+    {
+        $message->getMetadata()->setStatus($status);
+        $this->messageRepository->save($message);
+
+        return $message;
+    }
+
     public function delete(Message $message): void
     {
         $this->messageRepository->remove($message);

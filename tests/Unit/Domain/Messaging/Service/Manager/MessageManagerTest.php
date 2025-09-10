@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Messaging\Model\Dto\Message\MessageOptionsDto;
 use PhpList\Core\Domain\Messaging\Model\Dto\Message\MessageScheduleDto;
 use PhpList\Core\Domain\Messaging\Model\Dto\UpdateMessageDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\MessageBuilder;
 use PhpList\Core\Domain\Messaging\Service\Manager\MessageManager;
@@ -34,7 +35,7 @@ class MessageManagerTest extends TestCase
             requeueInterval: 60 * 12,
             requeueUntil: '2025-04-20T00:00:00+00:00',
         );
-        $metadata = new MessageMetadataDto('draft');
+        $metadata = new MessageMetadataDto(Message\MessageStatus::Draft);
         $content = new MessageContentDto('Subject', 'Full text', 'Short text', 'Footer');
         $options = new MessageOptionsDto('from@example.com', 'to@example.com', 'reply@example.com', 'all-users');
 
@@ -50,11 +51,11 @@ class MessageManagerTest extends TestCase
         $authUser = $this->createMock(Administrator::class);
 
         $expectedMessage = $this->createMock(Message::class);
-        $expectedContent = $this->createMock(\PhpList\Core\Domain\Messaging\Model\Message\MessageContent::class);
+        $expectedContent = $this->createMock(MessageContent::class);
         $expectedMetadata = $this->createMock(Message\MessageMetadata::class);
 
         $expectedContent->method('getSubject')->willReturn('Subject');
-        $expectedMetadata->method('getStatus')->willReturn('draft');
+        $expectedMetadata->method('getStatus')->willReturn(Message\MessageStatus::Draft);
 
         $expectedMessage->method('getContent')->willReturn($expectedContent);
         $expectedMessage->method('getMetadata')->willReturn($expectedMetadata);
@@ -71,7 +72,7 @@ class MessageManagerTest extends TestCase
         $message = $manager->createMessage($request, $authUser);
 
         $this->assertSame('Subject', $message->getContent()->getSubject());
-        $this->assertSame('draft', $message->getMetadata()->getStatus());
+        $this->assertSame(Message\MessageStatus::Draft, $message->getMetadata()->getStatus());
     }
 
     public function testUpdateMessageReturnsUpdatedMessage(): void
@@ -88,7 +89,7 @@ class MessageManagerTest extends TestCase
             requeueInterval: 0,
             requeueUntil: '2025-04-20T00:00:00+00:00',
         );
-        $metadata = new MessageMetadataDto('draft');
+        $metadata = new MessageMetadataDto(Message\MessageStatus::Draft);
         $content = new MessageContentDto(
             'Updated Subject',
             'Updated Full text',
@@ -115,11 +116,11 @@ class MessageManagerTest extends TestCase
         $authUser = $this->createMock(Administrator::class);
 
         $existingMessage = $this->createMock(Message::class);
-        $expectedContent = $this->createMock(\PhpList\Core\Domain\Messaging\Model\Message\MessageContent::class);
+        $expectedContent = $this->createMock(MessageContent::class);
         $expectedMetadata = $this->createMock(Message\MessageMetadata::class);
 
         $expectedContent->method('getSubject')->willReturn('Updated Subject');
-        $expectedMetadata->method('getStatus')->willReturn('draft');
+        $expectedMetadata->method('getStatus')->willReturn(Message\MessageStatus::Draft);
 
         $existingMessage->method('getContent')->willReturn($expectedContent);
         $existingMessage->method('getMetadata')->willReturn($expectedMetadata);
@@ -136,6 +137,6 @@ class MessageManagerTest extends TestCase
         $message = $manager->updateMessage($updateRequest, $existingMessage, $authUser);
 
         $this->assertSame('Updated Subject', $message->getContent()->getSubject());
-        $this->assertSame('draft', $message->getMetadata()->getStatus());
+        $this->assertSame(Message\MessageStatus::Draft, $message->getMetadata()->getStatus());
     }
 }

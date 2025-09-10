@@ -61,7 +61,7 @@ class CampaignProcessorTest extends TestCase
 
         $metadata->expects($this->once())
             ->method('setStatus')
-            ->with('sent');
+            ->with(Message\MessageStatus::Sent);
 
         $this->entityManager->expects($this->once())
             ->method('flush');
@@ -89,7 +89,7 @@ class CampaignProcessorTest extends TestCase
 
         $metadata->expects($this->once())
             ->method('setStatus')
-            ->with('sent');
+            ->with(Message\MessageStatus::Sent);
 
         $this->entityManager->expects($this->once())
             ->method('flush');
@@ -136,7 +136,7 @@ class CampaignProcessorTest extends TestCase
 
         $metadata->expects($this->once())
             ->method('setStatus')
-            ->with('sent');
+            ->with(Message\MessageStatus::Sent);
 
         $this->entityManager->expects($this->once())
             ->method('flush');
@@ -183,7 +183,7 @@ class CampaignProcessorTest extends TestCase
 
         $metadata->expects($this->once())
             ->method('setStatus')
-            ->with('sent');
+            ->with(Message\MessageStatus::Sent);
 
         $this->entityManager->expects($this->once())
             ->method('flush');
@@ -223,7 +223,7 @@ class CampaignProcessorTest extends TestCase
 
         $metadata->expects($this->once())
             ->method('setStatus')
-            ->with('sent');
+            ->with(Message\MessageStatus::Sent);
 
         $this->entityManager->expects($this->once())
             ->method('flush');
@@ -266,7 +266,7 @@ class CampaignProcessorTest extends TestCase
 
         $metadata->expects($this->once())
             ->method('setStatus')
-            ->with('sent');
+            ->with(Message\MessageStatus::Sent);
 
         $this->entityManager->expects($this->once())
             ->method('flush');

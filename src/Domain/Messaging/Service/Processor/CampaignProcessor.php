@@ -69,7 +69,7 @@ class CampaignProcessor
             usleep(100000);
         }
 
-        $campaign->getMetadata()->setStatus('sent');
+        $campaign->getMetadata()->setStatus(Message\MessageStatus::Sent);
         $this->entityManager->flush();
     }
 }

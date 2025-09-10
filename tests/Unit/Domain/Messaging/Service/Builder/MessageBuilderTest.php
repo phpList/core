@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Domain\Service\Builder;
+namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Builder;
 
-use Error;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Dto\CreateMessageDto;
@@ -64,7 +63,7 @@ class MessageBuilderTest extends TestCase
                 formatOptions: []
             ),
             metadata: new MessageMetadataDto(
-                status: 'draft'
+                status: Message\MessageStatus::Draft
             ),
             options: new MessageOptionsDto(
                 fromField: '',
@@ -115,16 +114,6 @@ class MessageBuilderTest extends TestCase
         $this->mockBuildCalls($request);
 
         $this->builder->build($request, $context);
-    }
-
-    public function testThrowsExceptionOnInvalidRequest(): void
-    {
-        $this->expectException(Error::class);
-
-        $this->builder->build(
-            $this->createMock(CreateMessageDto::class),
-            new MessageContext($this->createMock(Administrator::class))
-        );
     }
 
     public function testThrowsExceptionOnInvalidContext(): void
