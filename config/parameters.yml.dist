@@ -68,3 +68,6 @@ parameters:
 
     graylog_host: 'graylog.example.com'
     graylog_port: 12201
+
+    app.phplist_isp_conf_path: '%%env(APP_PHPLIST_ISP_CONF_PATH)%%'
+    env(APP_PHPLIST_ISP_CONF_PATH): '/etc/phplist.conf'
