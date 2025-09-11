@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Messaging\Model\Message;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Interfaces\EmbeddableInterface;
 
 #[ORM\Embeddable]
@@ -58,7 +59,11 @@ class MessageMetadata implements EmbeddableInterface
 
     public function setStatus(MessageStatus $status): self
     {
+        if (!$this->getStatus()->canTransitionTo($status)) {
+            throw new InvalidArgumentException('Invalid status transition');
+        }
         $this->status = $status->value;
+
         return $this;
     }
 

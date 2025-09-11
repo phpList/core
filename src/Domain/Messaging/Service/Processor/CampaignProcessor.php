@@ -38,7 +38,14 @@ class CampaignProcessor
 
     public function process(Message $campaign, ?OutputInterface $output = null): void
     {
+        $campaign->getMetadata()->setStatus(Message\MessageStatus::Prepared);
+        $this->entityManager->flush();
+
         $subscribers = $this->subscriberProvider->getSubscribersForMessage($campaign);
+
+        $campaign->getMetadata()->setStatus(Message\MessageStatus::InProcess);
+        $this->entityManager->flush();
+
         // phpcs:ignore Generic.Commenting.Todo
         // @todo check $ISPrestrictions logic
         foreach ($subscribers as $subscriber) {

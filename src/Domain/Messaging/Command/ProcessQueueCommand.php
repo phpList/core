@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Command;
 
+use DateTimeImmutable;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\Processor\CampaignProcessor;
@@ -54,7 +56,10 @@ class ProcessQueueCommand extends Command
             $this->messagePreparator->ensureSubscribersHaveUuid($output);
             $this->messagePreparator->ensureCampaignsHaveUuid($output);
 
-            $campaigns = $this->messageRepository->findBy(['status' => 'submitted']);
+            $campaigns = $this->messageRepository->getByStatusAndEmbargo(
+                status: MessageStatus::Submitted,
+                embargo: new DateTimeImmutable()
+            );
 
             foreach ($campaigns as $campaign) {
                 $this->campaignProcessor->process($campaign, $output);

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Manager;
 
-use InvalidArgumentException;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessageContext;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessageDtoInterface;
@@ -46,10 +45,6 @@ class MessageManager
 
     public function updateStatus(Message $message, Message\MessageStatus $status): Message
     {
-        if (!$message->getMetadata()->getStatus()->canTransitionTo($status)) {
-            throw new InvalidArgumentException('Invalid status transition');
-        }
-
         $message->getMetadata()->setStatus($status);
         $this->messageRepository->save($message);
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Repository;
 
+use DateTimeImmutable;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
@@ -73,5 +74,16 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->setParameter('messageId', $messageId)
             ->getQuery()
             ->execute();
+    }
+
+    public function getByStatusAndEmbargo(Message\MessageStatus $status, DateTimeImmutable $embargo): array
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.status = :status')
+            ->andWhere('m.embargo IS NULL OR m.embargo <= :embargo')
+            ->setParameter('status', $status->value)
+            ->setParameter('embargo', $embargo)
+            ->getQuery()
+            ->getResult();
     }
 }
