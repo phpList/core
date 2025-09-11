@@ -14,11 +14,25 @@ enum MessageStatus: string
     case Suspended = 'suspended';
     case Requeued = 'requeued';
 
-    public function isFinal(): bool
+    /**
+     * Allowed transitions for each state
+     *
+     * @return MessageStatus[]
+     */
+    public function allowedTransitions(): array
     {
         return match ($this) {
-            self::Sent, self::Suspended => true,
-            default => false,
+            self::Draft, self::Suspended => [self::Submitted],
+            self::Submitted => [self::Prepared, self::InProcess],
+            self::Prepared => [self::InProcess],
+            self::InProcess => [self::Sent, self::Suspended],
+            self::Requeued => [self::InProcess, self::Suspended],
+            self::Sent => [],
         };
+    }
+
+    public function canTransitionTo(self $next): bool
+    {
+        return in_array($next, $this->allowedTransitions(), true);
     }
 }
