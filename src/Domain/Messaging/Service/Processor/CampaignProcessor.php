@@ -61,8 +61,7 @@ class CampaignProcessor
 
             $userMessage = $existing ?? new UserMessage($subscriber, $campaign);
             $userMessage->setStatus(UserMessageStatus::Active);
-            $this->entityManager->persist($userMessage);
-            $this->entityManager->flush();
+            $this->userMessageRepository->save($userMessage);
 
             $this->rateLimiter->awaitTurn($output);
 
