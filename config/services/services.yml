@@ -35,6 +35,10 @@ services:
     autowire: true
     autoconfigure: true
     public: true
+
+  PhpList\Core\Domain\Messaging\Service\SendRateLimiter:
+    autowire: true
+    autoconfigure: true
     arguments:
       $mailqueueBatchSize: '%messaging.mail_queue_batch_size%'
       $mailqueueBatchPeriod: '%messaging.mail_queue_period%'

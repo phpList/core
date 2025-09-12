@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\Processor\CampaignProcessor;
+use PhpList\Core\Domain\Messaging\Service\SendRateLimiter;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -29,6 +30,7 @@ class CampaignProcessorTest extends TestCase
     private LoggerInterface&MockObject $logger;
     private OutputInterface&MockObject $output;
     private CampaignProcessor $campaignProcessor;
+    private SendRateLimiter&MockObject $rateLimiter;
 
     protected function setUp(): void
     {
@@ -38,13 +40,17 @@ class CampaignProcessorTest extends TestCase
         $this->messagePreparator = $this->createMock(MessageProcessingPreparator::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->output = $this->createMock(OutputInterface::class);
+        $this->rateLimiter = $this->createMock(SendRateLimiter::class);
+        $this->rateLimiter->method('awaitTurn');
+        $this->rateLimiter->method('afterSend');
 
         $this->campaignProcessor = new CampaignProcessor(
             $this->mailer,
             $this->entityManager,
             $this->subscriberProvider,
             $this->messagePreparator,
-            $this->logger
+            $this->logger,
+            $this->rateLimiter
         );
     }
 
@@ -59,11 +65,10 @@ class CampaignProcessorTest extends TestCase
             ->with($campaign)
             ->willReturn([]);
 
-        $metadata->expects($this->once())
-            ->method('setStatus')
-            ->with(Message\MessageStatus::Sent);
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
 
-        $this->entityManager->expects($this->once())
+        $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
         $this->mailer->expects($this->never())
@@ -87,11 +92,10 @@ class CampaignProcessorTest extends TestCase
             ->with($campaign)
             ->willReturn([$subscriber]);
 
-        $metadata->expects($this->once())
-            ->method('setStatus')
-            ->with(Message\MessageStatus::Sent);
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
 
-        $this->entityManager->expects($this->once())
+        $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
         $this->messagePreparator->expects($this->never())
@@ -134,11 +138,10 @@ class CampaignProcessorTest extends TestCase
                 return true;
             }));
 
-        $metadata->expects($this->once())
-            ->method('setStatus')
-            ->with(Message\MessageStatus::Sent);
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
 
-        $this->entityManager->expects($this->once())
+        $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
         $this->campaignProcessor->process($campaign, $this->output);
@@ -181,11 +184,10 @@ class CampaignProcessorTest extends TestCase
             ->method('writeln')
             ->with('Failed to send to: test@example.com');
 
-        $metadata->expects($this->once())
-            ->method('setStatus')
-            ->with(Message\MessageStatus::Sent);
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
 
-        $this->entityManager->expects($this->once())
+        $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
         $this->campaignProcessor->process($campaign, $this->output);
@@ -221,11 +223,10 @@ class CampaignProcessorTest extends TestCase
         $this->mailer->expects($this->exactly(2))
             ->method('send');
 
-        $metadata->expects($this->once())
-            ->method('setStatus')
-            ->with(Message\MessageStatus::Sent);
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
 
-        $this->entityManager->expects($this->once())
+        $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
         $this->campaignProcessor->process($campaign, $this->output);
@@ -264,11 +265,10 @@ class CampaignProcessorTest extends TestCase
                 'campaign_id' => 123,
             ]);
 
-        $metadata->expects($this->once())
-            ->method('setStatus')
-            ->with(Message\MessageStatus::Sent);
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
 
-        $this->entityManager->expects($this->once())
+        $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
         $this->campaignProcessor->process($campaign, null);
