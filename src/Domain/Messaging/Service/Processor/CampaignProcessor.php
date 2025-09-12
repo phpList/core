@@ -7,6 +7,7 @@ namespace PhpList\Core\Domain\Messaging\Service\Processor;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
+use PhpList\Core\Domain\Common\IspRestrictionsProvider;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,6 +22,10 @@ class CampaignProcessor
     private SubscriberProvider $subscriberProvider;
     private MessageProcessingPreparator $messagePreparator;
     private LoggerInterface $logger;
+    private ?IspRestrictionsProvider $ispRestrictionsProvider;
+    private ?int $mailqueueBatchSize;
+    private ?int $mailqueueBatchPeriod;
+    private ?int $mailqueueThrottle;
 
     public function __construct(
         MailerInterface $mailer,
@@ -28,27 +33,67 @@ class CampaignProcessor
         SubscriberProvider $subscriberProvider,
         MessageProcessingPreparator $messagePreparator,
         LoggerInterface $logger,
+        ?IspRestrictionsProvider $ispRestrictionsProvider = null,
+        ?int $mailqueueBatchSize = null,
+        ?int $mailqueueBatchPeriod = null,
+        ?int $mailqueueThrottle = null,
     ) {
         $this->mailer = $mailer;
         $this->entityManager = $entityManager;
         $this->subscriberProvider = $subscriberProvider;
         $this->messagePreparator = $messagePreparator;
         $this->logger = $logger;
+        $this->ispRestrictionsProvider = $ispRestrictionsProvider;
+        $this->mailqueueBatchSize = $mailqueueBatchSize;
+        $this->mailqueueBatchPeriod = $mailqueueBatchPeriod;
+        $this->mailqueueThrottle = $mailqueueThrottle;
     }
 
     public function process(Message $campaign, ?OutputInterface $output = null): void
     {
-        $campaign->getMetadata()->setStatus(Message\MessageStatus::Prepared);
-        $this->entityManager->flush();
-
+        $this->updateMessageStatus($campaign, Message\MessageStatus::Prepared);
+        $ispRestrictions = $this->ispRestrictionsProvider->load();
         $subscribers = $this->subscriberProvider->getSubscribersForMessage($campaign);
 
-        $campaign->getMetadata()->setStatus(Message\MessageStatus::InProcess);
-        $this->entityManager->flush();
+        $cfgBatch = ($this->mailqueueBatchSize ?? 0);
+        $ispMax = isset($ispRestrictions->maxBatch) ? (int)$ispRestrictions->maxBatch : null;
 
-        // phpcs:ignore Generic.Commenting.Todo
-        // @todo check $ISPrestrictions logic
+        $cfgPeriod = ($this->mailqueueBatchPeriod ?? 0);
+        $ispMinPeriod = ($ispRestrictions->minBatchPeriod ?? 0);
+
+        $cfgThrottle = ($this->mailqueueThrottle ?? 0);
+        $ispMinThrottle = (int)($ispRestrictions->minThrottle ?? 0);
+
+        if ($cfgBatch <= 0) {
+            $batchSize = $ispMax !== null ? max(0, $ispMax) : 0;
+        } else {
+            $batchSize = $ispMax !== null ? min($cfgBatch, max(1, $ispMax)) : $cfgBatch;
+        }
+
+        $batchPeriod = max(0, $cfgPeriod, $ispMinPeriod);
+
+        $throttleSec = max(0, $cfgThrottle, $ispMinThrottle);
+
+        $sentInBatch = 0;
+        $batchStart = microtime(true);
+
+        $this->updateMessageStatus($campaign, Message\MessageStatus::InProcess);
+
         foreach ($subscribers as $subscriber) {
+            if ($batchSize > 0 && $batchPeriod > 0 && $sentInBatch >= $batchSize) {
+                $elapsed = microtime(true) - $batchStart;
+                $remaining = (int)ceil($batchPeriod - $elapsed);
+                if ($remaining > 0) {
+                    $output?->writeln(sprintf(
+                        'Batch limit reached, sleeping %ds to respect MAILQUEUE_BATCH_PERIOD',
+                        $remaining
+                    ));
+                    sleep($remaining);
+                }
+                $batchStart = microtime(true);
+                $sentInBatch = 0;
+            }
+
             if (!filter_var($subscriber->getEmail(), FILTER_VALIDATE_EMAIL)) {
                 continue;
             }
@@ -62,9 +107,7 @@ class CampaignProcessor
 
             try {
                 $this->mailer->send($email);
-
-                // phpcs:ignore Generic.Commenting.Todo
-                // @todo log somewhere that this subscriber got email
+                $sentInBatch++;
             } catch (Throwable $e) {
                 $this->logger->error($e->getMessage(), [
                     'subscriber_id' => $subscriber->getId(),
@@ -73,10 +116,17 @@ class CampaignProcessor
                 $output?->writeln('Failed to send to: ' . $subscriber->getEmail());
             }
 
-            usleep(100000);
+            if ($throttleSec > 0) {
+                sleep($throttleSec);
+            }
         }
 
-        $campaign->getMetadata()->setStatus(Message\MessageStatus::Sent);
+        $this->updateMessageStatus($campaign, Message\MessageStatus::Sent);
+    }
+
+    private function updateMessageStatus(Message $message, Message\MessageStatus $status): void
+    {
+        $message->getMetadata()->setStatus($status);
         $this->entityManager->flush();
     }
 }

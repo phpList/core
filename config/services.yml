@@ -7,10 +7,6 @@ services:
     autoconfigure: true
     public: false
 
-  PhpList\Core\Core\ConfigProvider:
-    arguments:
-      $config: '%app.config%'
-
   PhpList\Core\Core\ApplicationStructure:
     public: true
 

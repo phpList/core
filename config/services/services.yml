@@ -35,6 +35,10 @@ services:
     autowire: true
     autoconfigure: true
     public: true
+    arguments:
+      $mailqueueBatchSize: '%messaging.mail_queue_batch_size%'
+      $mailqueueBatchPeriod: '%messaging.mail_queue_period%'
+      $mailqueueThrottle: '%messaging.mail_queue_throttle%'
 
   PhpList\Core\Domain\Common\ClientIpResolver:
     autowire: true
