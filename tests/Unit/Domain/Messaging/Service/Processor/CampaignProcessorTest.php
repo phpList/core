@@ -9,6 +9,7 @@ use Exception;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
+use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\Processor\CampaignProcessor;
 use PhpList\Core\Domain\Messaging\Service\SendRateLimiter;
@@ -31,6 +32,7 @@ class CampaignProcessorTest extends TestCase
     private OutputInterface&MockObject $output;
     private CampaignProcessor $campaignProcessor;
     private SendRateLimiter&MockObject $rateLimiter;
+    private UserMessageRepository&MockObject $userMessageRepository;
 
     protected function setUp(): void
     {
@@ -41,16 +43,18 @@ class CampaignProcessorTest extends TestCase
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->output = $this->createMock(OutputInterface::class);
         $this->rateLimiter = $this->createMock(SendRateLimiter::class);
+        $this->userMessageRepository = $this->createMock(UserMessageRepository::class);
         $this->rateLimiter->method('awaitTurn');
         $this->rateLimiter->method('afterSend');
 
         $this->campaignProcessor = new CampaignProcessor(
-            $this->mailer,
-            $this->entityManager,
-            $this->subscriberProvider,
-            $this->messagePreparator,
-            $this->logger,
-            $this->rateLimiter
+            mailer: $this->mailer,
+            entityManager: $this->entityManager,
+            subscriberProvider: $this->subscriberProvider,
+            messagePreparator: $this->messagePreparator,
+            logger: $this->logger,
+            rateLimiter: $this->rateLimiter,
+            userMessageRepository: $this->userMessageRepository,
         );
     }
 

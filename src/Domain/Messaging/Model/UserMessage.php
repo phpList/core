@@ -7,6 +7,7 @@ namespace PhpList\Core\Domain\Messaging\Model;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
+use PhpList\Core\Domain\Messaging\Model\Message\UserMessageStatus;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 
@@ -65,9 +66,12 @@ class UserMessage implements DomainModel
         return $this->viewed;
     }
 
-    public function getStatus(): ?string
+    /**
+     * @SuppressWarnings("PHPMD.StaticAccess")
+     */
+    public function getStatus(): ?UserMessageStatus
     {
-        return $this->status;
+        return UserMessageStatus::from($this->status);
     }
 
     public function setViewed(?DateTime $viewed): self
@@ -76,9 +80,9 @@ class UserMessage implements DomainModel
         return $this;
     }
 
-    public function setStatus(?string $status): self
+    public function setStatus(?UserMessageStatus $status): self
     {
-        $this->status = $status;
+        $this->status = $status->value;
         return $this;
     }
 }

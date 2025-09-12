@@ -92,7 +92,7 @@ class SubscriberDeletionServiceTest extends KernelTestCase
         $this->entityManager->persist($linkTrackUmlClick);
 
         $userMessage = new UserMessage($subscriber, $msg);
-        $userMessage->setStatus('sent');
+        $userMessage->setStatus(Message\UserMessageStatus::Sent);
         $this->entityManager->persist($userMessage);
 
         $userMessageBounce = new UserMessageBounce(1, new DateTime());

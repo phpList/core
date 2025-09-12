@@ -6,6 +6,9 @@ namespace PhpList\Core\Domain\Messaging\Service\Processor;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Messaging\Model\UserMessage;
+use PhpList\Core\Domain\Messaging\Model\Message\UserMessageStatus;
+use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\SendRateLimiter;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
@@ -23,6 +26,7 @@ class CampaignProcessor
     private MessageProcessingPreparator $messagePreparator;
     private LoggerInterface $logger;
     private SendRateLimiter $rateLimiter;
+    private UserMessageRepository $userMessageRepository;
 
     public function __construct(
         MailerInterface $mailer,
@@ -31,6 +35,7 @@ class CampaignProcessor
         MessageProcessingPreparator $messagePreparator,
         LoggerInterface $logger,
         SendRateLimiter $rateLimiter,
+        UserMessageRepository $userMessageRepository
     ) {
         $this->mailer = $mailer;
         $this->entityManager = $entityManager;
@@ -38,6 +43,7 @@ class CampaignProcessor
         $this->messagePreparator = $messagePreparator;
         $this->logger = $logger;
         $this->rateLimiter = $rateLimiter;
+        $this->userMessageRepository = $userMessageRepository;
     }
 
     public function process(Message $campaign, ?OutputInterface $output = null): void
@@ -48,12 +54,25 @@ class CampaignProcessor
         $this->updateMessageStatus($campaign, Message\MessageStatus::InProcess);
 
         foreach ($subscribers as $subscriber) {
+            $existing = $this->userMessageRepository->findOneByUserAndMessage($subscriber, $campaign);
+            if ($existing && $existing->getStatus() !== UserMessageStatus::Todo->value) {
+                continue;
+            }
+
+            $userMessage = $existing ?? new UserMessage($subscriber, $campaign);
+            $userMessage->setStatus(UserMessageStatus::Active);
+            $this->entityManager->persist($userMessage);
+            $this->entityManager->flush();
+
             $this->rateLimiter->awaitTurn($output);
 
             if (!filter_var($subscriber->getEmail(), FILTER_VALIDATE_EMAIL)) {
+                $this->updateUserMessageStatus($userMessage, UserMessageStatus::InvalidEmailAddress);
                 continue;
             }
+
             $this->messagePreparator->processMessageLinks($campaign, $subscriber->getId());
+
             $email = (new Email())
                 ->from('news@example.com')
                 ->to($subscriber->getEmail())
@@ -63,8 +82,10 @@ class CampaignProcessor
 
             try {
                 $this->mailer->send($email);
+                $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
                 $this->rateLimiter->afterSend();
             } catch (Throwable $e) {
+                $this->updateUserMessageStatus($userMessage, UserMessageStatus::NotSent);
                 $this->logger->error($e->getMessage(), [
                     'subscriber_id' => $subscriber->getId(),
                     'campaign_id' => $campaign->getId(),
@@ -81,4 +102,9 @@ class CampaignProcessor
         $message->getMetadata()->setStatus($status);
         $this->entityManager->flush();
     }
-}
+
+    private function updateUserMessageStatus(UserMessage $userMessage, Message\UserMessageStatus $status): void
+    {
+        $userMessage->setStatus($status);
+        $this->entityManager->flush();
+    }}
