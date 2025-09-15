@@ -22,8 +22,16 @@ class RateLimitedCampaignMailer
 
     public function composeEmail(Message $processed, Subscriber $subscriber): Email
     {
-        return (new Email())
-            ->from('news@example.com')
+        $email = new Email();
+        if ($processed->getOptions()->getFromField() !== '') {
+            $email->from($processed->getOptions()->getFromField());
+        }
+
+        if ($processed->getOptions()->getReplyTo() !== '') {
+            $email->replyTo($processed->getOptions()->getReplyTo());
+        }
+
+        return $email
             ->to($subscriber->getEmail())
             ->subject($processed->getContent()->getSubject())
             ->text($processed->getContent()->getTextMessage())
