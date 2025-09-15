@@ -52,11 +52,9 @@ services:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Common\IspRestrictionsProvider:
+  PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer:
     autowire: true
     autoconfigure: true
-    arguments:
-      $confPath: '%app.phplist_isp_conf_path%'
 
   PhpList\Core\Domain\Messaging\Service\ConsecutiveBounceHandler:
     autowire: true

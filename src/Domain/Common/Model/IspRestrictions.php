@@ -11,8 +11,7 @@ final class IspRestrictions
         public readonly ?int $minBatchPeriod,
         public readonly ?string $lockFile,
         public readonly array $raw = [],
-    )
-    {
+    ) {
     }
 
     public function isEmpty(): bool

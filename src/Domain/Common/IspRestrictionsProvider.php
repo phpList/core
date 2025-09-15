@@ -12,7 +12,8 @@ class IspRestrictionsProvider
     public function __construct(
         private readonly string $confPath,
         private readonly LoggerInterface $logger,
-    ) {}
+    ) {
+    }
 
     public function load(): IspRestrictions
     {
