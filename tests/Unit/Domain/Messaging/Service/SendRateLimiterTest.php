@@ -6,6 +6,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
 
 use PhpList\Core\Domain\Common\IspRestrictionsProvider;
 use PhpList\Core\Domain\Common\Model\IspRestrictions;
+use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\SendRateLimiter;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -25,6 +26,7 @@ class SendRateLimiterTest extends TestCase
         $this->ispProvider->method('load')->willReturn(new IspRestrictions(null, null, null));
         $limiter = new SendRateLimiter(
             ispRestrictionsProvider: $this->ispProvider,
+            userMessageRepository: $this->createMock(UserMessageRepository::class),
             mailqueueBatchSize: 5,
             mailqueueBatchPeriod: 10,
             mailqueueThrottle: 2
@@ -40,7 +42,8 @@ class SendRateLimiterTest extends TestCase
     {
         $this->ispProvider->method('load')->willReturn(new IspRestrictions(2, 1, null));
         $limiter = new SendRateLimiter(
-            $this->ispProvider,
+            ispRestrictionsProvider: $this->ispProvider,
+            userMessageRepository: $this->createMock(UserMessageRepository::class),
             mailqueueBatchSize: 10,
             mailqueueBatchPeriod: 1,
             mailqueueThrottle: 0
@@ -66,7 +69,8 @@ class SendRateLimiterTest extends TestCase
     {
         $this->ispProvider->method('load')->willReturn(new IspRestrictions(null, null, null));
         $limiter = new SendRateLimiter(
-            $this->ispProvider,
+            ispRestrictionsProvider: $this->ispProvider,
+            userMessageRepository: $this->createMock(UserMessageRepository::class),
             mailqueueBatchSize: 0,
             mailqueueBatchPeriod: 0,
             mailqueueThrottle: 1
