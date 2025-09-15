@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Command;
 
 use Exception;
+use PhpList\Core\Domain\Configuration\Service\Manager\ConfigManager;
 use PhpList\Core\Domain\Messaging\Command\ProcessQueueCommand;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
@@ -41,7 +42,8 @@ class ProcessQueueCommandTest extends TestCase
             $this->messageRepository,
             $lockFactory,
             $this->messageProcessingPreparator,
-            $this->campaignProcessor
+            $this->campaignProcessor,
+            $this->createMock(ConfigManager::class),
         );
 
         $application = new Application();
