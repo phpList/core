@@ -6,22 +6,27 @@
       <trans-unit id="auth.not_authorized">
         <source>Not authorized</source>
       </trans-unit>
-      <trans-unit id="auth.login_failed">
+      <trans-unit id="auth.login_failed" xml:space="preserve" approved="no">
         <source>Failed admin login attempt for '%login%'</source>
+        <target state="translated">Неудачная попытка авторизоваться как администратор '%login%</target>
       </trans-unit>
-      <trans-unit id="auth.login_disabled">
+      <trans-unit id="auth.login_disabled" xml:space="preserve" approved="no">
         <source>Login attempt for disabled admin '%login%'</source>
+        <target state="translated">Администратор «%login%» отключён, попытка входа не удалась</target>
       </trans-unit>
       <!-- Identity -->
-      <trans-unit id="identity.admin_not_found">
+      <trans-unit id="identity.admin_not_found" xml:space="preserve" approved="no">
         <source>Administrator not found</source>
+        <target state="translated">Администратор не найден</target>
       </trans-unit>
       <!-- Subscription -->
-      <trans-unit id="subscription.list_not_found">
+      <trans-unit id="subscription.list_not_found" xml:space="preserve" approved="no">
         <source>Subscriber list not found.</source>
+        <target state="translated">Список подписчиков не найден.</target>
       </trans-unit>
-      <trans-unit id="subscription.subscriber_not_found">
+      <trans-unit id="subscription.subscriber_not_found" xml:space="preserve" approved="no">
         <source>Subscriber does not exists.</source>
+        <target state="translated">Подписчик не существует.</target>
       </trans-unit>
       <trans-unit id="subscription.not_found_for_list_and_subscriber">
         <source>Subscription not found for this subscriber and list.</source>
