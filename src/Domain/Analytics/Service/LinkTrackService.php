@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Analytics\Service;
 
-use InvalidArgumentException;
 use PhpList\Core\Core\ConfigProvider;
+use PhpList\Core\Domain\Analytics\Exception\MissingMessageIdException;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository;
 use PhpList\Core\Domain\Messaging\Model\Message;
@@ -36,7 +36,7 @@ class LinkTrackService
      * Extract links from message content and save them to the LinkTrackRepository
      *
      * @return LinkTrack[] The saved LinkTrack entities
-     * @throws InvalidArgumentException if the message doesn't have an ID
+     * @throws MissingMessageIdException
      */
     public function extractAndSaveLinks(Message $message, int $userId): array
     {
@@ -48,7 +48,7 @@ class LinkTrackService
         $messageId = $message->getId();
 
         if ($messageId === null) {
-            throw new InvalidArgumentException('Message must have an ID');
+            throw new MissingMessageIdException();
         }
 
         $links = $this->extractLinksFromHtml($content->getText() ?? '');
