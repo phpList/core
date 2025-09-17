@@ -37,8 +37,10 @@ class IspRestrictionsProvider
         $contents = file_get_contents($this->confPath);
         if ($contents === false) {
             $this->logger->warning('Cannot read ISP restrictions file', ['path' => $this->confPath]);
+
             return null;
         }
+
         return $contents;
     }
 
@@ -106,20 +108,24 @@ class IspRestrictionsProvider
             if ($val !== '' && ctype_digit($val)) {
                 $maxBatch = (int) $val;
             }
+
             return [$maxBatch, $minBatchPeriod, $lockFile];
         }
         if ($key === 'minbatchperiod') {
             if ($val !== '' && ctype_digit($val)) {
                 $minBatchPeriod = (int) $val;
             }
+
             return [$maxBatch, $minBatchPeriod, $lockFile];
         }
         if ($key === 'lockfile') {
             if ($val !== '') {
                 $lockFile = $val;
             }
+
             return [$maxBatch, $minBatchPeriod, $lockFile];
         }
+
         return [$maxBatch, $minBatchPeriod, $lockFile];
     }
 

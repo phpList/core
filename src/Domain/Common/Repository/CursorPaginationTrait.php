@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Common\Repository;
 
+use BadMethodCallException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use RuntimeException;
@@ -38,6 +39,6 @@ trait CursorPaginationTrait
             return $this->getAfterId($lastId, $limit);
         }
 
-        throw new RuntimeException('Filter method not implemented');
+        throw new BadMethodCallException('getFilteredAfterId method not implemented');
     }
 }
