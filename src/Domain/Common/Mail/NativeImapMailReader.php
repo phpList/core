@@ -6,7 +6,7 @@ namespace PhpList\Core\Domain\Common\Mail;
 
 use DateTimeImmutable;
 use IMAP\Connection;
-use RuntimeException;
+use PhpList\Core\Domain\Common\Exception\MailboxConnectionException;
 
 class NativeImapMailReader
 {
@@ -24,7 +24,7 @@ class NativeImapMailReader
         $link = imap_open($mailbox, $this->username, $this->password, $options);
 
         if ($link === false) {
-            throw new RuntimeException('Cannot open mailbox: '.(imap_last_error() ?: 'unknown error'));
+            throw new MailboxConnectionException($mailbox);
         }
 
         return $link;
