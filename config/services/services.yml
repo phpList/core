@@ -120,6 +120,13 @@ services:
     arguments:
       - !tagged_iterator { tag: 'phplist.bounce_action_handler' }
 
+  PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $maxSeconds: '%messaging.max_process_time%'
+
+
   PhpList\Core\Domain\Identity\Service\PermissionChecker:
     autowire: true
     autoconfigure: true

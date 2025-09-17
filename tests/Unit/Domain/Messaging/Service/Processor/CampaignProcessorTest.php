@@ -10,6 +10,8 @@ use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
+use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
+use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\Processor\CampaignProcessor;
 use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
@@ -49,6 +51,8 @@ class CampaignProcessorTest extends TestCase
             messagePreparator: $this->messagePreparator,
             logger: $this->logger,
             userMessageRepository: $this->userMessageRepository,
+            timeLimiter: $this->createMock(MaxProcessTimeLimiter::class),
+            requeueHandler: $this->createMock(RequeueHandler::class),
         );
     }
 

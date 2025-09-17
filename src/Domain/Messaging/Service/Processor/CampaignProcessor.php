@@ -10,13 +10,19 @@ use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Model\Message\UserMessageStatus;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
+use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
+use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
+use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class CampaignProcessor
 {
     private RateLimitedCampaignMailer $mailer;
@@ -25,6 +31,8 @@ class CampaignProcessor
     private MessageProcessingPreparator $messagePreparator;
     private LoggerInterface $logger;
     private UserMessageRepository $userMessageRepository;
+    private MaxProcessTimeLimiter $timeLimiter;
+    private RequeueHandler $requeueHandler;
 
     public function __construct(
         RateLimitedCampaignMailer $mailer,
@@ -32,7 +40,9 @@ class CampaignProcessor
         SubscriberProvider $subscriberProvider,
         MessageProcessingPreparator $messagePreparator,
         LoggerInterface $logger,
-        UserMessageRepository $userMessageRepository
+        UserMessageRepository $userMessageRepository,
+        MaxProcessTimeLimiter $timeLimiter,
+        RequeueHandler $requeueHandler
     ) {
         $this->mailer = $mailer;
         $this->entityManager = $entityManager;
@@ -40,6 +50,8 @@ class CampaignProcessor
         $this->messagePreparator = $messagePreparator;
         $this->logger = $logger;
         $this->userMessageRepository = $userMessageRepository;
+        $this->timeLimiter = $timeLimiter;
+        $this->requeueHandler = $requeueHandler;
     }
 
     public function process(Message $campaign, ?OutputInterface $output = null): void
@@ -49,7 +61,15 @@ class CampaignProcessor
 
         $this->updateMessageStatus($campaign, MessageStatus::InProcess);
 
+        $this->timeLimiter->start();
+        $stoppedEarly = false;
+
         foreach ($subscribers as $subscriber) {
+            if ($this->timeLimiter->shouldStop($output)) {
+                $stoppedEarly = true;
+                break;
+            }
+
             $existing = $this->userMessageRepository->findOneByUserAndMessage($subscriber, $campaign);
             if ($existing && $existing->getStatus() !== UserMessageStatus::Todo) {
                 continue;
@@ -61,6 +81,8 @@ class CampaignProcessor
 
             if (!filter_var($subscriber->getEmail(), FILTER_VALIDATE_EMAIL)) {
                 $this->updateUserMessageStatus($userMessage, UserMessageStatus::InvalidEmailAddress);
+                $this->unconfirmSubscriber($subscriber);
+                $output?->writeln('Invalid email, marking unconfirmed: ' . $subscriber->getEmail());
                 continue;
             }
 
@@ -80,7 +102,19 @@ class CampaignProcessor
             }
         }
 
+        if ($stoppedEarly && $this->requeueHandler->handle($campaign, $output)) {
+            return;
+        }
+
         $this->updateMessageStatus($campaign, MessageStatus::Sent);
+    }
+
+    private function unconfirmSubscriber(Subscriber $subscriber): void
+    {
+        if ($subscriber->isConfirmed()) {
+            $subscriber->setConfirmed(false);
+            $this->entityManager->flush();
+        }
     }
 
     private function updateMessageStatus(Message $message, MessageStatus $status): void

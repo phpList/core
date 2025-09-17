@@ -36,7 +36,7 @@ class SubscriberProvider
         foreach ($lists as $list) {
             $listSubscribers = $this->subscriberRepository->getSubscribersBySubscribedListId($list->getId());
             foreach ($listSubscribers as $subscriber) {
-                $subscribers[$subscriber->getId()] = $subscriber;
+                $subscribers[$subscriber->getEmail()] = $subscriber;
             }
         }
 

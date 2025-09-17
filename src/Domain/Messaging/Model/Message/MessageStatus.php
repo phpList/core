@@ -25,7 +25,7 @@ enum MessageStatus: string
             self::Draft, self::Suspended => [self::Submitted],
             self::Submitted => [self::Prepared, self::InProcess],
             self::Prepared => [self::InProcess],
-            self::InProcess => [self::Sent, self::Suspended],
+            self::InProcess => [self::Sent, self::Suspended, self::Submitted],
             self::Requeued => [self::InProcess, self::Suspended],
             self::Sent => [],
         };

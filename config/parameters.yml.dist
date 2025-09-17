@@ -79,3 +79,5 @@ parameters:
     env(MAILQUEUE_BATCH_PERIOD): '5'
     messaging.mail_queue_throttle: '%%env(MAILQUEUE_THROTTLE)%%'
     env(MAILQUEUE_THROTTLE): '5'
+    messaging.max_process_time: '%%env(MESSAGING_MAX_PROCESS_TIME)%%'
+    env(MESSAGING_MAX_PROCESS_TIME): '600'
