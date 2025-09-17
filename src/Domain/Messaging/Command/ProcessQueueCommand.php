@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Command;
 
+use DateTimeImmutable;
+use PhpList\Core\Domain\Configuration\Service\Manager\ConfigManager;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\Processor\CampaignProcessor;
@@ -24,18 +27,21 @@ class ProcessQueueCommand extends Command
     private LockFactory $lockFactory;
     private MessageProcessingPreparator $messagePreparator;
     private CampaignProcessor $campaignProcessor;
+    private ConfigManager $configManager;
 
     public function __construct(
         MessageRepository $messageRepository,
         LockFactory $lockFactory,
         MessageProcessingPreparator $messagePreparator,
         CampaignProcessor $campaignProcessor,
+        ConfigManager $configManager
     ) {
         parent::__construct();
         $this->messageRepository = $messageRepository;
         $this->lockFactory = $lockFactory;
         $this->messagePreparator = $messagePreparator;
         $this->campaignProcessor = $campaignProcessor;
+        $this->configManager = $configManager;
     }
 
     /**
@@ -50,11 +56,20 @@ class ProcessQueueCommand extends Command
             return Command::FAILURE;
         }
 
+        if ($this->configManager->inMaintenanceMode()) {
+            $output->writeln('The system is in maintenance mode, stopping. Try again later.');
+
+            return Command::FAILURE;
+        }
+
         try {
             $this->messagePreparator->ensureSubscribersHaveUuid($output);
             $this->messagePreparator->ensureCampaignsHaveUuid($output);
 
-            $campaigns = $this->messageRepository->findBy(['status' => 'submitted']);
+            $campaigns = $this->messageRepository->getByStatusAndEmbargo(
+                status: MessageStatus::Submitted,
+                embargo: new DateTimeImmutable()
+            );
 
             foreach ($campaigns as $campaign) {
                 $this->campaignProcessor->process($campaign, $output);

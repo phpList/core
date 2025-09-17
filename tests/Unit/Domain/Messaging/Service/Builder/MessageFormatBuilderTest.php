@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Domain\Service\Builder;
+namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Builder;
 
 use InvalidArgumentException;
 use PhpList\Core\Domain\Messaging\Model\Dto\Message\MessageFormatDto;

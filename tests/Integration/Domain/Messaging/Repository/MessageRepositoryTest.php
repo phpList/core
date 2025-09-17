@@ -48,7 +48,7 @@ class MessageRepositoryTest extends KernelTestCase
         $message = new Message(
             new MessageFormat(true, 'text'),
             new MessageSchedule(1, null, 3, null, null),
-            new MessageMetadata('done'),
+            new MessageMetadata(Message\MessageStatus::Sent),
             new MessageContent('Hello world!'),
             new MessageOptions(),
             $admin
@@ -62,7 +62,7 @@ class MessageRepositoryTest extends KernelTestCase
 
         self::assertCount(1, $foundMessages);
         self::assertInstanceOf(Message::class, $foundMessages[0]);
-        self::assertSame('done', $foundMessages[0]->getMetadata()->getStatus());
+        self::assertSame(Message\MessageStatus::Sent, $foundMessages[0]->getMetadata()->getStatus());
         self::assertSame('Hello world!', $foundMessages[0]->getContent()->getSubject());
     }
 
@@ -77,7 +77,7 @@ class MessageRepositoryTest extends KernelTestCase
         $msg1 = new Message(
             new MessageFormat(true, MessageFormat::FORMAT_TEXT),
             new MessageSchedule(1, null, 3, null, null),
-            new MessageMetadata('done'),
+            new MessageMetadata(Message\MessageStatus::Sent),
             new MessageContent('Owned by Admin 1!'),
             new MessageOptions(),
             $admin1

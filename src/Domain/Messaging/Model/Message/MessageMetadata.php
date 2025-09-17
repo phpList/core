@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Messaging\Model\Message;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Interfaces\EmbeddableInterface;
 
 #[ORM\Embeddable]
@@ -33,13 +34,13 @@ class MessageMetadata implements EmbeddableInterface
     private ?DateTime $sendStart;
 
     public function __construct(
-        ?string $status = null,
+        ?MessageStatus $status = null,
         int $bounceCount = 0,
         ?DateTime $entered = null,
         ?DateTime $sent = null,
         ?DateTime $sendStart = null,
     ) {
-        $this->status = $status;
+        $this->status = $status->value ?? null;
         $this->processed = false;
         $this->viewed = 0;
         $this->bounceCount = $bounceCount;
@@ -48,14 +49,21 @@ class MessageMetadata implements EmbeddableInterface
         $this->sendStart = $sendStart;
     }
 
-    public function getStatus(): ?string
+    /**
+     * @SuppressWarnings("PHPMD.StaticAccess")
+     */
+    public function getStatus(): ?MessageStatus
     {
-        return $this->status;
+        return MessageStatus::from($this->status);
     }
 
-    public function setStatus(string $status): self
+    public function setStatus(MessageStatus $status): self
     {
-        $this->status = $status;
+        if (!$this->getStatus()->canTransitionTo($status)) {
+            throw new InvalidArgumentException('Invalid status transition');
+        }
+        $this->status = $status->value;
+
         return $this;
     }
 

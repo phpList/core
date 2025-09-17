@@ -45,7 +45,7 @@ class MessageBuilder
             return $context->getExisting();
         }
 
-        $metadata = new Message\MessageMetadata($createMessageDto->getMetadata()->status);
+        $metadata = new Message\MessageMetadata(Message\MessageStatus::Draft);
 
         return new Message($format, $schedule, $metadata, $content, $options, $context->getOwner(), $template);
     }

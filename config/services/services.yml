@@ -36,11 +36,23 @@ services:
     autoconfigure: true
     public: true
 
+  PhpList\Core\Domain\Messaging\Service\SendRateLimiter:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $mailqueueBatchSize: '%messaging.mail_queue_batch_size%'
+      $mailqueueBatchPeriod: '%messaging.mail_queue_period%'
+      $mailqueueThrottle: '%messaging.mail_queue_throttle%'
+
   PhpList\Core\Domain\Common\ClientIpResolver:
     autowire: true
     autoconfigure: true
 
   PhpList\Core\Domain\Common\SystemInfoCollector:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer:
     autowire: true
     autoconfigure: true
 
@@ -107,6 +119,13 @@ services:
   PhpList\Core\Domain\Messaging\Service\BounceActionResolver:
     arguments:
       - !tagged_iterator { tag: 'phplist.bounce_action_handler' }
+
+  PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $maxSeconds: '%messaging.max_process_time%'
+
 
   PhpList\Core\Domain\Identity\Service\PermissionChecker:
     autowire: true

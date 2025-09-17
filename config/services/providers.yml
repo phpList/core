@@ -2,3 +2,13 @@ services:
   PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider:
     autowire: true
     autoconfigure: true
+
+  PhpList\Core\Core\ConfigProvider:
+    arguments:
+      $config: '%app.config%'
+
+  PhpList\Core\Domain\Common\IspRestrictionsProvider:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $confPath: '%app.phplist_isp_conf_path%'

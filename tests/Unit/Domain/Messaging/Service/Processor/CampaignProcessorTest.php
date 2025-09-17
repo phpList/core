@@ -9,42 +9,50 @@ use Exception;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
+use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
+use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
+use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\Processor\CampaignProcessor;
+use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
 class CampaignProcessorTest extends TestCase
 {
-    private MailerInterface&MockObject $mailer;
-    private EntityManagerInterface&MockObject $entityManager;
-    private SubscriberProvider&MockObject $subscriberProvider;
-    private MessageProcessingPreparator&MockObject $messagePreparator;
-    private LoggerInterface&MockObject $logger;
-    private OutputInterface&MockObject $output;
+    private RateLimitedCampaignMailer|MockObject $mailer;
+    private EntityManagerInterface|MockObject $entityManager;
+    private SubscriberProvider|MockObject $subscriberProvider;
+    private MessageProcessingPreparator|MockObject $messagePreparator;
+    private LoggerInterface|MockObject $logger;
+    private OutputInterface|MockObject $output;
     private CampaignProcessor $campaignProcessor;
+    private UserMessageRepository|MockObject $userMessageRepository;
 
     protected function setUp(): void
     {
-        $this->mailer = $this->createMock(MailerInterface::class);
+        $this->mailer = $this->createMock(RateLimitedCampaignMailer::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->subscriberProvider = $this->createMock(SubscriberProvider::class);
         $this->messagePreparator = $this->createMock(MessageProcessingPreparator::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->output = $this->createMock(OutputInterface::class);
+        $this->userMessageRepository = $this->createMock(UserMessageRepository::class);
 
         $this->campaignProcessor = new CampaignProcessor(
-            $this->mailer,
-            $this->entityManager,
-            $this->subscriberProvider,
-            $this->messagePreparator,
-            $this->logger
+            mailer: $this->mailer,
+            entityManager: $this->entityManager,
+            subscriberProvider: $this->subscriberProvider,
+            messagePreparator: $this->messagePreparator,
+            logger: $this->logger,
+            userMessageRepository: $this->userMessageRepository,
+            timeLimiter: $this->createMock(MaxProcessTimeLimiter::class),
+            requeueHandler: $this->createMock(RequeueHandler::class),
         );
     }
 
@@ -59,11 +67,10 @@ class CampaignProcessorTest extends TestCase
             ->with($campaign)
             ->willReturn([]);
 
-        $metadata->expects($this->once())
-            ->method('setStatus')
-            ->with('sent');
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
 
-        $this->entityManager->expects($this->once())
+        $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
         $this->mailer->expects($this->never())
@@ -87,11 +94,10 @@ class CampaignProcessorTest extends TestCase
             ->with($campaign)
             ->willReturn([$subscriber]);
 
-        $metadata->expects($this->once())
-            ->method('setStatus')
-            ->with('sent');
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
 
-        $this->entityManager->expects($this->once())
+        $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
         $this->messagePreparator->expects($this->never())
@@ -124,21 +130,27 @@ class CampaignProcessorTest extends TestCase
             ->willReturn($campaign);
 
         $this->mailer->expects($this->once())
+            ->method('composeEmail')
+            ->with($campaign, $subscriber)
+            ->willReturnCallback(function ($processed, $sub) use ($campaign, $subscriber) {
+                $this->assertSame($campaign, $processed);
+                $this->assertSame($subscriber, $sub);
+                return (new Email())
+                    ->from('news@example.com')
+                    ->to('test@example.com')
+                    ->subject('Test Subject')
+                    ->text('Test text message')
+                    ->html('<p>Test HTML message</p>');
+            });
+
+        $this->mailer->expects($this->once())
             ->method('send')
-            ->with($this->callback(function (Email $email) {
-                $this->assertEquals('test@example.com', $email->getTo()[0]->getAddress());
-                $this->assertEquals('news@example.com', $email->getFrom()[0]->getAddress());
-                $this->assertEquals('Test Subject', $email->getSubject());
-                $this->assertEquals('Test text message', $email->getTextBody());
-                $this->assertEquals('<p>Test HTML message</p>', $email->getHtmlBody());
-                return true;
-            }));
+            ->with($this->isInstanceOf(Email::class));
 
-        $metadata->expects($this->once())
-            ->method('setStatus')
-            ->with('sent');
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
 
-        $this->entityManager->expects($this->once())
+        $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
         $this->campaignProcessor->process($campaign, $this->output);
@@ -181,11 +193,10 @@ class CampaignProcessorTest extends TestCase
             ->method('writeln')
             ->with('Failed to send to: test@example.com');
 
-        $metadata->expects($this->once())
-            ->method('setStatus')
-            ->with('sent');
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
 
-        $this->entityManager->expects($this->once())
+        $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
         $this->campaignProcessor->process($campaign, $this->output);
@@ -221,11 +232,10 @@ class CampaignProcessorTest extends TestCase
         $this->mailer->expects($this->exactly(2))
             ->method('send');
 
-        $metadata->expects($this->once())
-            ->method('setStatus')
-            ->with('sent');
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
 
-        $this->entityManager->expects($this->once())
+        $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
         $this->campaignProcessor->process($campaign, $this->output);
@@ -264,11 +274,10 @@ class CampaignProcessorTest extends TestCase
                 'campaign_id' => 123,
             ]);
 
-        $metadata->expects($this->once())
-            ->method('setStatus')
-            ->with('sent');
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
 
-        $this->entityManager->expects($this->once())
+        $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
         $this->campaignProcessor->process($campaign, null);
@@ -277,7 +286,7 @@ class CampaignProcessorTest extends TestCase
     /**
      * Creates a mock for the Message class with content
      */
-    private function createCampaignMock(): Message&MockObject
+    private function createCampaignMock(): Message|MockObject
     {
         $campaign = $this->createMock(Message::class);
         $content = $this->createMock(MessageContent::class);

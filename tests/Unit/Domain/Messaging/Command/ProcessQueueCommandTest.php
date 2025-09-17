@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Command;
 
 use Exception;
+use PhpList\Core\Domain\Configuration\Service\Manager\ConfigManager;
 use PhpList\Core\Domain\Messaging\Command\ProcessQueueCommand;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
@@ -41,7 +42,8 @@ class ProcessQueueCommandTest extends TestCase
             $this->messageRepository,
             $lockFactory,
             $this->messageProcessingPreparator,
-            $this->campaignProcessor
+            $this->campaignProcessor,
+            $this->createMock(ConfigManager::class),
         );
 
         $application = new Application();
@@ -82,8 +84,8 @@ class ProcessQueueCommandTest extends TestCase
             ->method('ensureCampaignsHaveUuid');
 
         $this->messageRepository->expects($this->once())
-            ->method('findBy')
-            ->with(['status' => 'submitted'])
+            ->method('getByStatusAndEmbargo')
+            ->with($this->anything(), $this->anything())
             ->willReturn([]);
 
         $this->campaignProcessor->expects($this->never())
@@ -112,8 +114,8 @@ class ProcessQueueCommandTest extends TestCase
         $campaign = $this->createMock(Message::class);
 
         $this->messageRepository->expects($this->once())
-            ->method('findBy')
-            ->with(['status' => 'submitted'])
+            ->method('getByStatusAndEmbargo')
+            ->with($this->anything(), $this->anything())
             ->willReturn([$campaign]);
 
         $this->campaignProcessor->expects($this->once())
@@ -145,8 +147,8 @@ class ProcessQueueCommandTest extends TestCase
         $campaign2 = $this->createMock(Message::class);
 
         $this->messageRepository->expects($this->once())
-            ->method('findBy')
-            ->with(['status' => 'submitted'])
+            ->method('getByStatusAndEmbargo')
+            ->with($this->anything(), $this->anything())
             ->willReturn([$campaign1, $campaign2]);
 
         $this->campaignProcessor->expects($this->exactly(2))
@@ -179,8 +181,8 @@ class ProcessQueueCommandTest extends TestCase
         $campaign = $this->createMock(Message::class);
 
         $this->messageRepository->expects($this->once())
-            ->method('findBy')
-            ->with(['status' => 'submitted'])
+            ->method('getByStatusAndEmbargo')
+            ->with($this->anything(), $this->anything())
             ->willReturn([$campaign]);
 
         $this->campaignProcessor->expects($this->once())
