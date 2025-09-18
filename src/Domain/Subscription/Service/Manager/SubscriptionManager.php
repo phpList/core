@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
-use PhpList\Core\Domain\Common\I18n\Messages;
 use PhpList\Core\Domain\Subscription\Exception\SubscriptionCreationException;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
@@ -42,7 +41,7 @@ class SubscriptionManager
         }
         $subscriberList = $this->subscriberListRepository->find($listId);
         if (!$subscriberList) {
-            $message = $this->translator->trans(Messages::SUBSCRIPTION_LIST_NOT_FOUND);
+            $message = $this->translator->trans('Subscriber list not found.');
             throw new SubscriptionCreationException($message, 404);
         }
 
@@ -70,7 +69,7 @@ class SubscriptionManager
     {
         $subscriber = $this->subscriberRepository->findOneBy(['email' => $email]);
         if (!$subscriber) {
-            $message = $this->translator->trans(Messages::SUBSCRIPTION_SUBSCRIBER_NOT_FOUND);
+            $message = $this->translator->trans('Subscriber does not exists.');
             throw new SubscriptionCreationException($message, 404);
         }
 
@@ -108,7 +107,7 @@ class SubscriptionManager
             ->findOneBySubscriberEmailAndListId($subscriberList->getId(), $email);
 
         if (!$subscription) {
-            $message = $this->translator->trans(Messages::SUBSCRIPTION_NOT_FOUND_FOR_LIST_AND_SUBSCRIBER);
+            $message = $this->translator->trans('Subscription not found for this subscriber and list.');
             throw new SubscriptionCreationException($message, 404);
         }
 

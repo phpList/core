@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Identity\Service;
 
-use PhpList\Core\Domain\Common\I18n\Messages;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Identity\Model\AdministratorToken;
@@ -35,16 +34,16 @@ class SessionManager
     {
         $administrator = $this->administratorRepository->findOneByLoginCredentials($loginName, $password);
         if ($administrator === null) {
-            $entry = $this->translator->trans(Messages::AUTH_LOGIN_FAILED, ['login' => $loginName]);
+            $entry = $this->translator->trans("Failed admin login attempt for '%login%'", ['login' => $loginName]);
             $this->eventLogManager->log('login', $entry);
-            $message = $this->translator->trans(Messages::AUTH_NOT_AUTHORIZED);
+            $message = $this->translator->trans('Not authorized');
             throw new UnauthorizedHttpException('', $message, null, 1500567098);
         }
 
         if ($administrator->isDisabled()) {
-            $entry = $this->translator->trans(Messages::AUTH_LOGIN_DISABLED, ['login' => $loginName]);
+            $entry = $this->translator->trans("Login attempt for disabled admin '%login%'", ['login' => $loginName]);
             $this->eventLogManager->log('login', $entry);
-            $message = $this->translator->trans(Messages::AUTH_NOT_AUTHORIZED);
+            $message = $this->translator->trans('Not authorized');
             throw new UnauthorizedHttpException('', $message, null, 1500567099);
         }
 

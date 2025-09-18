@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Identity\Service;
 
 use DateTime;
-use PhpList\Core\Domain\Common\I18n\Messages;
 use PhpList\Core\Domain\Identity\Model\AdminPasswordRequest;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Identity\Repository\AdminPasswordRequestRepository;
@@ -52,7 +51,7 @@ class PasswordManager
     {
         $administrator = $this->administratorRepository->findOneBy(['email' => $email]);
         if ($administrator === null) {
-            $message = $this->translator->trans(Messages::IDENTITY_ADMIN_NOT_FOUND);
+            $message = $this->translator->trans('Administrator not found');
             throw new NotFoundHttpException($message, null, 1500567100);
         }
 
