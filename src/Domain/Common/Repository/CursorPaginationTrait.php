@@ -7,7 +7,6 @@ namespace PhpList\Core\Domain\Common\Repository;
 use BadMethodCallException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
-use RuntimeException;
 
 trait CursorPaginationTrait
 {
@@ -31,8 +30,8 @@ trait CursorPaginationTrait
      * Get filtered + paginated messages for a given owner and status.
      *
      * @return DomainModel[]
-     * @throws RuntimeException
-     */
+     * @throws BadMethodCallException
+     * */
     public function getFilteredAfterId(int $lastId, int $limit, ?FilterRequestInterface $filter = null): array
     {
         if ($filter === null) {

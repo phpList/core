@@ -15,6 +15,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Translation\Translator;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ProcessBouncesCommandTest extends TestCase
 {
@@ -26,6 +28,7 @@ class ProcessBouncesCommandTest extends TestCase
     private ConsecutiveBounceHandler&MockObject $consecutiveBounceHandler;
 
     private CommandTester $commandTester;
+    private TranslatorInterface|MockObject $translator;
 
     protected function setUp(): void
     {
@@ -35,6 +38,7 @@ class ProcessBouncesCommandTest extends TestCase
         $this->advancedRulesProcessor = $this->createMock(AdvancedBounceRulesProcessor::class);
         $this->unidentifiedReprocessor = $this->createMock(UnidentifiedBounceReprocessor::class);
         $this->consecutiveBounceHandler = $this->createMock(ConsecutiveBounceHandler::class);
+        $this->translator = new Translator('en');
 
         $command = new ProcessBouncesCommand(
             lockService: $this->lockService,
@@ -43,6 +47,7 @@ class ProcessBouncesCommandTest extends TestCase
             advancedRulesProcessor: $this->advancedRulesProcessor,
             unidentifiedReprocessor: $this->unidentifiedReprocessor,
             consecutiveBounceHandler: $this->consecutiveBounceHandler,
+            translator: $this->translator,
         );
 
         $this->commandTester = new CommandTester($command);

@@ -45,9 +45,54 @@
                 <target>Another bounce processing is already running. Aborting.</target>
             </trans-unit>
 
+            <trans-unit id="messaging.queue_already_processing">
+                <source>Queue is already being processed by another instance.</source>
+                <target>Queue is already being processed by another instance.</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.maintenance_mode">
+                <source>The system is in maintenance mode, stopping. Try again later.</source>
+                <target>The system is in maintenance mode, stopping. Try again later.</target>
+            </trans-unit>
+
             <trans-unit id="messaging.bounce_processing_completed">
                 <source>Bounce processing completed.</source>
                 <target>Bounce processing completed.</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.recipient_not_provided">
+                <source>Recipient email address not provided</source>
+                <target>Recipient email address not provided</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.invalid_email">
+                <source>Invalid email address: %email%</source>
+                <target>Invalid email address: %email%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.sending_test_email_sync">
+                <source>Sending test email synchronously to %email%</source>
+                <target>Sending test email synchronously to %email%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.queuing_test_email">
+                <source>Queuing test email for %email%</source>
+                <target>Queuing test email for %email%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.test_email_sent_success">
+                <source>Test email sent successfully!</source>
+                <target>Test email sent successfully!</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.test_email_queued_success">
+                <source>Test email queued successfully! It will be sent asynchronously.</source>
+                <target>Test email queued successfully! It will be sent asynchronously.</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.failed_to_send_test_email">
+                <source>Failed to send test email: %error%</source>
+                <target>Failed to send test email: %error%</target>
             </trans-unit>
 
             <!-- Subscription -->

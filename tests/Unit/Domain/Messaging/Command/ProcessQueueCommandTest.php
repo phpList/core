@@ -17,6 +17,7 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\LockInterface;
+use Symfony\Component\Translation\Translator;
 
 class ProcessQueueCommandTest extends TestCase
 {
@@ -25,6 +26,7 @@ class ProcessQueueCommandTest extends TestCase
     private CampaignProcessor&MockObject $campaignProcessor;
     private LockInterface&MockObject $lock;
     private CommandTester $commandTester;
+    private Translator&MockObject $translator;
 
     protected function setUp(): void
     {
@@ -33,17 +35,19 @@ class ProcessQueueCommandTest extends TestCase
         $this->messageProcessingPreparator = $this->createMock(MessageProcessingPreparator::class);
         $this->campaignProcessor = $this->createMock(CampaignProcessor::class);
         $this->lock = $this->createMock(LockInterface::class);
+        $this->translator = $this->createMock(Translator::class);
 
         $lockFactory->method('createLock')
             ->with('queue_processor')
             ->willReturn($this->lock);
 
         $command = new ProcessQueueCommand(
-            $this->messageRepository,
-            $lockFactory,
-            $this->messageProcessingPreparator,
-            $this->campaignProcessor,
-            $this->createMock(ConfigManager::class),
+            messageRepository: $this->messageRepository,
+            lockFactory: $lockFactory,
+            messagePreparator: $this->messageProcessingPreparator,
+            campaignProcessor: $this->campaignProcessor,
+            configManager: $this->createMock(ConfigManager::class),
+            translator: $this->translator,
         );
 
         $application = new Application();
@@ -61,10 +65,15 @@ class ProcessQueueCommandTest extends TestCase
         $this->messageProcessingPreparator->expects($this->never())
             ->method('ensureSubscribersHaveUuid');
 
+        $this->translator->expects($this->once())
+            ->method('trans')
+            ->with('Queue is already being processed by another instance.')
+            ->willReturn('Queue is already being processed by another instance.');
+
         $this->commandTester->execute([]);
 
         $output = $this->commandTester->getDisplay();
-        $this->assertStringContainsString('Queue is already being processed by another instance', $output);
+        $this->assertStringContainsString('Queue is already being processed by another instance.', $output);
         $this->assertEquals(1, $this->commandTester->getStatusCode());
     }
 

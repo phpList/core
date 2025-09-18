@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Command;
 
+use Exception;
 use PhpList\Core\Domain\Messaging\Command\SendTestEmailCommand;
 use PhpList\Core\Domain\Messaging\Service\EmailService;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -11,16 +12,20 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Translation\Translator;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SendTestEmailCommandTest extends TestCase
 {
     private EmailService&MockObject $emailService;
     private CommandTester $commandTester;
+    private TranslatorInterface $translator;
 
     protected function setUp(): void
     {
         $this->emailService = $this->createMock(EmailService::class);
-        $command = new SendTestEmailCommand($this->emailService);
+        $this->translator = new Translator('en');
+        $command = new SendTestEmailCommand($this->emailService, $this->translator);
 
         $application = new Application();
         $application->add($command);
@@ -165,7 +170,7 @@ class SendTestEmailCommandTest extends TestCase
     {
         $this->emailService->expects($this->once())
             ->method('sendEmail')
-            ->willThrowException(new \Exception('Test exception'));
+            ->willThrowException(new Exception('Test exception'));
 
         $this->commandTester->execute([
             'recipient' => 'test@example.com',
@@ -182,7 +187,7 @@ class SendTestEmailCommandTest extends TestCase
     {
         $this->emailService->expects($this->once())
             ->method('sendEmailSync')
-            ->willThrowException(new \Exception('Test sync exception'));
+            ->willThrowException(new Exception('Test sync exception'));
 
         $this->commandTester->execute([
             'recipient' => 'test@example.com',
