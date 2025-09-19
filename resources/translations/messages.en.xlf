@@ -78,6 +78,43 @@
                 </target>
             </trans-unit>
 
+            <trans-unit id="identity.subscription_confirmation">
+                <source>Please confirm your subscription</source>
+                <target>Please confirm your subscription</target>
+            </trans-unit>
+
+            <trans-unit id="identity.subscription_confirmation.text">
+                <source>Thank you for subscribing!
+
+                    Please confirm your subscription by clicking the link below:
+
+                    %confirmationLink%
+
+                    If you did not request this subscription, please ignore this email.
+                </source>
+                <target>Thank you for subscribing!
+
+                    Please confirm your subscription by clicking the link below:
+
+                    %confirmationLink%
+
+                    If you did not request this subscription, please ignore this email.
+                </target>
+            </trans-unit>
+
+            <trans-unit id="identity.subscription_confirmation.html">
+                <source><![CDATA[<p>Thank you for subscribing!</p>
+<p>Please confirm your subscription by clicking the link below:</p>
+<p><a href="%confirmationLink%">Confirm Subscription</a></p>
+<p>If you did not request this subscription, please ignore this email.</p>]]>
+                </source>
+                <target><![CDATA[<p>Thank you for subscribing!</p>
+<p>Please confirm your subscription by clicking the link below:</p>
+<p><a href="%confirmationLink%">Confirm Subscription</a></p>
+<p>If you did not request this subscription, please ignore this email.</p>]]>
+                </target>
+            </trans-unit>
+
             <!-- Messaging -->
             <trans-unit id="messaging.imap_not_available">
                 <source>PHP IMAP extension not available. Falling back to Webklex IMAP.</source>
