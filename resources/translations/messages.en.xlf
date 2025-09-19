@@ -29,6 +29,55 @@
                 <target>Attribute definition already exists.</target>
             </trans-unit>
 
+            <trans-unit id="identity.password_reset.subject">
+                <source>Password Reset Request</source>
+            </trans-unit>
+
+            <trans-unit id="identity.password_reset.text">
+                <source>Hello,
+
+                    A password reset has been requested for your account.
+                    Please use the following token to reset your password:
+
+                    %token%
+
+                    If you did not request this password reset, please ignore this email.
+
+                    Thank you.
+                </source>
+                <target>
+                    Hello,
+
+                    A password reset has been requested for your account.
+                    Please use the following token to reset your password:
+
+                    %token%
+
+                    If you did not request this password reset, please ignore this email.
+
+                    Thank you.
+                </target>
+            </trans-unit>
+
+            <trans-unit id="identity.password_reset.html">
+                <source><![CDATA[<p>Password Reset Request!</p>
+<p>Hello! A password reset has been requested for your account.</p>
+<p>Please use the following token to reset your password:</p>
+<p><a href="%confirmationLink%">Reset Password</a></p>
+<p>If you did not request this password reset, please ignore this email.</p>
+<p>Thank you.</p>]]></source>
+                <target>
+                    <![CDATA[
+                        <p>Password Reset Request!</p>
+                        <p>Hello! A password reset has been requested for your account.</p>
+                        <p>Please use the following token to reset your password:</p>
+                        <p><a href="%confirmationLink%">Reset Password</a></p>
+                        <p>If you did not request this password reset, please ignore this email.</p>
+                        <p>Thank you.</p>
+                    ]]>
+                </target>
+            </trans-unit>
+
             <!-- Messaging -->
             <trans-unit id="messaging.imap_not_available">
                 <source>PHP IMAP extension not available. Falling back to Webklex IMAP.</source>

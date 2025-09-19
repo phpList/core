@@ -10,6 +10,7 @@ use PhpList\Core\Domain\Messaging\Service\EmailService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Translation\Translator;
 
 class PasswordResetMessageHandlerTest extends TestCase
 {
@@ -20,7 +21,11 @@ class PasswordResetMessageHandlerTest extends TestCase
     protected function setUp(): void
     {
         $this->emailService = $this->createMock(EmailService::class);
-        $this->handler = new PasswordResetMessageHandler($this->emailService, $this->passwordResetUrl);
+        $this->handler = new PasswordResetMessageHandler(
+            $this->emailService,
+            new Translator('en'),
+            $this->passwordResetUrl
+        );
     }
 
     public function testInvoke(): void
