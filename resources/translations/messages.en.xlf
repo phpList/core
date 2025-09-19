@@ -115,6 +115,21 @@
                 </target>
             </trans-unit>
 
+            <trans-unit id="messaging.email_blacklist.by_rule">
+                <source>Email address auto blacklisted by bounce rule %rule_id%</source>
+                <target>Email address auto blacklisted by bounce rule %rule_id%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.email_blacklist.message">
+                <source>Auto Unsubscribed</source>
+                <target>Auto Unsubscribed</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.email_blacklist.details">
+                <source>User auto unsubscribed for bounce rule %rule_id%</source>
+                <target>User auto unsubscribed for bounce rule %rule_id%</target>
+            </trans-unit>
+
             <!-- Messaging -->
             <trans-unit id="messaging.imap_not_available">
                 <source>PHP IMAP extension not available. Falling back to Webklex IMAP.</source>

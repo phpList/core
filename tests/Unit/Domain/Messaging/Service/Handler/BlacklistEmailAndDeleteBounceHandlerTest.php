@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Translator;
 
 class BlacklistEmailAndDeleteBounceHandlerTest extends TestCase
 {
@@ -29,6 +30,7 @@ class BlacklistEmailAndDeleteBounceHandlerTest extends TestCase
             subscriberHistoryManager: $this->historyManager,
             bounceManager: $this->bounceManager,
             blacklistService: $this->blacklistService,
+            translator: new Translator('en')
         );
     }
 
