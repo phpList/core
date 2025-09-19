@@ -34,12 +34,12 @@ class BlacklistEmailAndDeleteBounceHandler implements BounceActionHandlerInterfa
         if (!empty($closureData['subscriber'])) {
             $this->blacklistService->blacklist(
                 subscriber: $closureData['subscriber'],
-                reason: 'Email address auto blacklisted by bounce rule '.$closureData['ruleId']
+                reason: 'Email address auto blacklisted by bounce rule ' . $closureData['ruleId']
             );
             $this->subscriberHistoryManager->addHistory(
                 $closureData['subscriber'],
                 'Auto Unsubscribed',
-                'User auto unsubscribed for bounce rule '.$closureData['ruleId']
+                'User auto unsubscribed for bounce rule ' . $closureData['ruleId']
             );
         }
         $this->bounceManager->delete($closureData['bounce']);

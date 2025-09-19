@@ -53,13 +53,12 @@ class PasswordResetMessageHandler
 <p>Password Reset Request!</p>
 <p>Hello! A password reset has been requested for your account.</p>
 <p>Please use the following token to reset your password:</p>
-<p><a href="%confirmationLink%">Reset Password</a></p>
+<p><a href="%confirmation_link%">Reset Password</a></p>
 <p>If you did not request this password reset, please ignore this email.</p>
 <p>Thank you.</p>
 HTML,
             [
-                '%token%' => $message->getToken(),
-                '%confirmationLink%' => $confirmationLink,
+                '%confirmation_link%' => $confirmationLink,
             ]
         );
 

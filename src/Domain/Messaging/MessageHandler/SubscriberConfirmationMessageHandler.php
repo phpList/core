@@ -42,12 +42,12 @@ class SubscriberConfirmationMessageHandler
                 
             Please confirm your subscription by clicking the link below:
             
-            %confirmationLink%
+            %confirmation_link%
             
             If you did not request this subscription, please ignore this email.            
             TXT,
             [
-                '%confirmationLink%' => $confirmationLink
+                '%confirmation_link%' => $confirmationLink
             ]
         );
 
@@ -57,11 +57,11 @@ class SubscriberConfirmationMessageHandler
                 <<<HTML
 <p>Thank you for subscribing!</p>
 <p>Please confirm your subscription by clicking the link below:</p>
-<p><a href="%confirmationLink%">Confirm Subscription</a></p>
+<p><a href="%confirmation_link%">Confirm Subscription</a></p>
 <p>If you did not request this subscription, please ignore this email.</p>
 HTML,
                 [
-                    '%confirmationLink%' => $confirmationLink,
+                    '%confirmation_link%' => $confirmationLink,
                 ]
             );
         }

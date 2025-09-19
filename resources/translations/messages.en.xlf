@@ -63,7 +63,7 @@
                 <source><![CDATA[<p>Password Reset Request!</p>
 <p>Hello! A password reset has been requested for your account.</p>
 <p>Please use the following token to reset your password:</p>
-<p><a href="%confirmationLink%">Reset Password</a></p>
+<p><a href="%confirmation_link%">Reset Password</a></p>
 <p>If you did not request this password reset, please ignore this email.</p>
 <p>Thank you.</p>]]></source>
                 <target>
@@ -71,7 +71,7 @@
                         <p>Password Reset Request!</p>
                         <p>Hello! A password reset has been requested for your account.</p>
                         <p>Please use the following token to reset your password:</p>
-                        <p><a href="%confirmationLink%">Reset Password</a></p>
+                        <p><a href="%confirmation_link%">Reset Password</a></p>
                         <p>If you did not request this password reset, please ignore this email.</p>
                         <p>Thank you.</p>
                     ]]>
@@ -88,7 +88,7 @@
 
                     Please confirm your subscription by clicking the link below:
 
-                    %confirmationLink%
+                    %confirmation_link%
 
                     If you did not request this subscription, please ignore this email.
                 </source>
@@ -96,7 +96,7 @@
 
                     Please confirm your subscription by clicking the link below:
 
-                    %confirmationLink%
+                    %confirmation_link%
 
                     If you did not request this subscription, please ignore this email.
                 </target>
@@ -105,12 +105,12 @@
             <trans-unit id="identity.subscription_confirmation.html">
                 <source><![CDATA[<p>Thank you for subscribing!</p>
 <p>Please confirm your subscription by clicking the link below:</p>
-<p><a href="%confirmationLink%">Confirm Subscription</a></p>
+<p><a href="%confirmation_link%">Confirm Subscription</a></p>
 <p>If you did not request this subscription, please ignore this email.</p>]]>
                 </source>
                 <target><![CDATA[<p>Thank you for subscribing!</p>
 <p>Please confirm your subscription by clicking the link below:</p>
-<p><a href="%confirmationLink%">Confirm Subscription</a></p>
+<p><a href="%confirmation_link%">Confirm Subscription</a></p>
 <p>If you did not request this subscription, please ignore this email.</p>]]>
                 </target>
             </trans-unit>
