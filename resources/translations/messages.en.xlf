@@ -258,7 +258,7 @@
 
             <trans-unit id="messaging.announce_processed_count">
                 <source>Processed %processed% out of %total% bounces for advanced bounce rules</source>
-                <source>Processed %processed% out of %total% bounces for advanced bounce rules</source>
+                <target>Processed %processed% out of %total% bounces for advanced bounce rules</target>
             </trans-unit>
 
             <trans-unit id="messaging.announce_processed_total">
@@ -268,6 +268,23 @@
             <trans-unit id="messaging.announce_not_processed_total">
                 <source>%not_processed% bounces were not matched by advanced processing rules</source>
                 <target>%not_processed% bounces were not matched by advanced processing rules</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.opening_mbox">
+                <source>Opening mbox %file%</source>
+                <target>Opening mbox %file%</target>
+            </trans-unit>
+            <trans-unit id="messaging.connecting_to">
+                <source>Connecting to %mailbox%</source>
+                <target>Connecting to %mailbox%</target>
+            </trans-unit>
+            <trans-unit id="messaging.do_not_interrupt">
+                <source>Please do not interrupt this process</source>
+                <target>Please do not interrupt this process</target>
+            </trans-unit>
+            <trans-unit id="messaging.mbox_missing_option">
+                <source>mbox file path must be provided with --mailbox.</source>
+                <target>mbox file path must be provided with --mailbox.</target>
             </trans-unit>
 
             <!-- Subscription -->

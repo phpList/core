@@ -8,14 +8,17 @@ use PhpList\Core\Domain\Messaging\Service\BounceProcessingServiceInterface;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class MboxBounceProcessor implements BounceProtocolProcessor
 {
     private BounceProcessingServiceInterface $processingService;
+    private TranslatorInterface $translator;
 
-    public function __construct(BounceProcessingServiceInterface $processingService)
+    public function __construct(BounceProcessingServiceInterface $processingService, TranslatorInterface $translator)
     {
         $this->processingService = $processingService;
+        $this->translator = $translator;
     }
 
     public function getProtocol(): string
@@ -30,12 +33,12 @@ class MboxBounceProcessor implements BounceProtocolProcessor
 
         $file = (string)$input->getOption('mailbox');
         if (!$file) {
-            $inputOutput->error('mbox file path must be provided with --mailbox.');
+            $inputOutput->error($this->translator->trans('mbox file path must be provided with --mailbox.'));
             throw new RuntimeException('Missing --mailbox for mbox protocol');
         }
 
-        $inputOutput->section('Opening mbox ' . $file);
-        $inputOutput->writeln('Please do not interrupt this process');
+        $inputOutput->section($this->translator->trans('Opening mbox %file%', ['%file%' => $file]));
+        $inputOutput->writeln($this->translator->trans('Please do not interrupt this process'));
 
         return $this->processingService->processMailbox(
             mailbox: $file,

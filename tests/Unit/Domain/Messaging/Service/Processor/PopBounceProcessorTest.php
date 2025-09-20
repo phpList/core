@@ -10,6 +10,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Translation\Translator;
 
 class PopBounceProcessorTest extends TestCase
 {
@@ -26,13 +27,14 @@ class PopBounceProcessorTest extends TestCase
 
     public function testGetProtocol(): void
     {
-        $processor = new PopBounceProcessor($this->service, 'mail.example.com', 995, 'INBOX');
+        $processor = new PopBounceProcessor($this->service, 'mail.example.com', 995, 'INBOX', new Translator('en'));
         $this->assertSame('pop', $processor->getProtocol());
     }
 
     public function testProcessWithMultipleMailboxesAndDefaults(): void
     {
-        $processor = new PopBounceProcessor($this->service, 'pop.example.com', 110, 'INBOX, ,Custom');
+        $translator = new Translator('en');
+        $processor = new PopBounceProcessor($this->service, 'pop.example.com', 110, 'INBOX, ,Custom', $translator);
 
         $this->input->method('getOption')->willReturnMap([
             ['test', true],
