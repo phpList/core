@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Messaging\Service\Processor\UnidentifiedBounceReprocesso
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Translation\Translator;
 
 class UnidentifiedBounceReprocessorTest extends TestCase
 {
@@ -62,7 +63,8 @@ class UnidentifiedBounceReprocessorTest extends TestCase
         $processor = new UnidentifiedBounceReprocessor(
             bounceManager: $this->bounceManager,
             messageParser: $this->messageParser,
-            bounceDataProcessor: $this->dataProcessor
+            bounceDataProcessor: $this->dataProcessor,
+            translator: new Translator('en'),
         );
         $processor->process($this->io);
     }

@@ -296,6 +296,23 @@
                 <target>Failed to send to: %email%</target>
             </trans-unit>
 
+            <trans-unit id="messaging.process_unidentified">
+                <source>Reprocessing unidentified bounces</source>
+                <target>Reprocessing unidentified bounces</target>
+            </trans-unit>
+            <trans-unit id="messaging.total_to_process">
+                <source>%total% bounces to reprocess</source>
+                <target>%total% bounces to reprocess</target>
+            </trans-unit>
+            <trans-unit id="messaging.bounce_process.report">
+                <source>%count% out of %total% processed</source>
+                <target>%count% out of %total% processed</target>
+            </trans-unit>
+            <trans-unit id="messaging.bounce_process.final_report">
+                <source>%reparsed% bounces were re-processed and %reidentified% bounces were re-identified</source>
+                <target>%reparsed% bounces were re-processed and %reidentified% bounces were re-identified</target>
+            </trans-unit>
+
             <!-- Subscription -->
             <trans-unit id="subscription.list_not_found">
                 <source>Subscriber list not found.</source>

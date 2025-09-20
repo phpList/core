@@ -10,7 +10,7 @@ enum BounceStatus: string
     case BouncedList = 'bounced list message %d';
     case DuplicateBounce = 'duplicate bounce for %d';
     case SystemMessage = 'bounced system message';
-    case Unknown = 'unidentified bounce';
+    case UnidentifiedBounce = 'unidentified bounce';
 
     public function format(int $userId): string
     {

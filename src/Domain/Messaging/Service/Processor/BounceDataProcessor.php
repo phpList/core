@@ -64,7 +64,7 @@ class BounceDataProcessor
             return $this->handleMessageOnly(bounce: $bounce, msgId: (int)$msgId);
         }
 
-        $this->bounceManager->update(bounce: $bounce, status: BounceStatus::Unknown->value, comment: 'not processed');
+        $this->bounceManager->update(bounce: $bounce, status: BounceStatus::UnidentifiedBounce->value, comment: 'not processed');
 
         return false;
     }
