@@ -287,6 +287,15 @@
                 <target>mbox file path must be provided with --mailbox.</target>
             </trans-unit>
 
+            <trans-unit id="messaging.invalid_email_unconfirm">
+                <source>Invalid email, marking unconfirmed: %email%</source>
+                <target>Invalid email, marking unconfirmed: %email%</target>
+            </trans-unit>
+            <trans-unit id="messaging.failed_to_send">
+                <source>Failed to send to: %email%</source>
+                <target>Failed to send to: %email%</target>
+            </trans-unit>
+
             <!-- Subscription -->
             <trans-unit id="subscription.list_not_found">
                 <source>Subscriber list not found.</source>
