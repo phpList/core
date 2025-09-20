@@ -10,6 +10,7 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Translator;
 
 class UnconfirmUserHandlerTest extends TestCase
 {
@@ -23,7 +24,8 @@ class UnconfirmUserHandlerTest extends TestCase
         $this->historyManager = $this->createMock(SubscriberHistoryManager::class);
         $this->handler = new UnconfirmUserHandler(
             subscriberRepository: $this->subscriberRepository,
-            subscriberHistoryManager: $this->historyManager
+            subscriberHistoryManager: $this->historyManager,
+            translator: new Translator('en')
         );
     }
 
@@ -41,7 +43,7 @@ class UnconfirmUserHandlerTest extends TestCase
         $this->subscriberRepository->expects($this->once())->method('markUnconfirmed')->with(123);
         $this->historyManager->expects($this->once())->method('addHistory')->with(
             $subscriber,
-            'Auto Unconfirmed',
+            'Auto unconfirmed',
             $this->stringContains('bounce rule 9')
         );
 

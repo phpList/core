@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Translator;
 
 class UnconfirmUserAndDeleteBounceHandlerTest extends TestCase
 {
@@ -29,6 +30,7 @@ class UnconfirmUserAndDeleteBounceHandlerTest extends TestCase
             subscriberHistoryManager: $this->historyManager,
             subscriberRepository: $this->subscriberRepository,
             bounceManager: $this->bounceManager,
+            translator: new Translator('en')
         );
     }
 

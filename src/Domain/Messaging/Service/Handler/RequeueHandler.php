@@ -11,12 +11,14 @@ use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RequeueHandler
 {
     public function __construct(
         private readonly LoggerInterface $logger,
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -46,9 +48,9 @@ class RequeueHandler
         $campaign->getMetadata()->setStatus(MessageStatus::Submitted);
         $this->entityManager->flush();
 
-        $output?->writeln(sprintf(
-            'Requeued campaign; next embargo at %s',
-            $next->format(DateTime::ATOM)
+        $output?->writeln($this->translator->trans(
+            'Requeued campaign; next embargo at %time%',
+            ['%time%' => $next->format(DateTime::ATOM)],
         ));
         $this->logger->info('Campaign requeued with new embargo', [
             'campaign_id' => $campaign->getId(),

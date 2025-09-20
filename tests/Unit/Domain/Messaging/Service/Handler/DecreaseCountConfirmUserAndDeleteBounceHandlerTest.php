@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Translator;
 
 class DecreaseCountConfirmUserAndDeleteBounceHandlerTest extends TestCase
 {
@@ -33,6 +34,7 @@ class DecreaseCountConfirmUserAndDeleteBounceHandlerTest extends TestCase
             subscriberManager: $this->subscriberManager,
             bounceManager: $this->bounceManager,
             subscriberRepository: $this->subscriberRepository,
+            translator: new Translator('en'),
         );
     }
 

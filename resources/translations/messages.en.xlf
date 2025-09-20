@@ -115,21 +115,6 @@
                 </target>
             </trans-unit>
 
-            <trans-unit id="messaging.email_blacklist.by_rule">
-                <source>Email address auto blacklisted by bounce rule %rule_id%</source>
-                <target>Email address auto blacklisted by bounce rule %rule_id%</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.email_blacklist.message">
-                <source>Auto Unsubscribed</source>
-                <target>Auto Unsubscribed</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.email_blacklist.details">
-                <source>User auto unsubscribed for bounce rule %rule_id%</source>
-                <target>User auto unsubscribed for bounce rule %rule_id%</target>
-            </trans-unit>
-
             <!-- Messaging -->
             <trans-unit id="messaging.imap_not_available">
                 <source>PHP IMAP extension not available. Falling back to Webklex IMAP.</source>
@@ -194,6 +179,95 @@
             <trans-unit id="messaging.failed_to_send_test_email">
                 <source>Failed to send test email: %error%</source>
                 <target>Failed to send test email: %error%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.email_blacklist.by_rule">
+                <source>Email address auto blacklisted by bounce rule %rule_id%</source>
+                <target>Email address auto blacklisted by bounce rule %rule_id%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.email_blacklist.message">
+                <source>Auto Unsubscribed</source>
+                <target>Auto Unsubscribed</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.email_blacklist.details">
+                <source>User auto unsubscribed for bounce rule %rule_id%</source>
+                <target>User auto unsubscribed for bounce rule %rule_id%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.email_blacklist.auto_unsubscribed">
+                <source>email auto unsubscribed for bounce rule %rule_id%</source>
+                <target>email auto unsubscribed for bounce rule %rule_id%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.subscriber_blacklisted">
+                <source>Subscriber auto blacklisted by bounce rule %rule_id%</source>
+                <target>Subscriber auto blacklisted by bounce rule %rule_id%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.subscriber_unsubscribed">
+                <source>User auto unsubscribed for bounce rule %%rule_id%</source>
+                <target>User auto unsubscribed for bounce rule %%rule_id%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.auto_confirmed">
+                <source>Auto confirmed</source>
+                <target>Auto confirmed</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.auto_unconfirmed">
+                <source>Auto unconfirmed</source>
+                <target>Auto unconfirmed</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.subscriber_autoconfirmed">
+                <source>Subscriber auto confirmed for bounce rule %rule_id%</source>
+                <target>Subscriber auto confirmed for bounce rule %rule_id%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.requeue_message">
+                <source>Requeued campaign; next embargo at %time%</source>
+                <target>Requeued campaign; next embargo at %time%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.subscriber_unconfirmed">
+                <source>Subscriber auto unconfirmed for bounce rule %rule_id%</source>
+                <target>Subscriber auto unconfirmed for bounce rule %rule_id%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.bounce.running_test_mode">
+                <source>Running in test mode, not deleting messages from mailbox</source>
+                <target>Running in test mode, not deleting messages from mailbox</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.bounce.running_live_mode">
+                <source>Processed messages will be deleted from the mailbox</source>
+                <target>Processed messages will be deleted from the mailbox</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.processing_bounce">
+                <source>Processing bounces based on active bounce rules</source>
+                <target>Processing bounces based on active bounce rules</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.no_active_rules">
+                <source>No active rules</source>
+                <target>No active rules</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.announce_processed_count">
+                <source>Processed %processed% out of %total% bounces for advanced bounce rules</source>
+                <source>Processed %processed% out of %total% bounces for advanced bounce rules</source>
+            </trans-unit>
+
+            <trans-unit id="messaging.announce_processed_total">
+                <source>%processed% bounces processed by advanced processing</source>
+                <target>%processed% bounces processed by advanced processing</target>
+            </trans-unit>
+            <trans-unit id="messaging.announce_not_processed_total">
+                <source>%not_processed% bounces were not matched by advanced processing rules</source>
+                <target>%not_processed% bounces were not matched by advanced processing rules</target>
             </trans-unit>
 
             <!-- Subscription -->

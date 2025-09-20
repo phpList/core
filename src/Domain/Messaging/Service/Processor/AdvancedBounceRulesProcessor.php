@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceRuleManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AdvancedBounceRulesProcessor
 {
@@ -19,16 +20,18 @@ class AdvancedBounceRulesProcessor
         private readonly BounceRuleManager $ruleManager,
         private readonly BounceActionResolver $actionResolver,
         private readonly SubscriberManager $subscriberManager,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
     public function process(SymfonyStyle $io, int $batchSize): void
     {
-        $io->section('Processing bounces based on active bounce rules');
+        $io->section($this->translator->trans('Processing bounces based on active bounce rules'));
 
         $rules = $this->ruleManager->loadActiveRules();
         if (!$rules) {
-            $io->writeln('No active rules');
+            $io->writeln($this->translator->trans('No active rules'));
+
             return;
         }
 
@@ -69,15 +72,20 @@ class AdvancedBounceRulesProcessor
                 $processed++;
             }
 
-            $io->writeln(sprintf(
-                'processed %d out of %d bounces for advanced bounce rules',
-                min($processed, $total),
-                $total
+            $io->writeln($this->translator->trans(
+                'Processed %processed% out of %total% bounces for advanced bounce rules', [
+                    '%processed%' => min($processed, $total),
+                    '%total%' => $total,
+                ]
             ));
         }
 
-        $io->writeln(sprintf('%d bounces processed by advanced processing', $matched));
-        $io->writeln(sprintf('%d bounces were not matched by advanced processing rules', $notMatched));
+        $io->writeln($this->translator->trans(
+            '%processed% bounces processed by advanced processing', ['%processed%' => $matched]
+        ));
+        $io->writeln($this->translator->trans(
+            '%not_processed% bounces were not matched by advanced processing rules', ['%not_processed%' => $notMatched]
+        ));
     }
 
     private function composeText(Bounce $bounce): string
