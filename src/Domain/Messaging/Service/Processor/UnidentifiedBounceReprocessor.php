@@ -72,10 +72,8 @@ class UnidentifiedBounceReprocessor
             '%total%' => $total
         ]));
         $inputOutput->writeln($this->translator->trans(
-            '%reparsed% bounces were re-processed and %reidentified% bounces were re-identified', [
-                '%reparsed%' => $reparsed,
-                '%reidentified%' => $reidentified,
-            ]
+            '%reparsed% bounces were re-processed and %reidentified% bounces were re-identified',
+            ['%reparsed%' => $reparsed, '%reidentified%' => $reidentified]
         ));
     }
 }

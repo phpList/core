@@ -73,18 +73,18 @@ class AdvancedBounceRulesProcessor
             }
 
             $io->writeln($this->translator->trans(
-                'Processed %processed% out of %total% bounces for advanced bounce rules', [
-                    '%processed%' => min($processed, $total),
-                    '%total%' => $total,
-                ]
+                'Processed %processed% out of %total% bounces for advanced bounce rules',
+                ['%processed%' => min($processed, $total), '%total%' => $total]
             ));
         }
 
         $io->writeln($this->translator->trans(
-            '%processed% bounces processed by advanced processing', ['%processed%' => $matched]
+            '%processed% bounces processed by advanced processing',
+            ['%processed%' => $matched]
         ));
         $io->writeln($this->translator->trans(
-            '%not_processed% bounces were not matched by advanced processing rules', ['%not_processed%' => $notMatched]
+            '%not_processed% bounces were not matched by advanced processing rules',
+            ['%not_processed%' => $notMatched]
         ));
     }
 

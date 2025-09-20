@@ -65,8 +65,14 @@ class MboxBounceProcessorTest extends TestCase
             ['mailbox', '/var/mail/bounce.mbox'],
         ]);
 
-        $this->io->expects($this->once())->method('section')->with($translator->trans('Opening mbox %file%', ['%file%' => '/var/mail/bounce.mbox']));
-        $this->io->expects($this->once())->method('writeln')->with($translator->trans('Please do not interrupt this process'));
+        $this->io
+            ->expects($this->once())
+            ->method('section')
+            ->with($translator->trans('Opening mbox %file%', ['%file%' => '/var/mail/bounce.mbox']));
+        $this->io
+            ->expects($this->once())
+            ->method('writeln')
+            ->with($translator->trans('Please do not interrupt this process'));
 
         $this->service->expects($this->once())
             ->method('processMailbox')

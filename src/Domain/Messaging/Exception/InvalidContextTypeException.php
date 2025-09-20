@@ -10,6 +10,6 @@ class InvalidContextTypeException extends LogicException
 {
     public function __construct(string $type)
     {
-        parent::__construct("Invalid context type: $type");
+        parent::__construct('Invalid context type: ' . $type);
     }
 }

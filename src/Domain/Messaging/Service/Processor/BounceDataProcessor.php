@@ -53,7 +53,12 @@ class BounceDataProcessor
         }
 
         if ($msgId && $userId) {
-            return $this->handleKnownMessageAndUser(bounce: $bounce, date:  $bounceDate, msgId: (int)$msgId, userId: $userId);
+            return $this->handleKnownMessageAndUser(
+                bounce: $bounce,
+                date: $bounceDate,
+                msgId: (int)$msgId,
+                userId: $userId
+            );
         }
 
         if ($userId) {
@@ -64,7 +69,11 @@ class BounceDataProcessor
             return $this->handleMessageOnly(bounce: $bounce, msgId: (int)$msgId);
         }
 
-        $this->bounceManager->update(bounce: $bounce, status: BounceStatus::UnidentifiedBounce->value, comment: 'not processed');
+        $this->bounceManager->update(
+            bounce: $bounce,
+            status: BounceStatus::UnidentifiedBounce->value,
+            comment: 'not processed'
+        );
 
         return false;
     }

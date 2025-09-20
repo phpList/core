@@ -37,15 +37,10 @@ class SubscriberConfirmationMessageHandler
         $subject = $this->translator->trans('Please confirm your subscription');
 
         $textContent = $this->translator->trans(
-            <<<TXT
-            Thank you for subscribing!
-                
-            Please confirm your subscription by clicking the link below:
-            
-            %confirmation_link%
-            
-            If you did not request this subscription, please ignore this email.            
-            TXT,
+            "Thank you for subscribing!\n\n" .
+            "Please confirm your subscription by clicking the link below:\n\n" .
+            "%confirmation_link%\n\n" .
+            'If you did not request this subscription, please ignore this email.',
             [
                 '%confirmation_link%' => $confirmationLink
             ]
@@ -54,12 +49,10 @@ class SubscriberConfirmationMessageHandler
         $htmlContent = '';
         if ($message->hasHtmlEmail()) {
             $htmlContent = $this->translator->trans(
-                <<<HTML
-<p>Thank you for subscribing!</p>
-<p>Please confirm your subscription by clicking the link below:</p>
-<p><a href="%confirmation_link%">Confirm Subscription</a></p>
-<p>If you did not request this subscription, please ignore this email.</p>
-HTML,
+                '<p>Thank you for subscribing!</p>' .
+                '<p>Please confirm your subscription by clicking the link below:</p>' .
+                '<p><a href="%confirmation_link%">Confirm Subscription</a></p>' .
+                '<p>If you did not request this subscription, please ignore this email.</p>',
                 [
                     '%confirmation_link%' => $confirmationLink,
                 ]

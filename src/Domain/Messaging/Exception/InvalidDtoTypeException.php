@@ -10,6 +10,6 @@ class InvalidDtoTypeException extends LogicException
 {
     public function __construct(string $type)
     {
-        parent::__construct("Invalid dto type: $type");
+        parent::__construct('Invalid dto type: ' . $type);
     }
 }
