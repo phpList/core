@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Messaging\Service\Processor;
 
 use DateTimeImmutable;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
+use PhpList\Core\Domain\Messaging\Model\BounceStatus;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -44,26 +45,26 @@ class BounceDataProcessor
 
         if ($msgId === 'systemmessage') {
             return $userId ? $this->handleSystemMessageWithUser(
-                $bounce,
-                $bounceDate,
-                $userId,
-                $user
-            ) : $this->handleSystemMessageUnknownUser($bounce);
+                bounce: $bounce,
+                date: $bounceDate,
+                userId: $userId,
+                userOrNull: $user
+            ) : $this->handleSystemMessageUnknownUser(bounce: $bounce);
         }
 
         if ($msgId && $userId) {
-            return $this->handleKnownMessageAndUser($bounce, $bounceDate, (int)$msgId, $userId);
+            return $this->handleKnownMessageAndUser(bounce: $bounce, date:  $bounceDate, msgId: (int)$msgId, userId: $userId);
         }
 
         if ($userId) {
-            return $this->handleUserOnly($bounce, $userId);
+            return $this->handleUserOnly(bounce: $bounce, userId: $userId);
         }
 
         if ($msgId) {
-            return $this->handleMessageOnly($bounce, (int)$msgId);
+            return $this->handleMessageOnly(bounce: $bounce, msgId: (int)$msgId);
         }
 
-        $this->bounceManager->update($bounce, 'unidentified bounce', 'not processed');
+        $this->bounceManager->update(bounce: $bounce, status: BounceStatus::Unknown->value, comment: 'not processed');
 
         return false;
     }
@@ -76,10 +77,10 @@ class BounceDataProcessor
     ): bool {
         $this->bounceManager->update(
             bounce: $bounce,
-            status: 'bounced system message',
+            status: BounceStatus::SystemMessage->value,
             comment: sprintf('%d marked unconfirmed', $userId)
         );
-        $this->bounceManager->linkUserMessageBounce($bounce, $date, $userId);
+        $this->bounceManager->linkUserMessageBounce(bounce: $bounce, date: $date, subscriberId: $userId);
         $this->subscriberRepository->markUnconfirmed($userId);
         $this->logger->info('system message bounced, user marked unconfirmed', ['userId' => $userId]);
 
@@ -96,7 +97,11 @@ class BounceDataProcessor
 
     private function handleSystemMessageUnknownUser(Bounce $bounce): bool
     {
-        $this->bounceManager->update($bounce, 'bounced system message', 'unknown user');
+        $this->bounceManager->update(
+            bounce:$bounce,
+            status: BounceStatus::SystemMessage->value,
+            comment: 'unknown user'
+        );
         $this->logger->info('system message bounced, but unknown user');
 
         return true;
@@ -108,20 +113,30 @@ class BounceDataProcessor
         int $msgId,
         int $userId
     ): bool {
-        if (!$this->bounceManager->existsUserMessageBounce($userId, $msgId)) {
-            $this->bounceManager->linkUserMessageBounce($bounce, $date, $userId, $msgId);
+        if (!$this->bounceManager->existsUserMessageBounce(subscriberId: $userId, messageId: $msgId)) {
+            $this->bounceManager->linkUserMessageBounce(
+                bounce: $bounce,
+                date: $date,
+                subscriberId: $userId,
+                messageId: $msgId
+            );
             $this->bounceManager->update(
                 bounce: $bounce,
-                status: sprintf('bounced list message %d', $msgId),
+                status: BounceStatus::BouncedList->format($msgId),
                 comment: sprintf('%d bouncecount increased', $userId)
             );
             $this->messageRepository->incrementBounceCount($msgId);
             $this->subscriberRepository->incrementBounceCount($userId);
         } else {
-            $this->bounceManager->linkUserMessageBounce($bounce, $date, $userId, $msgId);
+            $this->bounceManager->linkUserMessageBounce(
+                bounce: $bounce,
+                date: $date,
+                subscriberId: $userId,
+                messageId: $msgId
+            );
             $this->bounceManager->update(
                 bounce: $bounce,
-                status: sprintf('duplicate bounce for %d', $userId),
+                status: BounceStatus::DuplicateBounce->format($userId),
                 comment: sprintf('duplicate bounce for subscriber %d on message %d', $userId, $msgId)
             );
         }
@@ -133,7 +148,7 @@ class BounceDataProcessor
     {
         $this->bounceManager->update(
             bounce: $bounce,
-            status: 'bounced unidentified message',
+            status: BounceStatus::UnidentifiedMessage->value,
             comment: sprintf('%d bouncecount increased', $userId)
         );
         $this->subscriberRepository->incrementBounceCount($userId);
@@ -145,7 +160,7 @@ class BounceDataProcessor
     {
         $this->bounceManager->update(
             bounce: $bounce,
-            status: sprintf('bounced list message %d', $msgId),
+            status: BounceStatus::BouncedList->format($msgId),
             comment: 'unknown user'
         );
         $this->messageRepository->incrementBounceCount($msgId);
