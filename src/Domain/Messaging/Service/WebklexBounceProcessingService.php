@@ -6,10 +6,10 @@ namespace PhpList\Core\Domain\Messaging\Service;
 
 use DateTimeImmutable;
 use DateTimeInterface;
+use PhpList\Core\Domain\Messaging\Exception\ImapConnectionException;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Messaging\Service\Processor\BounceDataProcessor;
 use Psr\Log\LoggerInterface;
-use RuntimeException;
 use Throwable;
 use Webklex\PHPIMAP\Client;
 use Webklex\PHPIMAP\Folder;
@@ -50,7 +50,7 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
      *
      * $mailbox: IMAP host; if you pass "host#FOLDER", FOLDER will be used instead of INBOX.
      *
-     * @throws RuntimeException If connection to the IMAP server cannot be established.
+     * @throws ImapConnectionException If connection to the IMAP server cannot be established.
      */
     public function processMailbox(
         string $mailbox,
@@ -61,9 +61,12 @@ class WebklexBounceProcessingService implements BounceProcessingServiceInterface
 
         try {
             $client->connect();
-        } catch (Throwable $e) {
-            $this->logger->error('Cannot connect to mailbox: '.$e->getMessage());
-            throw new RuntimeException('Cannot connect to IMAP server');
+        } catch (Throwable $throwable) {
+            $this->logger->error('Cannot connect to mailbox', [
+                'mailbox' => $mailbox,
+                'error' => $throwable->getMessage()
+            ]);
+            throw new ImapConnectionException($throwable);
         }
 
         try {

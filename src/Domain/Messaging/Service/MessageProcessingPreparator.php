@@ -10,6 +10,7 @@ use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class MessageProcessingPreparator
 {
@@ -20,17 +21,20 @@ class MessageProcessingPreparator
     private SubscriberRepository $subscriberRepository;
     private MessageRepository $messageRepository;
     private LinkTrackService $linkTrackService;
+    private TranslatorInterface $translator;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         SubscriberRepository $subscriberRepository,
         MessageRepository $messageRepository,
-        LinkTrackService $linkTrackService
+        LinkTrackService $linkTrackService,
+        TranslatorInterface $translator,
     ) {
         $this->entityManager = $entityManager;
         $this->subscriberRepository = $subscriberRepository;
         $this->messageRepository = $messageRepository;
         $this->linkTrackService = $linkTrackService;
+        $this->translator = $translator;
     }
 
     public function ensureSubscribersHaveUuid(OutputInterface $output): void
@@ -39,7 +43,9 @@ class MessageProcessingPreparator
 
         $numSubscribers = count($subscribersWithoutUuid);
         if ($numSubscribers > 0) {
-            $output->writeln(sprintf('Giving a UUID to %d subscribers, this may take a while', $numSubscribers));
+            $output->writeln($this->translator->trans('Giving a UUID to %count% subscribers, this may take a while', [
+                '%count%' => $numSubscribers
+            ]));
             foreach ($subscribersWithoutUuid as $subscriber) {
                 $subscriber->setUniqueId(bin2hex(random_bytes(16)));
             }
@@ -53,7 +59,9 @@ class MessageProcessingPreparator
 
         $numCampaigns = count($campaignsWithoutUuid);
         if ($numCampaigns > 0) {
-            $output->writeln(sprintf('Giving a UUID to %d campaigns', $numCampaigns));
+            $output->writeln($this->translator->trans('Giving a UUID to %count% campaigns', [
+                '%count%' => $numCampaigns
+            ]));
             foreach ($campaignsWithoutUuid as $campaign) {
                 $campaign->setUuid(bin2hex(random_bytes(18)));
             }

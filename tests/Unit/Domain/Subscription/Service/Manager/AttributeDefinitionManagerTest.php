@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRep
 use PhpList\Core\Domain\Subscription\Service\Manager\AttributeDefinitionManager;
 use PhpList\Core\Domain\Subscription\Validator\AttributeTypeValidator;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Translator;
 
 class AttributeDefinitionManagerTest extends TestCase
 {
@@ -18,7 +19,11 @@ class AttributeDefinitionManagerTest extends TestCase
     {
         $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $validator = $this->createMock(AttributeTypeValidator::class);
-        $manager = new AttributeDefinitionManager($repository, $validator);
+        $manager = new AttributeDefinitionManager(
+            definitionRepository: $repository,
+            attributeTypeValidator: $validator,
+            translator: new Translator('en')
+        );
 
         $dto = new AttributeDefinitionDto(
             name: 'Country',
@@ -51,7 +56,11 @@ class AttributeDefinitionManagerTest extends TestCase
     {
         $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $validator = $this->createMock(AttributeTypeValidator::class);
-        $manager = new AttributeDefinitionManager($repository, $validator);
+        $manager = new AttributeDefinitionManager(
+            definitionRepository: $repository,
+            attributeTypeValidator: $validator,
+            translator: new Translator('en'),
+        );
 
         $dto = new AttributeDefinitionDto(
             name: 'Country',
@@ -78,7 +87,11 @@ class AttributeDefinitionManagerTest extends TestCase
     {
         $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $validator = $this->createMock(AttributeTypeValidator::class);
-        $manager = new AttributeDefinitionManager($repository, $validator);
+        $manager = new AttributeDefinitionManager(
+            definitionRepository: $repository,
+            attributeTypeValidator: $validator,
+            translator: new Translator('en'),
+        );
 
         $attribute = new SubscriberAttributeDefinition();
         $attribute->setName('Old');
@@ -113,7 +126,11 @@ class AttributeDefinitionManagerTest extends TestCase
     {
         $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $validator = $this->createMock(AttributeTypeValidator::class);
-        $manager = new AttributeDefinitionManager($repository, $validator);
+        $manager = new AttributeDefinitionManager(
+            definitionRepository: $repository,
+            attributeTypeValidator: $validator,
+            translator: new Translator('en'),
+        );
 
         $dto = new AttributeDefinitionDto(
             name: 'Existing',
@@ -144,7 +161,11 @@ class AttributeDefinitionManagerTest extends TestCase
     {
         $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $validator = $this->createMock(AttributeTypeValidator::class);
-        $manager = new AttributeDefinitionManager($repository, $validator);
+        $manager = new AttributeDefinitionManager(
+            definitionRepository: $repository,
+            attributeTypeValidator: $validator,
+            translator: new Translator('en'),
+        );
 
         $attribute = new SubscriberAttributeDefinition();
 

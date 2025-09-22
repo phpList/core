@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ConsecutiveBounceHandler
 {
@@ -20,6 +21,7 @@ class ConsecutiveBounceHandler
     private SubscriberRepository $subscriberRepository;
     private SubscriberHistoryManager $subscriberHistoryManager;
     private SubscriberBlacklistService $blacklistService;
+    private TranslatorInterface $translator;
     private int $unsubscribeThreshold;
     private int $blacklistThreshold;
 
@@ -28,6 +30,7 @@ class ConsecutiveBounceHandler
         SubscriberRepository $subscriberRepository,
         SubscriberHistoryManager $subscriberHistoryManager,
         SubscriberBlacklistService $blacklistService,
+        TranslatorInterface $translator,
         int $unsubscribeThreshold,
         int $blacklistThreshold,
     ) {
@@ -35,19 +38,21 @@ class ConsecutiveBounceHandler
         $this->subscriberRepository = $subscriberRepository;
         $this->subscriberHistoryManager = $subscriberHistoryManager;
         $this->blacklistService = $blacklistService;
+        $this->translator = $translator;
         $this->unsubscribeThreshold = $unsubscribeThreshold;
         $this->blacklistThreshold = $blacklistThreshold;
     }
 
     public function handle(SymfonyStyle $io): void
     {
-        $io->section('Identifying consecutive bounces');
+        $io->section($this->translator->trans('Identifying consecutive bounces'));
 
         $users = $this->subscriberRepository->distinctUsersWithBouncesConfirmedNotBlacklisted();
         $total = count($users);
 
         if ($total === 0) {
-            $io->writeln('Nothing to do');
+            $io->writeln($this->translator->trans('Nothing to do'));
+
             return;
         }
 
@@ -57,11 +62,14 @@ class ConsecutiveBounceHandler
             $processed++;
 
             if ($processed % 5 === 0) {
-                $io->writeln(\sprintf('processed %d out of %d subscribers', $processed, $total));
+                $io->writeln($this->translator->trans('Processed %processed% out of %total% subscribers', [
+                    '%processed%' => $processed,
+                    '%total%' => $total,
+                ]));
             }
         }
 
-        $io->writeln(\sprintf('total of %d subscribers processed', $total));
+        $io->writeln($this->translator->trans('Total of %total% subscribers processed', ['%total%' => $total]));
     }
 
     private function processUser(Subscriber $user): void
@@ -123,15 +131,19 @@ class ConsecutiveBounceHandler
             $this->subscriberRepository->markUnconfirmed($user->getId());
             $this->subscriberHistoryManager->addHistory(
                 subscriber: $user,
-                message: 'Auto Unconfirmed',
-                details: sprintf('Subscriber auto unconfirmed for %d consecutive bounces', $consecutive)
+                message: $this->translator->trans('Auto unconfirmed'),
+                details: $this->translator->trans('Subscriber auto unconfirmed for %count% consecutive bounces', [
+                    '%count%' => $consecutive
+                ])
             );
         }
 
         if ($this->blacklistThreshold > 0 && $consecutive >= $this->blacklistThreshold) {
             $this->blacklistService->blacklist(
                 subscriber: $user,
-                reason: sprintf('%d consecutive bounces, threshold reached', $consecutive)
+                reason: $this->translator->trans('%count% consecutive bounces, threshold reached', [
+                    '%count%' => $consecutive
+                ])
             );
             return true;
         }

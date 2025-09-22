@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Messaging\Service\SendRateLimiter;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Translation\Translator;
 
 class SendRateLimiterTest extends TestCase
 {
@@ -27,6 +28,7 @@ class SendRateLimiterTest extends TestCase
         $limiter = new SendRateLimiter(
             ispRestrictionsProvider: $this->ispProvider,
             userMessageRepository: $this->createMock(UserMessageRepository::class),
+            translator: new Translator('en'),
             mailqueueBatchSize: 5,
             mailqueueBatchPeriod: 10,
             mailqueueThrottle: 2
@@ -44,6 +46,7 @@ class SendRateLimiterTest extends TestCase
         $limiter = new SendRateLimiter(
             ispRestrictionsProvider: $this->ispProvider,
             userMessageRepository: $this->createMock(UserMessageRepository::class),
+            translator: new Translator('en'),
             mailqueueBatchSize: 10,
             mailqueueBatchPeriod: 1,
             mailqueueThrottle: 0
@@ -71,6 +74,7 @@ class SendRateLimiterTest extends TestCase
         $limiter = new SendRateLimiter(
             ispRestrictionsProvider: $this->ispProvider,
             userMessageRepository: $this->createMock(UserMessageRepository::class),
+            translator: new Translator('en'),
             mailqueueBatchSize: 0,
             mailqueueBatchPeriod: 0,
             mailqueueThrottle: 1

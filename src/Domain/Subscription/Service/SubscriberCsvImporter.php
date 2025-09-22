@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Subscription\Exception\CouldNotReadUploadedFileException;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -13,8 +14,8 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriptionManager;
-use RuntimeException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
 /**
@@ -30,6 +31,7 @@ class SubscriberCsvImporter
     private CsvImporter $csvImporter;
     private SubscriberAttributeDefinitionRepository $attrDefinitionRepository;
     private EntityManagerInterface $entityManager;
+    private TranslatorInterface $translator;
 
     public function __construct(
         SubscriberManager $subscriberManager,
@@ -38,7 +40,8 @@ class SubscriberCsvImporter
         SubscriberRepository $subscriberRepository,
         CsvImporter $csvImporter,
         SubscriberAttributeDefinitionRepository $attrDefinitionRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        TranslatorInterface $translator,
     ) {
         $this->subscriberManager = $subscriberManager;
         $this->attributeManager = $attributeManager;
@@ -47,6 +50,7 @@ class SubscriberCsvImporter
         $this->csvImporter = $csvImporter;
         $this->attrDefinitionRepository = $attrDefinitionRepository;
         $this->entityManager = $entityManager;
+        $this->translator = $translator;
     }
 
     /**
@@ -55,7 +59,7 @@ class SubscriberCsvImporter
      * @param UploadedFile $file The uploaded CSV file
      * @param SubscriberImportOptions $options
      * @return array Import statistics
-     * @throws RuntimeException When the uploaded file cannot be read or for any other errors during import
+     * @throws CouldNotReadUploadedFileException When the uploaded file cannot be read during import
      */
     public function importFromCsv(UploadedFile $file, SubscriberImportOptions $options): array
     {
@@ -69,7 +73,9 @@ class SubscriberCsvImporter
         try {
             $path = $file->getRealPath();
             if ($path === false) {
-                throw new RuntimeException('Could not read the uploaded file.');
+                throw new CouldNotReadUploadedFileException(
+                    $this->translator->trans('Could not read the uploaded file.')
+                );
             }
 
             $result = $this->csvImporter->import($path);
@@ -81,7 +87,10 @@ class SubscriberCsvImporter
                         $this->entityManager->flush();
                     }
                 } catch (Throwable $e) {
-                    $stats['errors'][] = 'Error processing ' . $dto->email . ': ' . $e->getMessage();
+                    $stats['errors'][] = $this->translator->trans(
+                        'Error processing %email%: %error%',
+                        ['%email%' => $dto->email, '%error%' => $e->getMessage()]
+                    );
                     $stats['skipped']++;
                 }
             }
@@ -91,7 +100,10 @@ class SubscriberCsvImporter
                 $stats['skipped']++;
             }
         } catch (Throwable $e) {
-            $stats['errors'][] = 'General import error: ' . $e->getMessage();
+            $stats['errors'][] = $this->translator->trans(
+                'General import error: %error%',
+                ['%error%' => $e->getMessage()]
+            );
         }
 
         return $stats;

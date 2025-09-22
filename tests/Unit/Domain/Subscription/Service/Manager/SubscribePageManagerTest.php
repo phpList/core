@@ -14,6 +14,7 @@ use PhpList\Core\Domain\Subscription\Service\Manager\SubscribePageManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Translation\Translator;
 
 class SubscribePageManagerTest extends TestCase
 {
@@ -32,6 +33,7 @@ class SubscribePageManagerTest extends TestCase
             pageRepository: $this->pageRepository,
             pageDataRepository: $this->pageDataRepository,
             entityManager: $this->entityManager,
+            translator: new Translator('en'),
         );
     }
 

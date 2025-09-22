@@ -313,13 +313,80 @@
                 <target>%reparsed% bounces were re-processed and %reidentified% bounces were re-identified</target>
             </trans-unit>
 
+            <trans-unit id="messaging.consecutive_bounces">
+                <source>Identifying consecutive bounces</source>
+                <target>Identifying consecutive bounces</target>
+            </trans-unit>
+            <trans-unit id="messaging.nothing_to_do">
+                <source>Nothing to do</source>
+                <target>Nothing to do</target>
+            </trans-unit>
+            <trans-unit id="messaging.consecutive_bounces.report">
+                <source>Processed %processed% out of %total% subscribers</source>
+                <target>Processed %processed% out of %total% subscribers</target>
+            </trans-unit>
+            <trans-unit id="messaging.consecutive_bounces.final_report">
+                <source>Total of %total% subscribers processed</source>
+                <target>Total of %total% subscribers processed</target>
+            </trans-unit>
+            <trans-unit id="messaging.consecutive_bounces.unconfirm">
+                <source>Subscriber auto unconfirmed for %count% consecutive bounces</source>
+                <target>Subscriber auto unconfirmed for %count% consecutive bounces</target>
+            </trans-unit>
+            <trans-unit id="messaging.consecutive_bounces.threshold_reached">
+                <source>%count% consecutive bounces, threshold reached</source>
+                <target>%count% consecutive bounces, threshold reached</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.reached_max_processing_time">
+                <source>Reached max processing time; stopping cleanly.</source>
+                <target>Reached max processing time; stopping cleanly.</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.add_uuid_to_subscribers">
+                <source>Giving a UUID to %count% subscribers, this may take a while</source>
+                <target>Giving a UUID to %count% subscribers, this may take a while</target>
+            </trans-unit>
+            <trans-unit id="messaging.add_uuid_to_campaigns">
+                <source>Giving a UUID to %count% campaigns</source>
+                <target>Giving a UUID to %count% campaigns</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.send_rate_limit">
+                <source>Batch limit reached, sleeping %sleep%s to respect MAILQUEUE_BATCH_PERIOD</source>
+                <target>Batch limit reached, sleeping %sleep%s to respect MAILQUEUE_BATCH_PERIOD</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.validation.image_url">
+                <source>Value must be an array of image URLs.</source>
+                <target>Value must be an array of image URLs.</target>
+            </trans-unit>
+            <trans-unit id="messaging.validation.image_url_not_full">
+                <source>Image "%url%" is not a full URL.</source>
+                <target>Image "%url%" is not a full URL.</target>
+            </trans-unit>
+            <trans-unit id="messaging.validation.image_url_not_exists">
+                <source>Image "%url%" does not exist (HTTP %code%)</source>
+                <target>Image "%url%" does not exist (HTTP %code%)</target>
+            </trans-unit>
+            <trans-unit id="messaging.validation.image_url_cant_validate">
+                <source>Image "%url%" could not be validated: %message%</source>
+                <target>Image "%url%" could not be validated: %message%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.validation.urls_not_full">
+                <source>Not full URLs: %urls%</source>
+                <target>Not full URLs: %urls%</target>
+            </trans-unit>
+
+
             <!-- Subscription -->
             <trans-unit id="subscription.list_not_found">
                 <source>Subscriber list not found.</source>
                 <target>Subscriber list not found.</target>
             </trans-unit>
 
-            <trans-unit id="subscription.subscriber_not_found">
+            <trans-unit id="subscription.subscriber_does_not_exists">
                 <source>Subscriber does not exists.</source>
                 <target>Subscriber does not exists.</target>
             </trans-unit>
@@ -327,6 +394,55 @@
             <trans-unit id="subscription.not_found_for_list_and_subscriber">
                 <source>Subscription not found for this subscriber and list.</source>
                 <target>Subscription not found for this subscriber and list.</target>
+            </trans-unit>
+            <trans-unit id="subscription.attribute_definition_exists">
+                <source>Attribute definition already exists</source>
+                <target>Attribute definition already exists</target>
+            </trans-unit>
+            <trans-unit id="subscription.attribute_definition_name_exists">
+                <source>Another attribute with this name already exists.</source>
+                <target>Another attribute with this name already exists.</target>
+            </trans-unit>
+
+            <trans-unit id="subscription.subscriber_page_not_found">
+                <source>Subscribe page not found</source>
+                <target>Subscribe page not found</target>
+            </trans-unit>
+            <trans-unit id="subscription.value_is_required">
+                <source>Value is required</source>
+                <target>Value is required</target>
+            </trans-unit>
+            <trans-unit id="subscription.subscriber_not_found">
+                <source>Subscriber not found</source>
+                <target>Subscriber not found</target>
+            </trans-unit>
+            <trans-unit id="subscription.unexpected_error">
+                <source>Unexpected error: %error%</source>
+                <target>Unexpected error: %error%</target>
+            </trans-unit>
+            <trans-unit id="subscription.add_to_blacklist_for">
+                <source>Added to blacklist for reason %reason%</source>
+                <target>Added to blacklist for reason %reason%</target>
+            </trans-unit>
+            <trans-unit id="subscription.could_not_read_file">
+                <source>Could not read the uploaded file.</source>
+                <target>Could not read the uploaded file.</target>
+            </trans-unit>
+            <trans-unit id="subscription.csv_import_error">
+                <source>Error processing %email%: %error%</source>
+                <target>Error processing %email%: %error%</target>
+            </trans-unit>
+            <trans-unit id="subscription.csv_import_general_error">
+                <source>General import error: %error%</source>
+                <target>General import error: %error%</target>
+            </trans-unit>
+            <trans-unit id="subscription.value_must_be_string">
+                <source>Value must be a string.</source>
+                <target>Value must be a string.</target>
+            </trans-unit>
+            <trans-unit id="subscription.invalid_attribute_type">
+                <source>Invalid attribute type: "%type%". Valid types are: %valid_types%</source>
+                <target>Invalid attribute type: "%type%". Valid types are: %valid_types%</target>
             </trans-unit>
 
         </body>
