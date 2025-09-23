@@ -114,6 +114,8 @@ services:
         - { name: 'phplist.bounce_action_handler' }
 
   PhpList\Core\Domain\Messaging\Service\Handler\:
+    autowire: true
+    autoconfigure: true
     resource: '../../src/Domain/Messaging/Service/Handler/*Handler.php'
 
   PhpList\Core\Domain\Messaging\Service\BounceActionResolver:
