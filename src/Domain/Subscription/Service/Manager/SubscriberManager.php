@@ -15,6 +15,7 @@ use PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService;
 use PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SubscriberManager
 {
@@ -22,17 +23,20 @@ class SubscriberManager
     private EntityManagerInterface $entityManager;
     private MessageBusInterface $messageBus;
     private SubscriberDeletionService $subscriberDeletionService;
+    private TranslatorInterface $translator;
 
     public function __construct(
         SubscriberRepository $subscriberRepository,
         EntityManagerInterface $entityManager,
         MessageBusInterface $messageBus,
         SubscriberDeletionService $subscriberDeletionService,
+        TranslatorInterface $translator
     ) {
         $this->subscriberRepository = $subscriberRepository;
         $this->entityManager = $entityManager;
         $this->messageBus = $messageBus;
         $this->subscriberDeletionService = $subscriberDeletionService;
+        $this->translator = $translator;
     }
 
     public function createSubscriber(CreateSubscriberDto $subscriberDto): Subscriber
@@ -91,7 +95,7 @@ class SubscriberManager
     {
         $subscriber = $this->subscriberRepository->findOneByUniqueId($uniqueId);
         if (!$subscriber) {
-            throw new NotFoundHttpException('Subscriber not found');
+            throw new NotFoundHttpException($this->translator->trans('Subscriber not found'));
         }
 
         $subscriber->setConfirmed(true);

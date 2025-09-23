@@ -10,6 +10,7 @@ use PhpList\Core\Domain\Messaging\Service\EmailService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Translation\Translator;
 
 class SubscriberConfirmationMessageHandlerTest extends TestCase
 {
@@ -20,7 +21,11 @@ class SubscriberConfirmationMessageHandlerTest extends TestCase
     protected function setUp(): void
     {
         $this->emailService = $this->createMock(EmailService::class);
-        $this->handler = new SubscriberConfirmationMessageHandler($this->emailService, $this->confirmationUrl);
+        $this->handler = new SubscriberConfirmationMessageHandler(
+            emailService: $this->emailService,
+            translator: new Translator('en'),
+            confirmationUrl: $this->confirmationUrl
+        );
     }
 
     public function testInvokeWithTextEmail(): void

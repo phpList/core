@@ -15,6 +15,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Translation\Translator;
 
 class SubscriberManagerTest extends TestCase
 {
@@ -35,6 +36,7 @@ class SubscriberManagerTest extends TestCase
             entityManager: $this->entityManager,
             messageBus: $this->messageBus,
             subscriberDeletionService: $subscriberDeletionService,
+            translator: new Translator('en'),
         );
     }
 

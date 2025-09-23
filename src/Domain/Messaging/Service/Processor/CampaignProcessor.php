@@ -18,6 +18,7 @@ use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
 /**
@@ -33,6 +34,7 @@ class CampaignProcessor
     private UserMessageRepository $userMessageRepository;
     private MaxProcessTimeLimiter $timeLimiter;
     private RequeueHandler $requeueHandler;
+    private TranslatorInterface $translator;
 
     public function __construct(
         RateLimitedCampaignMailer $mailer,
@@ -42,7 +44,8 @@ class CampaignProcessor
         LoggerInterface $logger,
         UserMessageRepository $userMessageRepository,
         MaxProcessTimeLimiter $timeLimiter,
-        RequeueHandler $requeueHandler
+        RequeueHandler $requeueHandler,
+        TranslatorInterface $translator,
     ) {
         $this->mailer = $mailer;
         $this->entityManager = $entityManager;
@@ -52,6 +55,7 @@ class CampaignProcessor
         $this->userMessageRepository = $userMessageRepository;
         $this->timeLimiter = $timeLimiter;
         $this->requeueHandler = $requeueHandler;
+        $this->translator = $translator;
     }
 
     public function process(Message $campaign, ?OutputInterface $output = null): void
@@ -82,7 +86,9 @@ class CampaignProcessor
             if (!filter_var($subscriber->getEmail(), FILTER_VALIDATE_EMAIL)) {
                 $this->updateUserMessageStatus($userMessage, UserMessageStatus::InvalidEmailAddress);
                 $this->unconfirmSubscriber($subscriber);
-                $output?->writeln('Invalid email, marking unconfirmed: ' . $subscriber->getEmail());
+                $output?->writeln($this->translator->trans('Invalid email, marking unconfirmed: %email%', [
+                    '%email%' => $subscriber->getEmail(),
+                ]));
                 continue;
             }
 
@@ -98,7 +104,9 @@ class CampaignProcessor
                     'subscriber_id' => $subscriber->getId(),
                     'campaign_id' => $campaign->getId(),
                 ]);
-                $output?->writeln('Failed to send to: ' . $subscriber->getEmail());
+                $output?->writeln($this->translator->trans('Failed to send to: %email%', [
+                    '%email%' => $subscriber->getEmail(),
+                ]));
             }
         }
 

@@ -17,14 +17,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AsCommand(name: 'phplist:bounces:process', description: 'Process bounce mailbox')]
 class ProcessBouncesCommand extends Command
 {
-    private const IMAP_NOT_AVAILABLE = 'PHP IMAP extension not available. Falling back to Webklex IMAP.';
-    private const FORCE_LOCK_FAILED = 'Could not apply force lock. Aborting.';
-    private const ALREADY_LOCKED = 'Another bounce processing is already running. Aborting.';
-
     protected function configure(): void
     {
         $this
@@ -48,6 +45,7 @@ class ProcessBouncesCommand extends Command
         private readonly AdvancedBounceRulesProcessor $advancedRulesProcessor,
         private readonly UnidentifiedBounceReprocessor $unidentifiedReprocessor,
         private readonly ConsecutiveBounceHandler $consecutiveBounceHandler,
+        private readonly TranslatorInterface $translator,
     ) {
         parent::__construct();
     }
@@ -57,14 +55,19 @@ class ProcessBouncesCommand extends Command
         $inputOutput = new SymfonyStyle($input, $output);
 
         if (!function_exists('imap_open')) {
-            $inputOutput->note(self::IMAP_NOT_AVAILABLE);
+            $inputOutput->note($this->translator->trans(
+                'PHP IMAP extension not available. Falling back to Webklex IMAP.'
+            ));
         }
 
         $force = (bool)$input->getOption('force');
         $lock = $this->lockService->acquirePageLock('bounce_processor', $force);
 
         if (($lock ?? 0) === 0) {
-            $inputOutput->warning($force ? self::FORCE_LOCK_FAILED : self::ALREADY_LOCKED);
+            $forceLockFailed = $this->translator->trans('Could not apply force lock. Aborting.');
+            $lockFailed = $this->translator->trans('Another bounce processing is already running. Aborting.');
+
+            $inputOutput->warning($force ? $forceLockFailed : $lockFailed);
 
             return $force ? Command::FAILURE : Command::SUCCESS;
         }
@@ -88,7 +91,7 @@ class ProcessBouncesCommand extends Command
             $this->consecutiveBounceHandler->handle($inputOutput);
 
             $this->logger->info('Bounce processing completed', ['downloadReport' => $downloadReport]);
-            $inputOutput->success('Bounce processing completed.');
+            $inputOutput->success($this->translator->trans('Bounce processing completed.'));
 
             return Command::SUCCESS;
         } catch (Exception $e) {

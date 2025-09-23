@@ -10,6 +10,7 @@ use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Translator;
 
 class BlacklistEmailHandlerTest extends TestCase
 {
@@ -24,6 +25,7 @@ class BlacklistEmailHandlerTest extends TestCase
         $this->handler = new BlacklistEmailHandler(
             subscriberHistoryManager: $this->historyManager,
             blacklistService: $this->blacklistService,
+            translator: new Translator('en'),
         );
     }
 

@@ -19,36 +19,36 @@ use PhpList\Core\Domain\Subscription\Service\SubscriberCsvImporter;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Translation\Translator;
 
 class SubscriberCsvImporterTest extends TestCase
 {
     private SubscriberManager&MockObject $subscriberManagerMock;
     private SubscriberAttributeManager&MockObject $attributeManagerMock;
-    private SubscriptionManager&MockObject $subscriptionManagerMock;
     private SubscriberRepository&MockObject $subscriberRepositoryMock;
     private CsvImporter&MockObject $csvImporterMock;
     private SubscriberAttributeDefinitionRepository&MockObject $attributeDefinitionRepositoryMock;
-    private EntityManagerInterface $entityManager;
     private SubscriberCsvImporter $subject;
 
     protected function setUp(): void
     {
         $this->subscriberManagerMock = $this->createMock(SubscriberManager::class);
         $this->attributeManagerMock = $this->createMock(SubscriberAttributeManager::class);
-        $this->subscriptionManagerMock = $this->createMock(SubscriptionManager::class);
+        $subscriptionManagerMock = $this->createMock(SubscriptionManager::class);
         $this->subscriberRepositoryMock = $this->createMock(SubscriberRepository::class);
         $this->csvImporterMock = $this->createMock(CsvImporter::class);
         $this->attributeDefinitionRepositoryMock = $this->createMock(SubscriberAttributeDefinitionRepository::class);
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
 
         $this->subject = new SubscriberCsvImporter(
             subscriberManager: $this->subscriberManagerMock,
             attributeManager: $this->attributeManagerMock,
-            subscriptionManager: $this->subscriptionManagerMock,
+            subscriptionManager: $subscriptionManagerMock,
             subscriberRepository: $this->subscriberRepositoryMock,
             csvImporter: $this->csvImporterMock,
             attrDefinitionRepository: $this->attributeDefinitionRepositoryMock,
-            entityManager: $this->entityManager,
+            entityManager: $entityManager,
+            translator: new Translator('en'),
         );
     }
 

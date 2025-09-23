@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Common\Repository;
 
+use BadMethodCallException;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 
 final class CursorPaginationTraitTest extends TestCase
 {
@@ -59,8 +59,8 @@ final class CursorPaginationTraitTest extends TestCase
     {
         $dummyFilter = $this->createMock(FilterRequestInterface::class);
 
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Filter method not implemented');
+        $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessage('getFilteredAfterId method not implemented');
 
         $this->repo->getFilteredAfterId(0, 10, $dummyFilter);
     }

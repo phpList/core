@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Analytics\Service;
 
-use InvalidArgumentException;
 use PhpList\Core\Core\ConfigProvider;
+use PhpList\Core\Domain\Analytics\Exception\MissingMessageIdException;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
@@ -172,7 +172,7 @@ class LinkTrackServiceTest extends TestCase
         $message->method('getId')->willReturn(null);
         $message->method('getContent')->willReturn($messageContent);
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(MissingMessageIdException::class);
         $this->expectExceptionMessage('Message must have an ID');
 
         $this->subject->extractAndSaveLinks($message, $userId);

@@ -6,10 +6,10 @@ namespace PhpList\Core\Domain\Messaging\Service;
 
 use IMAP\Connection;
 use PhpList\Core\Domain\Common\Mail\NativeImapMailReader;
+use PhpList\Core\Domain\Messaging\Exception\OpenMboxFileException;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Messaging\Service\Processor\BounceDataProcessor;
 use Psr\Log\LoggerInterface;
-use RuntimeException;
 use Throwable;
 
 class NativeBounceProcessingService implements BounceProcessingServiceInterface
@@ -69,9 +69,12 @@ class NativeBounceProcessingService implements BounceProcessingServiceInterface
     {
         try {
             return $this->mailReader->open($mailbox, $testMode ? 0 : CL_EXPUNGE);
-        } catch (Throwable $e) {
-            $this->logger->error('Cannot open mailbox file: '.$e->getMessage());
-            throw new RuntimeException('Cannot open mbox file');
+        } catch (Throwable $throwable) {
+            $this->logger->error('Cannot open mailbox file', [
+                'mailbox' => $mailbox,
+                'error' => $throwable->getMessage(),
+            ]);
+            throw new OpenMboxFileException($throwable);
         }
     }
 

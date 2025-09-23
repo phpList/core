@@ -1,44 +1,450 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-  <file source-language="en" target-language="en" datatype="plaintext" original="messages">
-    <body>
+    <file source-language="en" target-language="en" datatype="plaintext" original="messages">
+        <body>
+            <!-- Authentication -->
+            <trans-unit id="auth.not_authorized">
+                <source>Not authorized</source>
+                <target>Not authorized</target>
+            </trans-unit>
 
-      <!-- Authentication -->
-      <trans-unit id="auth.not_authorized">
-        <source>Not authorized</source>
-        <target>Not authorized</target>
-      </trans-unit>
+            <trans-unit id="auth.login_failed">
+                <source>Failed admin login attempt for '%login%'</source>
+                <target>Failed admin login attempt for '%login%'</target>
+            </trans-unit>
 
-      <trans-unit id="auth.login_failed">
-        <source>Failed admin login attempt for '%login%'</source>
-        <target>Failed admin login attempt for '%login%'</target>
-      </trans-unit>
+            <trans-unit id="auth.login_disabled">
+                <source>Login attempt for disabled admin '%login%'</source>
+                <target>Login attempt for disabled admin '%login%'</target>
+            </trans-unit>
 
-      <trans-unit id="auth.login_disabled">
-        <source>Login attempt for disabled admin '%login%'</source>
-        <target>Login attempt for disabled admin '%login%'</target>
-      </trans-unit>
+            <!-- Identity -->
+            <trans-unit id="identity.admin_not_found">
+                <source>Administrator not found</source>
+                <target>Administrator not found</target>
+            </trans-unit>
 
-      <!-- Identity -->
-      <trans-unit id="identity.admin_not_found">
-        <source>Administrator not found</source>
-        <target>Administrator not found</target>
-      </trans-unit>
+            <trans-unit id="identity.attribute_definition_exists">
+                <source>Attribute definition already exists.</source>
+                <target>Attribute definition already exists.</target>
+            </trans-unit>
 
-      <!-- Subscription -->
-      <trans-unit id="subscription.list_not_found">
-        <source>Subscriber list not found.</source>
-        <target>Subscriber list not found.</target>
-      </trans-unit>
-      <trans-unit id="subscription.subscriber_not_found">
-        <source>Subscriber does not exists.</source>
-        <target>Subscriber does not exists.</target>
-      </trans-unit>
-      <trans-unit id="subscription.not_found_for_list_and_subscriber">
-        <source>Subscription not found for this subscriber and list.</source>
-        <target>Subscription not found for this subscriber and list.</target>
-      </trans-unit>
+            <trans-unit id="identity.password_reset.subject">
+                <source>Password Reset Request</source>
+            </trans-unit>
 
-    </body>
-  </file>
+            <trans-unit id="identity.password_reset.text">
+                <source>Hello,
+
+                    A password reset has been requested for your account.
+                    Please use the following token to reset your password:
+
+                    %token%
+
+                    If you did not request this password reset, please ignore this email.
+
+                    Thank you.
+                </source>
+                <target>
+                    Hello,
+
+                    A password reset has been requested for your account.
+                    Please use the following token to reset your password:
+
+                    %token%
+
+                    If you did not request this password reset, please ignore this email.
+
+                    Thank you.
+                </target>
+            </trans-unit>
+
+            <trans-unit id="identity.password_reset.html">
+                <source><![CDATA[<p>Password Reset Request!</p>
+<p>Hello! A password reset has been requested for your account.</p>
+<p>Please use the following token to reset your password:</p>
+<p><a href="%confirmation_link%">Reset Password</a></p>
+<p>If you did not request this password reset, please ignore this email.</p>
+<p>Thank you.</p>]]></source>
+                <target>
+                    <![CDATA[
+                        <p>Password Reset Request!</p>
+                        <p>Hello! A password reset has been requested for your account.</p>
+                        <p>Please use the following token to reset your password:</p>
+                        <p><a href="%confirmation_link%">Reset Password</a></p>
+                        <p>If you did not request this password reset, please ignore this email.</p>
+                        <p>Thank you.</p>
+                    ]]>
+                </target>
+            </trans-unit>
+
+            <trans-unit id="identity.subscription_confirmation">
+                <source>Please confirm your subscription</source>
+                <target>Please confirm your subscription</target>
+            </trans-unit>
+
+            <trans-unit id="identity.subscription_confirmation.text">
+                <source>Thank you for subscribing!
+
+                    Please confirm your subscription by clicking the link below:
+
+                    %confirmation_link%
+
+                    If you did not request this subscription, please ignore this email.
+                </source>
+                <target>Thank you for subscribing!
+
+                    Please confirm your subscription by clicking the link below:
+
+                    %confirmation_link%
+
+                    If you did not request this subscription, please ignore this email.
+                </target>
+            </trans-unit>
+
+            <trans-unit id="identity.subscription_confirmation.html">
+                <source><![CDATA[<p>Thank you for subscribing!</p>
+<p>Please confirm your subscription by clicking the link below:</p>
+<p><a href="%confirmation_link%">Confirm Subscription</a></p>
+<p>If you did not request this subscription, please ignore this email.</p>]]>
+                </source>
+                <target><![CDATA[<p>Thank you for subscribing!</p>
+<p>Please confirm your subscription by clicking the link below:</p>
+<p><a href="%confirmation_link%">Confirm Subscription</a></p>
+<p>If you did not request this subscription, please ignore this email.</p>]]>
+                </target>
+            </trans-unit>
+
+            <!-- Messaging -->
+            <trans-unit id="messaging.imap_not_available">
+                <source>PHP IMAP extension not available. Falling back to Webklex IMAP.</source>
+                <target>PHP IMAP extension not available. Falling back to Webklex IMAP.</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.force_lock_failed">
+                <source>Could not apply force lock. Aborting.</source>
+                <target>Could not apply force lock. Aborting.</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.already_locked">
+                <source>Another bounce processing is already running. Aborting.</source>
+                <target>Another bounce processing is already running. Aborting.</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.queue_already_processing">
+                <source>Queue is already being processed by another instance.</source>
+                <target>Queue is already being processed by another instance.</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.maintenance_mode">
+                <source>The system is in maintenance mode, stopping. Try again later.</source>
+                <target>The system is in maintenance mode, stopping. Try again later.</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.bounce_processing_completed">
+                <source>Bounce processing completed.</source>
+                <target>Bounce processing completed.</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.recipient_not_provided">
+                <source>Recipient email address not provided</source>
+                <target>Recipient email address not provided</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.invalid_email">
+                <source>Invalid email address: %email%</source>
+                <target>Invalid email address: %email%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.sending_test_email_sync">
+                <source>Sending test email synchronously to %email%</source>
+                <target>Sending test email synchronously to %email%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.queuing_test_email">
+                <source>Queuing test email for %email%</source>
+                <target>Queuing test email for %email%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.test_email_sent_success">
+                <source>Test email sent successfully!</source>
+                <target>Test email sent successfully!</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.test_email_queued_success">
+                <source>Test email queued successfully! It will be sent asynchronously.</source>
+                <target>Test email queued successfully! It will be sent asynchronously.</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.failed_to_send_test_email">
+                <source>Failed to send test email: %error%</source>
+                <target>Failed to send test email: %error%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.email_blacklist.by_rule">
+                <source>Email address auto blacklisted by bounce rule %rule_id%</source>
+                <target>Email address auto blacklisted by bounce rule %rule_id%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.email_blacklist.message">
+                <source>Auto Unsubscribed</source>
+                <target>Auto Unsubscribed</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.email_blacklist.details">
+                <source>User auto unsubscribed for bounce rule %rule_id%</source>
+                <target>User auto unsubscribed for bounce rule %rule_id%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.email_blacklist.auto_unsubscribed">
+                <source>email auto unsubscribed for bounce rule %rule_id%</source>
+                <target>email auto unsubscribed for bounce rule %rule_id%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.subscriber_blacklisted">
+                <source>Subscriber auto blacklisted by bounce rule %rule_id%</source>
+                <target>Subscriber auto blacklisted by bounce rule %rule_id%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.subscriber_unsubscribed">
+                <source>User auto unsubscribed for bounce rule %%rule_id%</source>
+                <target>User auto unsubscribed for bounce rule %%rule_id%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.auto_confirmed">
+                <source>Auto confirmed</source>
+                <target>Auto confirmed</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.auto_unconfirmed">
+                <source>Auto unconfirmed</source>
+                <target>Auto unconfirmed</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.subscriber_autoconfirmed">
+                <source>Subscriber auto confirmed for bounce rule %rule_id%</source>
+                <target>Subscriber auto confirmed for bounce rule %rule_id%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.requeue_message">
+                <source>Requeued campaign; next embargo at %time%</source>
+                <target>Requeued campaign; next embargo at %time%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.subscriber_unconfirmed">
+                <source>Subscriber auto unconfirmed for bounce rule %rule_id%</source>
+                <target>Subscriber auto unconfirmed for bounce rule %rule_id%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.bounce.running_test_mode">
+                <source>Running in test mode, not deleting messages from mailbox</source>
+                <target>Running in test mode, not deleting messages from mailbox</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.bounce.running_live_mode">
+                <source>Processed messages will be deleted from the mailbox</source>
+                <target>Processed messages will be deleted from the mailbox</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.processing_bounce">
+                <source>Processing bounces based on active bounce rules</source>
+                <target>Processing bounces based on active bounce rules</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.no_active_rules">
+                <source>No active rules</source>
+                <target>No active rules</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.announce_processed_count">
+                <source>Processed %processed% out of %total% bounces for advanced bounce rules</source>
+                <target>Processed %processed% out of %total% bounces for advanced bounce rules</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.announce_processed_total">
+                <source>%processed% bounces processed by advanced processing</source>
+                <target>%processed% bounces processed by advanced processing</target>
+            </trans-unit>
+            <trans-unit id="messaging.announce_not_processed_total">
+                <source>%not_processed% bounces were not matched by advanced processing rules</source>
+                <target>%not_processed% bounces were not matched by advanced processing rules</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.opening_mbox">
+                <source>Opening mbox %file%</source>
+                <target>Opening mbox %file%</target>
+            </trans-unit>
+            <trans-unit id="messaging.connecting_to">
+                <source>Connecting to %mailbox%</source>
+                <target>Connecting to %mailbox%</target>
+            </trans-unit>
+            <trans-unit id="messaging.do_not_interrupt">
+                <source>Please do not interrupt this process</source>
+                <target>Please do not interrupt this process</target>
+            </trans-unit>
+            <trans-unit id="messaging.mbox_missing_option">
+                <source>mbox file path must be provided with --mailbox.</source>
+                <target>mbox file path must be provided with --mailbox.</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.invalid_email_unconfirm">
+                <source>Invalid email, marking unconfirmed: %email%</source>
+                <target>Invalid email, marking unconfirmed: %email%</target>
+            </trans-unit>
+            <trans-unit id="messaging.failed_to_send">
+                <source>Failed to send to: %email%</source>
+                <target>Failed to send to: %email%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.process_unidentified">
+                <source>Reprocessing unidentified bounces</source>
+                <target>Reprocessing unidentified bounces</target>
+            </trans-unit>
+            <trans-unit id="messaging.total_to_process">
+                <source>%total% bounces to reprocess</source>
+                <target>%total% bounces to reprocess</target>
+            </trans-unit>
+            <trans-unit id="messaging.bounce_process.report">
+                <source>%count% out of %total% processed</source>
+                <target>%count% out of %total% processed</target>
+            </trans-unit>
+            <trans-unit id="messaging.bounce_process.final_report">
+                <source>%reparsed% bounces were re-processed and %reidentified% bounces were re-identified</source>
+                <target>%reparsed% bounces were re-processed and %reidentified% bounces were re-identified</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.consecutive_bounces">
+                <source>Identifying consecutive bounces</source>
+                <target>Identifying consecutive bounces</target>
+            </trans-unit>
+            <trans-unit id="messaging.nothing_to_do">
+                <source>Nothing to do</source>
+                <target>Nothing to do</target>
+            </trans-unit>
+            <trans-unit id="messaging.consecutive_bounces.report">
+                <source>Processed %processed% out of %total% subscribers</source>
+                <target>Processed %processed% out of %total% subscribers</target>
+            </trans-unit>
+            <trans-unit id="messaging.consecutive_bounces.final_report">
+                <source>Total of %total% subscribers processed</source>
+                <target>Total of %total% subscribers processed</target>
+            </trans-unit>
+            <trans-unit id="messaging.consecutive_bounces.unconfirm">
+                <source>Subscriber auto unconfirmed for %count% consecutive bounces</source>
+                <target>Subscriber auto unconfirmed for %count% consecutive bounces</target>
+            </trans-unit>
+            <trans-unit id="messaging.consecutive_bounces.threshold_reached">
+                <source>%count% consecutive bounces, threshold reached</source>
+                <target>%count% consecutive bounces, threshold reached</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.reached_max_processing_time">
+                <source>Reached max processing time; stopping cleanly.</source>
+                <target>Reached max processing time; stopping cleanly.</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.add_uuid_to_subscribers">
+                <source>Giving a UUID to %count% subscribers, this may take a while</source>
+                <target>Giving a UUID to %count% subscribers, this may take a while</target>
+            </trans-unit>
+            <trans-unit id="messaging.add_uuid_to_campaigns">
+                <source>Giving a UUID to %count% campaigns</source>
+                <target>Giving a UUID to %count% campaigns</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.send_rate_limit">
+                <source>Batch limit reached, sleeping %sleep%s to respect MAILQUEUE_BATCH_PERIOD</source>
+                <target>Batch limit reached, sleeping %sleep%s to respect MAILQUEUE_BATCH_PERIOD</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.validation.image_url">
+                <source>Value must be an array of image URLs.</source>
+                <target>Value must be an array of image URLs.</target>
+            </trans-unit>
+            <trans-unit id="messaging.validation.image_url_not_full">
+                <source>Image "%url%" is not a full URL.</source>
+                <target>Image "%url%" is not a full URL.</target>
+            </trans-unit>
+            <trans-unit id="messaging.validation.image_url_not_exists">
+                <source>Image "%url%" does not exist (HTTP %code%)</source>
+                <target>Image "%url%" does not exist (HTTP %code%)</target>
+            </trans-unit>
+            <trans-unit id="messaging.validation.image_url_cant_validate">
+                <source>Image "%url%" could not be validated: %message%</source>
+                <target>Image "%url%" could not be validated: %message%</target>
+            </trans-unit>
+
+            <trans-unit id="messaging.validation.urls_not_full">
+                <source>Not full URLs: %urls%</source>
+                <target>Not full URLs: %urls%</target>
+            </trans-unit>
+
+
+            <!-- Subscription -->
+            <trans-unit id="subscription.list_not_found">
+                <source>Subscriber list not found.</source>
+                <target>Subscriber list not found.</target>
+            </trans-unit>
+
+            <trans-unit id="subscription.subscriber_does_not_exists">
+                <source>Subscriber does not exists.</source>
+                <target>Subscriber does not exists.</target>
+            </trans-unit>
+
+            <trans-unit id="subscription.not_found_for_list_and_subscriber">
+                <source>Subscription not found for this subscriber and list.</source>
+                <target>Subscription not found for this subscriber and list.</target>
+            </trans-unit>
+            <trans-unit id="subscription.attribute_definition_exists">
+                <source>Attribute definition already exists</source>
+                <target>Attribute definition already exists</target>
+            </trans-unit>
+            <trans-unit id="subscription.attribute_definition_name_exists">
+                <source>Another attribute with this name already exists.</source>
+                <target>Another attribute with this name already exists.</target>
+            </trans-unit>
+
+            <trans-unit id="subscription.subscriber_page_not_found">
+                <source>Subscribe page not found</source>
+                <target>Subscribe page not found</target>
+            </trans-unit>
+            <trans-unit id="subscription.value_is_required">
+                <source>Value is required</source>
+                <target>Value is required</target>
+            </trans-unit>
+            <trans-unit id="subscription.subscriber_not_found">
+                <source>Subscriber not found</source>
+                <target>Subscriber not found</target>
+            </trans-unit>
+            <trans-unit id="subscription.unexpected_error">
+                <source>Unexpected error: %error%</source>
+                <target>Unexpected error: %error%</target>
+            </trans-unit>
+            <trans-unit id="subscription.add_to_blacklist_for">
+                <source>Added to blacklist for reason %reason%</source>
+                <target>Added to blacklist for reason %reason%</target>
+            </trans-unit>
+            <trans-unit id="subscription.could_not_read_file">
+                <source>Could not read the uploaded file.</source>
+                <target>Could not read the uploaded file.</target>
+            </trans-unit>
+            <trans-unit id="subscription.csv_import_error">
+                <source>Error processing %email%: %error%</source>
+                <target>Error processing %email%: %error%</target>
+            </trans-unit>
+            <trans-unit id="subscription.csv_import_general_error">
+                <source>General import error: %error%</source>
+                <target>General import error: %error%</target>
+            </trans-unit>
+            <trans-unit id="subscription.value_must_be_string">
+                <source>Value must be a string.</source>
+                <target>Value must be a string.</target>
+            </trans-unit>
+            <trans-unit id="subscription.invalid_attribute_type">
+                <source>Invalid attribute type: "%type%". Valid types are: %valid_types%</source>
+                <target>Invalid attribute type: "%type%". Valid types are: %valid_types%</target>
+            </trans-unit>
+
+        </body>
+    </file>
 </xliff>

@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberBlacklistManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SubscriberBlacklistService
 {
@@ -16,17 +17,20 @@ class SubscriberBlacklistService
     private SubscriberBlacklistManager $blacklistManager;
     private SubscriberHistoryManager $historyManager;
     private RequestStack $requestStack;
+    private TranslatorInterface $translator;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         SubscriberBlacklistManager $blacklistManager,
         SubscriberHistoryManager $historyManager,
         RequestStack $requestStack,
+        TranslatorInterface $translator,
     ) {
         $this->entityManager = $entityManager;
         $this->blacklistManager = $blacklistManager;
         $this->historyManager = $historyManager;
         $this->requestStack = $requestStack;
+        $this->translator = $translator;
     }
 
     /**
@@ -55,7 +59,7 @@ class SubscriberBlacklistService
         $this->historyManager->addHistory(
             subscriber: $subscriber,
             message: 'Added to blacklist',
-            details: sprintf('Added to blacklist for reason %s', $reason)
+            details: $this->translator->trans('Added to blacklist for reason %reason%', ['%reason%' => $reason])
         );
 
         if (isset($GLOBALS['plugins']) && is_array($GLOBALS['plugins'])) {

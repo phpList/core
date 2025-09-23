@@ -9,6 +9,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Translation\Translator;
 
 class MaxProcessTimeLimiterTest extends TestCase
 {
@@ -21,7 +22,7 @@ class MaxProcessTimeLimiterTest extends TestCase
 
     public function testShouldNotStopWhenMaxSecondsIsZero(): void
     {
-        $limiter = new MaxProcessTimeLimiter(logger: $this->logger, maxSeconds: 0);
+        $limiter = new MaxProcessTimeLimiter(logger: $this->logger, translator: new Translator('en'), maxSeconds: 0);
 
         $output = $this->createMock(OutputInterface::class);
         $output->expects($this->never())->method('writeln');
@@ -34,7 +35,7 @@ class MaxProcessTimeLimiterTest extends TestCase
 
     public function testShouldStopAfterThresholdAndLogAndOutput(): void
     {
-        $limiter = new MaxProcessTimeLimiter(logger: $this->logger, maxSeconds: 1);
+        $limiter = new MaxProcessTimeLimiter(logger: $this->logger, translator:  new Translator('en'), maxSeconds: 1);
 
         $output = $this->createMock(OutputInterface::class);
         $output->expects($this->once())

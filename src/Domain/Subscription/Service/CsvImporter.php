@@ -8,6 +8,7 @@ use League\Csv\Reader;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use League\Csv\Exception as CsvException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
 class CsvImporter
@@ -15,6 +16,7 @@ class CsvImporter
     public function __construct(
         private readonly CsvRowToDtoMapper $rowMapper,
         private readonly ValidatorInterface $validator,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -46,7 +48,9 @@ class CsvImporter
 
                 $validDtos[] = $dto;
             } catch (Throwable $e) {
-                $errors[$index + 1][] = 'Unexpected error: ' . $e->getMessage();
+                $errors[$index + 1][] = $this->translator->trans('Unexpected error: %error%', [
+                    '%error%' => $e->getMessage()
+                ]);
             }
         }
 

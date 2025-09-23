@@ -22,6 +22,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Translation\Translator;
 
 class CampaignProcessorTest extends TestCase
 {
@@ -32,7 +33,6 @@ class CampaignProcessorTest extends TestCase
     private LoggerInterface|MockObject $logger;
     private OutputInterface|MockObject $output;
     private CampaignProcessor $campaignProcessor;
-    private UserMessageRepository|MockObject $userMessageRepository;
 
     protected function setUp(): void
     {
@@ -42,7 +42,7 @@ class CampaignProcessorTest extends TestCase
         $this->messagePreparator = $this->createMock(MessageProcessingPreparator::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->output = $this->createMock(OutputInterface::class);
-        $this->userMessageRepository = $this->createMock(UserMessageRepository::class);
+        $userMessageRepository = $this->createMock(UserMessageRepository::class);
 
         $this->campaignProcessor = new CampaignProcessor(
             mailer: $this->mailer,
@@ -50,9 +50,10 @@ class CampaignProcessorTest extends TestCase
             subscriberProvider: $this->subscriberProvider,
             messagePreparator: $this->messagePreparator,
             logger: $this->logger,
-            userMessageRepository: $this->userMessageRepository,
+            userMessageRepository: $userMessageRepository,
             timeLimiter: $this->createMock(MaxProcessTimeLimiter::class),
             requeueHandler: $this->createMock(RequeueHandler::class),
+            translator: new Translator('en'),
         );
     }
 

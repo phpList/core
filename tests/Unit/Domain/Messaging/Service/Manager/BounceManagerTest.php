@@ -15,6 +15,7 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Translation\Translator;
 
 class BounceManagerTest extends TestCase
 {
@@ -35,6 +36,7 @@ class BounceManagerTest extends TestCase
             userMessageBounceRepo: $this->userMessageBounceRepository,
             entityManager: $this->entityManager,
             logger: $this->logger,
+            translator: new Translator('en')
         );
     }
 

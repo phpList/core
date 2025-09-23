@@ -15,6 +15,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Lock\LockFactory;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
 #[AsCommand(
@@ -28,13 +29,15 @@ class ProcessQueueCommand extends Command
     private MessageProcessingPreparator $messagePreparator;
     private CampaignProcessor $campaignProcessor;
     private ConfigManager $configManager;
+    private TranslatorInterface $translator;
 
     public function __construct(
         MessageRepository $messageRepository,
         LockFactory $lockFactory,
         MessageProcessingPreparator $messagePreparator,
         CampaignProcessor $campaignProcessor,
-        ConfigManager $configManager
+        ConfigManager $configManager,
+        TranslatorInterface $translator
     ) {
         parent::__construct();
         $this->messageRepository = $messageRepository;
@@ -42,6 +45,7 @@ class ProcessQueueCommand extends Command
         $this->messagePreparator = $messagePreparator;
         $this->campaignProcessor = $campaignProcessor;
         $this->configManager = $configManager;
+        $this->translator = $translator;
     }
 
     /**
@@ -51,13 +55,15 @@ class ProcessQueueCommand extends Command
     {
         $lock = $this->lockFactory->createLock('queue_processor');
         if (!$lock->acquire()) {
-            $output->writeln('Queue is already being processed by another instance.');
+            $output->writeln($this->translator->trans('Queue is already being processed by another instance.'));
 
             return Command::FAILURE;
         }
 
         if ($this->configManager->inMaintenanceMode()) {
-            $output->writeln('The system is in maintenance mode, stopping. Try again later.');
+            $output->writeln(
+                $this->translator->trans('The system is in maintenance mode, stopping. Try again later.')
+            );
 
             return Command::FAILURE;
         }

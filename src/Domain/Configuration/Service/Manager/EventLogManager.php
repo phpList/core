@@ -44,6 +44,7 @@ class EventLogManager
         ?DateTimeInterface $dateTo = null
     ): array {
         $filter = new EventLogFilter($page, $dateFrom, $dateTo);
+
         return $this->repository->getFilteredAfterId($lastId, $limit, $filter);
     }
 

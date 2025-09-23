@@ -7,6 +7,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Subscription\Validator;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Subscription\Validator\AttributeTypeValidator;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Translator;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
 class AttributeTypeValidatorTest extends TestCase
@@ -15,7 +16,7 @@ class AttributeTypeValidatorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->validator = new AttributeTypeValidator();
+        $this->validator = new AttributeTypeValidator(new Translator('en'));
     }
 
     public function testValidatesValidType(): void

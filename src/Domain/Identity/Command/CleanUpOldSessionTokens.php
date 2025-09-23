@@ -35,6 +35,7 @@ class CleanUpOldSessionTokens extends Command
             $output->writeln(sprintf('Successfully removed %d expired session token(s).', $deletedCount));
         } catch (Throwable $throwable) {
             $output->writeln(sprintf('Error removing expired session tokens: %s', $throwable->getMessage()));
+
             return Command::FAILURE;
         }
 

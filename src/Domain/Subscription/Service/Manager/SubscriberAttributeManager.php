@@ -10,18 +10,22 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SubscriberAttributeManager
 {
     private SubscriberAttributeValueRepository $attributeRepository;
     private EntityManagerInterface $entityManager;
+    private TranslatorInterface $translator;
 
     public function __construct(
         SubscriberAttributeValueRepository $attributeRepository,
         EntityManagerInterface $entityManager,
+        TranslatorInterface $translator,
     ) {
         $this->attributeRepository = $attributeRepository;
         $this->entityManager = $entityManager;
+        $this->translator = $translator;
     }
 
     public function createOrUpdate(
@@ -38,7 +42,7 @@ class SubscriberAttributeManager
 
         $value = $value ?? $definition->getDefaultValue();
         if ($value === null) {
-            throw new SubscriberAttributeCreationException('Value is required', 400);
+            throw new SubscriberAttributeCreationException($this->translator->trans('Value is required'));
         }
 
         $subscriberAttribute->setValue($value);

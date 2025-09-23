@@ -16,6 +16,7 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Translation\Translator;
 
 class MessageProcessingPreparatorTest extends TestCase
 {
@@ -35,10 +36,11 @@ class MessageProcessingPreparatorTest extends TestCase
         $this->output = $this->createMock(OutputInterface::class);
 
         $this->preparator = new MessageProcessingPreparator(
-            $this->entityManager,
-            $this->subscriberRepository,
-            $this->messageRepository,
-            $this->linkTrackService
+            entityManager: $this->entityManager,
+            subscriberRepository: $this->subscriberRepository,
+            messageRepository: $this->messageRepository,
+            linkTrackService: $this->linkTrackService,
+            translator: new Translator('en'),
         );
     }
 
@@ -189,7 +191,10 @@ class MessageProcessingPreparatorTest extends TestCase
         $savedLinks = [$linkTrack1, $linkTrack2];
 
         $this->linkTrackService->method('isExtractAndSaveLinksApplicable')->willReturn(true);
-        $this->linkTrackService->method('extractAndSaveLinks')->with($message, $userId)->willReturn($savedLinks);
+        $this->linkTrackService
+            ->method('extractAndSaveLinks')
+            ->with($message, $userId)
+            ->willReturn($savedLinks);
 
         $message->method('getContent')->willReturn($content);
 

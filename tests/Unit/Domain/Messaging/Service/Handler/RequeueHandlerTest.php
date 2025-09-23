@@ -19,6 +19,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Translation\Translator;
 
 class RequeueHandlerTest extends TestCase
 {
@@ -55,7 +56,7 @@ class RequeueHandlerTest extends TestCase
 
     public function testReturnsFalseWhenIntervalIsZeroOrNegative(): void
     {
-        $handler = new RequeueHandler($this->logger, $this->em);
+        $handler = new RequeueHandler($this->logger, $this->em, new Translator('en'));
         $message = $this->createMessage(0, null, null);
 
         $this->em->expects($this->never())->method('flush');
@@ -70,7 +71,7 @@ class RequeueHandlerTest extends TestCase
 
     public function testReturnsFalseWhenNowIsAfterRequeueUntil(): void
     {
-        $handler = new RequeueHandler($this->logger, $this->em);
+        $handler = new RequeueHandler($this->logger, $this->em, new Translator('en'));
         $past = (new DateTime())->sub(new DateInterval('PT5M'));
         $message = $this->createMessage(5, $past, null);
 
@@ -85,7 +86,7 @@ class RequeueHandlerTest extends TestCase
 
     public function testRequeuesFromFutureEmbargoAndSetsSubmittedStatus(): void
     {
-        $handler = new RequeueHandler($this->logger, $this->em);
+        $handler = new RequeueHandler($this->logger, $this->em, new Translator('en'));
         $embargo = (new DateTime())->add(new DateInterval('PT5M'));
         $interval = 10;
         $message = $this->createMessage($interval, null, $embargo);
@@ -107,7 +108,7 @@ class RequeueHandlerTest extends TestCase
 
     public function testRequeuesFromNowWhenEmbargoIsNullOrPast(): void
     {
-        $handler = new RequeueHandler($this->logger, $this->em);
+        $handler = new RequeueHandler($this->logger, $this->em, new Translator('en'));
         $interval = 3;
         $message = $this->createMessage($interval, null, null);
 
@@ -133,7 +134,7 @@ class RequeueHandlerTest extends TestCase
 
     public function testReturnsFalseWhenNextEmbargoExceedsUntil(): void
     {
-        $handler = new RequeueHandler($this->logger, $this->em);
+        $handler = new RequeueHandler($this->logger, $this->em, new Translator('en'));
         $embargo = (new DateTime())->add(new DateInterval('PT1M'));
         $interval = 10;
         // next would be +10, which exceeds until

@@ -14,27 +14,28 @@ use PhpList\Core\Domain\Messaging\Repository\BounceRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use Psr\Log\LoggerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class BounceManager
 {
-    private const TEST_MODE_MESSAGE = 'Running in test mode, not deleting messages from mailbox';
-    private const LIVE_MODE_MESSAGE = 'Processed messages will be deleted from the mailbox';
-
     private BounceRepository $bounceRepository;
     private UserMessageBounceRepository $userMessageBounceRepo;
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
+    private TranslatorInterface $translator;
 
     public function __construct(
         BounceRepository $bounceRepository,
         UserMessageBounceRepository $userMessageBounceRepo,
         EntityManagerInterface $entityManager,
         LoggerInterface $logger,
+        TranslatorInterface $translator,
     ) {
         $this->bounceRepository = $bounceRepository;
         $this->userMessageBounceRepo = $userMessageBounceRepo;
         $this->entityManager = $entityManager;
         $this->logger = $logger;
+        $this->translator = $translator;
     }
 
     public function create(
@@ -132,7 +133,9 @@ class BounceManager
 
     public function announceDeletionMode(bool $testMode): void
     {
-        $message = $testMode ? self::TEST_MODE_MESSAGE : self::LIVE_MODE_MESSAGE;
-        $this->logger->info($message);
+        $testModeMessage = $this->translator->trans('Running in test mode, not deleting messages from mailbox');
+        $liveModeMessage = $this->translator->trans('Processed messages will be deleted from the mailbox');
+
+        $this->logger->info($testMode ? $testModeMessage : $liveModeMessage);
     }
 }

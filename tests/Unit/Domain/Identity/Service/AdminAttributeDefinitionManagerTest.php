@@ -12,17 +12,24 @@ use PhpList\Core\Domain\Identity\Exception\AttributeDefinitionCreationException;
 use PhpList\Core\Domain\Subscription\Validator\AttributeTypeValidator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AdminAttributeDefinitionManagerTest extends TestCase
 {
     private AdminAttributeDefinitionRepository&MockObject $repository;
     private AdminAttributeDefinitionManager $subject;
+    private TranslatorInterface&MockObject $translator;
 
     protected function setUp(): void
     {
         $this->repository = $this->createMock(AdminAttributeDefinitionRepository::class);
         $attributeTypeValidator = $this->createMock(AttributeTypeValidator::class);
-        $this->subject = new AdminAttributeDefinitionManager($this->repository, $attributeTypeValidator);
+        $this->translator = $this->createMock(TranslatorInterface::class);
+        $this->subject = new AdminAttributeDefinitionManager(
+            definitionRepository: $this->repository,
+            attributeTypeValidator: $attributeTypeValidator,
+            translator: $this->translator,
+        );
     }
 
     public function testCreateCreatesNewAttributeDefinition(): void
@@ -75,6 +82,11 @@ class AdminAttributeDefinitionManagerTest extends TestCase
             ->method('findOneByName')
             ->with('test-attribute')
             ->willReturn($existingAttribute);
+
+        $this->translator->expects($this->once())
+            ->method('trans')
+            ->with('Attribute definition already exists.')
+            ->willReturn('Attribute definition already exists.');
 
         $this->expectException(AttributeDefinitionCreationException::class);
         $this->expectExceptionMessage('Attribute definition already exists');

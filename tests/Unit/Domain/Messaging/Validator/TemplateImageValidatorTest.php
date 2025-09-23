@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Common\Model\ValidationContext;
 use PhpList\Core\Domain\Messaging\Validator\TemplateImageValidator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Translator;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
 class TemplateImageValidatorTest extends TestCase
@@ -22,7 +23,7 @@ class TemplateImageValidatorTest extends TestCase
     protected function setUp(): void
     {
         $this->httpClient = $this->createMock(ClientInterface::class);
-        $this->validator = new TemplateImageValidator($this->httpClient);
+        $this->validator = new TemplateImageValidator($this->httpClient, new Translator('en'));
     }
 
     public function testThrowsExceptionIfValueIsNotArray(): void

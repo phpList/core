@@ -16,10 +16,8 @@ class SystemInfoCollector
     /**
      * @param string[] $configuredKeys keys to include (empty => use defaults)
      */
-    public function __construct(
-        RequestStack $requestStack,
-        array $configuredKeys = []
-    ) {
+    public function __construct(RequestStack $requestStack, array $configuredKeys = [])
+    {
         $this->requestStack = $requestStack;
         $this->configuredKeys = $configuredKeys;
     }
@@ -72,6 +70,7 @@ class SystemInfoCollector
         foreach ($pairs as $k => $v) {
             $lines[] = sprintf('%s = %s', $k, $v);
         }
+
         return "\n" . implode("\n", $lines);
     }
 }

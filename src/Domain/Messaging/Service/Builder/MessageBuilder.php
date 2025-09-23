@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Builder;
 
-use InvalidArgumentException;
+use PhpList\Core\Domain\Messaging\Exception\InvalidContextTypeException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessageContext;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessageDtoInterface;
 use PhpList\Core\Domain\Messaging\Model\Message;
@@ -24,7 +24,7 @@ class MessageBuilder
     public function build(MessageDtoInterface $createMessageDto, object $context = null): Message
     {
         if (!$context instanceof MessageContext) {
-            throw new InvalidArgumentException('Invalid context type');
+            throw new InvalidContextTypeException(get_debug_type($context));
         }
 
         $format = $this->messageFormatBuilder->build($createMessageDto->getFormat());
@@ -47,6 +47,14 @@ class MessageBuilder
 
         $metadata = new Message\MessageMetadata(Message\MessageStatus::Draft);
 
-        return new Message($format, $schedule, $metadata, $content, $options, $context->getOwner(), $template);
+        return new Message(
+            format: $format,
+            schedule: $schedule,
+            metadata: $metadata,
+            content: $content,
+            options: $options,
+            owner: $context->getOwner(),
+            template: $template
+        );
     }
 }

@@ -8,6 +8,7 @@ use PhpList\Core\Domain\Messaging\Message\SubscriberConfirmationMessage;
 use PhpList\Core\Domain\Messaging\Service\EmailService;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Mime\Email;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Handler for processing asynchronous subscriber confirmation email messages
@@ -16,11 +17,13 @@ use Symfony\Component\Mime\Email;
 class SubscriberConfirmationMessageHandler
 {
     private EmailService $emailService;
+    private TranslatorInterface $translator;
     private string $confirmationUrl;
 
-    public function __construct(EmailService $emailService, string $confirmationUrl)
+    public function __construct(EmailService $emailService, TranslatorInterface $translator, string $confirmationUrl)
     {
         $this->emailService = $emailService;
+        $this->translator = $translator;
         $this->confirmationUrl = $confirmationUrl;
     }
 
@@ -31,18 +34,29 @@ class SubscriberConfirmationMessageHandler
     {
         $confirmationLink = $this->generateConfirmationLink($message->getUniqueId());
 
-        $subject = 'Please confirm your subscription';
-        $textContent = "Thank you for subscribing!\n\n"
-            . "Please confirm your subscription by clicking the link below:\n"
-            . $confirmationLink . "\n\n"
-            . 'If you did not request this subscription, please ignore this email.';
+        $subject = $this->translator->trans('Please confirm your subscription');
+
+        $textContent = $this->translator->trans(
+            "Thank you for subscribing!\n\n" .
+            "Please confirm your subscription by clicking the link below:\n\n" .
+            "%confirmation_link%\n\n" .
+            'If you did not request this subscription, please ignore this email.',
+            [
+                '%confirmation_link%' => $confirmationLink
+            ]
+        );
 
         $htmlContent = '';
         if ($message->hasHtmlEmail()) {
-            $htmlContent = '<p>Thank you for subscribing!</p>'
-                . '<p>Please confirm your subscription by clicking the link below:</p>'
-                . '<p><a href="' . $confirmationLink . '">Confirm Subscription</a></p>'
-                . '<p>If you did not request this subscription, please ignore this email.</p>';
+            $htmlContent = $this->translator->trans(
+                '<p>Thank you for subscribing!</p>' .
+                '<p>Please confirm your subscription by clicking the link below:</p>' .
+                '<p><a href="%confirmation_link%">Confirm Subscription</a></p>' .
+                '<p>If you did not request this subscription, please ignore this email.</p>',
+                [
+                    '%confirmation_link%' => $confirmationLink,
+                ]
+            );
         }
 
         $email = (new Email())

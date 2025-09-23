@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Identity\Service;
 
-use PhpList\Core\Domain\Common\I18n\Messages;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Identity\Model\AdministratorToken;
 use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
@@ -36,8 +35,8 @@ class SessionManagerTest extends TestCase
         $translator->expects(self::exactly(2))
             ->method('trans')
             ->withConsecutive(
-                [Messages::AUTH_LOGIN_FAILED, ['login' => 'admin']],
-                [Messages::AUTH_NOT_AUTHORIZED, []]
+                ["Failed admin login attempt for '%login%'", ['login' => 'admin']],
+                ['Not authorized', []]
             )
             ->willReturnOnConsecutiveCalls(
                 "Failed admin login attempt for 'admin'",

@@ -14,6 +14,7 @@ use PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Translation\Translator;
 
 class ConsecutiveBounceHandlerTest extends TestCase
 {
@@ -43,6 +44,7 @@ class ConsecutiveBounceHandlerTest extends TestCase
             subscriberRepository: $this->subscriberRepository,
             subscriberHistoryManager: $this->subscriberHistoryManager,
             blacklistService: $this->blacklistService,
+            translator: new Translator('en'),
             unsubscribeThreshold: $unsubscribeThreshold,
             blacklistThreshold: $blacklistThreshold,
         );
@@ -89,14 +91,14 @@ class ConsecutiveBounceHandlerTest extends TestCase
             ->method('addHistory')
             ->with(
                 $user,
-                'Auto Unconfirmed',
+                'Auto unconfirmed',
                 $this->stringContains('2 consecutive bounces')
             );
 
         $this->blacklistService->expects($this->never())->method('blacklist');
 
         $this->io->expects($this->once())->method('section')->with('Identifying consecutive bounces');
-        $this->io->expects($this->once())->method('writeln')->with('total of 1 subscribers processed');
+        $this->io->expects($this->once())->method('writeln')->with('Total of 1 subscribers processed');
 
         $this->handler->handle($this->io);
     }
@@ -132,7 +134,7 @@ class ConsecutiveBounceHandlerTest extends TestCase
             ->method('addHistory')
             ->with(
                 $user,
-                'Auto Unconfirmed',
+                'Auto unconfirmed',
                 $this->stringContains('consecutive bounces')
             );
 
@@ -164,7 +166,7 @@ class ConsecutiveBounceHandlerTest extends TestCase
         $this->subscriberRepository->expects($this->once())->method('markUnconfirmed')->with(55);
         $this->subscriberHistoryManager->expects($this->once())->method('addHistory')->with(
             $user,
-            'Auto Unconfirmed',
+            'Auto unconfirmed',
             $this->stringContains('2 consecutive bounces')
         );
         $this->blacklistService->expects($this->never())->method('blacklist');

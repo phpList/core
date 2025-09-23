@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Builder;
 
-use InvalidArgumentException;
 use PhpList\Core\Domain\Identity\Model\Administrator;
+use PhpList\Core\Domain\Messaging\Exception\InvalidContextTypeException;
 use PhpList\Core\Domain\Messaging\Model\Dto\CreateMessageDto;
 use PhpList\Core\Domain\Messaging\Model\Dto\Message\MessageContentDto;
 use PhpList\Core\Domain\Messaging\Model\Dto\Message\MessageFormatDto;
@@ -14,6 +14,8 @@ use PhpList\Core\Domain\Messaging\Model\Dto\Message\MessageOptionsDto;
 use PhpList\Core\Domain\Messaging\Model\Dto\Message\MessageScheduleDto;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessageContext;
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageSchedule;
 use PhpList\Core\Domain\Messaging\Repository\TemplateRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\MessageBuilder;
 use PhpList\Core\Domain\Messaging\Service\Builder\MessageContentBuilder;
@@ -40,11 +42,11 @@ class MessageBuilderTest extends TestCase
         $this->optionsBuilder = $this->createMock(MessageOptionsBuilder::class);
 
         $this->builder = new MessageBuilder(
-            $templateRepository,
-            $this->formatBuilder,
-            $this->scheduleBuilder,
-            $this->contentBuilder,
-            $this->optionsBuilder
+            templateRepository: $templateRepository,
+            messageFormatBuilder: $this->formatBuilder,
+            messageScheduleBuilder: $this->scheduleBuilder,
+            messageContentBuilder: $this->contentBuilder,
+            messageOptionsBuilder: $this->optionsBuilder
         );
     }
 
@@ -92,12 +94,12 @@ class MessageBuilderTest extends TestCase
         $this->scheduleBuilder->expects($this->once())
             ->method('build')
             ->with($createMessageDto->schedule)
-            ->willReturn($this->createMock(\PhpList\Core\Domain\Messaging\Model\Message\MessageSchedule::class));
+            ->willReturn($this->createMock(MessageSchedule::class));
 
         $this->contentBuilder->expects($this->once())
             ->method('build')
             ->with($createMessageDto->content)
-            ->willReturn($this->createMock(\PhpList\Core\Domain\Messaging\Model\Message\MessageContent::class));
+            ->willReturn($this->createMock(MessageContent::class));
 
         $this->optionsBuilder->expects($this->once())
             ->method('build')
@@ -113,12 +115,12 @@ class MessageBuilderTest extends TestCase
 
         $this->mockBuildCalls($request);
 
-        $this->builder->build($request, $context);
+        $this->builder->build(createMessageDto: $request, context: $context);
     }
 
     public function testThrowsExceptionOnInvalidContext(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidContextTypeException::class);
 
         $this->builder->build($this->createMock(CreateMessageDto::class), new \stdClass());
     }
@@ -139,11 +141,11 @@ class MessageBuilderTest extends TestCase
         $existingMessage
             ->expects($this->once())
             ->method('setSchedule')
-            ->with($this->isInstanceOf(\PhpList\Core\Domain\Messaging\Model\Message\MessageSchedule::class));
+            ->with($this->isInstanceOf(MessageSchedule::class));
         $existingMessage
             ->expects($this->once())
             ->method('setContent')
-            ->with($this->isInstanceOf(\PhpList\Core\Domain\Messaging\Model\Message\MessageContent::class));
+            ->with($this->isInstanceOf(MessageContent::class));
         $existingMessage
             ->expects($this->once())
             ->method('setOptions')

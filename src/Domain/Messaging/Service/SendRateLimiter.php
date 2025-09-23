@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use PhpList\Core\Domain\Common\IspRestrictionsProvider;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Encapsulates batching and throttling logic for sending emails respecting
@@ -26,6 +27,7 @@ class SendRateLimiter
     public function __construct(
         private readonly IspRestrictionsProvider $ispRestrictionsProvider,
         private readonly UserMessageRepository $userMessageRepository,
+        private readonly TranslatorInterface $translator,
         private readonly ?int $mailqueueBatchSize = null,
         private readonly ?int $mailqueueBatchPeriod = null,
         private readonly ?int $mailqueueThrottle = null,
@@ -76,9 +78,9 @@ class SendRateLimiter
             $elapsed = microtime(true) - $this->batchStart;
             $remaining = (int)ceil($this->batchPeriod - $elapsed);
             if ($remaining > 0) {
-                $output?->writeln(sprintf(
-                    'Batch limit reached, sleeping %ds to respect MAILQUEUE_BATCH_PERIOD',
-                    $remaining
+                $output?->writeln($this->translator->trans(
+                    'Batch limit reached, sleeping %sleep%s to respect MAILQUEUE_BATCH_PERIOD',
+                    ['%sleep%' => $remaining]
                 ));
                 sleep($remaining);
             }

@@ -16,6 +16,7 @@ use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Translation\Translator;
 
 class AdvancedBounceRulesProcessorTest extends TestCase
 {
@@ -36,15 +37,23 @@ class AdvancedBounceRulesProcessorTest extends TestCase
 
     public function testNoActiveRules(): void
     {
-        $this->io->expects($this->once())->method('section')->with('Processing bounces based on active bounce rules');
+        $translator = new Translator('en');
+        $this->io
+            ->expects($this->once())
+            ->method('section')
+            ->with($translator->trans('Processing bounces based on active bounce rules'));
         $this->ruleManager->method('loadActiveRules')->willReturn([]);
-        $this->io->expects($this->once())->method('writeln')->with('No active rules');
+        $this->io
+            ->expects($this->once())
+            ->method('writeln')
+            ->with($translator->trans('No active rules'));
 
         $processor = new AdvancedBounceRulesProcessor(
             bounceManager: $this->bounceManager,
             ruleManager: $this->ruleManager,
             actionResolver: $this->actionResolver,
             subscriberManager: $this->subscriberManager,
+            translator: $translator,
         );
 
         $processor->process($this->io, 100);
@@ -159,10 +168,11 @@ class AdvancedBounceRulesProcessorTest extends TestCase
                 return null;
             });
 
+        $translator = new Translator('en');
         $this->io
             ->expects($this->once())
             ->method('section')
-            ->with('Processing bounces based on active bounce rules');
+            ->with($translator->trans('Processing bounces based on active bounce rules'));
         $this->io->expects($this->exactly(4))->method('writeln');
 
         $processor = new AdvancedBounceRulesProcessor(
@@ -170,6 +180,7 @@ class AdvancedBounceRulesProcessorTest extends TestCase
             ruleManager: $this->ruleManager,
             actionResolver: $this->actionResolver,
             subscriberManager: $this->subscriberManager,
+            translator: $translator,
         );
 
         $processor->process($this->io, 2);

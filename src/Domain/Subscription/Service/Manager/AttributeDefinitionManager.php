@@ -9,25 +9,32 @@ use PhpList\Core\Domain\Subscription\Model\Dto\AttributeDefinitionDto;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Validator\AttributeTypeValidator;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AttributeDefinitionManager
 {
     private SubscriberAttributeDefinitionRepository $definitionRepository;
     private AttributeTypeValidator $attributeTypeValidator;
+    private TranslatorInterface $translator;
 
     public function __construct(
         SubscriberAttributeDefinitionRepository $definitionRepository,
-        AttributeTypeValidator $attributeTypeValidator
+        AttributeTypeValidator $attributeTypeValidator,
+        TranslatorInterface $translator,
     ) {
         $this->definitionRepository = $definitionRepository;
         $this->attributeTypeValidator = $attributeTypeValidator;
+        $this->translator = $translator;
     }
 
     public function create(AttributeDefinitionDto $attributeDefinitionDto): SubscriberAttributeDefinition
     {
         $existingAttribute = $this->definitionRepository->findOneByName($attributeDefinitionDto->name);
         if ($existingAttribute) {
-            throw new AttributeDefinitionCreationException('Attribute definition already exists', 409);
+            throw new AttributeDefinitionCreationException(
+                message: $this->translator->trans('Attribute definition already exists'),
+                statusCode: 409
+            );
         }
         $this->attributeTypeValidator->validate($attributeDefinitionDto->type);
 
@@ -50,7 +57,10 @@ class AttributeDefinitionManager
     ): SubscriberAttributeDefinition {
         $existingAttribute = $this->definitionRepository->findOneByName($attributeDefinitionDto->name);
         if ($existingAttribute && $existingAttribute->getId() !== $attributeDefinition->getId()) {
-            throw new AttributeDefinitionCreationException('Another attribute with this name already exists.', 409);
+            throw new AttributeDefinitionCreationException(
+                message: $this->translator->trans('Another attribute with this name already exists.'),
+                statusCode: 409
+            );
         }
         $this->attributeTypeValidator->validate($attributeDefinitionDto->type);
 

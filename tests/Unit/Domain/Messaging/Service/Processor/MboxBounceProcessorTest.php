@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Translation\Translator;
 
 class MboxBounceProcessorTest extends TestCase
 {
@@ -27,13 +28,14 @@ class MboxBounceProcessorTest extends TestCase
 
     public function testGetProtocol(): void
     {
-        $processor = new MboxBounceProcessor($this->service);
+        $processor = new MboxBounceProcessor($this->service, new Translator('en'));
         $this->assertSame('mbox', $processor->getProtocol());
     }
 
     public function testProcessThrowsWhenMailboxMissing(): void
     {
-        $processor = new MboxBounceProcessor($this->service);
+        $translator = new Translator('en');
+        $processor = new MboxBounceProcessor($this->service, $translator);
 
         $this->input->method('getOption')->willReturnMap([
             ['test', false],
@@ -44,7 +46,7 @@ class MboxBounceProcessorTest extends TestCase
         $this->io
             ->expects($this->once())
             ->method('error')
-            ->with('mbox file path must be provided with --mailbox.');
+            ->with($translator->trans('mbox file path must be provided with --mailbox.'));
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Missing --mailbox for mbox protocol');
@@ -54,7 +56,8 @@ class MboxBounceProcessorTest extends TestCase
 
     public function testProcessSuccess(): void
     {
-        $processor = new MboxBounceProcessor($this->service);
+        $translator = new Translator('en');
+        $processor = new MboxBounceProcessor($this->service, $translator);
 
         $this->input->method('getOption')->willReturnMap([
             ['test', true],
@@ -62,8 +65,14 @@ class MboxBounceProcessorTest extends TestCase
             ['mailbox', '/var/mail/bounce.mbox'],
         ]);
 
-        $this->io->expects($this->once())->method('section')->with('Opening mbox /var/mail/bounce.mbox');
-        $this->io->expects($this->once())->method('writeln')->with('Please do not interrupt this process');
+        $this->io
+            ->expects($this->once())
+            ->method('section')
+            ->with($translator->trans('Opening mbox %file%', ['%file%' => '/var/mail/bounce.mbox']));
+        $this->io
+            ->expects($this->once())
+            ->method('writeln')
+            ->with($translator->trans('Please do not interrupt this process'));
 
         $this->service->expects($this->once())
             ->method('processMailbox')
