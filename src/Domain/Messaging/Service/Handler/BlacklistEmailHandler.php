@@ -39,9 +39,9 @@ class BlacklistEmailHandler implements BounceActionHandlerInterface
                 ]),
             );
             $this->subscriberHistoryManager->addHistory(
-                $closureData['subscriber'],
-                $this->translator->trans('Auto Unsubscribed'),
-                $this->translator->trans('email auto unsubscribed for bounce rule %rule_id%', [
+                subscriber: $closureData['subscriber'],
+                message: $this->translator->trans('Auto Unsubscribed'),
+                details: $this->translator->trans('email auto unsubscribed for bounce rule %rule_id%', [
                     '%rule_id%' => $closureData['ruleId']
                 ])
             );

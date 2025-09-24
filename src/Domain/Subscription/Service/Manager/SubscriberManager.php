@@ -91,6 +91,14 @@ class SubscriberManager
         return $subscriber;
     }
 
+    public function resetBounceCount(Subscriber $subscriber): Subscriber
+    {
+        $subscriber->setBounceCount(0);
+        $this->entityManager->flush();
+
+        return $subscriber;
+    }
+
     public function markAsConfirmedByUniqueId(string $uniqueId): Subscriber
     {
         $subscriber = $this->subscriberRepository->findOneByUniqueId($uniqueId);
