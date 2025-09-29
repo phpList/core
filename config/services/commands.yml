@@ -15,3 +15,6 @@ services:
   PhpList\Core\Domain\Messaging\Command\ProcessBouncesCommand:
     arguments:
       $protocolProcessors: !tagged_iterator 'phplist.bounce_protocol_processor'
+
+  TatevikGr\RssFeedBundle\Command\RssDispatchCommand:
+    tags: ['console.command']

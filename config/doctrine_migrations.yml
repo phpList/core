@@ -1,6 +1,7 @@
 doctrine_migrations:
     migrations_paths:
         'PhpList\Core\Migrations': '%kernel.project_dir%/src/Migrations'
+#        'TatevikGr\RssBundle\RssFeedBundle\Migrations': '%kernel.project_dir%/vendor/tatevikgr/rss-bundle/src/RssFeedBundle/Migrations'
     all_or_nothing: true
     organize_migrations: false
     storage:
