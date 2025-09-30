@@ -174,7 +174,7 @@ class SubscriberCsvImporter
 
         $this->processAttributes($subscriber, $dto);
 
-        if (count($options->listIds) > 0) {
+        if (!$subscriber->isBlacklisted() && count($options->listIds) > 0) {
             foreach ($options->listIds as $listId) {
                 $this->subscriptionManager->addSubscriberToAList($subscriber, $listId);
             }
@@ -190,6 +190,12 @@ class SubscriberCsvImporter
     private function processAttributes(Subscriber $subscriber, ImportSubscriberDto $dto): void
     {
         foreach ($dto->extraAttributes as $key => $value) {
+            $lowerKey = strtolower((string)$key);
+            // Do not import or update sensitive/system fields from CSV
+            if (in_array($lowerKey, ['password', 'modified'], true)) {
+                continue;
+            }
+
             $attributeDefinition = $this->attrDefinitionRepository->findOneByName($key);
             if ($attributeDefinition !== null) {
                 $this->attributeManager->createOrUpdate(
