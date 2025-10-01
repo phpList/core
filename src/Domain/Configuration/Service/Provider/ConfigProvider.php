@@ -12,6 +12,7 @@ class ConfigProvider
 {
     private array $booleanValues = [
         ConfigOption::MaintenanceMode,
+        ConfigOption::SendSubscribeMessage,
     ];
 
     private ConfigRepository $configRepository;

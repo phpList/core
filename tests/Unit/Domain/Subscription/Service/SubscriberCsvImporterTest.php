@@ -11,6 +11,10 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Messaging\Service\EmailService;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use PhpList\Core\Domain\Subscription\Service\CsvImporter;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
@@ -39,6 +43,10 @@ class SubscriberCsvImporterTest extends TestCase
         $this->csvImporterMock = $this->createMock(CsvImporter::class);
         $this->attributeDefinitionRepositoryMock = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $entityManager = $this->createMock(EntityManagerInterface::class);
+        $configProvider = $this->createMock(ConfigProvider::class);
+        $emailService = $this->createMock(EmailService::class);
+        $subscriberListRepository = $this->createMock(SubscriberListRepository::class);
+        $configProvider->method('isEnabled')->with(ConfigOption::SendSubscribeMessage)->willReturn(false);
 
         $this->subject = new SubscriberCsvImporter(
             subscriberManager: $this->subscriberManagerMock,
@@ -49,6 +57,9 @@ class SubscriberCsvImporterTest extends TestCase
             attrDefinitionRepository: $this->attributeDefinitionRepositoryMock,
             entityManager: $entityManager,
             translator: new Translator('en'),
+            emailService: $emailService,
+            configProvider: $configProvider,
+            subscriberListRepository: $subscriberListRepository,
         );
     }
 
