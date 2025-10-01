@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Analytics\Service;
 
-use PhpList\Core\Core\ConfigProvider;
+use PhpList\Core\Core\ParameterProvider;
 use PhpList\Core\Domain\Analytics\Exception\MissingMessageIdException;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository;
@@ -13,12 +13,12 @@ use PhpList\Core\Domain\Messaging\Model\Message;
 class LinkTrackService
 {
     private LinkTrackRepository $linkTrackRepository;
-    private ConfigProvider $configProvider;
+    private ParameterProvider $paramProvider;
 
-    public function __construct(LinkTrackRepository $linkTrackRepository, ConfigProvider $configProvider)
+    public function __construct(LinkTrackRepository $linkTrackRepository, ParameterProvider $paramProvider)
     {
         $this->linkTrackRepository = $linkTrackRepository;
-        $this->configProvider = $configProvider;
+        $this->paramProvider = $paramProvider;
     }
 
     public function getUrlById(int $id): ?string
@@ -29,7 +29,7 @@ class LinkTrackService
 
     public function isExtractAndSaveLinksApplicable(): bool
     {
-        return (bool)$this->configProvider->get('click_track', false);
+        return (bool)$this->paramProvider->get('click_track', false);
     }
 
     /**

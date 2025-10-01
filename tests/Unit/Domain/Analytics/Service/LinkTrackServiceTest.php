@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Analytics\Service;
 
-use PhpList\Core\Core\ConfigProvider;
+use PhpList\Core\Core\ParameterProvider;
 use PhpList\Core\Domain\Analytics\Exception\MissingMessageIdException;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository;
@@ -22,13 +22,13 @@ class LinkTrackServiceTest extends TestCase
     protected function setUp(): void
     {
         $this->linkTrackRepository = $this->createMock(LinkTrackRepository::class);
-        $configProvider = $this->createMock(ConfigProvider::class);
+        $paramProvider = $this->createMock(ParameterProvider::class);
 
-        $configProvider->method('get')
+        $paramProvider->method('get')
             ->with('click_track', false)
             ->willReturn(true);
 
-        $this->subject = new LinkTrackService($this->linkTrackRepository, $configProvider);
+        $this->subject = new LinkTrackService($this->linkTrackRepository, $paramProvider);
     }
 
     public function testExtractAndSaveLinksWithNoLinks(): void
@@ -185,12 +185,12 @@ class LinkTrackServiceTest extends TestCase
 
     public function testIsExtractAndSaveLinksApplicableWhenClickTrackIsFalse(): void
     {
-        $configProvider = $this->createMock(ConfigProvider::class);
-        $configProvider->method('get')
+        $paramProvider = $this->createMock(ParameterProvider::class);
+        $paramProvider->method('get')
             ->with('click_track', false)
             ->willReturn(false);
 
-        $subject = new LinkTrackService($this->linkTrackRepository, $configProvider);
+        $subject = new LinkTrackService($this->linkTrackRepository, $paramProvider);
 
         self::assertFalse($subject->isExtractAndSaveLinksApplicable());
     }

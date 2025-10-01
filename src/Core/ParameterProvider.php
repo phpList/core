@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Core;
 
-class ConfigProvider
+class ParameterProvider
 {
     public function __construct(private readonly array $config)
     {
