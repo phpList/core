@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Subscription\Exception\CouldNotReadUploadedFileException;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
@@ -14,6 +16,9 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriptionManager;
+use PhpList\Core\Domain\Messaging\Service\EmailService;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
@@ -32,6 +37,9 @@ class SubscriberCsvImporter
     private SubscriberAttributeDefinitionRepository $attrDefinitionRepository;
     private EntityManagerInterface $entityManager;
     private TranslatorInterface $translator;
+    private EmailService $emailService;
+    private ConfigProvider $configProvider;
+    private SubscriberListRepository $subscriberListRepository;
 
     public function __construct(
         SubscriberManager $subscriberManager,
@@ -42,6 +50,9 @@ class SubscriberCsvImporter
         SubscriberAttributeDefinitionRepository $attrDefinitionRepository,
         EntityManagerInterface $entityManager,
         TranslatorInterface $translator,
+        EmailService $emailService,
+        ConfigProvider $configProvider,
+        SubscriberListRepository $subscriberListRepository,
     ) {
         $this->subscriberManager = $subscriberManager;
         $this->attributeManager = $attributeManager;
@@ -51,6 +62,9 @@ class SubscriberCsvImporter
         $this->attrDefinitionRepository = $attrDefinitionRepository;
         $this->entityManager = $entityManager;
         $this->translator = $translator;
+        $this->emailService = $emailService;
+        $this->configProvider = $configProvider;
+        $this->subscriberListRepository = $subscriberListRepository;
     }
 
     /**
@@ -83,9 +97,6 @@ class SubscriberCsvImporter
             foreach ($result['valid'] as $dto) {
                 try {
                     $this->processRow($dto, $options, $stats);
-                    if (!$options->dryRun) {
-                        $this->entityManager->flush();
-                    }
                 } catch (Throwable $e) {
                     $stats['errors'][] = $this->translator->trans(
                         'Error processing %email%: %error%',
@@ -179,6 +190,37 @@ class SubscriberCsvImporter
                 $this->subscriptionManager->addSubscriberToAList($subscriber, $listId);
             }
         }
+
+        if (!$options->dryRun) {
+            $this->entityManager->flush();
+            if ($this->configProvider->isEnabled(ConfigOption::SendSubscribeMessage)) {
+                $this->sendSubscribeEmail($dto->email, $options->listIds);
+            }
+        }
+    }
+
+    private function sendSubscribeEmail(string $subscriberEmail, array $listIds): void
+    {
+        $listNames = [];
+        foreach ($listIds as $id) {
+            $list = $this->subscriberListRepository->find($id);
+            if ($list) {
+                $listNames[] = $list->getName();
+            }
+        }
+        $listOfLists = implode(', ', $listNames);
+
+        $subject = $this->configProvider->getValue('subscribesubject', 'Subscription');
+        $message = $this->configProvider->getValue('subscribemessage', 'You have been subscribed to: [LISTS]');
+        $message = str_replace('[LISTS]', $listOfLists, (string)$message);
+
+        $email = (new Email())
+            ->to($subscriberEmail)
+            ->subject((string)$subject)
+            ->text($message)
+            ->html(nl2br(htmlentities($message)));
+
+        $this->emailService->sendEmail($email);
     }
 
     /**
