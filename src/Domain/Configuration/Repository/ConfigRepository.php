@@ -8,4 +8,8 @@ use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 
 class ConfigRepository extends AbstractRepository
 {
+    public function findValueByItem(string $name): ?string
+    {
+        return $this->findOneBy(['item' => $name])?->getValue();
+    }
 }

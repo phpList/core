@@ -32,12 +32,12 @@ class SubscriptionManager
         $this->translator = $translator;
     }
 
-    public function addSubscriberToAList(Subscriber $subscriber, int $listId): Subscription
+    public function addSubscriberToAList(Subscriber $subscriber, int $listId): ?Subscription
     {
         $existingSubscription = $this->subscriptionRepository
             ->findOneBySubscriberEmailAndListId($listId, $subscriber->getEmail());
         if ($existingSubscription) {
-            return $existingSubscription;
+            return null;
         }
         $subscriberList = $this->subscriberListRepository->find($listId);
         if (!$subscriberList) {

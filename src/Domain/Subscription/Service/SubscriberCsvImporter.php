@@ -185,15 +185,19 @@ class SubscriberCsvImporter
 
         $this->processAttributes($subscriber, $dto);
 
+        $addedNewSubscriberToList = false;
         if (!$subscriber->isBlacklisted() && count($options->listIds) > 0) {
             foreach ($options->listIds as $listId) {
-                $this->subscriptionManager->addSubscriberToAList($subscriber, $listId);
+                $created = $this->subscriptionManager->addSubscriberToAList($subscriber, $listId);
+                if ($created) {
+                    $addedNewSubscriberToList = true;
+                }
             }
         }
 
         if (!$options->dryRun) {
             $this->entityManager->flush();
-            if ($this->configProvider->isEnabled(ConfigOption::SendSubscribeMessage)) {
+            if ($options->notifySubscribers && $addedNewSubscriberToList) {
                 $this->sendSubscribeEmail($dto->email, $options->listIds);
             }
         }
