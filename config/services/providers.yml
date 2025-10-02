@@ -3,7 +3,7 @@ services:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Core\ConfigProvider:
+  PhpList\Core\Core\ParameterProvider:
     arguments:
       $config: '%app.config%'
 
@@ -12,3 +12,9 @@ services:
     autoconfigure: true
     arguments:
       $confPath: '%app.phplist_isp_conf_path%'
+
+  PhpList\Core\Domain\Subscription\Service\Provider\CheckboxGroupValueProvider: ~
+  PhpList\Core\Domain\Subscription\Service\Provider\SelectOrRadioValueProvider: ~
+  PhpList\Core\Domain\Subscription\Service\Provider\ScalarValueProvider: ~
+
+  PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider:
