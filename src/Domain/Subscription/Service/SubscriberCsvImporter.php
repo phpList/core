@@ -151,21 +151,17 @@ class SubscriberCsvImporter
         SubscriberImportOptions $options,
         array &$stats,
     ): void {
-        if (!filter_var($dto->email, FILTER_VALIDATE_EMAIL)) {
-            if ($options->skipInvalidEmail) {
-                $stats['skipped']++;
-                return;
-            } else {
-                $dto->email = 'invalid_' . $dto->email;
-                $dto->sendConfirmation = false;
-            }
-        }
-        $subscriber = $this->subscriberRepository->findOneByEmail($dto->email);
-
-        if ($subscriber && !$options->updateExisting) {
-            $stats['skipped']++;
+        if ($this->handleInvalidEmail($dto, $options, $stats)) {
             return;
         }
+
+        $subscriber = $this->subscriberRepository->findOneByEmail($dto->email);
+        if ($subscriber && !$options->updateExisting) {
+            $stats['skipped']++;
+
+            return;
+        }
+
         if ($subscriber) {
             $this->subscriberManager->updateFromImport($subscriber, $dto);
             $stats['updated']++;
@@ -186,9 +182,37 @@ class SubscriberCsvImporter
             }
         }
 
+        $this->handleFlushAndEmail($subscriber, $options,$dto, $addedNewSubscriberToList);
+    }
+
+    private function handleInvalidEmail(
+        ImportSubscriberDto $dto,
+        SubscriberImportOptions $options,
+        array &$stats
+    ): bool {
+        if (!filter_var($dto->email, FILTER_VALIDATE_EMAIL)) {
+            if ($options->skipInvalidEmail) {
+                $stats['skipped']++;
+
+                return true;
+            }
+            // todo: check
+            $dto->email = 'invalid_' . $dto->email;
+            $dto->sendConfirmation = false;
+        }
+
+        return false;
+    }
+
+    private function handleFlushAndEmail(
+        Subscriber $subscriber,
+        SubscriberImportOptions $options,
+        ImportSubscriberDto $dto,
+        bool $addedNewSubscriberToList
+    ): void {
         if (!$options->dryRun) {
             $this->entityManager->flush();
-            if ($options->notifySubscribers && $addedNewSubscriberToList) {
+            if ($dto->sendConfirmation && $addedNewSubscriberToList) {
                 $this->sendSubscribeEmail($subscriber, $options->listIds);
             }
         }

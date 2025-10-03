@@ -26,7 +26,7 @@ class CheckboxGroupValueProvider implements AttributeValueProvider
         }
 
         $ids = array_values(array_filter(array_map(
-            fn($v) => ($i = (int)trim($v)) > 0 ? $i : null,
+            fn($value) => ($index = (int)trim($value)) > 0 ? $index : null,
             explode(',', $csv)
         )));
 

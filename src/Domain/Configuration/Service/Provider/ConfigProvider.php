@@ -22,6 +22,7 @@ class ConfigProvider
     ) {
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function isEnabled(ConfigOption $key): bool
     {
         if (!in_array($key, $this->booleanValues)) {
@@ -38,6 +39,7 @@ class ConfigProvider
 
     /**
      * Get configuration value by its key, from settings or default configs or default value (if provided)
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function getValue(ConfigOption $key): ?string
     {
@@ -58,6 +60,7 @@ class ConfigProvider
         return DefaultConfigProvider::has($key->value) ? DefaultConfigProvider::get($key->value) : null;
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function getValueWithNamespace(ConfigOption $key): ?string
     {
         $full = $this->getValue($key);

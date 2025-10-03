@@ -20,10 +20,10 @@ class PlaceholderResolver
         if ($input === null || $input === '') return $input;
 
         // Replace [TOKEN] (case-insensitive)
-        return preg_replace_callback('/\[(\w+)\]/i', function ($m) {
-            $key = strtoupper($m[1]);
+        return preg_replace_callback('/\[(\w+)\]/i', function ($map) {
+            $key = strtoupper($map[1]);
             if (!isset($this->providers[$key])) {
-                return $m[0];
+                return $map[0];
             }
             return (string) ($this->providers[$key])();
         }, $input);

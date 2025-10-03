@@ -30,13 +30,13 @@ class DynamicListAttrRepository
 
         $table = $this->prefix . 'listattr_' . $listTable;
 
-        $qb = $this->connection->createQueryBuilder();
-        $qb->select('name')
+        $queryBuilder = $this->connection->createQueryBuilder();
+        $queryBuilder->select('name')
             ->from($table)
             ->where('id IN (:ids)')
             ->setParameter('ids', array_map('intval', $ids), ArrayParameterType::INTEGER);
 
-        return $qb->executeQuery()->fetchFirstColumn();
+        return $queryBuilder->executeQuery()->fetchFirstColumn();
     }
 
     public function fetchSingleOptionName(string $listTable, int $id): ?string
@@ -47,13 +47,13 @@ class DynamicListAttrRepository
 
         $table = $this->prefix . 'listattr_' . $listTable;
 
-        $qb = $this->connection->createQueryBuilder();
-        $qb->select('name')
+        $queryBuilder = $this->connection->createQueryBuilder();
+        $queryBuilder->select('name')
             ->from($table)
             ->where('id = :id')
             ->setParameter('id', $id);
 
-        $val = $qb->executeQuery()->fetchOne();
+        $val = $queryBuilder->executeQuery()->fetchOne();
 
         return $val === false ? null : (string) $val;
     }

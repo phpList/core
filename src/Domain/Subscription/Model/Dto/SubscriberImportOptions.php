@@ -14,7 +14,6 @@ class SubscriberImportOptions
         public readonly array $listIds = [],
         public readonly bool $dryRun = false,
         public readonly bool $skipInvalidEmail = true,
-        public readonly bool $notifySubscribers = false,
     ) {
     }
 }

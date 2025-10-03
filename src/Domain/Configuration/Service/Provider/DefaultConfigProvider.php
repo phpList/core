@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Configuration\Service\Provider;
 
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+/** @SuppressWarnings(PHPMD.StaticAccess) */
 class DefaultConfigProvider
 {
     /**
@@ -21,6 +22,7 @@ class DefaultConfigProvider
         self::$translator = $translator;
     }
 
+    /** @SuppressWarnings(PHPMD.ExcessiveMethodLength) */
     private static function init(): void
     {
         if (!empty(self::$defaults)) {
