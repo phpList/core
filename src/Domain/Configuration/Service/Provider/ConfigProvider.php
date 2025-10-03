@@ -29,13 +29,17 @@ class ConfigProvider
         }
         $config = $this->configRepository->findOneBy(['item' => $key->value]);
 
-        return $config?->getValue() === '1';
+        if ($config !== null) {
+            $config->getValue() === '1';
+        }
+
+        return DefaultConfigProvider::has($key->value) && DefaultConfigProvider::get($key->value) === '1';
     }
 
     /**
-     * Get configuration value by its key
+     * Get configuration value by its key, from settings or default configs or default value (if provided)
      */
-    public function getValue(ConfigOption $key, ?string $default = null): ?string
+    public function getValue(ConfigOption $key): ?string
     {
         if (in_array($key, $this->booleanValues)) {
             throw new InvalidArgumentException('Key is a boolean value, use isEnabled instead');
@@ -47,10 +51,14 @@ class ConfigProvider
             $this->cache->set($cacheKey, $value, $this->ttlSeconds);
         }
 
-        return $value ?? $default;
+        if ($value !== null) {
+            return $value;
+        }
+
+        return DefaultConfigProvider::has($key->value) ? DefaultConfigProvider::get($key->value) : null;
     }
 
-    public function getValueWithNamespace(ConfigOption $key, ?string $default = null): ?string
+    public function getValueWithNamespace(ConfigOption $key): ?string
     {
         $full = $this->getValue($key);
         if ($full !== null && $full !== '') {
@@ -61,9 +69,9 @@ class ConfigProvider
             [$parent] = explode(':', $key->value, 2);
             $parentKey = ConfigOption::from($parent);
 
-            return $this->getValue($parentKey, $default);
+            return $this->getValue($parentKey);
         }
 
-        return $default;
+        return null;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Configuration\Service\Provider;
 
+use Symfony\Contracts\Translation\TranslatorInterface;
+
 class DefaultConfigProvider
 {
     /**
@@ -12,271 +14,280 @@ class DefaultConfigProvider
      */
     private static array $defaults = [];
 
+    private static TranslatorInterface $translator;
+
+    public static function setTranslator(TranslatorInterface $translator): void
+    {
+        self::$translator = $translator;
+    }
+
     private static function init(): void
     {
         if (!empty(self::$defaults)) {
             return;
         }
 
-        self::$defaults = array(
-            'admin_address' => array(
+        $publicSchema = 'http';
+        $pageRoot = '/api/v2';
+
+        self::$defaults = [
+            'admin_address' => [
                 'value'       => 'webmaster@[DOMAIN]',
-                'description' => s('Person in charge of this system (one email address)'),
+                'description' => self::$translator->trans('Person in charge of this system (one email address)'),
                 'type'        => 'email',
                 'allowempty'  => false,
                 'category'    => 'general',
-            ),
-            'organisation_name' => array(
+            ],
+            'organisation_name' => [
                 'value'       => '',
-                'description' => s('Name of the organisation'),
+                'description' => self::$translator->trans('Name of the organisation'),
                 'type'        => 'text',
                 'allowempty'  => true,
                 'allowtags'   => '<b><i><u><strong><em><h1><h2><h3><h4>',
                 'allowJS'     => false,
                 'category'    => 'general',
-            ),
-            'organisation_logo' => array(
+            ],
+            'organisation_logo' => [
                 'value'       => '',
-                'description' => s('Logo of the organisation'),
+                'description' => self::$translator->trans('Logo of the organisation'),
                 'infoicon'    => true,
                 'type'        => 'image',
                 'allowempty'  => true,
                 'category'    => 'general',
-            ),
-            'date_format' => array(
+            ],
+            'date_format' => [
                 'value'       => 'j F Y',
-                'description' => s('Date format'),
+                'description' => self::$translator->trans('Date format'),
                 'infoicon'    => true,
                 'type'        => 'text',
                 'allowempty'  => false,
                 'category'    => 'general',
-            ),
-            'rc_notification' => array(
+            ],
+            'rc_notification' => [
                 'value'       => 0,
-                'description' => s('Show notification for Release Candidates'),
+                'description' => self::$translator->trans('Show notification for Release Candidates'),
                 'type'        => 'boolean',
                 'allowempty'  => true,
                 'category'    => 'security',
-            ),
-            'remote_processing_secret' => array(
+            ],
+            'remote_processing_secret' => [
                 'value'       => bin2hex(random_bytes(10)),
-                'description' => s('Secret for remote processing'),
+                'description' => self::$translator->trans('Secret for remote processing'),
                 'type'        => 'text',
                 'category'    => 'security',
-            ),
-            'notify_admin_login' => array(
+            ],
+            'notify_admin_login' => [
                 'value'       => 1,
-                'description' => s('Notify admin on login from new location'),
+                'description' => self::$translator->trans('Notify admin on login from new location'),
                 'type'        => 'boolean',
                 'category'    => 'security',
                 'allowempty'  => true,
-            ),
-            'admin_addresses' => array(
+            ],
+            'admin_addresses' => [
                 'value'       => '',
-                'description' => s('List of email addresses to CC in system messages (separate by commas)'),
+                'description' => self::$translator->trans('List of email addresses to CC in system messages (separate by commas)'),
                 'type'        => 'emaillist',
                 'allowempty'  => true,
                 'category'    => 'reporting',
-            ),
-            'campaignfrom_default' => array(
+            ],
+            'campaignfrom_default' => [
                 'value'       => '',
-                'description' => s("Default for 'From:' in a campaign"),
+                'description' => self::$translator->trans("Default for 'From:' in a campaign"),
                 'type'        => 'text',
                 'allowempty'  => true,
                 'category'    => 'campaign',
-            ),
-            'notifystart_default' => array(
+            ],
+            'notifystart_default' => [
                 'value'       => '',
-                'description' => s("Default for 'address to alert when sending starts'"),
+                'description' => self::$translator->trans("Default for 'address to alert when sending starts'"),
                 'type'        => 'email',
                 'allowempty'  => true,
                 'category'    => 'campaign',
-            ),
-            'notifyend_default' => array(
+            ],
+            'notifyend_default' => [
                 'value'       => '',
-                'description' => s("Default for 'address to alert when sending finishes'"),
+                'description' => self::$translator->trans("Default for 'address to alert when sending finishes'"),
                 'type'        => 'email',
                 'allowempty'  => true,
                 'category'    => 'campaign',
-            ),
-            'always_add_googletracking' => array(
+            ],
+            'always_add_googletracking' => [
                 'value'       => '0',
-                'description' => s('Always add analytics tracking code to campaigns'),
+                'description' => self::$translator->trans('Always add analytics tracking code to campaigns'),
                 'type'        => 'boolean',
                 'allowempty'  => true,
                 'category'    => 'campaign',
-            ),
-            'analytic_tracker' => array(
+            ],
+            'analytic_tracker' => [
                 'values'       => array('google' => 'Google Analytics', 'matomo' => 'Matomo'),
                 'value'        => 'google',
-                'description'  => s('Analytics tracking code to add to campaign URLs'),
+                'description'  => self::$translator->trans('Analytics tracking code to add to campaign URLs'),
                 'type'         => 'select',
                 'allowempty'   => false,
                 'category'     => 'campaign',
-            ),
-            'report_address' => array(
+            ],
+            'report_address' => [
                 'value'       => 'listreports@[DOMAIN]',
-                'description' => s('Who gets the reports (email address, separate multiple emails with a comma)'),
+                'description' => self::$translator->trans('Who gets the reports (email address, separate multiple emails with a comma)'),
                 'type'        => 'emaillist',
                 'allowempty'  => true,
                 'category'    => 'reporting',
-            ),
-            'message_from_address' => array(
+            ],
+            'message_from_address' => [
                 'value'       => 'noreply@[DOMAIN]',
-                'description' => s('From email address for system messages'),
+                'description' => self::$translator->trans('From email address for system messages'),
                 'type'        => 'email',
                 'allowempty'  => 0,
                 'category'    => 'transactional',
-            ),
-            'message_from_name' => array(
-                'value'       => s('Webmaster'),
-                'description' => s('Name for system messages'),
+            ],
+            'message_from_name' => [
+                'value'       => self::$translator->trans('Webmaster'),
+                'description' => self::$translator->trans('Name for system messages'),
                 'type'        => 'text',
                 'allowempty'  => 0,
                 'category'    => 'transactional',
-            ),
-            'message_replyto_address' => array(
+            ],
+            'message_replyto_address' => [
                 'value'       => 'noreply@[DOMAIN]',
-                'description' => s('Reply-to email address for system messages'),
+                'description' => self::$translator->trans('Reply-to email address for system messages'),
                 'type'        => 'email',
                 'allowempty'  => 0,
                 'category'    => 'transactional',
-            ),
-            'hide_single_list' => array(
+            ],
+            'hide_single_list' => [
                 'value'       => '1',
-                'description' => s('If there is only one visible list, should it be hidden in the page and automatically subscribe users who sign up'),
+                'description' => self::$translator->trans('If there is only one visible list, should it be hidden in the page and automatically subscribe users who sign up'),
                 'type'        => 'boolean',
                 'allowempty'  => true,
                 'category'    => 'subscription-ui',
-            ),
-            'list_categories' => array(
+            ],
+            'list_categories' => [
                 'value'       => '',
-                'description' => s('Categories for lists. Separate with commas.'),
+                'description' => self::$translator->trans('Categories for lists. Separate with commas.'),
                 'infoicon'    => true,
                 'type'        => 'text',
                 'allowempty'  => true,
                 'category'    => 'list-organisation',
-            ),
-
-            'displaycategories' => array(
+            ],
+            'displaycategories' => [
                 'value'       => 0,
-                'description' => s('Display list categories on subscribe page'),
+                'description' => self::$translator->trans('Display list categories on subscribe page'),
                 'type'        => 'boolean',
                 'allowempty'  => false,
                 'category'    => 'list-organisation',
-            ),
-            'textline_width' => array(
+            ],
+            'textline_width' => [
                 'value'       => '40',
-                'description' => s('Width of a textline field (numerical)'),
+                'description' => self::$translator->trans('Width of a textline field (numerical)'),
                 'type'        => 'integer',
                 'min'         => 20,
                 'max'         => 150,
                 'category'    => 'subscription-ui',
-            ),
-            'textarea_dimensions' => array(
+            ],
+            'textarea_dimensions' => [
                 'value'       => '10,40',
-                'description' => s('Dimensions of a textarea field (rows,columns)'),
+                'description' => self::$translator->trans('Dimensions of a textarea field (rows,columns)'),
                 'type'        => 'text',
                 'allowempty'  => 0,
                 'category'    => 'subscription-ui',
-            ),
-            'send_admin_copies' => array(
+            ],
+            'send_admin_copies' => [
                 'value'       => '0',
-                'description' => s('Send notifications about subscribe, update and unsubscribe'),
+                'description' => self::$translator->trans('Send notifications about subscribe, update and unsubscribe'),
                 'type'        => 'boolean',
                 'allowempty'  => true,
                 'category'    => 'reporting',
-            ),
-            'defaultsubscribepage' => array(
+            ],
+            'defaultsubscribepage' => [
                 'value'       => 1,
-                'description' => s('The default subscribe page when there are multiple'),
+                'description' => self::$translator->trans('The default subscribe page when there are multiple'),
                 'type'        => 'integer',
                 'min'         => 1,
                 'max'         => 999,
                 'allowempty'  => true,
                 'category'    => 'subscription',
-            ),
-            'defaultmessagetemplate' => array(
+            ],
+            'defaultmessagetemplate' => [
                 'value'       => 0,
-                'description' => s('The default HTML template to use when sending a message'),
+                'description' => self::$translator->trans('The default HTML template to use when sending a message'),
                 'type'        => 'text',
                 'allowempty'  => true,
                 'category'    => 'campaign',
-            ),
-            'systemmessagetemplate' => array(
+            ],
+            'systemmessagetemplate' => [
                 'value'       => 0,
-                'description' => s('The HTML wrapper template for system messages'),
+                'description' => self::$translator->trans('The HTML wrapper template for system messages'),
                 'type'        => 'integer',
                 'min'         => 0,
                 'max'         => 999, // or max(id) from template
                 'allowempty'  => true,
                 'category'    => 'transactional',
-            ),
-            'subscribeurl' => array(
-                'value'       => $GLOBALS['public_scheme']."://[WEBSITE]$pageroot/?p=subscribe",
-                'description' => s('URL where subscribers can sign up'),
+            ],
+            'subscribeurl' => [
+                'value'       => $publicSchema."://[WEBSITE]$pageRoot/subscribe",
+                'description' => self::$translator->trans('URL where subscribers can sign up'),
                 'type'        => 'url',
                 'allowempty'  => 0,
                 'category'    => 'subscription',
-            ),
-            'unsubscribeurl' => array(
-                'value'       => $GLOBALS['public_scheme']."://[WEBSITE]$pageroot/?p=unsubscribe",
-                'description' => s('URL where subscribers can unsubscribe'),
+            ],
+            'unsubscribeurl' => [
+                'value'       => $publicSchema."://[WEBSITE]$pageRoot/unsubscribe",
+                'description' => self::$translator->trans('URL where subscribers can unsubscribe'),
                 'type'        => 'url',
                 'allowempty'  => 0,
                 'category'    => 'subscription',
-            ),
-            'blacklisturl' => array(
-                'value'       => $GLOBALS['public_scheme']."://[WEBSITE]$pageroot/?p=donotsend",
-                'description' => s('URL where unknown users can unsubscribe (do-not-send-list)'),
+            ],
+            'blacklisturl' => [
+                'value'       => $publicSchema."://[WEBSITE]$pageRoot/donotsend",
+                'description' => self::$translator->trans('URL where unknown users can unsubscribe (do-not-send-list)'),
                 'type'        => 'url',
                 'allowempty'  => 0,
                 'category'    => 'subscription',
-            ),
-            'confirmationurl' => array(
-                'value'       => $GLOBALS['public_scheme']."://[WEBSITE]$pageroot/?p=confirm",
-                'description' => s('URL where subscribers have to confirm their subscription'),
+            ],
+            'confirmationurl' => [
+                'value'       => $publicSchema."://[WEBSITE]$pageRoot/confirm",
+                'description' => self::$translator->trans('URL where subscribers have to confirm their subscription'),
                 'type'        => 'text',
                 'allowempty'  => 0,
                 'category'    => 'subscription',
-            ),
-            'preferencesurl' => array(
-                'value'       => $GLOBALS['public_scheme']."://[WEBSITE]$pageroot/?p=preferences",
-                'description' => s('URL where subscribers can update their details'),
+            ],
+            'preferencesurl' => [
+                'value'       => $publicSchema."://[WEBSITE]$pageRoot/preferences",
+                'description' => self::$translator->trans('URL where subscribers can update their details'),
                 'type'        => 'text',
                 'allowempty'  => 0,
                 'category'    => 'subscription',
-            ),
-            'forwardurl' => array(
-                'value'       => $GLOBALS['public_scheme']."://[WEBSITE]$pageroot/?p=forward",
-                'description' => s('URL for forwarding messages'),
+            ],
+            'forwardurl' => [
+                'value'       => $publicSchema."://[WEBSITE]$pageRoot/forward",
+                'description' => self::$translator->trans('URL for forwarding messages'),
                 'type'        => 'text',
                 'allowempty'  => 0,
                 'category'    => 'subscription',
-            ),
-            'vcardurl' => array(
-                'value'       => $GLOBALS['public_scheme']."://[WEBSITE]$pageroot/?p=vcard",
-                'description' => s('URL for downloading vcf card'),
+            ],
+            'vcardurl' => [
+                'value'       => $publicSchema."://[WEBSITE]$pageRoot/vcard",
+                'description' => self::$translator->trans('URL for downloading vcf card'),
                 'type'        => 'text',
                 'allowempty'  => 0,
                 'category'    => 'subscription',
-            ),
-            'ajax_subscribeconfirmation' => array(
-                'value'       => s('<h3>Thanks, you have been added to our newsletter</h3><p>You will receive an email to confirm your subscription. Please click the link in the email to confirm</p>'),
-                'description' => s('Text to display when subscription with an AJAX request was successful'),
+            ],
+            'ajax_subscribeconfirmation' => [
+                'value'       => self::$translator->trans('<h3>Thanks, you have been added to our newsletter</h3><p>You will receive an email to confirm your subscription. Please click the link in the email to confirm</p>'),
+                'description' => self::$translator->trans('Text to display when subscription with an AJAX request was successful'),
                 'type'        => 'textarea',
                 'allowempty'  => true,
                 'category'    => 'subscription',
-            ),
-            'subscribesubject' => array(
-                'value'       => s('Request for confirmation'),
-                'description' => s('Subject of the message subscribers receive when they sign up'),
+            ],
+            'subscribesubject' => [
+                'value'       => self::$translator->trans('Request for confirmation'),
+                'description' => self::$translator->trans('Subject of the message subscribers receive when they sign up'),
                 'infoicon'        => true,
                 'type'        => 'text',
                 'allowempty'  => 0,
                 'category'    => 'transactional',
-            ),
-            'subscribemessage' => array(
+            ],
+            'subscribemessage' => [
                 'value' =>
                     ' You have been subscribed to the following newsletters:
 
@@ -297,19 +308,19 @@ Track your interactions with these emails for marketing purposes
 
 If this is not correct, or you do not agree, simply take no action and delete this message.'
             ,
-                'description' => s('Message subscribers receive when they sign up'),
+                'description' => self::$translator->trans('Message subscribers receive when they sign up'),
                 'type'        => 'textarea',
                 'allowempty'  => 0,
                 'category'    => 'transactional',
-            ),
-            'unsubscribesubject' => array(
-                'value'       => s('Goodbye from our Newsletter'),
-                'description' => s('Subject of the message subscribers receive when they unsubscribe'),
+            ],
+            'unsubscribesubject' => [
+                'value'       => self::$translator->trans('Goodbye from our Newsletter'),
+                'description' => self::$translator->trans('Subject of the message subscribers receive when they unsubscribe'),
                 'type'        => 'text',
                 'allowempty'  => 0,
                 'category'    => 'transactional',
-            ),
-            'unsubscribemessage' => array(
+            ],
+            'unsubscribemessage' => [
                 'value' =>
                     'Goodbye from our Newsletter, sorry to see you go.
 
@@ -323,19 +334,19 @@ please go to [SUBSCRIBEURL] and follow the steps.
 
 Thank you'
             ,
-                'description' => s('Message subscribers receive when they unsubscribe'),
+                'description' => self::$translator->trans('Message subscribers receive when they unsubscribe'),
                 'type'        => 'textarea',
                 'allowempty'  => 0,
                 'category'    => 'transactional',
-            ),
-            'confirmationsubject' => array(
-                'value'       => s('Welcome to our Newsletter'),
-                'description' => s('Subject of the message subscribers receive after confirming their email address'),
+            ],
+            'confirmationsubject' => [
+                'value'       => self::$translator->trans('Welcome to our Newsletter'),
+                'description' => self::$translator->trans('Subject of the message subscribers receive after confirming their email address'),
                 'type'        => 'text',
                 'allowempty'  => 0,
                 'category'    => 'transactional',
-            ),
-            'confirmationmessage' => array(
+            ],
+            'confirmationmessage' => [
                 'value' =>
                     'Welcome to our Newsletter
 
@@ -349,23 +360,23 @@ If you do not want to receive any more messages, please go to [UNSUBSCRIBEURL].
 
 Thank you'
             ,
-                'description' => s('Message subscribers receive after confirming their email address'),
+                'description' => self::$translator->trans('Message subscribers receive after confirming their email address'),
                 'type'        => 'textarea',
                 'allowempty'  => 0,
                 'category'    => 'transactional',
-            ),
-            'updatesubject' => array(
-                'value'       => s('[notify] Change of List-Membership details'),
-                'description' => s('Subject of the message subscribers receive when they have changed their details'),
+            ],
+            'updatesubject' => [
+                'value'       => self::$translator->trans('[notify] Change of List-Membership details'),
+                'description' => self::$translator->trans('Subject of the message subscribers receive when they have changed their details'),
                 'type'        => 'text',
                 'allowempty'  => 0,
                 'category'    => 'transactional',
-            ),
+            ],
             // the message that is sent when a user updates their information.
             // just to make sure they approve of it.
             // confirmationinfo is replaced by one of the options below
             // userdata is replaced by the information in the database
-            'updatemessage' => array(
+            'updatemessage' => [
                 'value' =>
                     'This message is to inform you of a change of your details on our newsletter database
 
@@ -385,15 +396,15 @@ If this is not correct, please update your information at the following location
 
 Thank you'
             ,
-                'description' => s('Message subscribers receive when they have changed their details'),
+                'description' => self::$translator->trans('Message subscribers receive when they have changed their details'),
                 'type'        => 'textarea',
                 'allowempty'  => 0,
                 'category'    => 'transactional',
-            ),
+            ],
             // this is the text that is placed in the [!-- confirmation --] location of the above
             // message, in case the email is sent to their new email address and they have changed
             // their email address
-            'emailchanged_text' => array(
+            'emailchanged_text' => [
                 'value' => '
   When updating your details, your email address has changed.
   Please confirm your new email address by visiting this webpage:
@@ -401,15 +412,15 @@ Thank you'
   [CONFIRMATIONURL]
 
   ',
-                'description' => s('Part of the message that is sent to their new email address when subscribers change their information, and the email address has changed'),
+                'description' => self::$translator->trans('Part of the message that is sent to their new email address when subscribers change their information, and the email address has changed'),
                 'type'        => 'textarea',
                 'allowempty'  => 0,
                 'category'    => 'transactional',
-            ),
+            ],
             // this is the text that is placed in the [!-- confirmation --] location of the above
             // message, in case the email is sent to their old email address and they have changed
             // their email address
-            'emailchanged_text_oldaddress' => array(
+            'emailchanged_text_oldaddress' => [
                 'value' =>
                     'Please Note: when updating your details, your email address has changed.
 
@@ -417,19 +428,19 @@ A message has been sent to your new email address with a URL
 to confirm this change. Please visit this website to activate
 your membership.'
             ,
-                'description' => s('Part of the message that is sent to their old email address when subscribers change their information, and the email address has changed'),
+                'description' => self::$translator->trans('Part of the message that is sent to their old email address when subscribers change their information, and the email address has changed'),
                 'type'        => 'textarea',
                 'allowempty'  => 0,
                 'category'    => 'transactional',
-            ),
-            'personallocation_subject' => array(
-                'value'       => s('Your personal location'),
-                'description' => s('Subject of message when subscribers request their personal location'),
+            ],
+            'personallocation_subject' => [
+                'value'       => self::$translator->trans('Your personal location'),
+                'description' => self::$translator->trans('Subject of message when subscribers request their personal location'),
                 'type'        => 'text',
                 'allowempty'  => 0,
                 'category'    => 'transactional',
-            ),
-            'messagefooter' => array(
+            ],
+            'messagefooter' => [
                 'value' => '--
 
     <div class="footer" style="text-align:left; font-size: 75%;">
@@ -440,12 +451,12 @@ your membership.'
     </div>
 
   ',
-                'description' => s('Default footer for sending a campaign'),
+                'description' => self::$translator->trans('Default footer for sending a campaign'),
                 'type'        => 'textarea',
                 'allowempty'  => 0,
                 'category'    => 'campaign',
-            ),
-            'forwardfooter' => array(
+            ],
+            'forwardfooter' => [
                 'value' => '
      <div class="footer" style="text-align:left; font-size: 75%;">
       <p>This message has been forwarded to you by [FORWARDEDBY].</p>
@@ -454,14 +465,13 @@ your membership.'
       <p>You can also <a href="[BLACKLISTURL]">opt out completely</a> from receiving any further email from our newsletter application, phpList.</p>
     </div>
   ',
-                'description' => s('Footer used when a message has been forwarded'),
+                'description' => self::$translator->trans('Footer used when a message has been forwarded'),
                 'type'        => 'textarea',
                 'allowempty'  => 0,
                 'category'    => 'campaign',
-            ),
-            'personallocation_message' => array(
+            ],
+            'personallocation_message' => [
                 'value' =>
-
                     'You have requested your personal location to update your details from our website.
 The location is below. Please make sure that you use the full line as mentioned below.
 Sometimes email programmes can wrap the line into multiple lines.
@@ -471,80 +481,80 @@ Your personal location is:
 
 Thank you.'
             ,
-                'description' => s('Message to send when they request their personal location'),
+                'description' => self::$translator->trans('Message to send when they request their personal location'),
                 'type'        => 'textarea',
                 'allowempty'  => 0,
                 'category'    => 'transactional',
-            ),
-            'remoteurl_append' => array(
+            ],
+            'remoteurl_append' => [
                 'value'       => '',
-                'description' => s('String to always append to remote URL when using send-a-webpage'),
+                'description' => self::$translator->trans('String to always append to remote URL when using send-a-webpage'),
                 'type'        => 'text',
                 'allowempty'  => true,
                 'category'    => 'campaign',
-            ),
-            'wordwrap' => array(
+            ],
+            'wordwrap' => [
                 'value'       => '75',
-                'description' => s('Width for Wordwrap of Text messages'),
+                'description' => self::$translator->trans('Width for Wordwrap of Text messages'),
                 'type'        => 'text',
                 'allowempty'  => true,
                 'category'    => 'campaign',
-            ),
-            'html_email_style' => array(
+            ],
+            'html_email_style' => [
                 'value'       => '',
-                'description' => s('CSS for HTML messages without a template'),
+                'description' => self::$translator->trans('CSS for HTML messages without a template'),
                 'type'        => 'textarea',
                 'allowempty'  => true,
                 'category'    => 'campaign',
-            ),
-            'alwayssendtextto' => array(
+            ],
+            'alwayssendtextto' => [
                 'value'       => '',
-                'description' => s('Domains that only accept text emails, one per line'),
+                'description' => self::$translator->trans('Domains that only accept text emails, one per line'),
                 'type'        => 'textarea',
                 'allowempty'  => true,
                 'category'    => 'campaign',
-            ),
-            'tld_last_sync' => array(
+            ],
+            'tld_last_sync' => [
                 'value'       => '0',
-                'description' => s('last time TLDs were fetched'),
+                'description' => self::$translator->trans('last time TLDs were fetched'),
                 'type'        => 'text',
                 'allowempty'  => true,
                 'category'    => 'system',
                 'hidden'      => true,
-            ),
-            'internet_tlds' => array(
+            ],
+            'internet_tlds' => [
                 'value'       => '',
-                'description' => s('Top level domains'),
+                'description' => self::$translator->trans('Top level domains'),
                 'type'        => 'textarea',
                 'allowempty'  => true,
                 'category'    => 'system',
                 'hidden'      => true,
-            ),
-            'pageheader' => array(
+            ],
+            'pageheader' => [
                 'value'       => '<h1>Welcome</h1>',
-                'description' => s('Header of public pages.'),
+                'description' => self::$translator->trans('Header of public pages.'),
                 'type'        => 'textarea',
                 'allowempty'  => 0,
                 'category'    => 'subscription-ui',
-            ),
-            'pagefooter' => array(
+            ],
+            'pagefooter' => [
                 'value'       => '<p>Footer text</p>',
-                'description' => s('Footer of public pages'),
+                'description' => self::$translator->trans('Footer of public pages'),
                 'type'        => 'textarea',
                 'allowempty'  => 0,
                 'category'    => 'subscription-ui',
-            ),
-        );
+            ],
+        ];
     }
 
     /**
      * Get a single default config item by key
      *
      * @param string $key
-     * @param mixed $default
+     * @param mixed|null $default
      * @return mixed
      */
-    public static function get(string $key, $default = null)
+    public static function get(string $key, mixed $default = null)
     {
         self::init();
         return self::$defaults[$key] ?? $default;
