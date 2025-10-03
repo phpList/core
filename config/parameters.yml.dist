@@ -28,7 +28,9 @@ parameters:
     app.mailer_dsn: '%%env(MAILER_DSN)%%'
     env(MAILER_DSN): 'null://null'
     app.confirmation_url: '%%env(CONFIRMATION_URL)%%'
-    env(CONFIRMATION_URL): 'https://example.com/confirm/'
+    env(CONFIRMATION_URL): 'https://example.com/subscriber/confirm/'
+    app.subscription_confirmation_url: '%%env(SUBSCRIPTION_CONFIRMATION_URL)%%'
+    env(SUBSCRIPTION_CONFIRMATION_URL): 'https://example.com/subscription/confirm/'
     app.password_reset_url: '%%env(PASSWORD_RESET_URL)%%'
     env(PASSWORD_RESET_URL): 'https://example.com/reset/'
 

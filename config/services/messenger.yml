@@ -22,3 +22,9 @@ services:
         tags: [ 'messenger.message_handler' ]
         arguments:
             $passwordResetUrl: '%app.password_reset_url%'
+
+    PhpList\Core\Domain\Messaging\MessageHandler\SubscriptionConfirmationMessageHandler:
+      autowire: true
+      autoconfigure: true
+      tags: [ 'messenger.message_handler' ]
+

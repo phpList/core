@@ -64,4 +64,16 @@ class SubscriberAttributeValueRepository extends AbstractRepository implements P
             ->getQuery()
             ->getResult();
     }
+
+    /** @return SubscriberAttributeValue[] */
+    public function getForSubscriber(Subscriber $subscriber): array
+    {
+        return $this->createQueryBuilder('sa')
+            ->join('sa.subscriber', 's')
+            ->join('sa.attributeDefinition', 'ad')
+            ->where('s = :subscriber')
+            ->setParameter('subscriber', $subscriber)
+            ->getQuery()
+            ->getResult();
+    }
 }

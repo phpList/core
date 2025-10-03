@@ -49,11 +49,11 @@ class SubscriberCsvImportManagerTest extends KernelTestCase
         file_put_contents($tempFile, $csvContent);
 
         $uploadedFile = new UploadedFile(
-            $tempFile,
-            'subscribers.csv',
-            'text/csv',
-            null,
-            true
+            path: $tempFile,
+            originalName: 'subscribers.csv',
+            mimeType: 'text/csv',
+            error: null,
+            test: true
         );
 
         $subscriberCountBefore = count($this->subscriberRepository->findAll());

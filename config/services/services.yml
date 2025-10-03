@@ -120,8 +120,15 @@ services:
     arguments:
       $maxSeconds: '%messaging.max_process_time%'
 
-
   PhpList\Core\Domain\Identity\Service\PermissionChecker:
     autowire: true
     autoconfigure: true
     public: true
+
+  PhpList\Core\Domain\Configuration\Service\UserPersonalizer:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder:
+    autowire: true
+    autoconfigure: true
