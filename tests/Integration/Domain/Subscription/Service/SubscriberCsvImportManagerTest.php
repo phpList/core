@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Domain\Subscription\Service;
 
+use Doctrine\ORM\Tools\SchemaTool;
 use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
@@ -28,6 +29,10 @@ class SubscriberCsvImportManagerTest extends KernelTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->setUpDatabaseTest();
+        $schemaTool = new SchemaTool($this->entityManager);
+        $metadata = $this->entityManager->getMetadataFactory()->getAllMetadata();
+        $schemaTool->dropSchema($metadata);
         $this->loadSchema();
 
         $this->subscriberCsvImportManager = self::getContainer()->get(SubscriberCsvImporter::class);
@@ -42,8 +47,8 @@ class SubscriberCsvImportManagerTest extends KernelTestCase
         $this->entityManager->flush();
 
         $csvContent = "email,confirmed,html_email,blacklisted,disabled,extra_data,first_name\n";
-        $csvContent .= "test1@example.com,1,1,0,0,\"Some extra data\",John\n";
-        $csvContent .= "another1@example.com,0,0,1,1,\"More data\",Jane\n";
+        $csvContent .= "test@example.com,1,1,0,0,\"Some extra data\",John\n";
+        $csvContent .= "another@example.com,0,0,1,1,\"More data\",Jane\n";
 
         $tempFile = tempnam(sys_get_temp_dir(), 'csv_test');
         file_put_contents($tempFile, $csvContent);

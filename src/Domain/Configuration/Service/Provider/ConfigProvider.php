@@ -35,7 +35,7 @@ class ConfigProvider
         $config = $this->configRepository->findOneBy(['item' => $key->value]);
 
         if ($config !== null) {
-            $config->getValue() === '1';
+            return $config->getValue() === '1';
         }
 
         return $this->defaultConfigs->has($key->value) && $this->defaultConfigs->get($key->value)['value'] === '1';

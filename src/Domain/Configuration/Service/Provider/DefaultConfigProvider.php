@@ -16,7 +16,7 @@ class DefaultConfigProvider
      */
     private array $defaults = [];
 
-    public function __construct(private readonly TranslatorInterface $translator)
+    public function __construct(private TranslatorInterface $translator)
     {
     }
 
@@ -570,9 +570,7 @@ Thank you.'
      */
     public function get(string $key, mixed $default = null): mixed
     {
-        if (empty($this->defaults)) {
-            $this->init();
-        }
+        $this->init();
 
         return $this->defaults[$key] ?? $default;
     }
@@ -582,9 +580,7 @@ Thank you.'
      */
     public function has(string $key): bool
     {
-        if (empty($this->defaults)) {
-            $this->init();
-        }
+        $this->init();
 
         return isset($this->defaults[$key]);
     }
