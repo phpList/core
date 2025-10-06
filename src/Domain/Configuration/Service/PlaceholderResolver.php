@@ -17,7 +17,9 @@ class PlaceholderResolver
 
     public function resolve(?string $input): ?string
     {
-        if ($input === null || $input === '') return $input;
+        if ($input === null || $input === '') {
+            return $input;
+        }
 
         // Replace [TOKEN] (case-insensitive)
         return preg_replace_callback('/\[(\w+)\]/i', function ($map) {

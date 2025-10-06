@@ -17,14 +17,13 @@ class LegacyUrlBuilder
 
         $parts['query'] = http_build_query($query);
 
-        // rebuild url
-        $scheme   = $parts['scheme'] ?? 'https';
-        $host     = $parts['host'] ?? '';
-        $port     = isset($parts['port']) ? ':'.$parts['port'] : '';
-        $path     = $parts['path'] ?? '';
-        $queryStr = $parts['query'] ? '?'.$parts['query'] : '';
-        $frag     = isset($parts['fragment']) ? '#'.$parts['fragment'] : '';
+        $scheme = $parts['scheme'] ?? 'https';
+        $host = $parts['host'] ?? '';
+        $port = isset($parts['port']) ? ':' . $parts['port'] : '';
+        $path = $parts['path'] ?? '';
+        $queryStr = $parts['query'] ? '?' . $parts['query'] : '';
+        $frag = isset($parts['fragment']) ? '#' . $parts['fragment'] : '';
 
-        return "{$scheme}://{$host}{$port}{$path}{$queryStr}{$frag}";
+        return $scheme . '://' . $host . $port . $path . $queryStr . $frag;
     }
 }

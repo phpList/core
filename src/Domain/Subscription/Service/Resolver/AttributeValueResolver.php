@@ -10,7 +10,9 @@ use PhpList\Core\Domain\Subscription\Service\Provider\AttributeValueProvider;
 class AttributeValueResolver
 {
     /** @param iterable<AttributeValueProvider> $providers */
-    public function __construct(private readonly iterable $providers) {}
+    public function __construct(private readonly iterable $providers)
+    {
+    }
 
     public function resolve(SubscriberAttributeValue $userAttr): string
     {

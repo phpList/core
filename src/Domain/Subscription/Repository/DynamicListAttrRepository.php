@@ -8,21 +8,25 @@ use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use InvalidArgumentException;
+use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 
 class DynamicListAttrRepository
 {
     public function __construct(
         private readonly Connection $connection,
         private readonly string $prefix = 'phplist_'
-    ) {}
+    ) {
+    }
 
     /**
      * @return list<string>
-     * @throws Exception
+     * @throws InvalidArgumentException
      */
     public function fetchOptionNames(string $listTable, array $ids): array
     {
-        if (empty($ids)) return [];
+        if (empty($ids)) {
+            return [];
+        }
 
         if (!preg_match('/^[A-Za-z0-9_]+$/', $listTable)) {
             throw new InvalidArgumentException('Invalid list table');

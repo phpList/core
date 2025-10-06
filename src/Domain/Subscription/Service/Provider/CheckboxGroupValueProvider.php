@@ -10,11 +10,14 @@ use PhpList\Core\Domain\Subscription\Repository\DynamicListAttrRepository;
 
 class CheckboxGroupValueProvider implements AttributeValueProvider
 {
-    public function __construct(private DynamicListAttrRepository $repo) {}
+    public function __construct(private readonly DynamicListAttrRepository $repo)
+    {
+    }
 
     public function supports(SubscriberAttributeDefinition $attribute): bool
     {
-        // todo: check what real types exist in the database
+        // phpcs:ignore Generic.Commenting.Todo
+        // @todo: check what real types exist in the database
         return $attribute->getType() === 'checkboxgroup';
     }
 
@@ -25,12 +28,14 @@ class CheckboxGroupValueProvider implements AttributeValueProvider
             return '';
         }
 
-        $ids = array_values(array_filter(array_map(
-            fn($value) => ($index = (int)trim($value)) > 0 ? $index : null,
-            explode(',', $csv)
-        )));
+        $ids = array_values(array_filter(array_map(function ($value) {
+            $index = (int) trim($value);
+            return $index > 0 ? $index : null;
+        }, explode(',', $csv))));
 
-        if (empty($ids) || !$attribute->getTableName()) return '';
+        if (empty($ids) || !$attribute->getTableName()) {
+            return '';
+        }
 
         $names = $this->repo->fetchOptionNames($attribute->getTableName(), $ids);
 

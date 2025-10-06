@@ -22,7 +22,10 @@ class ConfigProvider
     ) {
     }
 
-    /** @SuppressWarnings(PHPMD.StaticAccess) */
+    /**
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     * @throws InvalidArgumentException
+     */
     public function isEnabled(ConfigOption $key): bool
     {
         if (!in_array($key, $this->booleanValues)) {
@@ -40,6 +43,7 @@ class ConfigProvider
     /**
      * Get configuration value by its key, from settings or default configs or default value (if provided)
      * @SuppressWarnings(PHPMD.StaticAccess)
+     * @throws InvalidArgumentException
      */
     public function getValue(ConfigOption $key): ?string
     {

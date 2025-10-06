@@ -20,7 +20,8 @@ class UserPersonalizer
         private readonly SubscriberRepository $subscriberRepository,
         private readonly SubscriberAttributeValueRepository $attributesRepository,
         private readonly AttributeValueResolver $attributeValueResolver
-    ) {}
+    ) {
+    }
 
     public function personalize(string $value, string $email): string
     {

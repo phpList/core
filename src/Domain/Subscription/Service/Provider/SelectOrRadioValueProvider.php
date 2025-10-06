@@ -10,7 +10,9 @@ use PhpList\Core\Domain\Subscription\Repository\DynamicListAttrRepository;
 
 class SelectOrRadioValueProvider implements AttributeValueProvider
 {
-    public function __construct(private readonly DynamicListAttrRepository $repo) {}
+    public function __construct(private readonly DynamicListAttrRepository $repo)
+    {
+    }
 
     public function supports(SubscriberAttributeDefinition $attribute): bool
     {
@@ -19,7 +21,9 @@ class SelectOrRadioValueProvider implements AttributeValueProvider
 
     public function getValue(SubscriberAttributeDefinition $attribute, SubscriberAttributeValue $userValue): string
     {
-        if (!$attribute->getTableName()) return '';
+        if (!$attribute->getTableName()) {
+            return '';
+        }
 
         $id = (int)($userValue->getValue() ?? 0);
         if ($id <= 0) {

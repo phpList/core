@@ -182,7 +182,7 @@ class SubscriberCsvImporter
             }
         }
 
-        $this->handleFlushAndEmail($subscriber, $options,$dto, $addedNewSubscriberToList);
+        $this->handleFlushAndEmail($subscriber, $options, $dto, $addedNewSubscriberToList);
     }
 
     private function handleInvalidEmail(
@@ -196,7 +196,8 @@ class SubscriberCsvImporter
 
                 return true;
             }
-            // todo: check
+            // phpcs:ignore Generic.Commenting.Todo
+            // @todo: check
             $dto->email = 'invalid_' . $dto->email;
             $dto->sendConfirmation = false;
         }
