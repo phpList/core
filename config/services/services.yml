@@ -132,3 +132,9 @@ services:
   PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder:
     autowire: true
     autoconfigure: true
+
+  cache.app.simple:
+    class: Symfony\Component\Cache\Psr16Cache
+    arguments: [ '@cache.app' ]
+
+  Psr\SimpleCache\CacheInterface: '@cache.app.simple'

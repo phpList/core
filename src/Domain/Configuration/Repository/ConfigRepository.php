@@ -10,6 +10,6 @@ class ConfigRepository extends AbstractRepository
 {
     public function findValueByItem(string $name): ?string
     {
-        return $this->findOneBy(['item' => $name])?->getValue();
+        return $this->findOneBy(['key' => $name])?->getValue();
     }
 }

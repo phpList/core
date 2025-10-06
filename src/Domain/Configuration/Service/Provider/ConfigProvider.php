@@ -18,7 +18,8 @@ class ConfigProvider
     public function __construct(
         private readonly ConfigRepository $configRepository,
         private readonly CacheInterface $cache,
-        private readonly int $ttlSeconds = 300
+        private readonly DefaultConfigProvider $defaultConfigs,
+        private readonly ?int $ttlSeconds = 300
     ) {
     }
 
@@ -37,7 +38,7 @@ class ConfigProvider
             $config->getValue() === '1';
         }
 
-        return DefaultConfigProvider::has($key->value) && DefaultConfigProvider::get($key->value) === '1';
+        return $this->defaultConfigs->has($key->value) && $this->defaultConfigs->get($key->value)['value'] === '1';
     }
 
     /**
@@ -61,7 +62,7 @@ class ConfigProvider
             return $value;
         }
 
-        return DefaultConfigProvider::has($key->value) ? DefaultConfigProvider::get($key->value) : null;
+        return $this->defaultConfigs->has($key->value) ? $this->defaultConfigs->get($key->value)['value'] : null;
     }
 
     /** @SuppressWarnings(PHPMD.StaticAccess) */

@@ -21,6 +21,8 @@ parameters:
     env(PHPLIST_DATABASE_USER): 'phplist'
     database_password: '%%env(PHPLIST_DATABASE_PASSWORD)%%'
     env(PHPLIST_DATABASE_PASSWORD): 'phplist'
+    database_prefix: '%%env(DATABASE_PREFIX)%%'
+    env(DATABASE_PREFIX): 'phplist_'
 
     # Email configuration
     app.mailer_from: '%%env(MAILER_FROM)%%'

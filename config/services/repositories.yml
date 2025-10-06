@@ -68,8 +68,9 @@ services:
     arguments:
       - PhpList\Core\Domain\Subscription\Model\Subscription
   PhpList\Core\Domain\Subscription\Repository\DynamicListAttrRepository:
+    autowire: true
     arguments:
-      $prefix: '%env(default:phplist_ DATABASE_PREFIX)%'
+      $prefix: '%database_prefix%'
   PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:

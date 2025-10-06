@@ -6,9 +6,7 @@ namespace PhpList\Core\Domain\Subscription\Repository;
 
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
 use InvalidArgumentException;
-use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 
 class DynamicListAttrRepository
 {

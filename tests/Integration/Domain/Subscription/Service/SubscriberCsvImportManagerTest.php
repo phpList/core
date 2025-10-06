@@ -42,8 +42,8 @@ class SubscriberCsvImportManagerTest extends KernelTestCase
         $this->entityManager->flush();
 
         $csvContent = "email,confirmed,html_email,blacklisted,disabled,extra_data,first_name\n";
-        $csvContent .= "test@example.com,1,1,0,0,\"Some extra data\",John\n";
-        $csvContent .= "another@example.com,0,0,1,1,\"More data\",Jane\n";
+        $csvContent .= "test1@example.com,1,1,0,0,\"Some extra data\",John\n";
+        $csvContent .= "another1@example.com,0,0,1,1,\"More data\",Jane\n";
 
         $tempFile = tempnam(sys_get_temp_dir(), 'csv_test');
         file_put_contents($tempFile, $csvContent);
@@ -58,7 +58,7 @@ class SubscriberCsvImportManagerTest extends KernelTestCase
 
         $subscriberCountBefore = count($this->subscriberRepository->findAll());
 
-        $options = new SubscriberImportOptions();
+        $options = new SubscriberImportOptions(true);
         $result = $this->subscriberCsvImportManager->importFromCsv($uploadedFile, $options);
 
         $subscriberCountAfter = count($this->subscriberRepository->findAll());

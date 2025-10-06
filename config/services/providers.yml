@@ -13,12 +13,17 @@ services:
     arguments:
       $confPath: '%app.phplist_isp_conf_path%'
 
-  PhpList\Core\Domain\Subscription\Service\Provider\CheckboxGroupValueProvider: ~
-  PhpList\Core\Domain\Subscription\Service\Provider\SelectOrRadioValueProvider: ~
-  PhpList\Core\Domain\Subscription\Service\Provider\ScalarValueProvider: ~
+  PhpList\Core\Domain\Subscription\Service\Provider\CheckboxGroupValueProvider:
+    autowire: true
+  PhpList\Core\Domain\Subscription\Service\Provider\SelectOrRadioValueProvider:
+    autowire: true
+  PhpList\Core\Domain\Subscription\Service\Provider\ScalarValueProvider:
+    autowire: true
 
   PhpList\Core\Domain\Configuration\Service\Provider\DefaultConfigProvider:
-    calls:
-      - [ setTranslator, [ '@translator' ] ]
+    autowire: true
 
   PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider:
+    autowire: true
+    arguments:
+      $cache: '@Psr\SimpleCache\CacheInterface'
