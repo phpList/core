@@ -49,7 +49,7 @@ class SubscriptionConfirmationMessageHandler
         $textContent = $this->configProvider->getValue(ConfigOption::SubscribeMessage);
         $personalizedTextContent = $this->userPersonalizer->personalize($textContent, $message->getUniqueId());
         $listOfLists = $this->getListNames($message->getListIds());
-        $replacedTextContent = str_replace('[LISTS]', $personalizedTextContent, $listOfLists);
+        $replacedTextContent = str_replace('[LISTS]', $listOfLists, $personalizedTextContent);
 
         $email = (new Email())
             ->to($message->getEmail())
