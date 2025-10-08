@@ -72,6 +72,7 @@ class SubscriberCsvImporter
             'created' => 0,
             'updated' => 0,
             'skipped' => 0,
+            'blacklisted' => 0,
             'errors' => [],
         ];
 
@@ -180,6 +181,10 @@ class SubscriberCsvImporter
                     $addedNewSubscriberToList = true;
                 }
             }
+        }
+
+        if ($subscriber->isBlacklisted()) {
+            $stats['blacklisted']++;
         }
 
         $this->handleFlushAndEmail($subscriber, $options, $dto, $addedNewSubscriberToList);
