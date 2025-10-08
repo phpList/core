@@ -136,7 +136,7 @@ class SubscriberManager
         return $subscriber;
     }
 
-    public function updateFromImport(Subscriber $existingSubscriber, ImportSubscriberDto $subscriberDto): Subscriber
+    public function updateFromImport(Subscriber $existingSubscriber, ImportSubscriberDto $subscriberDto): array
     {
         $existingSubscriber->setEmail($subscriberDto->email);
         $existingSubscriber->setConfirmed($subscriberDto->confirmed);
@@ -145,7 +145,11 @@ class SubscriberManager
         $existingSubscriber->setDisabled($subscriberDto->disabled);
         $existingSubscriber->setExtraData($subscriberDto->extraData);
 
-        return $existingSubscriber;
+        $uow = $this->entityManager->getUnitOfWork();
+        $meta = $this->entityManager->getClassMetadata(Subscriber::class);
+        $uow->computeChangeSet($meta, $existingSubscriber);
+
+        return $uow->getEntityChangeSet($existingSubscriber);
     }
 
     public function decrementBounceCount(Subscriber $subscriber): void
