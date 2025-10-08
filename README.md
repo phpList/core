@@ -214,3 +214,11 @@ For detailed configuration instructions, see the [Mailer Transports documentatio
 ## Copyright
 
 phpList is copyright (C) 2000-2025 [phpList Ltd](https://www.phplist.com/).
+
+
+### Translations
+command to extract translation strings
+
+```bash
+php bin/console translation:extract --force en --format=xlf
+```

@@ -1,13 +1,27 @@
 services:
+  PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Analytics\Model\LinkTrack
+  PhpList\Core\Domain\Analytics\Repository\UserMessageViewRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Analytics\Model\UserMessageView
+  PhpList\Core\Domain\Analytics\Repository\LinkTrackUmlClickRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Analytics\Model\LinkTrackUmlClick
+
+
   PhpList\Core\Domain\Configuration\Repository\ConfigRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Configuration\Model\Config
-
   PhpList\Core\Domain\Configuration\Repository\EventLogRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Configuration\Model\EventLog
+
 
   PhpList\Core\Domain\Identity\Repository\AdministratorRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
@@ -15,142 +29,110 @@ services:
       - PhpList\Core\Domain\Identity\Model\Administrator
       - Doctrine\ORM\Mapping\ClassMetadata\ClassMetadata
       - PhpList\Core\Security\HashGenerator
-
   PhpList\Core\Domain\Identity\Repository\AdminAttributeValueRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Identity\Model\AdminAttributeValue
-
   PhpList\Core\Domain\Identity\Repository\AdminAttributeDefinitionRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Identity\Model\AdminAttributeDefinition
-
   PhpList\Core\Domain\Identity\Repository\AdministratorTokenRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Identity\Model\AdministratorToken
-
   PhpList\Core\Domain\Identity\Repository\AdminPasswordRequestRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Identity\Model\AdminPasswordRequest
 
+
   PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Subscription\Model\SubscriberList
-
   PhpList\Core\Domain\Subscription\Repository\SubscriberRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Subscription\Model\Subscriber
-
   PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue
-
   PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition
-
   PhpList\Core\Domain\Subscription\Repository\SubscriptionRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Subscription\Model\Subscription
-
-  PhpList\Core\Domain\Messaging\Repository\MessageRepository:
-    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+  PhpList\Core\Domain\Subscription\Repository\DynamicListAttrRepository:
+    autowire: true
     arguments:
-      - PhpList\Core\Domain\Messaging\Model\Message
-
-  PhpList\Core\Domain\Messaging\Repository\TemplateRepository:
-    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
-    arguments:
-      - PhpList\Core\Domain\Messaging\Model\Template
-
-  PhpList\Core\Domain\Messaging\Repository\TemplateImageRepository:
-    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
-    arguments:
-      - PhpList\Core\Domain\Messaging\Model\TemplateImage
-
-  PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository:
-    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
-    arguments:
-      - PhpList\Core\Domain\Messaging\Model\UserMessageBounce
-
-  PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository:
-    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
-    arguments:
-      - PhpList\Core\Domain\Messaging\Model\UserMessageForward
-
-  PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository:
-    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
-    arguments:
-      - PhpList\Core\Domain\Analytics\Model\LinkTrack
-
-  PhpList\Core\Domain\Analytics\Repository\UserMessageViewRepository:
-    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
-    arguments:
-      - PhpList\Core\Domain\Analytics\Model\UserMessageView
-
-  PhpList\Core\Domain\Analytics\Repository\LinkTrackUmlClickRepository:
-    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
-    arguments:
-      - PhpList\Core\Domain\Analytics\Model\LinkTrackUmlClick
-
-  PhpList\Core\Domain\Messaging\Repository\UserMessageRepository:
-    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
-    arguments:
-      - PhpList\Core\Domain\Messaging\Model\UserMessage
-
+      $prefix: '%database_prefix%'
   PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Subscription\Model\SubscriberHistory
-
-  PhpList\Core\Domain\Messaging\Repository\ListMessageRepository:
-    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
-    arguments:
-      - PhpList\Core\Domain\Messaging\Model\ListMessage
-
   PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Subscription\Model\UserBlacklist
-
   PhpList\Core\Domain\Subscription\Repository\UserBlacklistDataRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Subscription\Model\UserBlacklistData
-
   PhpList\Core\Domain\Subscription\Repository\SubscriberPageRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Subscription\Model\SubscribePage
-
   PhpList\Core\Domain\Subscription\Repository\SubscriberPageDataRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Subscription\Model\SubscribePageData
 
+
+  PhpList\Core\Domain\Messaging\Repository\MessageRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Messaging\Model\Message
+  PhpList\Core\Domain\Messaging\Repository\TemplateRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Messaging\Model\Template
+  PhpList\Core\Domain\Messaging\Repository\TemplateImageRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Messaging\Model\TemplateImage
+  PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Messaging\Model\UserMessageBounce
+  PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Messaging\Model\UserMessageForward
+  PhpList\Core\Domain\Messaging\Repository\UserMessageRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Messaging\Model\UserMessage
+  PhpList\Core\Domain\Messaging\Repository\ListMessageRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Messaging\Model\ListMessage
   PhpList\Core\Domain\Messaging\Repository\BounceRegexRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Messaging\Model\BounceRegex
-
   PhpList\Core\Domain\Messaging\Repository\BounceRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Messaging\Model\Bounce
-
   PhpList\Core\Domain\Messaging\Repository\BounceRegexBounceRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Messaging\Model\BounceRegex
-
   PhpList\Core\Domain\Messaging\Repository\SendProcessRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:

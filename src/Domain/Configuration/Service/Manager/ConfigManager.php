@@ -17,12 +17,6 @@ class ConfigManager
         $this->configRepository = $configRepository;
     }
 
-    public function inMaintenanceMode(): bool
-    {
-        $config = $this->getByItem('maintenancemode');
-        return $config?->getValue() === '1';
-    }
-
     /**
      * Get a configuration item by its key
      */

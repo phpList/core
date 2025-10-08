@@ -1,40 +1,36 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file source-language="en" target-language="en" datatype="plaintext" original="messages">
-        <body>
-            <!-- Authentication -->
-            <trans-unit id="auth.not_authorized">
-                <source>Not authorized</source>
-                <target>Not authorized</target>
-            </trans-unit>
-
-            <trans-unit id="auth.login_failed">
-                <source>Failed admin login attempt for '%login%'</source>
-                <target>Failed admin login attempt for '%login%'</target>
-            </trans-unit>
-
-            <trans-unit id="auth.login_disabled">
-                <source>Login attempt for disabled admin '%login%'</source>
-                <target>Login attempt for disabled admin '%login%'</target>
-            </trans-unit>
-
-            <!-- Identity -->
-            <trans-unit id="identity.admin_not_found">
-                <source>Administrator not found</source>
-                <target>Administrator not found</target>
-            </trans-unit>
-
-            <trans-unit id="identity.attribute_definition_exists">
-                <source>Attribute definition already exists.</source>
-                <target>Attribute definition already exists.</target>
-            </trans-unit>
-
-            <trans-unit id="identity.password_reset.subject">
-                <source>Password Reset Request</source>
-            </trans-unit>
-
-            <trans-unit id="identity.password_reset.text">
-                <source>Hello,
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="en" datatype="plaintext" original="file.ext">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="Usece1u" resname="Not authorized">
+        <source>Not authorized</source>
+        <target>Not authorized</target>
+      </trans-unit>
+      <trans-unit id="mjx1orR" resname="Failed admin login attempt for '%login%'">
+        <source>Failed admin login attempt for '%login%'</source>
+        <target>Failed admin login attempt for '%login%'</target>
+      </trans-unit>
+      <trans-unit id="Jd9RbEu" resname="Login attempt for disabled admin '%login%'">
+        <source>Login attempt for disabled admin '%login%'</source>
+        <target>Login attempt for disabled admin '%login%'</target>
+      </trans-unit>
+      <trans-unit id="Wal5m11" resname="Administrator not found">
+        <source>Administrator not found</source>
+        <target>Administrator not found</target>
+      </trans-unit>
+      <trans-unit id="DBCyk.y" resname="Attribute definition already exists.">
+        <source>Attribute definition already exists.</source>
+        <target>Attribute definition already exists.</target>
+      </trans-unit>
+      <trans-unit id="ZiWp03w" resname="Password Reset Request">
+        <source>Password Reset Request</source>
+        <target>Password Reset Request</target>
+      </trans-unit>
+      <trans-unit id="MdrOODC" resname="Hello,&#10;&#10;                    A password reset has been requested for your account.&#10;                    Please use the following token to reset your password:&#10;&#10;                    %token%&#10;&#10;                    If you did not request this password reset, please ignore this email.&#10;&#10;                    Thank you.&#10;                ">
+        <source>Hello,
 
                     A password reset has been requested for your account.
                     Please use the following token to reset your password:
@@ -45,7 +41,7 @@
 
                     Thank you.
                 </source>
-                <target>
+        <target>
                     Hello,
 
                     A password reset has been requested for your account.
@@ -57,34 +53,31 @@
 
                     Thank you.
                 </target>
-            </trans-unit>
-
-            <trans-unit id="identity.password_reset.html">
-                <source><![CDATA[<p>Password Reset Request!</p>
-<p>Hello! A password reset has been requested for your account.</p>
-<p>Please use the following token to reset your password:</p>
-<p><a href="%confirmation_link%">Reset Password</a></p>
-<p>If you did not request this password reset, please ignore this email.</p>
-<p>Thank you.</p>]]></source>
-                <target>
-                    <![CDATA[
+      </trans-unit>
+      <trans-unit id="4G7PDL0" resname="&lt;p&gt;Password Reset Request!&lt;/p&gt;&#10;&lt;p&gt;Hello! A password reset has been requested for your account.&lt;/p&gt;&#10;&lt;p&gt;Please use the following token to reset your password:&lt;/p&gt;&#10;&lt;p&gt;&lt;a href=&quot;%confirmation_link%&quot;&gt;Reset Password&lt;/a&gt;&lt;/p&gt;&#10;&lt;p&gt;If you did not request this password reset, please ignore this email.&lt;/p&gt;&#10;&lt;p&gt;Thank you.&lt;/p&gt;">
+        <source>&lt;p&gt;Password Reset Request!&lt;/p&gt;
+&lt;p&gt;Hello! A password reset has been requested for your account.&lt;/p&gt;
+&lt;p&gt;Please use the following token to reset your password:&lt;/p&gt;
+&lt;p&gt;&lt;a href="%confirmation_link%"&gt;Reset Password&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;If you did not request this password reset, please ignore this email.&lt;/p&gt;
+&lt;p&gt;Thank you.&lt;/p&gt;</source>
+        <target><![CDATA[
+                    
                         <p>Password Reset Request!</p>
                         <p>Hello! A password reset has been requested for your account.</p>
                         <p>Please use the following token to reset your password:</p>
                         <p><a href="%confirmation_link%">Reset Password</a></p>
                         <p>If you did not request this password reset, please ignore this email.</p>
                         <p>Thank you.</p>
-                    ]]>
-                </target>
-            </trans-unit>
-
-            <trans-unit id="identity.subscription_confirmation">
-                <source>Please confirm your subscription</source>
-                <target>Please confirm your subscription</target>
-            </trans-unit>
-
-            <trans-unit id="identity.subscription_confirmation.text">
-                <source>Thank you for subscribing!
+                    
+                ]]></target>
+      </trans-unit>
+      <trans-unit id="sK6dtT6" resname="Request for confirmation">
+        <source>Request for confirmation</source>
+        <target>Request for confirmation</target>
+      </trans-unit>
+      <trans-unit id="mLtPi5e" resname="Thank you for subscribing!&#10;&#10;                    Please confirm your subscription by clicking the link below:&#10;&#10;                    %confirmation_link%&#10;&#10;                    If you did not request this subscription, please ignore this email.&#10;                ">
+        <source>Thank you for subscribing!
 
                     Please confirm your subscription by clicking the link below:
 
@@ -92,7 +85,7 @@
 
                     If you did not request this subscription, please ignore this email.
                 </source>
-                <target>Thank you for subscribing!
+        <target>Thank you for subscribing!
 
                     Please confirm your subscription by clicking the link below:
 
@@ -100,351 +93,597 @@
 
                     If you did not request this subscription, please ignore this email.
                 </target>
-            </trans-unit>
-
-            <trans-unit id="identity.subscription_confirmation.html">
-                <source><![CDATA[<p>Thank you for subscribing!</p>
-<p>Please confirm your subscription by clicking the link below:</p>
-<p><a href="%confirmation_link%">Confirm Subscription</a></p>
-<p>If you did not request this subscription, please ignore this email.</p>]]>
+      </trans-unit>
+      <trans-unit id="5NWV0FU" resname="&lt;p&gt;Thank you for subscribing!&lt;/p&gt;&#10;&lt;p&gt;Please confirm your subscription by clicking the link below:&lt;/p&gt;&#10;&lt;p&gt;&lt;a href=&quot;%confirmation_link%&quot;&gt;Confirm Subscription&lt;/a&gt;&lt;/p&gt;&#10;&lt;p&gt;If you did not request this subscription, please ignore this email.&lt;/p&gt;&#10;                ">
+        <source>&lt;p&gt;Thank you for subscribing!&lt;/p&gt;
+&lt;p&gt;Please confirm your subscription by clicking the link below:&lt;/p&gt;
+&lt;p&gt;&lt;a href="%confirmation_link%"&gt;Confirm Subscription&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;If you did not request this subscription, please ignore this email.&lt;/p&gt;
                 </source>
-                <target><![CDATA[<p>Thank you for subscribing!</p>
+        <target><![CDATA[<p>Thank you for subscribing!</p>
 <p>Please confirm your subscription by clicking the link below:</p>
 <p><a href="%confirmation_link%">Confirm Subscription</a></p>
-<p>If you did not request this subscription, please ignore this email.</p>]]>
-                </target>
-            </trans-unit>
+<p>If you did not request this subscription, please ignore this email.</p>
+                ]]></target>
+      </trans-unit>
+      <trans-unit id="f8Z25Rl" resname="PHP IMAP extension not available. Falling back to Webklex IMAP.">
+        <source>PHP IMAP extension not available. Falling back to Webklex IMAP.</source>
+        <target>PHP IMAP extension not available. Falling back to Webklex IMAP.</target>
+      </trans-unit>
+      <trans-unit id="F9Sr4jh" resname="Could not apply force lock. Aborting.">
+        <source>Could not apply force lock. Aborting.</source>
+        <target>Could not apply force lock. Aborting.</target>
+      </trans-unit>
+      <trans-unit id="PS3z3WA" resname="Another bounce processing is already running. Aborting.">
+        <source>Another bounce processing is already running. Aborting.</source>
+        <target>Another bounce processing is already running. Aborting.</target>
+      </trans-unit>
+      <trans-unit id="fd3PGim" resname="Queue is already being processed by another instance.">
+        <source>Queue is already being processed by another instance.</source>
+        <target>Queue is already being processed by another instance.</target>
+      </trans-unit>
+      <trans-unit id="FwIgIRj" resname="The system is in maintenance mode, stopping. Try again later.">
+        <source>The system is in maintenance mode, stopping. Try again later.</source>
+        <target>The system is in maintenance mode, stopping. Try again later.</target>
+      </trans-unit>
+      <trans-unit id="Z9LKp.A" resname="Bounce processing completed.">
+        <source>Bounce processing completed.</source>
+        <target>Bounce processing completed.</target>
+      </trans-unit>
+      <trans-unit id="U7o2WSP" resname="Recipient email address not provided">
+        <source>Recipient email address not provided</source>
+        <target>Recipient email address not provided</target>
+      </trans-unit>
+      <trans-unit id="hwz6xcG" resname="Invalid email address: %email%">
+        <source>Invalid email address: %email%</source>
+        <target>Invalid email address: %email%</target>
+      </trans-unit>
+      <trans-unit id="Id21vvi" resname="Sending test email synchronously to %email%">
+        <source>Sending test email synchronously to %email%</source>
+        <target>Sending test email synchronously to %email%</target>
+      </trans-unit>
+      <trans-unit id="5VLorkM" resname="Queuing test email for %email%">
+        <source>Queuing test email for %email%</source>
+        <target>Queuing test email for %email%</target>
+      </trans-unit>
+      <trans-unit id="8jnG9x9" resname="Test email sent successfully!">
+        <source>Test email sent successfully!</source>
+        <target>Test email sent successfully!</target>
+      </trans-unit>
+      <trans-unit id="ylF7NRd" resname="Test email queued successfully! It will be sent asynchronously.">
+        <source>Test email queued successfully! It will be sent asynchronously.</source>
+        <target>Test email queued successfully! It will be sent asynchronously.</target>
+      </trans-unit>
+      <trans-unit id="X3ekMwg" resname="Failed to send test email: %error%">
+        <source>Failed to send test email: %error%</source>
+        <target>Failed to send test email: %error%</target>
+      </trans-unit>
+      <trans-unit id="dzLHcS8" resname="Email address auto blacklisted by bounce rule %rule_id%">
+        <source>Email address auto blacklisted by bounce rule %rule_id%</source>
+        <target>Email address auto blacklisted by bounce rule %rule_id%</target>
+      </trans-unit>
+      <trans-unit id="VqkBYnI" resname="Auto Unsubscribed">
+        <source>Auto Unsubscribed</source>
+        <target>Auto Unsubscribed</target>
+      </trans-unit>
+      <trans-unit id="JJJj4Su" resname="User auto unsubscribed for bounce rule %rule_id%">
+        <source>User auto unsubscribed for bounce rule %rule_id%</source>
+        <target>User auto unsubscribed for bounce rule %rule_id%</target>
+      </trans-unit>
+      <trans-unit id=".Pwvu0_" resname="email auto unsubscribed for bounce rule %rule_id%">
+        <source>email auto unsubscribed for bounce rule %rule_id%</source>
+        <target>email auto unsubscribed for bounce rule %rule_id%</target>
+      </trans-unit>
+      <trans-unit id="LQgOyA0" resname="Subscriber auto blacklisted by bounce rule %rule_id%">
+        <source>Subscriber auto blacklisted by bounce rule %rule_id%</source>
+        <target>Subscriber auto blacklisted by bounce rule %rule_id%</target>
+      </trans-unit>
+      <trans-unit id="RFsNERv" resname="User auto unsubscribed for bounce rule %%rule_id%">
+        <source>User auto unsubscribed for bounce rule %%rule_id%</source>
+        <target>User auto unsubscribed for bounce rule %%rule_id%</target>
+      </trans-unit>
+      <trans-unit id="_7aNtod" resname="Auto confirmed">
+        <source>Auto confirmed</source>
+        <target>Auto confirmed</target>
+      </trans-unit>
+      <trans-unit id="KlTaQhf" resname="Auto unconfirmed">
+        <source>Auto unconfirmed</source>
+        <target>Auto unconfirmed</target>
+      </trans-unit>
+      <trans-unit id="jJFjctJ" resname="Subscriber auto confirmed for bounce rule %rule_id%">
+        <source>Subscriber auto confirmed for bounce rule %rule_id%</source>
+        <target>Subscriber auto confirmed for bounce rule %rule_id%</target>
+      </trans-unit>
+      <trans-unit id="pJqfsMp" resname="Requeued campaign; next embargo at %time%">
+        <source>Requeued campaign; next embargo at %time%</source>
+        <target>Requeued campaign; next embargo at %time%</target>
+      </trans-unit>
+      <trans-unit id="811rsKi" resname="Subscriber auto unconfirmed for bounce rule %rule_id%">
+        <source>Subscriber auto unconfirmed for bounce rule %rule_id%</source>
+        <target>Subscriber auto unconfirmed for bounce rule %rule_id%</target>
+      </trans-unit>
+      <trans-unit id="HESHk6d" resname="Running in test mode, not deleting messages from mailbox">
+        <source>Running in test mode, not deleting messages from mailbox</source>
+        <target>Running in test mode, not deleting messages from mailbox</target>
+      </trans-unit>
+      <trans-unit id="OVBt.Fm" resname="Processed messages will be deleted from the mailbox">
+        <source>Processed messages will be deleted from the mailbox</source>
+        <target>Processed messages will be deleted from the mailbox</target>
+      </trans-unit>
+      <trans-unit id="0Cb2LJu" resname="Processing bounces based on active bounce rules">
+        <source>Processing bounces based on active bounce rules</source>
+        <target>Processing bounces based on active bounce rules</target>
+      </trans-unit>
+      <trans-unit id=".BW1DEp" resname="No active rules">
+        <source>No active rules</source>
+        <target>No active rules</target>
+      </trans-unit>
+      <trans-unit id="SKEkGAe" resname="Processed %processed% out of %total% bounces for advanced bounce rules">
+        <source>Processed %processed% out of %total% bounces for advanced bounce rules</source>
+        <target>Processed %processed% out of %total% bounces for advanced bounce rules</target>
+      </trans-unit>
+      <trans-unit id="72Lh9jn" resname="%processed% bounces processed by advanced processing">
+        <source>%processed% bounces processed by advanced processing</source>
+        <target>%processed% bounces processed by advanced processing</target>
+      </trans-unit>
+      <trans-unit id="oefFlsp" resname="%not_processed% bounces were not matched by advanced processing rules">
+        <source>%not_processed% bounces were not matched by advanced processing rules</source>
+        <target>%not_processed% bounces were not matched by advanced processing rules</target>
+      </trans-unit>
+      <trans-unit id="wq7WTeH" resname="Opening mbox %file%">
+        <source>Opening mbox %file%</source>
+        <target>Opening mbox %file%</target>
+      </trans-unit>
+      <trans-unit id="1TmeAW9" resname="Connecting to %mailbox%">
+        <source>Connecting to %mailbox%</source>
+        <target>Connecting to %mailbox%</target>
+      </trans-unit>
+      <trans-unit id="wJoHXCp" resname="Please do not interrupt this process">
+        <source>Please do not interrupt this process</source>
+        <target>Please do not interrupt this process</target>
+      </trans-unit>
+      <trans-unit id="yZvVo5P" resname="mbox file path must be provided with --mailbox.">
+        <source>mbox file path must be provided with --mailbox.</source>
+        <target>mbox file path must be provided with --mailbox.</target>
+      </trans-unit>
+      <trans-unit id="85S9B8s" resname="Invalid email, marking unconfirmed: %email%">
+        <source>Invalid email, marking unconfirmed: %email%</source>
+        <target>Invalid email, marking unconfirmed: %email%</target>
+      </trans-unit>
+      <trans-unit id="8JG9vir" resname="Failed to send to: %email%">
+        <source>Failed to send to: %email%</source>
+        <target>Failed to send to: %email%</target>
+      </trans-unit>
+      <trans-unit id="MXKijxc" resname="Reprocessing unidentified bounces">
+        <source>Reprocessing unidentified bounces</source>
+        <target>Reprocessing unidentified bounces</target>
+      </trans-unit>
+      <trans-unit id="gfT9h_B" resname="%total% bounces to reprocess">
+        <source>%total% bounces to reprocess</source>
+        <target>%total% bounces to reprocess</target>
+      </trans-unit>
+      <trans-unit id="aVEKZcm" resname="%count% out of %total% processed">
+        <source>%count% out of %total% processed</source>
+        <target>%count% out of %total% processed</target>
+      </trans-unit>
+      <trans-unit id="spHTP52" resname="%reparsed% bounces were re-processed and %reidentified% bounces were re-identified">
+        <source>%reparsed% bounces were re-processed and %reidentified% bounces were re-identified</source>
+        <target>%reparsed% bounces were re-processed and %reidentified% bounces were re-identified</target>
+      </trans-unit>
+      <trans-unit id="U5eFkvX" resname="Identifying consecutive bounces">
+        <source>Identifying consecutive bounces</source>
+        <target>Identifying consecutive bounces</target>
+      </trans-unit>
+      <trans-unit id="ooijSL4" resname="Nothing to do">
+        <source>Nothing to do</source>
+        <target>Nothing to do</target>
+      </trans-unit>
+      <trans-unit id="SinJUTl" resname="Processed %processed% out of %total% subscribers">
+        <source>Processed %processed% out of %total% subscribers</source>
+        <target>Processed %processed% out of %total% subscribers</target>
+      </trans-unit>
+      <trans-unit id="3pAx5Eb" resname="Total of %total% subscribers processed">
+        <source>Total of %total% subscribers processed</source>
+        <target>Total of %total% subscribers processed</target>
+      </trans-unit>
+      <trans-unit id=".iObuac" resname="Subscriber auto unconfirmed for %count% consecutive bounces">
+        <source>Subscriber auto unconfirmed for %count% consecutive bounces</source>
+        <target>Subscriber auto unconfirmed for %count% consecutive bounces</target>
+      </trans-unit>
+      <trans-unit id="gVSHUQB" resname="%count% consecutive bounces, threshold reached">
+        <source>%count% consecutive bounces, threshold reached</source>
+        <target>%count% consecutive bounces, threshold reached</target>
+      </trans-unit>
+      <trans-unit id="hdm5VD2" resname="Reached max processing time; stopping cleanly.">
+        <source>Reached max processing time; stopping cleanly.</source>
+        <target>Reached max processing time; stopping cleanly.</target>
+      </trans-unit>
+      <trans-unit id="uVr_2T5" resname="Giving a UUID to %count% subscribers, this may take a while">
+        <source>Giving a UUID to %count% subscribers, this may take a while</source>
+        <target>Giving a UUID to %count% subscribers, this may take a while</target>
+      </trans-unit>
+      <trans-unit id="y2ncCK3" resname="Giving a UUID to %count% campaigns">
+        <source>Giving a UUID to %count% campaigns</source>
+        <target>Giving a UUID to %count% campaigns</target>
+      </trans-unit>
+      <trans-unit id="qbMqdp7" resname="Batch limit reached, sleeping %sleep%s to respect MAILQUEUE_BATCH_PERIOD">
+        <source>Batch limit reached, sleeping %sleep%s to respect MAILQUEUE_BATCH_PERIOD</source>
+        <target>Batch limit reached, sleeping %sleep%s to respect MAILQUEUE_BATCH_PERIOD</target>
+      </trans-unit>
+      <trans-unit id="VjulBeI" resname="Value must be an array of image URLs.">
+        <source>Value must be an array of image URLs.</source>
+        <target>Value must be an array of image URLs.</target>
+      </trans-unit>
+      <trans-unit id="TPLWDKL" resname="Image &quot;%url%&quot; is not a full URL.">
+        <source>Image "%url%" is not a full URL.</source>
+        <target>Image "%url%" is not a full URL.</target>
+      </trans-unit>
+      <trans-unit id="ZfCjc13" resname="Image &quot;%url%&quot; does not exist (HTTP %code%)">
+        <source>Image "%url%" does not exist (HTTP %code%)</source>
+        <target>Image "%url%" does not exist (HTTP %code%)</target>
+      </trans-unit>
+      <trans-unit id="mL25d3Y" resname="Image &quot;%url%&quot; could not be validated: %message%">
+        <source>Image "%url%" could not be validated: %message%</source>
+        <target>Image "%url%" could not be validated: %message%</target>
+      </trans-unit>
+      <trans-unit id="qwvuZSP" resname="Not full URLs: %urls%">
+        <source>Not full URLs: %urls%</source>
+        <target>Not full URLs: %urls%</target>
+      </trans-unit>
+      <trans-unit id="IuEsxaY" resname="Subscriber list not found.">
+        <source>Subscriber list not found.</source>
+        <target>Subscriber list not found.</target>
+      </trans-unit>
+      <trans-unit id="fCyBFqB" resname="Subscriber does not exists.">
+        <source>Subscriber does not exists.</source>
+        <target>Subscriber does not exists.</target>
+      </trans-unit>
+      <trans-unit id="88qWyBp" resname="Subscription not found for this subscriber and list.">
+        <source>Subscription not found for this subscriber and list.</source>
+        <target>Subscription not found for this subscriber and list.</target>
+      </trans-unit>
+      <trans-unit id="xWcRIPk" resname="Attribute definition already exists">
+        <source>Attribute definition already exists</source>
+        <target>Attribute definition already exists</target>
+      </trans-unit>
+      <trans-unit id="kQejNsl" resname="Another attribute with this name already exists.">
+        <source>Another attribute with this name already exists.</source>
+        <target>Another attribute with this name already exists.</target>
+      </trans-unit>
+      <trans-unit id="14Vn5V8" resname="Subscribe page not found">
+        <source>Subscribe page not found</source>
+        <target>Subscribe page not found</target>
+      </trans-unit>
+      <trans-unit id="H78ni1O" resname="Value is required">
+        <source>Value is required</source>
+        <target>Value is required</target>
+      </trans-unit>
+      <trans-unit id="FpZuot7" resname="Subscriber not found">
+        <source>Subscriber not found</source>
+        <target>Subscriber not found</target>
+      </trans-unit>
+      <trans-unit id="G7WcPix" resname="Unexpected error: %error%">
+        <source>Unexpected error: %error%</source>
+        <target>Unexpected error: %error%</target>
+      </trans-unit>
+      <trans-unit id="5xrq0Vk" resname="Added to blacklist for reason %reason%">
+        <source>Added to blacklist for reason %reason%</source>
+        <target>Added to blacklist for reason %reason%</target>
+      </trans-unit>
+      <trans-unit id="w5sp12u" resname="Could not read the uploaded file.">
+        <source>Could not read the uploaded file.</source>
+        <target>Could not read the uploaded file.</target>
+      </trans-unit>
+      <trans-unit id="XaXvseh" resname="Error processing %email%: %error%">
+        <source>Error processing %email%: %error%</source>
+        <target>Error processing %email%: %error%</target>
+      </trans-unit>
+      <trans-unit id="6yqhLKV" resname="General import error: %error%">
+        <source>General import error: %error%</source>
+        <target>General import error: %error%</target>
+      </trans-unit>
+      <trans-unit id="Dq6.vqo" resname="Value must be a string.">
+        <source>Value must be a string.</source>
+        <target>Value must be a string.</target>
+      </trans-unit>
+      <trans-unit id="NyMd0lh" resname="Invalid attribute type: &quot;%type%&quot;. Valid types are: %valid_types%">
+        <source>Invalid attribute type: "%type%". Valid types are: %valid_types%</source>
+        <target>Invalid attribute type: "%type%". Valid types are: %valid_types%</target>
+      </trans-unit>
+      <trans-unit id="0MBhbU0" resname="Thank you for subscribing!&#10;&#10;Please confirm your subscription by clicking the link below:&#10;&#10;%confirmation_link%&#10;&#10;If you did not request this subscription, please ignore this email.">
+        <source>Thank you for subscribing!
 
-            <!-- Messaging -->
-            <trans-unit id="messaging.imap_not_available">
-                <source>PHP IMAP extension not available. Falling back to Webklex IMAP.</source>
-                <target>PHP IMAP extension not available. Falling back to Webklex IMAP.</target>
-            </trans-unit>
+Please confirm your subscription by clicking the link below:
 
-            <trans-unit id="messaging.force_lock_failed">
-                <source>Could not apply force lock. Aborting.</source>
-                <target>Could not apply force lock. Aborting.</target>
-            </trans-unit>
+%confirmation_link%
 
-            <trans-unit id="messaging.already_locked">
-                <source>Another bounce processing is already running. Aborting.</source>
-                <target>Another bounce processing is already running. Aborting.</target>
-            </trans-unit>
+If you did not request this subscription, please ignore this email.</source>
+        <target>__Thank you for subscribing!
 
-            <trans-unit id="messaging.queue_already_processing">
-                <source>Queue is already being processed by another instance.</source>
-                <target>Queue is already being processed by another instance.</target>
-            </trans-unit>
+Please confirm your subscription by clicking the link below:
 
-            <trans-unit id="messaging.maintenance_mode">
-                <source>The system is in maintenance mode, stopping. Try again later.</source>
-                <target>The system is in maintenance mode, stopping. Try again later.</target>
-            </trans-unit>
+%confirmation_link%
 
-            <trans-unit id="messaging.bounce_processing_completed">
-                <source>Bounce processing completed.</source>
-                <target>Bounce processing completed.</target>
-            </trans-unit>
+If you did not request this subscription, please ignore this email.</target>
+      </trans-unit>
+      <trans-unit id="4zMurzl" resname="&lt;p&gt;Thank you for subscribing!&lt;/p&gt;&lt;p&gt;Please confirm your subscription by clicking the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;%confirmation_link%&quot;&gt;Confirm Subscription&lt;/a&gt;&lt;/p&gt;&lt;p&gt;If you did not request this subscription, please ignore this email.&lt;/p&gt;">
+        <source>&lt;p&gt;Thank you for subscribing!&lt;/p&gt;&lt;p&gt;Please confirm your subscription by clicking the link below:&lt;/p&gt;&lt;p&gt;&lt;a href="%confirmation_link%"&gt;Confirm Subscription&lt;/a&gt;&lt;/p&gt;&lt;p&gt;If you did not request this subscription, please ignore this email.&lt;/p&gt;</source>
+        <target><![CDATA[__<p>Thank you for subscribing!</p><p>Please confirm your subscription by clicking the link below:</p><p><a href="%confirmation_link%">Confirm Subscription</a></p><p>If you did not request this subscription, please ignore this email.</p>]]></target>
+      </trans-unit>
+      <trans-unit id="9j18IPN" resname="Hello,&#10;&#10;A password reset has been requested for your account.&#10;Please use the following token to reset your password:&#10;&#10;%token%&#10;&#10;If you did not request this password reset, please ignore this email.&#10;&#10;Thank you.">
+        <source>Hello,
 
-            <trans-unit id="messaging.recipient_not_provided">
-                <source>Recipient email address not provided</source>
-                <target>Recipient email address not provided</target>
-            </trans-unit>
+A password reset has been requested for your account.
+Please use the following token to reset your password:
 
-            <trans-unit id="messaging.invalid_email">
-                <source>Invalid email address: %email%</source>
-                <target>Invalid email address: %email%</target>
-            </trans-unit>
+%token%
 
-            <trans-unit id="messaging.sending_test_email_sync">
-                <source>Sending test email synchronously to %email%</source>
-                <target>Sending test email synchronously to %email%</target>
-            </trans-unit>
+If you did not request this password reset, please ignore this email.
 
-            <trans-unit id="messaging.queuing_test_email">
-                <source>Queuing test email for %email%</source>
-                <target>Queuing test email for %email%</target>
-            </trans-unit>
+Thank you.</source>
+        <target>__Hello,
 
-            <trans-unit id="messaging.test_email_sent_success">
-                <source>Test email sent successfully!</source>
-                <target>Test email sent successfully!</target>
-            </trans-unit>
+A password reset has been requested for your account.
+Please use the following token to reset your password:
 
-            <trans-unit id="messaging.test_email_queued_success">
-                <source>Test email queued successfully! It will be sent asynchronously.</source>
-                <target>Test email queued successfully! It will be sent asynchronously.</target>
-            </trans-unit>
+%token%
 
-            <trans-unit id="messaging.failed_to_send_test_email">
-                <source>Failed to send test email: %error%</source>
-                <target>Failed to send test email: %error%</target>
-            </trans-unit>
+If you did not request this password reset, please ignore this email.
 
-            <trans-unit id="messaging.email_blacklist.by_rule">
-                <source>Email address auto blacklisted by bounce rule %rule_id%</source>
-                <target>Email address auto blacklisted by bounce rule %rule_id%</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.email_blacklist.message">
-                <source>Auto Unsubscribed</source>
-                <target>Auto Unsubscribed</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.email_blacklist.details">
-                <source>User auto unsubscribed for bounce rule %rule_id%</source>
-                <target>User auto unsubscribed for bounce rule %rule_id%</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.email_blacklist.auto_unsubscribed">
-                <source>email auto unsubscribed for bounce rule %rule_id%</source>
-                <target>email auto unsubscribed for bounce rule %rule_id%</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.subscriber_blacklisted">
-                <source>Subscriber auto blacklisted by bounce rule %rule_id%</source>
-                <target>Subscriber auto blacklisted by bounce rule %rule_id%</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.subscriber_unsubscribed">
-                <source>User auto unsubscribed for bounce rule %%rule_id%</source>
-                <target>User auto unsubscribed for bounce rule %%rule_id%</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.auto_confirmed">
-                <source>Auto confirmed</source>
-                <target>Auto confirmed</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.auto_unconfirmed">
-                <source>Auto unconfirmed</source>
-                <target>Auto unconfirmed</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.subscriber_autoconfirmed">
-                <source>Subscriber auto confirmed for bounce rule %rule_id%</source>
-                <target>Subscriber auto confirmed for bounce rule %rule_id%</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.requeue_message">
-                <source>Requeued campaign; next embargo at %time%</source>
-                <target>Requeued campaign; next embargo at %time%</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.subscriber_unconfirmed">
-                <source>Subscriber auto unconfirmed for bounce rule %rule_id%</source>
-                <target>Subscriber auto unconfirmed for bounce rule %rule_id%</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.bounce.running_test_mode">
-                <source>Running in test mode, not deleting messages from mailbox</source>
-                <target>Running in test mode, not deleting messages from mailbox</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.bounce.running_live_mode">
-                <source>Processed messages will be deleted from the mailbox</source>
-                <target>Processed messages will be deleted from the mailbox</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.processing_bounce">
-                <source>Processing bounces based on active bounce rules</source>
-                <target>Processing bounces based on active bounce rules</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.no_active_rules">
-                <source>No active rules</source>
-                <target>No active rules</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.announce_processed_count">
-                <source>Processed %processed% out of %total% bounces for advanced bounce rules</source>
-                <target>Processed %processed% out of %total% bounces for advanced bounce rules</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.announce_processed_total">
-                <source>%processed% bounces processed by advanced processing</source>
-                <target>%processed% bounces processed by advanced processing</target>
-            </trans-unit>
-            <trans-unit id="messaging.announce_not_processed_total">
-                <source>%not_processed% bounces were not matched by advanced processing rules</source>
-                <target>%not_processed% bounces were not matched by advanced processing rules</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.opening_mbox">
-                <source>Opening mbox %file%</source>
-                <target>Opening mbox %file%</target>
-            </trans-unit>
-            <trans-unit id="messaging.connecting_to">
-                <source>Connecting to %mailbox%</source>
-                <target>Connecting to %mailbox%</target>
-            </trans-unit>
-            <trans-unit id="messaging.do_not_interrupt">
-                <source>Please do not interrupt this process</source>
-                <target>Please do not interrupt this process</target>
-            </trans-unit>
-            <trans-unit id="messaging.mbox_missing_option">
-                <source>mbox file path must be provided with --mailbox.</source>
-                <target>mbox file path must be provided with --mailbox.</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.invalid_email_unconfirm">
-                <source>Invalid email, marking unconfirmed: %email%</source>
-                <target>Invalid email, marking unconfirmed: %email%</target>
-            </trans-unit>
-            <trans-unit id="messaging.failed_to_send">
-                <source>Failed to send to: %email%</source>
-                <target>Failed to send to: %email%</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.process_unidentified">
-                <source>Reprocessing unidentified bounces</source>
-                <target>Reprocessing unidentified bounces</target>
-            </trans-unit>
-            <trans-unit id="messaging.total_to_process">
-                <source>%total% bounces to reprocess</source>
-                <target>%total% bounces to reprocess</target>
-            </trans-unit>
-            <trans-unit id="messaging.bounce_process.report">
-                <source>%count% out of %total% processed</source>
-                <target>%count% out of %total% processed</target>
-            </trans-unit>
-            <trans-unit id="messaging.bounce_process.final_report">
-                <source>%reparsed% bounces were re-processed and %reidentified% bounces were re-identified</source>
-                <target>%reparsed% bounces were re-processed and %reidentified% bounces were re-identified</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.consecutive_bounces">
-                <source>Identifying consecutive bounces</source>
-                <target>Identifying consecutive bounces</target>
-            </trans-unit>
-            <trans-unit id="messaging.nothing_to_do">
-                <source>Nothing to do</source>
-                <target>Nothing to do</target>
-            </trans-unit>
-            <trans-unit id="messaging.consecutive_bounces.report">
-                <source>Processed %processed% out of %total% subscribers</source>
-                <target>Processed %processed% out of %total% subscribers</target>
-            </trans-unit>
-            <trans-unit id="messaging.consecutive_bounces.final_report">
-                <source>Total of %total% subscribers processed</source>
-                <target>Total of %total% subscribers processed</target>
-            </trans-unit>
-            <trans-unit id="messaging.consecutive_bounces.unconfirm">
-                <source>Subscriber auto unconfirmed for %count% consecutive bounces</source>
-                <target>Subscriber auto unconfirmed for %count% consecutive bounces</target>
-            </trans-unit>
-            <trans-unit id="messaging.consecutive_bounces.threshold_reached">
-                <source>%count% consecutive bounces, threshold reached</source>
-                <target>%count% consecutive bounces, threshold reached</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.reached_max_processing_time">
-                <source>Reached max processing time; stopping cleanly.</source>
-                <target>Reached max processing time; stopping cleanly.</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.add_uuid_to_subscribers">
-                <source>Giving a UUID to %count% subscribers, this may take a while</source>
-                <target>Giving a UUID to %count% subscribers, this may take a while</target>
-            </trans-unit>
-            <trans-unit id="messaging.add_uuid_to_campaigns">
-                <source>Giving a UUID to %count% campaigns</source>
-                <target>Giving a UUID to %count% campaigns</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.send_rate_limit">
-                <source>Batch limit reached, sleeping %sleep%s to respect MAILQUEUE_BATCH_PERIOD</source>
-                <target>Batch limit reached, sleeping %sleep%s to respect MAILQUEUE_BATCH_PERIOD</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.validation.image_url">
-                <source>Value must be an array of image URLs.</source>
-                <target>Value must be an array of image URLs.</target>
-            </trans-unit>
-            <trans-unit id="messaging.validation.image_url_not_full">
-                <source>Image "%url%" is not a full URL.</source>
-                <target>Image "%url%" is not a full URL.</target>
-            </trans-unit>
-            <trans-unit id="messaging.validation.image_url_not_exists">
-                <source>Image "%url%" does not exist (HTTP %code%)</source>
-                <target>Image "%url%" does not exist (HTTP %code%)</target>
-            </trans-unit>
-            <trans-unit id="messaging.validation.image_url_cant_validate">
-                <source>Image "%url%" could not be validated: %message%</source>
-                <target>Image "%url%" could not be validated: %message%</target>
-            </trans-unit>
-
-            <trans-unit id="messaging.validation.urls_not_full">
-                <source>Not full URLs: %urls%</source>
-                <target>Not full URLs: %urls%</target>
-            </trans-unit>
-
-
-            <!-- Subscription -->
-            <trans-unit id="subscription.list_not_found">
-                <source>Subscriber list not found.</source>
-                <target>Subscriber list not found.</target>
-            </trans-unit>
-
-            <trans-unit id="subscription.subscriber_does_not_exists">
-                <source>Subscriber does not exists.</source>
-                <target>Subscriber does not exists.</target>
-            </trans-unit>
-
-            <trans-unit id="subscription.not_found_for_list_and_subscriber">
-                <source>Subscription not found for this subscriber and list.</source>
-                <target>Subscription not found for this subscriber and list.</target>
-            </trans-unit>
-            <trans-unit id="subscription.attribute_definition_exists">
-                <source>Attribute definition already exists</source>
-                <target>Attribute definition already exists</target>
-            </trans-unit>
-            <trans-unit id="subscription.attribute_definition_name_exists">
-                <source>Another attribute with this name already exists.</source>
-                <target>Another attribute with this name already exists.</target>
-            </trans-unit>
-
-            <trans-unit id="subscription.subscriber_page_not_found">
-                <source>Subscribe page not found</source>
-                <target>Subscribe page not found</target>
-            </trans-unit>
-            <trans-unit id="subscription.value_is_required">
-                <source>Value is required</source>
-                <target>Value is required</target>
-            </trans-unit>
-            <trans-unit id="subscription.subscriber_not_found">
-                <source>Subscriber not found</source>
-                <target>Subscriber not found</target>
-            </trans-unit>
-            <trans-unit id="subscription.unexpected_error">
-                <source>Unexpected error: %error%</source>
-                <target>Unexpected error: %error%</target>
-            </trans-unit>
-            <trans-unit id="subscription.add_to_blacklist_for">
-                <source>Added to blacklist for reason %reason%</source>
-                <target>Added to blacklist for reason %reason%</target>
-            </trans-unit>
-            <trans-unit id="subscription.could_not_read_file">
-                <source>Could not read the uploaded file.</source>
-                <target>Could not read the uploaded file.</target>
-            </trans-unit>
-            <trans-unit id="subscription.csv_import_error">
-                <source>Error processing %email%: %error%</source>
-                <target>Error processing %email%: %error%</target>
-            </trans-unit>
-            <trans-unit id="subscription.csv_import_general_error">
-                <source>General import error: %error%</source>
-                <target>General import error: %error%</target>
-            </trans-unit>
-            <trans-unit id="subscription.value_must_be_string">
-                <source>Value must be a string.</source>
-                <target>Value must be a string.</target>
-            </trans-unit>
-            <trans-unit id="subscription.invalid_attribute_type">
-                <source>Invalid attribute type: "%type%". Valid types are: %valid_types%</source>
-                <target>Invalid attribute type: "%type%". Valid types are: %valid_types%</target>
-            </trans-unit>
-
-        </body>
-    </file>
+Thank you.</target>
+      </trans-unit>
+      <trans-unit id="ltQcyU7" resname="&lt;p&gt;Password Reset Request!&lt;/p&gt;&lt;p&gt;Hello! A password reset has been requested for your account.&lt;/p&gt;&lt;p&gt;Please use the following token to reset your password:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;%confirmation_link%&quot;&gt;Reset Password&lt;/a&gt;&lt;/p&gt;&lt;p&gt;If you did not request this password reset, please ignore this email.&lt;/p&gt;&lt;p&gt;Thank you.&lt;/p&gt;">
+        <source>&lt;p&gt;Password Reset Request!&lt;/p&gt;&lt;p&gt;Hello! A password reset has been requested for your account.&lt;/p&gt;&lt;p&gt;Please use the following token to reset your password:&lt;/p&gt;&lt;p&gt;&lt;a href="%confirmation_link%"&gt;Reset Password&lt;/a&gt;&lt;/p&gt;&lt;p&gt;If you did not request this password reset, please ignore this email.&lt;/p&gt;&lt;p&gt;Thank you.&lt;/p&gt;</source>
+        <target><![CDATA[__<p>Password Reset Request!</p><p>Hello! A password reset has been requested for your account.</p><p>Please use the following token to reset your password:</p><p><a href="%confirmation_link%">Reset Password</a></p><p>If you did not request this password reset, please ignore this email.</p><p>Thank you.</p>]]></target>
+      </trans-unit>
+      <trans-unit id="AVKpvQf" resname="Person in charge of this system (one email address)">
+        <source>Person in charge of this system (one email address)</source>
+        <target>__Person in charge of this system (one email address)</target>
+      </trans-unit>
+      <trans-unit id="tUWhfXF" resname="Name of the organisation">
+        <source>Name of the organisation</source>
+        <target>__Name of the organisation</target>
+      </trans-unit>
+      <trans-unit id="6.QeoLj" resname="Logo of the organisation">
+        <source>Logo of the organisation</source>
+        <target>__Logo of the organisation</target>
+      </trans-unit>
+      <trans-unit id="QxI.XMq" resname="Date format">
+        <source>Date format</source>
+        <target>__Date format</target>
+      </trans-unit>
+      <trans-unit id="C0.a3_W" resname="Show notification for Release Candidates">
+        <source>Show notification for Release Candidates</source>
+        <target>__Show notification for Release Candidates</target>
+      </trans-unit>
+      <trans-unit id="1_bRIPu" resname="Secret for remote processing">
+        <source>Secret for remote processing</source>
+        <target>__Secret for remote processing</target>
+      </trans-unit>
+      <trans-unit id="P67XsZ0" resname="Notify admin on login from new location">
+        <source>Notify admin on login from new location</source>
+        <target>__Notify admin on login from new location</target>
+      </trans-unit>
+      <trans-unit id="P7qj02Z" resname="List of email addresses to CC in system messages (separate by commas)">
+        <source>List of email addresses to CC in system messages (separate by commas)</source>
+        <target>__List of email addresses to CC in system messages (separate by commas)</target>
+      </trans-unit>
+      <trans-unit id="7sv828R" resname="Default for 'From:' in a campaign">
+        <source>Default for 'From:' in a campaign</source>
+        <target>__Default for 'From:' in a campaign</target>
+      </trans-unit>
+      <trans-unit id="2lbIsQQ" resname="Default for 'address to alert when sending starts'">
+        <source>Default for 'address to alert when sending starts'</source>
+        <target>__Default for 'address to alert when sending starts'</target>
+      </trans-unit>
+      <trans-unit id="KV_uuuc" resname="Default for 'address to alert when sending finishes'">
+        <source>Default for 'address to alert when sending finishes'</source>
+        <target>__Default for 'address to alert when sending finishes'</target>
+      </trans-unit>
+      <trans-unit id="tY4YffB" resname="Always add analytics tracking code to campaigns">
+        <source>Always add analytics tracking code to campaigns</source>
+        <target>__Always add analytics tracking code to campaigns</target>
+      </trans-unit>
+      <trans-unit id="G7GrHSZ" resname="Analytics tracking code to add to campaign URLs">
+        <source>Analytics tracking code to add to campaign URLs</source>
+        <target>__Analytics tracking code to add to campaign URLs</target>
+      </trans-unit>
+      <trans-unit id="ohHb.wz" resname="Who gets the reports (email address, separate multiple emails with a comma)">
+        <source>Who gets the reports (email address, separate multiple emails with a comma)</source>
+        <target>__Who gets the reports (email address, separate multiple emails with a comma)</target>
+      </trans-unit>
+      <trans-unit id="0KnbDqQ" resname="From email address for system messages">
+        <source>From email address for system messages</source>
+        <target>__From email address for system messages</target>
+      </trans-unit>
+      <trans-unit id="OxyUk2a" resname="Webmaster">
+        <source>Webmaster</source>
+        <target>__Webmaster</target>
+      </trans-unit>
+      <trans-unit id="10n84Ut" resname="Name for system messages">
+        <source>Name for system messages</source>
+        <target>__Name for system messages</target>
+      </trans-unit>
+      <trans-unit id="04J19lk" resname="Reply-to email address for system messages">
+        <source>Reply-to email address for system messages</source>
+        <target>__Reply-to email address for system messages</target>
+      </trans-unit>
+      <trans-unit id="t7NdAgq" resname="If there is only one visible list, should it be hidden in the page and automatically subscribe users who sign up">
+        <source>If there is only one visible list, should it be hidden in the page and automatically subscribe users who sign up</source>
+        <target>__If there is only one visible list, should it be hidden in the page and automatically subscribe users who sign up</target>
+      </trans-unit>
+      <trans-unit id="WWHfYh1" resname="Categories for lists. Separate with commas.">
+        <source>Categories for lists. Separate with commas.</source>
+        <target>__Categories for lists. Separate with commas.</target>
+      </trans-unit>
+      <trans-unit id="girE3sj" resname="Display list categories on subscribe page">
+        <source>Display list categories on subscribe page</source>
+        <target>__Display list categories on subscribe page</target>
+      </trans-unit>
+      <trans-unit id="6WxBbvI" resname="Width of a textline field (numerical)">
+        <source>Width of a textline field (numerical)</source>
+        <target>__Width of a textline field (numerical)</target>
+      </trans-unit>
+      <trans-unit id="2o7PD8Q" resname="Dimensions of a textarea field (rows,columns)">
+        <source>Dimensions of a textarea field (rows,columns)</source>
+        <target>__Dimensions of a textarea field (rows,columns)</target>
+      </trans-unit>
+      <trans-unit id="v2qWs6R" resname="Send notifications about subscribe, update and unsubscribe">
+        <source>Send notifications about subscribe, update and unsubscribe</source>
+        <target>__Send notifications about subscribe, update and unsubscribe</target>
+      </trans-unit>
+      <trans-unit id="MGbjRwf" resname="The default subscribe page when there are multiple">
+        <source>The default subscribe page when there are multiple</source>
+        <target>__The default subscribe page when there are multiple</target>
+      </trans-unit>
+      <trans-unit id="SI9.kzi" resname="The default HTML template to use when sending a message">
+        <source>The default HTML template to use when sending a message</source>
+        <target>__The default HTML template to use when sending a message</target>
+      </trans-unit>
+      <trans-unit id="StdGv8Z" resname="The HTML wrapper template for system messages">
+        <source>The HTML wrapper template for system messages</source>
+        <target>__The HTML wrapper template for system messages</target>
+      </trans-unit>
+      <trans-unit id="4sSWwQR" resname="URL where subscribers can sign up">
+        <source>URL where subscribers can sign up</source>
+        <target>__URL where subscribers can sign up</target>
+      </trans-unit>
+      <trans-unit id="PW8fF3j" resname="URL where subscribers can unsubscribe">
+        <source>URL where subscribers can unsubscribe</source>
+        <target>__URL where subscribers can unsubscribe</target>
+      </trans-unit>
+      <trans-unit id="xgoHRRo" resname="URL where unknown users can unsubscribe (do-not-send-list)">
+        <source>URL where unknown users can unsubscribe (do-not-send-list)</source>
+        <target>__URL where unknown users can unsubscribe (do-not-send-list)</target>
+      </trans-unit>
+      <trans-unit id="rmwznCV" resname="URL where subscribers have to confirm their subscription">
+        <source>URL where subscribers have to confirm their subscription</source>
+        <target>__URL where subscribers have to confirm their subscription</target>
+      </trans-unit>
+      <trans-unit id="M5NeAk_" resname="URL where subscribers can update their details">
+        <source>URL where subscribers can update their details</source>
+        <target>__URL where subscribers can update their details</target>
+      </trans-unit>
+      <trans-unit id="x6Tt6e2" resname="URL for forwarding messages">
+        <source>URL for forwarding messages</source>
+        <target>__URL for forwarding messages</target>
+      </trans-unit>
+      <trans-unit id="DnOZz2x" resname="URL for downloading vcf card">
+        <source>URL for downloading vcf card</source>
+        <target>__URL for downloading vcf card</target>
+      </trans-unit>
+      <trans-unit id="95_qZ8M" resname="&lt;h3&gt;Thanks, you have been added to our newsletter&lt;/h3&gt;&lt;p&gt;You will receive an email to confirm your subscription. Please click the link in the email to confirm&lt;/p&gt;">
+        <source>&lt;h3&gt;Thanks, you have been added to our newsletter&lt;/h3&gt;&lt;p&gt;You will receive an email to confirm your subscription. Please click the link in the email to confirm&lt;/p&gt;</source>
+        <target><![CDATA[__<h3>Thanks, you have been added to our newsletter</h3><p>You will receive an email to confirm your subscription. Please click the link in the email to confirm</p>]]></target>
+      </trans-unit>
+      <trans-unit id="Rw9oeMy" resname="Text to display when subscription with an AJAX request was successful">
+        <source>Text to display when subscription with an AJAX request was successful</source>
+        <target>__Text to display when subscription with an AJAX request was successful</target>
+      </trans-unit>
+      <trans-unit id="UIIJrMT" resname="Subject of the message subscribers receive when they sign up">
+        <source>Subject of the message subscribers receive when they sign up</source>
+        <target>__Subject of the message subscribers receive when they sign up</target>
+      </trans-unit>
+      <trans-unit id="UzGhn7a" resname="Message subscribers receive when they sign up">
+        <source>Message subscribers receive when they sign up</source>
+        <target>__Message subscribers receive when they sign up</target>
+      </trans-unit>
+      <trans-unit id="nZvv5Lm" resname="Goodbye from our Newsletter">
+        <source>Goodbye from our Newsletter</source>
+        <target>__Goodbye from our Newsletter</target>
+      </trans-unit>
+      <trans-unit id="q7AEcch" resname="Subject of the message subscribers receive when they unsubscribe">
+        <source>Subject of the message subscribers receive when they unsubscribe</source>
+        <target>__Subject of the message subscribers receive when they unsubscribe</target>
+      </trans-unit>
+      <trans-unit id="ajlB1Iq" resname="Message subscribers receive when they unsubscribe">
+        <source>Message subscribers receive when they unsubscribe</source>
+        <target>__Message subscribers receive when they unsubscribe</target>
+      </trans-unit>
+      <trans-unit id="3FyGGhY" resname="Welcome to our Newsletter">
+        <source>Welcome to our Newsletter</source>
+        <target>__Welcome to our Newsletter</target>
+      </trans-unit>
+      <trans-unit id="F4J4jg5" resname="Subject of the message subscribers receive after confirming their email address">
+        <source>Subject of the message subscribers receive after confirming their email address</source>
+        <target>__Subject of the message subscribers receive after confirming their email address</target>
+      </trans-unit>
+      <trans-unit id="a43aLfW" resname="Message subscribers receive after confirming their email address">
+        <source>Message subscribers receive after confirming their email address</source>
+        <target>__Message subscribers receive after confirming their email address</target>
+      </trans-unit>
+      <trans-unit id="2hEfDJb" resname="[notify] Change of List-Membership details">
+        <source>[notify] Change of List-Membership details</source>
+        <target>__[notify] Change of List-Membership details</target>
+      </trans-unit>
+      <trans-unit id="aLNvbsx" resname="Subject of the message subscribers receive when they have changed their details">
+        <source>Subject of the message subscribers receive when they have changed their details</source>
+        <target>__Subject of the message subscribers receive when they have changed their details</target>
+      </trans-unit>
+      <trans-unit id="vm3uu8q" resname="Message subscribers receive when they have changed their details">
+        <source>Message subscribers receive when they have changed their details</source>
+        <target>__Message subscribers receive when they have changed their details</target>
+      </trans-unit>
+      <trans-unit id="1gidLKy" resname="Part of the message that is sent to their new email address when subscribers change their information, and the email address has changed">
+        <source>Part of the message that is sent to their new email address when subscribers change their information, and the email address has changed</source>
+        <target>__Part of the message that is sent to their new email address when subscribers change their information, and the email address has changed</target>
+      </trans-unit>
+      <trans-unit id="vZTqm0n" resname="Part of the message that is sent to their old email address when subscribers change their information, and the email address has changed">
+        <source>Part of the message that is sent to their old email address when subscribers change their information, and the email address has changed</source>
+        <target>__Part of the message that is sent to their old email address when subscribers change their information, and the email address has changed</target>
+      </trans-unit>
+      <trans-unit id="ZPMa03Y" resname="Your personal location">
+        <source>Your personal location</source>
+        <target>__Your personal location</target>
+      </trans-unit>
+      <trans-unit id="7pCSl.L" resname="Subject of message when subscribers request their personal location">
+        <source>Subject of message when subscribers request their personal location</source>
+        <target>__Subject of message when subscribers request their personal location</target>
+      </trans-unit>
+      <trans-unit id="sKrk4y." resname="Default footer for sending a campaign">
+        <source>Default footer for sending a campaign</source>
+        <target>__Default footer for sending a campaign</target>
+      </trans-unit>
+      <trans-unit id="wzYI.F." resname="Footer used when a message has been forwarded">
+        <source>Footer used when a message has been forwarded</source>
+        <target>__Footer used when a message has been forwarded</target>
+      </trans-unit>
+      <trans-unit id="Lga9p1l" resname="Message to send when they request their personal location">
+        <source>Message to send when they request their personal location</source>
+        <target>__Message to send when they request their personal location</target>
+      </trans-unit>
+      <trans-unit id="oCpuEit" resname="String to always append to remote URL when using send-a-webpage">
+        <source>String to always append to remote URL when using send-a-webpage</source>
+        <target>__String to always append to remote URL when using send-a-webpage</target>
+      </trans-unit>
+      <trans-unit id="rraNHvV" resname="Width for Wordwrap of Text messages">
+        <source>Width for Wordwrap of Text messages</source>
+        <target>__Width for Wordwrap of Text messages</target>
+      </trans-unit>
+      <trans-unit id="_nbiJLv" resname="CSS for HTML messages without a template">
+        <source>CSS for HTML messages without a template</source>
+        <target>__CSS for HTML messages without a template</target>
+      </trans-unit>
+      <trans-unit id="oJygLq3" resname="Domains that only accept text emails, one per line">
+        <source>Domains that only accept text emails, one per line</source>
+        <target>__Domains that only accept text emails, one per line</target>
+      </trans-unit>
+      <trans-unit id="kPeYYfT" resname="last time TLDs were fetched">
+        <source>last time TLDs were fetched</source>
+        <target>__last time TLDs were fetched</target>
+      </trans-unit>
+      <trans-unit id="JEEAFld" resname="Top level domains">
+        <source>Top level domains</source>
+        <target>__Top level domains</target>
+      </trans-unit>
+      <trans-unit id="jq6OT5J" resname="Header of public pages.">
+        <source>Header of public pages.</source>
+        <target>__Header of public pages.</target>
+      </trans-unit>
+      <trans-unit id="8eeI8hY" resname="Footer of public pages">
+        <source>Footer of public pages</source>
+        <target>__Footer of public pages</target>
+      </trans-unit>
+    </body>
+  </file>
 </xliff>

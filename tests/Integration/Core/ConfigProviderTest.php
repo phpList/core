@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Core;
 
-use PhpList\Core\Core\ConfigProvider;
+use PhpList\Core\Core\ParameterProvider;
 use PHPUnit\Framework\TestCase;
 
 class ConfigProviderTest extends TestCase
 {
     public function testReturnsConfigValueIfExists(): void
     {
-        $provider = new ConfigProvider([
+        $provider = new ParameterProvider([
             'site_name' => 'phpList',
             'debug' => true,
         ]);
@@ -22,7 +22,7 @@ class ConfigProviderTest extends TestCase
 
     public function testReturnsDefaultIfKeyMissing(): void
     {
-        $provider = new ConfigProvider([
+        $provider = new ParameterProvider([
             'site_name' => 'phpList',
         ]);
 
@@ -33,7 +33,7 @@ class ConfigProviderTest extends TestCase
     public function testReturnsAllConfig(): void
     {
         $data = ['a' => 1, 'b' => 2];
-        $provider = new ConfigProvider($data);
+        $provider = new ParameterProvider($data);
 
         $this->assertSame($data, $provider->all());
     }

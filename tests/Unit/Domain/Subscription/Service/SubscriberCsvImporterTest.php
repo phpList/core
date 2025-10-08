@@ -19,6 +19,7 @@ use PhpList\Core\Domain\Subscription\Service\SubscriberCsvImporter;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Translation\Translator;
 
 class SubscriberCsvImporterTest extends TestCase
@@ -49,6 +50,7 @@ class SubscriberCsvImporterTest extends TestCase
             attrDefinitionRepository: $this->attributeDefinitionRepositoryMock,
             entityManager: $entityManager,
             translator: new Translator('en'),
+            messageBus: $this->createMock(MessageBusInterface::class),
         );
     }
 

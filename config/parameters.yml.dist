@@ -21,6 +21,8 @@ parameters:
     env(PHPLIST_DATABASE_USER): 'phplist'
     database_password: '%%env(PHPLIST_DATABASE_PASSWORD)%%'
     env(PHPLIST_DATABASE_PASSWORD): 'phplist'
+    database_prefix: '%%env(DATABASE_PREFIX)%%'
+    env(DATABASE_PREFIX): 'phplist_'
 
     # Email configuration
     app.mailer_from: '%%env(MAILER_FROM)%%'
@@ -28,7 +30,9 @@ parameters:
     app.mailer_dsn: '%%env(MAILER_DSN)%%'
     env(MAILER_DSN): 'null://null'
     app.confirmation_url: '%%env(CONFIRMATION_URL)%%'
-    env(CONFIRMATION_URL): 'https://example.com/confirm/'
+    env(CONFIRMATION_URL): 'https://example.com/subscriber/confirm/'
+    app.subscription_confirmation_url: '%%env(SUBSCRIPTION_CONFIRMATION_URL)%%'
+    env(SUBSCRIPTION_CONFIRMATION_URL): 'https://example.com/subscription/confirm/'
     app.password_reset_url: '%%env(PASSWORD_RESET_URL)%%'
     env(PASSWORD_RESET_URL): 'https://example.com/reset/'
 

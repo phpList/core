@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Command;
 
 use DateTimeImmutable;
-use PhpList\Core\Domain\Configuration\Service\Manager\ConfigManager;
+use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
@@ -28,7 +29,7 @@ class ProcessQueueCommand extends Command
     private LockFactory $lockFactory;
     private MessageProcessingPreparator $messagePreparator;
     private CampaignProcessor $campaignProcessor;
-    private ConfigManager $configManager;
+    private ConfigProvider $configProvider;
     private TranslatorInterface $translator;
 
     public function __construct(
@@ -36,7 +37,7 @@ class ProcessQueueCommand extends Command
         LockFactory $lockFactory,
         MessageProcessingPreparator $messagePreparator,
         CampaignProcessor $campaignProcessor,
-        ConfigManager $configManager,
+        ConfigProvider $configProvider,
         TranslatorInterface $translator
     ) {
         parent::__construct();
@@ -44,7 +45,7 @@ class ProcessQueueCommand extends Command
         $this->lockFactory = $lockFactory;
         $this->messagePreparator = $messagePreparator;
         $this->campaignProcessor = $campaignProcessor;
-        $this->configManager = $configManager;
+        $this->configProvider = $configProvider;
         $this->translator = $translator;
     }
 
@@ -60,7 +61,7 @@ class ProcessQueueCommand extends Command
             return Command::FAILURE;
         }
 
-        if ($this->configManager->inMaintenanceMode()) {
+        if ($this->configProvider->isEnabled(ConfigOption::MaintenanceMode)) {
             $output->writeln(
                 $this->translator->trans('The system is in maintenance mode, stopping. Try again later.')
             );

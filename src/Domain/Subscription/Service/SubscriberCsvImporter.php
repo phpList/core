@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Messaging\Message\SubscriptionConfirmationMessage;
 use PhpList\Core\Domain\Subscription\Exception\CouldNotReadUploadedFileException;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
@@ -15,6 +16,7 @@ use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriptionManager;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
@@ -32,6 +34,7 @@ class SubscriberCsvImporter
     private SubscriberAttributeDefinitionRepository $attrDefinitionRepository;
     private EntityManagerInterface $entityManager;
     private TranslatorInterface $translator;
+    private MessageBusInterface $messageBus;
 
     public function __construct(
         SubscriberManager $subscriberManager,
@@ -42,6 +45,7 @@ class SubscriberCsvImporter
         SubscriberAttributeDefinitionRepository $attrDefinitionRepository,
         EntityManagerInterface $entityManager,
         TranslatorInterface $translator,
+        MessageBusInterface $messageBus,
     ) {
         $this->subscriberManager = $subscriberManager;
         $this->attributeManager = $attributeManager;
@@ -51,6 +55,7 @@ class SubscriberCsvImporter
         $this->attrDefinitionRepository = $attrDefinitionRepository;
         $this->entityManager = $entityManager;
         $this->translator = $translator;
+        $this->messageBus = $messageBus;
     }
 
     /**
@@ -83,9 +88,6 @@ class SubscriberCsvImporter
             foreach ($result['valid'] as $dto) {
                 try {
                     $this->processRow($dto, $options, $stats);
-                    if (!$options->dryRun) {
-                        $this->entityManager->flush();
-                    }
                 } catch (Throwable $e) {
                     $stats['errors'][] = $this->translator->trans(
                         'Error processing %email%: %error%',
@@ -149,21 +151,17 @@ class SubscriberCsvImporter
         SubscriberImportOptions $options,
         array &$stats,
     ): void {
-        if (!filter_var($dto->email, FILTER_VALIDATE_EMAIL)) {
-            if ($options->skipInvalidEmail) {
-                $stats['skipped']++;
-                return;
-            } else {
-                $dto->email = 'invalid_' . $dto->email;
-                $dto->sendConfirmation = false;
-            }
-        }
-        $subscriber = $this->subscriberRepository->findOneByEmail($dto->email);
-
-        if ($subscriber && !$options->updateExisting) {
-            $stats['skipped']++;
+        if ($this->handleInvalidEmail($dto, $options, $stats)) {
             return;
         }
+
+        $subscriber = $this->subscriberRepository->findOneByEmail($dto->email);
+        if ($subscriber && !$options->updateExisting) {
+            $stats['skipped']++;
+
+            return;
+        }
+
         if ($subscriber) {
             $this->subscriberManager->updateFromImport($subscriber, $dto);
             $stats['updated']++;
@@ -174,11 +172,63 @@ class SubscriberCsvImporter
 
         $this->processAttributes($subscriber, $dto);
 
-        if (count($options->listIds) > 0) {
+        $addedNewSubscriberToList = false;
+        if (!$subscriber->isBlacklisted() && count($options->listIds) > 0) {
             foreach ($options->listIds as $listId) {
-                $this->subscriptionManager->addSubscriberToAList($subscriber, $listId);
+                $created = $this->subscriptionManager->addSubscriberToAList($subscriber, $listId);
+                if ($created) {
+                    $addedNewSubscriberToList = true;
+                }
             }
         }
+
+        $this->handleFlushAndEmail($subscriber, $options, $dto, $addedNewSubscriberToList);
+    }
+
+    private function handleInvalidEmail(
+        ImportSubscriberDto $dto,
+        SubscriberImportOptions $options,
+        array &$stats
+    ): bool {
+        if (!filter_var($dto->email, FILTER_VALIDATE_EMAIL)) {
+            if ($options->skipInvalidEmail) {
+                $stats['skipped']++;
+
+                return true;
+            }
+            // phpcs:ignore Generic.Commenting.Todo
+            // @todo: check
+            $dto->email = 'invalid_' . $dto->email;
+            $dto->sendConfirmation = false;
+        }
+
+        return false;
+    }
+
+    private function handleFlushAndEmail(
+        Subscriber $subscriber,
+        SubscriberImportOptions $options,
+        ImportSubscriberDto $dto,
+        bool $addedNewSubscriberToList
+    ): void {
+        if (!$options->dryRun) {
+            $this->entityManager->flush();
+            if ($dto->sendConfirmation && $addedNewSubscriberToList) {
+                $this->sendSubscribeEmail($subscriber, $options->listIds);
+            }
+        }
+    }
+
+    private function sendSubscribeEmail(Subscriber $subscriber, array $listIds): void
+    {
+        $message = new SubscriptionConfirmationMessage(
+            email: $subscriber->getEmail(),
+            uniqueId: $subscriber->getUniqueId(),
+            listIds: $listIds,
+            htmlEmail: $subscriber->hasHtmlEmail(),
+        );
+
+        $this->messageBus->dispatch($message);
     }
 
     /**
@@ -190,6 +240,12 @@ class SubscriberCsvImporter
     private function processAttributes(Subscriber $subscriber, ImportSubscriberDto $dto): void
     {
         foreach ($dto->extraAttributes as $key => $value) {
+            $lowerKey = strtolower((string)$key);
+            // Do not import or update sensitive/system fields from CSV
+            if (in_array($lowerKey, ['password', 'modified'], true)) {
+                continue;
+            }
+
             $attributeDefinition = $this->attrDefinitionRepository->findOneByName($key);
             if ($attributeDefinition !== null) {
                 $this->attributeManager->createOrUpdate(
