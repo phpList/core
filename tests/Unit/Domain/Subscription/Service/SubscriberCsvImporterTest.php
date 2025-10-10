@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRep
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\CsvImporter;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriptionManager;
 use PhpList\Core\Domain\Subscription\Service\SubscriberCsvImporter;
@@ -51,6 +52,7 @@ class SubscriberCsvImporterTest extends TestCase
             entityManager: $entityManager,
             translator: new Translator('en'),
             messageBus: $this->createMock(MessageBusInterface::class),
+            subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class),
         );
     }
 

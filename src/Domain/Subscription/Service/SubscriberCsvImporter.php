@@ -25,6 +25,7 @@ use Throwable;
 /**
  * Service for importing subscribers from a CSV file.
  * @SuppressWarnings("CouplingBetweenObjects")
+ * @SuppressWarnings("ExcessiveParameterList")
  */
 class SubscriberCsvImporter
 {
@@ -65,14 +66,14 @@ class SubscriberCsvImporter
 
     /**
      * Import subscribers from a CSV file.
-     *
-     * @param UploadedFile $file The uploaded CSV file
-     * @param SubscriberImportOptions $options
-     * @param ?Administrator $admin
      * @return array Import statistics
+     * @throws CouldNotReadUploadedFileException
      */
-    public function importFromCsv(UploadedFile $file, SubscriberImportOptions $options, ?Administrator $admin = null): array
-    {
+    public function importFromCsv(
+        UploadedFile $file,
+        SubscriberImportOptions $options,
+        ?Administrator $admin = null
+    ): array {
         $stats = [
             'created' => 0,
             'updated' => 0,
@@ -123,8 +124,12 @@ class SubscriberCsvImporter
      * @param UploadedFile $file The uploaded CSV file
      * @return array Import statistics
      */
-    public function importAndUpdateFromCsv(UploadedFile $file, Administrator $admin, ?array $listIds = [], bool $dryRun = false): array
-    {
+    public function importAndUpdateFromCsv(
+        UploadedFile $file,
+        Administrator $admin,
+        ?array $listIds = [],
+        bool $dryRun = false
+    ): array {
         return $this->importFromCsv(
             file: $file,
             options: new SubscriberImportOptions(updateExisting: true, listIds: $listIds, dryRun: $dryRun),
@@ -138,8 +143,12 @@ class SubscriberCsvImporter
      * @param UploadedFile $file The uploaded CSV file
      * @return array Import statistics
      */
-    public function importNewFromCsv(UploadedFile $file,  Administrator $admin, ?array $listIds = [], bool $dryRun = false): array
-    {
+    public function importNewFromCsv(
+        UploadedFile $file,
+        Administrator $admin,
+        ?array $listIds = [],
+        bool $dryRun = false
+    ): array {
         return $this->importFromCsv(
             file: $file,
             options: new SubscriberImportOptions(listIds: $listIds, dryRun: $dryRun),
@@ -161,9 +170,7 @@ class SubscriberCsvImporter
         }
 
         $subscriber = $this->subscriberRepository->findOneByEmail($dto->email);
-        if ($subscriber && !$options->updateExisting) {
-            $stats['skipped']++;
-
+        if ($this->handleSkipCase($subscriber, $options, $stats)) {
             return;
         }
 
@@ -184,7 +191,10 @@ class SubscriberCsvImporter
                 $created = $this->subscriptionManager->addSubscriberToAList($subscriber, $listId);
                 if ($created) {
                     $addedNewSubscriberToList = true;
-                    $listLines[] = sprintf('Subscribed to %s', $created->getSubscriberList()->getName());
+                    $listLines[] = $this->translator->trans(
+                        'Subscribed to %list%',
+                        ['%list%' => $created->getSubscriberList()->getName()]
+                    );
                 }
             }
         }
@@ -212,6 +222,20 @@ class SubscriberCsvImporter
             // @todo: check
             $dto->email = 'invalid_' . $dto->email;
             $dto->sendConfirmation = false;
+        }
+
+        return false;
+    }
+
+    private function handleSkipCase(
+        ?Subscriber $existingSubscriber,
+        SubscriberImportOptions $options,
+        array &$stats
+    ): bool {
+        if ($existingSubscriber && !$options->updateExisting) {
+            $stats['skipped']++;
+
+            return true;
         }
 
         return false;

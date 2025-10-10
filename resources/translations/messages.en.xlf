@@ -684,6 +684,22 @@ Thank you.</target>
         <source>Footer of public pages</source>
         <target>__Footer of public pages</target>
       </trans-unit>
+      <trans-unit id="vmzIZ25" resname="Please confirm your subscription">
+        <source>Please confirm your subscription</source>
+        <target>__Please confirm your subscription</target>
+      </trans-unit>
+      <trans-unit id="rT_b2Tm" resname="No user details changed">
+        <source>No user details changed</source>
+        <target>__No user details changed</target>
+      </trans-unit>
+      <trans-unit id="1R4L28q" resname="%field% = %new% *changed* from %old%">
+        <source>%field% = %new% *changed* from %old%</source>
+        <target>__%field% = %new% *changed* from %old%</target>
+      </trans-unit>
+      <trans-unit id="rns1KOG" resname="Subscribed to %list%">
+        <source>Subscribed to %list%</source>
+        <target>__Subscribed to %list%</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
