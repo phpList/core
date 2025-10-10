@@ -14,6 +14,7 @@ use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use Psr\Log\LoggerInterface;
@@ -35,6 +36,7 @@ class CampaignProcessor
     private MaxProcessTimeLimiter $timeLimiter;
     private RequeueHandler $requeueHandler;
     private TranslatorInterface $translator;
+    private SubscriberHistoryManager $subscriberHistoryManager;
 
     public function __construct(
         RateLimitedCampaignMailer $mailer,
@@ -46,6 +48,7 @@ class CampaignProcessor
         MaxProcessTimeLimiter $timeLimiter,
         RequeueHandler $requeueHandler,
         TranslatorInterface $translator,
+        SubscriberHistoryManager $subscriberHistoryManager,
     ) {
         $this->mailer = $mailer;
         $this->entityManager = $entityManager;
@@ -56,6 +59,7 @@ class CampaignProcessor
         $this->timeLimiter = $timeLimiter;
         $this->requeueHandler = $requeueHandler;
         $this->translator = $translator;
+        $this->subscriberHistoryManager = $subscriberHistoryManager;
     }
 
     public function process(Message $campaign, ?OutputInterface $output = null): void
@@ -89,6 +93,14 @@ class CampaignProcessor
                 $output?->writeln($this->translator->trans('Invalid email, marking unconfirmed: %email%', [
                     '%email%' => $subscriber->getEmail(),
                 ]));
+                $this->subscriberHistoryManager->addHistory(
+                    subscriber: $subscriber,
+                    message: $this->translator->trans('Subscriber marked unconfirmed for invalid email address'),
+                    details: $this->translator->trans(
+                        'Marked unconfirmed while sending campaign %message_id%',
+                        ['%message_id%' => $campaign->getId()]
+                    )
+                );
                 continue;
             }
 

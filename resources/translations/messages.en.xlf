@@ -692,13 +692,21 @@ Thank you.</target>
         <source>No user details changed</source>
         <target>__No user details changed</target>
       </trans-unit>
-      <trans-unit id="1R4L28q" resname="%field% = %new% *changed* from %old%">
+      <trans-unit id="qdTR5bi" resname="%field% = %new% *changed* from %old%">
         <source>%field% = %new% *changed* from %old%</source>
         <target>__%field% = %new% *changed* from %old%</target>
       </trans-unit>
       <trans-unit id="rns1KOG" resname="Subscribed to %list%">
         <source>Subscribed to %list%</source>
         <target>__Subscribed to %list%</target>
+      </trans-unit>
+      <trans-unit id="eXllcQa" resname="Subscriber marked unconfirmed for invalid email address">
+        <source>Subscriber marked unconfirmed for invalid email address</source>
+        <target>__Subscriber marked unconfirmed for invalid email address</target>
+      </trans-unit>
+      <trans-unit id="oY0Gck3" resname="Marked unconfirmed while sending campaign %message_id%">
+        <source>Marked unconfirmed while sending campaign %message_id%</source>
+        <target>__Marked unconfirmed while sending campaign %message_id%</target>
       </trans-unit>
     </body>
   </file>
