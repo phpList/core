@@ -708,6 +708,10 @@ Thank you.</target>
         <source>Marked unconfirmed while sending campaign %message_id%</source>
         <target>__Marked unconfirmed while sending campaign %message_id%</target>
       </trans-unit>
+      <trans-unit id="duYukTn" resname="Update by %admin%">
+        <source>Update by %admin%</source>
+        <target>__Update by %admin%</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

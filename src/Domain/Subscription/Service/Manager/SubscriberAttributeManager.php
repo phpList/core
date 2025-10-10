@@ -9,21 +9,25 @@ use PhpList\Core\Domain\Subscription\Exception\SubscriberAttributeCreationExcept
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SubscriberAttributeManager
 {
     private SubscriberAttributeValueRepository $attributeRepository;
+    private SubscriberAttributeDefinitionRepository $attrDefinitionRepository;
     private EntityManagerInterface $entityManager;
     private TranslatorInterface $translator;
 
     public function __construct(
         SubscriberAttributeValueRepository $attributeRepository,
+        SubscriberAttributeDefinitionRepository $attrDefinitionRepository,
         EntityManagerInterface $entityManager,
         TranslatorInterface $translator,
     ) {
         $this->attributeRepository = $attributeRepository;
+        $this->attrDefinitionRepository = $attrDefinitionRepository;
         $this->entityManager = $entityManager;
         $this->translator = $translator;
     }
@@ -59,5 +63,28 @@ class SubscriberAttributeManager
     public function delete(SubscriberAttributeValue $attribute): void
     {
         $this->attributeRepository->remove($attribute);
+    }
+
+    public function processAttributes(Subscriber $subscriber, array $extraData): void
+    {
+//        $oldAttributesMap = $this->subscriberAttributeProvider->getMappedValues($subscriber);
+
+        foreach ($extraData as $key => $value) {
+            $lowerKey = strtolower((string)$key);
+            if (in_array($lowerKey, ['password', 'modified'], true)) {
+                continue;
+            }
+
+            $attributeDefinition = $this->attrDefinitionRepository->findOneByName($key);
+            if ($attributeDefinition !== null) {
+                $this->createOrUpdate(
+                    subscriber: $subscriber,
+                    definition: $attributeDefinition,
+                    value: $value
+                );
+            }
+        }
+
+//        $newAttributesMap = $this->subscriberAttributeProvider->getMappedValues($subscriber);
     }
 }

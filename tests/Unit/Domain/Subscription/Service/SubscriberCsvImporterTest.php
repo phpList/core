@@ -48,7 +48,6 @@ class SubscriberCsvImporterTest extends TestCase
             subscriptionManager: $subscriptionManagerMock,
             subscriberRepository: $this->subscriberRepositoryMock,
             csvImporter: $this->csvImporterMock,
-            attrDefinitionRepository: $this->attributeDefinitionRepositoryMock,
             entityManager: $entityManager,
             translator: new Translator('en'),
             messageBus: $this->createMock(MessageBusInterface::class),
@@ -122,10 +121,10 @@ class SubscriberCsvImporterTest extends TestCase
 
         $this->attributeManagerMock
             ->expects($this->exactly(2))
-            ->method('createOrUpdate')
+            ->method('processAttributes')
             ->withConsecutive(
-                [$subscriber1, $attributeDefinition, 'John'],
-                [$subscriber2, $attributeDefinition, 'Jane']
+                [$subscriber1, $importDto1],
+                [$subscriber2, $importDto2]
             );
 
         $options = new SubscriberImportOptions();
@@ -158,8 +157,6 @@ class SubscriberCsvImporterTest extends TestCase
             ->with('existing@example.com')
             ->willReturn($existingSubscriber);
 
-        $updatedSubscriber = $this->createMock(Subscriber::class);
-
         $importDto = new ImportSubscriberDto(
             email: 'existing@example.com',
             confirmed: true,
@@ -182,7 +179,7 @@ class SubscriberCsvImporterTest extends TestCase
             ->expects($this->once())
             ->method('updateFromImport')
             ->with($existingSubscriber, $importDto)
-            ->willReturn($updatedSubscriber);
+            ->willReturn([]);
 
         $options = new SubscriberImportOptions(updateExisting: true);
         $result = $this->subject->importFromCsv($uploadedFile, $options);

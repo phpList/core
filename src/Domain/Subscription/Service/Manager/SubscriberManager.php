@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Message\SubscriberConfirmationMessage;
 use PhpList\Core\Domain\Subscription\Model\Dto\CreateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\UpdateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
-use PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService;
 use PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -24,19 +24,22 @@ class SubscriberManager
     private MessageBusInterface $messageBus;
     private SubscriberDeletionService $subscriberDeletionService;
     private TranslatorInterface $translator;
+    private SubscriberHistoryManager $subscriberHistoryManager;
 
     public function __construct(
         SubscriberRepository $subscriberRepository,
         EntityManagerInterface $entityManager,
         MessageBusInterface $messageBus,
         SubscriberDeletionService $subscriberDeletionService,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        SubscriberHistoryManager $subscriberHistoryManager,
     ) {
         $this->subscriberRepository = $subscriberRepository;
         $this->entityManager = $entityManager;
         $this->messageBus = $messageBus;
         $this->subscriberDeletionService = $subscriberDeletionService;
         $this->translator = $translator;
+        $this->subscriberHistoryManager = $subscriberHistoryManager;
     }
 
     public function createSubscriber(CreateSubscriberDto $subscriberDto): Subscriber
@@ -74,7 +77,7 @@ class SubscriberManager
         return $this->subscriberRepository->find($subscriberId);
     }
 
-    public function updateSubscriber(UpdateSubscriberDto $subscriberDto): Subscriber
+    public function updateSubscriber(UpdateSubscriberDto $subscriberDto, Administrator $admin): Subscriber
     {
         /** @var Subscriber $subscriber */
         $subscriber = $this->subscriberRepository->find($subscriberDto->subscriberId);
@@ -86,7 +89,14 @@ class SubscriberManager
         $subscriber->setDisabled($subscriberDto->disabled);
         $subscriber->setExtraData($subscriberDto->additionalData);
 
+        $uow = $this->entityManager->getUnitOfWork();
+        $meta = $this->entityManager->getClassMetadata(Subscriber::class);
+        $uow->computeChangeSet($meta, $subscriber);
+        $changeSet = $uow->getEntityChangeSet($subscriber);
+
         $this->entityManager->flush();
+
+        $this->subscriberHistoryManager->addHistoryFromApi($subscriber, [], $changeSet, $admin);
 
         return $subscriber;
     }

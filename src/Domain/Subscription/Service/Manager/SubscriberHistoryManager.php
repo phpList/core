@@ -58,6 +58,32 @@ class SubscriberHistoryManager
     ): void {
         $headerLine = sprintf("API-v2-import - %s: %s%s", $admin ? 'Admin' : 'CLI', $admin?->getId(), "\n\n");
 
+        $lines = $this->getHistoryLines($updatedData, $listLines);
+
+        $this->addHistory(
+            subscriber: $subscriber,
+            message: 'Import by ' . $admin?->getLoginName(),
+            details: $headerLine . implode(PHP_EOL, $lines) . PHP_EOL
+        );
+    }
+
+    public function addHistoryFromApi(
+        Subscriber $subscriber,
+        array $listLines,
+        array $updatedData,
+        ?Administrator $admin = null,
+    ): void {
+        $lines = $this->getHistoryLines($updatedData, $listLines);
+
+        $this->addHistory(
+            subscriber: $subscriber,
+            message: $this->translator->trans('Update by %admin%', ['%admin%' => $admin->getLoginName()]),
+            details: implode(PHP_EOL, $lines) . PHP_EOL
+        );
+    }
+
+    private function getHistoryLines(array $updatedData, array $listLines): array
+    {
         $lines = [];
         if (empty($updatedData) && empty($listLines)) {
             $lines[] = $this->translator->trans('No user details changed');
@@ -81,10 +107,6 @@ class SubscriberHistoryManager
             }
         }
 
-        $this->addHistory(
-            subscriber: $subscriber,
-            message: 'Import by ' . $admin?->getLoginName(),
-            details: $headerLine . implode(PHP_EOL, $lines) . PHP_EOL
-        );
+        return $lines;
     }
 }

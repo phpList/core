@@ -11,7 +11,6 @@ use PhpList\Core\Domain\Subscription\Exception\CouldNotReadUploadedFileException
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
-use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
@@ -21,7 +20,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
-
+// todo: check if dryRun will work (some function flush)
 /**
  * Service for importing subscribers from a CSV file.
  * @SuppressWarnings("CouplingBetweenObjects")
@@ -34,7 +33,6 @@ class SubscriberCsvImporter
     private SubscriptionManager $subscriptionManager;
     private SubscriberRepository $subscriberRepository;
     private CsvImporter $csvImporter;
-    private SubscriberAttributeDefinitionRepository $attrDefinitionRepository;
     private EntityManagerInterface $entityManager;
     private TranslatorInterface $translator;
     private MessageBusInterface $messageBus;
@@ -46,7 +44,6 @@ class SubscriberCsvImporter
         SubscriptionManager $subscriptionManager,
         SubscriberRepository $subscriberRepository,
         CsvImporter $csvImporter,
-        SubscriberAttributeDefinitionRepository $attrDefinitionRepository,
         EntityManagerInterface $entityManager,
         TranslatorInterface $translator,
         MessageBusInterface $messageBus,
@@ -57,7 +54,6 @@ class SubscriberCsvImporter
         $this->subscriptionManager = $subscriptionManager;
         $this->subscriberRepository = $subscriberRepository;
         $this->csvImporter = $csvImporter;
-        $this->attrDefinitionRepository = $attrDefinitionRepository;
         $this->entityManager = $entityManager;
         $this->translator = $translator;
         $this->messageBus = $messageBus;
@@ -182,7 +178,7 @@ class SubscriberCsvImporter
             $stats['created']++;
         }
 
-        $this->processAttributes($subscriber, $dto);
+        $this->attributeManager->processAttributes($subscriber, $dto->extraAttributes);
 
         $addedNewSubscriberToList = false;
         $listLines = [];
@@ -258,32 +254,6 @@ class SubscriberCsvImporter
                 );
 
                 $this->messageBus->dispatch($message);
-            }
-        }
-    }
-
-    /**
-     * Process subscriber attributes.
-     *
-     * @param Subscriber $subscriber The subscriber
-     * @param ImportSubscriberDto $dto
-     */
-    private function processAttributes(Subscriber $subscriber, ImportSubscriberDto $dto): void
-    {
-        foreach ($dto->extraAttributes as $key => $value) {
-            $lowerKey = strtolower((string)$key);
-            // Do not import or update sensitive/system fields from CSV
-            if (in_array($lowerKey, ['password', 'modified'], true)) {
-                continue;
-            }
-
-            $attributeDefinition = $this->attrDefinitionRepository->findOneByName($key);
-            if ($attributeDefinition !== null) {
-                $this->attributeManager->createOrUpdate(
-                    subscriber: $subscriber,
-                    definition: $attributeDefinition,
-                    value: $value
-                );
             }
         }
     }
