@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Common\ClientIpResolver;
 use PhpList\Core\Domain\Common\SystemInfoCollector;
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberHistoryFilter;
@@ -27,6 +28,7 @@ class SubscriberHistoryManagerTest extends TestCase
             clientIpResolver: $this->createMock(ClientIpResolver::class),
             systemInfoCollector: $this->createMock(SystemInfoCollector::class),
             translator: $this->createMock(TranslatorInterface::class),
+            entityManager: $this->createMock(EntityManagerInterface::class),
         );
     }
 

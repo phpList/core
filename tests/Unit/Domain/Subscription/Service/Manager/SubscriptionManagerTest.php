@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Subscription\Exception\SubscriptionCreationException;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
@@ -21,6 +22,7 @@ class SubscriptionManagerTest extends TestCase
     private SubscriptionRepository&MockObject $subscriptionRepository;
     private SubscriberRepository&MockObject $subscriberRepository;
     private TranslatorInterface&MockObject $translator;
+    private EntityManagerInterface&MockObject $entityManager;
     private SubscriptionManager $manager;
 
     protected function setUp(): void
@@ -29,11 +31,13 @@ class SubscriptionManagerTest extends TestCase
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
         $subscriberListRepository = $this->createMock(SubscriberListRepository::class);
         $this->translator = $this->createMock(TranslatorInterface::class);
+        $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->manager = new SubscriptionManager(
             subscriptionRepository: $this->subscriptionRepository,
             subscriberRepository: $this->subscriberRepository,
             subscriberListRepository: $subscriberListRepository,
             translator: $this->translator,
+            entityManager: $this->entityManager,
         );
     }
 
@@ -45,7 +49,7 @@ class SubscriptionManagerTest extends TestCase
 
         $this->subscriberRepository->method('findOneBy')->with(['email' => $email])->willReturn($subscriber);
         $this->subscriptionRepository->method('findOneBySubscriberListAndSubscriber')->willReturn(null);
-        $this->subscriptionRepository->expects($this->once())->method('save');
+        $this->entityManager->expects($this->once())->method('persist');
 
         $subscriptions = $this->manager->createSubscriptions($list, [$email]);
 
@@ -78,7 +82,7 @@ class SubscriptionManagerTest extends TestCase
             ->with($subscriberList->getId(), $email)
             ->willReturn($subscription);
 
-        $this->subscriptionRepository->expects($this->once())->method('remove')->with($subscription);
+        $this->entityManager->expects($this->once())->method('remove')->with($subscription);
 
         $this->manager->deleteSubscriptions($subscriberList, [$email]);
     }
