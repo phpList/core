@@ -7,6 +7,7 @@ namespace PhpList\Core\Domain\Subscription\Service\Manager;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Message\SubscriberConfirmationMessage;
+use PhpList\Core\Domain\Subscription\Model\Dto\ChangeSetDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\CreateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\UpdateSubscriberDto;
@@ -17,6 +18,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class SubscriberManager
 {
     private SubscriberRepository $subscriberRepository;
@@ -77,6 +81,7 @@ class SubscriberManager
         return $this->subscriberRepository->find($subscriberId);
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function updateSubscriber(UpdateSubscriberDto $subscriberDto, Administrator $admin): Subscriber
     {
         /** @var Subscriber $subscriber */
@@ -92,9 +97,7 @@ class SubscriberManager
         $uow = $this->entityManager->getUnitOfWork();
         $meta = $this->entityManager->getClassMetadata(Subscriber::class);
         $uow->computeChangeSet($meta, $subscriber);
-        $changeSet = $uow->getEntityChangeSet($subscriber);
-
-        $this->entityManager->flush();
+        $changeSet = ChangeSetDto::fromDoctrineChangeSet($uow->getEntityChangeSet($subscriber));
 
         $this->subscriberHistoryManager->addHistoryFromApi($subscriber, [], $changeSet, $admin);
 
@@ -146,7 +149,8 @@ class SubscriberManager
         return $subscriber;
     }
 
-    public function updateFromImport(Subscriber $existingSubscriber, ImportSubscriberDto $subscriberDto): array
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
+    public function updateFromImport(Subscriber $existingSubscriber, ImportSubscriberDto $subscriberDto): ChangeSetDto
     {
         $existingSubscriber->setEmail($subscriberDto->email);
         $existingSubscriber->setConfirmed($subscriberDto->confirmed);
@@ -159,7 +163,7 @@ class SubscriberManager
         $meta = $this->entityManager->getClassMetadata(Subscriber::class);
         $uow->computeChangeSet($meta, $existingSubscriber);
 
-        return $uow->getEntityChangeSet($existingSubscriber);
+        return ChangeSetDto::fromDoctrineChangeSet($uow->getEntityChangeSet($existingSubscriber));
     }
 
     public function decrementBounceCount(Subscriber $subscriber): void

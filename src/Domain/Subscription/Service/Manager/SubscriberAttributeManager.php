@@ -37,6 +37,8 @@ class SubscriberAttributeManager
         SubscriberAttributeDefinition $definition,
         ?string $value = null
     ): SubscriberAttributeValue {
+        // phpcs:ignore Generic.Commenting.Todo
+        // todo: clarify which attributes can be created/updated
         $subscriberAttribute = $this->attributeRepository
             ->findOneBySubscriberAndAttribute($subscriber, $definition);
 
@@ -65,11 +67,9 @@ class SubscriberAttributeManager
         $this->attributeRepository->remove($attribute);
     }
 
-    public function processAttributes(Subscriber $subscriber, array $extraData): void
+    public function processAttributes(Subscriber $subscriber, array $attributeData): void
     {
-//        $oldAttributesMap = $this->subscriberAttributeProvider->getMappedValues($subscriber);
-
-        foreach ($extraData as $key => $value) {
+        foreach ($attributeData as $key => $value) {
             $lowerKey = strtolower((string)$key);
             if (in_array($lowerKey, ['password', 'modified'], true)) {
                 continue;
@@ -84,7 +84,5 @@ class SubscriberAttributeManager
                 );
             }
         }
-
-//        $newAttributesMap = $this->subscriberAttributeProvider->getMappedValues($subscriber);
     }
 }

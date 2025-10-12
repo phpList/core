@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Messaging\Message\SubscriberConfirmationMessage;
 use PhpList\Core\Domain\Subscription\Model\Dto\CreateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -37,6 +38,7 @@ class SubscriberManagerTest extends TestCase
             messageBus: $this->messageBus,
             subscriberDeletionService: $subscriberDeletionService,
             translator: new Translator('en'),
+            subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class)
         );
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Subscription\Model\Dto\ChangeSetDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -123,8 +124,8 @@ class SubscriberCsvImporterTest extends TestCase
             ->expects($this->exactly(2))
             ->method('processAttributes')
             ->withConsecutive(
-                [$subscriber1, $importDto1],
-                [$subscriber2, $importDto2]
+                [$subscriber1],
+                [$subscriber2]
             );
 
         $options = new SubscriberImportOptions();
@@ -179,7 +180,15 @@ class SubscriberCsvImporterTest extends TestCase
             ->expects($this->once())
             ->method('updateFromImport')
             ->with($existingSubscriber, $importDto)
-            ->willReturn([]);
+            ->willReturn(new ChangeSetDto(
+                [
+                    'extra_data' => [null, 'Updated data'],
+                    'confirmed' => [false, true],
+                    'html_email' => [false, true],
+                    'blacklisted' => [true, false],
+                    'disabled' => [true, false],
+                ]
+            ));
 
         $options = new SubscriberImportOptions(updateExisting: true);
         $result = $this->subject->importFromCsv($uploadedFile, $options);

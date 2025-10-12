@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Message\SubscriptionConfirmationMessage;
 use PhpList\Core\Domain\Subscription\Exception\CouldNotReadUploadedFileException;
+use PhpList\Core\Domain\Subscription\Model\Dto\ChangeSetDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -20,8 +21,10 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
-// todo: check if dryRun will work (some function flush)
+
 /**
+ * phpcs:ignore Generic.Commenting.Todo
+ * @todo: check if dryRun will work (some function flush)
  * Service for importing subscribers from a CSV file.
  * @SuppressWarnings("CouplingBetweenObjects")
  * @SuppressWarnings("ExcessiveParameterList")
@@ -171,7 +174,7 @@ class SubscriberCsvImporter
         }
 
         if ($subscriber) {
-            $updatedData = $this->subscriberManager->updateFromImport($subscriber, $dto);
+            $changeSet = $this->subscriberManager->updateFromImport($subscriber, $dto);
             $stats['updated']++;
         } else {
             $subscriber = $this->subscriberManager->createFromImport($dto);
@@ -199,7 +202,12 @@ class SubscriberCsvImporter
             $stats['blacklisted']++;
         }
 
-        $this->subscriberHistoryManager->addHistoryFromImport($subscriber, $listLines, $updatedData ?? [], $admin);
+        $this->subscriberHistoryManager->addHistoryFromImport(
+            subscriber: $subscriber,
+            listLines: $listLines,
+            changeSetDto: $changeSet ?? new ChangeSetDto(),
+            admin: $admin
+        );
         $this->handleFlushAndEmail($subscriber, $options, $dto, $addedNewSubscriberToList);
     }
 

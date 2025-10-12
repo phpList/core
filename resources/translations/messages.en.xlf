@@ -712,6 +712,20 @@ Thank you.</target>
         <source>Update by %admin%</source>
         <target>__Update by %admin%</target>
       </trans-unit>
+      <trans-unit id="7oMcCd6" resname="(no data)">
+        <source>(no data)</source>
+        <target>__(no data)</target>
+      </trans-unit>
+      <trans-unit id="rSZSC.W" resname="%attribute% = %new_value% &#10; changed from %old_value%">
+        <source>%attribute% = %new_value% 
+ changed from %old_value%</source>
+        <target>__%attribute% = %new_value% 
+ changed from %old_value%</target>
+      </trans-unit>
+      <trans-unit id="jkLAivD" resname="No data changed">
+        <source>No data changed</source>
+        <target>__No data changed</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

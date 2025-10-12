@@ -24,6 +24,8 @@ use Throwable;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings(PHPMD.StaticAccess)
+ * @SuppressWarnings(PHPMD.ExcessiveParameterList)
  */
 class CampaignProcessor
 {

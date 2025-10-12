@@ -16,6 +16,7 @@ use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\Processor\CampaignProcessor;
 use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -54,6 +55,7 @@ class CampaignProcessorTest extends TestCase
             timeLimiter: $this->createMock(MaxProcessTimeLimiter::class),
             requeueHandler: $this->createMock(RequeueHandler::class),
             translator: new Translator('en'),
+            subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class),
         );
     }
 
