@@ -93,8 +93,22 @@ class SubscriberCsvImporter
 
             foreach ($result['valid'] as $dto) {
                 try {
-                    $this->processRow($dto, $options, $stats, $admin);
+                    $this->entityManager->beginTransaction();
+
+                    $message = $this->processRow($dto, $options, $stats, $admin);
+
+                    if ($options->dryRun) {
+                        $this->entityManager->rollback();
+                    } else {
+                        $this->entityManager->flush();
+                        $this->entityManager->commit();
+                        if ($message !== null) {
+                            $this->messageBus->dispatch($message);
+                        }
+                    }
                 } catch (Throwable $e) {
+                    $this->entityManager->rollback();
+
                     $stats['errors'][] = $this->translator->trans(
                         'Error processing %email%: %error%',
                         ['%email%' => $dto->email, '%error%' => $e->getMessage()]
@@ -163,14 +177,14 @@ class SubscriberCsvImporter
         SubscriberImportOptions $options,
         array &$stats,
         ?Administrator $admin = null
-    ): void {
+    ): ?SubscriptionConfirmationMessage {
         if ($this->handleInvalidEmail($dto, $options, $stats)) {
-            return;
+            return null;
         }
 
         $subscriber = $this->subscriberRepository->findOneByEmail($dto->email);
         if ($this->handleSkipCase($subscriber, $options, $stats)) {
-            return;
+            return null;
         }
 
         if ($subscriber) {
@@ -208,7 +222,8 @@ class SubscriberCsvImporter
             changeSetDto: $changeSet ?? new ChangeSetDto(),
             admin: $admin
         );
-        $this->handleFlushAndEmail($subscriber, $options, $dto, $addedNewSubscriberToList);
+
+        return $this->prepareConfirmationMessage($subscriber, $options, $dto, $addedNewSubscriberToList);
     }
 
     private function handleInvalidEmail(
@@ -245,24 +260,21 @@ class SubscriberCsvImporter
         return false;
     }
 
-    private function handleFlushAndEmail(
+    private function prepareConfirmationMessage(
         Subscriber $subscriber,
         SubscriberImportOptions $options,
         ImportSubscriberDto $dto,
         bool $addedNewSubscriberToList
-    ): void {
-        if (!$options->dryRun) {
-            $this->entityManager->flush();
-            if ($dto->sendConfirmation && $addedNewSubscriberToList) {
-                $message = new SubscriptionConfirmationMessage(
-                    email: $subscriber->getEmail(),
-                    uniqueId: $subscriber->getUniqueId(),
-                    listIds: $options->listIds,
-                    htmlEmail: $subscriber->hasHtmlEmail(),
-                );
-
-                $this->messageBus->dispatch($message);
-            }
+    ): ?SubscriptionConfirmationMessage {
+        if ($dto->sendConfirmation && $addedNewSubscriberToList) {
+            return new SubscriptionConfirmationMessage(
+                email: $subscriber->getEmail(),
+                uniqueId: $subscriber->getUniqueId(),
+                listIds: $options->listIds,
+                htmlEmail: $subscriber->hasHtmlEmail(),
+            );
         }
+
+        return null;
     }
 }

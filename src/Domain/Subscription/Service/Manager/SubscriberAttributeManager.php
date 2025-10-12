@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Subscription\Exception\SubscriberAttributeCreationException;
+use PhpList\Core\Domain\Subscription\Model\Dto\ChangeSetDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;
@@ -71,7 +72,7 @@ class SubscriberAttributeManager
     {
         foreach ($attributeData as $key => $value) {
             $lowerKey = strtolower((string)$key);
-            if (in_array($lowerKey, ['password', 'modified'], true)) {
+            if (in_array($lowerKey, ChangeSetDto::IGNORED_ATTRIBUTES, true)) {
                 continue;
             }
 

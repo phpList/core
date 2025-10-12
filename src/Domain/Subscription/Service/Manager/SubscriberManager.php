@@ -6,7 +6,6 @@ namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
-use PhpList\Core\Domain\Messaging\Message\SubscriberConfirmationMessage;
 use PhpList\Core\Domain\Subscription\Model\Dto\ChangeSetDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\CreateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
@@ -15,7 +14,6 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -25,7 +23,6 @@ class SubscriberManager
 {
     private SubscriberRepository $subscriberRepository;
     private EntityManagerInterface $entityManager;
-    private MessageBusInterface $messageBus;
     private SubscriberDeletionService $subscriberDeletionService;
     private TranslatorInterface $translator;
     private SubscriberHistoryManager $subscriberHistoryManager;
@@ -33,14 +30,12 @@ class SubscriberManager
     public function __construct(
         SubscriberRepository $subscriberRepository,
         EntityManagerInterface $entityManager,
-        MessageBusInterface $messageBus,
         SubscriberDeletionService $subscriberDeletionService,
         TranslatorInterface $translator,
         SubscriberHistoryManager $subscriberHistoryManager,
     ) {
         $this->subscriberRepository = $subscriberRepository;
         $this->entityManager = $entityManager;
-        $this->messageBus = $messageBus;
         $this->subscriberDeletionService = $subscriberDeletionService;
         $this->translator = $translator;
         $this->subscriberHistoryManager = $subscriberHistoryManager;
@@ -58,22 +53,7 @@ class SubscriberManager
 
         $this->subscriberRepository->save($subscriber);
 
-        if ($subscriberDto->requestConfirmation) {
-            $this->sendConfirmationEmail($subscriber);
-        }
-
         return $subscriber;
-    }
-
-    private function sendConfirmationEmail(Subscriber $subscriber): void
-    {
-        $message = new SubscriberConfirmationMessage(
-            email: $subscriber->getEmail(),
-            uniqueId:$subscriber->getUniqueId(),
-            htmlEmail: $subscriber->hasHtmlEmail()
-        );
-
-        $this->messageBus->dispatch($message);
     }
 
     public function getSubscriberById(int $subscriberId): ?Subscriber
@@ -141,10 +121,6 @@ class SubscriberManager
         $subscriber->setExtraData($subscriberDto->extraData ?? '');
 
         $this->entityManager->persist($subscriber);
-
-        if ($subscriberDto->sendConfirmation) {
-            $this->sendConfirmationEmail($subscriber);
-        }
 
         return $subscriber;
     }
