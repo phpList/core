@@ -72,7 +72,7 @@ class LinkTrackService
             $linkTrack->setUserId($userId);
             $linkTrack->setUrl($url);
 
-            $this->linkTrackRepository->save($linkTrack);
+            $this->linkTrackRepository->persist($linkTrack);
             $savedLinks[] = $linkTrack;
         }
 

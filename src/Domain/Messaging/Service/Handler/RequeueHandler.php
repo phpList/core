@@ -46,7 +46,6 @@ class RequeueHandler
         $schedule->setEmbargo($next);
         $campaign->setSchedule($schedule);
         $campaign->getMetadata()->setStatus(MessageStatus::Submitted);
-        $this->entityManager->flush();
 
         $output?->writeln($this->translator->trans(
             'Requeued campaign; next embargo at %time%',

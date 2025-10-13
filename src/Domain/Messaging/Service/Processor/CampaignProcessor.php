@@ -103,6 +103,7 @@ class CampaignProcessor
                         ['%message_id%' => $campaign->getId()]
                     )
                 );
+                $this->entityManager->flush();
                 continue;
             }
 
@@ -125,6 +126,7 @@ class CampaignProcessor
         }
 
         if ($stoppedEarly && $this->requeueHandler->handle($campaign, $output)) {
+            $this->entityManager->flush();
             return;
         }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Command;
 
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
@@ -31,6 +32,7 @@ class ProcessQueueCommand extends Command
     private CampaignProcessor $campaignProcessor;
     private ConfigProvider $configProvider;
     private TranslatorInterface $translator;
+    private EntityManagerInterface $entityManager;
 
     public function __construct(
         MessageRepository $messageRepository,
@@ -38,7 +40,8 @@ class ProcessQueueCommand extends Command
         MessageProcessingPreparator $messagePreparator,
         CampaignProcessor $campaignProcessor,
         ConfigProvider $configProvider,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        EntityManagerInterface $entityManager,
     ) {
         parent::__construct();
         $this->messageRepository = $messageRepository;
@@ -47,6 +50,7 @@ class ProcessQueueCommand extends Command
         $this->campaignProcessor = $campaignProcessor;
         $this->configProvider = $configProvider;
         $this->translator = $translator;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -73,11 +77,21 @@ class ProcessQueueCommand extends Command
             $this->messagePreparator->ensureSubscribersHaveUuid($output);
             $this->messagePreparator->ensureCampaignsHaveUuid($output);
 
-            $campaigns = $this->messageRepository->getByStatusAndEmbargo(
-                status: MessageStatus::Submitted,
-                embargo: new DateTimeImmutable()
-            );
+            $this->entityManager->flush();
+        } catch (Throwable $throwable) {
+            $output->writeln($throwable->getMessage());
 
+            return Command::FAILURE;
+        } finally {
+            $lock->release();
+        }
+
+        $campaigns = $this->messageRepository->getByStatusAndEmbargo(
+            status: MessageStatus::Submitted,
+            embargo: new DateTimeImmutable()
+        );
+
+        try {
             foreach ($campaigns as $campaign) {
                 $this->campaignProcessor->process($campaign, $output);
             }

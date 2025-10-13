@@ -49,7 +49,6 @@ class MessageProcessingPreparator
             foreach ($subscribersWithoutUuid as $subscriber) {
                 $subscriber->setUniqueId(bin2hex(random_bytes(16)));
             }
-            $this->entityManager->flush();
         }
     }
 
@@ -65,7 +64,6 @@ class MessageProcessingPreparator
             foreach ($campaignsWithoutUuid as $campaign) {
                 $campaign->setUuid(bin2hex(random_bytes(18)));
             }
-            $this->entityManager->flush();
         }
     }
 
