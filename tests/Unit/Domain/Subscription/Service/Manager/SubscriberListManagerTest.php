@@ -36,7 +36,7 @@ class SubscriberListManagerTest extends TestCase
 
         $this->subscriberListRepository
             ->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->isInstanceOf(SubscriberList::class));
 
         $result = $this->manager->createSubscriberList($request, $admin);
