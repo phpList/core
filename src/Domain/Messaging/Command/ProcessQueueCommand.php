@@ -8,15 +8,16 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
-use PhpList\Core\Domain\Messaging\Service\Processor\CampaignProcessor;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
@@ -29,7 +30,7 @@ class ProcessQueueCommand extends Command
     private MessageRepository $messageRepository;
     private LockFactory $lockFactory;
     private MessageProcessingPreparator $messagePreparator;
-    private CampaignProcessor $campaignProcessor;
+    private MessageBusInterface $messageBus;
     private ConfigProvider $configProvider;
     private TranslatorInterface $translator;
     private EntityManagerInterface $entityManager;
@@ -38,7 +39,7 @@ class ProcessQueueCommand extends Command
         MessageRepository $messageRepository,
         LockFactory $lockFactory,
         MessageProcessingPreparator $messagePreparator,
-        CampaignProcessor $campaignProcessor,
+        MessageBusInterface $messageBus,
         ConfigProvider $configProvider,
         TranslatorInterface $translator,
         EntityManagerInterface $entityManager,
@@ -47,7 +48,7 @@ class ProcessQueueCommand extends Command
         $this->messageRepository = $messageRepository;
         $this->lockFactory = $lockFactory;
         $this->messagePreparator = $messagePreparator;
-        $this->campaignProcessor = $campaignProcessor;
+        $this->messageBus = $messageBus;
         $this->configProvider = $configProvider;
         $this->translator = $translator;
         $this->entityManager = $entityManager;
@@ -80,10 +81,9 @@ class ProcessQueueCommand extends Command
             $this->entityManager->flush();
         } catch (Throwable $throwable) {
             $output->writeln($throwable->getMessage());
+            $lock->release();
 
             return Command::FAILURE;
-        } finally {
-            $lock->release();
         }
 
         $campaigns = $this->messageRepository->getByStatusAndEmbargo(
@@ -93,7 +93,8 @@ class ProcessQueueCommand extends Command
 
         try {
             foreach ($campaigns as $campaign) {
-                $this->campaignProcessor->process($campaign, $output);
+                $message = new CampaignProcessorMessage(messageId: $campaign->getId());
+                $this->messageBus->dispatch($message);
             }
         } catch (Throwable $throwable) {
             $output->writeln($throwable->getMessage());

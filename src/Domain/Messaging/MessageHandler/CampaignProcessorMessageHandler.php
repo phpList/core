@@ -2,23 +2,24 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Messaging\Service\Processor;
+namespace PhpList\Core\Domain\Messaging\MessageHandler;
 
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\Model\Message;
-use PhpList\Core\Domain\Messaging\Model\UserMessage;
-use PhpList\Core\Domain\Messaging\Model\Message\UserMessageStatus;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
+use PhpList\Core\Domain\Messaging\Model\Message\UserMessageStatus;
+use PhpList\Core\Domain\Messaging\Model\UserMessage;
+use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
-use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
+use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
+use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
-use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
@@ -27,7 +28,7 @@ use Throwable;
  * @SuppressWarnings(PHPMD.StaticAccess)
  * @SuppressWarnings(PHPMD.ExcessiveParameterList)
  */
-class CampaignProcessor
+class CampaignProcessorMessageHandler
 {
     private RateLimitedCampaignMailer $mailer;
     private EntityManagerInterface $entityManager;
@@ -39,6 +40,7 @@ class CampaignProcessor
     private RequeueHandler $requeueHandler;
     private TranslatorInterface $translator;
     private SubscriberHistoryManager $subscriberHistoryManager;
+    private MessageRepository $messageRepository;
 
     public function __construct(
         RateLimitedCampaignMailer $mailer,
@@ -51,6 +53,7 @@ class CampaignProcessor
         RequeueHandler $requeueHandler,
         TranslatorInterface $translator,
         SubscriberHistoryManager $subscriberHistoryManager,
+        MessageRepository $messageRepository,
     ) {
         $this->mailer = $mailer;
         $this->entityManager = $entityManager;
@@ -62,10 +65,21 @@ class CampaignProcessor
         $this->requeueHandler = $requeueHandler;
         $this->translator = $translator;
         $this->subscriberHistoryManager = $subscriberHistoryManager;
+        $this->messageRepository = $messageRepository;
     }
 
-    public function process(Message $campaign, ?OutputInterface $output = null): void
+    public function __invoke(CampaignProcessorMessage $message): void
     {
+        $campaign = $this->messageRepository->findByIdAndStatus($message->getMessageId(), MessageStatus::Submitted);
+        if (!$campaign) {
+            $this->logger->warning(
+                $this->translator->trans('Campaign not found or not in submitted status'),
+                ['campaign_id' => $message->getMessageId()]
+            );
+
+            return;
+        }
+
         $this->updateMessageStatus($campaign, MessageStatus::Prepared);
         $subscribers = $this->subscriberProvider->getSubscribersForMessage($campaign);
 
@@ -75,7 +89,7 @@ class CampaignProcessor
         $stoppedEarly = false;
 
         foreach ($subscribers as $subscriber) {
-            if ($this->timeLimiter->shouldStop($output)) {
+            if ($this->timeLimiter->shouldStop()) {
                 $stoppedEarly = true;
                 break;
             }
@@ -92,7 +106,7 @@ class CampaignProcessor
             if (!filter_var($subscriber->getEmail(), FILTER_VALIDATE_EMAIL)) {
                 $this->updateUserMessageStatus($userMessage, UserMessageStatus::InvalidEmailAddress);
                 $this->unconfirmSubscriber($subscriber);
-                $output?->writeln($this->translator->trans('Invalid email, marking unconfirmed: %email%', [
+                $this->logger->warning($this->translator->trans('Invalid email, marking unconfirmed: %email%', [
                     '%email%' => $subscriber->getEmail(),
                 ]));
                 $this->subscriberHistoryManager->addHistory(
@@ -119,13 +133,13 @@ class CampaignProcessor
                     'subscriber_id' => $subscriber->getId(),
                     'campaign_id' => $campaign->getId(),
                 ]);
-                $output?->writeln($this->translator->trans('Failed to send to: %email%', [
+                $this->logger->warning($this->translator->trans('Failed to send to: %email%', [
                     '%email%' => $subscriber->getEmail(),
                 ]));
             }
         }
 
-        if ($stoppedEarly && $this->requeueHandler->handle($campaign, $output)) {
+        if ($stoppedEarly && $this->requeueHandler->handle($campaign)) {
             $this->entityManager->flush();
             return;
         }

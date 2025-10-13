@@ -86,4 +86,15 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->getQuery()
             ->getResult();
     }
+
+    public function findByIdAndStatus(int $id, Message\MessageStatus $status)
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.id = :id')
+            ->andWhere('m.status = :status')
+            ->setParameter('id', $id)
+            ->setParameter('status', $status->value)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
