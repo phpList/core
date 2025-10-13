@@ -4,67 +4,69 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Identity\Command;
 
-use Exception;
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Identity\Command\CleanUpOldSessionTokens;
 use PhpList\Core\Domain\Identity\Repository\AdministratorTokenRepository;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
-class CleanUpOldSessionTokensTest extends TestCase
+final class CleanUpOldSessionTokensTest extends TestCase
 {
-    private AdministratorTokenRepository&MockObject $tokenRepository;
-    private CommandTester $commandTester;
-
-    protected function setUp(): void
+    public function testItRemovesAllExpiredTokensAndOutputsSuccess(): void
     {
-        $this->tokenRepository = $this->createMock(AdministratorTokenRepository::class);
+        $repo = $this->createMock(AdministratorTokenRepository::class);
+        $em = $this->createMock(EntityManagerInterface::class);
 
-        $command = new CleanUpOldSessionTokens($this->tokenRepository);
+        $token1 = (object) ['id' => 1];
+        $token2 = (object) ['id' => 2];
+        $expired = [$token1, $token2];
 
-        $application = new Application();
-        $application->add($command);
+        $repo->expects($this->once())
+            ->method('getExpired')
+            ->willReturn($expired);
 
-        $this->commandTester = new CommandTester($command);
+        $removed = [];
+        $em->expects($this->exactly(\count($expired)))
+            ->method('remove')
+            ->willReturnCallback(function (object $o) use (&$removed) {
+                $removed[] = $o;
+            });
+
+        $em->expects($this->once())
+            ->method('flush');
+
+        $command = new CleanUpOldSessionTokens($repo, $em);
+        $tester  = new CommandTester($command);
+
+        $exitCode = $tester->execute([]);
+
+        self::assertSame(Command::SUCCESS, $exitCode);
+
+        $display = $tester->getDisplay();
+        self::assertStringContainsString('Successfully removed 2 expired session token(s).', $display);
+
+        self::assertEqualsCanonicalizing($expired, $removed);
     }
 
-    public function testExecuteSuccessfully(): void
+    public function testItHandlesExceptionsAndOutputsFailure(): void
     {
-        $this->tokenRepository->expects($this->once())
-            ->method('removeExpired')
-            ->willReturn(5);
+        $repo = $this->createMock(AdministratorTokenRepository::class);
+        $em = $this->createMock(EntityManagerInterface::class);
 
-        $this->commandTester->execute([]);
+        $repo->expects($this->once())
+            ->method('getExpired')
+            ->willThrowException(new \RuntimeException('boom'));
 
-        $output = $this->commandTester->getDisplay();
-        $this->assertStringContainsString('Successfully removed 5 expired session token(s)', $output);
-        $this->assertEquals(0, $this->commandTester->getStatusCode());
-    }
+        $em->expects($this->never())->method('remove');
+        $em->expects($this->never())->method('flush');
 
-    public function testExecuteWithNoExpiredTokens(): void
-    {
-        $this->tokenRepository->expects($this->once())
-            ->method('removeExpired')
-            ->willReturn(0);
+        $command = new CleanUpOldSessionTokens($repo, $em);
+        $tester  = new CommandTester($command);
 
-        $this->commandTester->execute([]);
+        $exitCode = $tester->execute([]);
 
-        $output = $this->commandTester->getDisplay();
-        $this->assertStringContainsString('Successfully removed 0 expired session token(s)', $output);
-        $this->assertEquals(0, $this->commandTester->getStatusCode());
-    }
-
-    public function testExecuteWithException(): void
-    {
-        $this->tokenRepository->expects($this->once())
-            ->method('removeExpired')
-            ->willThrowException(new Exception('Test exception'));
-
-        $this->commandTester->execute([]);
-
-        $output = $this->commandTester->getDisplay();
-        $this->assertStringContainsString('Error removing expired session tokens: Test exception', $output);
-        $this->assertEquals(1, $this->commandTester->getStatusCode());
+        self::assertSame(Command::FAILURE, $exitCode);
+        self::assertStringContainsString('Error removing expired session tokens: boom', $tester->getDisplay());
     }
 }
