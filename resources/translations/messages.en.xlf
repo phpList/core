@@ -726,6 +726,10 @@ Thank you.</target>
         <source>No data changed</source>
         <target>__No data changed</target>
       </trans-unit>
+      <trans-unit id="n7nf5lh" resname="Campaign not found or not in submitted status">
+        <source>Campaign not found or not in submitted status</source>
+        <target>__Campaign not found or not in submitted status</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

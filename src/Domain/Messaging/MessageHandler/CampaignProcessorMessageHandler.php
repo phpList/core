@@ -104,39 +104,12 @@ class CampaignProcessorMessageHandler
             $this->userMessageRepository->save($userMessage);
 
             if (!filter_var($subscriber->getEmail(), FILTER_VALIDATE_EMAIL)) {
-                $this->updateUserMessageStatus($userMessage, UserMessageStatus::InvalidEmailAddress);
-                $this->unconfirmSubscriber($subscriber);
-                $this->logger->warning($this->translator->trans('Invalid email, marking unconfirmed: %email%', [
-                    '%email%' => $subscriber->getEmail(),
-                ]));
-                $this->subscriberHistoryManager->addHistory(
-                    subscriber: $subscriber,
-                    message: $this->translator->trans('Subscriber marked unconfirmed for invalid email address'),
-                    details: $this->translator->trans(
-                        'Marked unconfirmed while sending campaign %message_id%',
-                        ['%message_id%' => $campaign->getId()]
-                    )
-                );
+                $this->handleInvalidEmail($userMessage, $subscriber, $campaign);
                 $this->entityManager->flush();
                 continue;
             }
 
-            $processed = $this->messagePreparator->processMessageLinks($campaign, $subscriber->getId());
-
-            try {
-                $email = $this->mailer->composeEmail($processed, $subscriber);
-                $this->mailer->send($email);
-                $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
-            } catch (Throwable $e) {
-                $this->updateUserMessageStatus($userMessage, UserMessageStatus::NotSent);
-                $this->logger->error($e->getMessage(), [
-                    'subscriber_id' => $subscriber->getId(),
-                    'campaign_id' => $campaign->getId(),
-                ]);
-                $this->logger->warning($this->translator->trans('Failed to send to: %email%', [
-                    '%email%' => $subscriber->getEmail(),
-                ]));
-            }
+            $this->handleEmailSending($campaign, $subscriber, $userMessage);
         }
 
         if ($stoppedEarly && $this->requeueHandler->handle($campaign)) {
@@ -165,5 +138,42 @@ class CampaignProcessorMessageHandler
     {
         $userMessage->setStatus($status);
         $this->entityManager->flush();
+    }
+
+    private function handleInvalidEmail(UserMessage $userMessage, Subscriber $subscriber, mixed $campaign): void
+    {
+        $this->updateUserMessageStatus($userMessage, UserMessageStatus::InvalidEmailAddress);
+        $this->unconfirmSubscriber($subscriber);
+        $this->logger->warning($this->translator->trans('Invalid email, marking unconfirmed: %email%', [
+            '%email%' => $subscriber->getEmail(),
+        ]));
+        $this->subscriberHistoryManager->addHistory(
+            subscriber: $subscriber,
+            message: $this->translator->trans('Subscriber marked unconfirmed for invalid email address'),
+            details: $this->translator->trans(
+                'Marked unconfirmed while sending campaign %message_id%',
+                ['%message_id%' => $campaign->getId()]
+            )
+        );
+    }
+
+    private function handleEmailSending(mixed $campaign, Subscriber $subscriber, UserMessage $userMessage): void
+    {
+        $processed = $this->messagePreparator->processMessageLinks($campaign, $subscriber->getId());
+
+        try {
+            $email = $this->mailer->composeEmail($processed, $subscriber);
+            $this->mailer->send($email);
+            $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
+        } catch (Throwable $e) {
+            $this->updateUserMessageStatus($userMessage, UserMessageStatus::NotSent);
+            $this->logger->error($e->getMessage(), [
+                'subscriber_id' => $subscriber->getId(),
+                'campaign_id' => $campaign->getId(),
+            ]);
+            $this->logger->warning($this->translator->trans('Failed to send to: %email%', [
+                '%email%' => $subscriber->getEmail(),
+            ]));
+        }
     }
 }

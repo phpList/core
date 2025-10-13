@@ -21,6 +21,9 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
+/**
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
+ */
 #[AsCommand(
     name: 'phplist:process-queue',
     description: 'Processes the email campaign queue.'
@@ -93,8 +96,7 @@ class ProcessQueueCommand extends Command
 
         try {
             foreach ($campaigns as $campaign) {
-                $message = new CampaignProcessorMessage(messageId: $campaign->getId());
-                $this->messageBus->dispatch($message);
+                $this->messageBus->dispatch(new CampaignProcessorMessage(messageId: $campaign->getId()));
             }
         } catch (Throwable $throwable) {
             $output->writeln($throwable->getMessage());

@@ -163,25 +163,25 @@ class ProcessQueueCommandTest extends TestCase
         $this->messageProcessingPreparator->expects($this->once())
             ->method('ensureCampaignsHaveUuid');
 
-        $campaign1 = $this->createMock(Message::class);
-        $campaign1->method('getId')->willReturn(1);
-        $campaign2 = $this->createMock(Message::class);
-        $campaign2->method('getId')->willReturn(2);
+        $cmp1 = $this->createMock(Message::class);
+        $cmp1->method('getId')->willReturn(1);
+        $cmp2 = $this->createMock(Message::class);
+        $cmp2->method('getId')->willReturn(2);
 
         $this->messageRepository->expects($this->once())
             ->method('getByStatusAndEmbargo')
             ->with($this->anything(), $this->anything())
-            ->willReturn([$campaign1, $campaign2]);
+            ->willReturn([$cmp1, $cmp2]);
 
         $this->messageBus->expects($this->exactly(2))
             ->method('dispatch')
-            ->willReturnCallback(function (CampaignProcessorMessage $message, array $stamps) use ($campaign1, $campaign2) {
+            ->willReturnCallback(function (CampaignProcessorMessage $message, array $stamps) use ($cmp1, $cmp2) {
                 static $call = 0;
                 $call++;
                 if ($call === 1) {
-                    $this->assertEquals($campaign1->getId(), $message->getMessageId());
+                    $this->assertEquals($cmp1->getId(), $message->getMessageId());
                 } else {
-                    $this->assertEquals($campaign2->getId(), $message->getMessageId());
+                    $this->assertEquals($cmp2->getId(), $message->getMessageId());
                 }
                 $this->assertSame([], $stamps);
 
