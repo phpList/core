@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service;
 
-use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
@@ -17,20 +16,17 @@ class MessageProcessingPreparator
     // phpcs:ignore Generic.Commenting.Todo
     // @todo: create functionality to track
     public const LINT_TRACK_ENDPOINT = '/api/v2/link-track';
-    private EntityManagerInterface $entityManager;
     private SubscriberRepository $subscriberRepository;
     private MessageRepository $messageRepository;
     private LinkTrackService $linkTrackService;
     private TranslatorInterface $translator;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
         SubscriberRepository $subscriberRepository,
         MessageRepository $messageRepository,
         LinkTrackService $linkTrackService,
         TranslatorInterface $translator,
     ) {
-        $this->entityManager = $entityManager;
         $this->subscriberRepository = $subscriberRepository;
         $this->messageRepository = $messageRepository;
         $this->linkTrackService = $linkTrackService;

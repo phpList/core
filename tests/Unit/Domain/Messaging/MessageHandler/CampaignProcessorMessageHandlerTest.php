@@ -2,18 +2,21 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Processor;
+namespace PhpList\Core\Tests\Unit\Domain\Messaging\MessageHandler;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
+use PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
+use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
-use PhpList\Core\Domain\Messaging\Service\Processor\CampaignProcessor;
 use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
@@ -21,19 +24,23 @@ use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Translation\Translator;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
-class CampaignProcessorTest extends TestCase
+class CampaignProcessorMessageHandlerTest extends TestCase
 {
     private RateLimitedCampaignMailer|MockObject $mailer;
     private EntityManagerInterface|MockObject $entityManager;
     private SubscriberProvider|MockObject $subscriberProvider;
     private MessageProcessingPreparator|MockObject $messagePreparator;
     private LoggerInterface|MockObject $logger;
-    private OutputInterface|MockObject $output;
-    private CampaignProcessor $campaignProcessor;
+    private CampaignProcessorMessageHandler $handler;
+    private MessageRepository|MockObject $messageRepository;
+    private UserMessageRepository|MockObject $userMessageRepository;
+    private MaxProcessTimeLimiter|MockObject $timeLimiter;
+    private RequeueHandler|MockObject $requeueHandler;
+    private TranslatorInterface|MockObject $translator;
 
     protected function setUp(): void
     {
@@ -42,28 +49,58 @@ class CampaignProcessorTest extends TestCase
         $this->subscriberProvider = $this->createMock(SubscriberProvider::class);
         $this->messagePreparator = $this->createMock(MessageProcessingPreparator::class);
         $this->logger = $this->createMock(LoggerInterface::class);
-        $this->output = $this->createMock(OutputInterface::class);
-        $userMessageRepository = $this->createMock(UserMessageRepository::class);
+        $this->messageRepository = $this->createMock(MessageRepository::class);
+        $this->userMessageRepository = $this->createMock(UserMessageRepository::class);
+        $this->timeLimiter = $this->createMock(MaxProcessTimeLimiter::class);
+        $this->requeueHandler = $this->createMock(RequeueHandler::class);
+        $this->translator = $this->createMock(Translator::class);
 
-        $this->campaignProcessor = new CampaignProcessor(
+        $this->timeLimiter->method('start');
+        $this->timeLimiter->method('shouldStop')->willReturn(false);
+
+        $this->handler = new CampaignProcessorMessageHandler(
             mailer: $this->mailer,
             entityManager: $this->entityManager,
             subscriberProvider: $this->subscriberProvider,
             messagePreparator: $this->messagePreparator,
             logger: $this->logger,
-            userMessageRepository: $userMessageRepository,
-            timeLimiter: $this->createMock(MaxProcessTimeLimiter::class),
-            requeueHandler: $this->createMock(RequeueHandler::class),
-            translator: new Translator('en'),
+            userMessageRepository: $this->userMessageRepository,
+            timeLimiter: $this->timeLimiter,
+            requeueHandler: $this->requeueHandler,
+            translator: $this->translator,
             subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class),
+            messageRepository: $this->messageRepository,
         );
     }
 
-    public function testProcessWithNoSubscribers(): void
+    public function testInvokeWhenCampaignNotFound(): void
+    {
+        $message = new CampaignProcessorMessage(999);
+
+        $this->messageRepository->expects($this->once())
+            ->method('findByIdAndStatus')
+            ->with(999, MessageStatus::Submitted)
+            ->willReturn(null);
+
+        $this->translator->method('trans')->willReturnCallback(fn(string $msg) => $msg);
+
+        $this->logger->expects($this->once())
+            ->method('warning')
+            ->with('Campaign not found or not in submitted status', ['campaign_id' => 999]);
+
+        ($this->handler)($message);
+    }
+
+    public function testInvokeWithNoSubscribers(): void
     {
         $campaign = $this->createCampaignMock();
         $metadata = $this->createMock(MessageMetadata::class);
         $campaign->method('getMetadata')->willReturn($metadata);
+        $campaign->method('getId')->willReturn(1);
+
+        $this->messageRepository->method('findByIdAndStatus')
+            ->with(1, MessageStatus::Submitted)
+            ->willReturn($campaign);
 
         $this->subscriberProvider->expects($this->once())
             ->method('getSubscribersForMessage')
@@ -79,14 +116,19 @@ class CampaignProcessorTest extends TestCase
         $this->mailer->expects($this->never())
             ->method('send');
 
-        $this->campaignProcessor->process($campaign, $this->output);
+        ($this->handler)(new CampaignProcessorMessage(1));
     }
 
-    public function testProcessWithInvalidSubscriberEmail(): void
+    public function testInvokeWithInvalidSubscriberEmail(): void
     {
         $campaign = $this->createCampaignMock();
         $metadata = $this->createMock(MessageMetadata::class);
         $campaign->method('getMetadata')->willReturn($metadata);
+        $campaign->method('getId')->willReturn(1);
+
+        $this->messageRepository->method('findByIdAndStatus')
+            ->with(1, MessageStatus::Submitted)
+            ->willReturn($campaign);
 
         $subscriber = $this->createMock(Subscriber::class);
         $subscriber->method('getEmail')->willReturn('invalid-email');
@@ -109,14 +151,19 @@ class CampaignProcessorTest extends TestCase
         $this->mailer->expects($this->never())
             ->method('send');
 
-        $this->campaignProcessor->process($campaign, $this->output);
+        ($this->handler)(new CampaignProcessorMessage(1));
     }
 
-    public function testProcessWithValidSubscriberEmail(): void
+    public function testInvokeWithValidSubscriberEmail(): void
     {
         $campaign = $this->createCampaignMock();
         $metadata = $this->createMock(MessageMetadata::class);
         $campaign->method('getMetadata')->willReturn($metadata);
+        $campaign->method('getId')->willReturn(1);
+
+        $this->messageRepository->method('findByIdAndStatus')
+            ->with(1, MessageStatus::Submitted)
+            ->willReturn($campaign);
 
         $subscriber = $this->createMock(Subscriber::class);
         $subscriber->method('getEmail')->willReturn('test@example.com');
@@ -156,15 +203,19 @@ class CampaignProcessorTest extends TestCase
         $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
-        $this->campaignProcessor->process($campaign, $this->output);
+        ($this->handler)(new CampaignProcessorMessage(1));
     }
 
-    public function testProcessWithMailerException(): void
+    public function testInvokeWithMailerException(): void
     {
         $campaign = $this->createCampaignMock();
         $metadata = $this->createMock(MessageMetadata::class);
         $campaign->method('getMetadata')->willReturn($metadata);
         $campaign->method('getId')->willReturn(123);
+
+        $this->messageRepository->method('findByIdAndStatus')
+            ->with(123, MessageStatus::Submitted)
+            ->willReturn($campaign);
 
         $subscriber = $this->createMock(Subscriber::class);
         $subscriber->method('getEmail')->willReturn('test@example.com');
@@ -192,24 +243,25 @@ class CampaignProcessorTest extends TestCase
                 'campaign_id' => 123,
             ]);
 
-        $this->output->expects($this->once())
-            ->method('writeln')
-            ->with('Failed to send to: test@example.com');
-
         $metadata->expects($this->atLeastOnce())
             ->method('setStatus');
 
         $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
-        $this->campaignProcessor->process($campaign, $this->output);
+        ($this->handler)(new CampaignProcessorMessage(123));
     }
 
-    public function testProcessWithMultipleSubscribers(): void
+    public function testInvokeWithMultipleSubscribers(): void
     {
         $campaign = $this->createCampaignMock();
         $metadata = $this->createMock(MessageMetadata::class);
         $campaign->method('getMetadata')->willReturn($metadata);
+        $campaign->method('getId')->willReturn(1);
+
+        $this->messageRepository->method('findByIdAndStatus')
+            ->with(1, MessageStatus::Submitted)
+            ->willReturn($campaign);
 
         $subscriber1 = $this->createMock(Subscriber::class);
         $subscriber1->method('getEmail')->willReturn('test1@example.com');
@@ -241,49 +293,7 @@ class CampaignProcessorTest extends TestCase
         $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
-        $this->campaignProcessor->process($campaign, $this->output);
-    }
-
-    public function testProcessWithNullOutput(): void
-    {
-        $campaign = $this->createCampaignMock();
-        $metadata = $this->createMock(MessageMetadata::class);
-        $campaign->method('getMetadata')->willReturn($metadata);
-        $campaign->method('getId')->willReturn(123);
-
-        $subscriber = $this->createMock(Subscriber::class);
-        $subscriber->method('getEmail')->willReturn('test@example.com');
-        $subscriber->method('getId')->willReturn(1);
-
-        $this->subscriberProvider->expects($this->once())
-            ->method('getSubscribersForMessage')
-            ->with($campaign)
-            ->willReturn([$subscriber]);
-
-        $this->messagePreparator->expects($this->once())
-            ->method('processMessageLinks')
-            ->with($campaign, 1)
-            ->willReturn($campaign);
-
-        $exception = new Exception('Test exception');
-        $this->mailer->expects($this->once())
-            ->method('send')
-            ->willThrowException($exception);
-
-        $this->logger->expects($this->once())
-            ->method('error')
-            ->with('Test exception', [
-                'subscriber_id' => 1,
-                'campaign_id' => 123,
-            ]);
-
-        $metadata->expects($this->atLeastOnce())
-            ->method('setStatus');
-
-        $this->entityManager->expects($this->atLeastOnce())
-            ->method('flush');
-
-        $this->campaignProcessor->process($campaign, null);
+        ($this->handler)(new CampaignProcessorMessage(1));
     }
 
     /**

@@ -6,7 +6,6 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Handler;
 
 use DateInterval;
 use DateTime;
-use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageFormat;
@@ -24,13 +23,11 @@ use Symfony\Component\Translation\Translator;
 class RequeueHandlerTest extends TestCase
 {
     private LoggerInterface&MockObject $logger;
-    private EntityManagerInterface&MockObject $em;
     private OutputInterface&MockObject $output;
 
     protected function setUp(): void
     {
         $this->logger = $this->createMock(LoggerInterface::class);
-        $this->em = $this->createMock(EntityManagerInterface::class);
         $this->output = $this->createMock(OutputInterface::class);
     }
 
@@ -56,10 +53,9 @@ class RequeueHandlerTest extends TestCase
 
     public function testReturnsFalseWhenIntervalIsZeroOrNegative(): void
     {
-        $handler = new RequeueHandler($this->logger, $this->em, new Translator('en'));
+        $handler = new RequeueHandler($this->logger, new Translator('en'));
         $message = $this->createMessage(0, null, null);
 
-        $this->em->expects($this->never())->method('flush');
         $this->output->expects($this->never())->method('writeln');
         $this->logger->expects($this->never())->method('info');
 
@@ -71,11 +67,10 @@ class RequeueHandlerTest extends TestCase
 
     public function testReturnsFalseWhenNowIsAfterRequeueUntil(): void
     {
-        $handler = new RequeueHandler($this->logger, $this->em, new Translator('en'));
+        $handler = new RequeueHandler($this->logger, new Translator('en'));
         $past = (new DateTime())->sub(new DateInterval('PT5M'));
         $message = $this->createMessage(5, $past, null);
 
-        $this->em->expects($this->never())->method('flush');
         $this->logger->expects($this->never())->method('info');
 
         $result = $handler->handle($message, $this->output);
@@ -86,12 +81,11 @@ class RequeueHandlerTest extends TestCase
 
     public function testRequeuesFromFutureEmbargoAndSetsSubmittedStatus(): void
     {
-        $handler = new RequeueHandler($this->logger, $this->em, new Translator('en'));
+        $handler = new RequeueHandler($this->logger, new Translator('en'));
         $embargo = (new DateTime())->add(new DateInterval('PT5M'));
         $interval = 10;
         $message = $this->createMessage($interval, null, $embargo);
 
-        $this->em->expects($this->once())->method('flush');
         $this->output->expects($this->once())->method('writeln');
         $this->logger->expects($this->once())->method('info');
 
@@ -108,11 +102,10 @@ class RequeueHandlerTest extends TestCase
 
     public function testRequeuesFromNowWhenEmbargoIsNullOrPast(): void
     {
-        $handler = new RequeueHandler($this->logger, $this->em, new Translator('en'));
+        $handler = new RequeueHandler($this->logger, new Translator('en'));
         $interval = 3;
         $message = $this->createMessage($interval, null, null);
 
-        $this->em->expects($this->once())->method('flush');
         $this->logger->expects($this->once())->method('info');
 
         $before = new DateTime();
@@ -134,14 +127,13 @@ class RequeueHandlerTest extends TestCase
 
     public function testReturnsFalseWhenNextEmbargoExceedsUntil(): void
     {
-        $handler = new RequeueHandler($this->logger, $this->em, new Translator('en'));
+        $handler = new RequeueHandler($this->logger, new Translator('en'));
         $embargo = (new DateTime())->add(new DateInterval('PT1M'));
         $interval = 10;
         // next would be +10, which exceeds until
         $until = (clone $embargo)->add(new DateInterval('PT5M'));
         $message = $this->createMessage($interval, $until, $embargo);
 
-        $this->em->expects($this->never())->method('flush');
         $this->logger->expects($this->never())->method('info');
 
         $result = $handler->handle($message, $this->output);

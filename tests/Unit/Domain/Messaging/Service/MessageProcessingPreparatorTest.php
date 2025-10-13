@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
 
-use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
@@ -20,7 +19,6 @@ use Symfony\Component\Translation\Translator;
 
 class MessageProcessingPreparatorTest extends TestCase
 {
-    private EntityManagerInterface&MockObject $entityManager;
     private SubscriberRepository&MockObject $subscriberRepository;
     private MessageRepository&MockObject $messageRepository;
     private LinkTrackService&MockObject $linkTrackService;
@@ -29,14 +27,12 @@ class MessageProcessingPreparatorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
         $this->messageRepository = $this->createMock(MessageRepository::class);
         $this->linkTrackService = $this->createMock(LinkTrackService::class);
         $this->output = $this->createMock(OutputInterface::class);
 
         $this->preparator = new MessageProcessingPreparator(
-            entityManager: $this->entityManager,
             subscriberRepository: $this->subscriberRepository,
             messageRepository: $this->messageRepository,
             linkTrackService: $this->linkTrackService,
@@ -52,9 +48,6 @@ class MessageProcessingPreparatorTest extends TestCase
 
         $this->output->expects($this->never())
             ->method('writeln');
-
-        $this->entityManager->expects($this->never())
-            ->method('flush');
 
         $this->preparator->ensureSubscribersHaveUuid($this->output);
     }
@@ -82,9 +75,6 @@ class MessageProcessingPreparatorTest extends TestCase
             ->method('setUniqueId')
             ->with($this->isType('string'));
 
-        $this->entityManager->expects($this->once())
-            ->method('flush');
-
         $this->preparator->ensureSubscribersHaveUuid($this->output);
     }
 
@@ -96,9 +86,6 @@ class MessageProcessingPreparatorTest extends TestCase
 
         $this->output->expects($this->never())
             ->method('writeln');
-
-        $this->entityManager->expects($this->never())
-            ->method('flush');
 
         $this->preparator->ensureCampaignsHaveUuid($this->output);
     }
@@ -125,9 +112,6 @@ class MessageProcessingPreparatorTest extends TestCase
         $campaign2->expects($this->once())
             ->method('setUuid')
             ->with($this->isType('string'));
-
-        $this->entityManager->expects($this->once())
-            ->method('flush');
 
         $this->preparator->ensureCampaignsHaveUuid($this->output);
     }
