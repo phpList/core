@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Subscription\Exception\SubscriptionCreationException;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
@@ -19,17 +20,20 @@ class SubscriptionManager
     private SubscriberRepository $subscriberRepository;
     private SubscriberListRepository $subscriberListRepository;
     private TranslatorInterface $translator;
+    private EntityManagerInterface $entityManager;
 
     public function __construct(
         SubscriptionRepository $subscriptionRepository,
         SubscriberRepository $subscriberRepository,
         SubscriberListRepository $subscriberListRepository,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        EntityManagerInterface $entityManager
     ) {
         $this->subscriptionRepository = $subscriptionRepository;
         $this->subscriberRepository = $subscriberRepository;
         $this->subscriberListRepository = $subscriberListRepository;
         $this->translator = $translator;
+        $this->entityManager = $entityManager;
     }
 
     public function addSubscriberToAList(Subscriber $subscriber, int $listId): ?Subscription
@@ -49,7 +53,7 @@ class SubscriptionManager
         $subscription->setSubscriber($subscriber);
         $subscription->setSubscriberList($subscriberList);
 
-        $this->subscriptionRepository->save($subscription);
+        $this->entityManager->persist($subscription);
 
         return $subscription;
     }
@@ -83,7 +87,7 @@ class SubscriptionManager
         $subscription->setSubscriber($subscriber);
         $subscription->setSubscriberList($subscriberList);
 
-        $this->subscriptionRepository->save($subscription);
+        $this->entityManager->persist($subscription);
 
         return $subscription;
     }
@@ -111,7 +115,7 @@ class SubscriptionManager
             throw new SubscriptionCreationException($message, 404);
         }
 
-        $this->subscriptionRepository->remove($subscription);
+        $this->entityManager->remove($subscription);
     }
 
     /** @return Subscriber[] */

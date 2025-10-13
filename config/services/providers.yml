@@ -27,3 +27,6 @@ services:
     autowire: true
     arguments:
       $cache: '@Psr\SimpleCache\CacheInterface'
+
+  PhpList\Core\Domain\Subscription\Service\Provider\SubscriberAttributeChangeSetProvider:
+    autowire: true

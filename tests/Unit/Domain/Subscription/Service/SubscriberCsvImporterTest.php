@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Subscription\Model\Dto\ChangeSetDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -13,6 +14,7 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRep
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\CsvImporter;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriptionManager;
 use PhpList\Core\Domain\Subscription\Service\SubscriberCsvImporter;
@@ -47,10 +49,10 @@ class SubscriberCsvImporterTest extends TestCase
             subscriptionManager: $subscriptionManagerMock,
             subscriberRepository: $this->subscriberRepositoryMock,
             csvImporter: $this->csvImporterMock,
-            attrDefinitionRepository: $this->attributeDefinitionRepositoryMock,
             entityManager: $entityManager,
             translator: new Translator('en'),
             messageBus: $this->createMock(MessageBusInterface::class),
+            subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class),
         );
     }
 
@@ -120,10 +122,10 @@ class SubscriberCsvImporterTest extends TestCase
 
         $this->attributeManagerMock
             ->expects($this->exactly(2))
-            ->method('createOrUpdate')
+            ->method('processAttributes')
             ->withConsecutive(
-                [$subscriber1, $attributeDefinition, 'John'],
-                [$subscriber2, $attributeDefinition, 'Jane']
+                [$subscriber1],
+                [$subscriber2]
             );
 
         $options = new SubscriberImportOptions();
@@ -156,8 +158,6 @@ class SubscriberCsvImporterTest extends TestCase
             ->with('existing@example.com')
             ->willReturn($existingSubscriber);
 
-        $updatedSubscriber = $this->createMock(Subscriber::class);
-
         $importDto = new ImportSubscriberDto(
             email: 'existing@example.com',
             confirmed: true,
@@ -180,7 +180,15 @@ class SubscriberCsvImporterTest extends TestCase
             ->expects($this->once())
             ->method('updateFromImport')
             ->with($existingSubscriber, $importDto)
-            ->willReturn($updatedSubscriber);
+            ->willReturn(new ChangeSetDto(
+                [
+                    'extra_data' => [null, 'Updated data'],
+                    'confirmed' => [false, true],
+                    'html_email' => [false, true],
+                    'blacklisted' => [true, false],
+                    'disabled' => [true, false],
+                ]
+            ));
 
         $options = new SubscriberImportOptions(updateExisting: true);
         $result = $this->subject->importFromCsv($uploadedFile, $options);

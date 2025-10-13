@@ -684,6 +684,48 @@ Thank you.</target>
         <source>Footer of public pages</source>
         <target>__Footer of public pages</target>
       </trans-unit>
+      <trans-unit id="vmzIZ25" resname="Please confirm your subscription">
+        <source>Please confirm your subscription</source>
+        <target>__Please confirm your subscription</target>
+      </trans-unit>
+      <trans-unit id="rT_b2Tm" resname="No user details changed">
+        <source>No user details changed</source>
+        <target>__No user details changed</target>
+      </trans-unit>
+      <trans-unit id="qdTR5bi" resname="%field% = %new% *changed* from %old%">
+        <source>%field% = %new% *changed* from %old%</source>
+        <target>__%field% = %new% *changed* from %old%</target>
+      </trans-unit>
+      <trans-unit id="rns1KOG" resname="Subscribed to %list%">
+        <source>Subscribed to %list%</source>
+        <target>__Subscribed to %list%</target>
+      </trans-unit>
+      <trans-unit id="eXllcQa" resname="Subscriber marked unconfirmed for invalid email address">
+        <source>Subscriber marked unconfirmed for invalid email address</source>
+        <target>__Subscriber marked unconfirmed for invalid email address</target>
+      </trans-unit>
+      <trans-unit id="oY0Gck3" resname="Marked unconfirmed while sending campaign %message_id%">
+        <source>Marked unconfirmed while sending campaign %message_id%</source>
+        <target>__Marked unconfirmed while sending campaign %message_id%</target>
+      </trans-unit>
+      <trans-unit id="duYukTn" resname="Update by %admin%">
+        <source>Update by %admin%</source>
+        <target>__Update by %admin%</target>
+      </trans-unit>
+      <trans-unit id="7oMcCd6" resname="(no data)">
+        <source>(no data)</source>
+        <target>__(no data)</target>
+      </trans-unit>
+      <trans-unit id="rSZSC.W" resname="%attribute% = %new_value% &#10; changed from %old_value%">
+        <source>%attribute% = %new_value% 
+ changed from %old_value%</source>
+        <target>__%attribute% = %new_value% 
+ changed from %old_value%</target>
+      </trans-unit>
+      <trans-unit id="jkLAivD" resname="No data changed">
+        <source>No data changed</source>
+        <target>__No data changed</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

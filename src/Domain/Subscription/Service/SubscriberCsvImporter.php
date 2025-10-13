@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Message\SubscriptionConfirmationMessage;
 use PhpList\Core\Domain\Subscription\Exception\CouldNotReadUploadedFileException;
+use PhpList\Core\Domain\Subscription\Model\Dto\ChangeSetDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
-use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriptionManager;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -21,8 +23,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
 /**
+ * phpcs:ignore Generic.Commenting.Todo
+ * @todo: check if dryRun will work (some function flush)
  * Service for importing subscribers from a CSV file.
  * @SuppressWarnings("CouplingBetweenObjects")
+ * @SuppressWarnings("ExcessiveParameterList")
  */
 class SubscriberCsvImporter
 {
@@ -31,10 +36,10 @@ class SubscriberCsvImporter
     private SubscriptionManager $subscriptionManager;
     private SubscriberRepository $subscriberRepository;
     private CsvImporter $csvImporter;
-    private SubscriberAttributeDefinitionRepository $attrDefinitionRepository;
     private EntityManagerInterface $entityManager;
     private TranslatorInterface $translator;
     private MessageBusInterface $messageBus;
+    private SubscriberHistoryManager $subscriberHistoryManager;
 
     public function __construct(
         SubscriberManager $subscriberManager,
@@ -42,36 +47,37 @@ class SubscriberCsvImporter
         SubscriptionManager $subscriptionManager,
         SubscriberRepository $subscriberRepository,
         CsvImporter $csvImporter,
-        SubscriberAttributeDefinitionRepository $attrDefinitionRepository,
         EntityManagerInterface $entityManager,
         TranslatorInterface $translator,
         MessageBusInterface $messageBus,
+        SubscriberHistoryManager $subscriberHistoryManager,
     ) {
         $this->subscriberManager = $subscriberManager;
         $this->attributeManager = $attributeManager;
         $this->subscriptionManager = $subscriptionManager;
         $this->subscriberRepository = $subscriberRepository;
         $this->csvImporter = $csvImporter;
-        $this->attrDefinitionRepository = $attrDefinitionRepository;
         $this->entityManager = $entityManager;
         $this->translator = $translator;
         $this->messageBus = $messageBus;
+        $this->subscriberHistoryManager = $subscriberHistoryManager;
     }
 
     /**
      * Import subscribers from a CSV file.
-     *
-     * @param UploadedFile $file The uploaded CSV file
-     * @param SubscriberImportOptions $options
      * @return array Import statistics
-     * @throws CouldNotReadUploadedFileException When the uploaded file cannot be read during import
+     * @throws CouldNotReadUploadedFileException
      */
-    public function importFromCsv(UploadedFile $file, SubscriberImportOptions $options): array
-    {
+    public function importFromCsv(
+        UploadedFile $file,
+        SubscriberImportOptions $options,
+        ?Administrator $admin = null
+    ): array {
         $stats = [
             'created' => 0,
             'updated' => 0,
             'skipped' => 0,
+            'blacklisted' => 0,
             'errors' => [],
         ];
 
@@ -87,8 +93,22 @@ class SubscriberCsvImporter
 
             foreach ($result['valid'] as $dto) {
                 try {
-                    $this->processRow($dto, $options, $stats);
+                    $this->entityManager->beginTransaction();
+
+                    $message = $this->processRow($dto, $options, $stats, $admin);
+
+                    if ($options->dryRun) {
+                        $this->entityManager->rollback();
+                    } else {
+                        $this->entityManager->flush();
+                        $this->entityManager->commit();
+                        if ($message !== null) {
+                            $this->messageBus->dispatch($message);
+                        }
+                    }
                 } catch (Throwable $e) {
+                    $this->entityManager->rollback();
+
                     $stats['errors'][] = $this->translator->trans(
                         'Error processing %email%: %error%',
                         ['%email%' => $dto->email, '%error%' => $e->getMessage()]
@@ -117,11 +137,16 @@ class SubscriberCsvImporter
      * @param UploadedFile $file The uploaded CSV file
      * @return array Import statistics
      */
-    public function importAndUpdateFromCsv(UploadedFile $file, ?array $listIds = [], bool $dryRun = false): array
-    {
+    public function importAndUpdateFromCsv(
+        UploadedFile $file,
+        Administrator $admin,
+        ?array $listIds = [],
+        bool $dryRun = false
+    ): array {
         return $this->importFromCsv(
             file: $file,
-            options: new SubscriberImportOptions(updateExisting: true, listIds: $listIds, dryRun: $dryRun)
+            options: new SubscriberImportOptions(updateExisting: true, listIds: $listIds, dryRun: $dryRun),
+            admin: $admin,
         );
     }
 
@@ -131,58 +156,74 @@ class SubscriberCsvImporter
      * @param UploadedFile $file The uploaded CSV file
      * @return array Import statistics
      */
-    public function importNewFromCsv(UploadedFile $file, ?array $listIds = [], bool $dryRun = false): array
-    {
+    public function importNewFromCsv(
+        UploadedFile $file,
+        Administrator $admin,
+        ?array $listIds = [],
+        bool $dryRun = false
+    ): array {
         return $this->importFromCsv(
             file: $file,
-            options: new SubscriberImportOptions(listIds: $listIds, dryRun: $dryRun)
+            options: new SubscriberImportOptions(listIds: $listIds, dryRun: $dryRun),
+            admin: $admin,
         );
     }
 
     /**
      * Process a single row from the CSV file.
-     *
-     * @param ImportSubscriberDto $dto
-     * @param SubscriberImportOptions $options
-     * @param array $stats Statistics to update
      */
     private function processRow(
         ImportSubscriberDto $dto,
         SubscriberImportOptions $options,
         array &$stats,
-    ): void {
+        ?Administrator $admin = null
+    ): ?SubscriptionConfirmationMessage {
         if ($this->handleInvalidEmail($dto, $options, $stats)) {
-            return;
+            return null;
         }
 
         $subscriber = $this->subscriberRepository->findOneByEmail($dto->email);
-        if ($subscriber && !$options->updateExisting) {
-            $stats['skipped']++;
-
-            return;
+        if ($this->handleSkipCase($subscriber, $options, $stats)) {
+            return null;
         }
 
         if ($subscriber) {
-            $this->subscriberManager->updateFromImport($subscriber, $dto);
+            $changeSet = $this->subscriberManager->updateFromImport($subscriber, $dto);
             $stats['updated']++;
         } else {
             $subscriber = $this->subscriberManager->createFromImport($dto);
             $stats['created']++;
         }
 
-        $this->processAttributes($subscriber, $dto);
+        $this->attributeManager->processAttributes($subscriber, $dto->extraAttributes);
 
         $addedNewSubscriberToList = false;
+        $listLines = [];
         if (!$subscriber->isBlacklisted() && count($options->listIds) > 0) {
             foreach ($options->listIds as $listId) {
                 $created = $this->subscriptionManager->addSubscriberToAList($subscriber, $listId);
                 if ($created) {
                     $addedNewSubscriberToList = true;
+                    $listLines[] = $this->translator->trans(
+                        'Subscribed to %list%',
+                        ['%list%' => $created->getSubscriberList()->getName()]
+                    );
                 }
             }
         }
 
-        $this->handleFlushAndEmail($subscriber, $options, $dto, $addedNewSubscriberToList);
+        if ($subscriber->isBlacklisted()) {
+            $stats['blacklisted']++;
+        }
+
+        $this->subscriberHistoryManager->addHistoryFromImport(
+            subscriber: $subscriber,
+            listLines: $listLines,
+            changeSetDto: $changeSet ?? new ChangeSetDto(),
+            admin: $admin
+        );
+
+        return $this->prepareConfirmationMessage($subscriber, $options, $dto, $addedNewSubscriberToList);
     }
 
     private function handleInvalidEmail(
@@ -205,55 +246,35 @@ class SubscriberCsvImporter
         return false;
     }
 
-    private function handleFlushAndEmail(
+    private function handleSkipCase(
+        ?Subscriber $existingSubscriber,
+        SubscriberImportOptions $options,
+        array &$stats
+    ): bool {
+        if ($existingSubscriber && !$options->updateExisting) {
+            $stats['skipped']++;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function prepareConfirmationMessage(
         Subscriber $subscriber,
         SubscriberImportOptions $options,
         ImportSubscriberDto $dto,
         bool $addedNewSubscriberToList
-    ): void {
-        if (!$options->dryRun) {
-            $this->entityManager->flush();
-            if ($dto->sendConfirmation && $addedNewSubscriberToList) {
-                $this->sendSubscribeEmail($subscriber, $options->listIds);
-            }
+    ): ?SubscriptionConfirmationMessage {
+        if ($dto->sendConfirmation && $addedNewSubscriberToList) {
+            return new SubscriptionConfirmationMessage(
+                email: $subscriber->getEmail(),
+                uniqueId: $subscriber->getUniqueId(),
+                listIds: $options->listIds,
+                htmlEmail: $subscriber->hasHtmlEmail(),
+            );
         }
-    }
 
-    private function sendSubscribeEmail(Subscriber $subscriber, array $listIds): void
-    {
-        $message = new SubscriptionConfirmationMessage(
-            email: $subscriber->getEmail(),
-            uniqueId: $subscriber->getUniqueId(),
-            listIds: $listIds,
-            htmlEmail: $subscriber->hasHtmlEmail(),
-        );
-
-        $this->messageBus->dispatch($message);
-    }
-
-    /**
-     * Process subscriber attributes.
-     *
-     * @param Subscriber $subscriber The subscriber
-     * @param ImportSubscriberDto $dto
-     */
-    private function processAttributes(Subscriber $subscriber, ImportSubscriberDto $dto): void
-    {
-        foreach ($dto->extraAttributes as $key => $value) {
-            $lowerKey = strtolower((string)$key);
-            // Do not import or update sensitive/system fields from CSV
-            if (in_array($lowerKey, ['password', 'modified'], true)) {
-                continue;
-            }
-
-            $attributeDefinition = $this->attrDefinitionRepository->findOneByName($key);
-            if ($attributeDefinition !== null) {
-                $this->attributeManager->createOrUpdate(
-                    subscriber: $subscriber,
-                    definition: $attributeDefinition,
-                    value: $value
-                );
-            }
-        }
+        return null;
     }
 }
