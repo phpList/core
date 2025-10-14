@@ -146,7 +146,7 @@ class AdministratorTokenRepositoryTest extends WebTestCase
         $numberOfModelsBeforeRemove = count($allModels);
         $firstModel = $allModels[0];
 
-        $this->repository->remove($firstModel);
+        $this->repository->delete($firstModel);
 
         $numberOfModelsAfterRemove = count($this->repository->findAll());
         self::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);

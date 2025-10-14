@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Messaging\MessageHandler;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
+use PhpList\Core\Domain\Messaging\Message\SyncCampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Model\Message\UserMessageStatus;
@@ -20,6 +21,7 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
@@ -28,6 +30,7 @@ use Throwable;
  * @SuppressWarnings(PHPMD.StaticAccess)
  * @SuppressWarnings(PHPMD.ExcessiveParameterList)
  */
+#[AsMessageHandler]
 class CampaignProcessorMessageHandler
 {
     private RateLimitedCampaignMailer $mailer;
@@ -68,7 +71,7 @@ class CampaignProcessorMessageHandler
         $this->messageRepository = $messageRepository;
     }
 
-    public function __invoke(CampaignProcessorMessage $message): void
+    public function __invoke(CampaignProcessorMessage|SyncCampaignProcessorMessage $message): void
     {
         $campaign = $this->messageRepository->findByIdAndStatus($message->getMessageId(), MessageStatus::Submitted);
         if (!$campaign) {

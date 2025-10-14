@@ -29,3 +29,5 @@ framework:
             'PhpList\Core\Domain\Messaging\Message\SubscriptionConfirmationMessage': async_email
             'PhpList\Core\Domain\Messaging\Message\PasswordResetMessage': async_email
             'PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage': async_email
+            'PhpList\Core\Domain\Messaging\Message\SyncCampaignProcessorMessage': sync
+
