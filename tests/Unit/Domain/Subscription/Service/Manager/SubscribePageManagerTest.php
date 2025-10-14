@@ -42,7 +42,7 @@ class SubscribePageManagerTest extends TestCase
         $owner = new Administrator();
         $this->pageRepository
             ->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->isInstanceOf(SubscribePage::class));
 
         $page = $this->manager->createPage('My Page', true, $owner);
@@ -91,7 +91,7 @@ class SubscribePageManagerTest extends TestCase
             ->setOwner($originalOwner);
 
         $this->entityManager
-            ->expects($this->once())
+            ->expects($this->never())
             ->method('flush');
 
         $updated = $this->manager->updatePage($page, title: 'New Title', active: true, owner: $newOwner);
@@ -111,7 +111,7 @@ class SubscribePageManagerTest extends TestCase
             ->setOwner($owner);
 
         $this->entityManager
-            ->expects($this->once())
+            ->expects($this->never())
             ->method('flush');
 
         $updated = $this->manager->updatePage(page: $page, title: null, active: null, owner: null);
@@ -121,14 +121,14 @@ class SubscribePageManagerTest extends TestCase
         $this->assertSame($owner, $updated->getOwner());
     }
 
-    public function testSetActiveSetsFlagAndFlushes(): void
+    public function testSetActiveSetsFlagButNDoesotFlush(): void
     {
         $page = (new SubscribePage())
             ->setTitle('Any')
             ->setActive(false);
 
         $this->entityManager
-            ->expects($this->once())
+            ->expects($this->never())
             ->method('flush');
 
         $this->manager->setActive($page, true);

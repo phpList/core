@@ -46,9 +46,14 @@ abstract class AbstractRepository extends EntityRepository
      *
      * @return void
      */
-    public function remove(DomainModel $model): void
+    public function delete(DomainModel $model): void
     {
         $this->getEntityManager()->remove($model);
         $this->getEntityManager()->flush();
+    }
+
+    public function remove(DomainModel $model): void
+    {
+        $this->getEntityManager()->remove($model);
     }
 }
