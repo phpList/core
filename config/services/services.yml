@@ -31,7 +31,7 @@ services:
     autoconfigure: true
     public: true
 
-  PhpList\Core\Domain\Messaging\Service\Processor\CampaignProcessor:
+  PhpList\Core\Bounce\Service\Processor\CampaignProcessor:
     autowire: true
     autoconfigure: true
     public: true
@@ -52,7 +52,7 @@ services:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Messaging\Service\ConsecutiveBounceHandler:
+  PhpList\Core\Bounce\Service\ConsecutiveBounceHandler:
     autowire: true
     autoconfigure: true
     arguments:
@@ -61,7 +61,7 @@ services:
 
   Webklex\PHPIMAP\ClientManager: ~
 
-  PhpList\Core\Domain\Messaging\Service\WebklexImapClientFactory:
+  PhpList\Core\Bounce\Service\WebklexImapClientFactory:
     autowire: true
     autoconfigure: true
     arguments:
@@ -78,21 +78,21 @@ services:
       $username: '%imap_bounce.email%'
       $password: '%imap_bounce.password%'
 
-  PhpList\Core\Domain\Messaging\Service\NativeBounceProcessingService:
+  PhpList\Core\Bounce\Service\NativeBounceProcessingService:
     autowire: true
     autoconfigure: true
     arguments:
       $purgeProcessed: '%imap_bounce.purge%'
       $purgeUnprocessed: '%imap_bounce.purge_unprocessed%'
 
-  PhpList\Core\Domain\Messaging\Service\WebklexBounceProcessingService:
+  PhpList\Core\Bounce\Service\WebklexBounceProcessingService:
     autowire: true
     autoconfigure: true
     arguments:
       $purgeProcessed: '%imap_bounce.purge%'
       $purgeUnprocessed: '%imap_bounce.purge_unprocessed%'
 
-  PhpList\Core\Domain\Messaging\Service\LockService:
+  PhpList\Core\Bounce\Service\LockService:
     autowire: true
     autoconfigure: true
 
@@ -100,12 +100,12 @@ services:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Messaging\Service\MessageParser:
+  PhpList\Core\Bounce\Service\MessageParser:
     autowire: true
     autoconfigure: true
 
   _instanceof:
-    PhpList\Core\Domain\Messaging\Service\Handler\BounceActionHandlerInterface:
+    PhpList\Core\Bounce\Service\Handler\BounceActionHandlerInterface:
       tags:
         - { name: 'phplist.bounce_action_handler' }
 

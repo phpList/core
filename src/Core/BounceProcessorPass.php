@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Core;
 
-use PhpList\Core\Domain\Messaging\Service\BounceProcessingServiceInterface;
-use PhpList\Core\Domain\Messaging\Service\NativeBounceProcessingService;
-use PhpList\Core\Domain\Messaging\Service\WebklexBounceProcessingService;
+use PhpList\Core\Bounce\Service\BounceProcessingServiceInterface;
+use PhpList\Core\Bounce\Service\NativeBounceProcessingService;
+use PhpList\Core\Bounce\Service\WebklexBounceProcessingService;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
