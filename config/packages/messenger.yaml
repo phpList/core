@@ -6,6 +6,7 @@ framework:
 
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
+            sync: 'sync://'
             async_email:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
                 options:
@@ -25,3 +26,6 @@ framework:
             # Route your messages to the transports
             'PhpList\Core\Domain\Messaging\Message\AsyncEmailMessage': async_email
             'PhpList\Core\Domain\Messaging\Message\SubscriberConfirmationMessage': async_email
+            'PhpList\Core\Domain\Messaging\Message\SubscriptionConfirmationMessage': async_email
+            'PhpList\Core\Domain\Messaging\Message\PasswordResetMessage': async_email
+            'PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage': async_email
