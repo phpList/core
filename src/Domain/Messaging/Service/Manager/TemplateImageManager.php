@@ -50,8 +50,6 @@ class TemplateImageManager
             $templateImages[] = $image;
         }
 
-        $this->entityManager->flush();
-
         return $templateImages;
     }
 
