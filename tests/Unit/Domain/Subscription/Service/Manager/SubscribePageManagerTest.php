@@ -194,10 +194,6 @@ class SubscribePageManagerTest extends TestCase
             ->expects($this->never())
             ->method('persist');
 
-        $this->entityManager
-            ->expects($this->once())
-            ->method('flush');
-
         $result = $this->manager->setPageData($page, 'color', 'blue');
 
         $this->assertSame($existing, $result);

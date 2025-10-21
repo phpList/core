@@ -97,7 +97,6 @@ class SubscribePageManager
         }
 
         $data->setData($value);
-        $this->entityManager->flush();
 
         return $data;
     }
