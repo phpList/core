@@ -69,7 +69,7 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
     {
         $this->createQueryBuilder('m')
             ->update()
-            ->set('m.bounceCount', 'm.bounceCount + 1')
+            ->set('m.metadata.bounceCount', 'm.bounceCount + 1')
             ->where('m.id = :messageId')
             ->setParameter('messageId', $messageId)
             ->getQuery()
@@ -79,8 +79,8 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
     public function getByStatusAndEmbargo(Message\MessageStatus $status, DateTimeImmutable $embargo): array
     {
         return $this->createQueryBuilder('m')
-            ->where('m.status = :status')
-            ->andWhere('m.embargo IS NULL OR m.embargo <= :embargo')
+            ->where('m.metadata.status = :status')
+            ->andWhere('m.schedule.embargo IS NULL OR m.embargo <= :embargo')
             ->setParameter('status', $status->value)
             ->setParameter('embargo', $embargo)
             ->getQuery()
@@ -91,7 +91,7 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
     {
         return $this->createQueryBuilder('m')
             ->where('m.id = :id')
-            ->andWhere('m.status = :status')
+            ->andWhere('m.metadata.status = :status')
             ->setParameter('id', $id)
             ->setParameter('status', $status->value)
             ->getQuery()
