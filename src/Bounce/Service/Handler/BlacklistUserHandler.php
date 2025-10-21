@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Bounce\Service\Handler;
 
+use PhpList\Core\Bounce\Service\SubscriberBlacklistService;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
-use PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class BlacklistUserHandler implements BounceActionHandlerInterface

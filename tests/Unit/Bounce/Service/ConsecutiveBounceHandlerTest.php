@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Bounce\Service;
 
 use PhpList\Core\Bounce\Service\ConsecutiveBounceHandler;
+use PhpList\Core\Bounce\Service\SubscriberBlacklistService;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
-use PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;

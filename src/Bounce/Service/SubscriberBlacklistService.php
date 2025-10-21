@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Subscription\Service;
+namespace PhpList\Core\Bounce\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -41,6 +41,7 @@ class SubscriberBlacklistService
         $subscriber->setBlacklisted(true);
         $this->entityManager->flush();
         $this->blacklistManager->addEmailToBlacklist($subscriber->getEmail(), $reason);
+        $this->entityManager->flush();
 
         foreach (['REMOTE_ADDR','HTTP_X_FORWARDED_FOR'] as $item) {
             $request = $this->requestStack->getCurrentRequest();

@@ -31,11 +31,6 @@ services:
     autoconfigure: true
     public: true
 
-  PhpList\Core\Bounce\Service\Processor\CampaignProcessor:
-    autowire: true
-    autoconfigure: true
-    public: true
-
   PhpList\Core\Domain\Messaging\Service\SendRateLimiter:
     autowire: true
     autoconfigure: true
@@ -96,7 +91,7 @@ services:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Subscription\Service\SubscriberBlacklistService:
+  PhpList\Core\Bounce\Service\SubscriberBlacklistService:
     autowire: true
     autoconfigure: true
 
