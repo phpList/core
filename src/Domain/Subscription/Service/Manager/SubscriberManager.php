@@ -16,9 +16,6 @@ use PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-/**
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- */
 class SubscriberManager
 {
     private SubscriberRepository $subscriberRepository;

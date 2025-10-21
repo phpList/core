@@ -45,7 +45,11 @@
     <rule ref="rulesets/design.xml/GotoStatement"/>
     <rule ref="rulesets/design.xml/NumberOfChildren"/>
     <rule ref="rulesets/design.xml/DepthOfInheritance"/>
-    <rule ref="rulesets/design.xml/CouplingBetweenObjects"/>
+    <rule ref="rulesets/design.xml/CouplingBetweenObjects">
+        <properties>
+            <property name="maximum" value="14"/>
+        </properties>
+    </rule>
     <rule ref="rulesets/design.xml/DevelopmentCodeFragment"/>
 
     <!-- rules from the "naming" rule set -->
