@@ -6,10 +6,10 @@ namespace PhpList\Core\Bounce\Service\Processor;
 
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Bounce\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Model\BounceStatus;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
-use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;

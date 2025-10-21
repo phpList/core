@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Bounce\Service;
 
+use PhpList\Core\Bounce\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
-use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;

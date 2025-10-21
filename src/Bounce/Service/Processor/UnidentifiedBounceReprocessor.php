@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace PhpList\Core\Bounce\Service\Processor;
 
 use DateTimeImmutable;
+use PhpList\Core\Bounce\Service\Manager\BounceManager;
 use PhpList\Core\Bounce\Service\MessageParser;
 use PhpList\Core\Domain\Messaging\Model\BounceStatus;
-use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Contracts\Translation\TranslatorInterface;
 

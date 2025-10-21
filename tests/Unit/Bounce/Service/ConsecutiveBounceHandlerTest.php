@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Bounce\Service;
 
 use PhpList\Core\Bounce\Service\ConsecutiveBounceHandler;
+use PhpList\Core\Bounce\Service\Manager\BounceManager;
 use PhpList\Core\Bounce\Service\SubscriberBlacklistService;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
-use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;

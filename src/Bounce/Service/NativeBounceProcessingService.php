@@ -7,9 +7,9 @@ namespace PhpList\Core\Bounce\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use IMAP\Connection;
 use PhpList\Core\Bounce\Exception\OpenMboxFileException;
+use PhpList\Core\Bounce\Service\Manager\BounceManager;
 use PhpList\Core\Bounce\Service\Processor\BounceDataProcessor;
 use PhpList\Core\Domain\Common\Mail\NativeImapMailReader;
-use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use Psr\Log\LoggerInterface;
 use Throwable;
 

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Processor;
 
 use PhpList\Core\Bounce\Service\BounceActionResolver;
+use PhpList\Core\Bounce\Service\Manager\BounceManager;
 use PhpList\Core\Bounce\Service\Processor\AdvancedBounceRulesProcessor;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Model\BounceRegex;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
-use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Messaging\Service\Manager\BounceRuleManager;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;

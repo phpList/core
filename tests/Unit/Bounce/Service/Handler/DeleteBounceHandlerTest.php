@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Bounce\Service\Handler;
 
 use PhpList\Core\Bounce\Service\Handler\DeleteBounceHandler;
+use PhpList\Core\Bounce\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
-use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 

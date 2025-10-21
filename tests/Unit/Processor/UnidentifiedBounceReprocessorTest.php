@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Processor;
 
 use DateTimeImmutable;
+use PhpList\Core\Bounce\Service\Manager\BounceManager;
 use PhpList\Core\Bounce\Service\MessageParser;
 use PhpList\Core\Bounce\Service\Processor\BounceDataProcessor;
 use PhpList\Core\Bounce\Service\Processor\UnidentifiedBounceReprocessor;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
-use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;

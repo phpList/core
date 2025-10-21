@@ -84,7 +84,6 @@ class SubscriberManager
     public function resetBounceCount(Subscriber $subscriber): Subscriber
     {
         $subscriber->setBounceCount(0);
-        $this->entityManager->flush();
 
         return $subscriber;
     }

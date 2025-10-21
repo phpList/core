@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Messaging\Service\Manager;
+namespace PhpList\Core\Bounce\Service\Manager;
 
 use DateTime;
 use DateTimeImmutable;

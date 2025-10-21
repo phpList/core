@@ -6,11 +6,11 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Manager;
 
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Bounce\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
 use PhpList\Core\Domain\Messaging\Repository\BounceRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
-use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

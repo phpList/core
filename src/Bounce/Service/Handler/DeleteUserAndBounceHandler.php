@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Bounce\Service\Handler;
 
-use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
+use PhpList\Core\Bounce\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 
 class DeleteUserAndBounceHandler implements BounceActionHandlerInterface
