@@ -29,7 +29,6 @@ class SendProcessManager
         $sendProcess->setPage($page);
 
         $this->entityManager->persist($sendProcess);
-        $this->entityManager->flush();
 
         return $sendProcess;
     }

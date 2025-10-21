@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Bounce\Command;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use PhpList\Core\Bounce\Service\ConsecutiveBounceHandler;
 use PhpList\Core\Bounce\Service\LockService;
@@ -46,6 +47,7 @@ class ProcessBouncesCommand extends Command
         private readonly UnidentifiedBounceReprocessor $unidentifiedReprocessor,
         private readonly ConsecutiveBounceHandler $consecutiveBounceHandler,
         private readonly TranslatorInterface $translator,
+        private readonly EntityManagerInterface $entityManager,
     ) {
         parent::__construct();
     }
@@ -62,6 +64,7 @@ class ProcessBouncesCommand extends Command
 
         $force = (bool)$input->getOption('force');
         $lock = $this->lockService->acquirePageLock('bounce_processor', $force);
+        $this->entityManager->flush();
 
         if (($lock ?? 0) === 0) {
             $forceLockFailed = $this->translator->trans('Could not apply force lock. Aborting.');
