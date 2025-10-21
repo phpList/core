@@ -92,7 +92,6 @@ class BounceRegexManager
         $this->entityManager->persist($relation);
 
         $regex->setCount(($regex->getCount() ?? 0) + 1);
-        $this->entityManager->flush();
 
         return $relation;
     }

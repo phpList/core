@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Bounce\Service\Processor;
 
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Model\BounceStatus;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
@@ -22,14 +23,15 @@ class BounceDataProcessor
     private readonly LoggerInterface $logger;
     private readonly SubscriberManager $subscriberManager;
     private readonly SubscriberHistoryManager $subscriberHistoryManager;
+    private EntityManagerInterface $entityManager;
 
     public function __construct(
-        BounceManager $bounceManager,
-        SubscriberRepository $subscriberRepository,
-        MessageRepository $messageRepository,
-        LoggerInterface $logger,
-        SubscriberManager $subscriberManager,
-        SubscriberHistoryManager $subscriberHistoryManager,
+        BounceManager            $bounceManager,
+        SubscriberRepository     $subscriberRepository,
+        MessageRepository        $messageRepository,
+        LoggerInterface          $logger,
+        SubscriberManager        $subscriberManager,
+        SubscriberHistoryManager $subscriberHistoryManager, EntityManagerInterface $entityManager,
     ) {
         $this->bounceManager = $bounceManager;
         $this->subscriberRepository = $subscriberRepository;
@@ -37,6 +39,7 @@ class BounceDataProcessor
         $this->logger = $logger;
         $this->subscriberManager = $subscriberManager;
         $this->subscriberHistoryManager = $subscriberHistoryManager;
+        $this->entityManager = $entityManager;
     }
 
     public function process(Bounce $bounce, ?string $msgId, ?int $userId, DateTimeImmutable $bounceDate): bool
@@ -90,6 +93,7 @@ class BounceDataProcessor
             comment: sprintf('%d marked unconfirmed', $userId)
         );
         $this->bounceManager->linkUserMessageBounce(bounce: $bounce, date: $date, subscriberId: $userId);
+        $this->entityManager->flush();
         $this->subscriberRepository->markUnconfirmed($userId);
         $this->logger->info('system message bounced, user marked unconfirmed', ['userId' => $userId]);
 
@@ -129,6 +133,7 @@ class BounceDataProcessor
                 subscriberId: $userId,
                 messageId: $msgId
             );
+            $this->entityManager->flush();
             $this->bounceManager->update(
                 bounce: $bounce,
                 status: BounceStatus::BouncedList->format($msgId),
@@ -143,6 +148,7 @@ class BounceDataProcessor
                 subscriberId: $userId,
                 messageId: $msgId
             );
+            $this->entityManager->flush();
             $this->bounceManager->update(
                 bounce: $bounce,
                 status: BounceStatus::DuplicateBounce->format($userId),

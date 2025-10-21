@@ -134,9 +134,6 @@ class BounceRegexManagerTest extends TestCase
                     && $entity->getRegexId() === $regex->getId();
             }));
 
-        $this->entityManager->expects($this->once())
-            ->method('flush');
-
         $this->assertSame(0, $regex->getCount());
         $this->manager->associateBounce($regex, $bounce);
         $this->assertSame(1, $regex->getCount());

@@ -94,7 +94,6 @@ class BounceManager
         $userMessageBounce = new UserMessageBounce($bounce->getId(), new DateTime($date->format('Y-m-d H:i:s')));
         $userMessageBounce->setUserId($subscriberId);
         $userMessageBounce->setMessageId($messageId);
-        $this->entityManager->flush();
 
         return $userMessageBounce;
     }
