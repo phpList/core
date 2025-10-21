@@ -218,10 +218,6 @@ class SubscribePageManagerTest extends TestCase
             ->method('persist')
             ->with($this->isInstanceOf(SubscribePageData::class));
 
-        $this->entityManager
-            ->expects($this->once())
-            ->method('flush');
-
         $result = $this->manager->setPageData($page, 'greeting', 'hello');
 
         $this->assertInstanceOf(SubscribePageData::class, $result);

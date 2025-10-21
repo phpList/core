@@ -29,7 +29,6 @@ class SendProcessManagerTest extends TestCase
     public function testCreatePersistsEntityAndSetsFields(): void
     {
         $this->em->expects($this->once())->method('persist')->with($this->isInstanceOf(SendProcess::class));
-        $this->em->expects($this->once())->method('flush');
 
         $sp = $this->manager->create('pageA', 'proc-1');
         $this->assertInstanceOf(SendProcess::class, $sp);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Processor;
 
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Bounce\Service\Processor\BounceDataProcessor;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
@@ -47,6 +48,7 @@ class BounceDataProcessorTest extends TestCase
             logger: $this->logger,
             subscriberManager: $this->subscriberManager,
             subscriberHistoryManager: $this->historyManager,
+            entityManager: $this->createMock(EntityManagerInterface::class),
         );
     }
 

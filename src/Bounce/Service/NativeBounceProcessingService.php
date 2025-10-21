@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Bounce\Service;
 
+use Doctrine\ORM\EntityManagerInterface;
 use IMAP\Connection;
 use PhpList\Core\Bounce\Exception\OpenMboxFileException;
 use PhpList\Core\Bounce\Service\Processor\BounceDataProcessor;
@@ -21,6 +22,7 @@ class NativeBounceProcessingService implements BounceProcessingServiceInterface
     private LoggerInterface $logger;
     private bool $purgeProcessed;
     private bool $purgeUnprocessed;
+    private EntityManagerInterface $entityManager;
 
     public function __construct(
         BounceManager $bounceManager,
@@ -28,6 +30,7 @@ class NativeBounceProcessingService implements BounceProcessingServiceInterface
         MessageParser $messageParser,
         BounceDataProcessor $bounceDataProcessor,
         LoggerInterface $logger,
+        EntityManagerInterface $entityManager,
         bool $purgeProcessed,
         bool $purgeUnprocessed
     ) {
@@ -36,6 +39,7 @@ class NativeBounceProcessingService implements BounceProcessingServiceInterface
         $this->messageParser = $messageParser;
         $this->bounceDataProcessor = $bounceDataProcessor;
         $this->logger = $logger;
+        $this->entityManager = $entityManager;
         $this->purgeProcessed = $purgeProcessed;
         $this->purgeUnprocessed = $purgeUnprocessed;
     }
@@ -135,7 +139,7 @@ class NativeBounceProcessingService implements BounceProcessingServiceInterface
         $userId = $this->messageParser->findUserId($body);
 
         $bounce = $this->bounceManager->create($bounceDate, $header, $body);
-
+        $this->entityManager->flush();
         return $this->bounceDataProcessor->process($bounce, $msgId, $userId, $bounceDate);
     }
 }

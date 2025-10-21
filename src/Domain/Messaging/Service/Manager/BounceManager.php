@@ -53,7 +53,8 @@ class BounceManager
             comment: $comment
         );
 
-        $this->bounceRepository->save($bounce);
+        $this->bounceRepository->persist($bounce);
+        $this->entityManager->flush();
 
         return $bounce;
     }
@@ -62,7 +63,7 @@ class BounceManager
     {
         $bounce->setStatus($status);
         $bounce->setComment($comment);
-        $this->bounceRepository->save($bounce);
+        $this->entityManager->flush();
 
         return $bounce;
     }
@@ -70,6 +71,7 @@ class BounceManager
     public function delete(Bounce $bounce): void
     {
         $this->bounceRepository->remove($bounce);
+        $this->entityManager->flush();
     }
 
     /** @return Bounce[] */

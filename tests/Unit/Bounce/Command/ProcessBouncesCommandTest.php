@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Bounce\Command;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use PhpList\Core\Bounce\Command\ProcessBouncesCommand;
 use PhpList\Core\Bounce\Service\ConsecutiveBounceHandler;
@@ -48,6 +49,7 @@ class ProcessBouncesCommandTest extends TestCase
             unidentifiedReprocessor: $this->unidentifiedReprocessor,
             consecutiveBounceHandler: $this->consecutiveBounceHandler,
             translator: $this->translator,
+            entityManager: $this->createMock(EntityManagerInterface::class),
         );
 
         $this->commandTester = new CommandTester($command);
