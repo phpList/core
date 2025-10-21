@@ -10,7 +10,6 @@ use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
-use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Translation\Translator;
@@ -18,7 +17,6 @@ use Symfony\Component\Translation\Translator;
 class DecreaseCountConfirmUserAndDeleteBounceHandlerTest extends TestCase
 {
     private SubscriberHistoryManager&MockObject $historyManager;
-    private SubscriberManager&MockObject $subscriberManager;
     private BounceManager&MockObject $bounceManager;
     private SubscriberRepository&MockObject $subscriberRepository;
     private DecreaseCountConfirmUserAndDeleteBounceHandler $handler;
@@ -26,12 +24,10 @@ class DecreaseCountConfirmUserAndDeleteBounceHandlerTest extends TestCase
     protected function setUp(): void
     {
         $this->historyManager = $this->createMock(SubscriberHistoryManager::class);
-        $this->subscriberManager = $this->createMock(SubscriberManager::class);
         $this->bounceManager = $this->createMock(BounceManager::class);
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
         $this->handler = new DecreaseCountConfirmUserAndDeleteBounceHandler(
             subscriberHistoryManager: $this->historyManager,
-            subscriberManager: $this->subscriberManager,
             bounceManager: $this->bounceManager,
             subscriberRepository: $this->subscriberRepository,
             translator: new Translator('en'),
@@ -50,7 +46,7 @@ class DecreaseCountConfirmUserAndDeleteBounceHandlerTest extends TestCase
         $subscriber = $this->createMock(Subscriber::class);
         $bounce = $this->createMock(Bounce::class);
 
-        $this->subscriberManager->expects($this->once())->method('decrementBounceCount')->with($subscriber);
+        $this->subscriberRepository->expects($this->once())->method('decrementBounceCount')->with($subscriber);
         $this->subscriberRepository->expects($this->once())->method('markConfirmed')->with(11);
         $this->historyManager->expects($this->once())->method('addHistory')->with(
             $subscriber,
@@ -73,7 +69,7 @@ class DecreaseCountConfirmUserAndDeleteBounceHandlerTest extends TestCase
         $subscriber = $this->createMock(Subscriber::class);
         $bounce = $this->createMock(Bounce::class);
 
-        $this->subscriberManager->expects($this->once())->method('decrementBounceCount')->with($subscriber);
+        $this->subscriberRepository->expects($this->once())->method('decrementBounceCount')->with($subscriber);
         $this->subscriberRepository->expects($this->never())->method('markConfirmed');
         $this->historyManager->expects($this->never())->method('addHistory');
         $this->bounceManager->expects($this->once())->method('delete')->with($bounce);
@@ -91,7 +87,7 @@ class DecreaseCountConfirmUserAndDeleteBounceHandlerTest extends TestCase
     {
         $bounce = $this->createMock(Bounce::class);
 
-        $this->subscriberManager->expects($this->never())->method('decrementBounceCount');
+        $this->subscriberRepository->expects($this->never())->method('decrementBounceCount');
         $this->subscriberRepository->expects($this->never())->method('markConfirmed');
         $this->historyManager->expects($this->never())->method('addHistory');
         $this->bounceManager->expects($this->once())->method('delete')->with($bounce);

@@ -133,10 +133,6 @@ class SubscriberManagerTest extends TestCase
             ->method('setConfirmed')
             ->with(true);
 
-        $this->entityManager
-            ->expects($this->once())
-            ->method('flush');
-
         $result = $this->subscriberManager->markAsConfirmedByUniqueId($uniqueId);
 
         $this->assertSame($subscriber, $result);

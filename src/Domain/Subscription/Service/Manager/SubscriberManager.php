@@ -96,7 +96,6 @@ class SubscriberManager
         }
 
         $subscriber->setConfirmed(true);
-        $this->entityManager->flush();
 
         return $subscriber;
     }
@@ -136,11 +135,5 @@ class SubscriberManager
         $uow->computeChangeSet($meta, $existingSubscriber);
 
         return ChangeSetDto::fromDoctrineChangeSet($uow->getEntityChangeSet($existingSubscriber));
-    }
-
-    public function decrementBounceCount(Subscriber $subscriber): void
-    {
-        $subscriber->addToBounceCount(-1);
-        $this->entityManager->flush();
     }
 }

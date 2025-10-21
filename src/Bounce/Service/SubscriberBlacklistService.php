@@ -54,6 +54,7 @@ class SubscriberBlacklistService
                     name: $item,
                     data: $request->server->get($item)
                 );
+                $this->entityManager->flush();
             }
         }
 

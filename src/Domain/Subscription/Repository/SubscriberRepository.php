@@ -188,4 +188,15 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->getQuery()
             ->getScalarResult();
     }
+
+    public function decrementBounceCount(Subscriber $subscriber): void
+    {
+        $this->createQueryBuilder('s')
+            ->update()
+            ->set('s.bounceCount', 's.bounceCount - 1')
+            ->where('s.id = :subscriberId')
+            ->setParameter('subscriberId', $subscriber->getId())
+            ->getQuery()
+            ->execute();
+    }
 }

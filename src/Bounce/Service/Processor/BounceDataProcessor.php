@@ -26,12 +26,13 @@ class BounceDataProcessor
     private EntityManagerInterface $entityManager;
 
     public function __construct(
-        BounceManager            $bounceManager,
-        SubscriberRepository     $subscriberRepository,
-        MessageRepository        $messageRepository,
-        LoggerInterface          $logger,
-        SubscriberManager        $subscriberManager,
-        SubscriberHistoryManager $subscriberHistoryManager, EntityManagerInterface $entityManager,
+        BounceManager $bounceManager,
+        SubscriberRepository $subscriberRepository,
+        MessageRepository $messageRepository,
+        LoggerInterface $logger,
+        SubscriberManager $subscriberManager,
+        SubscriberHistoryManager $subscriberHistoryManager,
+        EntityManagerInterface $entityManager,
     ) {
         $this->bounceManager = $bounceManager;
         $this->subscriberRepository = $subscriberRepository;

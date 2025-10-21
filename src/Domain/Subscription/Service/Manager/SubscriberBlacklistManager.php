@@ -63,7 +63,6 @@ class SubscriberBlacklistManager
         $blacklistData->setName($name);
         $blacklistData->setData($data);
         $this->entityManager->persist($blacklistData);
-        $this->entityManager->flush();
     }
 
     public function removeEmailFromBlacklist(string $email): void
