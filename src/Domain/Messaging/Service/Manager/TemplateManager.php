@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Manager;
 
-use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Common\Model\ValidationContext;
 use PhpList\Core\Domain\Messaging\Model\Dto\CreateTemplateDto;
 use PhpList\Core\Domain\Messaging\Model\Template;
@@ -17,20 +16,17 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 class TemplateManager
 {
     private TemplateRepository $templateRepository;
-    private EntityManagerInterface $entityManager;
     private TemplateImageManager $templateImageManager;
     private TemplateLinkValidator $templateLinkValidator;
     private TemplateImageValidator $templateImageValidator;
 
     public function __construct(
         TemplateRepository $templateRepository,
-        EntityManagerInterface $entityManager,
         TemplateImageManager $templateImageManager,
         TemplateLinkValidator $templateLinkValidator,
         TemplateImageValidator $templateImageValidator
     ) {
         $this->templateRepository = $templateRepository;
-        $this->entityManager = $entityManager;
         $this->templateImageManager = $templateImageManager;
         $this->templateLinkValidator = $templateLinkValidator;
         $this->templateImageValidator = $templateImageValidator;
@@ -56,7 +52,7 @@ class TemplateManager
         $imageUrls = $this->templateImageManager->extractAllImages($template->getContent() ?? '');
         $this->templateImageValidator->validate($imageUrls, $context);
 
-        $this->templateRepository->save($template);
+        $this->templateRepository->persist($template);
 
         $this->templateImageManager->createImagesFromImagePaths($imageUrls, $template);
 
@@ -74,8 +70,6 @@ class TemplateManager
         $subscriber->setHtmlEmail($updateSubscriberDto->htmlEmail);
         $subscriber->setDisabled($updateSubscriberDto->disabled);
         $subscriber->setExtraData($updateSubscriberDto->additionalData);
-
-        $this->entityManager->flush();
 
         return $subscriber;
     }

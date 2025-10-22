@@ -16,9 +16,6 @@ use PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-/**
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- */
 class SubscriberManager
 {
     private SubscriberRepository $subscriberRepository;
@@ -51,7 +48,7 @@ class SubscriberManager
         $subscriber->setHtmlEmail((bool)$subscriberDto->htmlEmail);
         $subscriber->setDisabled(false);
 
-        $this->subscriberRepository->save($subscriber);
+        $this->subscriberRepository->persist($subscriber);
 
         return $subscriber;
     }
@@ -87,7 +84,6 @@ class SubscriberManager
     public function resetBounceCount(Subscriber $subscriber): Subscriber
     {
         $subscriber->setBounceCount(0);
-        $this->entityManager->flush();
 
         return $subscriber;
     }
@@ -100,7 +96,6 @@ class SubscriberManager
         }
 
         $subscriber->setConfirmed(true);
-        $this->entityManager->flush();
 
         return $subscriber;
     }
@@ -140,11 +135,5 @@ class SubscriberManager
         $uow->computeChangeSet($meta, $existingSubscriber);
 
         return ChangeSetDto::fromDoctrineChangeSet($uow->getEntityChangeSet($existingSubscriber));
-    }
-
-    public function decrementBounceCount(Subscriber $subscriber): void
-    {
-        $subscriber->addToBounceCount(-1);
-        $this->entityManager->flush();
     }
 }

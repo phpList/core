@@ -39,7 +39,7 @@ class AdminAttributeManager
         }
 
         $adminAttribute->setValue($value);
-        $this->attributeRepository->save($adminAttribute);
+        $this->attributeRepository->persist($adminAttribute);
 
         return $adminAttribute;
     }

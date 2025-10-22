@@ -8,6 +8,7 @@ use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\Common\Collections\Criteria;
+use Exception;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
@@ -45,31 +46,19 @@ class AdministratorTokenRepository extends AbstractRepository implements Paginat
     }
 
     /**
-     * Removes all expired tokens.
+     * Get all expired tokens.
      *
-     * This method should be called regularly to clean up the tokens.
-     *
-     * @return int the number of removed tokens
+     * @return AdministratorToken[]
+     * @throws Exception
      */
-    public function removeExpired(): int
+    public function getExpired(): array
     {
         $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
 
-        $expiredTokens = $this->createQueryBuilder('at')
+        return $this->createQueryBuilder('at')
             ->where('at.expiry <= :date')
             ->setParameter('date', $now)
             ->getQuery()
             ->getResult();
-
-        $deletedCount = 0;
-
-        foreach ($expiredTokens as $token) {
-            $this->getEntityManager()->remove($token);
-            $deletedCount++;
-        }
-
-        $this->getEntityManager()->flush();
-
-        return $deletedCount;
     }
 }

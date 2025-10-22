@@ -4,26 +4,29 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Command;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Command\ProcessQueueCommand;
+use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
-use PhpList\Core\Domain\Messaging\Service\Processor\CampaignProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\LockInterface;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Translation\Translator;
 
 class ProcessQueueCommandTest extends TestCase
 {
     private MessageRepository&MockObject $messageRepository;
     private MessageProcessingPreparator&MockObject $messageProcessingPreparator;
-    private CampaignProcessor&MockObject $campaignProcessor;
+    private MessageBusInterface&MockObject $messageBus;
     private LockInterface&MockObject $lock;
     private CommandTester $commandTester;
     private Translator&MockObject $translator;
@@ -33,7 +36,7 @@ class ProcessQueueCommandTest extends TestCase
         $this->messageRepository = $this->createMock(MessageRepository::class);
         $lockFactory = $this->createMock(LockFactory::class);
         $this->messageProcessingPreparator = $this->createMock(MessageProcessingPreparator::class);
-        $this->campaignProcessor = $this->createMock(CampaignProcessor::class);
+        $this->messageBus = $this->createMock(MessageBusInterface::class);
         $this->lock = $this->createMock(LockInterface::class);
         $this->translator = $this->createMock(Translator::class);
 
@@ -45,9 +48,10 @@ class ProcessQueueCommandTest extends TestCase
             messageRepository: $this->messageRepository,
             lockFactory: $lockFactory,
             messagePreparator: $this->messageProcessingPreparator,
-            campaignProcessor: $this->campaignProcessor,
+            messageBus: $this->messageBus,
             configProvider: $this->createMock(ConfigProvider::class),
             translator: $this->translator,
+            entityManager: $this->createMock(EntityManagerInterface::class),
         );
 
         $application = new Application();
@@ -97,8 +101,8 @@ class ProcessQueueCommandTest extends TestCase
             ->with($this->anything(), $this->anything())
             ->willReturn([]);
 
-        $this->campaignProcessor->expects($this->never())
-            ->method('process');
+        $this->messageBus->expects($this->never())
+            ->method('dispatch');
 
         $this->commandTester->execute([]);
 
@@ -121,21 +125,28 @@ class ProcessQueueCommandTest extends TestCase
             ->method('ensureCampaignsHaveUuid');
 
         $campaign = $this->createMock(Message::class);
+        $campaign->method('getId')->willReturn(1);
 
         $this->messageRepository->expects($this->once())
             ->method('getByStatusAndEmbargo')
             ->with($this->anything(), $this->anything())
             ->willReturn([$campaign]);
 
-        $this->campaignProcessor->expects($this->once())
-            ->method('process')
-            ->with($campaign, $this->anything());
+        $this->messageBus->expects($this->once())
+            ->method('dispatch')
+            ->with(
+                $this->callback(function (CampaignProcessorMessage $message) use ($campaign) {
+                    $this->assertEquals($campaign->getId(), $message->getMessageId());
+                    return true;
+                }),
+                $this->equalTo([])
+            )
+            ->willReturn(new Envelope(new CampaignProcessorMessage($campaign->getId())));
 
         $this->commandTester->execute([]);
 
         $this->assertEquals(0, $this->commandTester->getStatusCode());
     }
-
 
     public function testExecuteWithMultipleCampaigns(): void
     {
@@ -152,27 +163,37 @@ class ProcessQueueCommandTest extends TestCase
         $this->messageProcessingPreparator->expects($this->once())
             ->method('ensureCampaignsHaveUuid');
 
-        $campaign1 = $this->createMock(Message::class);
-        $campaign2 = $this->createMock(Message::class);
+        $cmp1 = $this->createMock(Message::class);
+        $cmp1->method('getId')->willReturn(1);
+        $cmp2 = $this->createMock(Message::class);
+        $cmp2->method('getId')->willReturn(2);
 
         $this->messageRepository->expects($this->once())
             ->method('getByStatusAndEmbargo')
             ->with($this->anything(), $this->anything())
-            ->willReturn([$campaign1, $campaign2]);
+            ->willReturn([$cmp1, $cmp2]);
 
-        $this->campaignProcessor->expects($this->exactly(2))
-            ->method('process')
-            ->withConsecutive(
-                [$campaign1, $this->anything()],
-                [$campaign2, $this->anything()]
-            );
+        $this->messageBus->expects($this->exactly(2))
+            ->method('dispatch')
+            ->willReturnCallback(function (CampaignProcessorMessage $message, array $stamps) use ($cmp1, $cmp2) {
+                static $call = 0;
+                $call++;
+                if ($call === 1) {
+                    $this->assertEquals($cmp1->getId(), $message->getMessageId());
+                } else {
+                    $this->assertEquals($cmp2->getId(), $message->getMessageId());
+                }
+                $this->assertSame([], $stamps);
+
+                return new Envelope(new CampaignProcessorMessage($message->getMessageId()));
+            });
 
         $this->commandTester->execute([]);
 
         $this->assertEquals(0, $this->commandTester->getStatusCode());
     }
 
-    public function testExecuteWithProcessorException(): void
+    public function testExecuteWithDispatcherException(): void
     {
         $this->lock->expects($this->once())
             ->method('acquire')
@@ -188,16 +209,23 @@ class ProcessQueueCommandTest extends TestCase
             ->method('ensureCampaignsHaveUuid');
 
         $campaign = $this->createMock(Message::class);
+        $campaign->method('getId')->willReturn(1);
 
         $this->messageRepository->expects($this->once())
             ->method('getByStatusAndEmbargo')
             ->with($this->anything(), $this->anything())
             ->willReturn([$campaign]);
 
-        $this->campaignProcessor->expects($this->once())
-            ->method('process')
-            ->with($campaign, $this->anything())
-            ->willThrowException(new Exception('Test exception'));
+        $this->messageBus->expects($this->once())
+            ->method('dispatch')
+            ->with(
+                $this->callback(function (CampaignProcessorMessage $message) use ($campaign) {
+                    $this->assertEquals($campaign->getId(), $message->getMessageId());
+                    return true;
+                }),
+                $this->equalTo([])
+            )
+            ->willThrowException(new Exception());
 
         $this->commandTester->execute([]);
 

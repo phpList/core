@@ -42,7 +42,7 @@ class LinkTrackServiceTest extends TestCase
         $message->method('getId')->willReturn($messageId);
         $message->method('getContent')->willReturn($messageContent);
 
-        $this->linkTrackRepository->expects(self::never())->method('save');
+        $this->linkTrackRepository->expects(self::never())->method('persist');
 
         $result = $this->subject->extractAndSaveLinks($message, $userId);
 
@@ -63,7 +63,7 @@ class LinkTrackServiceTest extends TestCase
         $message->method('getContent')->willReturn($messageContent);
 
         $this->linkTrackRepository->expects(self::exactly(2))
-            ->method('save')
+            ->method('persist')
             ->willReturnCallback(function (LinkTrack $linkTrack) use ($messageId, $userId) {
                 self::assertSame($messageId, $linkTrack->getMessageId());
                 self::assertSame($userId, $linkTrack->getUserId());
@@ -92,7 +92,7 @@ class LinkTrackServiceTest extends TestCase
         $message->method('getContent')->willReturn($messageContent);
 
         $this->linkTrackRepository->expects(self::exactly(2))
-            ->method('save')
+            ->method('persist')
             ->willReturnCallback(function (LinkTrack $linkTrack) use ($messageId, $userId) {
                 self::assertSame($messageId, $linkTrack->getMessageId());
                 self::assertSame($userId, $linkTrack->getUserId());
@@ -120,7 +120,7 @@ class LinkTrackServiceTest extends TestCase
         $message->method('getContent')->willReturn($messageContent);
 
         $this->linkTrackRepository->expects(self::once())
-            ->method('save')
+            ->method('persist')
             ->willReturnCallback(function (LinkTrack $linkTrack) use ($messageId, $userId) {
                 self::assertSame($messageId, $linkTrack->getMessageId());
                 self::assertSame($userId, $linkTrack->getUserId());
@@ -147,7 +147,7 @@ class LinkTrackServiceTest extends TestCase
         $message->method('getContent')->willReturn($messageContent);
 
         $this->linkTrackRepository->expects(self::once())
-            ->method('save')
+            ->method('persist')
             ->willReturnCallback(function (LinkTrack $linkTrack) use ($messageId, $userId) {
                 self::assertSame($messageId, $linkTrack->getMessageId());
                 self::assertSame($userId, $linkTrack->getUserId());
@@ -219,7 +219,7 @@ class LinkTrackServiceTest extends TestCase
             ->willReturn($existingLinkTrack);
 
         $this->linkTrackRepository->expects(self::never())
-            ->method('save');
+            ->method('persist');
 
         $result = $this->subject->extractAndSaveLinks($message, $userId);
 

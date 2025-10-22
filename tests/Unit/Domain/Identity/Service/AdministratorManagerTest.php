@@ -32,7 +32,6 @@ class AdministratorManagerTest extends TestCase
             ->willReturn('hashed_pass');
 
         $entityManager->expects($this->once())->method('persist');
-        $entityManager->expects($this->once())->method('flush');
 
         $manager = new AdministratorManager($entityManager, $hashGenerator);
         $admin = $manager->createAdministrator($dto);
@@ -67,8 +66,6 @@ class AdministratorManagerTest extends TestCase
             ->with('newpass')
             ->willReturn('new_hash');
 
-        $entityManager->expects($this->once())->method('flush');
-
         $manager = new AdministratorManager($entityManager, $hashGenerator);
         $manager->updateAdministrator($admin, $dto);
 
@@ -86,7 +83,6 @@ class AdministratorManagerTest extends TestCase
         $admin = $this->createMock(Administrator::class);
 
         $entityManager->expects($this->once())->method('remove')->with($admin);
-        $entityManager->expects($this->once())->method('flush');
 
         $manager = new AdministratorManager($entityManager, $hashGenerator);
         $manager->deleteAdministrator($admin);

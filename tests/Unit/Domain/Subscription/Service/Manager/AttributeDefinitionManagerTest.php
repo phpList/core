@@ -39,7 +39,7 @@ class AttributeDefinitionManagerTest extends TestCase
             ->with('Country')
             ->willReturn(null);
 
-        $repository->expects($this->once())->method('save');
+        $repository->expects($this->once())->method('persist');
 
         $attribute = $manager->create($dto);
 
@@ -109,8 +109,6 @@ class AttributeDefinitionManagerTest extends TestCase
             ->method('findOneByName')
             ->with('New')
             ->willReturn(null);
-
-        $repository->expects($this->once())->method('save')->with($attribute);
 
         $updated = $manager->update($attribute, $dto);
 

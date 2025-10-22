@@ -106,10 +106,6 @@ class SubscriberBlacklistManagerTest extends TestCase
                 [$this->isInstanceOf(UserBlacklistData::class)]
             );
 
-        $this->entityManager
-            ->expects($this->once())
-            ->method('flush');
-
         $this->manager->addEmailToBlacklist('new@blacklist.com', 'test reason');
     }
 
@@ -125,10 +121,6 @@ class SubscriberBlacklistManagerTest extends TestCase
             ->expects($this->once())
             ->method('persist')
             ->with($this->isInstanceOf(UserBlacklist::class));
-
-        $this->entityManager
-            ->expects($this->once())
-            ->method('flush');
 
         $this->manager->addEmailToBlacklist('noreason@blacklist.com');
     }
@@ -165,10 +157,6 @@ class SubscriberBlacklistManagerTest extends TestCase
             ->withConsecutive([$blacklist], [$blacklistData]);
 
         $subscriber->expects($this->once())->method('setBlacklisted')->with(false);
-
-        $this->entityManager
-            ->expects($this->once())
-            ->method('flush');
 
         $this->manager->removeEmailFromBlacklist('remove@me.com');
     }

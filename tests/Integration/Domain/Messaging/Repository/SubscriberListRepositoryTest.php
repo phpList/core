@@ -206,7 +206,7 @@ class SubscriberListRepositoryTest extends KernelTestCase
         $numberOfModelsBeforeRemove = count($allModels);
         $firstModel = $allModels[0];
 
-        $this->subscriberListRepository->remove($firstModel);
+        $this->subscriberListRepository->delete($firstModel);
 
         $numberOfModelsAfterRemove = count($this->subscriberListRepository->findAll());
         self::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);

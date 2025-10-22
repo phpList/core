@@ -177,7 +177,7 @@ class AdministratorRepositoryTest extends KernelTestCase
         $this->assertNotEmpty($allModels);
 
         $model = $allModels[0];
-        $this->repository->remove($model);
+        $this->repository->delete($model);
 
         $remainingModels = $this->repository->findAll();
         $this->assertCount(count($allModels) - 1, $remainingModels);

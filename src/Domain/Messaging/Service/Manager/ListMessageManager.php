@@ -43,7 +43,6 @@ class ListMessageManager
         $listMessage->setEntered(new DateTime());
 
         $this->entityManager->persist($listMessage);
-        $this->entityManager->flush();
 
         return $listMessage;
     }

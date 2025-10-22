@@ -122,56 +122,6 @@ class AdministratorTokenRepositoryTest extends WebTestCase
         self::assertNull($model);
     }
 
-    public function testRemoveExpiredRemovesExpiredToken()
-    {
-        $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
-
-        $idOfExpiredToken = 1;
-        $this->repository->removeExpired();
-
-        $token = $this->repository->find($idOfExpiredToken);
-        self::assertNull($token);
-    }
-
-    public function testRemoveExpiredKeepsUnexpiredToken()
-    {
-        $this->assertNotYear2037Yet();
-
-        $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
-
-        $idOfUnexpiredToken = 2;
-        $this->repository->removeExpired();
-
-        $token = $this->repository->find($idOfUnexpiredToken);
-        self::assertNotNull($token);
-    }
-
-    /**
-     * Asserts that it's not year 2037 yet (which is the year the "not expired" token in the fixture
-     * data set expires).
-     */
-    private function assertNotYear2037Yet(): void
-    {
-        $currentYear = (int)date('Y');
-        if ($currentYear >= 2037) {
-            self::markTestIncomplete('The tests token has an expiry in the year 2037. Please update this test.');
-        }
-    }
-
-    public function testRemoveExpiredForNoExpiredTokensReturnsZero()
-    {
-        self::assertSame(0, $this->repository->removeExpired());
-    }
-
-    public function testRemoveExpiredForOneExpiredTokenReturnsOne()
-    {
-        $this->assertNotYear2037Yet();
-
-        $this->loadFixtures([DetachedAdministratorTokenFixture::class]);
-
-        self::assertSame(1, $this->repository->removeExpired());
-    }
-
     public function testSavePersistsAndFlushesModel()
     {
         $this->loadFixtures([AdministratorFixture::class]);
@@ -196,7 +146,7 @@ class AdministratorTokenRepositoryTest extends WebTestCase
         $numberOfModelsBeforeRemove = count($allModels);
         $firstModel = $allModels[0];
 
-        $this->repository->remove($firstModel);
+        $this->repository->delete($firstModel);
 
         $numberOfModelsAfterRemove = count($this->repository->findAll());
         self::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);

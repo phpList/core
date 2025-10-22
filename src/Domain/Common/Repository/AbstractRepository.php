@@ -31,6 +31,11 @@ abstract class AbstractRepository extends EntityRepository
         $this->getEntityManager()->flush();
     }
 
+    public function persist(DomainModel $model): void
+    {
+        $this->getEntityManager()->persist($model);
+    }
+
     /**
      * Removes $model and flushes the entity manager change list.
      *
@@ -41,9 +46,14 @@ abstract class AbstractRepository extends EntityRepository
      *
      * @return void
      */
-    public function remove(DomainModel $model): void
+    public function delete(DomainModel $model): void
     {
         $this->getEntityManager()->remove($model);
         $this->getEntityManager()->flush();
+    }
+
+    public function remove(DomainModel $model): void
+    {
+        $this->getEntityManager()->remove($model);
     }
 }

@@ -33,7 +33,7 @@ class SubscribePageManager
             ->setActive($active)
             ->setOwner($owner);
 
-        $this->pageRepository->save($page);
+        $this->pageRepository->persist($page);
 
         return $page;
     }
@@ -65,15 +65,12 @@ class SubscribePageManager
             $page->setOwner($owner);
         }
 
-        $this->entityManager->flush();
-
         return $page;
     }
 
     public function setActive(SubscribePage $page, bool $active): void
     {
         $page->setActive($active);
-        $this->entityManager->flush();
     }
 
     public function deletePage(SubscribePage $page): void
@@ -100,7 +97,6 @@ class SubscribePageManager
         }
 
         $data->setData($value);
-        $this->entityManager->flush();
 
         return $data;
     }

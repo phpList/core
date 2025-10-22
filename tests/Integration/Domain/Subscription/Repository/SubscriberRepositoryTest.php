@@ -227,7 +227,7 @@ class SubscriberRepositoryTest extends KernelTestCase
         $numberOfAssociatedSubscriptions = count($model->getSubscriptions());
         self::assertGreaterThan(0, $numberOfAssociatedSubscriptions);
 
-        $this->subscriberRepository->remove($model);
+        $this->subscriberRepository->delete($model);
 
         $newNumberOfSubscriptions = count($this->subscriptionRepository->findAll());
         $numberOfRemovedSubscriptions = $initialNumberOfSubscriptions - $newNumberOfSubscriptions;
@@ -246,7 +246,7 @@ class SubscriberRepositoryTest extends KernelTestCase
         $numberOfModelsBeforeRemove = count($allModels);
         $firstModel = $allModels[0];
 
-        $this->subscriberRepository->remove($firstModel);
+        $this->subscriberRepository->delete($firstModel);
 
         $numberOfModelsAfterRemove = count($this->subscriberRepository->findAll());
         self::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);

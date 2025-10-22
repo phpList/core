@@ -12,7 +12,7 @@ services:
     resource: '../../src/Domain/Identity/Command'
     tags: ['console.command']
 
-  PhpList\Core\Domain\Messaging\Command\ProcessBouncesCommand:
+  PhpList\Core\Bounce\Command\ProcessBouncesCommand:
     arguments:
       $protocolProcessors: !tagged_iterator 'phplist.bounce_protocol_processor'
 

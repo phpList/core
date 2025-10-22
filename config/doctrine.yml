@@ -17,12 +17,6 @@ doctrine:
     naming_strategy: doctrine.orm.naming_strategy.underscore
     auto_mapping: false
     mappings:
-      TatevikGrRssBundle:
-        is_bundle: false
-        type: attribute
-        dir: '%kernel.project_dir%/vendor/tatevikgr/rss-feed/src/Entity'
-        prefix: 'TatevikGr\RssFeedBundle\Entity'
-        alias: 'RssBundle'
       Identity:
         is_bundle: false
         type: attribute

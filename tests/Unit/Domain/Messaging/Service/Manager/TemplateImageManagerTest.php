@@ -37,9 +37,6 @@ class TemplateImageManagerTest extends TestCase
             ->method('persist')
             ->with($this->isInstanceOf(TemplateImage::class));
 
-        $this->entityManager->expects($this->once())
-            ->method('flush');
-
         $images = $this->manager->createImagesFromImagePaths(['image1.jpg', 'image2.png'], $template);
 
         $this->assertCount(2, $images);

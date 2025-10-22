@@ -42,7 +42,7 @@ class BounceRegexManagerTest extends TestCase
             ->willReturn(null);
 
         $this->regexRepository->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->isInstanceOf(BounceRegex::class));
 
         $regex = $this->manager->createOrUpdateFromPattern(
@@ -84,10 +84,6 @@ class BounceRegexManagerTest extends TestCase
             ->method('findOneByRegexHash')
             ->with($hash)
             ->willReturn($existing);
-
-        $this->regexRepository->expects($this->once())
-            ->method('save')
-            ->with($existing);
 
         $updated = $this->manager->createOrUpdateFromPattern(
             regex: $pattern,
@@ -133,9 +129,6 @@ class BounceRegexManagerTest extends TestCase
                 return $entity instanceof BounceRegexBounce
                     && $entity->getRegexId() === $regex->getId();
             }));
-
-        $this->entityManager->expects($this->once())
-            ->method('flush');
 
         $this->assertSame(0, $regex->getCount());
         $this->manager->associateBounce($regex, $bounce);

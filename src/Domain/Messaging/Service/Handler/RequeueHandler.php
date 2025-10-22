@@ -6,7 +6,6 @@ namespace PhpList\Core\Domain\Messaging\Service\Handler;
 
 use DateInterval;
 use DateTime;
-use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use Psr\Log\LoggerInterface;
@@ -17,7 +16,6 @@ class RequeueHandler
 {
     public function __construct(
         private readonly LoggerInterface $logger,
-        private readonly EntityManagerInterface $entityManager,
         private readonly TranslatorInterface $translator,
     ) {
     }
@@ -46,7 +44,6 @@ class RequeueHandler
         $schedule->setEmbargo($next);
         $campaign->setSchedule($schedule);
         $campaign->getMetadata()->setStatus(MessageStatus::Submitted);
-        $this->entityManager->flush();
 
         $output?->writeln($this->translator->trans(
             'Requeued campaign; next embargo at %time%',

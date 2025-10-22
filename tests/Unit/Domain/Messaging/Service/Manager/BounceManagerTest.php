@@ -6,11 +6,11 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Manager;
 
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Bounce\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
 use PhpList\Core\Domain\Messaging\Repository\BounceRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
-use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -49,7 +49,7 @@ class BounceManagerTest extends TestCase
         $comment = 'created by test';
 
         $this->repository->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->isInstanceOf(Bounce::class));
 
         $bounce = $this->manager->create(
@@ -115,9 +115,8 @@ class BounceManagerTest extends TestCase
     public function testUpdateChangesFieldsAndSaves(): void
     {
         $bounce = new Bounce();
-        $this->repository->expects($this->once())
-            ->method('save')
-            ->with($bounce);
+        $this->entityManager->expects($this->once())
+            ->method('flush');
 
         $updated = $this->manager->update($bounce, 'processed', 'done');
         $this->assertSame($bounce, $updated);
@@ -129,8 +128,6 @@ class BounceManagerTest extends TestCase
     {
         $bounce = $this->createMock(Bounce::class);
         $bounce->method('getId')->willReturn(77);
-
-        $this->entityManager->expects($this->once())->method('flush');
 
         $dt = new DateTimeImmutable('2024-05-01 12:34:56');
         $umb = $this->manager->linkUserMessageBounce($bounce, $dt, 123, 456);

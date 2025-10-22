@@ -4,18 +4,18 @@ services:
     autoconfigure: true
     public: false
 
-  PhpList\Core\Domain\Messaging\Service\Processor\PopBounceProcessor:
+  PhpList\Core\Bounce\Service\Processor\PopBounceProcessor:
     arguments:
       $host: '%imap_bounce.host%'
       $port: '%imap_bounce.port%'
       $mailboxNames: '%imap_bounce.mailbox_name%'
     tags: ['phplist.bounce_protocol_processor']
 
-  PhpList\Core\Domain\Messaging\Service\Processor\MboxBounceProcessor:
+  PhpList\Core\Bounce\Service\Processor\MboxBounceProcessor:
     tags: ['phplist.bounce_protocol_processor']
 
-  PhpList\Core\Domain\Messaging\Service\Processor\AdvancedBounceRulesProcessor: ~
+  PhpList\Core\Bounce\Service\Processor\AdvancedBounceRulesProcessor: ~
 
-  PhpList\Core\Domain\Messaging\Service\Processor\UnidentifiedBounceReprocessor: ~
+  PhpList\Core\Bounce\Service\Processor\UnidentifiedBounceReprocessor: ~
 
-  PhpList\Core\Domain\Messaging\Service\Processor\BounceDataProcessor: ~
+  PhpList\Core\Bounce\Service\Processor\BounceDataProcessor: ~

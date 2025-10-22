@@ -51,9 +51,6 @@ class ListMessageManagerTest extends TestCase
                     && $listMessage->getEntered() instanceof DateTime;
             }));
             
-        $this->entityManager->expects($this->once())
-            ->method('flush');
-            
         $result = $this->manager->associateMessageWithList($message, $subscriberList);
         
         $this->assertInstanceOf(ListMessage::class, $result);
@@ -119,9 +116,6 @@ class ListMessageManagerTest extends TestCase
                     && ($listMessage->getList()->getId() === 2 || $listMessage->getList()->getId() === 3)
                     && $listMessage->getEntered() instanceof DateTime;
             }));
-            
-        $this->entityManager->expects($this->exactly(2))
-            ->method('flush');
             
         $this->manager->associateMessageWithLists($message, [$subscriberList1, $subscriberList2]);
     }
