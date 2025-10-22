@@ -48,7 +48,7 @@ class SubscriberManager
         $subscriber->setHtmlEmail((bool)$subscriberDto->htmlEmail);
         $subscriber->setDisabled(false);
 
-        $this->subscriberRepository->save($subscriber);
+        $this->subscriberRepository->persist($subscriber);
 
         return $subscriber;
     }

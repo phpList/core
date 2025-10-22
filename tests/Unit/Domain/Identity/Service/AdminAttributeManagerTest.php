@@ -41,7 +41,7 @@ class AdminAttributeManagerTest extends TestCase
             ->willReturn(null);
 
         $this->repository->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->callback(function (AdminAttributeValue $attribute) use ($value) {
                 return $attribute->getAdministrator()->getId() === 1
                     && $attribute->getAttributeDefinition()->getId() === 2
@@ -72,7 +72,7 @@ class AdminAttributeManagerTest extends TestCase
             ->with(1, 2)
             ->willReturn($existingAttribute);
 
-        $this->repository->expects($this->once())
+        $this->repository->expects($this->never())
             ->method('save')
             ->with($this->callback(function (AdminAttributeValue $attribute) use ($newValue) {
                 return $attribute->getValue() === $newValue;
@@ -98,8 +98,7 @@ class AdminAttributeManagerTest extends TestCase
             ->method('findOneByAdminIdAndAttributeId')
             ->willReturn(null);
 
-        $this->repository->expects($this->once())
-            ->method('save');
+        // will not throw AdminAttributeCreationException
 
         $result = $this->subject->createOrUpdate($admin, $definition);
 

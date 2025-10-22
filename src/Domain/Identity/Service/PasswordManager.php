@@ -65,7 +65,7 @@ class PasswordManager
         $expiryDate = new DateTime(self::TOKEN_EXPIRY);
         $passwordRequest = new AdminPasswordRequest(date: $expiryDate, admin: $administrator, keyValue: $token);
 
-        $this->passwordRequestRepository->save($passwordRequest);
+        $this->passwordRequestRepository->persist($passwordRequest);
 
         $message = new PasswordResetMessage(email: $email, token: $token);
         $this->messageBus->dispatch($message);
@@ -113,7 +113,7 @@ class PasswordManager
 
         $passwordHash = $this->hashGenerator->createPasswordHash($newPassword);
         $administrator->setPasswordHash($passwordHash);
-        $this->administratorRepository->save($administrator);
+        $this->administratorRepository->persist($administrator);
 
         $passwordRequest = $this->passwordRequestRepository->findOneByToken($token);
         $this->passwordRequestRepository->remove($passwordRequest);

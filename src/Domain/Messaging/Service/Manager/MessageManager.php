@@ -26,7 +26,7 @@ class MessageManager
     {
         $context = new MessageContext($authUser);
         $message = $this->messageBuilder->build($createMessageDto, $context);
-        $this->messageRepository->save($message);
+        $this->messageRepository->persist($message);
 
         return $message;
     }
@@ -37,16 +37,12 @@ class MessageManager
         Administrator $authUser
     ): Message {
         $context = new MessageContext($authUser, $message);
-        $message = $this->messageBuilder->build($updateMessageDto, $context);
-        $this->messageRepository->save($message);
-
-        return $message;
+        return $this->messageBuilder->build($updateMessageDto, $context);
     }
 
     public function updateStatus(Message $message, Message\MessageStatus $status): Message
     {
         $message->getMetadata()->setStatus($status);
-        $this->messageRepository->save($message);
 
         return $message;
     }

@@ -46,8 +46,6 @@ class BounceRegexManager
                 ->setComment($comment ?? $existing->getComment())
                 ->setStatus($status ?? $existing->getStatus());
 
-            $this->bounceRegexRepository->save($existing);
-
             return $existing;
         }
 
@@ -62,7 +60,7 @@ class BounceRegexManager
             count: 0
         );
 
-        $this->bounceRegexRepository->save($bounceRegex);
+        $this->bounceRegexRepository->persist($bounceRegex);
 
         return $bounceRegex;
     }

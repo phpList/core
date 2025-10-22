@@ -83,7 +83,7 @@ class PasswordManagerTest extends TestCase
             ->with($existingRequest);
 
         $this->passwordRequestRepository->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->isInstanceOf(AdminPasswordRequest::class));
 
         $this->messageBus->expects($this->once())
@@ -187,7 +187,7 @@ class PasswordManagerTest extends TestCase
             ->willReturn($newPasswordHash);
 
         $this->administratorRepository->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($administrator);
 
         $this->passwordRequestRepository->expects($this->once())

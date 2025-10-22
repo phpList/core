@@ -49,7 +49,7 @@ class AdminAttributeDefinitionManagerTest extends TestCase
             ->willReturn(null);
 
         $this->repository->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->callback(function (AdminAttributeDefinition $definition) use ($dto) {
                 return $definition->getName() === $dto->name
                     && $definition->getType() === $dto->type
@@ -142,10 +142,6 @@ class AdminAttributeDefinitionManagerTest extends TestCase
             ->method('setTableName')
             ->with('new_table')
             ->willReturnSelf();
-
-        $this->repository->expects($this->once())
-            ->method('save')
-            ->with($attributeDefinition);
 
         $result = $this->subject->update($attributeDefinition, $dto);
 

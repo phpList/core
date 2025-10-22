@@ -45,8 +45,6 @@ class ConfigManager
             throw new ConfigNotEditableException($config->getKey());
         }
         $config->setValue($value);
-
-        $this->configRepository->save($config);
     }
 
     public function create(string $key, string $value, bool $editable, ?string $type = null): void
@@ -57,7 +55,7 @@ class ConfigManager
             ->setEditable($editable)
             ->setType($type);
 
-        $this->configRepository->save($config);
+        $this->configRepository->persist($config);
     }
 
     public function delete(Config $config): void

@@ -42,7 +42,7 @@ class BounceRegexManagerTest extends TestCase
             ->willReturn(null);
 
         $this->regexRepository->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->isInstanceOf(BounceRegex::class));
 
         $regex = $this->manager->createOrUpdateFromPattern(

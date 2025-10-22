@@ -45,7 +45,7 @@ class AdminAttributeDefinitionManager
             ->setDefaultValue($attributeDefinitionDto->defaultValue)
             ->setTableName($attributeDefinitionDto->tableName);
 
-        $this->definitionRepository->save($attributeDefinition);
+        $this->definitionRepository->persist($attributeDefinition);
 
         return $attributeDefinition;
     }
@@ -67,8 +67,6 @@ class AdminAttributeDefinitionManager
             ->setRequired($attributeDefinitionDto->required)
             ->setDefaultValue($attributeDefinitionDto->defaultValue)
             ->setTableName($attributeDefinitionDto->tableName);
-
-        $this->definitionRepository->save($attributeDefinition);
 
         return $attributeDefinition;
     }

@@ -51,7 +51,7 @@ class SessionManager
         $token->setAdministrator($administrator);
         $token->generateExpiry();
         $token->generateKey();
-        $this->tokenRepository->save($token);
+        $this->tokenRepository->persist($token);
 
         return $token;
     }

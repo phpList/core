@@ -40,7 +40,7 @@ class SubscriberManagerTest extends TestCase
     {
         $this->subscriberRepository
             ->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->callback(function (Subscriber $sub): bool {
                 return $sub->getEmail() === 'foo@bar.com'
                     && $sub->isConfirmed() === true
@@ -65,7 +65,7 @@ class SubscriberManagerTest extends TestCase
     {
         $this->subscriberRepository
             ->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->callback(function (Subscriber $sub): bool {
                 $sub->setUniqueId('test-unique-id-456');
                 return $sub->getEmail() === 'foo@bar.com'
@@ -91,7 +91,7 @@ class SubscriberManagerTest extends TestCase
         $capturedSubscriber = null;
         $this->subscriberRepository
             ->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->callback(function (Subscriber $subscriber) use (&$capturedSubscriber) {
                 $capturedSubscriber = $subscriber;
                 $subscriber->setUniqueId('test-unique-id-123');
@@ -111,7 +111,7 @@ class SubscriberManagerTest extends TestCase
     {
         $this->subscriberRepository
             ->expects($this->once())
-            ->method('save');
+            ->method('persist');
 
         $dto = new CreateSubscriberDto(email: 'test@example.com', requestConfirmation: false, htmlEmail: true);
         $this->subscriberManager->createSubscriber($dto);

@@ -66,7 +66,7 @@ class MessageManagerTest extends TestCase
             ->willReturn($expectedMessage);
 
         $messageRepository->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($expectedMessage);
 
         $message = $manager->createMessage($request, $authUser);
@@ -129,10 +129,6 @@ class MessageManagerTest extends TestCase
             ->method('build')
             ->with($updateRequest, $this->anything())
             ->willReturn($existingMessage);
-
-        $messageRepository->expects($this->once())
-            ->method('save')
-            ->with($existingMessage);
 
         $message = $manager->updateMessage($updateRequest, $existingMessage, $authUser);
 
