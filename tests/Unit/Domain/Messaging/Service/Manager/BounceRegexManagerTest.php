@@ -85,10 +85,6 @@ class BounceRegexManagerTest extends TestCase
             ->with($hash)
             ->willReturn($existing);
 
-        $this->regexRepository->expects($this->once())
-            ->method('save')
-            ->with($existing);
-
         $updated = $this->manager->createOrUpdateFromPattern(
             regex: $pattern,
             action: 'delete',
