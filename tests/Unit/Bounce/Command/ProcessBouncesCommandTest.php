@@ -30,6 +30,7 @@ class ProcessBouncesCommandTest extends TestCase
 
     private CommandTester $commandTester;
     private TranslatorInterface|MockObject $translator;
+    private EntityManagerInterface|MockObject $entityManager;
 
     protected function setUp(): void
     {
@@ -40,6 +41,7 @@ class ProcessBouncesCommandTest extends TestCase
         $this->unidentifiedReprocessor = $this->createMock(UnidentifiedBounceReprocessor::class);
         $this->consecutiveBounceHandler = $this->createMock(ConsecutiveBounceHandler::class);
         $this->translator = new Translator('en');
+        $this->entityManager = $this->createMock(EntityManagerInterface::class);
 
         $command = new ProcessBouncesCommand(
             lockService: $this->lockService,
@@ -49,7 +51,7 @@ class ProcessBouncesCommandTest extends TestCase
             unidentifiedReprocessor: $this->unidentifiedReprocessor,
             consecutiveBounceHandler: $this->consecutiveBounceHandler,
             translator: $this->translator,
-            entityManager: $this->createMock(EntityManagerInterface::class),
+            entityManager: $this->entityManager,
         );
 
         $this->commandTester = new CommandTester($command);
@@ -198,6 +200,67 @@ class ProcessBouncesCommandTest extends TestCase
         $this->commandTester->execute([
             '--force' => true,
         ]);
+
+        $this->assertSame(0, $this->commandTester->getStatusCode());
+    }
+    public function testForceLockFailureReturnsFailureAndMessage(): void
+    {
+        $this->lockService->expects($this->once())
+            ->method('acquirePageLock')
+            ->with('bounce_processor', true)
+            ->willReturn(0);
+
+        $this->protocolProcessor->expects($this->never())->method('process');
+        $this->advancedRulesProcessor->expects($this->never())->method('process');
+        $this->consecutiveBounceHandler->expects($this->never())->method('handle');
+
+        $this->commandTester->execute([
+            '--force' => true,
+        ]);
+
+        $output = $this->commandTester->getDisplay();
+        $this->assertStringContainsString('Could not apply force lock. Aborting.', $output);
+        $this->assertSame(1, $this->commandTester->getStatusCode());
+    }
+
+    public function testRulesBatchSizeOptionIsRespected(): void
+    {
+        $this->lockService
+            ->expects($this->once())
+            ->method('acquirePageLock')
+            ->with('bounce_processor', false)
+            ->willReturn(10);
+        $this->lockService
+            ->expects($this->once())
+            ->method('release')
+            ->with(10);
+
+        $this->protocolProcessor->method('getProtocol')->willReturn('pop');
+        $this->protocolProcessor->method('process')->willReturn('');
+
+        $this->advancedRulesProcessor
+            ->expects($this->once())
+            ->method('process')
+            ->with($this->anything(), 50);
+
+        $this->commandTester->execute([
+            '--rules-batch-size' => 50,
+        ]);
+
+        $this->assertSame(0, $this->commandTester->getStatusCode());
+    }
+
+    public function testEntityManagerIsFlushedAfterLockAcquireAttempt(): void
+    {
+        $this->lockService->expects($this->once())
+            ->method('acquirePageLock')
+            ->with('bounce_processor', false)
+            ->willReturn(null);
+
+        $this->entityManager->expects($this->once())
+            ->method('flush');
+
+        $this->commandTester->execute([]);
 
         $this->assertSame(0, $this->commandTester->getStatusCode());
     }
