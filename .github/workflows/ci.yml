@@ -1,78 +1,78 @@
-#name: phpList Core Build
-#on: [push, pull_request]
-#jobs:
-#  main:
-#    name: phpList on PHP ${{ matrix.php-versions }} [Build, Test]
-#    runs-on: ubuntu-22.04
-#    env:
-#      DB_DATABASE: phplist
-#      DB_USERNAME: root
-#      DB_PASSWORD: phplist
-#      BROADCAST_DRIVER: log
-#    services:
-#      mysql:
-#        image: mysql:5.7
-#        env:
-#          MYSQL_ALLOW_EMPTY_PASSWORD: false
-#          MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
-#          MYSQL_DATABASE: ${{ env.DB_DATABASE }}
-#        ports:
-#          - 3306/tcp
-#        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        php-versions: ['8.1']
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#      - name: Setup PHP, with composer and extensions
-#        uses: shivammathur/setup-php@v2
-#        with:
-#          php-version: ${{ matrix.php-versions }}
-#          extensions: mbstring, dom, fileinfo, mysql
-#          coverage: xdebug #optional
-#      - name: Install Symfony CLI
-#        run: |
-#          curl -sS https://get.symfony.com/cli/installer | bash
-#          mv $HOME/.symfony*/bin/symfony /usr/local/bin/symfony
-#          symfony version
-#      - name: Start mysql service
-#        run: sudo /etc/init.d/mysql start
-#      - name: Verify MySQL connection on host
-#        run: mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports['3306'] }} -u${{ env.DB_USERNAME }} -p${{ env.DB_PASSWORD }} -e "SHOW DATABASES"
-#      - name: Set up database schema
-#        run: mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports['3306'] }} -u${{ env.DB_USERNAME }} -p${{ env.DB_PASSWORD }} ${{ env.DB_DATABASE }} < resources/Database/Schema.sql
-#      - name: Get composer cache directory
-#        id: composer-cache
-#        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-#      - name: Cache composer dependencies
-#        uses: actions/cache@v3
-#        with:
-#          path: ${{ steps.composer-cache.outputs.dir }}
-#          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-#          restore-keys: ${{ runner.os }}-composer-
-#      - name: Install Composer dependencies
-#        run: composer install --no-progress --prefer-dist --optimize-autoloader
-#      - name: Validating composer.json
-#        run: composer validate --no-check-all --no-check-lock --strict;
-#      - name: Linting all php files
-#        run: find src/ tests/ public/ -name ''*.php'' -print0 | xargs -0 -n 1 -P 4 php -l; php -l bin/*;
-#      - name: Run units tests with phpunit
-#        run: vendor/bin/phpunit tests/Unit/ --testdox
-#      - name: Run integration tests with phpunit
-#        run: |
-#          export PHPLIST_DATABASE_NAME=${{ env.DB_DATABASE }}
-#          export PHPLIST_DATABASE_USER=${{ env.DB_USERNAME }}
-#          export PHPLIST_DATABASE_PASSWORD=${{ env.DB_PASSWORD }}
-#          export PHPLIST_DATABASE_PORT=${{ job.services.mysql.ports['3306'] }}
-#          export PHPLIST_DATABASE_HOST=127.0.0.1
-#          vendor/bin/phpunit tests/Integration/
-#      - name: Running the system tests
-#        run: vendor/bin/phpunit tests/System/ --testdox;
-#      - name: Running static analysis
-#        run: vendor/bin/phpstan analyse -c phpstan.neon;
-#      - name: Running PHPMD
-#        run: vendor/bin/phpmd src/ text config/PHPMD/rules.xml;
-#      - name: Running PHP_CodeSniffer
-#        run: vendor/bin/phpcs --standard=config/PhpCodeSniffer/ bin/ src/ tests/ public/;
+name: phpList Core Build
+on: [push, pull_request]
+jobs:
+  main:
+    name: phpList on PHP ${{ matrix.php-versions }} [Build, Test]
+    runs-on: ubuntu-22.04
+    env:
+      DB_DATABASE: phplist
+      DB_USERNAME: root
+      DB_PASSWORD: phplist
+      BROADCAST_DRIVER: log
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: false
+          MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
+          MYSQL_DATABASE: ${{ env.DB_DATABASE }}
+        ports:
+          - 3306/tcp
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    strategy:
+      fail-fast: false
+      matrix:
+        php-versions: ['8.1']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup PHP, with composer and extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: mbstring, dom, fileinfo, mysql
+          coverage: xdebug #optional
+      - name: Install Symfony CLI
+        run: |
+          curl -sS https://get.symfony.com/cli/installer | bash
+          mv $HOME/.symfony*/bin/symfony /usr/local/bin/symfony
+          symfony version
+      - name: Start mysql service
+        run: sudo /etc/init.d/mysql start
+      - name: Verify MySQL connection on host
+        run: mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports['3306'] }} -u${{ env.DB_USERNAME }} -p${{ env.DB_PASSWORD }} -e "SHOW DATABASES"
+      - name: Set up database schema
+        run: mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports['3306'] }} -u${{ env.DB_USERNAME }} -p${{ env.DB_PASSWORD }} ${{ env.DB_DATABASE }} < resources/Database/Schema.sql
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+      - name: Cache composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+      - name: Install Composer dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+      - name: Validating composer.json
+        run: composer validate --no-check-all --no-check-lock --strict;
+      - name: Linting all php files
+        run: find src/ tests/ public/ -name ''*.php'' -print0 | xargs -0 -n 1 -P 4 php -l; php -l bin/*;
+      - name: Run units tests with phpunit
+        run: vendor/bin/phpunit tests/Unit/ --testdox
+      - name: Run integration tests with phpunit
+        run: |
+          export PHPLIST_DATABASE_NAME=${{ env.DB_DATABASE }}
+          export PHPLIST_DATABASE_USER=${{ env.DB_USERNAME }}
+          export PHPLIST_DATABASE_PASSWORD=${{ env.DB_PASSWORD }}
+          export PHPLIST_DATABASE_PORT=${{ job.services.mysql.ports['3306'] }}
+          export PHPLIST_DATABASE_HOST=127.0.0.1
+          vendor/bin/phpunit tests/Integration/
+      - name: Running the system tests
+        run: vendor/bin/phpunit tests/System/ --testdox;
+      - name: Running static analysis
+        run: vendor/bin/phpstan analyse -c phpstan.neon;
+      - name: Running PHPMD
+        run: vendor/bin/phpmd src/ text config/PHPMD/rules.xml;
+      - name: Running PHP_CodeSniffer
+        run: vendor/bin/phpcs --standard=config/PhpCodeSniffer/ bin/ src/ tests/ public/;

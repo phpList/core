@@ -1,89 +1,89 @@
-#name: Publish Core Docs
-#on: [push, pull_request]
-#jobs:
-#  make-restapi-docs:
-#    name: Checkout phpList core and generate docs using `phpDocumentor`
-#    runs-on: ubuntu-22.04
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#      - name: Setup PHP, with composer and extensions
-#        uses: shivammathur/setup-php@v2
-#        with:
-#          php-version: 8.1
-#          extensions: mbstring, dom, fileinfo, mysql
-#      - name: Get composer cache directory
-#        id: composer-cache
-#        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_ENV
-#      - name: Cache composer dependencies
-#        uses: actions/cache@v3
-#        with:
-#          path: ${{ env.dir }}
-#          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-#          restore-keys: ${{ runner.os }}-composer-
-#      - name: Install current dependencies from composer.lock
-#        run: composer install
-#      - name: Install phpDocumentor
-#        run: |
-#          wget https://phpdoc.org/phpDocumentor.phar
-#          chmod +x phpDocumentor.phar
-#          mv phpDocumentor.phar /usr/local/bin/phpDocumentor
-#      - name: Verify phpDocumentor version
-#        run: phpDocumentor --version
-#      - name: Generate documentation
-#        run: composer run-php-documentor
-#      - name: Zip phpDocumentor directory
-#        run: zip -r phpdocumentor.zip docs/phpdocumentor
-#      - name: Upload generated doc files
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: doc-files
-#          path: phpdocumentor.zip
-#  deploy-docs:
-#    name: Deploy Core Docs
-#    runs-on: ubuntu-22.04
-#    needs: make-restapi-docs
-#    steps:
-#      - name: Checkout phplist/core-docs
-#        uses: actions/checkout@v3
-#        with:
-#          repository: phpList/core-docs
-#          fetch-depth: 0
-#          token: ${{ secrets.PUSH_CORE_DOCS }}
-#      - name: Restore REST API Spec
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: doc-files
-#      - name: Unzip phpDocumentor
-#        run: |
-#          unzip phpdocumentor.zip
-#          rm phpdocumentor.zip
-#      - name: List Files
-#        run: ls
-#      - name: Sync old files with newly generated ones
-#        run: rsync -av docs/phpdocumentor/* .
-#      - name: Remove temporary directories
-#        run: rm -rf docs
-#      - name: Check if updates/changes
-#        run: git status --porcelain > repo-changes.txt
-#      - name: Check changes file
-#        run: cat repo-changes.txt
-#      - name: Verify updates
-#        id: allow-deploy
-#        run: |
-#          if [ -s repo-changes.txt ]; then
-#            echo "Updates made to documentation";
-#            echo 'DEPLOY=true' >> $GITHUB_ENV;
-#          else
-#            echo "No updates made to documentation. Deployment would be skipped.";
-#            echo 'DEPLOY=false' >> $GITHUB_ENV;
-#          fi
-#      - name: Commit changes and deploy
-#        if: ${{ env.DEPLOY == 'true' }}
-#        run: |
-#          rm repo-changes.txt
-#          git config user.name "github-actions"
-#          git config user.email "github-actions@restapi-docs.workflow"
-#          git add .
-#          git commit -s -m "phplist/core docs deployment `date`"
-#          git push origin main --force
+name: Publish Core Docs
+on: [push, pull_request]
+jobs:
+  make-restapi-docs:
+    name: Checkout phpList core and generate docs using `phpDocumentor`
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup PHP, with composer and extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.1
+          extensions: mbstring, dom, fileinfo, mysql
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_ENV
+      - name: Cache composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+      - name: Install current dependencies from composer.lock
+        run: composer install
+      - name: Install phpDocumentor
+        run: |
+          wget https://phpdoc.org/phpDocumentor.phar
+          chmod +x phpDocumentor.phar
+          mv phpDocumentor.phar /usr/local/bin/phpDocumentor
+      - name: Verify phpDocumentor version
+        run: phpDocumentor --version
+      - name: Generate documentation
+        run: composer run-php-documentor
+      - name: Zip phpDocumentor directory
+        run: zip -r phpdocumentor.zip docs/phpdocumentor
+      - name: Upload generated doc files
+        uses: actions/upload-artifact@v4
+        with:
+          name: doc-files
+          path: phpdocumentor.zip
+  deploy-docs:
+    name: Deploy Core Docs
+    runs-on: ubuntu-22.04
+    needs: make-restapi-docs
+    steps:
+      - name: Checkout phplist/core-docs
+        uses: actions/checkout@v3
+        with:
+          repository: phpList/core-docs
+          fetch-depth: 0
+          token: ${{ secrets.PUSH_CORE_DOCS }}
+      - name: Restore REST API Spec
+        uses: actions/download-artifact@v4
+        with:
+          name: doc-files
+      - name: Unzip phpDocumentor
+        run: |
+          unzip phpdocumentor.zip
+          rm phpdocumentor.zip
+      - name: List Files
+        run: ls
+      - name: Sync old files with newly generated ones
+        run: rsync -av docs/phpdocumentor/* .
+      - name: Remove temporary directories
+        run: rm -rf docs
+      - name: Check if updates/changes
+        run: git status --porcelain > repo-changes.txt
+      - name: Check changes file
+        run: cat repo-changes.txt
+      - name: Verify updates
+        id: allow-deploy
+        run: |
+          if [ -s repo-changes.txt ]; then 
+            echo "Updates made to documentation"; 
+            echo 'DEPLOY=true' >> $GITHUB_ENV; 
+          else 
+            echo "No updates made to documentation. Deployment would be skipped."; 
+            echo 'DEPLOY=false' >> $GITHUB_ENV; 
+          fi
+      - name: Commit changes and deploy
+        if: ${{ env.DEPLOY == 'true' }}
+        run: |
+          rm repo-changes.txt
+          git config user.name "github-actions"
+          git config user.email "github-actions@restapi-docs.workflow"
+          git add .
+          git commit -s -m "phplist/core docs deployment `date`"
+          git push origin main --force
