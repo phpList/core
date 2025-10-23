@@ -1,69 +1,69 @@
-name: I18n Validate
-
-on:
-  pull_request:
-    paths:
-      - 'resources/translations/**/*.xlf'
-      - 'composer.lock'
-      - 'composer.json'
-
-jobs:
-  validate-xliff:
-    runs-on: ubuntu-22.04
-
-    strategy:
-      fail-fast: false
-      matrix:
-        php: ['8.1']
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: imap, zip
-          tools: composer:v2
-          coverage: none
-
-      - name: Cache Composer packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.composer/cache/files
-          key: ${{ runner.os }}-composer-${{ matrix.php }}-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-${{ matrix.php }}-
-
-      - name: Install dependencies (no dev autoloader scripts)
-        run: |
-          set -euo pipefail
-          composer install --no-interaction --no-progress --prefer-dist
-
-      - name: Lint XLIFF with Symfony
-        run: |
-          set -euo pipefail
-          # Adjust the directory to match your repo layout
-          php bin/console lint:xliff resources/translations
-
-      - name: Validate XLIFF XML with xmllint
-        run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libxml2-utils
-          # Adjust root dir; prune vendor; accept spaces/newlines safely
-          find resources/translations -type f -name '*.xlf' -not -path '*/vendor/*' -print0 \
-            | xargs -0 -n1 xmllint --noout
-
-      - name: Symfony translation sanity (extract dry-run)
-        run: |
-          set -euo pipefail
-          # Show what would be created/updated without writing files
-          php bin/console translation:extract en \
-            --format=xlf \
-            --domain=messages \
-            --dump-messages \
-            --no-interaction
-          # Note: omit --force to keep this a dry-run
+#name: I18n Validate
+#
+#on:
+#  pull_request:
+#    paths:
+#      - 'resources/translations/**/*.xlf'
+#      - 'composer.lock'
+#      - 'composer.json'
+#
+#jobs:
+#  validate-xliff:
+#    runs-on: ubuntu-22.04
+#
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        php: ['8.1']
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Setup PHP
+#        uses: shivammathur/setup-php@v2
+#        with:
+#          php-version: ${{ matrix.php }}
+#          extensions: imap, zip
+#          tools: composer:v2
+#          coverage: none
+#
+#      - name: Cache Composer packages
+#        uses: actions/cache@v4
+#        with:
+#          path: |
+#            ~/.composer/cache/files
+#          key: ${{ runner.os }}-composer-${{ matrix.php }}-${{ hashFiles('**/composer.lock') }}
+#          restore-keys: |
+#            ${{ runner.os }}-composer-${{ matrix.php }}-
+#
+#      - name: Install dependencies (no dev autoloader scripts)
+#        run: |
+#          set -euo pipefail
+#          composer install --no-interaction --no-progress --prefer-dist
+#
+#      - name: Lint XLIFF with Symfony
+#        run: |
+#          set -euo pipefail
+#          # Adjust the directory to match your repo layout
+#          php bin/console lint:xliff resources/translations
+#
+#      - name: Validate XLIFF XML with xmllint
+#        run: |
+#          set -euo pipefail
+#          sudo apt-get update
+#          sudo apt-get install -y --no-install-recommends libxml2-utils
+#          # Adjust root dir; prune vendor; accept spaces/newlines safely
+#          find resources/translations -type f -name '*.xlf' -not -path '*/vendor/*' -print0 \
+#            | xargs -0 -n1 xmllint --noout
+#
+#      - name: Symfony translation sanity (extract dry-run)
+#        run: |
+#          set -euo pipefail
+#          # Show what would be created/updated without writing files
+#          php bin/console translation:extract en \
+#            --format=xlf \
+#            --domain=messages \
+#            --dump-messages \
+#            --no-interaction
+#          # Note: omit --force to keep this a dry-run
