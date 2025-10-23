@@ -3,3 +3,6 @@ reviews:
     enabled: true
     base_branches:
       - ".*"
+  pull_request:
+    summarize: true
+    update_description: true
