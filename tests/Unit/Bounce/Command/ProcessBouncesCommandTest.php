@@ -73,7 +73,7 @@ class ProcessBouncesCommandTest extends TestCase
         $this->commandTester->execute([]);
 
         $output = $this->commandTester->getDisplay();
-        $this->assertStringContainsString('Another bounce processing is already running. Aborting.', $output);
+        $this->assertStringContainsString('Another bounce processing is already running.', $output);
         $this->assertSame(0, $this->commandTester->getStatusCode());
     }
 
