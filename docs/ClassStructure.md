@@ -1,32 +1,49 @@
 # Class structure
 
-All production classes are located in `src/`, and all unit and integration
-tests are located in `tests/`.
-
+All production classes live under `src/`, and all unit/integration tests live under `tests/`.
 
 ## Core/
+Core runtime and DI wiring.
+- Bootstrap: entry point that bootstraps the phpList core system and configures the application.
+- ApplicationKernel, ApplicationStructure: Symfony kernel and structure configuration.
+- Compiler passes (e.g., BounceProcessorPass, DoctrineMappingPass), environment helpers, parameter providers.
 
-### Bootstrap
+## Bounce/
+Bounce processing feature. (This module continuously updates the database throughout the bounce-processing workflow; therefore, it is separated into its own feature block.)
+- Command/: Console commands related to processing bounces.
+- Service/: Services that parse, classify and handle bounces.
+- Exception/: Bounce‑related exceptions.
 
-This class bootstraps the phpList core system.
-
+## Composer/
+Integration with Composer.
+- ScriptHandler, ModuleFinder, PackageRepository: helpers invoked by Composer scripts and for module discovery.
 
 ## Domain/
+Domain logic organized by sub‑domains (e.g., Analytics, Common, Configuration, Identity, Messaging, Subscription).
+Each sub‑domain follows similar conventions:
+- Model/: Domain entities/value objects. Contains business logic; no direct DB access.
+- Repository/: Reading/writing models and other DB queries.
+- Service/: Domain services and orchestration.
+- Exception/: Domain‑specific exceptions.
 
-### Model/
+## EmptyStartPageBundle/
+A minimal Symfony bundle providing an empty start page.
+- Controller/: Controllers for the bundle.
 
-These classes are the domain models, which map to some of the database tables,
-and where the model-related business logic can be found. There must be no
-database access code in these classes.
+## Migrations/
+Holds database migration files (Doctrine Migrations). May be empty until migrations are generated.
 
-### Repository/
+## Routing/
+Routing extensions and loaders.
+- ExtraLoader: additional/dynamic route loading.
 
-These classes are responsible for reading domain models from the database,
-for writing them there, and for other database queries.
+## Security/
+Security‑related concerns.
+- Authentication: authentication helpers/integration.
+- HashGenerator: password hashing utilities.
 
-
-## Security
-
-These classes deal with security-related concerns, e.g., password hashing.
+## TestingSupport/
+Utilities to support tests.
+- Traits/: Reusable traits and helpers used in the test suite.
 
 
