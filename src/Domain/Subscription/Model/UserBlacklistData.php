@@ -15,8 +15,9 @@ use PhpList\Core\Domain\Subscription\Repository\UserBlacklistDataRepository;
 class UserBlacklistData implements DomainModel
 {
     #[ORM\Id]
-    #[ORM\Column(name: 'email', type: 'string', length: 150)]
-    private string $email;
+    #[ORM\OneToOne(targetEntity: UserBlacklist::class, inversedBy: 'blacklistData')]
+    #[ORM\JoinColumn(name: 'email', referencedColumnName: 'email', nullable: false, onDelete: 'CASCADE')]
+    private UserBlacklist $blacklist;
 
     #[ORM\Column(name: 'name', type: 'string', length: 25)]
     private string $name;
@@ -24,9 +25,20 @@ class UserBlacklistData implements DomainModel
     #[ORM\Column(name: 'data', type: 'text', nullable: true)]
     private ?string $data = null;
 
+    public function getBlacklist(): UserBlacklist
+    {
+        return $this->blacklist;
+    }
+
+    public function setBlacklist(UserBlacklist $blacklist): self
+    {
+        $this->blacklist = $blacklist;
+        return $this;
+    }
+
     public function getEmail(): string
     {
-        return $this->email;
+        return $this->blacklist->getEmail();
     }
 
     public function getName(): string
