@@ -45,3 +45,8 @@ services:
     arguments:
       - '@annotation_reader'
       - '%kernel.project_dir%/src/Domain/Model/'
+
+  PhpList\Core\Core\Doctrine\OnlyOrmTablesFilter:
+    lazy: true
+    tags:
+      - { name: 'doctrine.dbal.schema_filter', connection: 'default' }
