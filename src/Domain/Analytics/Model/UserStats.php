@@ -32,8 +32,8 @@ class UserStats implements DomainModel, Identity
     #[ORM\Column(name: 'listid', type: 'integer', options: ['default' => 0])]
     private int $listId = 0;
 
-    #[ORM\Column(name: 'value', type: 'integer', options: ['default' => 0])]
-    private int $value = 0;
+    #[ORM\Column(name: 'value', type: 'integer', nullable: false)]
+    private int $value;
 
     public function getId(): ?int
     {

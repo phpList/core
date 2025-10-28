@@ -402,7 +402,7 @@ CREATE TABLE `phplist_listattr_becities` (
   `listorder` int DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`(150))
-) ENGINE=InnoDB AUTO_INCREMENT=2680 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2680 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -418,7 +418,7 @@ CREATE TABLE `phplist_listattr_termsofservice` (
   `listorder` int DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`(150))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -434,7 +434,7 @@ CREATE TABLE `phplist_listattr_ukcounties` (
   `listorder` int DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`(150))
-) ENGINE=InnoDB AUTO_INCREMENT=184 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=184 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -450,7 +450,7 @@ CREATE TABLE `phplist_listattr_ukcounties1` (
   `listorder` int DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`(150))
-) ENGINE=InnoDB AUTO_INCREMENT=184 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=184 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
