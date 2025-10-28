@@ -28,7 +28,7 @@ class OnlyOrmTablesFilter
             foreach ($this->em->getMetadataFactory()->getAllMetadata() as $m) {
                 // main table
                 $table = $m->getTableName();
-                if (str_starts_with($table, 'phplist_')) {
+                if ($table) {
                     $names[] = $table;
                 }
 
@@ -36,7 +36,7 @@ class OnlyOrmTablesFilter
                 foreach ($m->getAssociationMappings() as $assoc) {
                     if (isset($assoc['joinTable']['name'])) {
                         $join = $assoc['joinTable']['name'];
-                        if (str_starts_with($join, 'phplist_')) {
+                        if ($join) {
                             $names[] = $join;
                         }
                     }
