@@ -27,7 +27,7 @@ class AdministratorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->subject = new Administrator();
+        $this->subject = (new Administrator())->setLoginName('');
     }
 
     public function testIsDomainModel(): void

@@ -44,11 +44,13 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
 
     #[ORM\ManyToOne(targetEntity: Administrator::class)]
     #[ORM\JoinColumn(name: 'adminid', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private ?Administrator $administrator = null;
+    private Administrator $administrator;
 
-    public function __construct()
+    public function __construct(Administrator $administrator)
     {
-        $this->setExpiry(new DateTime());
+        $this->generateExpiry();
+        $this->generateKey();
+        $this->administrator = $administrator;
     }
 
     public function getId(): ?int
@@ -112,7 +114,7 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
         return $this;
     }
 
-    public function getAdministrator(): Administrator|Proxy|null
+    public function getAdministrator(): Administrator|Proxy
     {
         return $this->administrator;
     }

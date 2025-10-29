@@ -29,11 +29,11 @@ class UserStats implements DomainModel, Identity
     #[ORM\Column(name: 'item', type: 'string', length: 255, nullable: true)]
     private ?string $item = null;
 
-    #[ORM\Column(name: 'listid', type: 'integer', options: ['default' => 0])]
+    #[ORM\Column(name: 'listid', type: 'integer', nullable: true, options: ['default' => 0])]
     private int $listId = 0;
 
-    #[ORM\Column(name: 'value', type: 'integer', nullable: false)]
-    private int $value;
+    #[ORM\Column(name: 'value', type: 'integer', nullable: true, options: ['default' => 0])]
+    private ?int $value = null;
 
     public function getId(): ?int
     {

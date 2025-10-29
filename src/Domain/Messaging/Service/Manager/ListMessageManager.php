@@ -40,7 +40,6 @@ class ListMessageManager
         $listMessage = new ListMessage();
         $listMessage->setMessage($message);
         $listMessage->setList($subscriberList);
-        $listMessage->setEntered(new DateTime());
 
         $this->entityManager->persist($listMessage);
 

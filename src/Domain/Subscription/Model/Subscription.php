@@ -95,10 +95,8 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
 
     #[ORM\PrePersist]
     #[ORM\PreUpdate]
-    public function updateUpdatedAt(): DomainModel
+    public function updateUpdatedAt(): void
     {
         $this->updatedAt = new DateTime();
-
-        return $this;
     }
 }

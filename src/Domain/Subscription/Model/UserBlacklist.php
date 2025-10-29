@@ -24,6 +24,12 @@ class UserBlacklist implements DomainModel
     #[ORM\OneToOne(targetEntity: UserBlacklistData::class, mappedBy: 'blacklist', cascade: ['persist', 'remove'])]
     private ?UserBlacklistData $blacklistData = null;
 
+    public function __construct(string $email)
+    {
+        $this->email = $email;
+        $this->added = new DateTime();
+    }
+
     public function getEmail(): string
     {
         return $this->email;
@@ -32,12 +38,6 @@ class UserBlacklist implements DomainModel
     public function getAdded(): ?DateTime
     {
         return $this->added;
-    }
-
-    public function setEmail(string $email): self
-    {
-        $this->email = $email;
-        return $this;
     }
 
     public function setAdded(?DateTime $added): self

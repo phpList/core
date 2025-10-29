@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Model;
 
 use DateTime;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -31,8 +32,8 @@ class Message implements DomainModel, Identity, ModificationDate, OwnableInterfa
     #[ORM\GeneratedValue]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'modified', type: 'datetime')]
-    private ?DateTime $updatedAt = null;
+    #[ORM\Column(name: 'modified', type: 'datetime', nullable: false)]
+    private DateTimeImmutable $updatedAt;
 
     #[ORM\Embedded(class: MessageFormat::class, columnPrefix: false)]
     private MessageFormat $format;
@@ -81,6 +82,8 @@ class Message implements DomainModel, Identity, ModificationDate, OwnableInterfa
         $this->owner = $owner;
         $this->template = $template;
         $this->listMessages = new ArrayCollection();
+        $this->updatedAt = new DateTimeImmutable();
+        $this->metadata->setEntered(new DateTime());
     }
 
     public function getId(): ?int
@@ -88,18 +91,16 @@ class Message implements DomainModel, Identity, ModificationDate, OwnableInterfa
         return $this->id;
     }
 
-    public function getUpdatedAt(): ?DateTime
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
+    public function getUpdatedAt(): DateTime
     {
-        return $this->updatedAt;
+        return DateTime::createFromImmutable($this->updatedAt);
     }
 
-    #[ORM\PrePersist]
     #[ORM\PreUpdate]
-    public function updateUpdatedAt(): DomainModel
+    public function touchUpdatedTimestamp(): void
     {
-        $this->updatedAt = new DateTime();
-
-        return $this;
+        $this->updatedAt = new DateTimeImmutable();
     }
 
     public function getFormat(): MessageFormat

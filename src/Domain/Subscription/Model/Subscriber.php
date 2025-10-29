@@ -108,11 +108,9 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
 
     #[ORM\PrePersist]
     #[ORM\PreUpdate]
-    public function updateUpdatedAt(): DomainModel
+    public function updateUpdatedAt(): void
     {
         $this->updatedAt = new DateTime();
-
-        return $this;
     }
 
     public function isConfirmed(): bool

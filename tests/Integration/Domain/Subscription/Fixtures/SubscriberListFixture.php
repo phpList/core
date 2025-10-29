@@ -41,7 +41,8 @@ class SubscriberListFixture extends Fixture
 
             $admin = $adminRepository->find($row['owner']);
             if ($admin === null) {
-                $admin = new Administrator();
+                $admin = (new Administrator())
+                    ->setLoginName($row['name']);
                 $this->setSubjectId($admin, (int)$row['owner']);
                 $manager->persist($admin);
             }

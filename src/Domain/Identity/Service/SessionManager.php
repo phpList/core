@@ -47,10 +47,7 @@ class SessionManager
             throw new UnauthorizedHttpException('', $message, null, 1500567099);
         }
 
-        $token = new AdministratorToken();
-        $token->setAdministrator($administrator);
-        $token->generateExpiry();
-        $token->generateKey();
+        $token = new AdministratorToken($administrator);
         $this->tokenRepository->persist($token);
 
         return $token;

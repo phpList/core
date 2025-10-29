@@ -40,7 +40,7 @@ class AdministratorTokenWithAdministratorFixture extends Fixture
 
             $admin = $adminRepository->find($row['adminid']);
             if ($admin === null) {
-                $admin = new Administrator();
+                $admin = (new Administrator())->setLoginName($row['id']);
                 $this->setSubjectId($admin, (int)$row['adminid']);
                 $manager->persist($admin);
             }

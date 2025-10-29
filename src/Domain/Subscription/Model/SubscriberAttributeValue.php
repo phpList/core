@@ -25,7 +25,7 @@ class SubscriberAttributeValue implements DomainModel
     #[ORM\JoinColumn(name: 'userid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private Subscriber $subscriber;
 
-    #[ORM\Column(name: 'value', type: 'text', nullable: true)]
+    #[ORM\Column(name: 'value', type: 'text', nullable: true, columnDefinition: 'TEXT')]
     private ?string $value = null;
 
     public function __construct(SubscriberAttributeDefinition $attributeDefinition, Subscriber $subscriber)

@@ -39,6 +39,12 @@ class ListMessage implements DomainModel, Identity, ModificationDate
     #[ORM\Column(name: 'modified', type: 'datetime')]
     private ?DateTime $updatedAt = null;
 
+    public function __construct()
+    {
+        $this->updatedAt = new DateTime();
+        $this->entered = new DateTime();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -71,23 +77,14 @@ class ListMessage implements DomainModel, Identity, ModificationDate
         return $this->entered;
     }
 
-    public function setEntered(?DateTimeInterface $entered): self
-    {
-        $this->entered = $entered;
-        return $this;
-    }
-
     public function getUpdatedAt(): ?DateTime
     {
         return $this->updatedAt;
     }
 
-    #[ORM\PrePersist]
     #[ORM\PreUpdate]
-    public function updateUpdatedAt(): DomainModel
+    public function updateUpdatedAt(): void
     {
         $this->updatedAt = new DateTime();
-
-        return $this;
     }
 }

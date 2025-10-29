@@ -30,7 +30,7 @@ class Bounce implements DomainModel, Identity
     #[ORM\Column(type: 'blob', nullable: true)]
     private ?string $data;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
     private ?string $status;
 
     #[ORM\Column(type: 'text', nullable: true)]

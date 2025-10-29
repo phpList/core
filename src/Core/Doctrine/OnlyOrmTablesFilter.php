@@ -11,21 +11,22 @@ class OnlyOrmTablesFilter
     /** @var string[]|null */
     private ?array $allow = null;
 
-    public function __construct(private readonly EntityManagerInterface $em)
+    public function __construct(private readonly EntityManagerInterface $entityManager)
     {
     }
 
     public function __invoke(string $assetName): bool
     {
         // asset names can be "schema.table" ➜ normalize
-        if (false !== ($pos = strrpos($assetName, '.'))) {
+        $pos = strrpos($assetName, '.');
+        if ($pos !== false) {
             $assetName = substr($assetName, $pos + 1);
         }
 
         // Build the whitelist lazily to avoid touching the EM during container compilation or early boot.
         if ($this->allow === null) {
             $names = [];
-            foreach ($this->em->getMetadataFactory()->getAllMetadata() as $m) {
+            foreach ($this->entityManager->getMetadataFactory()->getAllMetadata() as $m) {
                 // main table
                 $table = $m->getTableName();
                 if ($table) {

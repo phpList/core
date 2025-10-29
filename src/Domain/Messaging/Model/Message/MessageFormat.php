@@ -11,7 +11,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\EmbeddableInterface;
 #[ORM\Embeddable]
 class MessageFormat implements EmbeddableInterface
 {
-    #[ORM\Column(name: 'htmlformatted', type: 'boolean', options: ['default' => false])]
+    #[ORM\Column(name: 'htmlformatted', type: 'boolean')]
     private bool $htmlFormatted = false;
 
     #[ORM\Column(name: 'sendformat', type: 'string', length: 20, nullable: true)]

@@ -22,10 +22,8 @@ use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
  * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 #[ORM\Entity(repositoryClass: AdministratorRepository::class)]
-#[ORM\Table(
-    name: 'phplist_admin',
-    uniqueConstraints: [new ORM\UniqueConstraint(name: 'loginnameidx', columns: ['loginname'])]
-)]
+#[ORM\Table(name: 'phplist_admin')]
+#[ORM\UniqueConstraint(name: 'loginnameidx', columns: ['loginname'])]
 #[ORM\HasLifecycleCallbacks]
 class Administrator implements DomainModel, Identity, CreationDate, ModificationDate
 {
@@ -35,7 +33,7 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     private ?int $id = null;
 
     #[ORM\Column(name: 'created', type: 'datetime', nullable: true)]
-    protected ?DateTime $createdAt = null;
+    protected DateTime $createdAt;
 
     #[ORM\Column(name: 'modified', type: 'datetime', nullable: false)]
     private DateTime $updatedAt;
@@ -71,7 +69,6 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     {
         $this->createdAt = new DateTime();
         $this->updatedAt = new DateTime();
-        $this->loginName = '';
         $this->email = '';
     }
 
@@ -80,7 +77,7 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->id;
     }
 
-    public function getCreatedAt(): ?DateTime
+    public function getCreatedAt(): DateTime
     {
         return $this->createdAt;
     }
@@ -170,6 +167,8 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
 
     /**
      * @throws InvalidArgumentException
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function setPrivilegesFromArray(array $privilegesData): void
     {
@@ -184,6 +183,7 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         $this->setPrivileges($privileges);
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function getPrivileges(): Privileges
     {
         return Privileges::fromSerialized($this->privileges);
@@ -209,17 +209,8 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $resource->getOwner()->getId() === $this->getId();
     }
 
-    #[ORM\PrePersist]
-    public function onPrePersist(): void
-    {
-        if ($this->createdAt === null) {
-            $this->createdAt = new DateTime();
-        }
-        $this->updatedAt = new DateTime();
-    }
-
     #[ORM\PreUpdate]
-    public function onPreUpdate(): void
+    public function setUpdatedAt(): void
     {
         $this->updatedAt = new DateTime();
     }

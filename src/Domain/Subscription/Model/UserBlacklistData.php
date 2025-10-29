@@ -51,12 +51,6 @@ class UserBlacklistData implements DomainModel
         return $this->data;
     }
 
-    public function setEmail(string $email): self
-    {
-        $this->email = $email;
-        return $this;
-    }
-
     public function setName(string $name): self
     {
         $this->name = $name;

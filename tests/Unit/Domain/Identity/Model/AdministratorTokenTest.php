@@ -26,7 +26,7 @@ class AdministratorTokenTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->subject = new AdministratorToken();
+        $this->subject = new AdministratorToken((new Administrator())->setLoginName('admin'));
     }
 
     public function testIsDomainModel(): void
@@ -54,11 +54,6 @@ class AdministratorTokenTest extends TestCase
         self::assertSimilarDates(new DateTime(), $this->subject->getCreatedAt());
     }
 
-    public function testGetKeyInitiallyReturnsEmptyString(): void
-    {
-        self::assertSame('', $this->subject->getKey());
-    }
-
     public function testSetKeySetsKey(): void
     {
         $value = 'Club-Mate';
@@ -74,8 +69,6 @@ class AdministratorTokenTest extends TestCase
 
     public function testGenerateExpirySetsExpiryOneHourInTheFuture(): void
     {
-        $this->subject->generateExpiry();
-
         self::assertSimilarDates(new DateTime('+1 hour'), $this->subject->getExpiry());
     }
 
@@ -99,7 +92,7 @@ class AdministratorTokenTest extends TestCase
 
     public function testGetAdministratorInitiallyReturnsNull(): void
     {
-        self::assertNull($this->subject->getAdministrator());
+        self::assertNotNull($this->subject->getAdministrator());
     }
 
     public function testSetAdministratorSetsAdministrator(): void

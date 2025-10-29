@@ -37,7 +37,7 @@ class AdminLogin implements DomainModel, Identity
     #[ORM\Column(name: 'sessionid', type: 'string', length: 50)]
     private string $sessionId;
 
-    #[ORM\Column(name: 'active', type: 'boolean')]
+    #[ORM\Column(name: 'active', type: 'boolean', nullable: false)]
     private bool $active = false;
 
     public function __construct(

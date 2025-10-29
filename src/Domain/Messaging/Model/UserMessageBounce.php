@@ -16,7 +16,6 @@ use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
 #[ORM\Index(name: 'msgidx', columns: ['message'])]
 #[ORM\Index(name: 'umbindex', columns: ['user', 'message', 'bounce'])]
 #[ORM\Index(name: 'useridx', columns: ['user'])]
-#[ORM\HasLifecycleCallbacks]
 class UserMessageBounce implements DomainModel, Identity
 {
     #[ORM\Id]

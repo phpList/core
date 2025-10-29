@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Analytics\Model;
 
+use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository;
@@ -39,11 +40,16 @@ class LinkTrack implements DomainModel, Identity
     #[ORM\Column(name: 'firstclick', type: 'datetime', nullable: true)]
     private ?DateTimeInterface $firstClick = null;
 
-    #[ORM\Column(name: 'latestclick', type: 'datetime', nullable: true, options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[ORM\Column(name: 'latestclick', type: 'datetime')]
     private ?DateTimeInterface $latestClick = null;
 
     #[ORM\Column(type: 'integer', nullable: true, options: ['default' => 0])]
     private int $clicked = 0;
+
+    public function __construct()
+    {
+        $this->latestClick = new DateTime();
+    }
 
     public function getId(): int
     {
