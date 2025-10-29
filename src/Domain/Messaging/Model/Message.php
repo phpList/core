@@ -33,7 +33,7 @@ class Message implements DomainModel, Identity, ModificationDate, OwnableInterfa
     private ?int $id = null;
 
     #[ORM\Column(name: 'modified', type: 'datetime', nullable: false)]
-    private DateTimeImmutable $updatedAt;
+    private DateTime $updatedAt;
 
     #[ORM\Embedded(class: MessageFormat::class, columnPrefix: false)]
     private MessageFormat $format;
@@ -82,7 +82,7 @@ class Message implements DomainModel, Identity, ModificationDate, OwnableInterfa
         $this->owner = $owner;
         $this->template = $template;
         $this->listMessages = new ArrayCollection();
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTime();
         $this->metadata->setEntered(new DateTime());
     }
 
@@ -91,16 +91,15 @@ class Message implements DomainModel, Identity, ModificationDate, OwnableInterfa
         return $this->id;
     }
 
-    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function getUpdatedAt(): DateTime
     {
-        return DateTime::createFromImmutable($this->updatedAt);
+        return $this->updatedAt;
     }
 
     #[ORM\PreUpdate]
     public function touchUpdatedTimestamp(): void
     {
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTime;
     }
 
     public function getFormat(): MessageFormat

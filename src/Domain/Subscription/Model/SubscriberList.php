@@ -43,7 +43,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     private ?string $rssFeed = null;
 
     #[ORM\Column]
-    private ?string $description;
+    private string $description = '';
 
     #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
     protected ?DateTime $createdAt = null;

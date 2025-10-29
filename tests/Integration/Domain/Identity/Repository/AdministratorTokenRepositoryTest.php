@@ -130,8 +130,7 @@ class AdministratorTokenRepositoryTest extends WebTestCase
         /** @var Administrator $administrator */
         $administrator = $administratorRepository->find(1);
 
-        $model = new AdministratorToken();
-        $model->setAdministrator($administrator);
+        $model = new AdministratorToken($administrator);
         $this->repository->save($model);
 
         self::assertSame($model, $this->repository->find($model->getId()));

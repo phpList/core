@@ -114,14 +114,8 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
         return $this;
     }
 
-    public function getAdministrator(): Administrator|Proxy
+    public function getAdministrator(): Administrator
     {
         return $this->administrator;
-    }
-
-    public function setAdministrator(Administrator $administrator): self
-    {
-        $this->administrator = $administrator;
-        return $this;
     }
 }

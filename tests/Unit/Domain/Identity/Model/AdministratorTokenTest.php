@@ -94,12 +94,4 @@ class AdministratorTokenTest extends TestCase
     {
         self::assertNotNull($this->subject->getAdministrator());
     }
-
-    public function testSetAdministratorSetsAdministrator(): void
-    {
-        $model = new Administrator();
-        $this->subject->setAdministrator($model);
-
-        self::assertSame($model, $this->subject->getAdministrator());
-    }
 }
