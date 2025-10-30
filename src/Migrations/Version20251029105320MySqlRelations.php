@@ -11,11 +11,11 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20251029105320 extends AbstractMigration
+final class Version20251029105320MySqlRelations extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Update according to symfony Entity mappings';
     }
 
     public function up(Schema $schema): void

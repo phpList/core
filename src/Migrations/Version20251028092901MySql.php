@@ -11,11 +11,11 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Manual Migration
  */
-final class Version20251028092901 extends AbstractMigration
+final class Version20251028092901MySql extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Initial schema from SQL file generated from phplist3';
     }
 
     /**

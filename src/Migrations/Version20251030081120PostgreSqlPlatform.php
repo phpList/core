@@ -15,7 +15,7 @@ final class Version20251030081120PostgreSqlPlatform extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'PostgreSql platform migration according to current Entity state';
     }
 
     public function up(Schema $schema): void
