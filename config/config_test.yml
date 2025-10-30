@@ -13,10 +13,10 @@ doctrine:
     dbal:
 #        driver: 'pdo_sqlite'
 #        memory: true
-        driver: 'pdo_mysql'
+        driver: 'pdo_pgsql'
         host: '%database_host%'
-        port: '%database_port%'
-        dbname: 'phplist'
+        port: '5433'
+        dbname: 'phplistdb'
         user: '%database_user%'
         password: '%database_password%'
         charset: UTF8
