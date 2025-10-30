@@ -4,6 +4,7 @@ doctrine_migrations:
 #        'TatevikGr\RssBundle\RssFeedBundle\Migrations': '%kernel.project_dir%/vendor/tatevikgr/rss-bundle/src/RssFeedBundle/Migrations'
     all_or_nothing: true
     organize_migrations: false
+    custom_template: '%kernel.project_dir%/src/Migrations/_template_migration.php'
     storage:
         table_storage:
             table_name: 'doctrine_migration_versions'
