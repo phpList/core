@@ -23,7 +23,7 @@ use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
  */
 #[ORM\Entity(repositoryClass: AdministratorRepository::class)]
 #[ORM\Table(name: 'phplist_admin')]
-#[ORM\UniqueConstraint(name: 'loginnameidx', columns: ['loginname'])]
+#[ORM\UniqueConstraint(name: 'phplist_admin_loginnameidx', columns: ['loginname'])]
 #[ORM\HasLifecycleCallbacks]
 class Administrator implements DomainModel, Identity, CreationDate, ModificationDate
 {

@@ -10,8 +10,8 @@ use PhpList\Core\Domain\Subscription\Repository\UserBlacklistDataRepository;
 
 #[ORM\Entity(repositoryClass: UserBlacklistDataRepository::class)]
 #[ORM\Table(name: 'phplist_user_blacklist_data')]
-#[ORM\Index(name: 'emailidx', columns: ['email'])]
-#[ORM\Index(name: 'emailnameidx', columns: ['email', 'name'])]
+#[ORM\Index(name: 'phplist_user_blacklist_data_emailidx', columns: ['email'])]
+#[ORM\Index(name: 'phplist_user_blacklist_data_emailnameidx', columns: ['email', 'name'])]
 class UserBlacklistData implements DomainModel
 {
     #[ORM\Id]

@@ -13,11 +13,11 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 
 #[ORM\Entity(repositoryClass: LinkTrackRepository::class)]
 #[ORM\Table(name: 'phplist_linktrack')]
-#[ORM\UniqueConstraint(name: 'miduidurlindex', columns: ['messageid', 'userid', 'url'])]
-#[ORM\Index(name: 'midindex', columns: ['messageid'])]
-#[ORM\Index(name: 'miduidindex', columns: ['messageid', 'userid'])]
-#[ORM\Index(name: 'uidindex', columns: ['userid'])]
-#[ORM\Index(name: 'urlindex', columns: ['url'])]
+#[ORM\UniqueConstraint(name: 'phplist_linktrack_miduidurlindex', columns: ['messageid', 'userid', 'url'])]
+#[ORM\Index(name: 'phplist_linktrack_midindex', columns: ['messageid'])]
+#[ORM\Index(name: 'phplist_linktrack_miduidindex', columns: ['messageid', 'userid'])]
+#[ORM\Index(name: 'phplist_linktrack_uidindex', columns: ['userid'])]
+#[ORM\Index(name: 'phplist_linktrack_urlindex', columns: ['url'])]
 class LinkTrack implements DomainModel, Identity
 {
     #[ORM\Id]

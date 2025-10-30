@@ -26,8 +26,8 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
  */
 #[ORM\Entity(repositoryClass: SubscriberListRepository::class)]
 #[ORM\Table(name: 'phplist_list')]
-#[ORM\Index(name: 'nameidx', columns: ['name'])]
-#[ORM\Index(name: 'listorderidx', columns: ['listorder'])]
+#[ORM\Index(name: 'phplist_list_nameidx', columns: ['name'])]
+#[ORM\Index(name: 'phplist_list_listorderidx', columns: ['listorder'])]
 #[ORM\HasLifecycleCallbacks]
 class SubscriberList implements DomainModel, Identity, CreationDate, ModificationDate, OwnableInterface
 {

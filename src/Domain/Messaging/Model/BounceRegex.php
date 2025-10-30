@@ -11,7 +11,7 @@ use PhpList\Core\Domain\Messaging\Repository\BounceRegexRepository;
 
 #[ORM\Entity(repositoryClass: BounceRegexRepository::class)]
 #[ORM\Table(name: 'phplist_bounceregex')]
-#[ORM\UniqueConstraint(name: 'regex', columns: ['regexhash'])]
+#[ORM\UniqueConstraint(name: 'phplist_bounceregex_regex', columns: ['regexhash'])]
 class BounceRegex implements DomainModel, Identity
 {
     #[ORM\Id]

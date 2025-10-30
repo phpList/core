@@ -12,7 +12,7 @@ use PhpList\Core\Domain\Configuration\Repository\UrlCacheRepository;
 
 #[ORM\Entity(repositoryClass: UrlCacheRepository::class)]
 #[ORM\Table(name: 'phplist_urlcache')]
-#[ORM\Index(name: 'urlindex', columns: ['url'])]
+#[ORM\Index(name: 'phplist_urlcache_urlindex', columns: ['url'])]
 #[ORM\HasLifecycleCallbacks]
 class UrlCache implements DomainModel, Identity
 {

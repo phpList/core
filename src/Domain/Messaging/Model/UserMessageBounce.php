@@ -12,10 +12,10 @@ use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
 
 #[ORM\Entity(repositoryClass: UserMessageBounceRepository::class)]
 #[ORM\Table(name: 'phplist_user_message_bounce')]
-#[ORM\Index(name: 'bounceidx', columns: ['bounce'])]
-#[ORM\Index(name: 'msgidx', columns: ['message'])]
-#[ORM\Index(name: 'umbindex', columns: ['user', 'message', 'bounce'])]
-#[ORM\Index(name: 'useridx', columns: ['user'])]
+#[ORM\Index(name: 'phplist_user_message_bounce_bounceidx', columns: ['bounce'])]
+#[ORM\Index(name: 'phplist_user_message_bounce_msgidx', columns: ['message'])]
+#[ORM\Index(name: 'phplist_user_message_bounce_umbindex', columns: ['user', 'message', 'bounce'])]
+#[ORM\Index(name: 'phplist_user_message_bounce_useridx', columns: ['user'])]
 class UserMessageBounce implements DomainModel, Identity
 {
     #[ORM\Id]

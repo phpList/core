@@ -12,8 +12,8 @@ use PhpList\Core\Domain\Messaging\Repository\BounceRepository;
 
 #[ORM\Entity(repositoryClass: BounceRepository::class)]
 #[ORM\Table(name: 'phplist_bounce')]
-#[ORM\Index(name: 'dateindex', columns: ['date'])]
-#[ORM\Index(name: 'statusidx', columns: ['status'])]
+#[ORM\Index(name: 'phplist_bounce_dateindex', columns: ['date'])]
+#[ORM\Index(name: 'phplist_bounce_statusidx', columns: ['status'])]
 class Bounce implements DomainModel, Identity
 {
     #[ORM\Id]

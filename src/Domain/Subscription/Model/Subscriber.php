@@ -23,14 +23,14 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
  */
 #[ORM\Entity(repositoryClass: SubscriberRepository::class)]
 #[ORM\Table(name: 'phplist_user_user')]
-#[ORM\Index(name: 'idxuniqid', columns: ['uniqid'])]
-#[ORM\Index(name: 'enteredindex', columns: ['entered'])]
-#[ORM\Index(name: 'confidx', columns: ['confirmed'])]
-#[ORM\Index(name: 'blidx', columns: ['blacklisted'])]
-#[ORM\Index(name: 'optidx', columns: ['optedin'])]
-#[ORM\Index(name: 'uuididx', columns: ['uuid'])]
-#[ORM\Index(name: 'foreignkey', columns: ['foreignkey'])]
-#[ORM\UniqueConstraint(name: 'email', columns: ['email'])]
+#[ORM\Index(name: 'phplist_user_user_idxuniqid', columns: ['uniqid'])]
+#[ORM\Index(name: 'phplist_user_user_enteredindex', columns: ['entered'])]
+#[ORM\Index(name: 'phplist_user_user_confidx', columns: ['confirmed'])]
+#[ORM\Index(name: 'phplist_user_user_blidx', columns: ['blacklisted'])]
+#[ORM\Index(name: 'phplist_user_user_optidx', columns: ['optedin'])]
+#[ORM\Index(name: 'phplist_user_user_uuididx', columns: ['uuid'])]
+#[ORM\Index(name: 'phplist_user_user_foreignkey', columns: ['foreignkey'])]
+#[ORM\UniqueConstraint(name: 'phplist_user_user_email', columns: ['email'])]
 #[ORM\HasLifecycleCallbacks]
 class Subscriber implements DomainModel, Identity, CreationDate, ModificationDate
 {

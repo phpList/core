@@ -11,11 +11,11 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 
 #[ORM\Entity(repositoryClass: UserStatsRepository::class)]
 #[ORM\Table(name: 'phplist_userstats')]
-#[ORM\UniqueConstraint(name: 'entry', columns: ['unixdate', 'item', 'listid'])]
-#[ORM\Index(name: 'dateindex', columns: ['unixdate'])]
-#[ORM\Index(name: 'itemindex', columns: ['item'])]
-#[ORM\Index(name: 'listdateindex', columns: ['listid', 'unixdate'])]
-#[ORM\Index(name: 'listindex', columns: ['listid'])]
+#[ORM\UniqueConstraint(name: 'phplist_userstats_entry', columns: ['unixdate', 'item', 'listid'])]
+#[ORM\Index(name: 'phplist_userstats_dateindex', columns: ['unixdate'])]
+#[ORM\Index(name: 'phplist_userstats_itemindex', columns: ['item'])]
+#[ORM\Index(name: 'phplist_userstats_listdateindex', columns: ['listid', 'unixdate'])]
+#[ORM\Index(name: 'phplist_userstats_listindex', columns: ['listid'])]
 class UserStats implements DomainModel, Identity
 {
     #[ORM\Id]

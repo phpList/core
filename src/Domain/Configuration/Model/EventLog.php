@@ -13,8 +13,8 @@ use PhpList\Core\Domain\Configuration\Repository\EventLogRepository;
 
 #[ORM\Entity(repositoryClass: EventLogRepository::class)]
 #[ORM\Table(name: 'phplist_eventlog')]
-#[ORM\Index(name: 'enteredidx', columns: ['entered'])]
-#[ORM\Index(name: 'pageidx', columns: ['page'])]
+#[ORM\Index(name: 'phplist_eventlog_enteredidx', columns: ['entered'])]
+#[ORM\Index(name: 'phplist_eventlog_pageidx', columns: ['page'])]
 #[ORM\HasLifecycleCallbacks]
 class EventLog implements DomainModel, Identity
 {
