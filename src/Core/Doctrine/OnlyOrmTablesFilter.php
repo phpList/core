@@ -18,9 +18,6 @@ class OnlyOrmTablesFilter
 
     public function __construct(private readonly EntityManagerInterface $entityManager) {}
 
-    /**
-     * Doctrine (DBAL 3+) may pass strings OR AbstractAsset (Table, Sequence, etc.).
-     */
     public function __invoke(string|AbstractAsset $asset): bool
     {
         $name = \is_string($asset) ? $asset : $asset->getName();
