@@ -13,11 +13,11 @@ doctrine:
     dbal:
 #        driver: 'pdo_sqlite'
 #        memory: true
-    driver: 'pdo_mysql'
-    host: '%database_host%'
-    port: '%database_port%'
-    dbname: 'phplist'
-    user: '%database_user%'
-    password: '%database_password%'
-    charset: UTF8
+        driver: 'pdo_mysql'
+        host: '%database_host%'
+        port: '%database_port%'
+        dbname: 'phplist'
+        user: '%database_user%'
+        password: '%database_password%'
+        charset: UTF8
 

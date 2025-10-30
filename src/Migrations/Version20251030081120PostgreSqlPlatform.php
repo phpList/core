@@ -24,7 +24,7 @@ final class Version20251030081120PostgreSqlPlatform extends AbstractMigration
         $this->skipIf(
             !$platform instanceof PostgreSqlPlatform,
             sprintf(
-                'This migration is only applicable for MySQL. Current platform: %s',
+                'This migration is only applicable for PostgreSql. Current platform: %s',
                 get_class($platform)
             )
         );
@@ -187,7 +187,7 @@ final class Version20251030081120PostgreSqlPlatform extends AbstractMigration
         $this->skipIf(
             !$platform instanceof PostgreSqlPlatform,
             sprintf(
-                'This migration is only applicable for MySQL. Current platform: %s',
+                'This migration is only applicable for PostgreSql. Current platform: %s',
                 get_class($platform)
             )
         );
