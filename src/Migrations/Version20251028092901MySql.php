@@ -18,10 +18,6 @@ final class Version20251028092901MySql extends AbstractMigration
         return 'Initial schema from SQL file generated from phplist3';
     }
 
-    /**
-     * @SuppressWarnings(PHPMD.ShortMethodName)
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-     */
     public function up(Schema $schema): void
     {
         $platform = $this->connection->getDatabasePlatform();

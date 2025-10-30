@@ -16,13 +16,15 @@ class OnlyOrmTablesFilter
     /** @var string[]|null */
     private ?array $allowPrefixes = null;
 
-    public function __construct(private readonly EntityManagerInterface $entityManager) {}
+    public function __construct(private readonly EntityManagerInterface $entityManager)
+    {
+    }
 
     public function __invoke(string|AbstractAsset $asset): bool
     {
         $name = \is_string($asset) ? $asset : $asset->getName();
-
-        if (false !== ($pos = strrpos($name, '.'))) {
+        $pos = strrpos($name, '.');
+        if (false !== $pos) {
             $name = substr($name, $pos + 1);
         }
         $nameLower = strtolower($name);
@@ -56,12 +58,13 @@ class OnlyOrmTablesFilter
         }
 
         $tables = [];
-        foreach ($this->entityManager->getMetadataFactory()->getAllMetadata() as $m) {
-            if ($t = $m->getTableName()) {
-                $tables[] = strtolower($t);
+        foreach ($this->entityManager->getMetadataFactory()->getAllMetadata() as $metadatum) {
+            $tableName = $metadatum->getTableName();
+            if ($tableName) {
+                $tables[] = strtolower($tableName);
             }
             // many-to-many join tables
-            foreach ($m->getAssociationMappings() as $assoc) {
+            foreach ($metadatum->getAssociationMappings() as $assoc) {
                 if (!empty($assoc['joinTable']['name'])) {
                     $tables[] = strtolower($assoc['joinTable']['name']);
                 }
@@ -71,7 +74,7 @@ class OnlyOrmTablesFilter
         $tables[] = 'doctrine_migration_versions';
 
         $tables = array_values(array_unique($tables));
-        $prefixes = array_map(static fn($t) => $t . '_', $tables);
+        $prefixes = array_map(static fn($table) => $table . '_', $tables);
 
         $this->allow = $tables;
         $this->allowPrefixes = $prefixes;

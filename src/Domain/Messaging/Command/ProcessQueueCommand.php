@@ -57,9 +57,6 @@ class ProcessQueueCommand extends Command
         $this->entityManager = $entityManager;
     }
 
-    /**
-     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $lock = $this->lockFactory->createLock('queue_processor');

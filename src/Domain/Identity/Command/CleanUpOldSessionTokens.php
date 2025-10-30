@@ -28,9 +28,6 @@ class CleanUpOldSessionTokens extends Command
         $this->entityManager = $entityManager;
     }
 
-    /**
-     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
