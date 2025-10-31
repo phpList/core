@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="hy" datatype="plaintext" original="messages">
+    <body>
+      <!-- Authentication -->
+      <trans-unit id="auth.not_authorized">
+        <source>Not authorized</source>
+      </trans-unit>
+      <trans-unit id="auth.login_failed">
+        <source>Failed admin login attempt for '%login%'</source>
+      </trans-unit>
+      <trans-unit id="auth.login_disabled">
+        <source>Login attempt for disabled admin '%login%'</source>
+      </trans-unit>
+      <!-- Identity -->
+      <trans-unit id="identity.admin_not_found">
+        <source>Administrator not found</source>
+      </trans-unit>
+      <!-- Subscription -->
+      <trans-unit id="subscription.list_not_found">
+        <source>Subscriber list not found.</source>
+      </trans-unit>
+      <trans-unit id="subscription.subscriber_not_found">
+        <source>Subscriber does not exists.</source>
+      </trans-unit>
+      <trans-unit id="subscription.not_found_for_list_and_subscriber">
+        <source>Subscription not found for this subscriber and list.</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
