@@ -7,7 +7,6 @@ namespace PhpList\Core\Domain\Identity\Model;
 use DateTime;
 use DateTimeZone;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Persistence\Proxy;
 use PhpList\Core\Domain\Common\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;

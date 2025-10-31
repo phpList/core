@@ -4,45 +4,59 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Migrations;
 
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
-use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
+use Doctrine\DBAL\Schema\Schema;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
-final class Version20251030083621MySqlRenameIndex extends AbstractMigration
+final class Version20251028092902MySqlUpdate extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Rename indexes as postgresql does not support duplicate index names';
+        return '';
     }
 
     public function up(Schema $schema): void
     {
         $platform = $this->connection->getDatabasePlatform();
-        $this->skipIf(
-            !$platform instanceof MySQLPlatform,
-            sprintf(
-                'This migration is only applicable for MySQL. Current platform: %s',
-                get_class($platform)
-            )
-        );
+        $this->skipIf(!$platform instanceof MySQLPlatform, sprintf(
+            'Unsupported platform for this migration: %s',
+            get_class($platform)
+        ));
 
-        // this up() migration is auto-generated, please modify it to your needs
+        $this->addSql('ALTER TABLE phplist_admin CHANGE created created DATETIME NOT NULL, CHANGE modified modified DATETIME NOT NULL, CHANGE superuser superuser TINYINT(1) NOT NULL, CHANGE disabled disabled TINYINT(1) NOT NULL, CHANGE privileges privileges LONGTEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_admin RENAME INDEX loginnameidx TO phplist_admin_loginnameidx');
+        $this->addSql('ALTER TABLE phplist_admin_attribute ADD CONSTRAINT FK_58E07690D3B10C48 FOREIGN KEY (adminattributeid) REFERENCES phplist_adminattribute (id)');
+        $this->addSql('ALTER TABLE phplist_admin_attribute ADD CONSTRAINT FK_58E07690B8ED4D93 FOREIGN KEY (adminid) REFERENCES phplist_admin (id)');
+        $this->addSql('CREATE INDEX IDX_58E07690D3B10C48 ON phplist_admin_attribute (adminattributeid)');
+        $this->addSql('CREATE INDEX IDX_58E07690B8ED4D93 ON phplist_admin_attribute (adminid)');
+        $this->addSql('ALTER TABLE phplist_admin_login CHANGE active active TINYINT(1) NOT NULL');
+        $this->addSql('ALTER TABLE phplist_admin_login ADD CONSTRAINT FK_5FCE0842B8ED4D93 FOREIGN KEY (adminid) REFERENCES phplist_admin (id)');
+        $this->addSql('CREATE INDEX IDX_5FCE0842B8ED4D93 ON phplist_admin_login (adminid)');
+        $this->addSql('ALTER TABLE phplist_admin_password_request CHANGE id_key id_key INT UNSIGNED AUTO_INCREMENT NOT NULL');
+        $this->addSql('ALTER TABLE phplist_admin_password_request ADD CONSTRAINT FK_DC146F3B880E0D76 FOREIGN KEY (`admin`) REFERENCES phplist_admin (id)');
+        $this->addSql('CREATE INDEX IDX_DC146F3B880E0D76 ON phplist_admin_password_request (`admin`)');
+        $this->addSql('ALTER TABLE phplist_admintoken CHANGE adminid adminid INT DEFAULT NULL, CHANGE value value VARCHAR(255) NOT NULL');
+        $this->addSql('ALTER TABLE phplist_admintoken ADD CONSTRAINT FK_CB15D477B8ED4D93 FOREIGN KEY (adminid) REFERENCES phplist_admin (id) ON DELETE CASCADE');
+        $this->addSql('CREATE INDEX IDX_CB15D477B8ED4D93 ON phplist_admintoken (adminid)');
+        $this->addSql('ALTER TABLE phplist_attachment CHANGE description description LONGTEXT DEFAULT NULL');
+        $this->addSql('ALTER TABLE phplist_bounce DROP INDEX statusidx, ADD INDEX phplist_bounce_statusidx (status)');
+        $this->addSql('ALTER TABLE phplist_bounce CHANGE header header LONGTEXT DEFAULT NULL, CHANGE data data LONGBLOB DEFAULT NULL, CHANGE comment comment LONGTEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_bounce RENAME INDEX dateindex TO phplist_bounce_dateindex');
-        $this->addSql('ALTER TABLE phplist_bounce RENAME INDEX statusidx TO phplist_bounce_statusidx');
+        $this->addSql('ALTER TABLE phplist_bounceregex CHANGE regexhash regexhash VARCHAR(32) DEFAULT NULL, CHANGE comment comment LONGTEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_bounceregex RENAME INDEX regex TO phplist_bounceregex_regex');
+        $this->addSql('ALTER TABLE phplist_config CHANGE editable editable TINYINT(1) DEFAULT 1 NOT NULL');
+        $this->addSql('ALTER TABLE phplist_eventlog CHANGE entry entry LONGTEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_eventlog RENAME INDEX enteredidx TO phplist_eventlog_enteredidx');
         $this->addSql('ALTER TABLE phplist_eventlog RENAME INDEX pageidx TO phplist_eventlog_pageidx');
-        $this->addSql('ALTER TABLE phplist_i18n RENAME INDEX lanorigunq TO phplist_i18n_lanorigunq');
+        $this->addSql('ALTER TABLE phplist_linktrack CHANGE latestclick latestclick DATETIME NOT NULL');
         $this->addSql('ALTER TABLE phplist_linktrack RENAME INDEX midindex TO phplist_linktrack_midindex');
         $this->addSql('ALTER TABLE phplist_linktrack RENAME INDEX miduidindex TO phplist_linktrack_miduidindex');
         $this->addSql('ALTER TABLE phplist_linktrack RENAME INDEX uidindex TO phplist_linktrack_uidindex');
         $this->addSql('ALTER TABLE phplist_linktrack RENAME INDEX urlindex TO phplist_linktrack_urlindex');
         $this->addSql('ALTER TABLE phplist_linktrack RENAME INDEX miduidurlindex TO phplist_linktrack_miduidurlindex');
-        $this->addSql('ALTER TABLE phplist_linktrack_forward RENAME INDEX urlindex TO phplist_linktrack_forward_urlindex');
+        $this->addSql('ALTER TABLE phplist_linktrack_forward RENAME INDEX urlindex TO phplist_linktrack_forward_urlindex;');
+        $this->addSql('ALTER TABLE phplist_linktrack_forward CHANGE urlhash urlhash VARCHAR(32) DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_linktrack_forward RENAME INDEX uuididx TO phplist_linktrack_forward_uuididx');
         $this->addSql('ALTER TABLE phplist_linktrack_forward RENAME INDEX urlunique TO phplist_linktrack_forward_urlunique');
         $this->addSql('ALTER TABLE phplist_linktrack_ml RENAME INDEX fwdindex TO phplist_linktrack_ml_fwdindex');
@@ -51,29 +65,59 @@ final class Version20251030083621MySqlRenameIndex extends AbstractMigration
         $this->addSql('ALTER TABLE phplist_linktrack_uml_click RENAME INDEX miduidindex TO phplist_linktrack_uml_click_miduidindex');
         $this->addSql('ALTER TABLE phplist_linktrack_uml_click RENAME INDEX uidindex TO phplist_linktrack_uml_click_uidindex');
         $this->addSql('ALTER TABLE phplist_linktrack_uml_click RENAME INDEX miduidfwdid TO phplist_linktrack_uml_click_miduidfwdid');
+        $this->addSql('ALTER TABLE phplist_linktrack_userclick CHANGE data data LONGTEXT DEFAULT NULL, ADD PRIMARY KEY (linkid, userid, messageid)');
         $this->addSql('ALTER TABLE phplist_linktrack_userclick RENAME INDEX linkindex TO phplist_linktrack_userclick_linkindex');
         $this->addSql('ALTER TABLE phplist_linktrack_userclick RENAME INDEX linkuserindex TO phplist_linktrack_userclick_linkuserindex');
         $this->addSql('ALTER TABLE phplist_linktrack_userclick RENAME INDEX linkusermessageindex TO phplist_linktrack_userclick_linkusermessageindex');
         $this->addSql('ALTER TABLE phplist_linktrack_userclick RENAME INDEX midindex TO phplist_linktrack_userclick_midindex');
         $this->addSql('ALTER TABLE phplist_linktrack_userclick RENAME INDEX uidindex TO phplist_linktrack_userclick_uidindex');
+        $this->addSql('ALTER TABLE phplist_list CHANGE description description VARCHAR(255) NOT NULL, CHANGE modified modified DATETIME NOT NULL, CHANGE active active TINYINT(1) NOT NULL, CHANGE category category VARCHAR(255) NOT NULL');
+        $this->addSql('ALTER TABLE phplist_list ADD CONSTRAINT FK_A4CE8621CF60E67C FOREIGN KEY (owner) REFERENCES phplist_admin (id)');
+        $this->addSql('CREATE INDEX IDX_A4CE8621CF60E67C ON phplist_list (owner)');
         $this->addSql('ALTER TABLE phplist_list RENAME INDEX nameidx TO phplist_list_nameidx');
         $this->addSql('ALTER TABLE phplist_list RENAME INDEX listorderidx TO phplist_list_listorderidx');
+        $this->addSql('ALTER TABLE phplist_listmessage CHANGE modified modified DATETIME NOT NULL');
+        $this->addSql('ALTER TABLE phplist_listmessage ADD CONSTRAINT FK_83B22D7A31478478 FOREIGN KEY (messageid) REFERENCES phplist_message (id)');
+        $this->addSql('ALTER TABLE phplist_listmessage ADD CONSTRAINT FK_83B22D7A8E44C1EF FOREIGN KEY (listid) REFERENCES phplist_list (id)');
+        $this->addSql('CREATE INDEX IDX_83B22D7A31478478 ON phplist_listmessage (messageid)');
+        $this->addSql('CREATE INDEX IDX_83B22D7A8E44C1EF ON phplist_listmessage (listid)');
         $this->addSql('ALTER TABLE phplist_listmessage RENAME INDEX listmessageidx TO phplist_listmessage_listmessageidx');
         $this->addSql('ALTER TABLE phplist_listmessage RENAME INDEX messageid TO phplist_listmessage_messageid');
+        $this->addSql('DROP INDEX userlistenteredidx ON phplist_listuser');
+        $this->addSql('ALTER TABLE phplist_listuser CHANGE modified modified DATETIME NOT NULL');
+        $this->addSql('ALTER TABLE phplist_listuser ADD CONSTRAINT FK_F467E411F132696E FOREIGN KEY (userid) REFERENCES phplist_user_user (id)');
+        $this->addSql('ALTER TABLE phplist_listuser ADD CONSTRAINT FK_F467E4118E44C1EF FOREIGN KEY (listid) REFERENCES phplist_list (id) ON DELETE CASCADE');
+        $this->addSql('CREATE INDEX phplist_listuser_userlistenteredidx ON phplist_listuser (userid, entered, listid)');
         $this->addSql('ALTER TABLE phplist_listuser RENAME INDEX userenteredidx TO phplist_listuser_userenteredidx');
-        $this->addSql('ALTER TABLE phplist_listuser RENAME INDEX userlistenteredidx TO phplist_listuser_userlistenteredidx');
         $this->addSql('ALTER TABLE phplist_listuser RENAME INDEX useridx TO phplist_listuser_useridx');
         $this->addSql('ALTER TABLE phplist_listuser RENAME INDEX listidx TO phplist_listuser_listidx');
+        $this->addSql('ALTER TABLE phplist_message CHANGE footer footer LONGTEXT DEFAULT NULL, CHANGE modified modified DATETIME NOT NULL, CHANGE userselection userselection LONGTEXT DEFAULT NULL, CHANGE htmlformatted htmlformatted TINYINT(1) NOT NULL, CHANGE processed processed TINYINT(1) DEFAULT 0 NOT NULL, CHANGE astext astext TINYINT(1) NOT NULL, CHANGE ashtml ashtml TINYINT(1) NOT NULL, CHANGE astextandhtml astextandhtml TINYINT(1) NOT NULL, CHANGE aspdf aspdf TINYINT(1) NOT NULL, CHANGE astextandpdf astextandpdf TINYINT(1) NOT NULL, CHANGE viewed viewed INT DEFAULT 0 NOT NULL, CHANGE bouncecount bouncecount INT DEFAULT 0 NOT NULL');
+        $this->addSql('ALTER TABLE phplist_message ADD CONSTRAINT FK_C5D81FCDCF60E67C FOREIGN KEY (owner) REFERENCES phplist_admin (id)');
+        $this->addSql('ALTER TABLE phplist_message ADD CONSTRAINT FK_C5D81FCD97601F83 FOREIGN KEY (template) REFERENCES phplist_template (id) ON DELETE SET NULL');
+        $this->addSql('CREATE INDEX IDX_C5D81FCDCF60E67C ON phplist_message (owner)');
+        $this->addSql('CREATE INDEX IDX_C5D81FCD97601F83 ON phplist_message (template)');
         $this->addSql('ALTER TABLE phplist_message RENAME INDEX uuididx TO phplist_message_uuididx');
         $this->addSql('ALTER TABLE phplist_message_attachment RENAME INDEX messageattidx TO phplist_message_attachment_messageattidx');
         $this->addSql('ALTER TABLE phplist_message_attachment RENAME INDEX messageidx TO phplist_message_attachment_messageidx');
         $this->addSql('ALTER TABLE phplist_messagedata CHANGE data data LONGTEXT CHARACTER SET utf8mb4 DEFAULT NULL');
+        $this->addSql('ALTER TABLE phplist_sendprocess CHANGE modified modified DATETIME NOT NULL');
+        $this->addSql('ALTER TABLE phplist_subscribepage CHANGE active active TINYINT(1) DEFAULT 0 NOT NULL');
+        $this->addSql('ALTER TABLE phplist_subscribepage ADD CONSTRAINT FK_5BAC7737CF60E67C FOREIGN KEY (owner) REFERENCES phplist_admin (id)');
+        $this->addSql('CREATE INDEX IDX_5BAC7737CF60E67C ON phplist_subscribepage (owner)');
+        $this->addSql('ALTER TABLE phplist_subscribepage_data CHANGE data data LONGTEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_template RENAME INDEX title TO phplist_template_title');
+        $this->addSql('ALTER TABLE phplist_templateimage CHANGE template template INT NOT NULL');
+        $this->addSql('ALTER TABLE phplist_templateimage ADD CONSTRAINT FK_30A85BA97601F83 FOREIGN KEY (template) REFERENCES phplist_template (id)');
         $this->addSql('ALTER TABLE phplist_templateimage RENAME INDEX templateidx TO phplist_templateimage_templateidx');
         $this->addSql('ALTER TABLE phplist_urlcache RENAME INDEX urlindex TO phplist_urlcache_urlindex');
         $this->addSql('ALTER TABLE phplist_user_attribute RENAME INDEX idnameindex TO phplist_user_attribute_idnameindex');
         $this->addSql('ALTER TABLE phplist_user_attribute RENAME INDEX nameindex TO phplist_user_attribute_nameindex');
+        $this->addSql('DROP INDEX email ON phplist_user_blacklist');
+        $this->addSql('ALTER TABLE phplist_user_blacklist ADD PRIMARY KEY (email)');
         $this->addSql('ALTER TABLE phplist_user_blacklist RENAME INDEX emailidx TO phplist_user_blacklist_emailidx');
+        $this->addSql('DROP INDEX email ON phplist_user_blacklist_data');
+        $this->addSql('ALTER TABLE phplist_user_blacklist_data CHANGE email email VARCHAR(255) NOT NULL, CHANGE data data LONGTEXT DEFAULT NULL, ADD PRIMARY KEY (email)');
+        $this->addSql('ALTER TABLE phplist_user_blacklist_data ADD CONSTRAINT FK_6D67150CE7927C74 FOREIGN KEY (email) REFERENCES phplist_user_blacklist (email) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE phplist_user_blacklist_data RENAME INDEX emailidx TO phplist_user_blacklist_data_emailidx');
         $this->addSql('ALTER TABLE phplist_user_blacklist_data RENAME INDEX emailnameidx TO phplist_user_blacklist_data_emailnameidx');
         $this->addSql('ALTER TABLE phplist_user_message_bounce RENAME INDEX bounceidx TO phplist_user_message_bounce_bounceidx');
@@ -86,6 +130,7 @@ final class Version20251030083621MySqlRenameIndex extends AbstractMigration
         $this->addSql('ALTER TABLE phplist_user_message_view RENAME INDEX msgidx TO phplist_user_message_view_msgidx');
         $this->addSql('ALTER TABLE phplist_user_message_view RENAME INDEX useridx TO phplist_user_message_view_useridx');
         $this->addSql('ALTER TABLE phplist_user_message_view RENAME INDEX usermsgidx TO phplist_user_message_view_usermsgidx');
+        $this->addSql('ALTER TABLE phplist_user_user CHANGE confirmed confirmed TINYINT(1) NOT NULL, CHANGE blacklisted blacklisted TINYINT(1) NOT NULL, CHANGE optedin optedin TINYINT(1) NOT NULL, CHANGE bouncecount bouncecount INT NOT NULL, CHANGE modified modified DATETIME NOT NULL, CHANGE uuid uuid VARCHAR(36) NOT NULL, CHANGE htmlemail htmlemail TINYINT(1) NOT NULL, CHANGE passwordchanged passwordchanged DATETIME DEFAULT NULL, CHANGE disabled disabled TINYINT(1) NOT NULL, CHANGE extradata extradata LONGTEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_user_user RENAME INDEX idxuniqid TO phplist_user_user_idxuniqid');
         $this->addSql('ALTER TABLE phplist_user_user RENAME INDEX enteredindex TO phplist_user_user_enteredindex');
         $this->addSql('ALTER TABLE phplist_user_user RENAME INDEX confidx TO phplist_user_user_confidx');
@@ -94,11 +139,18 @@ final class Version20251030083621MySqlRenameIndex extends AbstractMigration
         $this->addSql('ALTER TABLE phplist_user_user RENAME INDEX uuididx TO phplist_user_user_uuididx');
         $this->addSql('ALTER TABLE phplist_user_user RENAME INDEX foreignkey TO phplist_user_user_foreignkey');
         $this->addSql('ALTER TABLE phplist_user_user RENAME INDEX email TO phplist_user_user_email');
+        $this->addSql('ALTER TABLE phplist_user_user_attribute CHANGE value value LONGTEXT DEFAULT NULL');
+        $this->addSql('ALTER TABLE phplist_user_user_attribute ADD CONSTRAINT FK_E24E310878C45AB5 FOREIGN KEY (attributeid) REFERENCES phplist_user_attribute (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE phplist_user_user_attribute ADD CONSTRAINT FK_E24E3108F132696E FOREIGN KEY (userid) REFERENCES phplist_user_user (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE phplist_user_user_attribute RENAME INDEX attindex TO phplist_user_user_attribute_attindex');
         $this->addSql('ALTER TABLE phplist_user_user_attribute RENAME INDEX attuserid TO phplist_user_user_attribute_attuserid');
         $this->addSql('ALTER TABLE phplist_user_user_attribute RENAME INDEX userindex TO phplist_user_user_attribute_userindex');
+        $this->addSql('ALTER TABLE phplist_user_user_history CHANGE detail detail LONGTEXT DEFAULT NULL, CHANGE systeminfo systeminfo LONGTEXT DEFAULT NULL');
+        $this->addSql('ALTER TABLE phplist_user_user_history ADD CONSTRAINT FK_6DBB605CF132696E FOREIGN KEY (userid) REFERENCES phplist_user_user (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE phplist_user_user_history RENAME INDEX dateidx TO phplist_user_user_history_dateidx');
         $this->addSql('ALTER TABLE phplist_user_user_history RENAME INDEX userididx TO phplist_user_user_history_userididx');
+        $this->addSql('ALTER TABLE phplist_usermessage ADD CONSTRAINT FK_7F30F469F132696E FOREIGN KEY (userid) REFERENCES phplist_user_user (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE phplist_usermessage ADD CONSTRAINT FK_7F30F46931478478 FOREIGN KEY (messageid) REFERENCES phplist_message (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE phplist_usermessage RENAME INDEX enteredindex TO phplist_usermessage_enteredindex');
         $this->addSql('ALTER TABLE phplist_usermessage RENAME INDEX messageidindex TO phplist_usermessage_messageidindex');
         $this->addSql('ALTER TABLE phplist_usermessage RENAME INDEX statusidx TO phplist_usermessage_statusidx');
@@ -114,59 +166,105 @@ final class Version20251030083621MySqlRenameIndex extends AbstractMigration
     public function down(Schema $schema): void
     {
         $platform = $this->connection->getDatabasePlatform();
-        $this->skipIf(
-            !$platform instanceof MySQLPlatform,
-            sprintf(
-                'This migration is only applicable for MySQL. Current platform: %s',
-                get_class($platform)
-            )
-        );
+        $this->skipIf(!$platform instanceof MySQLPlatform, sprintf(
+            'Unsupported platform for this migration: %s',
+            get_class($platform)
+        ));
 
-        // this down() migration is auto-generated, please modify it to your needs
+        $this->addSql('ALTER TABLE phplist_admin CHANGE created created DATETIME DEFAULT NULL, CHANGE modified modified DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, CHANGE disabled disabled TINYINT(1) DEFAULT 0, CHANGE superuser superuser TINYINT(1) DEFAULT 0, CHANGE privileges privileges TEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_admin RENAME INDEX phplist_admin_loginnameidx TO loginnameidx');
+        $this->addSql('ALTER TABLE phplist_admin_attribute DROP FOREIGN KEY FK_58E07690D3B10C48');
+        $this->addSql('ALTER TABLE phplist_admin_attribute DROP FOREIGN KEY FK_58E07690B8ED4D93');
+        $this->addSql('DROP INDEX IDX_58E07690D3B10C48 ON phplist_admin_attribute');
+        $this->addSql('DROP INDEX IDX_58E07690B8ED4D93 ON phplist_admin_attribute');
+        $this->addSql('ALTER TABLE phplist_admin_login DROP FOREIGN KEY FK_5FCE0842B8ED4D93');
+        $this->addSql('DROP INDEX IDX_5FCE0842B8ED4D93 ON phplist_admin_login');
+        $this->addSql('ALTER TABLE phplist_admin_login CHANGE active active TINYINT(1) DEFAULT 0 NOT NULL');
+        $this->addSql('ALTER TABLE phplist_admin_password_request DROP FOREIGN KEY FK_DC146F3B880E0D76');
+        $this->addSql('DROP INDEX IDX_DC146F3B880E0D76 ON phplist_admin_password_request');
+        $this->addSql('ALTER TABLE phplist_admin_password_request CHANGE id_key id_key INT AUTO_INCREMENT NOT NULL');
+        $this->addSql('ALTER TABLE phplist_admintoken DROP FOREIGN KEY FK_CB15D477B8ED4D93');
+        $this->addSql('DROP INDEX IDX_CB15D477B8ED4D93 ON phplist_admintoken');
+        $this->addSql('ALTER TABLE phplist_admintoken CHANGE adminid adminid INT NOT NULL, CHANGE value value VARCHAR(255) DEFAULT NULL');
+        $this->addSql('ALTER TABLE phplist_attachment CHANGE description description TEXT DEFAULT NULL');
+        $this->addSql('ALTER TABLE phplist_bounce DROP INDEX phplist_bounce_statusidx, ADD INDEX statusidx (status(20))');
+        $this->addSql('ALTER TABLE phplist_bounce CHANGE header header TEXT DEFAULT NULL, CHANGE data data MEDIUMBLOB DEFAULT NULL, CHANGE comment comment TEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_bounce RENAME INDEX phplist_bounce_dateindex TO dateindex');
-        $this->addSql('ALTER TABLE phplist_bounce RENAME INDEX phplist_bounce_statusidx TO statusidx');
+        $this->addSql('ALTER TABLE phplist_bounceregex CHANGE regexhash regexhash CHAR(32) DEFAULT NULL, CHANGE comment comment TEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_bounceregex RENAME INDEX phplist_bounceregex_regex TO regex');
+        $this->addSql('ALTER TABLE phplist_config CHANGE editable editable TINYINT(1) DEFAULT 1');
+        $this->addSql('ALTER TABLE phplist_eventlog CHANGE entry entry TEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_eventlog RENAME INDEX phplist_eventlog_enteredidx TO enteredidx');
         $this->addSql('ALTER TABLE phplist_eventlog RENAME INDEX phplist_eventlog_pageidx TO pageidx');
-        $this->addSql('ALTER TABLE phplist_i18n RENAME INDEX phplist_i18n_lanorigunq TO lanorigunq');
+        $this->addSql('ALTER TABLE phplist_linktrack CHANGE latestclick latestclick DATETIME DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_linktrack RENAME INDEX phplist_linktrack_miduidurlindex TO miduidurlindex');
         $this->addSql('ALTER TABLE phplist_linktrack RENAME INDEX phplist_linktrack_midindex TO midindex');
         $this->addSql('ALTER TABLE phplist_linktrack RENAME INDEX phplist_linktrack_uidindex TO uidindex');
         $this->addSql('ALTER TABLE phplist_linktrack RENAME INDEX phplist_linktrack_urlindex TO urlindex');
         $this->addSql('ALTER TABLE phplist_linktrack RENAME INDEX phplist_linktrack_miduidindex TO miduidindex');
+        $this->addSql('ALTER TABLE phplist_linktrack_forward DROP INDEX phplist_linktrack_forward_urlindex, ADD INDEX urlindex (url(255))');
+        $this->addSql('ALTER TABLE phplist_linktrack_forward CHANGE urlhash urlhash CHAR(32) DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_linktrack_forward RENAME INDEX phplist_linktrack_forward_urlunique TO urlunique');
         $this->addSql('ALTER TABLE phplist_linktrack_forward RENAME INDEX phplist_linktrack_forward_uuididx TO uuididx');
-        $this->addSql('ALTER TABLE phplist_linktrack_forward RENAME INDEX phplist_linktrack_forward_urlindex TO urlindex');
         $this->addSql('ALTER TABLE phplist_linktrack_ml RENAME INDEX phplist_linktrack_ml_midindex TO midindex');
         $this->addSql('ALTER TABLE phplist_linktrack_ml RENAME INDEX phplist_linktrack_ml_fwdindex TO fwdindex');
         $this->addSql('ALTER TABLE phplist_linktrack_uml_click RENAME INDEX phplist_linktrack_uml_click_miduidfwdid TO miduidfwdid');
         $this->addSql('ALTER TABLE phplist_linktrack_uml_click RENAME INDEX phplist_linktrack_uml_click_midindex TO midindex');
         $this->addSql('ALTER TABLE phplist_linktrack_uml_click RENAME INDEX phplist_linktrack_uml_click_uidindex TO uidindex');
         $this->addSql('ALTER TABLE phplist_linktrack_uml_click RENAME INDEX phplist_linktrack_uml_click_miduidindex TO miduidindex');
+        $this->addSql('DROP INDEX `primary` ON phplist_linktrack_userclick');
+        $this->addSql('ALTER TABLE phplist_linktrack_userclick CHANGE data data TEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_linktrack_userclick RENAME INDEX phplist_linktrack_userclick_linkindex TO linkindex');
         $this->addSql('ALTER TABLE phplist_linktrack_userclick RENAME INDEX phplist_linktrack_userclick_uidindex TO uidindex');
         $this->addSql('ALTER TABLE phplist_linktrack_userclick RENAME INDEX phplist_linktrack_userclick_midindex TO midindex');
         $this->addSql('ALTER TABLE phplist_linktrack_userclick RENAME INDEX phplist_linktrack_userclick_linkuserindex TO linkuserindex');
         $this->addSql('ALTER TABLE phplist_linktrack_userclick RENAME INDEX phplist_linktrack_userclick_linkusermessageindex TO linkusermessageindex');
+        $this->addSql('ALTER TABLE phplist_list DROP FOREIGN KEY FK_A4CE8621CF60E67C');
+        $this->addSql('DROP INDEX IDX_A4CE8621CF60E67C ON phplist_list');
+        $this->addSql('ALTER TABLE phplist_list CHANGE description description TEXT DEFAULT NULL, CHANGE modified modified DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, CHANGE active active TINYINT(1) DEFAULT NULL, CHANGE category category VARCHAR(255) DEFAULT \'\'');
         $this->addSql('ALTER TABLE phplist_list RENAME INDEX phplist_list_nameidx TO nameidx');
         $this->addSql('ALTER TABLE phplist_list RENAME INDEX phplist_list_listorderidx TO listorderidx');
+        $this->addSql('ALTER TABLE phplist_listmessage DROP FOREIGN KEY FK_83B22D7A31478478');
+        $this->addSql('ALTER TABLE phplist_listmessage DROP FOREIGN KEY FK_83B22D7A8E44C1EF');
+        $this->addSql('DROP INDEX IDX_83B22D7A31478478 ON phplist_listmessage');
+        $this->addSql('DROP INDEX IDX_83B22D7A8E44C1EF ON phplist_listmessage');
+        $this->addSql('ALTER TABLE phplist_listmessage CHANGE modified modified DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL');
         $this->addSql('ALTER TABLE phplist_listmessage RENAME INDEX phplist_listmessage_messageid TO messageid');
         $this->addSql('ALTER TABLE phplist_listmessage RENAME INDEX phplist_listmessage_listmessageidx TO listmessageidx');
+        $this->addSql('ALTER TABLE phplist_listuser DROP FOREIGN KEY FK_F467E411F132696E');
+        $this->addSql('ALTER TABLE phplist_listuser DROP FOREIGN KEY FK_F467E4118E44C1EF');
+        $this->addSql('DROP INDEX phplist_listuser_userlistenteredidx ON phplist_listuser');
+        $this->addSql('ALTER TABLE phplist_listuser CHANGE modified modified DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL');
+        $this->addSql('CREATE INDEX userlistenteredidx ON phplist_listuser (userid, listid, entered)');
         $this->addSql('ALTER TABLE phplist_listuser RENAME INDEX phplist_listuser_userenteredidx TO userenteredidx');
         $this->addSql('ALTER TABLE phplist_listuser RENAME INDEX phplist_listuser_useridx TO useridx');
         $this->addSql('ALTER TABLE phplist_listuser RENAME INDEX phplist_listuser_listidx TO listidx');
-        $this->addSql('ALTER TABLE phplist_listuser RENAME INDEX phplist_listuser_userlistenteredidx TO userlistenteredidx');
+        $this->addSql('ALTER TABLE phplist_message DROP FOREIGN KEY FK_C5D81FCDCF60E67C');
+        $this->addSql('ALTER TABLE phplist_message DROP FOREIGN KEY FK_C5D81FCD97601F83');
+        $this->addSql('DROP INDEX IDX_C5D81FCDCF60E67C ON phplist_message');
+        $this->addSql('DROP INDEX IDX_C5D81FCD97601F83 ON phplist_message');
+        $this->addSql('ALTER TABLE phplist_message CHANGE modified modified DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, CHANGE htmlformatted htmlformatted TINYINT(1) DEFAULT 0, CHANGE astext astext INT DEFAULT 0, CHANGE ashtml ashtml INT DEFAULT 0, CHANGE aspdf aspdf INT DEFAULT 0, CHANGE astextandhtml astextandhtml INT DEFAULT 0, CHANGE astextandpdf astextandpdf INT DEFAULT 0, CHANGE processed processed INT UNSIGNED DEFAULT 0, CHANGE viewed viewed INT DEFAULT 0, CHANGE bouncecount bouncecount INT DEFAULT 0, CHANGE footer footer TEXT DEFAULT NULL, CHANGE userselection userselection TEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_message RENAME INDEX phplist_message_uuididx TO uuididx');
         $this->addSql('ALTER TABLE phplist_message_attachment RENAME INDEX phplist_message_attachment_messageidx TO messageidx');
         $this->addSql('ALTER TABLE phplist_message_attachment RENAME INDEX phplist_message_attachment_messageattidx TO messageattidx');
-        $this->addSql('ALTER TABLE phplist_messagedata CHANGE data data LONGTEXT CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_0900_ai_ci`');
+        $this->addSql('ALTER TABLE phplist_messagedata CHANGE data data LONGTEXT DEFAULT NULL');
+        $this->addSql('ALTER TABLE phplist_sendprocess CHANGE modified modified DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL');
+        $this->addSql('ALTER TABLE phplist_subscribepage DROP FOREIGN KEY FK_5BAC7737CF60E67C');
+        $this->addSql('DROP INDEX IDX_5BAC7737CF60E67C ON phplist_subscribepage');
+        $this->addSql('ALTER TABLE phplist_subscribepage CHANGE active active TINYINT(1) DEFAULT 0');
+        $this->addSql('ALTER TABLE phplist_subscribepage_data CHANGE data data TEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_template RENAME INDEX phplist_template_title TO title');
+        $this->addSql('ALTER TABLE phplist_templateimage DROP FOREIGN KEY FK_30A85BA97601F83');
+        $this->addSql('ALTER TABLE phplist_templateimage CHANGE template template INT DEFAULT 0 NOT NULL');
         $this->addSql('ALTER TABLE phplist_templateimage RENAME INDEX phplist_templateimage_templateidx TO templateidx');
-        $this->addSql('ALTER TABLE phplist_urlcache RENAME INDEX phplist_urlcache_urlindex TO urlindex');
+        $this->addSql('ALTER TABLE phplist_urlcache DROP INDEX phplist_urlcache_urlindex, ADD INDEX urlindex (url(255))');
         $this->addSql('ALTER TABLE phplist_user_attribute RENAME INDEX phplist_user_attribute_nameindex TO nameindex');
         $this->addSql('ALTER TABLE phplist_user_attribute RENAME INDEX phplist_user_attribute_idnameindex TO idnameindex');
+        $this->addSql('ALTER TABLE phplist_user_blacklist DROP INDEX `primary`, ADD UNIQUE INDEX email (email)');
         $this->addSql('ALTER TABLE phplist_user_blacklist RENAME INDEX phplist_user_blacklist_emailidx TO emailidx');
+        $this->addSql('ALTER TABLE phplist_user_blacklist_data DROP INDEX `primary`, ADD UNIQUE INDEX email (email)');
+        $this->addSql('ALTER TABLE phplist_user_blacklist_data DROP FOREIGN KEY FK_6D67150CE7927C74');
+        $this->addSql('ALTER TABLE phplist_user_blacklist_data CHANGE email email VARCHAR(150) NOT NULL, CHANGE data data TEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_user_blacklist_data RENAME INDEX phplist_user_blacklist_data_emailidx TO emailidx');
         $this->addSql('ALTER TABLE phplist_user_blacklist_data RENAME INDEX phplist_user_blacklist_data_emailnameidx TO emailnameidx');
         $this->addSql('ALTER TABLE phplist_user_message_bounce RENAME INDEX phplist_user_message_bounce_umbindex TO umbindex');
@@ -179,6 +277,7 @@ final class Version20251030083621MySqlRenameIndex extends AbstractMigration
         $this->addSql('ALTER TABLE phplist_user_message_view RENAME INDEX phplist_user_message_view_usermsgidx TO usermsgidx');
         $this->addSql('ALTER TABLE phplist_user_message_view RENAME INDEX phplist_user_message_view_msgidx TO msgidx');
         $this->addSql('ALTER TABLE phplist_user_message_view RENAME INDEX phplist_user_message_view_useridx TO useridx');
+        $this->addSql('ALTER TABLE phplist_user_user CHANGE modified modified DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, CHANGE confirmed confirmed TINYINT(1) DEFAULT 0, CHANGE blacklisted blacklisted TINYINT(1) DEFAULT 0, CHANGE bouncecount bouncecount INT DEFAULT 0, CHANGE htmlemail htmlemail TINYINT(1) DEFAULT 0, CHANGE disabled disabled TINYINT(1) DEFAULT 0, CHANGE extradata extradata TEXT DEFAULT NULL, CHANGE optedin optedin TINYINT(1) DEFAULT 0, CHANGE uuid uuid VARCHAR(36) DEFAULT \'\', CHANGE passwordchanged passwordchanged DATE DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_user_user RENAME INDEX phplist_user_user_email TO email');
         $this->addSql('ALTER TABLE phplist_user_user RENAME INDEX phplist_user_user_foreignkey TO foreignkey');
         $this->addSql('ALTER TABLE phplist_user_user RENAME INDEX phplist_user_user_idxuniqid TO idxuniqid');
@@ -187,11 +286,18 @@ final class Version20251030083621MySqlRenameIndex extends AbstractMigration
         $this->addSql('ALTER TABLE phplist_user_user RENAME INDEX phplist_user_user_blidx TO blidx');
         $this->addSql('ALTER TABLE phplist_user_user RENAME INDEX phplist_user_user_optidx TO optidx');
         $this->addSql('ALTER TABLE phplist_user_user RENAME INDEX phplist_user_user_uuididx TO uuididx');
+        $this->addSql('ALTER TABLE phplist_user_user_attribute DROP FOREIGN KEY FK_E24E310878C45AB5');
+        $this->addSql('ALTER TABLE phplist_user_user_attribute DROP FOREIGN KEY FK_E24E3108F132696E');
+        $this->addSql('ALTER TABLE phplist_user_user_attribute CHANGE value value TEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_user_user_attribute RENAME INDEX phplist_user_user_attribute_userindex TO userindex');
         $this->addSql('ALTER TABLE phplist_user_user_attribute RENAME INDEX phplist_user_user_attribute_attindex TO attindex');
         $this->addSql('ALTER TABLE phplist_user_user_attribute RENAME INDEX phplist_user_user_attribute_attuserid TO attuserid');
+        $this->addSql('ALTER TABLE phplist_user_user_history DROP FOREIGN KEY FK_6DBB605CF132696E');
+        $this->addSql('ALTER TABLE phplist_user_user_history CHANGE detail detail TEXT DEFAULT NULL, CHANGE systeminfo systeminfo TEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_user_user_history RENAME INDEX phplist_user_user_history_userididx TO userididx');
         $this->addSql('ALTER TABLE phplist_user_user_history RENAME INDEX phplist_user_user_history_dateidx TO dateidx');
+        $this->addSql('ALTER TABLE phplist_usermessage DROP FOREIGN KEY FK_7F30F469F132696E');
+        $this->addSql('ALTER TABLE phplist_usermessage DROP FOREIGN KEY FK_7F30F46931478478');
         $this->addSql('ALTER TABLE phplist_usermessage RENAME INDEX phplist_usermessage_messageidindex TO messageidindex');
         $this->addSql('ALTER TABLE phplist_usermessage RENAME INDEX phplist_usermessage_useridindex TO useridindex');
         $this->addSql('ALTER TABLE phplist_usermessage RENAME INDEX phplist_usermessage_enteredindex TO enteredindex');

@@ -9,11 +9,18 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 
+/**
+* ⚠️ Wizard warning:
+* Doctrine will `helpfully` remove url(255) prefixes and add collations 5.7 can’t read.
+* Review the SQL unless you enjoy debugging key length errors at 2 AM.
+*
+* Ex: phplist_linktrack_forward phplist_linktrack_forward_urlindex (but there are more)
+*/
 final class <className> extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '<comment>';
+        return '';
     }
 
     public function up(Schema $schema): void

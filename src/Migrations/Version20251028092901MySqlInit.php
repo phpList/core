@@ -11,7 +11,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Manual Migration
  */
-final class Version20251028092901MySql extends AbstractMigration
+final class Version20251028092901MySqlInit extends AbstractMigration
 {
     public function getDescription(): string
     {

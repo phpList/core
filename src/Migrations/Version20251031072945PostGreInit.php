@@ -5,31 +5,61 @@ declare(strict_types=1);
 namespace PhpList\Core\Migrations;
 
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Schema\Schema;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\Migrations\AbstractMigration;
+use Doctrine\DBAL\Schema\Schema;
 
 /**
- * Auto-generated Migration: Please modify to your needs!
- */
-final class Version20251030081120PostgreSqlPlatform extends AbstractMigration
+* ⚠️ Wizard warning:
+* Doctrine will `helpfully` remove url(255) prefixes and add collations 5.7 can’t read.
+* Review the SQL unless you enjoy debugging key length errors at 2 AM.
+*
+* Ex: phplist_linktrack_forward phplist_linktrack_forward_urlindex (but there are more)
+*/
+final class Version20251031072945PostGreInit extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'PostgreSql platform migration according to current Entity state';
+        return '';
     }
 
     public function up(Schema $schema): void
     {
         $platform = $this->connection->getDatabasePlatform();
-        $this->skipIf(
-            !$platform instanceof PostgreSqlPlatform,
-            sprintf(
-                'This migration is only applicable for PostgreSql. Current platform: %s',
-                get_class($platform)
-            )
-        );
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('CREATE TABLE phplist_admin (id INT NOT NULL, created TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, modified TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, loginname VARCHAR(66) NOT NULL, namelc VARCHAR(255) DEFAULT NULL, email VARCHAR(255) NOT NULL, modifiedby VARCHAR(66) DEFAULT NULL, password VARCHAR(255) DEFAULT NULL, passwordchanged DATE DEFAULT NULL, disabled BOOLEAN NOT NULL, superuser BOOLEAN NOT NULL, privileges TEXT DEFAULT NULL, PRIMARY KEY(id))');
+        $this->skipIf(!$platform instanceof PostgreSQLPlatform, sprintf(
+            'Unsupported platform for this migration: %s',
+            get_class($platform)
+        ));
+
+        $this->addSql('CREATE SEQUENCE phplist_admin_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_admin_login_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_admin_password_request_id_key_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_adminattribute_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_admintoken_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_attachment_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_bounce_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_bounceregex_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_eventlog_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_linktrack_linkid_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_linktrack_forward_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_linktrack_uml_click_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_list_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_listmessage_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_message_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_message_attachment_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_sendprocess_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_subscribepage_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_template_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_templateimage_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_urlcache_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_user_attribute_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_user_message_bounce_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_user_message_forward_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_user_message_view_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_user_user_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_user_user_history_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE phplist_userstats_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE TABLE phplist_admin (id INT NOT NULL, created TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, modified TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, loginname VARCHAR(66) NOT NULL, namelc VARCHAR(255) DEFAULT NULL, email VARCHAR(255) NOT NULL, modifiedby VARCHAR(66) DEFAULT NULL, password VARCHAR(255) DEFAULT NULL, passwordchanged DATE DEFAULT NULL, disabled BOOLEAN NOT NULL, superuser BOOLEAN NOT NULL, privileges TEXT DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE UNIQUE INDEX phplist_admin_loginnameidx ON phplist_admin (loginname)');
         $this->addSql('CREATE TABLE phplist_admin_attribute (adminattributeid INT NOT NULL, adminid INT NOT NULL, value VARCHAR(255) DEFAULT NULL, PRIMARY KEY(adminattributeid, adminid))');
         $this->addSql('CREATE INDEX IDX_58E07690D3B10C48 ON phplist_admin_attribute (adminattributeid)');
@@ -42,7 +72,7 @@ final class Version20251030081120PostgreSqlPlatform extends AbstractMigration
         $this->addSql('CREATE TABLE phplist_admintoken (id INT NOT NULL, adminid INT DEFAULT NULL, entered INT NOT NULL, expires TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, value VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_CB15D477B8ED4D93 ON phplist_admintoken (adminid)');
         $this->addSql('CREATE TABLE phplist_attachment (id INT NOT NULL, filename VARCHAR(255) DEFAULT NULL, remotefile VARCHAR(255) DEFAULT NULL, mimetype VARCHAR(255) DEFAULT NULL, description TEXT DEFAULT NULL, size INT DEFAULT NULL, PRIMARY KEY(id))');
-        $this->addSql('CREATE TABLE phplist_bounce (id INT NOT NULL, date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, header TEXT DEFAULT NULL, data BYTEA DEFAULT NULL, status VARCHAR(20) DEFAULT NULL, comment TEXT DEFAULT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE phplist_bounce (id INT NOT NULL, date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, header TEXT DEFAULT NULL, data BYTEA DEFAULT NULL, status VARCHAR(255) DEFAULT NULL, comment TEXT DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX phplist_bounce_dateindex ON phplist_bounce (date)');
         $this->addSql('CREATE INDEX phplist_bounce_statusidx ON phplist_bounce (status)');
         $this->addSql('CREATE TABLE phplist_bounceregex (id INT NOT NULL, regex VARCHAR(2083) DEFAULT NULL, regexhash VARCHAR(32) DEFAULT NULL, action VARCHAR(255) DEFAULT NULL, listorder INT DEFAULT 0, admin INT DEFAULT NULL, comment TEXT DEFAULT NULL, status VARCHAR(255) DEFAULT NULL, count INT DEFAULT 0, PRIMARY KEY(id))');
@@ -60,7 +90,7 @@ final class Version20251030081120PostgreSqlPlatform extends AbstractMigration
         $this->addSql('CREATE INDEX phplist_linktrack_uidindex ON phplist_linktrack (userid)');
         $this->addSql('CREATE INDEX phplist_linktrack_urlindex ON phplist_linktrack (url)');
         $this->addSql('CREATE UNIQUE INDEX phplist_linktrack_miduidurlindex ON phplist_linktrack (messageid, userid, url)');
-        $this->addSql('CREATE TABLE phplist_linktrack_forward (id INT NOT NULL, url VARCHAR(255) DEFAULT NULL, urlhash VARCHAR(32) DEFAULT NULL, uuid VARCHAR(36) DEFAULT \'\', personalise BOOLEAN DEFAULT false, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE phplist_linktrack_forward (id INT NOT NULL, url VARCHAR(2083) DEFAULT NULL, urlhash VARCHAR(32) DEFAULT NULL, uuid VARCHAR(36) DEFAULT \'\', personalise BOOLEAN DEFAULT false, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX phplist_linktrack_forward_urlindex ON phplist_linktrack_forward (url)');
         $this->addSql('CREATE INDEX phplist_linktrack_forward_uuididx ON phplist_linktrack_forward (uuid)');
         $this->addSql('CREATE UNIQUE INDEX phplist_linktrack_forward_urlunique ON phplist_linktrack_forward (urlhash)');
@@ -92,7 +122,7 @@ final class Version20251030081120PostgreSqlPlatform extends AbstractMigration
         $this->addSql('CREATE INDEX phplist_listuser_userlistenteredidx ON phplist_listuser (userid, entered, listid)');
         $this->addSql('CREATE INDEX phplist_listuser_useridx ON phplist_listuser (userid)');
         $this->addSql('CREATE INDEX phplist_listuser_listidx ON phplist_listuser (listid)');
-        $this->addSql('CREATE TABLE phplist_message (id INT NOT NULL, owner INT DEFAULT NULL, template INT DEFAULT NULL, modified TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, uuid VARCHAR(36) DEFAULT \'\', htmlformatted BOOLEAN NOT NULL, sendformat VARCHAR(20) DEFAULT NULL, astext BOOLEAN DEFAULT false NOT NULL, ashtml BOOLEAN DEFAULT false NOT NULL, aspdf BOOLEAN DEFAULT false NOT NULL, astextandhtml BOOLEAN DEFAULT false NOT NULL, astextandpdf BOOLEAN DEFAULT false NOT NULL, repeatinterval INT DEFAULT 0, repeatuntil TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, requeueinterval INT DEFAULT 0, requeueuntil TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, embargo TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, status VARCHAR(255) DEFAULT NULL, processed BOOLEAN DEFAULT false NOT NULL, viewed INT DEFAULT 0 NOT NULL, bouncecount INT DEFAULT 0 NOT NULL, entered TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, sent TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, sendstart TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, subject VARCHAR(255) DEFAULT \'(no subject)\' NOT NULL, message TEXT DEFAULT NULL, textmessage TEXT DEFAULT NULL, footer TEXT DEFAULT NULL, fromfield VARCHAR(255) DEFAULT \'\' NOT NULL, tofield VARCHAR(255) DEFAULT \'\' NOT NULL, replyto VARCHAR(255) DEFAULT \'\' NOT NULL, userselection TEXT DEFAULT NULL, rsstemplate VARCHAR(100) DEFAULT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE phplist_message (id INT NOT NULL, owner INT DEFAULT NULL, template INT DEFAULT NULL, modified TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, uuid VARCHAR(36) DEFAULT \'\', htmlformatted BOOLEAN NOT NULL, sendformat VARCHAR(20) DEFAULT NULL, astext BOOLEAN NOT NULL, ashtml BOOLEAN NOT NULL, aspdf BOOLEAN NOT NULL, astextandhtml BOOLEAN NOT NULL, astextandpdf BOOLEAN NOT NULL, repeatinterval INT DEFAULT 0, repeatuntil TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, requeueinterval INT DEFAULT 0, requeueuntil TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, embargo TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, status VARCHAR(255) DEFAULT NULL, processed BOOLEAN DEFAULT false NOT NULL, viewed INT DEFAULT 0 NOT NULL, bouncecount INT DEFAULT 0 NOT NULL, entered TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, sent TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, sendstart TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, subject VARCHAR(255) DEFAULT \'(no subject)\' NOT NULL, message TEXT DEFAULT NULL, textmessage TEXT DEFAULT NULL, footer TEXT DEFAULT NULL, fromfield VARCHAR(255) DEFAULT \'\' NOT NULL, tofield VARCHAR(255) DEFAULT \'\' NOT NULL, replyto VARCHAR(255) DEFAULT \'\' NOT NULL, userselection TEXT DEFAULT NULL, rsstemplate VARCHAR(100) DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_C5D81FCDCF60E67C ON phplist_message (owner)');
         $this->addSql('CREATE INDEX IDX_C5D81FCD97601F83 ON phplist_message (template)');
         $this->addSql('CREATE INDEX phplist_message_uuididx ON phplist_message (uuid)');
@@ -108,7 +138,7 @@ final class Version20251030081120PostgreSqlPlatform extends AbstractMigration
         $this->addSql('CREATE UNIQUE INDEX phplist_template_title ON phplist_template (title)');
         $this->addSql('CREATE TABLE phplist_templateimage (id INT NOT NULL, template INT NOT NULL, mimetype VARCHAR(100) DEFAULT NULL, filename VARCHAR(100) DEFAULT NULL, data BYTEA DEFAULT NULL, width INT DEFAULT NULL, height INT DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX phplist_templateimage_templateidx ON phplist_templateimage (template)');
-        $this->addSql('CREATE TABLE phplist_urlcache (id INT NOT NULL, url VARCHAR(255) NOT NULL, lastmodified INT DEFAULT NULL, added TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, content BYTEA DEFAULT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE phplist_urlcache (id INT NOT NULL, url VARCHAR(2083) NOT NULL, lastmodified INT DEFAULT NULL, added TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, content BYTEA DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX phplist_urlcache_urlindex ON phplist_urlcache (url)');
         $this->addSql('CREATE TABLE phplist_user_attribute (id INT NOT NULL, name VARCHAR(255) NOT NULL, type VARCHAR(30) DEFAULT NULL, listorder INT DEFAULT NULL, default_value VARCHAR(255) DEFAULT NULL, required BOOLEAN DEFAULT NULL, tablename VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX phplist_user_attribute_idnameindex ON phplist_user_attribute (id, name)');
@@ -179,19 +209,56 @@ final class Version20251030081120PostgreSqlPlatform extends AbstractMigration
         $this->addSql('ALTER TABLE phplist_user_user_history ADD CONSTRAINT FK_6DBB605CF132696E FOREIGN KEY (userid) REFERENCES phplist_user_user (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE phplist_usermessage ADD CONSTRAINT FK_7F30F469F132696E FOREIGN KEY (userid) REFERENCES phplist_user_user (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE phplist_usermessage ADD CONSTRAINT FK_7F30F46931478478 FOREIGN KEY (messageid) REFERENCES phplist_message (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
+
+        $sm = $this->connection->createSchemaManager();
+        if ($sm->tablesExist(['feed'])) {
+            $this->addSql('ALTER TABLE feed ALTER id DROP DEFAULT');
+            $this->addSql('ALTER TABLE feed ALTER etag DROP DEFAULT');
+            $this->addSql('ALTER TABLE feed ALTER lastmodified DROP DEFAULT');
+            $this->addSql('ALTER TABLE item ALTER id DROP DEFAULT');
+            $this->addSql('ALTER TABLE item_data DROP CONSTRAINT fk_itemdata_item');
+            $this->addSql('ALTER TABLE item_data ALTER value SET NOT NULL');
+            $this->addSql('ALTER TABLE item_data ADD CONSTRAINT FK_65C3B798207C93D3 FOREIGN KEY (itemid) REFERENCES item (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
+        }
     }
 
     public function down(Schema $schema): void
     {
         $platform = $this->connection->getDatabasePlatform();
-        $this->skipIf(
-            !$platform instanceof PostgreSqlPlatform,
-            sprintf(
-                'This migration is only applicable for PostgreSql. Current platform: %s',
-                get_class($platform)
-            )
-        );
-        // this down() migration is auto-generated, please modify it to your needs
+        $this->skipIf(!$platform instanceof PostgreSQLPlatform, sprintf(
+            'Unsupported platform for this migration: %s',
+            get_class($platform)
+        ));
+
+        $this->addSql('CREATE SCHEMA public');
+        $this->addSql('DROP SEQUENCE phplist_admin_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_admin_login_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_admin_password_request_id_key_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_adminattribute_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_admintoken_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_attachment_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_bounce_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_bounceregex_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_eventlog_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_linktrack_linkid_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_linktrack_forward_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_linktrack_uml_click_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_list_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_listmessage_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_message_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_message_attachment_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_sendprocess_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_subscribepage_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_template_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_templateimage_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_urlcache_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_user_attribute_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_user_message_bounce_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_user_message_forward_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_user_message_view_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_user_user_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_user_user_history_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE phplist_userstats_id_seq CASCADE');
         $this->addSql('ALTER TABLE phplist_admin_attribute DROP CONSTRAINT FK_58E07690D3B10C48');
         $this->addSql('ALTER TABLE phplist_admin_attribute DROP CONSTRAINT FK_58E07690B8ED4D93');
         $this->addSql('ALTER TABLE phplist_admin_login DROP CONSTRAINT FK_5FCE0842B8ED4D93');
@@ -253,5 +320,20 @@ final class Version20251030081120PostgreSqlPlatform extends AbstractMigration
         $this->addSql('DROP TABLE phplist_user_user_history');
         $this->addSql('DROP TABLE phplist_usermessage');
         $this->addSql('DROP TABLE phplist_userstats');
+
+        $sm = $this->connection->createSchemaManager();
+        if ($sm->tablesExist(['feed'])) {
+            $this->addSql('CREATE SEQUENCE feed_id_seq');
+            $this->addSql('SELECT setval(\'feed_id_seq\', (SELECT MAX(id) FROM feed))');
+            $this->addSql('ALTER TABLE feed ALTER id SET DEFAULT nextval(\'feed_id_seq\')');
+            $this->addSql('ALTER TABLE feed ALTER etag SET DEFAULT \'\'');
+            $this->addSql('ALTER TABLE feed ALTER lastmodified SET DEFAULT \'\'');
+            $this->addSql('CREATE SEQUENCE item_id_seq');
+            $this->addSql('SELECT setval(\'item_id_seq\', (SELECT MAX(id) FROM item))');
+            $this->addSql('ALTER TABLE item ALTER id SET DEFAULT nextval(\'item_id_seq\')');
+            $this->addSql('ALTER TABLE item_data DROP CONSTRAINT FK_65C3B798207C93D3');
+            $this->addSql('ALTER TABLE item_data ALTER value DROP NOT NULL');
+            $this->addSql('ALTER TABLE item_data ADD CONSTRAINT fk_itemdata_item FOREIGN KEY (itemid) REFERENCES item (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
+        }
     }
 }
