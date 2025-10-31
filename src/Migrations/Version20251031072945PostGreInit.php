@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PhpList\Core\Migrations;
 
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 
@@ -209,17 +208,6 @@ final class Version20251031072945PostGreInit extends AbstractMigration
         $this->addSql('ALTER TABLE phplist_user_user_history ADD CONSTRAINT FK_6DBB605CF132696E FOREIGN KEY (userid) REFERENCES phplist_user_user (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE phplist_usermessage ADD CONSTRAINT FK_7F30F469F132696E FOREIGN KEY (userid) REFERENCES phplist_user_user (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE phplist_usermessage ADD CONSTRAINT FK_7F30F46931478478 FOREIGN KEY (messageid) REFERENCES phplist_message (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
-
-        $sm = $this->connection->createSchemaManager();
-        if ($sm->tablesExist(['feed'])) {
-            $this->addSql('ALTER TABLE feed ALTER id DROP DEFAULT');
-            $this->addSql('ALTER TABLE feed ALTER etag DROP DEFAULT');
-            $this->addSql('ALTER TABLE feed ALTER lastmodified DROP DEFAULT');
-            $this->addSql('ALTER TABLE item ALTER id DROP DEFAULT');
-            $this->addSql('ALTER TABLE item_data DROP CONSTRAINT fk_itemdata_item');
-            $this->addSql('ALTER TABLE item_data ALTER value SET NOT NULL');
-            $this->addSql('ALTER TABLE item_data ADD CONSTRAINT FK_65C3B798207C93D3 FOREIGN KEY (itemid) REFERENCES item (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
-        }
     }
 
     public function down(Schema $schema): void
@@ -230,7 +218,6 @@ final class Version20251031072945PostGreInit extends AbstractMigration
             get_class($platform)
         ));
 
-        $this->addSql('CREATE SCHEMA public');
         $this->addSql('DROP SEQUENCE phplist_admin_id_seq CASCADE');
         $this->addSql('DROP SEQUENCE phplist_admin_login_id_seq CASCADE');
         $this->addSql('DROP SEQUENCE phplist_admin_password_request_id_key_seq CASCADE');
@@ -320,20 +307,5 @@ final class Version20251031072945PostGreInit extends AbstractMigration
         $this->addSql('DROP TABLE phplist_user_user_history');
         $this->addSql('DROP TABLE phplist_usermessage');
         $this->addSql('DROP TABLE phplist_userstats');
-
-        $sm = $this->connection->createSchemaManager();
-        if ($sm->tablesExist(['feed'])) {
-            $this->addSql('CREATE SEQUENCE feed_id_seq');
-            $this->addSql('SELECT setval(\'feed_id_seq\', (SELECT MAX(id) FROM feed))');
-            $this->addSql('ALTER TABLE feed ALTER id SET DEFAULT nextval(\'feed_id_seq\')');
-            $this->addSql('ALTER TABLE feed ALTER etag SET DEFAULT \'\'');
-            $this->addSql('ALTER TABLE feed ALTER lastmodified SET DEFAULT \'\'');
-            $this->addSql('CREATE SEQUENCE item_id_seq');
-            $this->addSql('SELECT setval(\'item_id_seq\', (SELECT MAX(id) FROM item))');
-            $this->addSql('ALTER TABLE item ALTER id SET DEFAULT nextval(\'item_id_seq\')');
-            $this->addSql('ALTER TABLE item_data DROP CONSTRAINT FK_65C3B798207C93D3');
-            $this->addSql('ALTER TABLE item_data ALTER value DROP NOT NULL');
-            $this->addSql('ALTER TABLE item_data ADD CONSTRAINT fk_itemdata_item FOREIGN KEY (itemid) REFERENCES item (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
-        }
     }
 }
