@@ -12,9 +12,9 @@ use PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository;
 
 #[ORM\Entity(repositoryClass: UserMessageForwardRepository::class)]
 #[ORM\Table(name: 'phplist_user_message_forward')]
-#[ORM\Index(name: 'messageidx', columns: ['message'])]
-#[ORM\Index(name: 'useridx', columns: ['user'])]
-#[ORM\Index(name: 'usermessageidx', columns: ['user', 'message'])]
+#[ORM\Index(name: 'phplist_user_message_forward_messageidx', columns: ['message'])]
+#[ORM\Index(name: 'phplist_user_message_forward_useridx', columns: ['user'])]
+#[ORM\Index(name: 'phplist_user_message_forward_usermessageidx', columns: ['user', 'message'])]
 class UserMessageForward implements DomainModel, Identity
 {
     #[ORM\Id]

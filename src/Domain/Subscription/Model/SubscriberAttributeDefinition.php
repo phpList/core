@@ -11,8 +11,8 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRep
 
 #[ORM\Entity(repositoryClass: SubscriberAttributeDefinitionRepository::class)]
 #[ORM\Table(name: 'phplist_user_attribute')]
-#[ORM\Index(name: 'idnameindex', columns: ['id', 'name'])]
-#[ORM\Index(name: 'nameindex', columns: ['name'])]
+#[ORM\Index(name: 'phplist_user_attribute_idnameindex', columns: ['id', 'name'])]
+#[ORM\Index(name: 'phplist_user_attribute_nameindex', columns: ['name'])]
 class SubscriberAttributeDefinition implements DomainModel, Identity
 {
     #[ORM\Id]

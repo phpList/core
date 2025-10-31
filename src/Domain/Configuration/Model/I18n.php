@@ -15,8 +15,8 @@ use PhpList\Core\Domain\Configuration\Repository\I18nRepository;
  */
 #[ORM\Entity(repositoryClass: I18nRepository::class)]
 #[ORM\Table(name: 'phplist_i18n')]
-#[ORM\UniqueConstraint(name: 'lanorigunq', columns: ['lan', 'original'])]
-#[ORM\Index(name: 'lanorigidx', columns: ['lan', 'original'])]
+#[ORM\UniqueConstraint(name: 'phplist_i18n_lanorigunq', columns: ['lan', 'original'])]
+#[ORM\Index(name: 'phplist_i18n_lanorigidx', columns: ['lan', 'original'])]
 class I18n implements DomainModel
 {
     #[ORM\Id]

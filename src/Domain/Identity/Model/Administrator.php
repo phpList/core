@@ -23,6 +23,7 @@ use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
  */
 #[ORM\Entity(repositoryClass: AdministratorRepository::class)]
 #[ORM\Table(name: 'phplist_admin')]
+#[ORM\UniqueConstraint(name: 'phplist_admin_loginnameidx', columns: ['loginname'])]
 #[ORM\HasLifecycleCallbacks]
 class Administrator implements DomainModel, Identity, CreationDate, ModificationDate
 {
@@ -31,50 +32,59 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     #[ORM\GeneratedValue]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'created', type: 'datetime')]
-    protected DateTime $createdAt;
+    #[ORM\Column(name: 'created', type: 'datetime', nullable: false)]
+    protected ?DateTime $createdAt = null;
 
-    #[ORM\Column(name: 'modified', type: 'datetime')]
-    private ?DateTime $updatedAt;
+    #[ORM\Column(name: 'modified', type: 'datetime', nullable: false)]
+    private DateTime $updatedAt;
 
-    #[ORM\Column(name: 'loginname')]
+    #[ORM\Column(name: 'loginname', type: 'string', length: 66, nullable: false)]
     private string $loginName;
 
-    #[ORM\Column(name: 'namelc', nullable: true)]
-    private string $namelc;
+    #[ORM\Column(name: 'namelc', type: 'string', length: 255, nullable: true)]
+    private ?string $namelc = null;
 
-    #[ORM\Column(name: 'email')]
+    #[ORM\Column(name: 'email', type: 'string', length: 255, nullable: false)]
     private string $email;
 
     #[ORM\Column(name: 'modifiedby', type: 'string', length: 66, nullable: true)]
-    private ?string $modifiedBy;
+    private ?string $modifiedBy = null;
 
-    #[ORM\Column(name: 'password')]
-    private string $passwordHash;
+    #[ORM\Column(name: 'password', type: 'string', length: 255, nullable: true)]
+    private ?string $passwordHash = null;
 
     #[ORM\Column(name: 'passwordchanged', type: 'date', nullable: true)]
-    private ?DateTime $passwordChangeDate;
+    private ?DateTime $passwordChangeDate = null;
 
-    #[ORM\Column(type: 'boolean')]
-    private bool $disabled;
+    #[ORM\Column(name: 'disabled', type: 'boolean', nullable: false)]
+    private bool $disabled = false;
 
-    #[ORM\Column(name: 'superuser', type: 'boolean')]
-    private bool $superUser;
+    #[ORM\Column(name: 'superuser', type: 'boolean', nullable: false)]
+    private bool $superUser = false;
 
     #[ORM\Column(name: 'privileges', type: 'text', nullable: true)]
-    private ?string $privileges;
+    private ?string $privileges = null;
 
     public function __construct()
     {
-        $this->disabled = false;
-        $this->superUser = false;
-        $this->passwordChangeDate = null;
-        $this->loginName = '';
-        $this->passwordHash = '';
         $this->createdAt = new DateTime();
-        $this->updatedAt = null;
+        $this->updatedAt = new DateTime();
         $this->email = '';
-        $this->privileges = null;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getCreatedAt(): ?DateTime
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): DateTime
+    {
+        return $this->updatedAt;
     }
 
     public function getLoginName(): string
@@ -85,7 +95,6 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     public function setLoginName(string $loginName): self
     {
         $this->loginName = $loginName;
-
         return $this;
     }
 
@@ -97,20 +106,29 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     public function setEmail(string $email): self
     {
         $this->email = $email;
-
         return $this;
     }
 
-    public function getPasswordHash(): string
+    public function getNameLc(): ?string
+    {
+        return $this->namelc;
+    }
+
+    public function setNameLc(?string $nameLc): self
+    {
+        $this->namelc = $nameLc;
+        return $this;
+    }
+
+    public function getPasswordHash(): ?string
     {
         return $this->passwordHash;
     }
 
-    public function setPasswordHash(string $passwordHash): self
+    public function setPasswordHash(?string $passwordHash): self
     {
         $this->passwordHash = $passwordHash;
-        $this->passwordChangeDate = new DateTime();
-
+        $this->passwordChangeDate = $passwordHash !== null ? new DateTime() : null;
         return $this;
     }
 
@@ -127,7 +145,6 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     public function setDisabled(bool $disabled): self
     {
         $this->disabled = $disabled;
-
         return $this;
     }
 
@@ -139,32 +156,19 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     public function setSuperUser(bool $superUser): self
     {
         $this->superUser = $superUser;
-
         return $this;
-    }
-
-    public function setNameLc(string $nameLc): self
-    {
-        $this->namelc = $nameLc;
-
-        return $this;
-    }
-
-    public function getNameLc(): string
-    {
-        return $this->namelc;
     }
 
     public function setPrivileges(Privileges $privileges): self
     {
         $this->privileges = $privileges->toSerialized();
-
         return $this;
     }
 
     /**
-     * @SuppressWarnings(PHPMD.StaticAccess)
      * @throws InvalidArgumentException
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function setPrivilegesFromArray(array $privilegesData): void
     {
@@ -172,44 +176,17 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         foreach ($privilegesData as $key => $value) {
             $flag = PrivilegeFlag::tryFrom($key);
             if (!$flag) {
-                throw new InvalidArgumentException('Unknown privilege key: '. $key);
+                throw new InvalidArgumentException('Unknown privilege key: ' . $key);
             }
-
             $privileges = $value ? $privileges->grant($flag) : $privileges->revoke($flag);
         }
         $this->setPrivileges($privileges);
     }
 
-    /**
-     * @SuppressWarnings(PHPMD.StaticAccess)
-     */
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function getPrivileges(): Privileges
     {
         return Privileges::fromSerialized($this->privileges);
-    }
-
-    public function getCreatedAt(): ?DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getUpdatedAt(): ?DateTime
-    {
-        return $this->updatedAt;
-    }
-
-    #[ORM\PrePersist]
-    #[ORM\PreUpdate]
-    public function updateUpdatedAt(): DomainModel
-    {
-        $this->updatedAt = new DateTime();
-
-        return $this;
     }
 
     public function setModifiedBy(?string $modifiedBy): self
@@ -230,5 +207,11 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         }
 
         return $resource->getOwner()->getId() === $this->getId();
+    }
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAt(): void
+    {
+        $this->updatedAt = new DateTime();
     }
 }

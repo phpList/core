@@ -7,6 +7,7 @@ namespace PhpList\Core\Tests\Integration\Domain\Identity\Fixtures;
 use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Identity\Model\AdministratorToken;
 use PhpList\Core\TestingSupport\Traits\ModelTestTrait;
 use RuntimeException;
@@ -28,6 +29,9 @@ class DetachedAdministratorTokenFixture extends Fixture
         }
 
         $headers = fgetcsv($handle);
+        $admin = (new Administrator())->setLoginName('admin');
+        $this->setSubjectId($admin, 1);
+        $manager->persist($admin);
 
         do {
             $data = fgetcsv($handle);
@@ -36,7 +40,7 @@ class DetachedAdministratorTokenFixture extends Fixture
             }
             $row = array_combine($headers, $data);
 
-            $adminToken = new AdministratorToken();
+            $adminToken = new AdministratorToken($admin);
             $this->setSubjectId($adminToken, (int)$row['id']);
             $adminToken->setKey($row['value']);
 

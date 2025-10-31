@@ -16,7 +16,7 @@ class MessageMetadata implements EmbeddableInterface
     private ?string $status = null;
 
     #[ORM\Column(type: 'boolean', options: ['unsigned' => true, 'default' => false])]
-    private bool $processed;
+    private bool $processed = false;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     private int $viewed = 0;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Configuration\Model;
 
+use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
@@ -12,8 +13,9 @@ use PhpList\Core\Domain\Configuration\Repository\EventLogRepository;
 
 #[ORM\Entity(repositoryClass: EventLogRepository::class)]
 #[ORM\Table(name: 'phplist_eventlog')]
-#[ORM\Index(name: 'enteredidx', columns: ['entered'])]
-#[ORM\Index(name: 'pageidx', columns: ['page'])]
+#[ORM\Index(name: 'phplist_eventlog_enteredidx', columns: ['entered'])]
+#[ORM\Index(name: 'phplist_eventlog_pageidx', columns: ['page'])]
+#[ORM\HasLifecycleCallbacks]
 class EventLog implements DomainModel, Identity
 {
     #[ORM\Id]
@@ -33,6 +35,13 @@ class EventLog implements DomainModel, Identity
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    #[ORM\PrePersist]
+    public function setCreatedTimestamps(): void
+    {
+        $now = new DateTimeImmutable();
+        $this->entered = $now;
     }
 
     public function getEntered(): ?DateTimeInterface

@@ -11,7 +11,7 @@ use PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository;
 
 #[ORM\Entity(repositoryClass: UserBlacklistRepository::class)]
 #[ORM\Table(name: 'phplist_user_blacklist')]
-#[ORM\Index(name: 'emailidx', columns: ['email'])]
+#[ORM\Index(name: 'phplist_user_blacklist_emailidx', columns: ['email'])]
 class UserBlacklist implements DomainModel
 {
     #[ORM\Id]
@@ -21,8 +21,14 @@ class UserBlacklist implements DomainModel
     #[ORM\Column(name: 'added', type: 'datetime', nullable: true)]
     private ?DateTime $added = null;
 
-    #[ORM\OneToOne(targetEntity: UserBlacklistData::class, mappedBy: 'email')]
+    #[ORM\OneToOne(targetEntity: UserBlacklistData::class, mappedBy: 'blacklist', cascade: ['persist', 'remove'])]
     private ?UserBlacklistData $blacklistData = null;
+
+    public function __construct(string $email)
+    {
+        $this->email = $email;
+        $this->added = new DateTime();
+    }
 
     public function getEmail(): string
     {
@@ -34,12 +40,6 @@ class UserBlacklist implements DomainModel
         return $this->added;
     }
 
-    public function setEmail(string $email): self
-    {
-        $this->email = $email;
-        return $this;
-    }
-
     public function setAdded(?DateTime $added): self
     {
         $this->added = $added;
@@ -49,5 +49,14 @@ class UserBlacklist implements DomainModel
     public function getBlacklistData(): ?UserBlacklistData
     {
         return $this->blacklistData;
+    }
+
+    public function setBlacklistData(?UserBlacklistData $data): self
+    {
+        $this->blacklistData = $data;
+        if ($data && $data->getBlacklist() !== $this) {
+            $data->setBlacklist($this);
+        }
+        return $this;
     }
 }

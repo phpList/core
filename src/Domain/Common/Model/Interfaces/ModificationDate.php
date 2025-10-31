@@ -20,14 +20,4 @@ interface ModificationDate
      * @return DateTime|null
      */
     public function getUpdatedAt(): ?DateTime;
-
-    /**
-     * Updates the modification date to be now.
-     *
-     * @Mapping\PrePersist
-     * @Mapping\PreUpdate
-     *
-     * @return DomainModel
-     */
-    public function updateUpdatedAt(): DomainModel;
 }

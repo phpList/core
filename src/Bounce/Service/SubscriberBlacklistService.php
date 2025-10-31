@@ -40,7 +40,7 @@ class SubscriberBlacklistService
     {
         $subscriber->setBlacklisted(true);
         $this->entityManager->flush();
-        $this->blacklistManager->addEmailToBlacklist($subscriber->getEmail(), $reason);
+        $userBlacklist = $this->blacklistManager->addEmailToBlacklist($subscriber->getEmail(), $reason);
         $this->entityManager->flush();
 
         foreach (['REMOTE_ADDR','HTTP_X_FORWARDED_FOR'] as $item) {
@@ -50,7 +50,7 @@ class SubscriberBlacklistService
             }
             if ($request->server->get($item)) {
                 $this->blacklistManager->addBlacklistData(
-                    email: $subscriber->getEmail(),
+                    userBlacklist: $userBlacklist,
                     name: $item,
                     data: $request->server->get($item)
                 );

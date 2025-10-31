@@ -10,13 +10,14 @@ use PhpList\Core\Domain\Subscription\Repository\UserBlacklistDataRepository;
 
 #[ORM\Entity(repositoryClass: UserBlacklistDataRepository::class)]
 #[ORM\Table(name: 'phplist_user_blacklist_data')]
-#[ORM\Index(name: 'emailidx', columns: ['email'])]
-#[ORM\Index(name: 'emailnameidx', columns: ['email', 'name'])]
+#[ORM\Index(name: 'phplist_user_blacklist_data_emailidx', columns: ['email'])]
+#[ORM\Index(name: 'phplist_user_blacklist_data_emailnameidx', columns: ['email', 'name'])]
 class UserBlacklistData implements DomainModel
 {
     #[ORM\Id]
-    #[ORM\Column(name: 'email', type: 'string', length: 150)]
-    private string $email;
+    #[ORM\OneToOne(targetEntity: UserBlacklist::class, inversedBy: 'blacklistData')]
+    #[ORM\JoinColumn(name: 'email', referencedColumnName: 'email', nullable: false, onDelete: 'CASCADE')]
+    private UserBlacklist $blacklist;
 
     #[ORM\Column(name: 'name', type: 'string', length: 25)]
     private string $name;
@@ -24,9 +25,20 @@ class UserBlacklistData implements DomainModel
     #[ORM\Column(name: 'data', type: 'text', nullable: true)]
     private ?string $data = null;
 
+    public function getBlacklist(): UserBlacklist
+    {
+        return $this->blacklist;
+    }
+
+    public function setBlacklist(UserBlacklist $blacklist): self
+    {
+        $this->blacklist = $blacklist;
+        return $this;
+    }
+
     public function getEmail(): string
     {
-        return $this->email;
+        return $this->blacklist->getEmail();
     }
 
     public function getName(): string
@@ -37,12 +49,6 @@ class UserBlacklistData implements DomainModel
     public function getData(): ?string
     {
         return $this->data;
-    }
-
-    public function setEmail(string $email): self
-    {
-        $this->email = $email;
-        return $this;
     }
 
     public function setName(string $name): self

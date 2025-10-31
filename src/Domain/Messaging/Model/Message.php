@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Model;
 
 use DateTime;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -22,7 +23,7 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\Table(name: 'phplist_message')]
-#[ORM\Index(name: 'uuididx', columns: ['uuid'])]
+#[ORM\Index(name: 'phplist_message_uuididx', columns: ['uuid'])]
 #[ORM\HasLifecycleCallbacks]
 class Message implements DomainModel, Identity, ModificationDate, OwnableInterface
 {
@@ -31,8 +32,8 @@ class Message implements DomainModel, Identity, ModificationDate, OwnableInterfa
     #[ORM\GeneratedValue]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'modified', type: 'datetime')]
-    private ?DateTime $updatedAt = null;
+    #[ORM\Column(name: 'modified', type: 'datetime', nullable: false)]
+    private DateTime $updatedAt;
 
     #[ORM\Embedded(class: MessageFormat::class, columnPrefix: false)]
     private MessageFormat $format;
@@ -81,6 +82,8 @@ class Message implements DomainModel, Identity, ModificationDate, OwnableInterfa
         $this->owner = $owner;
         $this->template = $template;
         $this->listMessages = new ArrayCollection();
+        $this->updatedAt = new DateTime();
+        $this->metadata->setEntered(new DateTime());
     }
 
     public function getId(): ?int
@@ -88,18 +91,15 @@ class Message implements DomainModel, Identity, ModificationDate, OwnableInterfa
         return $this->id;
     }
 
-    public function getUpdatedAt(): ?DateTime
+    public function getUpdatedAt(): DateTime
     {
         return $this->updatedAt;
     }
 
-    #[ORM\PrePersist]
     #[ORM\PreUpdate]
-    public function updateUpdatedAt(): DomainModel
+    public function touchUpdatedTimestamp(): void
     {
-        $this->updatedAt = new DateTime();
-
-        return $this;
+        $this->updatedAt = new DateTime;
     }
 
     public function getFormat(): MessageFormat

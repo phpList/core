@@ -13,11 +13,11 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 
 #[ORM\Entity(repositoryClass: UserMessageRepository::class)]
 #[ORM\Table(name: 'phplist_usermessage')]
-#[ORM\Index(name: 'enteredindex', columns: ['entered'])]
-#[ORM\Index(name: 'messageidindex', columns: ['messageid'])]
-#[ORM\Index(name: 'statusidx', columns: ['status'])]
-#[ORM\Index(name: 'useridindex', columns: ['userid'])]
-#[ORM\Index(name: 'viewedidx', columns: ['viewed'])]
+#[ORM\Index(name: 'phplist_usermessage_enteredindex', columns: ['entered'])]
+#[ORM\Index(name: 'phplist_usermessage_messageidindex', columns: ['messageid'])]
+#[ORM\Index(name: 'phplist_usermessage_statusidx', columns: ['status'])]
+#[ORM\Index(name: 'phplist_usermessage_useridindex', columns: ['userid'])]
+#[ORM\Index(name: 'phplist_usermessage_viewedidx', columns: ['viewed'])]
 class UserMessage implements DomainModel
 {
     #[ORM\Id]

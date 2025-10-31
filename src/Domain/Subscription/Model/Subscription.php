@@ -23,10 +23,10 @@ use Symfony\Component\Serializer\Attribute\Groups;
  */
 #[ORM\Entity(repositoryClass: SubscriptionRepository::class)]
 #[ORM\Table(name: 'phplist_listuser')]
-#[ORM\Index(name: 'userenteredidx', columns: ['userid', 'entered'])]
-#[ORM\Index(name: 'userlistenteredidx', columns: ['userid', 'entered', 'listid'])]
-#[ORM\Index(name: 'useridx', columns: ['userid'])]
-#[ORM\Index(name: 'listidx', columns: ['listid'])]
+#[ORM\Index(name: 'phplist_listuser_userenteredidx', columns: ['userid', 'entered'])]
+#[ORM\Index(name: 'phplist_listuser_userlistenteredidx', columns: ['userid', 'entered', 'listid'])]
+#[ORM\Index(name: 'phplist_listuser_useridx', columns: ['userid'])]
+#[ORM\Index(name: 'phplist_listuser_listidx', columns: ['listid'])]
 #[ORM\HasLifecycleCallbacks]
 class Subscription implements DomainModel, CreationDate, ModificationDate
 {
@@ -95,10 +95,8 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
 
     #[ORM\PrePersist]
     #[ORM\PreUpdate]
-    public function updateUpdatedAt(): DomainModel
+    public function updateUpdatedAt(): void
     {
         $this->updatedAt = new DateTime();
-
-        return $this;
     }
 }

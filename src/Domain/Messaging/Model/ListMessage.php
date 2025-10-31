@@ -15,8 +15,8 @@ use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 
 #[ORM\Entity(repositoryClass: ListMessageRepository::class)]
 #[ORM\Table(name: 'phplist_listmessage')]
-#[ORM\UniqueConstraint(name: 'messageid', columns: ['messageid', 'listid'])]
-#[ORM\Index(name: 'listmessageidx', columns: ['listid', 'messageid'])]
+#[ORM\UniqueConstraint(name: 'phplist_listmessage_messageid', columns: ['messageid', 'listid'])]
+#[ORM\Index(name: 'phplist_listmessage_listmessageidx', columns: ['listid', 'messageid'])]
 #[ORM\HasLifecycleCallbacks]
 class ListMessage implements DomainModel, Identity, ModificationDate
 {
@@ -38,6 +38,12 @@ class ListMessage implements DomainModel, Identity, ModificationDate
 
     #[ORM\Column(name: 'modified', type: 'datetime')]
     private ?DateTime $updatedAt = null;
+
+    public function __construct()
+    {
+        $this->updatedAt = new DateTime();
+        $this->entered = new DateTime();
+    }
 
     public function getId(): ?int
     {
@@ -71,23 +77,14 @@ class ListMessage implements DomainModel, Identity, ModificationDate
         return $this->entered;
     }
 
-    public function setEntered(?DateTimeInterface $entered): self
-    {
-        $this->entered = $entered;
-        return $this;
-    }
-
     public function getUpdatedAt(): ?DateTime
     {
         return $this->updatedAt;
     }
 
-    #[ORM\PrePersist]
     #[ORM\PreUpdate]
-    public function updateUpdatedAt(): DomainModel
+    public function updateUpdatedAt(): void
     {
         $this->updatedAt = new DateTime();
-
-        return $this;
     }
 }

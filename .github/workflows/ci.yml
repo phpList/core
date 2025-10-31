@@ -75,4 +75,4 @@ jobs:
       - name: Running PHPMD
         run: vendor/bin/phpmd src/ text config/PHPMD/rules.xml;
       - name: Running PHP_CodeSniffer
-        run: vendor/bin/phpcs --standard=config/PhpCodeSniffer/ bin/ src/ tests/ public/;
+        run: vendor/bin/phpcs --standard=config/PhpCodeSniffer/ --ignore=*/Migrations/* bin/ src/ tests/ public/;

@@ -11,7 +11,7 @@ use PhpList\Core\Domain\Messaging\Repository\TemplateImageRepository;
 
 #[ORM\Entity(repositoryClass: TemplateImageRepository::class)]
 #[ORM\Table(name: 'phplist_templateimage')]
-#[ORM\Index(name: 'templateidx', columns: ['template'])]
+#[ORM\Index(name: 'phplist_templateimage_templateidx', columns: ['template'])]
 class TemplateImage implements DomainModel, Identity
 {
     #[ORM\Id]

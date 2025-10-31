@@ -39,15 +39,12 @@ class SubscriberBlacklistManager
             return $this->getBlacklistInfo($email);
         }
 
-        $blacklistEntry = new UserBlacklist();
-        $blacklistEntry->setEmail($email);
-        $blacklistEntry->setAdded(new DateTime());
-
+        $blacklistEntry = new UserBlacklist($email);
         $this->entityManager->persist($blacklistEntry);
 
         if ($reasonData !== null) {
             $blacklistData = new UserBlacklistData();
-            $blacklistData->setEmail($email);
+            $blacklistData->setBlacklist($blacklistEntry);
             $blacklistData->setName('reason');
             $blacklistData->setData($reasonData);
             $this->entityManager->persist($blacklistData);
@@ -56,10 +53,10 @@ class SubscriberBlacklistManager
         return $blacklistEntry;
     }
 
-    public function addBlacklistData(string $email, string $name, string $data): void
+    public function addBlacklistData(UserBlacklist $userBlacklist, string $name, string $data): void
     {
         $blacklistData = new UserBlacklistData();
-        $blacklistData->setEmail($email);
+        $blacklistData->setBlacklist($userBlacklist);
         $blacklistData->setName($name);
         $blacklistData->setData($data);
         $this->entityManager->persist($blacklistData);

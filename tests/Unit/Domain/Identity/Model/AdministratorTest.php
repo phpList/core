@@ -27,7 +27,7 @@ class AdministratorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->subject = new Administrator();
+        $this->subject = (new Administrator())->setLoginName('');
     }
 
     public function testIsDomainModel(): void
@@ -69,21 +69,21 @@ class AdministratorTest extends TestCase
         self::assertSame($value, $this->subject->getEmail());
     }
 
-    public function testGetUpdatedAtInitiallyReturnsNull(): void
+    public function testGetUpdatedAtInitiallyReturnsNotNull(): void
     {
-        self::assertNull($this->subject->getUpdatedAt());
+        self::assertNotNull($this->subject->getUpdatedAt());
     }
 
     public function testUpdateModificationDateSetsModificationDateToNow(): void
     {
-        $this->subject->updateUpdatedAt();
+        $this->subject->setEmail('update@email.com');
 
         self::assertSimilarDates(new DateTime(), $this->subject->getUpdatedAt());
     }
 
-    public function testGetPasswordHashInitiallyReturnsEmptyString(): void
+    public function testGetPasswordHashInitiallyReturnsNull(): void
     {
-        self::assertSame('', $this->subject->getPasswordHash());
+        self::assertNull($this->subject->getPasswordHash());
     }
 
     public function testSetPasswordHashSetsPasswordHash(): void

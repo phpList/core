@@ -13,7 +13,7 @@ use PhpList\Core\Domain\Messaging\Repository\TemplateRepository;
 
 #[ORM\Entity(repositoryClass: TemplateRepository::class)]
 #[ORM\Table(name: 'phplist_template')]
-#[ORM\UniqueConstraint(name: 'title', columns: ['title'])]
+#[ORM\UniqueConstraint(name: 'phplist_template_title', columns: ['title'])]
 class Template implements DomainModel, Identity
 {
     #[ORM\Id]

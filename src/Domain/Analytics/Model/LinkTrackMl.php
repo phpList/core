@@ -11,8 +11,8 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 
 #[ORM\Entity(repositoryClass: LinkTrackMlRepository::class)]
 #[ORM\Table(name: 'phplist_linktrack_ml')]
-#[ORM\Index(name: 'fwdindex', columns: ['forwardid'])]
-#[ORM\Index(name: 'midindex', columns: ['messageid'])]
+#[ORM\Index(name: 'phplist_linktrack_ml_fwdindex', columns: ['forwardid'])]
+#[ORM\Index(name: 'phplist_linktrack_ml_midindex', columns: ['messageid'])]
 class LinkTrackMl implements DomainModel
 {
     #[ORM\Id]

@@ -42,7 +42,7 @@ class MessageRepositoryTest extends KernelTestCase
 
     public function testMessageIsPersistedAndFetchedCorrectly(): void
     {
-        $admin = new Administrator();
+        $admin = (new Administrator())->setLoginName('t');
         $this->entityManager->persist($admin);
 
         $message = new Message(
@@ -68,8 +68,8 @@ class MessageRepositoryTest extends KernelTestCase
 
     public function testGetByOwnerIdReturnsOnlyOwnedMessages(): void
     {
-        $admin1 = new Administrator();
-        $admin2 = new Administrator();
+        $admin1 = (new Administrator())->setLoginName('1');
+        $admin2 = (new Administrator())->setLoginName('2');
 
         $this->entityManager->persist($admin1);
         $this->entityManager->persist($admin2);

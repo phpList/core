@@ -52,7 +52,7 @@ class SubscriberDeletionServiceTest extends KernelTestCase
 
     public function testDeleteSubscriberWithRelatedDataDoesNotThrowDoctrineError(): void
     {
-        $admin = new Administrator();
+        $admin = (new Administrator())->setLoginName('ta');
         $this->entityManager->persist($admin);
 
         $msg = new Message(

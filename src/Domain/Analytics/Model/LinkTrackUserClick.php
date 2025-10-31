@@ -11,11 +11,11 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 
 #[ORM\Entity(repositoryClass: LinkTrackUserClickRepository::class)]
 #[ORM\Table(name: 'phplist_linktrack_userclick')]
-#[ORM\Index(name: 'linkindex', columns: ['linkid'])]
-#[ORM\Index(name: 'linkuserindex', columns: ['linkid', 'userid'])]
-#[ORM\Index(name: 'linkusermessageindex', columns: ['linkid', 'userid', 'messageid'])]
-#[ORM\Index(name: 'midindex', columns: ['messageid'])]
-#[ORM\Index(name: 'uidindex', columns: ['userid'])]
+#[ORM\Index(name: 'phplist_linktrack_userclick_linkindex', columns: ['linkid'])]
+#[ORM\Index(name: 'phplist_linktrack_userclick_linkuserindex', columns: ['linkid', 'userid'])]
+#[ORM\Index(name: 'phplist_linktrack_userclick_linkusermessageindex', columns: ['linkid', 'userid', 'messageid'])]
+#[ORM\Index(name: 'phplist_linktrack_userclick_midindex', columns: ['messageid'])]
+#[ORM\Index(name: 'phplist_linktrack_userclick_uidindex', columns: ['userid'])]
 class LinkTrackUserClick implements DomainModel
 {
     #[ORM\Id]

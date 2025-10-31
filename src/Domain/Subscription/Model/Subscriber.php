@@ -19,13 +19,18 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
  * campaigns for those subscriber lists.
  * @author Oliver Klee <oliver@phplist.com>
  * @author Tatevik Grigoryan <tatevik@phplist.com>
+ * @SuppressWarnings(TooManyFields)
  */
 #[ORM\Entity(repositoryClass: SubscriberRepository::class)]
 #[ORM\Table(name: 'phplist_user_user')]
-#[ORM\Index(name: 'idxuniqid', columns: ['uniqid'])]
-#[ORM\Index(name: 'enteredindex', columns: ['entered'])]
-#[ORM\Index(name: 'confidx', columns: ['confirmed'])]
-#[ORM\Index(name: 'blidx', columns: ['blacklisted'])]
+#[ORM\Index(name: 'phplist_user_user_idxuniqid', columns: ['uniqid'])]
+#[ORM\Index(name: 'phplist_user_user_enteredindex', columns: ['entered'])]
+#[ORM\Index(name: 'phplist_user_user_confidx', columns: ['confirmed'])]
+#[ORM\Index(name: 'phplist_user_user_blidx', columns: ['blacklisted'])]
+#[ORM\Index(name: 'phplist_user_user_optidx', columns: ['optedin'])]
+#[ORM\Index(name: 'phplist_user_user_uuididx', columns: ['uuid'])]
+#[ORM\Index(name: 'phplist_user_user_foreignkey', columns: ['foreignkey'])]
+#[ORM\UniqueConstraint(name: 'phplist_user_user_email', columns: ['email'])]
 #[ORM\HasLifecycleCallbacks]
 class Subscriber implements DomainModel, Identity, CreationDate, ModificationDate
 {
@@ -37,8 +42,8 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
     protected ?DateTime $createdAt = null;
 
-    #[ORM\Column(name: 'modified', type: 'datetime')]
-    private ?DateTime $updatedAt = null;
+    #[ORM\Column(name: 'modified', type: 'datetime', nullable: false)]
+    private DateTime $updatedAt;
 
     #[ORM\Column(unique: true)]
     private string $email = '';
@@ -52,7 +57,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     #[ORM\Column(name: 'bouncecount', type: 'integer')]
     private int $bounceCount = 0;
 
-    #[ORM\Column(name: 'uniqid', unique: true)]
+    #[ORM\Column(name: 'uniqid', type: 'string', length: 255, nullable: true)]
     private string $uniqueId = '';
 
     #[ORM\Column(name: 'htmlemail', type: 'boolean')]
@@ -61,8 +66,8 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     #[ORM\Column(type: 'boolean')]
     private bool $disabled = false;
 
-    #[ORM\Column(name: 'extradata', type: 'text')]
-    private ?string $extraData;
+    #[ORM\Column(name: 'extradata', type: 'text', nullable: true)]
+    private ?string $extraData = null;
 
     #[ORM\OneToMany(
         targetEntity: Subscription::class,
@@ -83,12 +88,34 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     )]
     private Collection $attributes;
 
+    #[ORM\Column(name: 'optedin', type: 'boolean')]
+    private bool $optedIn = false;
+
+    #[ORM\Column(name: 'uuid', type: 'string', length: 36)]
+    private string $uuid = '';
+
+    #[ORM\Column(name: 'subscribepage', type: 'integer', nullable: true)]
+    private ?int $subscribePage = null;
+
+    #[ORM\Column(name: 'rssfrequency', type: 'string', length: 100, nullable: true)]
+    private ?string $rssFrequency = null;
+
+    #[ORM\Column(name: 'password', type: 'string', length: 255, nullable: true)]
+    private ?string $password = null;
+
+    #[ORM\Column(name: 'passwordchanged', type: 'datetime', nullable: true)]
+    private ?DateTime $passwordChanged = null;
+
+    #[ORM\Column(name: 'foreignkey', type: 'string', length: 100, nullable: true)]
+    private ?string $foreignKey = null;
+
     public function __construct()
     {
         $this->subscriptions = new ArrayCollection();
         $this->attributes = new ArrayCollection();
         $this->extraData = '';
         $this->createdAt = new DateTime();
+        $this->updatedAt = new DateTime();
     }
 
     public function getId(): ?int
@@ -101,18 +128,15 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->createdAt;
     }
 
-    public function getUpdatedAt(): ?DateTime
+    public function getUpdatedAt(): DateTime
     {
         return $this->updatedAt;
     }
 
-    #[ORM\PrePersist]
     #[ORM\PreUpdate]
-    public function updateUpdatedAt(): DomainModel
+    public function updateUpdatedAt(): void
     {
         $this->updatedAt = new DateTime();
-
-        return $this;
     }
 
     public function isConfirmed(): bool
@@ -280,5 +304,75 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     {
         $this->attributes->removeElement($attribute);
         return $this;
+    }
+
+    public function isOptedIn(): bool
+    {
+        return $this->optedIn;
+    }
+
+    public function setOptedIn(bool $optedIn): void
+    {
+        $this->optedIn = $optedIn;
+    }
+
+    public function getUuid(): string
+    {
+        return $this->uuid;
+    }
+
+    public function setUuid(string $uuid): void
+    {
+        $this->uuid = $uuid;
+    }
+
+    public function getSubscribePage(): ?int
+    {
+        return $this->subscribePage;
+    }
+
+    public function setSubscribePage(?int $subscribePage): void
+    {
+        $this->subscribePage = $subscribePage;
+    }
+
+    public function getRssFrequency(): ?string
+    {
+        return $this->rssFrequency;
+    }
+
+    public function setRssFrequency(?string $rssFrequency): void
+    {
+        $this->rssFrequency = $rssFrequency;
+    }
+
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(?string $password): void
+    {
+        $this->password = $password;
+    }
+
+    public function getPasswordChanged(): ?DateTime
+    {
+        return $this->passwordChanged;
+    }
+
+    public function setPasswordChanged(?DateTime $passwordChanged): void
+    {
+        $this->passwordChanged = $passwordChanged;
+    }
+
+    public function getForeignKey(): ?string
+    {
+        return $this->foreignKey;
+    }
+
+    public function setForeignKey(?string $foreignKey): void
+    {
+        $this->foreignKey = $foreignKey;
     }
 }

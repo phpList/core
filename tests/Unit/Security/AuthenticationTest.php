@@ -34,10 +34,9 @@ class AuthenticationTest extends TestCase
         $request = new Request();
         $request->headers->add(['php-auth-pw' => $apiKey]);
 
-        $token = new AdministratorToken();
         $administrator = new Administrator();
         $administrator->setSuperUser(true);
-        $token->setAdministrator($administrator);
+        $token = new AdministratorToken($administrator);
 
         $this->tokenRepository
             ->expects($this->any())
@@ -54,7 +53,7 @@ class AuthenticationTest extends TestCase
         $request = new Request();
         $request->headers->add(['php-auth-pw' => $apiKey]);
 
-        $token = new AdministratorToken();
+        $token = $this->createMock(AdministratorToken::class);
 
         $this->tokenRepository
             ->expects($this->any())
