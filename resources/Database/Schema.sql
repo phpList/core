@@ -502,12 +502,12 @@ DROP TABLE IF EXISTS `phplist_message`;
 CREATE TABLE `phplist_message` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) DEFAULT '',
-  `subject` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '(no subject)',
+  `subject` varchar(255) NOT NULL DEFAULT '(no subject)',
   `fromfield` varchar(255) NOT NULL DEFAULT '',
   `tofield` varchar(255) NOT NULL DEFAULT '',
   `replyto` varchar(255) NOT NULL DEFAULT '',
-  `message` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-  `textmessage` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `message` longtext,
+  `textmessage` longtext,
   `footer` text,
   `entered` datetime DEFAULT NULL,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -565,7 +565,7 @@ DROP TABLE IF EXISTS `phplist_messagedata`;
 CREATE TABLE `phplist_messagedata` (
   `name` varchar(100) NOT NULL,
   `id` int NOT NULL,
-  `data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `data` longtext,
   PRIMARY KEY (`name`,`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
