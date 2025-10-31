@@ -19,7 +19,6 @@
 -- Table structure for table `phplist_admin`
 --
 
-DROP TABLE IF EXISTS `phplist_admin`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_admin` (
@@ -44,7 +43,6 @@ CREATE TABLE `phplist_admin` (
 -- Table structure for table `phplist_admin_attribute`
 --
 
-DROP TABLE IF EXISTS `phplist_admin_attribute`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_admin_attribute` (
@@ -59,7 +57,6 @@ CREATE TABLE `phplist_admin_attribute` (
 -- Table structure for table `phplist_admin_login`
 --
 
-DROP TABLE IF EXISTS `phplist_admin_login`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_admin_login` (
@@ -78,7 +75,6 @@ CREATE TABLE `phplist_admin_login` (
 -- Table structure for table `phplist_admin_password_request`
 --
 
-DROP TABLE IF EXISTS `phplist_admin_password_request`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_admin_password_request` (
@@ -94,7 +90,6 @@ CREATE TABLE `phplist_admin_password_request` (
 -- Table structure for table `phplist_adminattribute`
 --
 
-DROP TABLE IF EXISTS `phplist_adminattribute`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_adminattribute` (
@@ -113,7 +108,6 @@ CREATE TABLE `phplist_adminattribute` (
 -- Table structure for table `phplist_admintoken`
 --
 
-DROP TABLE IF EXISTS `phplist_admintoken`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_admintoken` (
@@ -130,7 +124,6 @@ CREATE TABLE `phplist_admintoken` (
 -- Table structure for table `phplist_attachment`
 --
 
-DROP TABLE IF EXISTS `phplist_attachment`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_attachment` (
@@ -148,7 +141,6 @@ CREATE TABLE `phplist_attachment` (
 -- Table structure for table `phplist_bounce`
 --
 
-DROP TABLE IF EXISTS `phplist_bounce`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_bounce` (
@@ -168,7 +160,6 @@ CREATE TABLE `phplist_bounce` (
 -- Table structure for table `phplist_bounceregex`
 --
 
-DROP TABLE IF EXISTS `phplist_bounceregex`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_bounceregex` (
@@ -190,7 +181,6 @@ CREATE TABLE `phplist_bounceregex` (
 -- Table structure for table `phplist_bounceregex_bounce`
 --
 
-DROP TABLE IF EXISTS `phplist_bounceregex_bounce`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_bounceregex_bounce` (
@@ -204,7 +194,6 @@ CREATE TABLE `phplist_bounceregex_bounce` (
 -- Table structure for table `phplist_config`
 --
 
-DROP TABLE IF EXISTS `phplist_config`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_config` (
@@ -220,7 +209,6 @@ CREATE TABLE `phplist_config` (
 -- Table structure for table `phplist_eventlog`
 --
 
-DROP TABLE IF EXISTS `phplist_eventlog`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_eventlog` (
@@ -238,7 +226,6 @@ CREATE TABLE `phplist_eventlog` (
 -- Table structure for table `phplist_i18n`
 --
 
-DROP TABLE IF EXISTS `phplist_i18n`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_i18n` (
@@ -254,7 +241,6 @@ CREATE TABLE `phplist_i18n` (
 -- Table structure for table `phplist_linktrack`
 --
 
-DROP TABLE IF EXISTS `phplist_linktrack`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_linktrack` (
@@ -279,7 +265,6 @@ CREATE TABLE `phplist_linktrack` (
 -- Table structure for table `phplist_linktrack_forward`
 --
 
-DROP TABLE IF EXISTS `phplist_linktrack_forward`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_linktrack_forward` (
@@ -299,7 +284,6 @@ CREATE TABLE `phplist_linktrack_forward` (
 -- Table structure for table `phplist_linktrack_ml`
 --
 
-DROP TABLE IF EXISTS `phplist_linktrack_ml`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_linktrack_ml` (
@@ -321,7 +305,6 @@ CREATE TABLE `phplist_linktrack_ml` (
 -- Table structure for table `phplist_linktrack_uml_click`
 --
 
-DROP TABLE IF EXISTS `phplist_linktrack_uml_click`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_linktrack_uml_click` (
@@ -346,7 +329,6 @@ CREATE TABLE `phplist_linktrack_uml_click` (
 -- Table structure for table `phplist_linktrack_userclick`
 --
 
-DROP TABLE IF EXISTS `phplist_linktrack_userclick`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_linktrack_userclick` (
@@ -368,7 +350,6 @@ CREATE TABLE `phplist_linktrack_userclick` (
 -- Table structure for table `phplist_list`
 --
 
-DROP TABLE IF EXISTS `phplist_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_list` (
@@ -393,7 +374,6 @@ CREATE TABLE `phplist_list` (
 -- Table structure for table `phplist_listattr_becities`
 --
 
-DROP TABLE IF EXISTS `phplist_listattr_becities`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_listattr_becities` (
@@ -409,7 +389,6 @@ CREATE TABLE `phplist_listattr_becities` (
 -- Table structure for table `phplist_listattr_termsofservice`
 --
 
-DROP TABLE IF EXISTS `phplist_listattr_termsofservice`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_listattr_termsofservice` (
@@ -425,7 +404,6 @@ CREATE TABLE `phplist_listattr_termsofservice` (
 -- Table structure for table `phplist_listattr_ukcounties`
 --
 
-DROP TABLE IF EXISTS `phplist_listattr_ukcounties`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_listattr_ukcounties` (
@@ -441,7 +419,6 @@ CREATE TABLE `phplist_listattr_ukcounties` (
 -- Table structure for table `phplist_listattr_ukcounties1`
 --
 
-DROP TABLE IF EXISTS `phplist_listattr_ukcounties1`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_listattr_ukcounties1` (
@@ -457,7 +434,6 @@ CREATE TABLE `phplist_listattr_ukcounties1` (
 -- Table structure for table `phplist_listmessage`
 --
 
-DROP TABLE IF EXISTS `phplist_listmessage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_listmessage` (
@@ -476,7 +452,6 @@ CREATE TABLE `phplist_listmessage` (
 -- Table structure for table `phplist_listuser`
 --
 
-DROP TABLE IF EXISTS `phplist_listuser`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_listuser` (
@@ -496,7 +471,6 @@ CREATE TABLE `phplist_listuser` (
 -- Table structure for table `phplist_message`
 --
 
-DROP TABLE IF EXISTS `phplist_message`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_message` (
@@ -542,7 +516,6 @@ CREATE TABLE `phplist_message` (
 -- Table structure for table `phplist_message_attachment`
 --
 
-DROP TABLE IF EXISTS `phplist_message_attachment`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_message_attachment` (
@@ -559,7 +532,6 @@ CREATE TABLE `phplist_message_attachment` (
 -- Table structure for table `phplist_messagedata`
 --
 
-DROP TABLE IF EXISTS `phplist_messagedata`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_messagedata` (
@@ -574,7 +546,6 @@ CREATE TABLE `phplist_messagedata` (
 -- Table structure for table `phplist_sendprocess`
 --
 
-DROP TABLE IF EXISTS `phplist_sendprocess`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_sendprocess` (
@@ -592,7 +563,6 @@ CREATE TABLE `phplist_sendprocess` (
 -- Table structure for table `phplist_subscribepage`
 --
 
-DROP TABLE IF EXISTS `phplist_subscribepage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_subscribepage` (
@@ -608,7 +578,6 @@ CREATE TABLE `phplist_subscribepage` (
 -- Table structure for table `phplist_subscribepage_data`
 --
 
-DROP TABLE IF EXISTS `phplist_subscribepage_data`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_subscribepage_data` (
@@ -623,7 +592,6 @@ CREATE TABLE `phplist_subscribepage_data` (
 -- Table structure for table `phplist_template`
 --
 
-DROP TABLE IF EXISTS `phplist_template`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_template` (
@@ -641,7 +609,6 @@ CREATE TABLE `phplist_template` (
 -- Table structure for table `phplist_templateimage`
 --
 
-DROP TABLE IF EXISTS `phplist_templateimage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_templateimage` (
@@ -661,7 +628,6 @@ CREATE TABLE `phplist_templateimage` (
 -- Table structure for table `phplist_urlcache`
 --
 
-DROP TABLE IF EXISTS `phplist_urlcache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_urlcache` (
@@ -679,7 +645,6 @@ CREATE TABLE `phplist_urlcache` (
 -- Table structure for table `phplist_user_attribute`
 --
 
-DROP TABLE IF EXISTS `phplist_user_attribute`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_user_attribute` (
@@ -700,7 +665,6 @@ CREATE TABLE `phplist_user_attribute` (
 -- Table structure for table `phplist_user_blacklist`
 --
 
-DROP TABLE IF EXISTS `phplist_user_blacklist`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_user_blacklist` (
@@ -715,7 +679,6 @@ CREATE TABLE `phplist_user_blacklist` (
 -- Table structure for table `phplist_user_blacklist_data`
 --
 
-DROP TABLE IF EXISTS `phplist_user_blacklist_data`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_user_blacklist_data` (
@@ -732,7 +695,6 @@ CREATE TABLE `phplist_user_blacklist_data` (
 -- Table structure for table `phplist_user_message_bounce`
 --
 
-DROP TABLE IF EXISTS `phplist_user_message_bounce`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_user_message_bounce` (
@@ -753,7 +715,6 @@ CREATE TABLE `phplist_user_message_bounce` (
 -- Table structure for table `phplist_user_message_forward`
 --
 
-DROP TABLE IF EXISTS `phplist_user_message_forward`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_user_message_forward` (
@@ -774,7 +735,6 @@ CREATE TABLE `phplist_user_message_forward` (
 -- Table structure for table `phplist_user_message_view`
 --
 
-DROP TABLE IF EXISTS `phplist_user_message_view`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_user_message_view` (
@@ -795,7 +755,6 @@ CREATE TABLE `phplist_user_message_view` (
 -- Table structure for table `phplist_user_user`
 --
 
-DROP TABLE IF EXISTS `phplist_user_user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_user_user` (
@@ -833,7 +792,6 @@ CREATE TABLE `phplist_user_user` (
 -- Table structure for table `phplist_user_user_attribute`
 --
 
-DROP TABLE IF EXISTS `phplist_user_user_attribute`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_user_user_attribute` (
@@ -851,7 +809,6 @@ CREATE TABLE `phplist_user_user_attribute` (
 -- Table structure for table `phplist_user_user_history`
 --
 
-DROP TABLE IF EXISTS `phplist_user_user_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_user_user_history` (
@@ -872,7 +829,6 @@ CREATE TABLE `phplist_user_user_history` (
 -- Table structure for table `phplist_usermessage`
 --
 
-DROP TABLE IF EXISTS `phplist_usermessage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_usermessage` (
@@ -894,7 +850,6 @@ CREATE TABLE `phplist_usermessage` (
 -- Table structure for table `phplist_userstats`
 --
 
-DROP TABLE IF EXISTS `phplist_userstats`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phplist_userstats` (

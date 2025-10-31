@@ -32,8 +32,8 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     #[ORM\GeneratedValue]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'created', type: 'datetime', nullable: true)]
-    protected DateTime $createdAt;
+    #[ORM\Column(name: 'created', type: 'datetime', nullable: false)]
+    protected ?DateTime $createdAt = null;
 
     #[ORM\Column(name: 'modified', type: 'datetime', nullable: false)]
     private DateTime $updatedAt;
@@ -77,7 +77,7 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->id;
     }
 
-    public function getCreatedAt(): DateTime
+    public function getCreatedAt(): ?DateTime
     {
         return $this->createdAt;
     }

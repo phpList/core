@@ -192,7 +192,6 @@ final class Version20251030081120PostgreSqlPlatform extends AbstractMigration
             )
         );
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('CREATE SCHEMA public');
         $this->addSql('ALTER TABLE phplist_admin_attribute DROP CONSTRAINT FK_58E07690D3B10C48');
         $this->addSql('ALTER TABLE phplist_admin_attribute DROP CONSTRAINT FK_58E07690B8ED4D93');
         $this->addSql('ALTER TABLE phplist_admin_login DROP CONSTRAINT FK_5FCE0842B8ED4D93');

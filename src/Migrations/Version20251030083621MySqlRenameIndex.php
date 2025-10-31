@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Migrations;
 
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
@@ -19,6 +20,15 @@ final class Version20251030083621MySqlRenameIndex extends AbstractMigration
 
     public function up(Schema $schema): void
     {
+        $platform = $this->connection->getDatabasePlatform();
+        $this->skipIf(
+            !$platform instanceof MySQLPlatform,
+            sprintf(
+                'This migration is only applicable for MySQL. Current platform: %s',
+                get_class($platform)
+            )
+        );
+
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE phplist_admin RENAME INDEX loginnameidx TO phplist_admin_loginnameidx');
         $this->addSql('ALTER TABLE phplist_bounce RENAME INDEX dateindex TO phplist_bounce_dateindex');
@@ -103,6 +113,15 @@ final class Version20251030083621MySqlRenameIndex extends AbstractMigration
 
     public function down(Schema $schema): void
     {
+        $platform = $this->connection->getDatabasePlatform();
+        $this->skipIf(
+            !$platform instanceof MySQLPlatform,
+            sprintf(
+                'This migration is only applicable for MySQL. Current platform: %s',
+                get_class($platform)
+            )
+        );
+
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE phplist_admin RENAME INDEX phplist_admin_loginnameidx TO loginnameidx');
         $this->addSql('ALTER TABLE phplist_bounce RENAME INDEX phplist_bounce_dateindex TO dateindex');

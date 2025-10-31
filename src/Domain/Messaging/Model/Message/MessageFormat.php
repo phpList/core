@@ -17,19 +17,19 @@ class MessageFormat implements EmbeddableInterface
     #[ORM\Column(name: 'sendformat', type: 'string', length: 20, nullable: true)]
     private ?string $sendFormat = null;
 
-    #[ORM\Column(name: 'astext', type: 'boolean', options: ['default' => false])]
+    #[ORM\Column(name: 'astext', type: 'boolean')]
     private bool $asText = false;
 
-    #[ORM\Column(name: 'ashtml', type: 'boolean', options: ['default' => false])]
+    #[ORM\Column(name: 'ashtml', type: 'boolean')]
     private bool $asHtml = false;
 
-    #[ORM\Column(name: 'aspdf', type: 'boolean', options: ['default' => false])]
+    #[ORM\Column(name: 'aspdf', type: 'boolean')]
     private bool $asPdf = false;
 
-    #[ORM\Column(name: 'astextandhtml', type: 'boolean', options: ['default' => false])]
+    #[ORM\Column(name: 'astextandhtml', type: 'boolean')]
     private bool $asTextAndHtml = false;
 
-    #[ORM\Column(name: 'astextandpdf', type: 'boolean', options: ['default' => false])]
+    #[ORM\Column(name: 'astextandpdf', type: 'boolean')]
     private bool $asTextAndPdf = false;
 
     public const FORMAT_TEXT = 'text';

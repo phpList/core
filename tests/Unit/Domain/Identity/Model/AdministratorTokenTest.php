@@ -90,7 +90,7 @@ class AdministratorTokenTest extends TestCase
         self::assertNotSame($firstKey, $secondKey);
     }
 
-    public function testGetAdministratorInitiallyReturnsNull(): void
+    public function testGetAdministratorReturnsConstructorProvidedAdministrator(): void
     {
         self::assertNotNull($this->subject->getAdministrator());
     }
