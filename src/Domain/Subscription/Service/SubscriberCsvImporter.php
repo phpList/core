@@ -182,7 +182,20 @@ class SubscriberCsvImporter
             return null;
         }
 
-        $subscriber = $this->subscriberRepository->findOneByEmail($dto->email);
+        $subscriberByEmail = $this->subscriberRepository->findOneByEmail($dto->email);
+        $subscriberByFk = null;
+        if ($dto->foreignKey !== null) {
+            $subscriberByFk = $this->subscriberRepository->findOneByForeignKey($dto->foreignKey);
+        }
+
+        if ($subscriberByEmail && $subscriberByFk && $subscriberByEmail->getId() !== $subscriberByFk->getId()) {
+            $stats['skipped']++;
+            $stats['errors'][] = $this->translator->trans('Conflict: email and foreign key refer to different subscribers.');
+            return null;
+        }
+
+        $subscriber = $subscriberByFk ?? $subscriberByEmail;
+
         if ($this->handleSkipCase($subscriber, $options, $stats)) {
             return null;
         }

@@ -8,24 +8,38 @@ use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 
 class CsvRowToDtoMapper
 {
+    private const FK_HEADER = 'foreignkey';
     private const KNOWN_HEADERS = [
-        'email', 'confirmed', 'blacklisted', 'html_email', 'disabled', 'extra_data',
+        'email', 'confirmed', 'blacklisted', 'html_email', 'disabled', 'extra_data', 'foreignkey',
     ];
 
     public function map(array $row): ImportSubscriberDto
     {
-        $extraAttributes = array_filter($row, function ($key) {
+        // Normalize keys to lower-case for header matching safety (CSV library keeps original headers)
+        $normalizedRow = [];
+        foreach ($row as $key => $value) {
+            $normalizedRow[strtolower((string)$key)] = is_string($value) ? trim($value) : $value;
+        }
+
+        $email = strtolower(trim((string)($normalizedRow['email'] ?? '')));
+
+        if (array_key_exists(self::FK_HEADER, $normalizedRow) && $normalizedRow[self::FK_HEADER] !== '') {
+            $foreignKey = (string)$normalizedRow[self::FK_HEADER];
+        }
+
+        $extraAttributes = array_filter($normalizedRow, function ($key) {
             return !in_array($key, self::KNOWN_HEADERS, true);
         }, ARRAY_FILTER_USE_KEY);
 
         return new ImportSubscriberDto(
-            email: trim($row['email'] ?? ''),
-            confirmed: filter_var($row['confirmed'] ?? false, FILTER_VALIDATE_BOOLEAN),
-            blacklisted: filter_var($row['blacklisted'] ?? false, FILTER_VALIDATE_BOOLEAN),
-            htmlEmail: filter_var($row['html_email'] ?? false, FILTER_VALIDATE_BOOLEAN),
-            disabled: filter_var($row['disabled'] ?? false, FILTER_VALIDATE_BOOLEAN),
-            extraData: $row['extra_data'] ?? null,
-            extraAttributes: $extraAttributes
+            email: $email,
+            confirmed: filter_var($normalizedRow['confirmed'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            blacklisted: filter_var($normalizedRow['blacklisted'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            htmlEmail: filter_var($normalizedRow['html_email'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            disabled: filter_var($normalizedRow['disabled'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            extraData: $normalizedRow['extra_data'] ?? null,
+            extraAttributes: $extraAttributes,
+            foreignKey: $foreignKey ?? null,
         );
     }
 }

@@ -114,6 +114,9 @@ class SubscriberManager
         $subscriber->setHtmlEmail($subscriberDto->htmlEmail);
         $subscriber->setDisabled($subscriberDto->disabled);
         $subscriber->setExtraData($subscriberDto->extraData ?? '');
+        if ($subscriberDto->foreignKey !== null) {
+            $subscriber->setForeignKey($subscriberDto->foreignKey);
+        }
 
         $this->entityManager->persist($subscriber);
 
@@ -129,6 +132,9 @@ class SubscriberManager
         $existingSubscriber->setHtmlEmail($subscriberDto->htmlEmail);
         $existingSubscriber->setDisabled($subscriberDto->disabled);
         $existingSubscriber->setExtraData($subscriberDto->extraData);
+        if ($subscriberDto->foreignKey !== null) {
+            $existingSubscriber->setForeignKey($subscriberDto->foreignKey);
+        }
 
         $uow = $this->entityManager->getUnitOfWork();
         $meta = $this->entityManager->getClassMetadata(Subscriber::class);
