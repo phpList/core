@@ -8,9 +8,14 @@ use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\ValidationContext;
 use PhpList\Core\Domain\Common\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Exception\ValidatorException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AttributeTypeValidator implements ValidatorInterface
 {
+    public function __construct(private readonly TranslatorInterface $translator)
+    {
+    }
+
     private const VALID_TYPES = [
         'textline',
         'checkbox',
@@ -25,15 +30,17 @@ class AttributeTypeValidator implements ValidatorInterface
     public function validate(mixed $value, ValidationContext $context = null): void
     {
         if (!is_string($value)) {
-            throw new InvalidArgumentException('Value must be a string.');
+            throw new InvalidArgumentException($this->translator->trans('Value must be a string.'));
         }
 
         $errors = [];
         if (!in_array($value, self::VALID_TYPES, true)) {
-            $errors[] = sprintf(
-                'Invalid attribute type: "%s". Valid types are: %s',
-                $value,
-                implode(', ', self::VALID_TYPES)
+            $errors[] = $this->translator->trans(
+                'Invalid attribute type: "%type%". Valid types are: %valid_types%',
+                [
+                    '%type%' => $value,
+                    '%valid_types%' => implode(', ', self::VALID_TYPES),
+                ]
             );
         }
 

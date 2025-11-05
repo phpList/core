@@ -1,6 +1,7 @@
 services:
     # Register message handlers for Symfony Messenger
     PhpList\Core\Domain\Messaging\MessageHandler\:
+        autowire: true
         resource: '../../src/Domain/Messaging/MessageHandler'
         tags: [ 'messenger.message_handler' ]
 
@@ -22,3 +23,9 @@ services:
         tags: [ 'messenger.message_handler' ]
         arguments:
             $passwordResetUrl: '%app.password_reset_url%'
+
+    PhpList\Core\Domain\Messaging\MessageHandler\SubscriptionConfirmationMessageHandler:
+        autowire: true
+        autoconfigure: true
+        tags: [ 'messenger.message_handler' ]
+

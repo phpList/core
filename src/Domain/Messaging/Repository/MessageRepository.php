@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Repository;
 
+use DateTimeImmutable;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
@@ -62,5 +63,38 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->setParameter('list', $list)
             ->getQuery()
             ->getResult();
+    }
+
+    public function incrementBounceCount(int $messageId): void
+    {
+        $this->createQueryBuilder('m')
+            ->update()
+            ->set('m.metadata.bounceCount', 'm.bounceCount + 1')
+            ->where('m.id = :messageId')
+            ->setParameter('messageId', $messageId)
+            ->getQuery()
+            ->execute();
+    }
+
+    public function getByStatusAndEmbargo(Message\MessageStatus $status, DateTimeImmutable $embargo): array
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.metadata.status = :status')
+            ->andWhere('m.schedule.embargo IS NULL OR m.embargo <= :embargo')
+            ->setParameter('status', $status->value)
+            ->setParameter('embargo', $embargo)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByIdAndStatus(int $id, Message\MessageStatus $status)
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.id = :id')
+            ->andWhere('m.metadata.status = :status')
+            ->setParameter('id', $id)
+            ->setParameter('status', $status->value)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

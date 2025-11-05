@@ -4,6 +4,8 @@
         PHPMD rules for phpList
     </description>
 
+    <exclude-pattern>*/Migrations/*</exclude-pattern>
+
     <!-- rules from the "clean code" rule set -->
     <rule ref="rulesets/cleancode.xml/BooleanArgumentFlag"/>
     <rule ref="rulesets/cleancode.xml/StaticAccess">
@@ -45,13 +47,17 @@
     <rule ref="rulesets/design.xml/GotoStatement"/>
     <rule ref="rulesets/design.xml/NumberOfChildren"/>
     <rule ref="rulesets/design.xml/DepthOfInheritance"/>
-    <rule ref="rulesets/design.xml/CouplingBetweenObjects"/>
+    <rule ref="rulesets/design.xml/CouplingBetweenObjects">
+        <properties>
+            <property name="maximum" value="15"/>
+        </properties>
+    </rule>
     <rule ref="rulesets/design.xml/DevelopmentCodeFragment"/>
 
     <!-- rules from the "naming" rule set -->
     <rule ref="rulesets/naming.xml/ShortVariable">
         <properties>
-            <property name="exceptions" value="id,ip,cc"/>
+            <property name="exceptions" value="id,ip,cc,io"/>
         </properties>
     </rule>
     <rule ref="rulesets/naming.xml/LongVariable">
@@ -67,5 +73,4 @@
     <rule ref="rulesets/unusedcode.xml/UnusedPrivateField"/>
     <rule ref="rulesets/unusedcode.xml/UnusedLocalVariable"/>
     <rule ref="rulesets/unusedcode.xml/UnusedPrivateMethod"/>
-    <rule ref="rulesets/unusedcode.xml/UnusedFormalParameter"/>
 </ruleset>

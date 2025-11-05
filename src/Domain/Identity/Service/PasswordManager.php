@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Messaging\Message\PasswordResetMessage;
 use PhpList\Core\Security\HashGenerator;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class PasswordManager
 {
@@ -22,17 +23,20 @@ class PasswordManager
     private AdministratorRepository $administratorRepository;
     private HashGenerator $hashGenerator;
     private MessageBusInterface $messageBus;
+    private TranslatorInterface $translator;
 
     public function __construct(
         AdminPasswordRequestRepository $passwordRequestRepository,
         AdministratorRepository $administratorRepository,
         HashGenerator $hashGenerator,
-        MessageBusInterface $messageBus
+        MessageBusInterface $messageBus,
+        TranslatorInterface $translator
     ) {
         $this->passwordRequestRepository = $passwordRequestRepository;
         $this->administratorRepository = $administratorRepository;
         $this->hashGenerator = $hashGenerator;
         $this->messageBus = $messageBus;
+        $this->translator = $translator;
     }
 
     /**
@@ -47,7 +51,8 @@ class PasswordManager
     {
         $administrator = $this->administratorRepository->findOneBy(['email' => $email]);
         if ($administrator === null) {
-            throw new NotFoundHttpException('Administrator not found', null, 1500567100);
+            $message = $this->translator->trans('Administrator not found');
+            throw new NotFoundHttpException($message, null, 1500567100);
         }
 
         $existingRequests = $this->passwordRequestRepository->findByAdmin($administrator);
@@ -60,7 +65,7 @@ class PasswordManager
         $expiryDate = new DateTime(self::TOKEN_EXPIRY);
         $passwordRequest = new AdminPasswordRequest(date: $expiryDate, admin: $administrator, keyValue: $token);
 
-        $this->passwordRequestRepository->save($passwordRequest);
+        $this->passwordRequestRepository->persist($passwordRequest);
 
         $message = new PasswordResetMessage(email: $email, token: $token);
         $this->messageBus->dispatch($message);
@@ -108,7 +113,7 @@ class PasswordManager
 
         $passwordHash = $this->hashGenerator->createPasswordHash($newPassword);
         $administrator->setPasswordHash($passwordHash);
-        $this->administratorRepository->save($administrator);
+        $this->administratorRepository->persist($administrator);
 
         $passwordRequest = $this->passwordRequestRepository->findOneByToken($token);
         $this->passwordRequestRepository->remove($passwordRequest);

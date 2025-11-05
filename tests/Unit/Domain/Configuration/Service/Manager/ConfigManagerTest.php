@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Configuration\Service\Manager;
 
+use PhpList\Core\Domain\Configuration\Exception\ConfigNotEditableException;
 use PhpList\Core\Domain\Configuration\Model\Config;
 use PhpList\Core\Domain\Configuration\Repository\ConfigRepository;
 use PhpList\Core\Domain\Configuration\Service\Manager\ConfigManager;
@@ -61,30 +62,13 @@ class ConfigManagerTest extends TestCase
         $this->assertSame('value2', $result[1]->getValue());
     }
 
-    public function testUpdateSavesConfigToRepository(): void
-    {
-        $configRepository = $this->createMock(ConfigRepository::class);
-        $manager = new ConfigManager($configRepository);
-
-        $config = new Config();
-        $config->setKey('test_item');
-        $config->setValue('test_value');
-        $config->setEditable(true);
-
-        $configRepository->expects($this->once())
-            ->method('save')
-            ->with($config);
-
-        $manager->update($config, 'new_value');
-    }
-
     public function testCreateSavesNewConfigToRepository(): void
     {
         $configRepository = $this->createMock(ConfigRepository::class);
         $manager = new ConfigManager($configRepository);
 
         $configRepository->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->callback(function (Config $config) {
                 return $config->getKey() === 'test_key' &&
                     $config->getValue() === 'test_value' &&
@@ -119,10 +103,7 @@ class ConfigManagerTest extends TestCase
         $config->setValue('test_value');
         $config->setEditable(false);
 
-        $configRepository->expects($this->never())
-            ->method('save');
-
-        $this->expectException(\PhpList\Core\Domain\Configuration\Exception\ConfigNotEditableException::class);
+        $this->expectException(ConfigNotEditableException::class);
         $this->expectExceptionMessage('Configuration item "test_item" is not editable.');
 
         $manager->update($config, 'new_value');

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Subscription\Exception\SubscriptionCreationException;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
@@ -11,40 +12,48 @@ use PhpList\Core\Domain\Subscription\Model\Subscription;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriptionRepository;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SubscriptionManager
 {
     private SubscriptionRepository $subscriptionRepository;
     private SubscriberRepository $subscriberRepository;
     private SubscriberListRepository $subscriberListRepository;
+    private TranslatorInterface $translator;
+    private EntityManagerInterface $entityManager;
 
     public function __construct(
         SubscriptionRepository $subscriptionRepository,
         SubscriberRepository $subscriberRepository,
-        SubscriberListRepository $subscriberListRepository
+        SubscriberListRepository $subscriberListRepository,
+        TranslatorInterface $translator,
+        EntityManagerInterface $entityManager
     ) {
         $this->subscriptionRepository = $subscriptionRepository;
         $this->subscriberRepository = $subscriberRepository;
         $this->subscriberListRepository = $subscriberListRepository;
+        $this->translator = $translator;
+        $this->entityManager = $entityManager;
     }
 
-    public function addSubscriberToAList(Subscriber $subscriber, int $listId): Subscription
+    public function addSubscriberToAList(Subscriber $subscriber, int $listId): ?Subscription
     {
         $existingSubscription = $this->subscriptionRepository
             ->findOneBySubscriberEmailAndListId($listId, $subscriber->getEmail());
         if ($existingSubscription) {
-            return $existingSubscription;
+            return null;
         }
         $subscriberList = $this->subscriberListRepository->find($listId);
         if (!$subscriberList) {
-            throw new SubscriptionCreationException('Subscriber list not found.', 404);
+            $message = $this->translator->trans('Subscriber list not found.');
+            throw new SubscriptionCreationException($message, 404);
         }
 
         $subscription = new Subscription();
         $subscription->setSubscriber($subscriber);
         $subscription->setSubscriberList($subscriberList);
 
-        $this->subscriptionRepository->save($subscription);
+        $this->entityManager->persist($subscription);
 
         return $subscription;
     }
@@ -64,7 +73,8 @@ class SubscriptionManager
     {
         $subscriber = $this->subscriberRepository->findOneBy(['email' => $email]);
         if (!$subscriber) {
-            throw new SubscriptionCreationException('Subscriber does not exists.', 404);
+            $message = $this->translator->trans('Subscriber does not exists.');
+            throw new SubscriptionCreationException($message, 404);
         }
 
         $existingSubscription = $this->subscriptionRepository
@@ -77,7 +87,7 @@ class SubscriptionManager
         $subscription->setSubscriber($subscriber);
         $subscription->setSubscriberList($subscriberList);
 
-        $this->subscriptionRepository->save($subscription);
+        $this->entityManager->persist($subscription);
 
         return $subscription;
     }
@@ -101,10 +111,11 @@ class SubscriptionManager
             ->findOneBySubscriberEmailAndListId($subscriberList->getId(), $email);
 
         if (!$subscription) {
-            throw new SubscriptionCreationException('Subscription not found for this subscriber and list.', 404);
+            $message = $this->translator->trans('Subscription not found for this subscriber and list.');
+            throw new SubscriptionCreationException($message, 404);
         }
 
-        $this->subscriptionRepository->remove($subscription);
+        $this->entityManager->remove($subscription);
     }
 
     /** @return Subscriber[] */

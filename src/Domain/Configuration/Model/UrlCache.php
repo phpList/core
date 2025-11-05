@@ -12,7 +12,8 @@ use PhpList\Core\Domain\Configuration\Repository\UrlCacheRepository;
 
 #[ORM\Entity(repositoryClass: UrlCacheRepository::class)]
 #[ORM\Table(name: 'phplist_urlcache')]
-#[ORM\Index(name: 'urlindex', columns: ['url'])]
+#[ORM\Index(name: 'phplist_urlcache_urlindex', columns: ['url'])]
+#[ORM\HasLifecycleCallbacks]
 class UrlCache implements DomainModel, Identity
 {
     #[ORM\Id]
@@ -71,10 +72,11 @@ class UrlCache implements DomainModel, Identity
         return $this;
     }
 
-    public function setAdded(?DateTime $added): self
+    #[ORM\PrePersist]
+    public function setCreatedTimestamps(): void
     {
-        $this->added = $added;
-        return $this;
+        $now = new DateTime();
+        $this->added = $now;
     }
 
     public function setContent(?string $content): self

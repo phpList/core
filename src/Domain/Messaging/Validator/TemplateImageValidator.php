@@ -9,18 +9,21 @@ use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\ValidationContext;
 use PhpList\Core\Domain\Common\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Exception\ValidatorException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
 class TemplateImageValidator implements ValidatorInterface
 {
-    public function __construct(private readonly ClientInterface $httpClient)
-    {
+    public function __construct(
+        private readonly ClientInterface $httpClient,
+        private readonly TranslatorInterface $translator,
+    ) {
     }
 
     public function validate(mixed $value, ValidationContext $context = null): void
     {
         if (!is_array($value)) {
-            throw new InvalidArgumentException('Value must be an array of image URLs.');
+            throw new InvalidArgumentException($this->translator->trans('Value must be an array of image URLs.'));
         }
 
         $checkFull = $context?->get('checkImages', false);
@@ -42,7 +45,7 @@ class TemplateImageValidator implements ValidatorInterface
 
         foreach ($urls as $url) {
             if (!preg_match('#^https?://#i', $url)) {
-                $errors[] = sprintf('Image "%s" is not a full URL.', $url);
+                $errors[] = $this->translator->trans('Image "%url%" is not a full URL.', ['%url%' => $url]);
             }
         }
 
@@ -61,10 +64,16 @@ class TemplateImageValidator implements ValidatorInterface
             try {
                 $response = $this->httpClient->request('HEAD', $url);
                 if ($response->getStatusCode() !== 200) {
-                    $errors[] = sprintf('Image "%s" does not exist (HTTP %s)', $url, $response->getStatusCode());
+                    $errors[] = $this->translator->trans('Image "%url%" does not exist (HTTP %code%)', [
+                        '%url%' => $url,
+                        '%code%' => $response->getStatusCode()
+                    ]);
                 }
             } catch (Throwable $e) {
-                $errors[] = sprintf('Image "%s" could not be validated: %s', $url, $e->getMessage());
+                $errors[] = $this->translator->trans('Image "%url%" could not be validated: %message%', [
+                    '%url%' => $url,
+                    '%message%' => $e->getMessage()
+                ]);
             }
         }
 

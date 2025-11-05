@@ -43,8 +43,6 @@ class ExtraLoader extends Loader
     /**
      * Loads a resource.
      *
-     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
-     *
      * @param mixed $resource the resource (unused)
      * @param string|null $type the resource type or null if unknown (unused)
      *
@@ -68,8 +66,6 @@ class ExtraLoader extends Loader
 
     /**
      * Checks whether this class supports the given resource.
-     *
-     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      *
      * @param mixed $resource a resource (unused)
      * @param string|null $type The resource type or null if unknown

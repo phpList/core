@@ -7,6 +7,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\Validator;
 use PhpList\Core\Domain\Common\Model\ValidationContext;
 use PhpList\Core\Domain\Messaging\Validator\TemplateLinkValidator;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Translator;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
 class TemplateLinkValidatorTest extends TestCase
@@ -15,7 +16,7 @@ class TemplateLinkValidatorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->validator = new TemplateLinkValidator();
+        $this->validator = new TemplateLinkValidator(new Translator('en'));
     }
 
     public function testSkipsValidationIfNotString(): void

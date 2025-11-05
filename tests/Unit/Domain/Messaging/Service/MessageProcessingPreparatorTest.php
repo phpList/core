@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
 
-use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
@@ -16,10 +15,10 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Translation\Translator;
 
 class MessageProcessingPreparatorTest extends TestCase
 {
-    private EntityManagerInterface&MockObject $entityManager;
     private SubscriberRepository&MockObject $subscriberRepository;
     private MessageRepository&MockObject $messageRepository;
     private LinkTrackService&MockObject $linkTrackService;
@@ -28,17 +27,16 @@ class MessageProcessingPreparatorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
         $this->messageRepository = $this->createMock(MessageRepository::class);
         $this->linkTrackService = $this->createMock(LinkTrackService::class);
         $this->output = $this->createMock(OutputInterface::class);
 
         $this->preparator = new MessageProcessingPreparator(
-            $this->entityManager,
-            $this->subscriberRepository,
-            $this->messageRepository,
-            $this->linkTrackService
+            subscriberRepository: $this->subscriberRepository,
+            messageRepository: $this->messageRepository,
+            linkTrackService: $this->linkTrackService,
+            translator: new Translator('en'),
         );
     }
 
@@ -50,9 +48,6 @@ class MessageProcessingPreparatorTest extends TestCase
 
         $this->output->expects($this->never())
             ->method('writeln');
-
-        $this->entityManager->expects($this->never())
-            ->method('flush');
 
         $this->preparator->ensureSubscribersHaveUuid($this->output);
     }
@@ -80,9 +75,6 @@ class MessageProcessingPreparatorTest extends TestCase
             ->method('setUniqueId')
             ->with($this->isType('string'));
 
-        $this->entityManager->expects($this->once())
-            ->method('flush');
-
         $this->preparator->ensureSubscribersHaveUuid($this->output);
     }
 
@@ -94,9 +86,6 @@ class MessageProcessingPreparatorTest extends TestCase
 
         $this->output->expects($this->never())
             ->method('writeln');
-
-        $this->entityManager->expects($this->never())
-            ->method('flush');
 
         $this->preparator->ensureCampaignsHaveUuid($this->output);
     }
@@ -123,9 +112,6 @@ class MessageProcessingPreparatorTest extends TestCase
         $campaign2->expects($this->once())
             ->method('setUuid')
             ->with($this->isType('string'));
-
-        $this->entityManager->expects($this->once())
-            ->method('flush');
 
         $this->preparator->ensureCampaignsHaveUuid($this->output);
     }
@@ -189,7 +175,10 @@ class MessageProcessingPreparatorTest extends TestCase
         $savedLinks = [$linkTrack1, $linkTrack2];
 
         $this->linkTrackService->method('isExtractAndSaveLinksApplicable')->willReturn(true);
-        $this->linkTrackService->method('extractAndSaveLinks')->with($message, $userId)->willReturn($savedLinks);
+        $this->linkTrackService
+            ->method('extractAndSaveLinks')
+            ->with($message, $userId)
+            ->willReturn($savedLinks);
 
         $message->method('getContent')->willReturn($content);
 

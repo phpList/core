@@ -21,6 +21,8 @@ parameters:
     env(PHPLIST_DATABASE_USER): 'phplist'
     database_password: '%%env(PHPLIST_DATABASE_PASSWORD)%%'
     env(PHPLIST_DATABASE_PASSWORD): 'phplist'
+    database_prefix: '%%env(DATABASE_PREFIX)%%'
+    env(DATABASE_PREFIX): 'phplist_'
 
     # Email configuration
     app.mailer_from: '%%env(MAILER_FROM)%%'
@@ -28,9 +30,37 @@ parameters:
     app.mailer_dsn: '%%env(MAILER_DSN)%%'
     env(MAILER_DSN): 'null://null'
     app.confirmation_url: '%%env(CONFIRMATION_URL)%%'
-    env(CONFIRMATION_URL): 'https://example.com/confirm/'
+    env(CONFIRMATION_URL): 'https://example.com/subscriber/confirm/'
+    app.subscription_confirmation_url: '%%env(SUBSCRIPTION_CONFIRMATION_URL)%%'
+    env(SUBSCRIPTION_CONFIRMATION_URL): 'https://example.com/subscription/confirm/'
     app.password_reset_url: '%%env(PASSWORD_RESET_URL)%%'
     env(PASSWORD_RESET_URL): 'https://example.com/reset/'
+
+    # bounce email settings
+    imap_bounce.email: '%%env(BOUNCE_EMAIL)%%'
+    env(BOUNCE_EMAIL): 'bounce@phplist.com'
+    imap_bounce.password: '%%env(BOUNCE_IMAP_PASS)%%'
+    env(BOUNCE_IMAP_PASS): 'bounce@phplist.com'
+    imap_bounce.host: '%%env(BOUNCE_IMAP_HOST)%%'
+    env(BOUNCE_IMAP_HOST): 'imap.phplist.com'
+    imap_bounce.port: '%%env(BOUNCE_IMAP_PORT)%%'
+    env(BOUNCE_IMAP_PORT): '993'
+    imap_bounce.encryption: '%%env(BOUNCE_IMAP_ENCRYPTION)%%'
+    env(BOUNCE_IMAP_ENCRYPTION): 'ssl'
+    imap_bounce.mailbox: '%%env(BOUNCE_IMAP_MAILBOX)%%'
+    env(BOUNCE_IMAP_MAILBOX): '/var/spool/mail/bounces'
+    imap_bounce.mailbox_name: '%%env(BOUNCE_IMAP_MAILBOX_NAME)%%'
+    env(BOUNCE_IMAP_MAILBOX_NAME): 'INBOX,ONE_MORE'
+    imap_bounce.protocol: '%%env(BOUNCE_IMAP_PROTOCOL)%%'
+    env(BOUNCE_IMAP_PROTOCOL): 'imap'
+    imap_bounce.unsubscribe_threshold: '%%env(BOUNCE_IMAP_UNSUBSCRIBE_THRESHOLD)%%'
+    env(BOUNCE_IMAP_UNSUBSCRIBE_THRESHOLD): '5'
+    imap_bounce.blacklist_threshold: '%%env(BOUNCE_IMAP_BLACKLIST_THRESHOLD)%%'
+    env(BOUNCE_IMAP_BLACKLIST_THRESHOLD): '3'
+    imap_bounce.purge: '%%env(BOUNCE_IMAP_PURGE)%%'
+    env(BOUNCE_IMAP_PURGE): '0'
+    imap_bounce.purge_unprocessed: '%%env(BOUNCE_IMAP_PURGE_UNPROCESSED)%%'
+    env(BOUNCE_IMAP_PURGE_UNPROCESSED): '0'
 
     # Messenger configuration for asynchronous processing
     app.messenger_transport_dsn: '%%env(MESSENGER_TRANSPORT_DSN)%%'
@@ -42,3 +72,16 @@ parameters:
 
     graylog_host: 'graylog.example.com'
     graylog_port: 12201
+
+    app.phplist_isp_conf_path: '%%env(APP_PHPLIST_ISP_CONF_PATH)%%'
+    env(APP_PHPLIST_ISP_CONF_PATH): '/etc/phplist.conf'
+
+    # Message sending
+    messaging.mail_queue_batch_size: '%%env(MAILQUEUE_BATCH_SIZE)%%'
+    env(MAILQUEUE_BATCH_SIZE): '5'
+    messaging.mail_queue_period: '%%env(MAILQUEUE_BATCH_PERIOD)%%'
+    env(MAILQUEUE_BATCH_PERIOD): '5'
+    messaging.mail_queue_throttle: '%%env(MAILQUEUE_THROTTLE)%%'
+    env(MAILQUEUE_THROTTLE): '5'
+    messaging.max_process_time: '%%env(MESSAGING_MAX_PROCESS_TIME)%%'
+    env(MESSAGING_MAX_PROCESS_TIME): '600'

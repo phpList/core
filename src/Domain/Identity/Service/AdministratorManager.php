@@ -32,7 +32,6 @@ class AdministratorManager
         $administrator->setPrivilegesFromArray($dto->privileges);
 
         $this->entityManager->persist($administrator);
-        $this->entityManager->flush();
 
         return $administrator;
     }
@@ -53,13 +52,10 @@ class AdministratorManager
             $administrator->setPasswordHash($hashedPassword);
         }
         $administrator->setPrivilegesFromArray($dto->privileges);
-
-        $this->entityManager->flush();
     }
 
     public function deleteAdministrator(Administrator $administrator): void
     {
         $this->entityManager->remove($administrator);
-        $this->entityManager->flush();
     }
 }

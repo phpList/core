@@ -12,7 +12,6 @@ use PhpList\Core\Domain\Identity\Repository\AdminPasswordRequestRepository;
 
 #[ORM\Entity(repositoryClass: AdminPasswordRequestRepository::class)]
 #[ORM\Table(name: 'phplist_admin_password_request')]
-#[ORM\HasLifecycleCallbacks]
 class AdminPasswordRequest implements DomainModel, Identity
 {
     #[ORM\Id]

@@ -16,6 +16,7 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
  *
  * @author Oliver Klee <oliver@phplist.com>
  * @author Tatevik Grigoryan <tatevik@phplist.com>
+ * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
 class SubscriberRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
@@ -39,6 +40,11 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
     public function findOneByUniqueId(string $uniqueId): ?Subscriber
     {
         return $this->findOneBy(['uniqueId' => $uniqueId]);
+    }
+
+    public function findOneByForeignKey(string $foreignKey): ?Subscriber
+    {
+        return $this->findOneBy(['foreignKey' => $foreignKey]);
     }
 
     public function findSubscribersBySubscribedList(int $listId): ?Subscriber
@@ -126,5 +132,77 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->setParameter('id', $id)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function isEmailBlacklisted(string $email): bool
+    {
+        $queryBuilder = $this->getEntityManager()->createQueryBuilder();
+
+        $queryBuilder->select('u.email')
+            ->from(Subscriber::class, 'u')
+            ->where('u.email = :email')
+            ->andWhere('u.blacklisted = 1')
+            ->setParameter('email', $email)
+            ->setMaxResults(1);
+
+        return !($queryBuilder->getQuery()->getOneOrNullResult() === null);
+    }
+
+    public function incrementBounceCount(int $subscriberId): void
+    {
+        $this->createQueryBuilder('s')
+            ->update()
+            ->set('s.bounceCount', 's.bounceCount + 1')
+            ->where('s.id = :subscriberId')
+            ->setParameter('subscriberId', $subscriberId)
+            ->getQuery()
+            ->execute();
+    }
+
+    public function markUnconfirmed(int $subscriberId): void
+    {
+        $this->createQueryBuilder('s')
+            ->update()
+            ->set('s.confirmed', ':confirmed')
+            ->where('s.id = :id')
+            ->setParameter('confirmed', false)
+            ->setParameter('id', $subscriberId)
+            ->getQuery()
+            ->execute();
+    }
+
+    public function markConfirmed(int $subscriberId): void
+    {
+        $this->createQueryBuilder('s')
+            ->update()
+            ->set('s.confirmed', ':confirmed')
+            ->where('s.id = :id')
+            ->setParameter('confirmed', true)
+            ->setParameter('id', $subscriberId)
+            ->getQuery()
+            ->execute();
+    }
+
+    /** @return Subscriber[] */
+    public function distinctUsersWithBouncesConfirmedNotBlacklisted(): array
+    {
+        return $this->createQueryBuilder('s')
+            ->select('s.id')
+            ->where('s.bounceCount > 0')
+            ->andWhere('s.confirmed = 1')
+            ->andWhere('s.blacklisted = 0')
+            ->getQuery()
+            ->getScalarResult();
+    }
+
+    public function decrementBounceCount(Subscriber $subscriber): void
+    {
+        $this->createQueryBuilder('s')
+            ->update()
+            ->set('s.bounceCount', 's.bounceCount - 1')
+            ->where('s.id = :subscriberId')
+            ->setParameter('subscriberId', $subscriber->getId())
+            ->getQuery()
+            ->execute();
     }
 }

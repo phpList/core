@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Domain\Subscription\Service;
 
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Exception;
@@ -51,13 +52,13 @@ class SubscriberDeletionServiceTest extends KernelTestCase
 
     public function testDeleteSubscriberWithRelatedDataDoesNotThrowDoctrineError(): void
     {
-        $admin = new Administrator();
+        $admin = (new Administrator())->setLoginName('ta');
         $this->entityManager->persist($admin);
 
         $msg = new Message(
             format: new MessageFormat(true, MessageFormat::FORMAT_TEXT),
             schedule: new MessageSchedule(1, null, 3, null, null),
-            metadata: new MessageMetadata('done'),
+            metadata: new MessageMetadata(Message\MessageStatus::Sent),
             content: new MessageContent('Owned by Admin 1!'),
             options: new MessageOptions(),
             owner: $admin
@@ -91,10 +92,10 @@ class SubscriberDeletionServiceTest extends KernelTestCase
         $this->entityManager->persist($linkTrackUmlClick);
 
         $userMessage = new UserMessage($subscriber, $msg);
-        $userMessage->setStatus('sent');
+        $userMessage->setStatus(Message\UserMessageStatus::Sent);
         $this->entityManager->persist($userMessage);
 
-        $userMessageBounce = new UserMessageBounce(1);
+        $userMessageBounce = new UserMessageBounce(1, new DateTime());
         $userMessageBounce->setUserId($subscriberId);
         $userMessageBounce->setMessageId(1);
         $this->entityManager->persist($userMessageBounce);

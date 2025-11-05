@@ -9,9 +9,11 @@ use PhpList\Core\Domain\Subscription\Exception\SubscriberAttributeCreationExcept
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Translator;
 
 class SubscriberAttributeManagerTest extends TestCase
 {
@@ -34,7 +36,12 @@ class SubscriberAttributeManagerTest extends TestCase
                 return $attr->getValue() === 'US';
             }));
 
-        $manager = new SubscriberAttributeManager($subscriberAttrRepo, $entityManager);
+        $manager = new SubscriberAttributeManager(
+            attributeRepository: $subscriberAttrRepo,
+            attrDefinitionRepository: $this->createMock(SubscriberAttributeDefinitionRepository::class),
+            entityManager: $entityManager,
+            translator: new Translator('en')
+        );
         $attribute = $manager->createOrUpdate($subscriber, $definition, 'US');
 
         self::assertInstanceOf(SubscriberAttributeValue::class, $attribute);
@@ -60,7 +67,12 @@ class SubscriberAttributeManagerTest extends TestCase
             ->method('persist')
             ->with($existing);
 
-        $manager = new SubscriberAttributeManager($subscriberAttrRepo, $entityManager);
+        $manager = new SubscriberAttributeManager(
+            attributeRepository: $subscriberAttrRepo,
+            attrDefinitionRepository: $this->createMock(SubscriberAttributeDefinitionRepository::class),
+            entityManager: $entityManager,
+            translator: new Translator('en')
+        );
         $result = $manager->createOrUpdate($subscriber, $definition, 'Updated');
 
         self::assertSame('Updated', $result->getValue());
@@ -76,7 +88,12 @@ class SubscriberAttributeManagerTest extends TestCase
 
         $subscriberAttrRepo->method('findOneBySubscriberAndAttribute')->willReturn(null);
 
-        $manager = new SubscriberAttributeManager($subscriberAttrRepo, $entityManager);
+        $manager = new SubscriberAttributeManager(
+            attributeRepository: $subscriberAttrRepo,
+            attrDefinitionRepository: $this->createMock(SubscriberAttributeDefinitionRepository::class),
+            entityManager: $entityManager,
+            translator: new Translator('en')
+        );
 
         $this->expectException(SubscriberAttributeCreationException::class);
         $this->expectExceptionMessage('Value is required');
@@ -95,7 +112,12 @@ class SubscriberAttributeManagerTest extends TestCase
             ->with(5, 10)
             ->willReturn($expected);
 
-        $manager = new SubscriberAttributeManager($subscriberAttrRepo, $entityManager);
+        $manager = new SubscriberAttributeManager(
+            attributeRepository: $subscriberAttrRepo,
+            attrDefinitionRepository: $this->createMock(SubscriberAttributeDefinitionRepository::class),
+            entityManager: $entityManager,
+            translator: new Translator('en')
+        );
         $result = $manager->getSubscriberAttribute(5, 10);
 
         self::assertSame($expected, $result);
@@ -111,7 +133,12 @@ class SubscriberAttributeManagerTest extends TestCase
             ->method('remove')
             ->with($attribute);
 
-        $manager = new SubscriberAttributeManager($subscriberAttrRepo, $entityManager);
+        $manager = new SubscriberAttributeManager(
+            attributeRepository: $subscriberAttrRepo,
+            attrDefinitionRepository: $this->createMock(SubscriberAttributeDefinitionRepository::class),
+            entityManager: $entityManager,
+            translator: new Translator('en')
+        );
         $manager->delete($attribute);
 
         self::assertTrue(true);

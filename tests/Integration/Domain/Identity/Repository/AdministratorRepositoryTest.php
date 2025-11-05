@@ -93,7 +93,7 @@ class AdministratorRepositoryTest extends KernelTestCase
 
     public function testCreationDateOfNewModelIsSetToNowOnPersist()
     {
-        $model = new Administrator();
+        $model = (new Administrator())->setLoginName('ta');
 
         $this->entityManager->persist($model);
         $this->entityManager->flush();
@@ -104,7 +104,7 @@ class AdministratorRepositoryTest extends KernelTestCase
 
     public function testModificationDateOfNewModelIsSetToNowOnPersist()
     {
-        $model = new Administrator();
+        $model = (new Administrator())->setLoginName('tat');
 
         $this->entityManager->persist($model);
         $this->entityManager->flush();
@@ -165,7 +165,7 @@ class AdministratorRepositoryTest extends KernelTestCase
 
     public function testSavePersistsAndFlushesModel(): void
     {
-        $model = new Administrator();
+        $model = (new Administrator())->setLoginName('t');
         $this->repository->save($model);
 
         $this->assertSame($model, $this->repository->find($model->getId()));
@@ -177,7 +177,7 @@ class AdministratorRepositoryTest extends KernelTestCase
         $this->assertNotEmpty($allModels);
 
         $model = $allModels[0];
-        $this->repository->remove($model);
+        $this->repository->delete($model);
 
         $remainingModels = $this->repository->findAll();
         $this->assertCount(count($allModels) - 1, $remainingModels);

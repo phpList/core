@@ -1,36 +1,135 @@
 services:
-    PhpList\Core\Domain\Subscription\Service\SubscriberCsvExporter:
-        autowire: true
-        autoconfigure: true
-        public: true
+  PhpList\Core\Domain\Subscription\Service\SubscriberCsvExporter:
+    autowire: true
+    autoconfigure: true
+    public: true
 
-    PhpList\Core\Domain\Subscription\Service\SubscriberCsvImporter:
-        autowire: true
-        autoconfigure: true
-        public: true
+  PhpList\Core\Domain\Subscription\Service\SubscriberCsvImporter:
+    autowire: true
+    autoconfigure: true
+    public: true
 
-    PhpList\Core\Domain\Messaging\Service\EmailService:
-        autowire: true
-        autoconfigure: true
-        arguments:
-            $defaultFromEmail: '%app.mailer_from%'
+  PhpList\Core\Domain\Messaging\Service\EmailService:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $defaultFromEmail: '%app.mailer_from%'
+      $bounceEmail: '%imap_bounce.email%'
 
-    PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService:
-        autowire: true
-        autoconfigure: true
-        public: true
+  PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService:
+    autowire: true
+    autoconfigure: true
+    public: true
 
-    PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator:
-        autowire: true
-        autoconfigure: true
-        public: true
+  PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator:
+    autowire: true
+    autoconfigure: true
+    public: true
 
-    PhpList\Core\Domain\Analytics\Service\LinkTrackService:
-        autowire: true
-        autoconfigure: true
-        public: true
+  PhpList\Core\Domain\Analytics\Service\LinkTrackService:
+    autowire: true
+    autoconfigure: true
+    public: true
 
-    PhpList\Core\Domain\Messaging\Service\CampaignProcessor:
-        autowire: true
-        autoconfigure: true
-        public: true
+  PhpList\Core\Domain\Messaging\Service\SendRateLimiter:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $mailqueueBatchSize: '%messaging.mail_queue_batch_size%'
+      $mailqueueBatchPeriod: '%messaging.mail_queue_period%'
+      $mailqueueThrottle: '%messaging.mail_queue_throttle%'
+
+  PhpList\Core\Domain\Common\SystemInfoCollector:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Bounce\Service\ConsecutiveBounceHandler:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $unsubscribeThreshold: '%imap_bounce.unsubscribe_threshold%'
+      $blacklistThreshold: '%imap_bounce.blacklist_threshold%'
+
+  Webklex\PHPIMAP\ClientManager: ~
+
+  PhpList\Core\Bounce\Service\WebklexImapClientFactory:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $mailbox: '%imap_bounce.mailbox%'#  e.g. "{imap.example.com:993/imap/ssl}INBOX" or "/var/mail/user"
+      $host: '%imap_bounce.host%'
+      $port: '%imap_bounce.port%'
+      $encryption: '%imap_bounce.encryption%'
+      $username: '%imap_bounce.email%'
+      $password: '%imap_bounce.password%'
+      $protocol: '%imap_bounce.protocol%'
+
+  PhpList\Core\Domain\Common\Mail\NativeImapMailReader:
+    arguments:
+      $username: '%imap_bounce.email%'
+      $password: '%imap_bounce.password%'
+
+  PhpList\Core\Bounce\Service\NativeBounceProcessingService:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $purgeProcessed: '%imap_bounce.purge%'
+      $purgeUnprocessed: '%imap_bounce.purge_unprocessed%'
+
+  PhpList\Core\Bounce\Service\WebklexBounceProcessingService:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $purgeProcessed: '%imap_bounce.purge%'
+      $purgeUnprocessed: '%imap_bounce.purge_unprocessed%'
+
+  PhpList\Core\Bounce\Service\LockService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Bounce\Service\SubscriberBlacklistService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Bounce\Service\MessageParser:
+    autowire: true
+    autoconfigure: true
+
+  _instanceof:
+    PhpList\Core\Bounce\Service\Handler\BounceActionHandlerInterface:
+      tags:
+        - { name: 'phplist.bounce_action_handler' }
+
+  PhpList\Core\Domain\Messaging\Service\Handler\:
+    autowire: true
+    autoconfigure: true
+    resource: '../../src/Domain/Messaging/Service/Handler/*Handler.php'
+
+  PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $maxSeconds: '%messaging.max_process_time%'
+
+  PhpList\Core\Domain\Identity\Service\PermissionChecker:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  PhpList\Core\Domain\Configuration\Service\UserPersonalizer:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder:
+    autowire: true
+    autoconfigure: true
+
+  cache.app.simple:
+    class: Symfony\Component\Cache\Psr16Cache
+    arguments: [ '@cache.app' ]
+
+  Psr\SimpleCache\CacheInterface: '@cache.app.simple'

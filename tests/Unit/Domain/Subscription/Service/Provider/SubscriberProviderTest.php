@@ -26,8 +26,8 @@ class SubscriberProviderTest extends TestCase
         $this->subscriberListRepository = $this->createMock(SubscriberListRepository::class);
 
         $this->subscriberProvider = new SubscriberProvider(
-            $this->subscriberRepository,
-            $this->subscriberListRepository,
+            subscriberRepository: $this->subscriberRepository,
+            subscriberListRepository: $this->subscriberListRepository,
         );
     }
 
@@ -82,9 +82,9 @@ class SubscriberProviderTest extends TestCase
             ->willReturn([$subscriberList]);
 
         $subscriber1 = $this->createMock(Subscriber::class);
-        $subscriber1->method('getId')->willReturn(1);
+        $subscriber1->method('getEmail')->willReturn('test1@example.am');
         $subscriber2 = $this->createMock(Subscriber::class);
-        $subscriber2->method('getId')->willReturn(2);
+        $subscriber2->method('getEmail')->willReturn('test2@exsmple.am');
 
         $this->subscriberRepository
             ->expects($this->once())
@@ -114,11 +114,11 @@ class SubscriberProviderTest extends TestCase
             ->willReturn([$subscriberList1, $subscriberList2]);
 
         $subscriber1 = $this->createMock(Subscriber::class);
-        $subscriber1->method('getId')->willReturn(1);
+        $subscriber1->method('getEmail')->willReturn('test1@example.am');
         $subscriber2 = $this->createMock(Subscriber::class);
-        $subscriber2->method('getId')->willReturn(2);
+        $subscriber2->method('getEmail')->willReturn('test2@example.am');
         $subscriber3 = $this->createMock(Subscriber::class);
-        $subscriber3->method('getId')->willReturn(3);
+        $subscriber3->method('getEmail')->willReturn('test3@example.am');
 
         $this->subscriberRepository
             ->expects($this->exactly(2))

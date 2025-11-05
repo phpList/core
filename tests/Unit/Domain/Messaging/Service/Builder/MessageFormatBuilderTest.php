@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Domain\Service\Builder;
+namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Builder;
 
-use InvalidArgumentException;
+use PhpList\Core\Domain\Messaging\Exception\InvalidDtoTypeException;
 use PhpList\Core\Domain\Messaging\Model\Dto\Message\MessageFormatDto;
 use PhpList\Core\Domain\Messaging\Service\Builder\MessageFormatBuilder;
 use PHPUnit\Framework\TestCase;
@@ -30,7 +30,7 @@ class MessageFormatBuilderTest extends TestCase
 
     public function testThrowsExceptionOnInvalidDto(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidDtoTypeException::class);
 
         $invalidDto = new \stdClass();
         $this->builder->build($invalidDto);

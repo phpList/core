@@ -1,0 +1,23 @@
+# .weblate
+---
+projects:
+  - slug: phplist-core
+    name: phpList core
+    components:
+      - slug: messages
+        name: Messages
+        files:
+          # {language} is Weblate’s placeholder (e.g., fr, de, es)
+          - src: resources/translations/messages.en.xlf
+            template: true
+            # Where localized files live (mirrors Symfony layout)
+            target: resources/translations/messages.{language}.xlf
+        file_format: xliff
+        language_code_style: bcp
+        # Ensure placeholders like %name% are preserved
+        parse_file_headers: true
+        check_flags:
+          - xml-invalid
+          - placeholders
+          - urls
+          - accelerated

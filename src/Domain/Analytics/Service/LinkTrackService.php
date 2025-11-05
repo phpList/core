@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Analytics\Service;
 
-use InvalidArgumentException;
-use PhpList\Core\Core\ConfigProvider;
+use PhpList\Core\Core\ParameterProvider;
+use PhpList\Core\Domain\Analytics\Exception\MissingMessageIdException;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository;
 use PhpList\Core\Domain\Messaging\Model\Message;
@@ -13,12 +13,12 @@ use PhpList\Core\Domain\Messaging\Model\Message;
 class LinkTrackService
 {
     private LinkTrackRepository $linkTrackRepository;
-    private ConfigProvider $configProvider;
+    private ParameterProvider $paramProvider;
 
-    public function __construct(LinkTrackRepository $linkTrackRepository, ConfigProvider $configProvider)
+    public function __construct(LinkTrackRepository $linkTrackRepository, ParameterProvider $paramProvider)
     {
         $this->linkTrackRepository = $linkTrackRepository;
-        $this->configProvider = $configProvider;
+        $this->paramProvider = $paramProvider;
     }
 
     public function getUrlById(int $id): ?string
@@ -29,14 +29,14 @@ class LinkTrackService
 
     public function isExtractAndSaveLinksApplicable(): bool
     {
-        return (bool)$this->configProvider->get('click_track', false);
+        return (bool)$this->paramProvider->get('click_track', false);
     }
 
     /**
      * Extract links from message content and save them to the LinkTrackRepository
      *
      * @return LinkTrack[] The saved LinkTrack entities
-     * @throws InvalidArgumentException if the message doesn't have an ID
+     * @throws MissingMessageIdException
      */
     public function extractAndSaveLinks(Message $message, int $userId): array
     {
@@ -48,7 +48,7 @@ class LinkTrackService
         $messageId = $message->getId();
 
         if ($messageId === null) {
-            throw new InvalidArgumentException('Message must have an ID');
+            throw new MissingMessageIdException();
         }
 
         $links = $this->extractLinksFromHtml($content->getText() ?? '');
@@ -72,7 +72,7 @@ class LinkTrackService
             $linkTrack->setUserId($userId);
             $linkTrack->setUrl($url);
 
-            $this->linkTrackRepository->save($linkTrack);
+            $this->linkTrackRepository->persist($linkTrack);
             $savedLinks[] = $linkTrack;
         }
 

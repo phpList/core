@@ -106,6 +106,7 @@ class ApplicationKernel extends Kernel
     {
         $container->setParameter('kernel.application_dir', $this->getApplicationDir());
         $container->addCompilerPass(new DoctrineMappingPass());
+        $container->addCompilerPass(new BounceProcessorPass());
     }
 
     /**

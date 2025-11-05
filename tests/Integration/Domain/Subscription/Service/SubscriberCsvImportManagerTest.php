@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Integration\Domain\Subscription\Service;
 
+use Doctrine\ORM\Tools\SchemaTool;
 use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
@@ -28,6 +29,10 @@ class SubscriberCsvImportManagerTest extends KernelTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->setUpDatabaseTest();
+        $schemaTool = new SchemaTool($this->entityManager);
+        $metadata = $this->entityManager->getMetadataFactory()->getAllMetadata();
+        $schemaTool->dropSchema($metadata);
         $this->loadSchema();
 
         $this->subscriberCsvImportManager = self::getContainer()->get(SubscriberCsvImporter::class);
@@ -49,16 +54,16 @@ class SubscriberCsvImportManagerTest extends KernelTestCase
         file_put_contents($tempFile, $csvContent);
 
         $uploadedFile = new UploadedFile(
-            $tempFile,
-            'subscribers.csv',
-            'text/csv',
-            null,
-            true
+            path: $tempFile,
+            originalName: 'subscribers.csv',
+            mimeType: 'text/csv',
+            error: null,
+            test: true
         );
 
         $subscriberCountBefore = count($this->subscriberRepository->findAll());
 
-        $options = new SubscriberImportOptions();
+        $options = new SubscriberImportOptions(true);
         $result = $this->subscriberCsvImportManager->importFromCsv($uploadedFile, $options);
 
         $subscriberCountAfter = count($this->subscriberRepository->findAll());

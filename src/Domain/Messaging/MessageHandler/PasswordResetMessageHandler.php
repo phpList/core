@@ -8,16 +8,19 @@ use PhpList\Core\Domain\Messaging\Message\PasswordResetMessage;
 use PhpList\Core\Domain\Messaging\Service\EmailService;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Mime\Email;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AsMessageHandler]
 class PasswordResetMessageHandler
 {
     private EmailService $emailService;
+    private TranslatorInterface $translator;
     private string $passwordResetUrl;
 
-    public function __construct(EmailService $emailService, string $passwordResetUrl)
+    public function __construct(EmailService $emailService, TranslatorInterface $translator, string $passwordResetUrl)
     {
         $this->emailService = $emailService;
+        $this->translator = $translator;
         $this->passwordResetUrl = $passwordResetUrl;
     }
 
@@ -28,19 +31,30 @@ class PasswordResetMessageHandler
     {
         $confirmationLink = $this->generateLink($message->getToken());
 
-        $subject = 'Password Reset Request';
-        $textContent = "Hello,\n\n"
-            . "A password reset has been requested for your account.\n"
-            . "Please use the following token to reset your password:\n\n"
-            . $message->getToken()
-            . "\n\nIf you did not request this password reset, please ignore this email.\n\nThank you.";
+        $subject = $this->translator->trans('Password Reset Request');
 
-        $htmlContent = '<p>Password Reset Request!</p>'
-            . '<p>Hello! A password reset has been requested for your account.</p>'
-            . '<p>Please use the following token to reset your password:</p>'
-            . '<p><a href="' . $confirmationLink . '">Reset Password</a></p>'
-            . '<p>If you did not request this password reset, please ignore this email.</p>'
-            . '<p>Thank you.</p>';
+        $textContent = $this->translator->trans(
+            "Hello,\n\n" .
+            "A password reset has been requested for your account.\n" .
+            "Please use the following token to reset your password:\n\n" .
+            "%token%\n\n" .
+            "If you did not request this password reset, please ignore this email.\n\n" .
+            'Thank you.',
+            ['%token%' => $message->getToken()]
+        );
+
+        $htmlContent = $this->translator->trans(
+            '<p>Password Reset Request!</p>' .
+            '<p>Hello! A password reset has been requested for your account.</p>' .
+            '<p>Please use the following token to reset your password:</p>' .
+            '<p><a href="%confirmation_link%">Reset Password</a></p>' .
+            '<p>If you did not request this password reset, please ignore this email.</p>' .
+            '<p>Thank you.</p>',
+            [
+                '%confirmation_link%' => $confirmationLink,
+            ]
+        );
+
 
         $email = (new Email())
             ->to($message->getEmail())

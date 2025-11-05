@@ -8,9 +8,14 @@ use DOMDocument;
 use PhpList\Core\Domain\Common\Model\ValidationContext;
 use PhpList\Core\Domain\Common\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Exception\ValidatorException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class TemplateLinkValidator implements ValidatorInterface
 {
+    public function __construct(private readonly TranslatorInterface $translator)
+    {
+    }
+
     private const PLACEHOLDERS = [
         '[PREFERENCESURL]',
         '[UNSUBSCRIBEURL]',
@@ -37,10 +42,9 @@ class TemplateLinkValidator implements ValidatorInterface
         }
 
         if (!empty($invalid)) {
-            throw new ValidatorException(sprintf(
-                'Not full URLs: %s',
-                implode(', ', $invalid)
-            ));
+            throw new ValidatorException(
+                $this->translator->trans('Not full URLs: %urls%', ['%urls%' => implode(', ', $invalid)]),
+            );
         }
     }
 

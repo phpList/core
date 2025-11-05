@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Common\Model\Interfaces\ModificationDate;
+use PhpList\Core\Domain\Common\Model\Interfaces\OwnableInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\ListMessage;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
@@ -25,10 +26,10 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
  */
 #[ORM\Entity(repositoryClass: SubscriberListRepository::class)]
 #[ORM\Table(name: 'phplist_list')]
-#[ORM\Index(name: 'nameidx', columns: ['name'])]
-#[ORM\Index(name: 'listorderidx', columns: ['listorder'])]
+#[ORM\Index(name: 'phplist_list_nameidx', columns: ['name'])]
+#[ORM\Index(name: 'phplist_list_listorderidx', columns: ['listorder'])]
 #[ORM\HasLifecycleCallbacks]
-class SubscriberList implements DomainModel, Identity, CreationDate, ModificationDate
+class SubscriberList implements DomainModel, Identity, CreationDate, ModificationDate, OwnableInterface
 {
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
@@ -37,6 +38,9 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
 
     #[ORM\Column]
     private string $name = '';
+
+    #[ORM\Column(name: 'rssfeed', type: 'string', length: 255, nullable: true)]
+    private ?string $rssFeed = null;
 
     #[ORM\Column]
     private string $description = '';
@@ -50,7 +54,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     #[ORM\Column(name: 'listorder', type: 'integer', nullable: true)]
     private ?int $listPosition;
 
-    #[ORM\Column(name: 'prefix')]
+    #[ORM\Column(name: 'prefix', length: 10, nullable: true)]
     private ?string $subjectPrefix;
 
     #[ORM\Column(name: 'active', type: 'boolean')]
@@ -91,6 +95,17 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this->id;
     }
 
+    public function getRssFeed(): ?string
+    {
+        return $this->rssFeed;
+    }
+
+    public function setRssFeed(?string $rssFeed): self
+    {
+        $this->rssFeed = $rssFeed;
+        return $this;
+    }
+
     public function getName(): string
     {
         return $this->name;
@@ -102,12 +117,12 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this;
     }
 
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function setDescription(string $description): self
+    public function setDescription(?string $description): self
     {
         $this->description = $description;
 
@@ -216,10 +231,9 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
 
     #[ORM\PrePersist]
     #[ORM\PreUpdate]
-    public function updateUpdatedAt(): DomainModel
+    public function updateUpdatedAt(): void
     {
         $this->updatedAt = new DateTime();
-        return $this;
     }
 
     public function getListMessages(): Collection

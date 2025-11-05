@@ -7,8 +7,26 @@ namespace PhpList\Core\Domain\Messaging\Repository;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
+use PhpList\Core\Domain\Messaging\Model\BounceRegex;
 
 class BounceRegexRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
     use CursorPaginationTrait;
+
+    public function findOneByRegexHash(string $regexHash): ?BounceRegex
+    {
+        return $this->findOneBy(['regexHash' => $regexHash]);
+    }
+
+    /** @return BounceRegex[] */
+    public function fetchAllOrdered(): array
+    {
+        return $this->findBy([], ['listOrder' => 'ASC']);
+    }
+
+    /** @return BounceRegex[] */
+    public function fetchActiveOrdered(): array
+    {
+        return $this->findBy(['active' => true], ['listOrder' => 'ASC']);
+    }
 }

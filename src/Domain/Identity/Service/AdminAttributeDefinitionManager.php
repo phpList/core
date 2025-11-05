@@ -9,25 +9,32 @@ use PhpList\Core\Domain\Identity\Model\Dto\AdminAttributeDefinitionDto;
 use PhpList\Core\Domain\Identity\Repository\AdminAttributeDefinitionRepository;
 use PhpList\Core\Domain\Identity\Exception\AttributeDefinitionCreationException;
 use PhpList\Core\Domain\Subscription\Validator\AttributeTypeValidator;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AdminAttributeDefinitionManager
 {
     private AdminAttributeDefinitionRepository $definitionRepository;
     private AttributeTypeValidator $attributeTypeValidator;
+    private TranslatorInterface $translator;
 
     public function __construct(
         AdminAttributeDefinitionRepository $definitionRepository,
-        AttributeTypeValidator $attributeTypeValidator
+        AttributeTypeValidator $attributeTypeValidator,
+        TranslatorInterface $translator
     ) {
         $this->definitionRepository = $definitionRepository;
         $this->attributeTypeValidator = $attributeTypeValidator;
+        $this->translator = $translator;
     }
 
     public function create(AdminAttributeDefinitionDto $attributeDefinitionDto): AdminAttributeDefinition
     {
         $existingAttribute = $this->definitionRepository->findOneByName($attributeDefinitionDto->name);
         if ($existingAttribute) {
-            throw new AttributeDefinitionCreationException('Attribute definition already exists', 409);
+            throw new AttributeDefinitionCreationException(
+                $this->translator->trans('Attribute definition already exists.'),
+                409
+            );
         }
         $this->attributeTypeValidator->validate($attributeDefinitionDto->type);
 
@@ -38,7 +45,7 @@ class AdminAttributeDefinitionManager
             ->setDefaultValue($attributeDefinitionDto->defaultValue)
             ->setTableName($attributeDefinitionDto->tableName);
 
-        $this->definitionRepository->save($attributeDefinition);
+        $this->definitionRepository->persist($attributeDefinition);
 
         return $attributeDefinition;
     }
@@ -60,8 +67,6 @@ class AdminAttributeDefinitionManager
             ->setRequired($attributeDefinitionDto->required)
             ->setDefaultValue($attributeDefinitionDto->defaultValue)
             ->setTableName($attributeDefinitionDto->tableName);
-
-        $this->definitionRepository->save($attributeDefinition);
 
         return $attributeDefinition;
     }

@@ -5,36 +5,34 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
-use PhpList\Core\Domain\Messaging\Message\SubscriberConfirmationMessage;
 use PhpList\Core\Domain\Subscription\Model\Dto\CreateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Translation\Translator;
 
 class SubscriberManagerTest extends TestCase
 {
     private SubscriberRepository|MockObject $subscriberRepository;
     private EntityManagerInterface|MockObject $entityManager;
-    private MessageBusInterface|MockObject $messageBus;
     private SubscriberManager $subscriberManager;
 
     protected function setUp(): void
     {
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->messageBus = $this->createMock(MessageBusInterface::class);
         $subscriberDeletionService = $this->createMock(SubscriberDeletionService::class);
 
         $this->subscriberManager = new SubscriberManager(
             subscriberRepository: $this->subscriberRepository,
             entityManager: $this->entityManager,
-            messageBus: $this->messageBus,
-            subscriberDeletionService: $subscriberDeletionService
+            subscriberDeletionService: $subscriberDeletionService,
+            translator: new Translator('en'),
+            subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class)
         );
     }
 
@@ -42,7 +40,7 @@ class SubscriberManagerTest extends TestCase
     {
         $this->subscriberRepository
             ->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->callback(function (Subscriber $sub): bool {
                 return $sub->getEmail() === 'foo@bar.com'
                     && $sub->isConfirmed() === true
@@ -63,11 +61,11 @@ class SubscriberManagerTest extends TestCase
         $this->assertFalse($result->isDisabled());
     }
 
-    public function testCreateSubscriberPersistsAndSendsEmail(): void
+    public function testCreateSubscriberPersists(): void
     {
         $this->subscriberRepository
             ->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->callback(function (Subscriber $sub): bool {
                 $sub->setUniqueId('test-unique-id-456');
                 return $sub->getEmail() === 'foo@bar.com'
@@ -76,13 +74,6 @@ class SubscriberManagerTest extends TestCase
                     && $sub->hasHtmlEmail() === true
                     && $sub->isDisabled() === false;
             }));
-
-        $this->messageBus
-            ->expects($this->once())
-            ->method('dispatch')
-            ->willReturnCallback(function ($message) {
-                return new Envelope($message);
-            });
 
         $dto = new CreateSubscriberDto(email: 'foo@bar.com', requestConfirmation: true, htmlEmail: true);
 
@@ -95,30 +86,17 @@ class SubscriberManagerTest extends TestCase
         $this->assertFalse($result->isDisabled());
     }
 
-    public function testCreateSubscriberWithConfirmationSendsConfirmationEmail(): void
+    public function testCreateSubscriberWithConfirmation(): void
     {
         $capturedSubscriber = null;
         $this->subscriberRepository
             ->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->callback(function (Subscriber $subscriber) use (&$capturedSubscriber) {
                 $capturedSubscriber = $subscriber;
                 $subscriber->setUniqueId('test-unique-id-123');
                 return true;
             }));
-
-        $this->messageBus
-            ->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(function (SubscriberConfirmationMessage $message) {
-                $this->assertEquals('test@example.com', $message->getEmail());
-                $this->assertEquals('test-unique-id-123', $message->getUniqueId());
-                $this->assertTrue($message->hasHtmlEmail());
-                return true;
-            }))
-            ->willReturnCallback(function ($message) {
-                return new Envelope($message);
-            });
 
         $dto = new CreateSubscriberDto(email: 'test@example.com', requestConfirmation: true, htmlEmail: true);
         $this->subscriberManager->createSubscriber($dto);
@@ -129,15 +107,11 @@ class SubscriberManagerTest extends TestCase
         $this->assertFalse($capturedSubscriber->isConfirmed());
     }
 
-    public function testCreateSubscriberWithoutConfirmationDoesNotSendConfirmationEmail(): void
+    public function testCreateSubscriberWithoutConfirmation(): void
     {
         $this->subscriberRepository
             ->expects($this->once())
-            ->method('save');
-
-        $this->messageBus
-            ->expects($this->never())
-            ->method('dispatch');
+            ->method('persist');
 
         $dto = new CreateSubscriberDto(email: 'test@example.com', requestConfirmation: false, htmlEmail: true);
         $this->subscriberManager->createSubscriber($dto);
@@ -158,10 +132,6 @@ class SubscriberManagerTest extends TestCase
             ->expects($this->once())
             ->method('setConfirmed')
             ->with(true);
-
-        $this->entityManager
-            ->expects($this->once())
-            ->method('flush');
 
         $result = $this->subscriberManager->markAsConfirmedByUniqueId($uniqueId);
 

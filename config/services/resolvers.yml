@@ -1,0 +1,15 @@
+services:
+  PhpList\Core\Domain\Subscription\Service\Resolver\AttributeValueResolver:
+    arguments:
+      $providers:
+        - '@PhpList\Core\Domain\Subscription\Service\Provider\CheckboxGroupValueProvider'
+        - '@PhpList\Core\Domain\Subscription\Service\Provider\SelectOrRadioValueProvider'
+        - '@PhpList\Core\Domain\Subscription\Service\Provider\ScalarValueProvider'
+
+  PhpList\Core\Domain\Common\ClientIpResolver:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Bounce\Service\BounceActionResolver:
+    arguments:
+      - !tagged_iterator { tag: 'phplist.bounce_action_handler' }

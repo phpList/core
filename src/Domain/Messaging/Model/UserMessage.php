@@ -7,16 +7,17 @@ namespace PhpList\Core\Domain\Messaging\Model;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
+use PhpList\Core\Domain\Messaging\Model\Message\UserMessageStatus;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 
 #[ORM\Entity(repositoryClass: UserMessageRepository::class)]
 #[ORM\Table(name: 'phplist_usermessage')]
-#[ORM\Index(name: 'enteredindex', columns: ['entered'])]
-#[ORM\Index(name: 'messageidindex', columns: ['messageid'])]
-#[ORM\Index(name: 'statusidx', columns: ['status'])]
-#[ORM\Index(name: 'useridindex', columns: ['userid'])]
-#[ORM\Index(name: 'viewedidx', columns: ['viewed'])]
+#[ORM\Index(name: 'phplist_usermessage_enteredindex', columns: ['entered'])]
+#[ORM\Index(name: 'phplist_usermessage_messageidindex', columns: ['messageid'])]
+#[ORM\Index(name: 'phplist_usermessage_statusidx', columns: ['status'])]
+#[ORM\Index(name: 'phplist_usermessage_useridindex', columns: ['userid'])]
+#[ORM\Index(name: 'phplist_usermessage_viewedidx', columns: ['viewed'])]
 class UserMessage implements DomainModel
 {
     #[ORM\Id]
@@ -65,9 +66,12 @@ class UserMessage implements DomainModel
         return $this->viewed;
     }
 
-    public function getStatus(): ?string
+    /**
+     * @SuppressWarnings("PHPMD.StaticAccess")
+     */
+    public function getStatus(): ?UserMessageStatus
     {
-        return $this->status;
+        return UserMessageStatus::from($this->status);
     }
 
     public function setViewed(?DateTime $viewed): self
@@ -76,9 +80,9 @@ class UserMessage implements DomainModel
         return $this;
     }
 
-    public function setStatus(?string $status): self
+    public function setStatus(?UserMessageStatus $status): self
     {
-        $this->status = $status;
+        $this->status = $status->value;
         return $this;
     }
 }

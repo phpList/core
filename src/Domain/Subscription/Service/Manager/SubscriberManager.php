@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
-use PhpList\Core\Domain\Messaging\Message\SubscriberConfirmationMessage;
+use PhpList\Core\Domain\Identity\Model\Administrator;
+use PhpList\Core\Domain\Subscription\Model\Dto\ChangeSetDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\CreateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\UpdateSubscriberDto;
@@ -13,25 +14,28 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SubscriberManager
 {
     private SubscriberRepository $subscriberRepository;
     private EntityManagerInterface $entityManager;
-    private MessageBusInterface $messageBus;
     private SubscriberDeletionService $subscriberDeletionService;
+    private TranslatorInterface $translator;
+    private SubscriberHistoryManager $subscriberHistoryManager;
 
     public function __construct(
         SubscriberRepository $subscriberRepository,
         EntityManagerInterface $entityManager,
-        MessageBusInterface $messageBus,
-        SubscriberDeletionService $subscriberDeletionService
+        SubscriberDeletionService $subscriberDeletionService,
+        TranslatorInterface $translator,
+        SubscriberHistoryManager $subscriberHistoryManager,
     ) {
         $this->subscriberRepository = $subscriberRepository;
         $this->entityManager = $entityManager;
-        $this->messageBus = $messageBus;
         $this->subscriberDeletionService = $subscriberDeletionService;
+        $this->translator = $translator;
+        $this->subscriberHistoryManager = $subscriberHistoryManager;
     }
 
     public function createSubscriber(CreateSubscriberDto $subscriberDto): Subscriber
@@ -44,38 +48,18 @@ class SubscriberManager
         $subscriber->setHtmlEmail((bool)$subscriberDto->htmlEmail);
         $subscriber->setDisabled(false);
 
-        $this->subscriberRepository->save($subscriber);
-
-        if ($subscriberDto->requestConfirmation) {
-            $this->sendConfirmationEmail($subscriber);
-        }
+        $this->subscriberRepository->persist($subscriber);
 
         return $subscriber;
     }
 
-    private function sendConfirmationEmail(Subscriber $subscriber): void
+    public function getSubscriberById(int $subscriberId): ?Subscriber
     {
-        $message = new SubscriberConfirmationMessage(
-            email: $subscriber->getEmail(),
-            uniqueId:$subscriber->getUniqueId(),
-            htmlEmail: $subscriber->hasHtmlEmail()
-        );
-
-        $this->messageBus->dispatch($message);
+        return $this->subscriberRepository->find($subscriberId);
     }
 
-    public function getSubscriber(int $subscriberId): Subscriber
-    {
-        $subscriber = $this->subscriberRepository->findSubscriberWithSubscriptions($subscriberId);
-
-        if (!$subscriber) {
-            throw new NotFoundHttpException('Subscriber not found');
-        }
-
-        return $subscriber;
-    }
-
-    public function updateSubscriber(UpdateSubscriberDto $subscriberDto): Subscriber
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
+    public function updateSubscriber(UpdateSubscriberDto $subscriberDto, Administrator $admin): Subscriber
     {
         /** @var Subscriber $subscriber */
         $subscriber = $this->subscriberRepository->find($subscriberDto->subscriberId);
@@ -87,7 +71,19 @@ class SubscriberManager
         $subscriber->setDisabled($subscriberDto->disabled);
         $subscriber->setExtraData($subscriberDto->additionalData);
 
-        $this->entityManager->flush();
+        $uow = $this->entityManager->getUnitOfWork();
+        $meta = $this->entityManager->getClassMetadata(Subscriber::class);
+        $uow->computeChangeSet($meta, $subscriber);
+        $changeSet = ChangeSetDto::fromDoctrineChangeSet($uow->getEntityChangeSet($subscriber));
+
+        $this->subscriberHistoryManager->addHistoryFromApi($subscriber, [], $changeSet, $admin);
+
+        return $subscriber;
+    }
+
+    public function resetBounceCount(Subscriber $subscriber): Subscriber
+    {
+        $subscriber->setBounceCount(0);
 
         return $subscriber;
     }
@@ -96,11 +92,10 @@ class SubscriberManager
     {
         $subscriber = $this->subscriberRepository->findOneByUniqueId($uniqueId);
         if (!$subscriber) {
-            throw new NotFoundHttpException('Subscriber not found');
+            throw new NotFoundHttpException($this->translator->trans('Subscriber not found'));
         }
 
         $subscriber->setConfirmed(true);
-        $this->entityManager->flush();
 
         return $subscriber;
     }
@@ -119,17 +114,17 @@ class SubscriberManager
         $subscriber->setHtmlEmail($subscriberDto->htmlEmail);
         $subscriber->setDisabled($subscriberDto->disabled);
         $subscriber->setExtraData($subscriberDto->extraData ?? '');
+        if ($subscriberDto->foreignKey !== null) {
+            $subscriber->setForeignKey($subscriberDto->foreignKey);
+        }
 
         $this->entityManager->persist($subscriber);
-
-        if ($subscriberDto->sendConfirmation) {
-            $this->sendConfirmationEmail($subscriber);
-        }
 
         return $subscriber;
     }
 
-    public function updateFromImport(Subscriber $existingSubscriber, ImportSubscriberDto $subscriberDto): Subscriber
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
+    public function updateFromImport(Subscriber $existingSubscriber, ImportSubscriberDto $subscriberDto): ChangeSetDto
     {
         $existingSubscriber->setEmail($subscriberDto->email);
         $existingSubscriber->setConfirmed($subscriberDto->confirmed);
@@ -137,7 +132,14 @@ class SubscriberManager
         $existingSubscriber->setHtmlEmail($subscriberDto->htmlEmail);
         $existingSubscriber->setDisabled($subscriberDto->disabled);
         $existingSubscriber->setExtraData($subscriberDto->extraData);
+        if ($subscriberDto->foreignKey !== null) {
+            $existingSubscriber->setForeignKey($subscriberDto->foreignKey);
+        }
 
-        return $existingSubscriber;
+        $uow = $this->entityManager->getUnitOfWork();
+        $meta = $this->entityManager->getClassMetadata(Subscriber::class);
+        $uow->computeChangeSet($meta, $existingSubscriber);
+
+        return ChangeSetDto::fromDoctrineChangeSet($uow->getEntityChangeSet($existingSubscriber));
     }
 }

@@ -17,6 +17,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class PasswordManagerTest extends TestCase
 {
@@ -36,7 +37,8 @@ class PasswordManagerTest extends TestCase
             passwordRequestRepository: $this->passwordRequestRepository,
             administratorRepository: $this->administratorRepository,
             hashGenerator: $this->hashGenerator,
-            messageBus: $this->messageBus
+            messageBus: $this->messageBus,
+            translator: $this->createMock(TranslatorInterface::class)
         );
     }
 
@@ -81,7 +83,7 @@ class PasswordManagerTest extends TestCase
             ->with($existingRequest);
 
         $this->passwordRequestRepository->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($this->isInstanceOf(AdminPasswordRequest::class));
 
         $this->messageBus->expects($this->once())
@@ -185,7 +187,7 @@ class PasswordManagerTest extends TestCase
             ->willReturn($newPasswordHash);
 
         $this->administratorRepository->expects($this->once())
-            ->method('save')
+            ->method('persist')
             ->with($administrator);
 
         $this->passwordRequestRepository->expects($this->once())

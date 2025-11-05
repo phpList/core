@@ -11,7 +11,7 @@ use PhpList\Core\Domain\Messaging\Repository\BounceRegexRepository;
 
 #[ORM\Entity(repositoryClass: BounceRegexRepository::class)]
 #[ORM\Table(name: 'phplist_bounceregex')]
-#[ORM\UniqueConstraint(name: 'regex', columns: ['regexhash'])]
+#[ORM\UniqueConstraint(name: 'phplist_bounceregex_regex', columns: ['regexhash'])]
 class BounceRegex implements DomainModel, Identity
 {
     #[ORM\Id]
@@ -31,8 +31,8 @@ class BounceRegex implements DomainModel, Identity
     #[ORM\Column(name: 'listorder', type: 'integer', nullable: true, options: ['default' => 0])]
     private ?int $listOrder = 0;
 
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $admin;
+    #[ORM\Column(name: 'admin', type: 'integer', nullable: true)]
+    private ?int $adminId;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $comment;
@@ -48,7 +48,7 @@ class BounceRegex implements DomainModel, Identity
         ?string $regexHash = null,
         ?string $action = null,
         ?int $listOrder = 0,
-        ?int $admin = null,
+        ?int $adminId = null,
         ?string $comment = null,
         ?string $status = null,
         ?int $count = 0
@@ -57,7 +57,7 @@ class BounceRegex implements DomainModel, Identity
         $this->regexHash = $regexHash;
         $this->action = $action;
         $this->listOrder = $listOrder;
-        $this->admin = $admin;
+        $this->adminId = $adminId;
         $this->comment = $comment;
         $this->status = $status;
         $this->count = $count;
@@ -112,14 +112,14 @@ class BounceRegex implements DomainModel, Identity
         return $this;
     }
 
-    public function getAdmin(): ?int
+    public function getAdminId(): ?int
     {
-        return $this->admin;
+        return $this->adminId;
     }
 
-    public function setAdmin(?int $admin): self
+    public function setAdminId(?int $adminId): self
     {
-        $this->admin = $admin;
+        $this->adminId = $adminId;
         return $this;
     }
 

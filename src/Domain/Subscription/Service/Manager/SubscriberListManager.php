@@ -29,7 +29,7 @@ class SubscriberListManager
             ->setListPosition($subscriberListDto->listPosition)
             ->setPublic($subscriberListDto->isPublic);
 
-        $this->subscriberListRepository->save($subscriberList);
+        $this->subscriberListRepository->persist($subscriberList);
 
         return $subscriberList;
     }
