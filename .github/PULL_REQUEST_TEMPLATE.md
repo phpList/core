@@ -1,10 +1,4 @@
-### Summary
-
-Provide a general description of the code changes in your pull request …
-were there any bugs you had fixed? If so, mention them. If these bugs have open
-GitHub issues, be sure to tag them here as well, to keep the conversation
-linked together.
-
+"@coderabbitai summary"
 
 ### Unit test
 
@@ -17,7 +11,7 @@ You can run the existing unit tests using this command:
 
 ### Code style
 
-Have you checked that you code is well-documented and follows the PSR-2 coding
+Have you checked that your code is well-documented and follows the PSR-2 coding
 style?
 
 You can check for this using this command:
