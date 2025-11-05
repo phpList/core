@@ -16,10 +16,7 @@ class CsvRowToDtoMapper
     public function map(array $row): ImportSubscriberDto
     {
         // Normalize keys to lower-case for header matching safety (CSV library keeps original headers)
-        $normalizedRow = [];
-        foreach ($row as $key => $value) {
-            $normalizedRow[strtolower((string)$key)] = is_string($value) ? trim($value) : $value;
-        }
+        $normalizedRow = $this->normalizeData($row);
 
         $email = strtolower(trim((string)($normalizedRow['email'] ?? '')));
 
@@ -41,5 +38,15 @@ class CsvRowToDtoMapper
             extraAttributes: $extraAttributes,
             foreignKey: $foreignKey ?? null,
         );
+    }
+
+    private function normalizeData(array $row): array
+    {
+        $normalizedRow = [];
+        foreach ($row as $key => $value) {
+            $normalizedRow[strtolower((string)$key)] = is_string($value) ? trim($value) : $value;
+        }
+
+        return $normalizedRow;
     }
 }
