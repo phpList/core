@@ -16,6 +16,7 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
  *
  * @author Oliver Klee <oliver@phplist.com>
  * @author Tatevik Grigoryan <tatevik@phplist.com>
+ * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
 class SubscriberRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
@@ -39,6 +40,11 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
     public function findOneByUniqueId(string $uniqueId): ?Subscriber
     {
         return $this->findOneBy(['uniqueId' => $uniqueId]);
+    }
+
+    public function findOneByForeignKey(string $foreignKey): ?Subscriber
+    {
+        return $this->findOneBy(['foreignKey' => $foreignKey]);
     }
 
     public function findSubscribersBySubscribedList(int $listId): ?Subscriber

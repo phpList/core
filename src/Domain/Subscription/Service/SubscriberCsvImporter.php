@@ -182,7 +182,14 @@ class SubscriberCsvImporter
             return null;
         }
 
-        $subscriber = $this->subscriberRepository->findOneByEmail($dto->email);
+        [$subscriber, $conflictError] = $this->resolveSubscriber($dto);
+
+        if ($conflictError !== null) {
+            $stats['skipped']++;
+            $stats['errors'][] = $conflictError;
+            return null;
+        }
+
         if ($this->handleSkipCase($subscriber, $options, $stats)) {
             return null;
         }
@@ -197,20 +204,7 @@ class SubscriberCsvImporter
 
         $this->attributeManager->processAttributes($subscriber, $dto->extraAttributes);
 
-        $addedNewSubscriberToList = false;
-        $listLines = [];
-        if (!$subscriber->isBlacklisted() && count($options->listIds) > 0) {
-            foreach ($options->listIds as $listId) {
-                $created = $this->subscriptionManager->addSubscriberToAList($subscriber, $listId);
-                if ($created) {
-                    $addedNewSubscriberToList = true;
-                    $listLines[] = $this->translator->trans(
-                        'Subscribed to %list%',
-                        ['%list%' => $created->getSubscriberList()->getName()]
-                    );
-                }
-            }
-        }
+        [$listLines, $addedNewSubscriberToList] = $this->getHistoryListLines($subscriber, $options);
 
         if ($subscriber->isBlacklisted()) {
             $stats['blacklisted']++;
@@ -224,6 +218,22 @@ class SubscriberCsvImporter
         );
 
         return $this->prepareConfirmationMessage($subscriber, $options, $dto, $addedNewSubscriberToList);
+    }
+
+    private function resolveSubscriber(ImportSubscriberDto $dto): array
+    {
+        $byEmail = $this->subscriberRepository->findOneByEmail($dto->email);
+        $byFk = null;
+
+        if ($dto->foreignKey !== null) {
+            $byFk = $this->subscriberRepository->findOneByForeignKey($dto->foreignKey);
+        }
+
+        if ($byEmail && $byFk && $byEmail->getId() !== $byFk->getId()) {
+            return [null, $this->translator->trans('Conflict: email and foreign key refer to different subscribers.')];
+        }
+
+        return [$byFk ?? $byEmail, null];
     }
 
     private function handleInvalidEmail(
@@ -276,5 +286,28 @@ class SubscriberCsvImporter
         }
 
         return null;
+    }
+
+    private function getHistoryListLines(Subscriber $subscriber, SubscriberImportOptions $options): array
+    {
+        $addedNewSubscriberToList = false;
+        $listLines = [];
+        if (!$subscriber->isBlacklisted() && count($options->listIds) > 0) {
+            foreach ($options->listIds as $listId) {
+                $created = $this->subscriptionManager->addSubscriberToAList($subscriber, $listId);
+                if ($created) {
+                    $addedNewSubscriberToList = true;
+                    $listLines[] = $this->translator->trans(
+                        'Subscribed to %list%',
+                        ['%list%' => $created->getSubscriberList()->getName()]
+                    );
+                }
+            }
+        }
+
+        return [
+            $listLines,
+            $addedNewSubscriberToList,
+        ];
     }
 }

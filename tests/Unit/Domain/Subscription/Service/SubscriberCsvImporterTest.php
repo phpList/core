@@ -158,6 +158,10 @@ class SubscriberCsvImporterTest extends TestCase
             ->with('existing@example.com')
             ->willReturn($existingSubscriber);
 
+        $this->subscriberRepositoryMock
+            ->method('findOneByForeignKey')
+            ->willReturn(null);
+
         $importDto = new ImportSubscriberDto(
             email: 'existing@example.com',
             confirmed: true,
@@ -190,11 +194,267 @@ class SubscriberCsvImporterTest extends TestCase
                 ]
             ));
 
+        $this->attributeManagerMock
+            ->expects($this->once())
+            ->method('processAttributes')
+            ->with($existingSubscriber);
+
         $options = new SubscriberImportOptions(updateExisting: true);
         $result = $this->subject->importFromCsv($uploadedFile, $options);
 
         $this->assertSame(0, $result['created']);
         $this->assertSame(1, $result['updated']);
+        $this->assertSame(0, $result['skipped']);
+        $this->assertEmpty($result['errors']);
+
+        unlink($tempFile);
+    }
+
+    public function testImportResolvesByForeignKeyWhenProvidedAndMatches(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'csv_test_fk');
+        file_put_contents($tempFile, "email,confirmed,html_email,blacklisted,disabled,foreignkey\n" .
+            "user@example.com,1,1,0,0,EXT-123\n");
+
+        $uploadedFile = $this->createMock(UploadedFile::class);
+        $uploadedFile->method('getRealPath')->willReturn($tempFile);
+
+        $existingByFk = $this->createMock(Subscriber::class);
+        $existingByFk->method('getId')->willReturn(10);
+
+        $this->subscriberRepositoryMock
+            ->method('findOneByEmail')
+            ->with('user@example.com')
+            ->willReturn(null);
+
+        $this->subscriberRepositoryMock
+            ->method('findOneByForeignKey')
+            ->with('EXT-123')
+            ->willReturn($existingByFk);
+
+        $dto = new ImportSubscriberDto(
+            email: 'user@example.com',
+            confirmed: true,
+            blacklisted: false,
+            htmlEmail: true,
+            disabled: false,
+            extraData: null,
+            extraAttributes: [],
+            foreignKey: 'EXT-123',
+        );
+
+        $this->csvImporterMock
+            ->method('import')
+            ->with($tempFile)
+            ->willReturn([
+                'valid' => [$dto],
+                'errors' => []
+            ]);
+
+        $this->subscriberManagerMock
+            ->expects($this->once())
+            ->method('updateFromImport')
+            ->with($existingByFk, $dto)
+            ->willReturn(new ChangeSetDto());
+
+        $this->attributeManagerMock
+            ->expects($this->once())
+            ->method('processAttributes')
+            ->with($existingByFk);
+
+        $options = new SubscriberImportOptions(updateExisting: true);
+        $result = $this->subject->importFromCsv($uploadedFile, $options);
+
+        $this->assertSame(0, $result['created']);
+        $this->assertSame(1, $result['updated']);
+        $this->assertSame(0, $result['skipped']);
+        $this->assertEmpty($result['errors']);
+
+        unlink($tempFile);
+    }
+
+    public function testImportConflictWhenEmailAndForeignKeyReferToDifferentSubscribers(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'csv_test_fk_conflict');
+        file_put_contents($tempFile, "email,confirmed,html_email,blacklisted,disabled,foreignkey\n" .
+            "conflict@example.com,1,1,0,0,EXT-999\n");
+
+        $uploadedFile = $this->createMock(UploadedFile::class);
+        $uploadedFile->method('getRealPath')->willReturn($tempFile);
+
+        $byEmail = $this->createMock(Subscriber::class);
+        $byEmail->method('getId')->willReturn(1);
+        $byFk = $this->createMock(Subscriber::class);
+        $byFk->method('getId')->willReturn(2);
+
+        $this->subscriberRepositoryMock
+            ->method('findOneByEmail')
+            ->with('conflict@example.com')
+            ->willReturn($byEmail);
+
+        $this->subscriberRepositoryMock
+            ->method('findOneByForeignKey')
+            ->with('EXT-999')
+            ->willReturn($byFk);
+
+        $dto = new ImportSubscriberDto(
+            email: 'conflict@example.com',
+            confirmed: true,
+            blacklisted: false,
+            htmlEmail: true,
+            disabled: false,
+            extraData: null,
+            extraAttributes: [],
+            foreignKey: 'EXT-999',
+        );
+
+        $this->csvImporterMock
+            ->method('import')
+            ->with($tempFile)
+            ->willReturn([
+                'valid' => [$dto],
+                'errors' => []
+            ]);
+
+        $this->subscriberManagerMock
+            ->expects($this->never())
+            ->method('createFromImport');
+        $this->subscriberManagerMock
+            ->expects($this->never())
+            ->method('updateFromImport');
+
+        $options = new SubscriberImportOptions(updateExisting: true);
+        $result = $this->subject->importFromCsv($uploadedFile, $options);
+
+        $this->assertSame(0, $result['created']);
+        $this->assertSame(0, $result['updated']);
+        $this->assertSame(1, $result['skipped']);
+        $this->assertCount(1, $result['errors']);
+        $this->assertSame('Conflict: email and foreign key refer to different subscribers.', $result['errors'][0]);
+
+        unlink($tempFile);
+    }
+
+    public function testImportResolvesByEmailWhenForeignKeyNotFound(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'csv_test_fk_email');
+        file_put_contents($tempFile, "email,confirmed,html_email,blacklisted,disabled,foreignkey\n" .
+            "existing@example.com,1,1,0,0,EXT-404\n");
+
+        $uploadedFile = $this->createMock(UploadedFile::class);
+        $uploadedFile->method('getRealPath')->willReturn($tempFile);
+
+        $existingByEmail = $this->createMock(Subscriber::class);
+        $existingByEmail->method('getId')->willReturn(5);
+
+        $this->subscriberRepositoryMock
+            ->method('findOneByEmail')
+            ->with('existing@example.com')
+            ->willReturn($existingByEmail);
+
+        $this->subscriberRepositoryMock
+            ->method('findOneByForeignKey')
+            ->with('EXT-404')
+            ->willReturn(null);
+
+        $dto = new ImportSubscriberDto(
+            email: 'existing@example.com',
+            confirmed: true,
+            blacklisted: false,
+            htmlEmail: true,
+            disabled: false,
+            extraData: null,
+            extraAttributes: [],
+            foreignKey: 'EXT-404',
+        );
+
+        $this->csvImporterMock
+            ->method('import')
+            ->with($tempFile)
+            ->willReturn([
+                'valid' => [$dto],
+                'errors' => []
+            ]);
+
+        $this->subscriberManagerMock
+            ->expects($this->once())
+            ->method('updateFromImport')
+            ->with($existingByEmail, $dto)
+            ->willReturn(new ChangeSetDto());
+
+        $this->attributeManagerMock
+            ->expects($this->once())
+            ->method('processAttributes')
+            ->with($existingByEmail);
+
+        $options = new SubscriberImportOptions(updateExisting: true);
+        $result = $this->subject->importFromCsv($uploadedFile, $options);
+
+        $this->assertSame(0, $result['created']);
+        $this->assertSame(1, $result['updated']);
+        $this->assertSame(0, $result['skipped']);
+        $this->assertEmpty($result['errors']);
+
+        unlink($tempFile);
+    }
+
+    public function testImportCreatesNewWhenNeitherEmailNorForeignKeyFound(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'csv_test_fk_create');
+        file_put_contents($tempFile, "email,confirmed,html_email,blacklisted,disabled,foreignkey\n" .
+            "new@example.com,0,1,0,0,NEW-KEY\n");
+
+        $uploadedFile = $this->createMock(UploadedFile::class);
+        $uploadedFile->method('getRealPath')->willReturn($tempFile);
+
+        $this->subscriberRepositoryMock
+            ->method('findOneByEmail')
+            ->with('new@example.com')
+            ->willReturn(null);
+
+        $this->subscriberRepositoryMock
+            ->method('findOneByForeignKey')
+            ->with('NEW-KEY')
+            ->willReturn(null);
+
+        $dto = new ImportSubscriberDto(
+            email: 'new@example.com',
+            confirmed: false,
+            blacklisted: false,
+            htmlEmail: true,
+            disabled: false,
+            extraData: null,
+            extraAttributes: [],
+            foreignKey: 'NEW-KEY',
+        );
+
+        $this->csvImporterMock
+            ->method('import')
+            ->with($tempFile)
+            ->willReturn([
+                'valid' => [$dto],
+                'errors' => []
+            ]);
+
+        $created = $this->createMock(Subscriber::class);
+        $created->method('getId')->willReturn(100);
+
+        $this->subscriberManagerMock
+            ->expects($this->once())
+            ->method('createFromImport')
+            ->with($dto)
+            ->willReturn($created);
+
+        $this->attributeManagerMock
+            ->expects($this->once())
+            ->method('processAttributes')
+            ->with($created);
+
+        $options = new SubscriberImportOptions(updateExisting: false);
+        $result = $this->subject->importFromCsv($uploadedFile, $options);
+
+        $this->assertSame(1, $result['created']);
+        $this->assertSame(0, $result['updated']);
         $this->assertSame(0, $result['skipped']);
         $this->assertEmpty($result['errors']);
 

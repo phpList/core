@@ -730,6 +730,10 @@ Thank you.</target>
         <source>Campaign not found or not in submitted status</source>
         <target>__Campaign not found or not in submitted status</target>
       </trans-unit>
+      <trans-unit id="TBYUW2m" resname="Conflict: email and foreign key refer to different subscribers.">
+        <source>Conflict: email and foreign key refer to different subscribers.</source>
+        <target>__Conflict: email and foreign key refer to different subscribers.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

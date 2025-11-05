@@ -11,6 +11,12 @@ class ImportSubscriberDto
     #[Assert\NotBlank]
     public string $email;
 
+    /**
+     * Optional external identifier used for matching existing subscribers during import.
+     */
+    #[Assert\Length(max: 191)]
+    public ?string $foreignKey = null;
+
     #[Assert\Type('bool')]
     public bool $confirmed;
 
@@ -37,7 +43,8 @@ class ImportSubscriberDto
         bool $htmlEmail,
         bool $disabled,
         ?string $extraData = null,
-        array $extraAttributes = []
+        array $extraAttributes = [],
+        ?string $foreignKey = null,
     ) {
         $this->email = $email;
         $this->confirmed = $confirmed;
@@ -47,5 +54,6 @@ class ImportSubscriberDto
         $this->disabled = $disabled;
         $this->extraData = $extraData;
         $this->extraAttributes = $extraAttributes;
+        $this->foreignKey = $foreignKey;
     }
 }
