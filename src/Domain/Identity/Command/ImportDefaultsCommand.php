@@ -78,7 +78,7 @@ class ImportDefaultsCommand extends Command
             $output->writeln(sprintf(
                 'Default admin already exists: login="%s", email="%s"',
                 $existing->getLoginName(),
-                $email,
+                $existing->getEmail(),
             ));
         }
 
