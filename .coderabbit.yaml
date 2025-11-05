@@ -1,9 +1,50 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 language: "en-US"
+tone_instructions: "chill"
 reviews:
   profile: "chill"
   high_level_summary: true
+  collapse_walkthrough: true
+  suggested_labels: false
+  high_level_summary_in_walkthrough: false
+  poem: false
+  path_instructions:
+      - path: "src/Domain/**"
+        instructions: |
+          You are reviewing PHP domain-layer code. Enforce strict domain purity:
+          - ❌ Do not allow infrastructure persistence side effects here.
+          - Flag ANY usage of Doctrine persistence APIs, especially:
+          - $entityManager->flush(...), $this->entityManager->flush(...)
+          - $em->persist(...), $em->remove(...)
+          - direct transaction control ($em->beginTransaction(), commit(), rollback())
+          - If found, request moving these calls to application-layer Command handlers or background Jobs.
+          - Also flag repositories in Domain that invoke flush/transactional logic; Domain repositories should be abstractions without side effects.
+          - Encourage domain events/outbox or return-values to signal write-intent, leaving orchestration to Commands/Jobs.
+
+      - path: "src/**/Command/**"
+        instructions: |
+          Application layer (Commands/Handlers) is the right place to coordinate persistence.
+          - ✅ It is acceptable to call $entityManager->flush() here.
+          - Check that flush is used atomically (once per unit of work) after all domain operations.
+          - Ensure no domain entity or domain service is calling flush; only the handler orchestrates it.
+          - Prefer $em->transactional(...) or explicit try/catch with rollback on failure.
+
+      - path: "src/**/MessageHandler/**"
+        instructions: |
+          Background jobs/workers may perform persistence.
+          - ✅ Allow $entityManager->flush() here when the job is the orchestration boundary.
+          - Verify idempotency and that flush frequency is appropriate (batching where practical).
+          - Ensure no domain-layer code invoked by the job performs flush/transaction control.
+
   auto_review:
     enabled: true
     base_branches:
       - ".*"
     drafts: false
+#    ignore_title_keywords:
+#      - ''
+
+#knowledge_base:
+#  code_guidelines:
+#    filePatterns:
+#      - ".github/AGENT.md"
