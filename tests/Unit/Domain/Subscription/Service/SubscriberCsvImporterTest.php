@@ -12,7 +12,7 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
-use PhpList\Core\Domain\Subscription\Service\CsvImporter;
+use PhpList\Core\Domain\Subscription\Service\CsvToDtoImporter;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
@@ -29,7 +29,7 @@ class SubscriberCsvImporterTest extends TestCase
     private SubscriberManager&MockObject $subscriberManagerMock;
     private SubscriberAttributeManager&MockObject $attributeManagerMock;
     private SubscriberRepository&MockObject $subscriberRepositoryMock;
-    private CsvImporter&MockObject $csvImporterMock;
+    private CsvToDtoImporter&MockObject $csvImporterMock;
     private SubscriberAttributeDefinitionRepository&MockObject $attributeDefinitionRepositoryMock;
     private SubscriberCsvImporter $subject;
 
@@ -39,7 +39,7 @@ class SubscriberCsvImporterTest extends TestCase
         $this->attributeManagerMock = $this->createMock(SubscriberAttributeManager::class);
         $subscriptionManagerMock = $this->createMock(SubscriptionManager::class);
         $this->subscriberRepositoryMock = $this->createMock(SubscriberRepository::class);
-        $this->csvImporterMock = $this->createMock(CsvImporter::class);
+        $this->csvImporterMock = $this->createMock(CsvToDtoImporter::class);
         $this->attributeDefinitionRepositoryMock = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $entityManager = $this->createMock(EntityManagerInterface::class);
 
@@ -48,7 +48,7 @@ class SubscriberCsvImporterTest extends TestCase
             attributeManager: $this->attributeManagerMock,
             subscriptionManager: $subscriptionManagerMock,
             subscriberRepository: $this->subscriberRepositoryMock,
-            csvImporter: $this->csvImporterMock,
+            csvToDtoImporter: $this->csvImporterMock,
             entityManager: $entityManager,
             translator: new Translator('en'),
             messageBus: $this->createMock(MessageBusInterface::class),
@@ -108,7 +108,7 @@ class SubscriberCsvImporterTest extends TestCase
         $importDto2->extraAttributes = ['first_name' => 'Jane'];
 
         $this->csvImporterMock
-            ->method('import')
+            ->method('parseAndValidate')
             ->with($tempFile)
             ->willReturn([
                 'valid' => [$importDto1, $importDto2],
@@ -173,7 +173,7 @@ class SubscriberCsvImporterTest extends TestCase
         $importDto->extraAttributes = [];
 
         $this->csvImporterMock
-            ->method('import')
+            ->method('parseAndValidate')
             ->with($tempFile)
             ->willReturn([
                 'valid' => [$importDto],
@@ -244,7 +244,7 @@ class SubscriberCsvImporterTest extends TestCase
         );
 
         $this->csvImporterMock
-            ->method('import')
+            ->method('parseAndValidate')
             ->with($tempFile)
             ->willReturn([
                 'valid' => [$dto],
@@ -309,7 +309,7 @@ class SubscriberCsvImporterTest extends TestCase
         );
 
         $this->csvImporterMock
-            ->method('import')
+            ->method('parseAndValidate')
             ->with($tempFile)
             ->willReturn([
                 'valid' => [$dto],
@@ -369,7 +369,7 @@ class SubscriberCsvImporterTest extends TestCase
         );
 
         $this->csvImporterMock
-            ->method('import')
+            ->method('parseAndValidate')
             ->with($tempFile)
             ->willReturn([
                 'valid' => [$dto],
@@ -429,7 +429,7 @@ class SubscriberCsvImporterTest extends TestCase
         );
 
         $this->csvImporterMock
-            ->method('import')
+            ->method('parseAndValidate')
             ->with($tempFile)
             ->willReturn([
                 'valid' => [$dto],

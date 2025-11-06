@@ -6,7 +6,7 @@ namespace PhpList\Core\Domain\Subscription\Service;
 
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 
-class CsvRowToDtoMapper
+class ArrayToDtoMapper
 {
     private const FK_HEADER = 'foreignkey';
     private const KNOWN_HEADERS = [

@@ -4,10 +4,10 @@ services:
     autoconfigure: true
     public: false
 
-  PhpList\Core\Domain\Subscription\Service\CsvRowToDtoMapper:
+  PhpList\Core\Domain\Subscription\Service\ArrayToDtoMapper:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Subscription\Service\CsvImporter:
+  PhpList\Core\Domain\Subscription\Service\CsvToDtoImporter:
     autowire: true
     autoconfigure: true
