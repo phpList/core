@@ -53,7 +53,7 @@ class DynamicListAttrManagerFunctionalTest extends KernelTestCase
         // Create manager with actual constructor signature
         $this->manager = new DynamicListAttrManager(
             dynamicListAttrRepository: $this->dynamicListAttrRepo,
-            subscriberAttributeValueRepository: $subscriberAttributeValueRepo
+            attributeValueRepo: $subscriberAttributeValueRepo
         );
     }
 

@@ -20,6 +20,7 @@ reviews:
           - If found, request moving these calls to application-layer Command handlers or background Jobs.
           - Also flag repositories in Domain that invoke flush/transactional logic; Domain repositories should be abstractions without side effects.
           - Encourage domain events/outbox or return-values to signal write-intent, leaving orchestration to Commands/Jobs.
+          - Only exception to this rule is when the service is orchestrating multiple domain services with complex use cases
 
       - path: "src/**/Command/**"
         instructions: |

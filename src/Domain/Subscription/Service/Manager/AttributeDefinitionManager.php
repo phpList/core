@@ -85,13 +85,12 @@ class AttributeDefinitionManager
             ->setRequired($attributeDefinitionDto->required)
             ->setDefaultValue($attributeDefinitionDto->defaultValue);
 
-        if ($attributeDefinition->getTableName()) {
-            $this->dynamicListAttrManager
-                ->syncOptions($attributeDefinition->getTableName(), $attributeDefinitionDto->options);
-        } elseif ($attributeDefinitionDto->type->isMultiValued()) {
-            $tableName = $this->dynamicTablesManager
+        if ($attributeDefinitionDto->type->isMultiValued()) {
+            $tableName = $attributeDefinition->getTableName() ?? $this->dynamicTablesManager
                 ->resolveTableName(name: $attributeDefinitionDto->name, type: $attributeDefinitionDto->type);
-            $this->dynamicListAttrManager->insertOptions($tableName, $attributeDefinitionDto->options);
+            $this->dynamicTablesManager->createOptionsTableIfNotExists($tableName);
+
+            $this->dynamicListAttrManager->syncOptions($tableName, $attributeDefinitionDto->options);
         }
 
         return $attributeDefinition;

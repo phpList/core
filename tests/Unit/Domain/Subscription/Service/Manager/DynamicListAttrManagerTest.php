@@ -27,7 +27,7 @@ class DynamicListAttrManagerTest extends TestCase
     {
         return new DynamicListAttrManager(
             dynamicListAttrRepository: $this->listAttrRepo,
-            subscriberAttributeValueRepository: $this->subscriberAttributeValueRepo
+            attributeValueRepo: $this->subscriberAttributeValueRepo
         );
     }
 
