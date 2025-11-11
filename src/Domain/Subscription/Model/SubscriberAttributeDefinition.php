@@ -48,9 +48,10 @@ class SubscriberAttributeDefinition implements DomainModel, Identity
         return $this->name;
     }
 
-    public function getType(): ?string
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
+    public function getType(): ?AttributeTypeEnum
     {
-        return $this->type;
+        return $this->type === null ? null : AttributeTypeEnum::from($this->type);
     }
 
     public function getListOrder(): ?int
@@ -80,9 +81,19 @@ class SubscriberAttributeDefinition implements DomainModel, Identity
         return $this;
     }
 
-    public function setType(?string $type): self
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
+    public function setType(?AttributeTypeEnum $type): self
     {
-        $this->type = $type;
+        if ($type === null) {
+            return $this;
+        }
+
+        if ($this->type !== null) {
+            $currentType = AttributeTypeEnum::from($this->type);
+            $currentType->assertTransitionAllowed($type);
+        }
+        $this->type = $type->value;
+
         return $this;
     }
 

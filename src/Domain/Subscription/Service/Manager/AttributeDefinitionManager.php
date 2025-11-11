@@ -16,15 +16,21 @@ class AttributeDefinitionManager
     private SubscriberAttributeDefinitionRepository $definitionRepository;
     private AttributeTypeValidator $attributeTypeValidator;
     private TranslatorInterface $translator;
+    private DynamicListAttrManager $dynamicListAttrManager;
+    private DynamicListAttrTablesManager $dynamicTablesManager;
 
     public function __construct(
         SubscriberAttributeDefinitionRepository $definitionRepository,
         AttributeTypeValidator $attributeTypeValidator,
         TranslatorInterface $translator,
+        DynamicListAttrManager $dynamicListAttrManager,
+        DynamicListAttrTablesManager $dynamicTablesManager,
     ) {
         $this->definitionRepository = $definitionRepository;
         $this->attributeTypeValidator = $attributeTypeValidator;
         $this->translator = $translator;
+        $this->dynamicListAttrManager = $dynamicListAttrManager;
+        $this->dynamicTablesManager = $dynamicTablesManager;
     }
 
     public function create(AttributeDefinitionDto $attributeDefinitionDto): SubscriberAttributeDefinition
@@ -38,15 +44,23 @@ class AttributeDefinitionManager
         }
         $this->attributeTypeValidator->validate($attributeDefinitionDto->type);
 
+        $tableName = $this->dynamicTablesManager
+            ->resolveTableName(name: $attributeDefinitionDto->name, type: $attributeDefinitionDto->type);
+
         $attributeDefinition = (new SubscriberAttributeDefinition())
             ->setName($attributeDefinitionDto->name)
             ->setType($attributeDefinitionDto->type)
             ->setListOrder($attributeDefinitionDto->listOrder)
             ->setRequired($attributeDefinitionDto->required)
             ->setDefaultValue($attributeDefinitionDto->defaultValue)
-            ->setTableName($attributeDefinitionDto->tableName);
+            ->setTableName($tableName);
 
         $this->definitionRepository->persist($attributeDefinition);
+
+        if ($tableName) {
+            $this->dynamicTablesManager->createOptionsTableIfNotExists($tableName);
+            $this->dynamicListAttrManager->insertOptions($tableName, $attributeDefinitionDto->options);
+        }
 
         return $attributeDefinition;
     }
@@ -69,8 +83,12 @@ class AttributeDefinitionManager
             ->setType($attributeDefinitionDto->type)
             ->setListOrder($attributeDefinitionDto->listOrder)
             ->setRequired($attributeDefinitionDto->required)
-            ->setDefaultValue($attributeDefinitionDto->defaultValue)
-            ->setTableName($attributeDefinitionDto->tableName);
+            ->setDefaultValue($attributeDefinitionDto->defaultValue);
+
+        if ($attributeDefinition->getTableName()) {
+            $this->dynamicListAttrManager
+                ->syncOptions($attributeDefinition->getTableName(), $attributeDefinitionDto->options);
+        }
 
         return $attributeDefinition;
     }

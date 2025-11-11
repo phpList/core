@@ -17,4 +17,15 @@ class SubscriberAttributeDefinitionRepository extends AbstractRepository impleme
     {
         return $this->findOneBy(['name' => $name]);
     }
+
+    public function existsByTableName(string $tableName): bool
+    {
+        return $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
+            ->where('s.tableName IS NOT NULL')
+            ->andWhere('s.tableName = :tableName')
+            ->setParameter('tableName', $tableName)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 
+use Doctrine\DBAL\Connection;
 use PhpList\Core\Domain\Subscription\Exception\AttributeDefinitionCreationException;
+use PhpList\Core\Domain\Subscription\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Subscription\Model\Dto\AttributeDefinitionDto;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\AttributeDefinitionManager;
+use PhpList\Core\Domain\Subscription\Service\Manager\DynamicListAttrManager;
+use PhpList\Core\Domain\Subscription\Service\Manager\DynamicListAttrTablesManager;
 use PhpList\Core\Domain\Subscription\Validator\AttributeTypeValidator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Translation\Translator;
@@ -19,19 +23,24 @@ class AttributeDefinitionManagerTest extends TestCase
     {
         $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $validator = $this->createMock(AttributeTypeValidator::class);
+        $dynamicTablesManager = new DynamicListAttrTablesManager(
+            $this->createMock(SubscriberAttributeDefinitionRepository::class),
+            $this->createMock(Connection::class),
+        );
         $manager = new AttributeDefinitionManager(
             definitionRepository: $repository,
             attributeTypeValidator: $validator,
-            translator: new Translator('en')
+            translator: new Translator('en'),
+            dynamicListAttrManager: $this->createMock(DynamicListAttrManager::class),
+            dynamicTablesManager: $dynamicTablesManager,
         );
 
         $dto = new AttributeDefinitionDto(
             name: 'Country',
-            type: 'checkbox',
+            type: AttributeTypeEnum::Checkbox,
             listOrder: 1,
             defaultValue: 'US',
             required: true,
-            tableName: 'user_attribute'
         );
 
         $repository->expects($this->once())
@@ -45,11 +54,11 @@ class AttributeDefinitionManagerTest extends TestCase
 
         $this->assertInstanceOf(SubscriberAttributeDefinition::class, $attribute);
         $this->assertSame('Country', $attribute->getName());
-        $this->assertSame('checkbox', $attribute->getType());
+        $this->assertSame(AttributeTypeEnum::Checkbox, $attribute->getType());
         $this->assertSame(1, $attribute->getListOrder());
         $this->assertSame('US', $attribute->getDefaultValue());
         $this->assertTrue($attribute->isRequired());
-        $this->assertSame('user_attribute', $attribute->getTableName());
+        $this->assertSame('country', $attribute->getTableName());
     }
 
     public function testCreateThrowsWhenAttributeAlreadyExists(): void
@@ -60,15 +69,16 @@ class AttributeDefinitionManagerTest extends TestCase
             definitionRepository: $repository,
             attributeTypeValidator: $validator,
             translator: new Translator('en'),
+            dynamicListAttrManager: $this->createMock(DynamicListAttrManager::class),
+            dynamicTablesManager: $this->createMock(DynamicListAttrTablesManager::class),
         );
 
         $dto = new AttributeDefinitionDto(
             name: 'Country',
-            type: 'checkbox',
+            type: AttributeTypeEnum::Checkbox,
             listOrder: 1,
             defaultValue: 'US',
             required: true,
-            tableName: 'user_attribute'
         );
 
         $existing = $this->createMock(SubscriberAttributeDefinition::class);
@@ -91,6 +101,8 @@ class AttributeDefinitionManagerTest extends TestCase
             definitionRepository: $repository,
             attributeTypeValidator: $validator,
             translator: new Translator('en'),
+            dynamicListAttrManager: $this->createMock(DynamicListAttrManager::class),
+            dynamicTablesManager: $this->createMock(DynamicListAttrTablesManager::class),
         );
 
         $attribute = new SubscriberAttributeDefinition();
@@ -98,11 +110,10 @@ class AttributeDefinitionManagerTest extends TestCase
 
         $dto = new AttributeDefinitionDto(
             name: 'New',
-            type: 'text',
+            type: AttributeTypeEnum::Text,
             listOrder: 5,
             defaultValue: 'Canada',
             required: false,
-            tableName: 'custom_attrs'
         );
 
         $repository->expects($this->once())
@@ -113,11 +124,11 @@ class AttributeDefinitionManagerTest extends TestCase
         $updated = $manager->update($attribute, $dto);
 
         $this->assertSame('New', $updated->getName());
-        $this->assertSame('text', $updated->getType());
+        $this->assertSame(AttributeTypeEnum::Text, $updated->getType());
         $this->assertSame(5, $updated->getListOrder());
         $this->assertSame('Canada', $updated->getDefaultValue());
         $this->assertFalse($updated->isRequired());
-        $this->assertSame('custom_attrs', $updated->getTableName());
+        $this->assertSame(null, $updated->getTableName());
     }
 
     public function testUpdateThrowsWhenAnotherAttributeWithSameNameExists(): void
@@ -128,15 +139,16 @@ class AttributeDefinitionManagerTest extends TestCase
             definitionRepository: $repository,
             attributeTypeValidator: $validator,
             translator: new Translator('en'),
+            dynamicListAttrManager: $this->createMock(DynamicListAttrManager::class),
+            dynamicTablesManager: $this->createMock(DynamicListAttrTablesManager::class),
         );
 
         $dto = new AttributeDefinitionDto(
             name: 'Existing',
-            type: 'text',
+            type: AttributeTypeEnum::Text,
             listOrder: 5,
             defaultValue: 'Canada',
             required: false,
-            tableName: 'custom_attrs'
         );
 
         $current = new SubscriberAttributeDefinition();
@@ -163,6 +175,8 @@ class AttributeDefinitionManagerTest extends TestCase
             definitionRepository: $repository,
             attributeTypeValidator: $validator,
             translator: new Translator('en'),
+            dynamicListAttrManager: $this->createMock(DynamicListAttrManager::class),
+            dynamicTablesManager: $this->createMock(DynamicListAttrTablesManager::class),
         );
 
         $attribute = new SubscriberAttributeDefinition();

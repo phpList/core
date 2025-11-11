@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Provider;
 
+use PhpList\Core\Domain\Subscription\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;
@@ -30,7 +31,9 @@ class CheckboxGroupValueProviderTest extends TestCase
         ?string $tableName = 'colors'
     ): SubscriberAttributeDefinition {
         $attr = new SubscriberAttributeDefinition();
-        $attr->setName('prefs')->setType($type)->setTableName($tableName);
+        $attr->setName('prefs')
+            ->setType(AttributeTypeEnum::from($type))
+            ->setTableName($tableName);
 
         return $attr;
     }
@@ -52,7 +55,7 @@ class CheckboxGroupValueProviderTest extends TestCase
 
     public function testSupportsReturnsFalseForOtherTypes(): void
     {
-        $attr = $this->createAttribute('textline');
+        $attr = $this->createAttribute('text');
         self::assertFalse($this->subject->supports($attr));
     }
 

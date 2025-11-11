@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Provider;
 
+use PhpList\Core\Domain\Subscription\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;
 use PhpList\Core\Domain\Subscription\Service\Provider\ScalarValueProvider;
@@ -26,7 +27,7 @@ final class ScalarValueProviderTest extends TestCase
         $provider = new ScalarValueProvider();
 
         $attr = $this->createMock(SubscriberAttributeDefinition::class);
-        $attr->method('getType')->willReturn('checkbox');
+        $attr->method('getType')->willReturn(AttributeTypeEnum::Checkbox);
 
         self::assertFalse($provider->supports($attr));
     }
