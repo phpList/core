@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception\TableExistsException;
 use Doctrine\DBAL\Schema\Table;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Subscription\Model\AttributeTypeEnum;
@@ -77,6 +78,12 @@ class DynamicListAttrTablesManager
         $table->setPrimaryKey(['id']);
         $table->addUniqueIndex(['name'], 'uniq_' . $fullTableName . '_name');
 
-        $schemaManager->createTable($table);
+        try {
+            $schemaManager->createTable($table);
+        } catch (TableExistsException $e) {
+            // Table was created by a concurrent process or a previous test run.
+            // Since this method is idempotent by contract, swallow the exception.
+            return;
+        }
     }
 }

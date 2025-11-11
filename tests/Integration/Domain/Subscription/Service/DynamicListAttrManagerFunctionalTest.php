@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Subscription\Service\Manager\DynamicListAttrTablesManage
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
 use PHPUnit\Framework\Assert;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Throwable;
 
 /**
  * Functional test for DynamicListAttrManager and DynamicListAttrRepository working together
@@ -89,5 +90,25 @@ class DynamicListAttrManagerFunctionalTest extends KernelTestCase
         $oneName = $this->repo->fetchSingleOptionName('colors', $ids[0]);
         Assert::assertNotNull($oneName);
         Assert::assertTrue(in_array($oneName, ['Blue', 'Red'], true));
+    }
+
+    protected function tearDown(): void
+    {
+        try {
+            if ($this->entityManager !== null) {
+                $connection = $this->entityManager->getConnection();
+                $fullTable = 'phplist_listattr_colours';
+                // Use raw SQL for cleanup to avoid relying on SchemaManager in tests
+                $connection->executeStatement('DROP TABLE IF EXISTS ' . $fullTable);
+            }
+            // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
+        } catch (Throwable $e) {
+            // Ignore cleanup failures to not mask test results
+        } finally {
+            $this->repo = null;
+            $this->manager = null;
+            $this->tablesManager = null;
+            parent::tearDown();
+        }
     }
 }
