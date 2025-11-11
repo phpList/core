@@ -6,18 +6,18 @@ namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
 use PhpList\Core\Domain\Subscription\Model\Dto\DynamicListAttrDto;
 use PhpList\Core\Domain\Subscription\Repository\DynamicListAttrRepository;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
 use RuntimeException;
 
 class DynamicListAttrManager
 {
-    public function __construct(private readonly DynamicListAttrRepository $dynamicListAttrRepository,)
-    {
+    public function __construct(
+        private readonly DynamicListAttrRepository $dynamicListAttrRepository,
+        private readonly SubscriberAttributeValueRepository $attributeValueRepo,
+    ) {
     }
 
     /**
-     * Seed options into the just-created options table.
-     *
-     * @param string $listTable logical table (without global prefix)
      * @param DynamicListAttrDto[]  $rawOptions
      */
     public function insertOptions(string $listTable, array $rawOptions, array &$usedOrders = []): array
@@ -130,7 +130,7 @@ class DynamicListAttrManager
             foreach ($currentByName as $lowerKey => $row) {
                 if (!isset($keptByLowerName[$lowerKey])) {
                     // This row is not in desired input → consider removal
-                    if (!$this->optionHasReferences($getTableName, (int)$row->id)) {
+                    if (!$this->optionHasReferences($getTableName, $row->id)) {
                         $this->dynamicListAttrRepository->deleteById($getTableName, (int)$row->id);
                     } else {
                         $result[] = $row;
@@ -142,9 +142,10 @@ class DynamicListAttrManager
         });
     }
 
-    private function optionHasReferences(string $listTable, int $id): bool
+    private function optionHasReferences(string $listTable, int $optionId): bool
     {
-        return $this->dynamicListAttrRepository->existsById($listTable, $id);
+        return $this->attributeValueRepo
+            ->existsByAttributeAndValue(tableName: $listTable, optionId: $optionId);
     }
 
     private function getSetListOrders(array $options): array
@@ -158,6 +159,14 @@ class DynamicListAttrManager
         return array_flip($nonNullListOrders);
     }
 
+    /**
+     * Splits the dynamic list attribute set into lookup maps.
+     *
+     * @return array{
+     *     0: array<int, DynamicListAttrDto>,
+     *     1: array<string, DynamicListAttrDto>
+     * }
+     */
     private function splitOptionsSet(array $options, array &$usedOrders): array
     {
         $incomingById = [];
@@ -192,6 +201,15 @@ class DynamicListAttrManager
         return [$incomingById, $incomingNew];
     }
 
+    /**
+     * Splits the current dynamic list attribute set into lookup maps.
+     *
+     * @param string $listTable
+     * @return array{
+     *     0: array<int, DynamicListAttrDto>,
+     *     1: array<string, DynamicListAttrDto>
+     * }
+     */
     private function splitCurrentSet(string $listTable): array
     {
         $currentById = [];
@@ -210,6 +228,7 @@ class DynamicListAttrManager
     {
         $result = [];
 
+        /** @var DynamicListAttrDto $dto */
         foreach ($incomingById as $dto) {
             if (!isset($currentById[$dto->id])) {
                 // Unexpected: incoming has id but the current table does not — insert a new row
@@ -222,7 +241,7 @@ class DynamicListAttrManager
                 $cur = $currentById[$dto->id];
                 $updates = [];
                 if ($cur->name !== $dto->name) {
-                    $nameExists = $this->dynamicListAttrRepository->existsByName($listTable, $dto->name);
+                    $nameExists = $this->dynamicListAttrRepository->existsByName($listTable, $dto);
                     if ($nameExists) {
                         throw new RuntimeException('Option name ' . $dto->name . ' already exists.');
                     }

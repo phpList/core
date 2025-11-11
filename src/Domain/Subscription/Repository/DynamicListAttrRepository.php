@@ -12,6 +12,7 @@ use PDO;
 use PhpList\Core\Domain\Subscription\Model\Dto\DynamicListAttrDto;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Throwable;
 
 class DynamicListAttrRepository
 {
@@ -33,7 +34,7 @@ class DynamicListAttrRepository
             $result = $callback();
             $this->connection->commit();
             return $result;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->connection->rollBack();
             throw $e;
         }
@@ -151,7 +152,7 @@ class DynamicListAttrRepository
         return $val === false ? null : (string) $val;
     }
 
-    public function existsByName(string $listTable, string $name): bool
+    public function existsByName(string $listTable, DynamicListAttrDto $dto): bool
     {
         if (!preg_match('/^[A-Za-z0-9_]+$/', $listTable)) {
             throw new InvalidArgumentException('Invalid list table');
@@ -159,16 +160,30 @@ class DynamicListAttrRepository
 
         $table = $this->fullTablePrefix . $listTable;
 
-        try {
-            $sql = 'SELECT 1 FROM ' . $table . ' WHERE LOWER(name) = LOWER(?) LIMIT 1';
-            $result = $this->connection->fetchOne($sql, [$name], [PDO::PARAM_STR]);
+        $sql = 'SELECT 1 FROM ' . $table . ' WHERE LOWER(name) = LOWER(:name)';
+        $params = ['name' => $dto->name];
+        $types  = ['name' => PDO::PARAM_STR];
 
+        if ($dto->id !== null) {
+            $sql .= ' AND id <> :excludeId';
+            $params['excludeId'] = $dto->id;
+            $types['excludeId']  = PDO::PARAM_INT;
+        }
+
+        $sql .= ' LIMIT 1';
+
+        try {
+            $result = $this->connection->fetchOne($sql, $params, $types);
             return $result !== false;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             throw $e;
         }
     }
 
+    /**
+     * @throws InvalidArgumentException
+     * @return DynamicListAttrDto[]
+     */
     public function getAll(string $listTable): array
     {
         if (!preg_match('/^[A-Za-z0-9_]+$/', $listTable)) {

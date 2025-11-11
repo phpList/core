@@ -6,6 +6,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 
 use PhpList\Core\Domain\Subscription\Model\Dto\DynamicListAttrDto;
 use PhpList\Core\Domain\Subscription\Repository\DynamicListAttrRepository;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\DynamicListAttrManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -13,9 +14,12 @@ use PHPUnit\Framework\TestCase;
 class DynamicListAttrManagerTest extends TestCase
 {
     private DynamicListAttrRepository&MockObject $listAttrRepo;
+    private ?SubscriberAttributeValueRepository $subscriberAttributeValueRepo = null;
+
 
     protected function setUp(): void
     {
+        $this->subscriberAttributeValueRepo = $this->createMock(SubscriberAttributeValueRepository::class);
         $this->listAttrRepo = $this->createMock(DynamicListAttrRepository::class);
     }
 
@@ -23,6 +27,7 @@ class DynamicListAttrManagerTest extends TestCase
     {
         return new DynamicListAttrManager(
             dynamicListAttrRepository: $this->listAttrRepo,
+            subscriberAttributeValueRepository: $this->subscriberAttributeValueRepo
         );
     }
 
@@ -31,6 +36,7 @@ class DynamicListAttrManagerTest extends TestCase
         return $this->getMockBuilder(DynamicListAttrManager::class)
             ->setConstructorArgs([
                 $this->listAttrRepo,
+                $this->subscriberAttributeValueRepo,
             ])
             ->onlyMethods($methods)
             ->getMock();

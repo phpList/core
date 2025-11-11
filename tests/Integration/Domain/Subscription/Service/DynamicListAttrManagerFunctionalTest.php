@@ -6,6 +6,7 @@ namespace PhpList\Core\Tests\Integration\Domain\Subscription\Service;
 
 use PhpList\Core\Domain\Subscription\Model\Dto\DynamicListAttrDto;
 use PhpList\Core\Domain\Subscription\Repository\DynamicListAttrRepository;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\DynamicListAttrManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\DynamicListAttrTablesManager;
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
@@ -21,7 +22,7 @@ class DynamicListAttrManagerFunctionalTest extends KernelTestCase
 {
     use DatabaseTestTrait;
 
-    private ?DynamicListAttrRepository $repo = null;
+    private ?DynamicListAttrRepository $dynamicListAttrRepo = null;
     private ?DynamicListAttrManager $manager = null;
     private ?DynamicListAttrTablesManager $tablesManager = null;
 
@@ -36,19 +37,23 @@ class DynamicListAttrManagerFunctionalTest extends KernelTestCase
 
         // Use real repository and manager services (but we construct them explicitly
         // to be independent from service wiring changes).
-        $this->repo = new DynamicListAttrRepository(
+        $this->dynamicListAttrRepo = new DynamicListAttrRepository(
             connection: $connection,
             serializer: $serializer,
             dbPrefix: 'phplist_',
             dynamicListTablePrefix: 'listattr_'
         );
 
+        $subscriberAttributeValueRepo = null;
+        $subscriberAttributeValueRepo = self::getContainer()->get(SubscriberAttributeValueRepository::class);
+
         // Get tables manager from container for creating/ensuring dynamic tables
         $this->tablesManager = self::getContainer()->get(DynamicListAttrTablesManager::class);
 
         // Create manager with actual constructor signature
         $this->manager = new DynamicListAttrManager(
-            dynamicListAttrRepository: $this->repo,
+            dynamicListAttrRepository: $this->dynamicListAttrRepo,
+            subscriberAttributeValueRepository: $subscriberAttributeValueRepo
         );
     }
 
@@ -72,19 +77,19 @@ class DynamicListAttrManagerFunctionalTest extends KernelTestCase
         Assert::assertSame(['Blue', 'Red'], $names);
 
         // Now fetch through the repository
-        $all = $this->repo->getAll('colours');
+        $all = $this->dynamicListAttrRepo->getAll('colours');
         Assert::assertCount(2, $all);
 
         // Collect ids to test fetchOptionNames/fetchSingleOptionName
         $ids = array_map(fn(DynamicListAttrDto $d) => (int)$d->id, $inserted);
         sort($ids);
 
-        $fetchedNames = $this->repo->fetchOptionNames('colours', $ids);
+        $fetchedNames = $this->dynamicListAttrRepo->fetchOptionNames('colours', $ids);
         sort($fetchedNames);
         Assert::assertSame(['Blue', 'Red'], $fetchedNames);
 
         // Single fetch
-        $oneName = $this->repo->fetchSingleOptionName('colours', $ids[0]);
+        $oneName = $this->dynamicListAttrRepo->fetchSingleOptionName('colours', $ids[0]);
         Assert::assertNotNull($oneName);
         Assert::assertTrue(in_array($oneName, ['Blue', 'Red'], true));
     }
@@ -102,7 +107,7 @@ class DynamicListAttrManagerFunctionalTest extends KernelTestCase
         } catch (Throwable $e) {
             // Ignore cleanup failures to not mask test results
         } finally {
-            $this->repo = null;
+            $this->dynamicListAttrRepo = null;
             $this->manager = null;
             $this->tablesManager = null;
             parent::tearDown();

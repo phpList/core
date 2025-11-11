@@ -88,6 +88,10 @@ class AttributeDefinitionManager
         if ($attributeDefinition->getTableName()) {
             $this->dynamicListAttrManager
                 ->syncOptions($attributeDefinition->getTableName(), $attributeDefinitionDto->options);
+        } elseif ($attributeDefinitionDto->type->isMultiValued()) {
+            $tableName = $this->dynamicTablesManager
+                ->resolveTableName(name: $attributeDefinitionDto->name, type: $attributeDefinitionDto->type);
+            $this->dynamicListAttrManager->insertOptions($tableName, $attributeDefinitionDto->options);
         }
 
         return $attributeDefinition;
