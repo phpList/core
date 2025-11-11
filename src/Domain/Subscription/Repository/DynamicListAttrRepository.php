@@ -26,6 +26,19 @@ class DynamicListAttrRepository
         $this->fullTablePrefix = $dbPrefix . $dynamicListTablePrefix;
     }
 
+    public function transactional(callable $callback): mixed
+    {
+        $this->connection->beginTransaction();
+        try {
+            $result = $callback();
+            $this->connection->commit();
+            return $result;
+        } catch (\Throwable $e) {
+            $this->connection->rollBack();
+            throw $e;
+        }
+    }
+
     /**
      * @param array<int, array<string, mixed>> $rows
      * @return DynamicListAttrDto[]
@@ -37,6 +50,61 @@ class DynamicListAttrRepository
             fn(array $row) => $this->serializer->denormalize($row, DynamicListAttrDto::class),
             $rows
         );
+    }
+
+    public function insertOne(string $listTable, DynamicListAttrDto $dto): DynamicListAttrDto
+    {
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $listTable)) {
+            throw new InvalidArgumentException('Invalid list table');
+        }
+        $table = $this->fullTablePrefix . $listTable;
+        $this->connection->insert($table, [
+            'name' => $dto->name,
+            'listorder' => $dto->listOrder ?? 0,
+        ]);
+        $id = (int)$this->connection->lastInsertId();
+        return new DynamicListAttrDto(id: $id, name: $dto->name, listOrder: $dto->listOrder ?? 0);
+    }
+
+    /**
+     * @param DynamicListAttrDto[] $dtos
+     * @return DynamicListAttrDto[]
+     */
+    public function insertMany(string $listTable, array $dtos): array
+    {
+        $result = [];
+        foreach ($dtos as $dto) {
+            $result[] = $this->insertOne($listTable, $dto);
+        }
+        return $result;
+    }
+
+    public function updateById(string $listTable, int $id, array $updates): void
+    {
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $listTable)) {
+            throw new InvalidArgumentException('Invalid list table');
+        }
+        $table = $this->fullTablePrefix . $listTable;
+        $this->connection->update($table, $updates, ['id' => $id]);
+    }
+
+    public function deleteById(string $listTable, int $id): void
+    {
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $listTable)) {
+            throw new InvalidArgumentException('Invalid list table');
+        }
+        $table = $this->fullTablePrefix . $listTable;
+        $this->connection->delete($table, ['id' => $id], ['integer']);
+    }
+
+    public function existsById(string $listTable, int $id): bool
+    {
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $listTable)) {
+            throw new InvalidArgumentException('Invalid list table');
+        }
+        $table = $this->fullTablePrefix . $listTable;
+        $stmt = $this->connection->executeQuery('SELECT COUNT(*) FROM ' . $table . ' WHERE id = :id', ['id' => $id]);
+        return (bool)$stmt->fetchOne();
     }
 
     /**

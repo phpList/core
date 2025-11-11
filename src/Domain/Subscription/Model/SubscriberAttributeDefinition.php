@@ -85,6 +85,7 @@ class SubscriberAttributeDefinition implements DomainModel, Identity
     public function setType(?AttributeTypeEnum $type): self
     {
         if ($type === null) {
+            $this->type = null;
             return $this;
         }
 

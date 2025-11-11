@@ -51,9 +51,9 @@ services:
   PhpList\Core\Domain\Subscription\Service\Manager\DynamicListAttrManager:
     autowire: true
     autoconfigure: true
-    arguments:
-      $dbPrefix: '%database_prefix%'
-      $dynamicListTablePrefix: '%list_table_prefix%'
+
+  Doctrine\DBAL\Schema\AbstractSchemaManager:
+    factory: ['@doctrine.dbal.default_connection', 'createSchemaManager']
 
   PhpList\Core\Domain\Subscription\Service\Manager\DynamicListAttrTablesManager:
     autowire: true

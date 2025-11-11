@@ -20,7 +20,7 @@ class SubscriberAttributeDefinitionRepository extends AbstractRepository impleme
 
     public function existsByTableName(string $tableName): bool
     {
-        return $this->createQueryBuilder('s')
+        return (bool) $this->createQueryBuilder('s')
             ->select('COUNT(s.id)')
             ->where('s.tableName IS NOT NULL')
             ->andWhere('s.tableName = :tableName')

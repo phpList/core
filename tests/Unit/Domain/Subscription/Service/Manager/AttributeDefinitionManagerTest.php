@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use PhpList\Core\Domain\Subscription\Exception\AttributeDefinitionCreationException;
 use PhpList\Core\Domain\Subscription\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Subscription\Model\Dto\AttributeDefinitionDto;
@@ -23,9 +23,13 @@ class AttributeDefinitionManagerTest extends TestCase
     {
         $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $validator = $this->createMock(AttributeTypeValidator::class);
+        $schema = $this->getMockBuilder(AbstractSchemaManager::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['tablesExist', 'createTable'])
+            ->getMockForAbstractClass();
         $dynamicTablesManager = new DynamicListAttrTablesManager(
-            $this->createMock(SubscriberAttributeDefinitionRepository::class),
-            $this->createMock(Connection::class),
+            definitionRepository: $this->createMock(SubscriberAttributeDefinitionRepository::class),
+            schemaManager: $schema,
         );
         $manager = new AttributeDefinitionManager(
             definitionRepository: $repository,
@@ -121,7 +125,7 @@ class AttributeDefinitionManagerTest extends TestCase
             ->with('New')
             ->willReturn(null);
 
-        $updated = $manager->update($attribute, $dto);
+        $updated = $manager->update(attributeDefinition: $attribute, attributeDefinitionDto: $dto);
 
         $this->assertSame('New', $updated->getName());
         $this->assertSame(AttributeTypeEnum::Text, $updated->getType());
@@ -164,7 +168,7 @@ class AttributeDefinitionManagerTest extends TestCase
 
         $this->expectException(AttributeDefinitionCreationException::class);
 
-        $manager->update($current, $dto);
+        $manager->update(attributeDefinition: $current, attributeDefinitionDto: $dto);
     }
 
     public function testDeleteAttributeDefinition(): void

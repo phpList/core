@@ -4,25 +4,14 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
-use Doctrine\DBAL\ParameterType;
 use PhpList\Core\Domain\Subscription\Model\Dto\DynamicListAttrDto;
 use PhpList\Core\Domain\Subscription\Repository\DynamicListAttrRepository;
 use RuntimeException;
-use Throwable;
 
 class DynamicListAttrManager
 {
-    private string $prefix;
-
-    public function __construct(
-        private readonly DynamicListAttrRepository $dynamicListAttrRepository,
-        private readonly Connection $connection,
-        string $dbPrefix = 'phplist_',
-        string $dynamicListTablePrefix = 'listattr_',
-    ) {
-        $this->prefix = $dbPrefix . $dynamicListTablePrefix;
+    public function __construct(private readonly DynamicListAttrRepository $dynamicListAttrRepository,)
+    {
     }
 
     /**
@@ -30,7 +19,6 @@ class DynamicListAttrManager
      *
      * @param string $listTable logical table (without global prefix)
      * @param DynamicListAttrDto[]  $rawOptions
-     * @throws Exception|Throwable
      */
     public function insertOptions(string $listTable, array $rawOptions, array &$usedOrders = []): array
     {
@@ -38,8 +26,6 @@ class DynamicListAttrManager
         if (empty($rawOptions)) {
             return $result;
         }
-
-        $fullTable = $this->prefix . $listTable;
 
         $options = [];
         $index = 0;
@@ -72,72 +58,93 @@ class DynamicListAttrManager
             return $result;
         }
 
-        $this->connection->beginTransaction();
-        try {
-            return $this->createFromDtos($fullTable, $unique);
-        } catch (Throwable $e) {
-            $this->connection->rollBack();
-            return [];
-        }
+        return $this->dynamicListAttrRepository->transactional(function () use ($listTable, $unique) {
+            return $this->dynamicListAttrRepository->insertMany($listTable, $unique);
+        });
     }
 
     public function syncOptions(string $getTableName, array $options): array
     {
-        $fullTable = $this->prefix . $getTableName;
         $result = [];
         $usedOrders = $this->getSetListOrders($options);
         [$incomingById, $incomingNew] = $this->splitOptionsSet($options, $usedOrders);
 
-        $this->connection->beginTransaction();
-        try {
-            [$currentById, $currentByName] = $this->splitCurrentSet($fullTable);
+        return $this->dynamicListAttrRepository->transactional(function () use (
+            $getTableName,
+            $incomingById,
+            $incomingNew,
+            $usedOrders,
+            &$result
+        ) {
+            [$currentById, $currentByName] = $this->splitCurrentSet($getTableName);
 
-            // 1) Updates for items with id
-            $result = array_merge($result, $this->updateRowsById($incomingById, $currentById, $fullTable));
+            // Track all lowercase names that should remain after sync (to avoid accidental pruning)
+            $keptByLowerName = [];
 
-            foreach ($incomingNew as $dto) {
-                if (isset($currentByName[$dto->name])) {
-                    $this->connection->update(
-                        $fullTable,
-                        ['name' => $dto->name, 'listorder' => $dto->listOrder],
-                        ['id' => $dto->id],
+            // 1) Updates for items with id and inserts for id-missing-but-present ones
+            $result = array_merge(
+                $result,
+                $this->updateRowsById(
+                    incomingById: $incomingById,
+                    currentById: $currentById,
+                    listTable: $getTableName
+                )
+            );
+            foreach ($incomingById as $dto) {
+                // Keep target names (case-insensitive)
+                $keptByLowerName[mb_strtolower($dto->name)] = true;
+            }
+
+            // Handle incoming items without id but matching an existing row by case-insensitive name
+            foreach ($incomingNew as $key => $dto) {
+                // $key is already lowercase (set in splitOptionsSet)
+                if (isset($currentByName[$key])) {
+                    $existing = $currentByName[$key];
+                    $this->dynamicListAttrRepository->updateById(
+                        listTable: $getTableName,
+                        id: (int)$existing->id,
+                        updates: ['name' => $dto->name, 'listorder' => $dto->listOrder]
                     );
-                    $result[] = $dto;
-                    unset($incomingNew[$dto->name]);
+                    $result[] = new DynamicListAttrDto(id: $existing->id, name: $dto->name, listOrder: $dto->listOrder);
+                    // Mark as kept and remove from incomingNew so it won't be re-inserted
+                    $keptByLowerName[$key] = true;
+                    unset($incomingNew[$key]);
                 }
             }
 
-            // 2) Inserts for new items (no id)
-            $result = array_merge($result, $this->insertOptions($getTableName, $incomingNew, $usedOrders));
+            // 2) Inserts for truly new items (no id and no existing match)
+            // Mark remaining new keys as kept, then insert them
+            foreach (array_keys($incomingNew) as $lowerKey) {
+                $keptByLowerName[$lowerKey] = true;
+            }
+            $result = array_merge(
+                $result,
+                $this->insertOptions(
+                    listTable: $getTableName,
+                    rawOptions: $incomingNew,
+                    usedOrders: $usedOrders
+                )
+            );
 
-            // 3) Prune: rows not present in input
-            $missing = array_diff_key($currentByName, $incomingNew);
-            foreach ($missing as $row) {
-                // This row is not in input → consider removal
-                if (!$this->optionHasReferences($getTableName, $row->id)) {
-                    $this->connection->delete($fullTable, ['id' => $row->id], ['integer']);
-                } else {
-                    $result[] = $row;
+            // 3) Prune: rows not present in the intended final set (case-insensitive)
+            foreach ($currentByName as $lowerKey => $row) {
+                if (!isset($keptByLowerName[$lowerKey])) {
+                    // This row is not in desired input → consider removal
+                    if (!$this->optionHasReferences($getTableName, (int)$row->id)) {
+                        $this->dynamicListAttrRepository->deleteById($getTableName, (int)$row->id);
+                    } else {
+                        $result[] = $row;
+                    }
                 }
             }
 
-            $this->connection->commit();
-        } catch (Throwable $e) {
-            $this->connection->rollBack();
-            throw $e;
-        }
-
-        return $result;
+            return $result;
+        });
     }
 
     private function optionHasReferences(string $listTable, int $id): bool
     {
-        $fullTable = $this->prefix . $listTable;
-        $stmt = $this->connection->executeQuery(
-            'SELECT COUNT(*) FROM ' . $fullTable . ' WHERE id = :id',
-            ['id' => $id]
-        );
-        return (bool)$stmt->fetchOne();
+        return $this->dynamicListAttrRepository->existsById($listTable, $id);
     }
 
     private function getSetListOrders(array $options): array
@@ -185,12 +192,12 @@ class DynamicListAttrManager
         return [$incomingById, $incomingNew];
     }
 
-    private function splitCurrentSet(string $fullTable): array
+    private function splitCurrentSet(string $listTable): array
     {
         $currentById = [];
         $currentByName = [];
 
-        $rows = $this->dynamicListAttrRepository->getAll($fullTable);
+        $rows = $this->dynamicListAttrRepository->getAll($listTable);
         foreach ($rows as $listAttrDto) {
             $currentById[$listAttrDto->id] = $listAttrDto;
             $currentByName[mb_strtolower($listAttrDto->name)] = $listAttrDto;
@@ -199,29 +206,23 @@ class DynamicListAttrManager
         return [$currentById, $currentByName];
     }
 
-    private function updateRowsById(array $incomingById, array $currentById, string $fullTable): array
+    private function updateRowsById(array $incomingById, array $currentById, string $listTable): array
     {
         $result = [];
 
-        $insertSql = 'INSERT INTO ' . $fullTable . ' (name, listorder) VALUES (:name, :listOrder)';
-        $insertStmt = $this->connection->prepare($insertSql);
-
         foreach ($incomingById as $dto) {
             if (!isset($currentById[$dto->id])) {
-                $insertStmt->bindValue('name', $dto->name, ParameterType::STRING);
-                $insertStmt->bindValue('listorder', $dto->listOrder, ParameterType::INTEGER);
-                $insertStmt->executeStatement();
-
-                $result[] = new DynamicListAttrDto(
-                    id: (int) $this->connection->lastInsertId(),
-                    name: $dto->name,
-                    listOrder: $dto->listOrder
+                // Unexpected: incoming has id but the current table does not — insert a new row
+                $inserted = $this->dynamicListAttrRepository->insertOne(
+                    listTable: $listTable,
+                    dto: new DynamicListAttrDto(id: null, name: $dto->name, listOrder: $dto->listOrder)
                 );
+                $result[] = $inserted;
             } else {
                 $cur = $currentById[$dto->id];
                 $updates = [];
                 if ($cur->name !== $dto->name) {
-                    $nameExists = $this->dynamicListAttrRepository->existsByName($fullTable, $dto->name);
+                    $nameExists = $this->dynamicListAttrRepository->existsByName($listTable, $dto->name);
                     if ($nameExists) {
                         throw new RuntimeException('Option name ' . $dto->name . ' already exists.');
                     }
@@ -232,35 +233,11 @@ class DynamicListAttrManager
                 }
 
                 if ($updates) {
-                    $this->connection->update($fullTable, $updates, ['id' => $dto->id]);
+                    $this->dynamicListAttrRepository->updateById($listTable, (int)$dto->id, $updates);
                 }
                 $result[] = $dto;
             }
         }
-
-        return $result;
-    }
-
-    private function createFromDtos(string $fullTable, array $unique): array
-    {
-        $sql = 'INSERT INTO ' . $fullTable . ' (name, listorder) VALUES (:name, :listOrder)';
-        $stmt = $this->connection->prepare($sql);
-
-        $result = [];
-        foreach ($unique as $opt) {
-            $stmt->bindValue('name', $opt->name, ParameterType::STRING);
-            $stmt->bindValue('listOrder', $opt->listOrder, ParameterType::INTEGER);
-            $stmt->executeStatement();
-
-            $inserted = new DynamicListAttrDto(
-                id: (int) $this->connection->lastInsertId(),
-                name: $opt->name,
-                listOrder: $opt->listOrder
-            );
-
-            $result[] = $inserted;
-        }
-        $this->connection->commit();
 
         return $result;
     }

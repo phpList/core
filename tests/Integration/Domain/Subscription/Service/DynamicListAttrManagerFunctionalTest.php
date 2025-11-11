@@ -49,9 +49,6 @@ class DynamicListAttrManagerFunctionalTest extends KernelTestCase
         // Create manager with actual constructor signature
         $this->manager = new DynamicListAttrManager(
             dynamicListAttrRepository: $this->repo,
-            connection: $connection,
-            dbPrefix: 'phplist_',
-            dynamicListTablePrefix: 'listattr_'
         );
     }
 
@@ -75,19 +72,19 @@ class DynamicListAttrManagerFunctionalTest extends KernelTestCase
         Assert::assertSame(['Blue', 'Red'], $names);
 
         // Now fetch through the repository
-        $all = $this->repo->getAll('colors');
+        $all = $this->repo->getAll('colours');
         Assert::assertCount(2, $all);
 
         // Collect ids to test fetchOptionNames/fetchSingleOptionName
         $ids = array_map(fn(DynamicListAttrDto $d) => (int)$d->id, $inserted);
         sort($ids);
 
-        $fetchedNames = $this->repo->fetchOptionNames('colors', $ids);
+        $fetchedNames = $this->repo->fetchOptionNames('colours', $ids);
         sort($fetchedNames);
         Assert::assertSame(['Blue', 'Red'], $fetchedNames);
 
         // Single fetch
-        $oneName = $this->repo->fetchSingleOptionName('colors', $ids[0]);
+        $oneName = $this->repo->fetchSingleOptionName('colours', $ids[0]);
         Assert::assertNotNull($oneName);
         Assert::assertTrue(in_array($oneName, ['Blue', 'Red'], true));
     }

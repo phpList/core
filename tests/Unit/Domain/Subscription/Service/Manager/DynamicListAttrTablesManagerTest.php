@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 
-use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use PhpList\Core\Domain\Subscription\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
@@ -15,19 +14,22 @@ use PHPUnit\Framework\TestCase;
 class DynamicListAttrTablesManagerTest extends TestCase
 {
     private SubscriberAttributeDefinitionRepository&MockObject $definitionRepo;
-    private Connection&MockObject $connection;
+    private AbstractSchemaManager&MockObject $schema;
 
     protected function setUp(): void
     {
         $this->definitionRepo = $this->createMock(SubscriberAttributeDefinitionRepository::class);
-        $this->connection = $this->createMock(Connection::class);
+        $this->schema = $this->getMockBuilder(AbstractSchemaManager::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['tablesExist', 'createTable'])
+            ->getMockForAbstractClass();
     }
 
     private function makeManager(): DynamicListAttrTablesManager
     {
         return new DynamicListAttrTablesManager(
             definitionRepository: $this->definitionRepo,
-            connection: $this->connection,
+            schemaManager: $this->schema,
             dbPrefix: 'phplist_',
             dynamicListTablePrefix: 'listattr_'
         );
@@ -59,18 +61,9 @@ class DynamicListAttrTablesManagerTest extends TestCase
 
     public function testCreateOptionsTableIfNotExistsCreatesOnlyWhenMissing(): void
     {
-        $schema = $this->getMockBuilder(AbstractSchemaManager::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['tablesExist', 'createTable'])
-            ->getMockForAbstractClass();
-
-        $this->connection->expects($this->exactly(2))
-            ->method('createSchemaManager')
-            ->willReturnOnConsecutiveCalls($schema, $schema);
-
         // First call: table does not exist -> createTable called, second call: exists -> no create
-        $schema->method('tablesExist')->willReturnOnConsecutiveCalls(false, true);
-        $schema->expects($this->once())->method('createTable');
+        $this->schema->method('tablesExist')->willReturnOnConsecutiveCalls(false, true);
+        $this->schema->expects($this->once())->method('createTable');
 
         $manager = $this->makeManager();
         $manager->createOptionsTableIfNotExists('sizes');

@@ -734,6 +734,10 @@ Thank you.</target>
         <source>Conflict: email and foreign key refer to different subscribers.</source>
         <target>__Conflict: email and foreign key refer to different subscribers.</target>
       </trans-unit>
+      <trans-unit id="HHtgwG9" resname="Invalid email: %email%">
+        <source>Invalid email: %email%</source>
+        <target>__Invalid email: %email%</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
-use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\TableExistsException;
+use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Subscription\Model\AttributeTypeEnum;
@@ -18,7 +18,7 @@ class DynamicListAttrTablesManager
 
     public function __construct(
         private readonly SubscriberAttributeDefinitionRepository $definitionRepository,
-        private readonly Connection $connection,
+        private readonly AbstractSchemaManager $schemaManager,
         string $dbPrefix = 'phplist_',
         string $dynamicListTablePrefix = 'listattr_',
     ) {
@@ -31,15 +31,7 @@ class DynamicListAttrTablesManager
             return null;
         }
 
-        $shouldHaveBackingTable = match ($type) {
-            AttributeTypeEnum::Select,
-            AttributeTypeEnum::Checkbox,
-            AttributeTypeEnum::MultiSelect,
-            AttributeTypeEnum::CheckboxGroup => true,
-            default => false,
-        };
-
-        if (!$shouldHaveBackingTable) {
+        if (!$type->isMultiValued()) {
             return null;
         }
 
@@ -60,10 +52,9 @@ class DynamicListAttrTablesManager
      */
     public function createOptionsTableIfNotExists(string $listTable): void
     {
-        $schemaManager = $this->connection->createSchemaManager();
         $fullTableName = $this->prefix . $listTable;
 
-        if ($schemaManager->tablesExist([$fullTableName])) {
+        if ($this->schemaManager->tablesExist([$fullTableName])) {
             return;
         }
 
@@ -79,7 +70,7 @@ class DynamicListAttrTablesManager
         $table->addUniqueIndex(['name'], 'uniq_' . $fullTableName . '_name');
 
         try {
-            $schemaManager->createTable($table);
+            $this->schemaManager->createTable($table);
         } catch (TableExistsException $e) {
             // Table was created by a concurrent process or a previous test run.
             // Since this method is idempotent by contract, swallow the exception.
