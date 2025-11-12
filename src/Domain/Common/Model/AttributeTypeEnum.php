@@ -13,11 +13,12 @@ enum AttributeTypeEnum: string
     case Date = 'date';
     case Select = 'select';
     case Checkbox = 'checkbox';
-    case MultiSelect = 'multiselect';
     case CheckboxGroup = 'checkboxgroup';
     case Radio = 'radio';
     case Hidden = 'hidden';
     case TextLine = 'textline';
+    case CreditCardNo = 'creditcardno';
+    case TextArea = 'textarea';
 
     public function equals(self $other): bool
     {
@@ -29,7 +30,6 @@ enum AttributeTypeEnum: string
         return match ($this) {
             self::Select,
             self::Checkbox,
-            self::MultiSelect,
             self::Radio,
             self::CheckboxGroup => true,
             default => false,

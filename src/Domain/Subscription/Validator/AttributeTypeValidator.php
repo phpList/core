@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Validator;
 
 use InvalidArgumentException;
+use PhpList\Core\Domain\Common\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Common\Model\ValidationContext;
 use PhpList\Core\Domain\Common\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Exception\ValidatorException;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Throwable;
 
 class AttributeTypeValidator implements ValidatorInterface
 {
@@ -17,35 +19,63 @@ class AttributeTypeValidator implements ValidatorInterface
     }
 
     private const VALID_TYPES = [
-        'textline',
-        'checkbox',
-        'checkboxgroup',
-        'radio',
-        'select',
-        'hidden',
-        'textarea',
-        'date',
+        AttributeTypeEnum::TextLine,
+        AttributeTypeEnum::Hidden,
+        AttributeTypeEnum::CreditCardNo,
+        AttributeTypeEnum::Select,
+        AttributeTypeEnum::Date,
+        AttributeTypeEnum::Checkbox,
+        AttributeTypeEnum::TextArea,
+        AttributeTypeEnum::Radio,
+        AttributeTypeEnum::CheckboxGroup,
     ];
 
     public function validate(mixed $value, ValidationContext $context = null): void
     {
-        if (!is_string($value)) {
-            throw new InvalidArgumentException($this->translator->trans('Value must be a string.'));
-        }
+        $enum = $this->normalizeToEnum($value);
 
-        $errors = [];
-        if (!in_array($value, self::VALID_TYPES, true)) {
-            $errors[] = $this->translator->trans(
+        if (!in_array($enum, self::VALID_TYPES, true)) {
+            $validList = implode(', ', array_map(
+                static fn(AttributeTypeEnum $enum) => $enum->value,
+                self::VALID_TYPES
+            ));
+
+            $message = $this->translator->trans(
                 'Invalid attribute type: "%type%". Valid types are: %valid_types%',
                 [
-                    '%type%' => $value,
-                    '%valid_types%' => implode(', ', self::VALID_TYPES),
+                    '%type%' => $enum->value,
+                    '%valid_types%' => $validList,
                 ]
             );
+
+            throw new ValidatorException($message);
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException if value cannot be converted to AttributeTypeEnum
+     */
+    private function normalizeToEnum(mixed $value): AttributeTypeEnum
+    {
+        if ($value instanceof AttributeTypeEnum) {
+            return $value;
         }
 
-        if (!empty($errors)) {
-            throw new ValidatorException(implode("\n", $errors));
+        if (is_string($value)) {
+            try {
+                return AttributeTypeEnum::from($value);
+            } catch (Throwable) {
+                $lower = strtolower($value);
+                foreach (AttributeTypeEnum::cases() as $case) {
+                    if ($case->value === $lower) {
+                        return $case;
+                    }
+                }
+            }
         }
+
+        throw new InvalidArgumentException(
+            $this->translator->trans('Value must be an AttributeTypeEnum or string.')
+        );
     }
 }

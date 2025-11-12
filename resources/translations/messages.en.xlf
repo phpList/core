@@ -734,6 +734,10 @@ Thank you.</target>
         <source>Invalid email: %email%</source>
         <target>__Invalid email: %email%</target>
       </trans-unit>
+      <trans-unit id="VvdYY4S" resname="Value must be an AttributeTypeEnum or string.">
+        <source>Value must be an AttributeTypeEnum or string.</source>
+        <target>__Value must be an AttributeTypeEnum or string.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
