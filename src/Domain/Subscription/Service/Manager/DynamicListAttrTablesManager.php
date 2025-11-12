@@ -45,6 +45,16 @@ class DynamicListAttrTablesManager
         return $candidate;
     }
 
+    /**
+     * Creates an option table dynamically if it does not already exist.
+     *
+     * Dispatches a {@see DynamicTableMessage} through the message bus to handle
+     * creation of the specified table with the given name and prefix.
+     *
+     * @param string $listTable The base name of the list table to ensure exists.
+     *
+     * @return void
+     */
     public function createOptionsTableIfNotExists(string $listTable): void
     {
         $fullTableName = $this->prefix . $listTable;
