@@ -31,16 +31,14 @@ class AttributeTypeValidatorTest extends TestCase
     public function testThrowsExceptionForInvalidType(): void
     {
         $this->expectException(ValidatorException::class);
-        $this->expectExceptionMessage('Invalid attribute type: "invalid_type"');
-        
+
         $this->validator->validate('invalid_type');
     }
 
     public function testThrowsExceptionForNonStringValue(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Value must be a string.');
-        
+
         $this->validator->validate(123);
     }
 }

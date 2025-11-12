@@ -168,8 +168,6 @@ class Bootstrap
     /**
      * Dispatches the current HTTP request (if there is any).
      *
-     * @SuppressWarnings("PHPMD.StaticAccess")
-     *
      * @return null
      *
      * @throws RuntimeException if configure has not been called before

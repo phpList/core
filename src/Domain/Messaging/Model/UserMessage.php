@@ -66,9 +66,6 @@ class UserMessage implements DomainModel
         return $this->viewed;
     }
 
-    /**
-     * @SuppressWarnings("PHPMD.StaticAccess")
-     */
     public function getStatus(): ?UserMessageStatus
     {
         return UserMessageStatus::from($this->status);

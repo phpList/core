@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Validator;
 
-use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Common\Model\ValidationContext;
 use PhpList\Core\Domain\Common\Validator\ValidatorInterface;
@@ -53,7 +52,7 @@ class AttributeTypeValidator implements ValidatorInterface
     }
 
     /**
-     * @throws InvalidArgumentException if value cannot be converted to AttributeTypeEnum
+     * @throws ValidatorException if value cannot be converted to AttributeTypeEnum
      */
     private function normalizeToEnum(mixed $value): AttributeTypeEnum
     {
@@ -74,7 +73,7 @@ class AttributeTypeValidator implements ValidatorInterface
             }
         }
 
-        throw new InvalidArgumentException(
+        throw new ValidatorException(
             $this->translator->trans('Value must be an AttributeTypeEnum or string.')
         );
     }

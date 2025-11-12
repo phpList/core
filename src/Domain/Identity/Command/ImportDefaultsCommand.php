@@ -87,7 +87,6 @@ class ImportDefaultsCommand extends Command
 
     /**
      * @return array<string,bool>
-     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     private function allPrivilegesGranted(): array
     {

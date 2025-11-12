@@ -24,7 +24,6 @@ class ConfigProvider
     }
 
     /**
-     * @SuppressWarnings(PHPMD.StaticAccess)
      * @throws InvalidArgumentException
      */
     public function isEnabled(ConfigOption $key): bool
@@ -43,7 +42,6 @@ class ConfigProvider
 
     /**
      * Get configuration value by its key, from settings or default configs or default value (if provided)
-     * @SuppressWarnings(PHPMD.StaticAccess)
      * @throws InvalidArgumentException
      */
     public function getValue(ConfigOption $key): ?string
@@ -65,7 +63,6 @@ class ConfigProvider
         return $this->defaultConfigs->has($key->value) ? $this->defaultConfigs->get($key->value)['value'] : null;
     }
 
-    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function getValueWithNamespace(ConfigOption $key): ?string
     {
         $full = $this->getValue($key);

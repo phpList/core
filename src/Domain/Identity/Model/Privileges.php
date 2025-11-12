@@ -14,9 +14,6 @@ class Privileges
      */
     private array $flags = [];
 
-    /**
-     * @SuppressWarnings(PHPMD.StaticAccess)
-     */
     public function __construct(?array $flags = [])
     {
         foreach (PrivilegeFlag::cases() as $flag) {

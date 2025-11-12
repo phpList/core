@@ -58,7 +58,6 @@ class SubscriberManager
         return $this->subscriberRepository->find($subscriberId);
     }
 
-    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function updateSubscriber(UpdateSubscriberDto $subscriberDto, Administrator $admin): Subscriber
     {
         /** @var Subscriber $subscriber */
@@ -123,7 +122,6 @@ class SubscriberManager
         return $subscriber;
     }
 
-    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function updateFromImport(Subscriber $existingSubscriber, ImportSubscriberDto $subscriberDto): ChangeSetDto
     {
         $existingSubscriber->setEmail($subscriberDto->email);

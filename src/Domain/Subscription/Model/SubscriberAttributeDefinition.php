@@ -49,7 +49,6 @@ class SubscriberAttributeDefinition implements DomainModel, Identity
         return $this->name;
     }
 
-    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function getType(): ?AttributeTypeEnum
     {
         return $this->type === null ? null : AttributeTypeEnum::from($this->type);
@@ -82,7 +81,6 @@ class SubscriberAttributeDefinition implements DomainModel, Identity
         return $this;
     }
 
-    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function setType(?AttributeTypeEnum $type): self
     {
         if ($type === null) {
