@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 
-use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use PhpList\Core\Domain\Subscription\Exception\AttributeDefinitionCreationException;
 use PhpList\Core\Domain\Subscription\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Subscription\Model\Dto\AttributeDefinitionDto;
@@ -15,6 +14,8 @@ use PhpList\Core\Domain\Subscription\Service\Manager\DynamicListAttrManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\DynamicListAttrTablesManager;
 use PhpList\Core\Domain\Subscription\Validator\AttributeTypeValidator;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Translation\Translator;
 
 class AttributeDefinitionManagerTest extends TestCase
@@ -23,13 +24,13 @@ class AttributeDefinitionManagerTest extends TestCase
     {
         $repository = $this->createMock(SubscriberAttributeDefinitionRepository::class);
         $validator = $this->createMock(AttributeTypeValidator::class);
-        $schema = $this->getMockBuilder(AbstractSchemaManager::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['tablesExist', 'createTable'])
-            ->getMockForAbstractClass();
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->method('dispatch')->willReturnCallback(function ($message) {
+            return new Envelope($message);
+        });
         $dynamicTablesManager = new DynamicListAttrTablesManager(
             definitionRepository: $this->createMock(SubscriberAttributeDefinitionRepository::class),
-            schemaManager: $schema,
+            messageBus: $bus,
         );
         $manager = new AttributeDefinitionManager(
             definitionRepository: $repository,

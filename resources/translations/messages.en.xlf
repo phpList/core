@@ -342,10 +342,6 @@
         <source>Subscription not found for this subscriber and list.</source>
         <target>Subscription not found for this subscriber and list.</target>
       </trans-unit>
-      <trans-unit id="xWcRIPk" resname="Attribute definition already exists">
-        <source>Attribute definition already exists</source>
-        <target>Attribute definition already exists</target>
-      </trans-unit>
       <trans-unit id="kQejNsl" resname="Another attribute with this name already exists.">
         <source>Another attribute with this name already exists.</source>
         <target>Another attribute with this name already exists.</target>

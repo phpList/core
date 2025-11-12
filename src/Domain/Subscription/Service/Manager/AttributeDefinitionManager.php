@@ -38,7 +38,7 @@ class AttributeDefinitionManager
         $existingAttribute = $this->definitionRepository->findOneByName($attributeDefinitionDto->name);
         if ($existingAttribute) {
             throw new AttributeDefinitionCreationException(
-                message: $this->translator->trans('Attribute definition already exists'),
+                message: $this->translator->trans('Attribute definition already exists.'),
                 statusCode: 409
             );
         }
