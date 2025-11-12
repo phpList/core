@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Validator;
 
-use InvalidArgumentException;
 use PhpList\Core\Domain\Subscription\Validator\AttributeTypeValidator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Translation\Translator;
@@ -37,7 +36,7 @@ class AttributeTypeValidatorTest extends TestCase
 
     public function testThrowsExceptionForNonStringValue(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(ValidatorException::class);
 
         $this->validator->validate(123);
     }
