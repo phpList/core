@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Provider;
 
-use PhpList\Core\Domain\Subscription\Model\AttributeTypeEnum;
+use PhpList\Core\Domain\Common\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;

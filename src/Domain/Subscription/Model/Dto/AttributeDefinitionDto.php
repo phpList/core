@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Model\Dto;
 
 use InvalidArgumentException;
-use PhpList\Core\Domain\Subscription\Model\AttributeTypeEnum;
+use PhpList\Core\Domain\Common\Model\AttributeTypeEnum;
 
 class AttributeDefinitionDto
 {

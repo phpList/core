@@ -186,26 +186,4 @@ class AdminAttributeDefinitionTest extends TestCase
     {
         self::assertSame($this->tableName, $this->subject->getTableName());
     }
-
-    public function testSetTableNameSetsTableName(): void
-    {
-        $newTableName = 'new_table';
-        $this->subject->setTableName($newTableName);
-
-        self::assertSame($newTableName, $this->subject->getTableName());
-    }
-
-    public function testSetTableNameReturnsInstance(): void
-    {
-        $result = $this->subject->setTableName('new_table');
-
-        self::assertSame($this->subject, $result);
-    }
-
-    public function testSetTableNameCanSetNull(): void
-    {
-        $this->subject->setTableName(null);
-
-        self::assertNull($this->subject->getTableName());
-    }
 }

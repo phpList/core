@@ -9,7 +9,7 @@ use PhpList\Core\Domain\Identity\Model\Dto\AdminAttributeDefinitionDto;
 use PhpList\Core\Domain\Identity\Repository\AdminAttributeDefinitionRepository;
 use PhpList\Core\Domain\Identity\Service\AdminAttributeDefinitionManager;
 use PhpList\Core\Domain\Identity\Exception\AttributeDefinitionCreationException;
-use PhpList\Core\Domain\Subscription\Validator\AttributeTypeValidator;
+use PhpList\Core\Domain\Identity\Validator\AttributeTypeValidator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -40,7 +40,6 @@ class AdminAttributeDefinitionManagerTest extends TestCase
             listOrder: 10,
             defaultValue: 'default',
             required: true,
-            tableName: 'test_table'
         );
 
         $this->repository->expects($this->once())
@@ -55,8 +54,7 @@ class AdminAttributeDefinitionManagerTest extends TestCase
                     && $definition->getType() === $dto->type
                     && $definition->getListOrder() === $dto->listOrder
                     && $definition->getDefaultValue() === $dto->defaultValue
-                    && $definition->isRequired() === $dto->required
-                    && $definition->getTableName() === $dto->tableName;
+                    && $definition->isRequired() === $dto->required;
             }));
 
         $result = $this->subject->create($dto);
@@ -67,7 +65,6 @@ class AdminAttributeDefinitionManagerTest extends TestCase
         $this->assertEquals($dto->listOrder, $result->getListOrder());
         $this->assertEquals($dto->defaultValue, $result->getDefaultValue());
         $this->assertEquals($dto->required, $result->isRequired());
-        $this->assertEquals($dto->tableName, $result->getTableName());
     }
 
     public function testCreateThrowsExceptionIfAttributeAlreadyExists(): void
@@ -105,7 +102,6 @@ class AdminAttributeDefinitionManagerTest extends TestCase
             listOrder: 20,
             defaultValue: 'new-default',
             required: false,
-            tableName: 'new_table'
         );
 
         $this->repository->expects($this->once())
@@ -136,11 +132,6 @@ class AdminAttributeDefinitionManagerTest extends TestCase
         $attributeDefinition->expects($this->once())
             ->method('setRequired')
             ->with(false)
-            ->willReturnSelf();
-
-        $attributeDefinition->expects($this->once())
-            ->method('setTableName')
-            ->with('new_table')
             ->willReturnSelf();
 
         $result = $this->subject->update($attributeDefinition, $dto);

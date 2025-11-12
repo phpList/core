@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 
+use PhpList\Core\Domain\Common\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Subscription\Message\DynamicTableMessage;
-use PhpList\Core\Domain\Subscription\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\DynamicListAttrTablesManager;
 use PHPUnit\Framework\MockObject\MockObject;

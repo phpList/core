@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Subscription\Model;
+namespace PhpList\Core\Domain\Common\Model;
 
 use PhpList\Core\Domain\Subscription\Exception\AttributeTypeChangeNotAllowed;
 
@@ -16,6 +16,8 @@ enum AttributeTypeEnum: string
     case MultiSelect = 'multiselect';
     case CheckboxGroup = 'checkboxgroup';
     case Radio = 'radio';
+    case Hidden = 'hidden';
+    case TextLine = 'textline';
 
     public function equals(self $other): bool
     {

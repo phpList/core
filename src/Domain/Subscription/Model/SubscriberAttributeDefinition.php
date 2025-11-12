@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Model;
 
 use Doctrine\ORM\Mapping as ORM;
+use PhpList\Core\Domain\Common\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
