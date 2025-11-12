@@ -23,6 +23,13 @@ class DynamicListAttrTablesManager
         $this->prefix = $dbPrefix . $dynamicListTablePrefix;
     }
 
+    /**
+     * Resolve an available snake_case table name for a multi-valued attribute.
+     *
+     * @param string $name The candidate name to convert to snake_case.
+     * @param AttributeTypeEnum|null $type The attribute type; must indicate a multi-valued attribute to resolve a table name.
+     * @return string|null The chosen table name (snake_case, without prefix) if $type indicates a multi-valued attribute; `null` if $type is null or not multi-valued.
+     */
     public function resolveTableName(string $name, ?AttributeTypeEnum $type): ?string
     {
         if ($type === null) {
@@ -46,14 +53,12 @@ class DynamicListAttrTablesManager
     }
 
     /**
-     * Creates an option table dynamically if it does not already exist.
+     * Ensure a dynamic options table exists for the given list.
      *
-     * Dispatches a {@see DynamicTableMessage} through the message bus to handle
-     * creation of the specified table with the given name and prefix.
+     * Dispatches a DynamicTableMessage with the full table name (configured prefix + provided base)
+     * to request creation of the table if it does not already exist.
      *
-     * @param string $listTable The base name of the list table to ensure exists.
-     *
-     * @return void
+     * @param string $listTable The base name of the list table (suffix appended to the configured prefix).
      */
     public function createOptionsTableIfNotExists(string $listTable): void
     {
