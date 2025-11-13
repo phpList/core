@@ -11,37 +11,54 @@ reviews:
   path_instructions:
     - path: "src/Domain/**"
       instructions: |
-        You are reviewing PHP domain-layer code. Enforce strict domain purity:
-        - ❌ Do not allow persistence or transaction side effects here.
-        - Flag ANY usage of Doctrine persistence APIs, especially:
+        You are reviewing PHP domain-layer code. Enforce domain purity, with a relaxed policy for DynamicListAttr:
+
+        - ❌ Do not allow persistence or transaction side effects here for *normal* domain models.
+        - Flag ANY usage of Doctrine persistence APIs on regular domain entities, especially:
           - `$entityManager->flush(...)`, `$this->entityManager->flush(...)`
           - `$em->persist(...)`, `$em->remove(...)`
           - `$em->beginTransaction()`, `$em->commit()`, `$em->rollback()`
         - ✅ Accessing Doctrine *metadata*, *schema manager*, or *read-only schema info* is acceptable
           as long as it does not modify state or perform writes.
-        - ⚠️ If code is invoking actual table-creation, DDL execution, or schema synchronization,
-          then request moving that to the Infrastructure or Application layer (e.g. MessageHandler).
-        - Also flag repositories in Domain that invoke flush/transactional logic;
-          Domain repositories should be abstractions without side effects.
-        - Encourage using domain events or return-values to signal intent to write,
-          leaving persistence orchestration to Commands/Jobs.
+
+        - ✅ **Relaxed rule for DynamicListAttr-related code**:
+          - DynamicListAttr is a special case dealing with dynamic tables/attrs.
+          - It is acceptable for DynamicListAttr repositories/services to:
+            - Create/update/drop DynamicListAttr tables/columns.
+            - Use Doctrine persistence APIs (`persist`, `remove`, `flush`, etc.)
+              as part of managing DynamicListAttr data and schema.
+          - Do *not* flag persistence or schema-creation calls that are clearly scoped
+            to DynamicListAttr tables or their management.
+          - Still prefer keeping this logic well-encapsulated (e.g. in dedicated services/repos),
+            not scattered across unrelated domain objects.
+
+        - ⚠️ For non-DynamicListAttr code:
+          - If code is invoking actual table-creation, DDL execution, or schema synchronization,
+            then request moving that to the Infrastructure or Application layer (e.g. MessageHandler).
+          - Repositories in Domain should be abstractions without side effects; they should express *intent*,
+            not perform flush/transactional logic.
 
     - path: "src/**/Command/**"
       instructions: |
         Application layer (Commands/Handlers) is the right place to coordinate persistence.
+
         - ✅ It is acceptable to call $entityManager->flush() here.
         - Check that flush is used atomically (once per unit of work) after all domain operations.
-        - Ensure no domain entity or domain service is calling flush; only the handler orchestrates it.
-        - Prefer $em->transactional(...) or explicit try/catch with rollback on failure.
+        - Ensure no domain entity or domain service is calling flush; only the handler orchestrates it,
+          except for the explicitly allowed DynamicListAttr management logic in Domain.
+        - Prefer $em->transactional(...) or explicit try/catch with rollback on failure when multiple writes are involved.
 
     - path: "src/**/MessageHandler/**"
       instructions: |
         Background jobs/workers may perform persistence and schema management.
+
         - ✅ Allow `$entityManager->flush()` when the job is the orchestration boundary.
         - ✅ Allow table creation, migration, or schema synchronization (e.g. via Doctrine SchemaTool or SchemaManager),
           as this is considered infrastructure-level orchestration.
-        - Verify idempotency for schema operations — e.g., check if a table exists before creating.
-        - Ensure domain-layer code invoked by the job remains free of persistence calls.
+        - For DynamicListAttr-related jobs, it is fine to orchestrate both data and schema changes here,
+          as long as responsibilities remain clear and behavior is predictable.
+        - Verify idempotency for schema operations where practical — e.g., check if a table exists before creating.
+        - Ensure domain-layer code invoked by the job (outside the DynamicListAttr exception) remains free of persistence calls.
         - Batch flush operations where practical.
 
   auto_review:

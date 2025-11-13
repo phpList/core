@@ -32,6 +32,7 @@ class AttributeTypeValidatorTest extends TestCase
         $this->expectException(ValidatorException::class);
 
         $this->validator->validate('invalid_type');
+        $this->assertTrue(true);
     }
 
     public function testThrowsExceptionForNonStringValue(): void
@@ -39,5 +40,6 @@ class AttributeTypeValidatorTest extends TestCase
         $this->expectException(ValidatorException::class);
 
         $this->validator->validate(123);
+        $this->assertTrue(true);
     }
 }
