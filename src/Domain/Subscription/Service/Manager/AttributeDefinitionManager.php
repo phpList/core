@@ -85,7 +85,7 @@ class AttributeDefinitionManager
             ->setRequired($attributeDefinitionDto->required)
             ->setDefaultValue($attributeDefinitionDto->defaultValue);
 
-        if ($attributeDefinitionDto->type->isMultiValued()) {
+        if ($attributeDefinitionDto->type && $attributeDefinitionDto->type->isMultiValued()) {
             $tableName = $attributeDefinition->getTableName() ?? $this->dynamicTablesManager
                 ->resolveTableName(name: $attributeDefinitionDto->name, type: $attributeDefinitionDto->type);
             $this->dynamicTablesManager->createOptionsTableIfNotExists($tableName);

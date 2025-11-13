@@ -15,7 +15,7 @@ use Throwable;
  */
 class FakeDriverException extends Exception implements DriverException
 {
-    private string|null $sqlState;
+    private ?string $sqlState;
 
     public function __construct(
         string $message = '',

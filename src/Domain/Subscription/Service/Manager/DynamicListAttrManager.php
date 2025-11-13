@@ -241,7 +241,7 @@ class DynamicListAttrManager
                 $cur = $currentById[$dto->id];
                 $updates = [];
                 if ($cur->name !== $dto->name) {
-                    $nameExists = $this->dynamicListAttrRepository->existsByName($listTable, $dto);
+                    $nameExists = $this->dynamicListAttrRepository->isNameTakenByOtherRecord($listTable, $dto);
                     if ($nameExists) {
                         throw new RuntimeException('Option name ' . $dto->name . ' already exists.');
                     }

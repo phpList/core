@@ -151,7 +151,7 @@ class DynamicListAttrRepository
         return $val === false ? null : (string) $val;
     }
 
-    public function existsByName(string $listTable, DynamicListAttrDto $dto): bool
+    public function isNameTakenByOtherRecord(string $listTable, DynamicListAttrDto $dto): bool
     {
         if (!preg_match('/^[A-Za-z0-9_]+$/', $listTable)) {
             throw new InvalidArgumentException('Invalid list table');

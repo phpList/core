@@ -44,7 +44,6 @@ class DynamicListAttrManagerFunctionalTest extends KernelTestCase
             dynamicListTablePrefix: 'listattr_'
         );
 
-        $subscriberAttributeValueRepo = null;
         $subscriberAttributeValueRepo = self::getContainer()->get(SubscriberAttributeValueRepository::class);
 
         // Get tables manager from container for creating/ensuring dynamic tables
