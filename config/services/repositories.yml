@@ -60,9 +60,11 @@ services:
     arguments:
       - PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue
   PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
-      $entityManager: '@doctrine.orm.entity_manager'
-      $dynamicListAttrRepository: '@PhpList\Core\Domain\Subscription\Repository\DynamicListAttrRepository'
+      - PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition
+    calls:
+      - [ setDynamicListAttrRepository, [ '@PhpList\Core\Domain\Subscription\Repository\DynamicListAttrRepository' ] ]
   PhpList\Core\Domain\Subscription\Repository\SubscriptionRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:

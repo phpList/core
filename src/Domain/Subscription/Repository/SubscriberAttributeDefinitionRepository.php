@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Repository;
 
-use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
@@ -14,14 +13,11 @@ class SubscriberAttributeDefinitionRepository extends AbstractRepository impleme
 {
     use CursorPaginationTrait;
 
-    public function __construct(
-        EntityManagerInterface $entityManager,
-        private readonly DynamicListAttrRepository $dynamicListAttrRepository,
-    ) {
-        parent::__construct(
-            $entityManager,
-            $entityManager->getClassMetadata(SubscriberAttributeDefinition::class)
-        );
+    private ?DynamicListAttrRepository $dynamicListAttrRepository = null;
+
+    public function setDynamicListAttrRepository(DynamicListAttrRepository $dynamicListAttrRepository): void
+    {
+        $this->dynamicListAttrRepository = $dynamicListAttrRepository;
     }
 
     /**
@@ -30,6 +26,9 @@ class SubscriberAttributeDefinitionRepository extends AbstractRepository impleme
      */
     private function hydrateOptionsForAll(array $defs): array
     {
+        if ($this->dynamicListAttrRepository === null) {
+            return $defs;
+        }
         foreach ($defs as $def) {
             $this->hydrateOptions($def);
         }
@@ -38,6 +37,9 @@ class SubscriberAttributeDefinitionRepository extends AbstractRepository impleme
 
     private function hydrateOptions(SubscriberAttributeDefinition $def): void
     {
+        if ($this->dynamicListAttrRepository === null) {
+            return;
+        }
         $table = $def->getTableName();
         if ($table) {
             $options = $this->dynamicListAttrRepository->getAll($table);
@@ -60,7 +62,11 @@ class SubscriberAttributeDefinitionRepository extends AbstractRepository impleme
 
     public function findOneByName(string $name): ?SubscriberAttributeDefinition
     {
-        return $this->findOneBy(['name' => $name]);
+        $def = $this->findOneBy(['name' => $name]);
+        if ($def instanceof SubscriberAttributeDefinition) {
+            $this->hydrateOptions($def);
+        }
+        return $def;
     }
 
     public function existsByTableName(string $tableName): bool
