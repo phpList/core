@@ -76,4 +76,18 @@ class SubscriberAttributeValueRepository extends AbstractRepository implements P
             ->getQuery()
             ->getResult();
     }
+
+    public function existsByAttributeAndValue(string $tableName, int $optionId): bool
+    {
+        $row = $this->createQueryBuilder('sa')
+            ->join('sa.attributeDefinition', 'ad')
+            ->andWhere('ad.tableName = :tableName')
+            ->setParameter('tableName', $tableName)
+            ->andWhere('sa.value = :value')
+            ->setParameter('value', $optionId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $row !== null;
+    }
 }

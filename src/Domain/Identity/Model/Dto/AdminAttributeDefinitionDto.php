@@ -15,7 +15,6 @@ class AdminAttributeDefinitionDto
         public readonly ?int $listOrder = null,
         public readonly ?string $defaultValue = null,
         public readonly ?bool $required = false,
-        public readonly ?string $tableName = null,
     ) {
     }
 }

@@ -29,3 +29,7 @@ services:
         autoconfigure: true
         tags: [ 'messenger.message_handler' ]
 
+    PhpList\Core\Domain\Subscription\MessageHandler\DynamicTableMessageHandler:
+        autowire: true
+        autoconfigure: true
+        tags: [ 'messenger.message_handler' ]

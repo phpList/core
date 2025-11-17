@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Subscription\Validator;
+namespace PhpList\Core\Domain\Identity\Validator;
 
+use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Common\Model\ValidationContext;
 use PhpList\Core\Domain\Common\Validator\ValidatorInterface;
@@ -20,13 +21,6 @@ class AttributeTypeValidator implements ValidatorInterface
     private const VALID_TYPES = [
         AttributeTypeEnum::TextLine,
         AttributeTypeEnum::Hidden,
-        AttributeTypeEnum::CreditCardNo,
-        AttributeTypeEnum::Select,
-        AttributeTypeEnum::Date,
-        AttributeTypeEnum::Checkbox,
-        AttributeTypeEnum::TextArea,
-        AttributeTypeEnum::Radio,
-        AttributeTypeEnum::CheckboxGroup,
     ];
 
     public function validate(mixed $value, ValidationContext $context = null): void
@@ -52,7 +46,7 @@ class AttributeTypeValidator implements ValidatorInterface
     }
 
     /**
-     * @throws ValidatorException if value cannot be converted to AttributeTypeEnum
+     * @throws InvalidArgumentException if value cannot be converted to AttributeTypeEnum
      */
     private function normalizeToEnum(mixed $value): AttributeTypeEnum
     {
@@ -73,7 +67,7 @@ class AttributeTypeValidator implements ValidatorInterface
             }
         }
 
-        throw new ValidatorException(
+        throw new InvalidArgumentException(
             $this->translator->trans('Value must be an AttributeTypeEnum or string.')
         );
     }

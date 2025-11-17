@@ -8,7 +8,7 @@ use PhpList\Core\Domain\Identity\Model\AdminAttributeDefinition;
 use PhpList\Core\Domain\Identity\Model\Dto\AdminAttributeDefinitionDto;
 use PhpList\Core\Domain\Identity\Repository\AdminAttributeDefinitionRepository;
 use PhpList\Core\Domain\Identity\Exception\AttributeDefinitionCreationException;
-use PhpList\Core\Domain\Subscription\Validator\AttributeTypeValidator;
+use PhpList\Core\Domain\Identity\Validator\AttributeTypeValidator;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AdminAttributeDefinitionManager
@@ -42,8 +42,7 @@ class AdminAttributeDefinitionManager
             ->setType($attributeDefinitionDto->type)
             ->setListOrder($attributeDefinitionDto->listOrder)
             ->setRequired($attributeDefinitionDto->required)
-            ->setDefaultValue($attributeDefinitionDto->defaultValue)
-            ->setTableName($attributeDefinitionDto->tableName);
+            ->setDefaultValue($attributeDefinitionDto->defaultValue);
 
         $this->definitionRepository->persist($attributeDefinition);
 
@@ -65,8 +64,7 @@ class AdminAttributeDefinitionManager
             ->setType($attributeDefinitionDto->type)
             ->setListOrder($attributeDefinitionDto->listOrder)
             ->setRequired($attributeDefinitionDto->required)
-            ->setDefaultValue($attributeDefinitionDto->defaultValue)
-            ->setTableName($attributeDefinitionDto->tableName);
+            ->setDefaultValue($attributeDefinitionDto->defaultValue);
 
         return $attributeDefinition;
     }

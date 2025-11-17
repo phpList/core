@@ -23,6 +23,8 @@ parameters:
     env(PHPLIST_DATABASE_PASSWORD): 'phplist'
     database_prefix: '%%env(DATABASE_PREFIX)%%'
     env(DATABASE_PREFIX): 'phplist_'
+    list_table_prefix: '%%env(LIST_TABLE_PREFIX)%%'
+    env(LIST_TABLE_PREFIX): 'listattr_'
 
     # Email configuration
     app.mailer_from: '%%env(MAILER_FROM)%%'

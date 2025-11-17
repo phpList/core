@@ -122,11 +122,4 @@ class AdminAttributeDefinition implements DomainModel, Identity
 
         return $this;
     }
-
-    public function setTableName(?string $tableName): self
-    {
-        $this->tableName = $tableName;
-
-        return $this;
-    }
 }

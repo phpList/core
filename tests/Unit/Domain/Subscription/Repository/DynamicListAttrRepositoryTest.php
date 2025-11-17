@@ -11,13 +11,17 @@ use Doctrine\DBAL\Result;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Subscription\Repository\DynamicListAttrRepository;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class DynamicListAttrRepositoryTest extends TestCase
 {
     public function testFetchOptionNamesReturnsEmptyForEmptyIds(): void
     {
         $conn = $this->createMock(Connection::class);
-        $repo = new DynamicListAttrRepository($conn, 'phplist_');
+        $repo = new DynamicListAttrRepository(
+            $conn,
+            $this->createMock(DenormalizerInterface::class),
+        );
 
         $this->assertSame([], $repo->fetchOptionNames('valid_table', []));
         $this->assertSame([], $repo->fetchOptionNames('valid_table', []));
@@ -26,7 +30,10 @@ class DynamicListAttrRepositoryTest extends TestCase
     public function testFetchOptionNamesThrowsOnInvalidTable(): void
     {
         $conn = $this->createMock(Connection::class);
-        $repo = new DynamicListAttrRepository($conn, 'phplist_');
+        $repo = new DynamicListAttrRepository(
+            $conn,
+            $this->createMock(DenormalizerInterface::class),
+        );
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid list table');
@@ -80,7 +87,10 @@ class DynamicListAttrRepositoryTest extends TestCase
 
         $conn->method('createQueryBuilder')->willReturn($qb);
 
-        $repo = new DynamicListAttrRepository($conn, 'phplist_');
+        $repo = new DynamicListAttrRepository(
+            $conn,
+            $this->createMock(DenormalizerInterface::class),
+        );
         $names = $repo->fetchOptionNames('users', [1, '2', 3]);
 
         $this->assertSame(['alpha', 'beta', 'gamma'], $names);
@@ -89,7 +99,10 @@ class DynamicListAttrRepositoryTest extends TestCase
     public function testFetchSingleOptionNameThrowsOnInvalidTable(): void
     {
         $conn = $this->createMock(Connection::class);
-        $repo = new DynamicListAttrRepository($conn, 'phplist_');
+        $repo = new DynamicListAttrRepository(
+            $conn,
+            $this->createMock(DenormalizerInterface::class),
+        );
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid list table');
@@ -117,7 +130,10 @@ class DynamicListAttrRepositoryTest extends TestCase
         $qb->expects($this->once())->method('executeQuery')->willReturn($result);
         $conn->method('createQueryBuilder')->willReturn($qb);
 
-        $repo = new DynamicListAttrRepository($conn, 'phplist_');
+        $repo = new DynamicListAttrRepository(
+            $conn,
+            $this->createMock(DenormalizerInterface::class),
+        );
         $this->assertSame('Bradford', $repo->fetchSingleOptionName('ukcountries', 42));
     }
 
@@ -141,7 +157,10 @@ class DynamicListAttrRepositoryTest extends TestCase
         $qb->method('executeQuery')->willReturn($result);
         $conn->method('createQueryBuilder')->willReturn($qb);
 
-        $repo = new DynamicListAttrRepository($conn, 'phplist_');
+        $repo = new DynamicListAttrRepository(
+            $conn,
+            $this->createMock(DenormalizerInterface::class),
+        );
         $this->assertNull($repo->fetchSingleOptionName('termsofservices', 999));
     }
 }

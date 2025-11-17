@@ -11,10 +11,10 @@ use League\Csv\Exception as CsvException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
-class CsvImporter
+class CsvToDtoImporter
 {
     public function __construct(
-        private readonly CsvRowToDtoMapper $rowMapper,
+        private readonly ArrayToDtoMapper $rowMapper,
         private readonly ValidatorInterface $validator,
         private readonly TranslatorInterface $translator,
     ) {
@@ -25,7 +25,7 @@ class CsvImporter
      * @return array{valid: ImportSubscriberDto[], errors: array<int, array<string>>}
      * @throws CsvException
      */
-    public function import(string $csvFilePath): array
+    public function parseAndValidate(string $csvFilePath): array
     {
         $reader = Reader::createFromPath($csvFilePath, 'r');
         $reader->setHeaderOffset(0);

@@ -23,9 +23,12 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
 /**
- * phpcs:ignore Generic.Commenting.Todo
- * @todo: check if dryRun will work (some function flush)
- * Service for importing subscribers from a CSV file.
+ * Handles full subscriber import workflow, including DB transactions and message dispatching.
+ *
+ * Note: Although this lives in the Service namespace, it acts as an *application service* —
+ * it orchestrates multiple domain services and manages transactions/flushes directly.
+ * This is an intentional exception for this complex import use case.
+ *
  * @SuppressWarnings("CouplingBetweenObjects")
  * @SuppressWarnings("ExcessiveParameterList")
  */
@@ -35,7 +38,7 @@ class SubscriberCsvImporter
     private SubscriberAttributeManager $attributeManager;
     private SubscriptionManager $subscriptionManager;
     private SubscriberRepository $subscriberRepository;
-    private CsvImporter $csvImporter;
+    private CsvToDtoImporter $csvToDtoImporter;
     private EntityManagerInterface $entityManager;
     private TranslatorInterface $translator;
     private MessageBusInterface $messageBus;
@@ -46,7 +49,7 @@ class SubscriberCsvImporter
         SubscriberAttributeManager $attributeManager,
         SubscriptionManager $subscriptionManager,
         SubscriberRepository $subscriberRepository,
-        CsvImporter $csvImporter,
+        CsvToDtoImporter $csvToDtoImporter,
         EntityManagerInterface $entityManager,
         TranslatorInterface $translator,
         MessageBusInterface $messageBus,
@@ -56,7 +59,7 @@ class SubscriberCsvImporter
         $this->attributeManager = $attributeManager;
         $this->subscriptionManager = $subscriptionManager;
         $this->subscriberRepository = $subscriberRepository;
-        $this->csvImporter = $csvImporter;
+        $this->csvToDtoImporter = $csvToDtoImporter;
         $this->entityManager = $entityManager;
         $this->translator = $translator;
         $this->messageBus = $messageBus;
@@ -78,6 +81,7 @@ class SubscriberCsvImporter
             'updated' => 0,
             'skipped' => 0,
             'blacklisted' => 0,
+            'invalid_email' => 0,
             'errors' => [],
         ];
 
@@ -89,7 +93,7 @@ class SubscriberCsvImporter
                 );
             }
 
-            $result = $this->csvImporter->import($path);
+            $result = $this->csvToDtoImporter->parseAndValidate($path);
 
             foreach ($result['valid'] as $dto) {
                 try {
@@ -244,11 +248,12 @@ class SubscriberCsvImporter
         if (!filter_var($dto->email, FILTER_VALIDATE_EMAIL)) {
             if ($options->skipInvalidEmail) {
                 $stats['skipped']++;
+                $stats['invalid_email']++;
+                $stats['errors'][] = $this->translator->trans('Invalid email: %email%', ['%email%' => $dto->email]);
 
                 return true;
             }
-            // phpcs:ignore Generic.Commenting.Todo
-            // @todo: check
+
             $dto->email = 'invalid_' . $dto->email;
             $dto->sendConfirmation = false;
         }

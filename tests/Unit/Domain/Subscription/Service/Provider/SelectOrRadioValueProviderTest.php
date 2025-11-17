@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Provider;
 
+use PhpList\Core\Domain\Common\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;
 use PhpList\Core\Domain\Subscription\Repository\DynamicListAttrRepository;
@@ -18,11 +19,11 @@ final class SelectOrRadioValueProviderTest extends TestCase
         $provider = new SelectOrRadioValueProvider($repo);
 
         $attrSelect = $this->createMock(SubscriberAttributeDefinition::class);
-        $attrSelect->method('getType')->willReturn('select');
+        $attrSelect->method('getType')->willReturn(AttributeTypeEnum::Select);
         self::assertTrue($provider->supports($attrSelect));
 
         $attrRadio = $this->createMock(SubscriberAttributeDefinition::class);
-        $attrRadio->method('getType')->willReturn('radio');
+        $attrRadio->method('getType')->willReturn(AttributeTypeEnum::Radio);
         self::assertTrue($provider->supports($attrRadio));
     }
 
@@ -32,7 +33,7 @@ final class SelectOrRadioValueProviderTest extends TestCase
         $provider = new SelectOrRadioValueProvider($repo);
 
         $attr = $this->createMock(SubscriberAttributeDefinition::class);
-        $attr->method('getType')->willReturn('checkboxgroup');
+        $attr->method('getType')->willReturn(AttributeTypeEnum::CheckboxGroup);
 
         self::assertFalse($provider->supports($attr));
     }

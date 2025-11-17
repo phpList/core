@@ -49,9 +49,6 @@ class MessageMetadata implements EmbeddableInterface
         $this->sendStart = $sendStart;
     }
 
-    /**
-     * @SuppressWarnings("PHPMD.StaticAccess")
-     */
     public function getStatus(): ?MessageStatus
     {
         return MessageStatus::from($this->status);

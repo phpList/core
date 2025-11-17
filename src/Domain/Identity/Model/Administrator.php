@@ -167,8 +167,6 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
 
     /**
      * @throws InvalidArgumentException
-     *
-     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function setPrivilegesFromArray(array $privilegesData): void
     {
@@ -183,7 +181,6 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         $this->setPrivileges($privileges);
     }
 
-    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function getPrivileges(): Privileges
     {
         return Privileges::fromSerialized($this->privileges);

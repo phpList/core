@@ -30,4 +30,5 @@ framework:
             'PhpList\Core\Domain\Messaging\Message\PasswordResetMessage': async_email
             'PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage': async_email
             'PhpList\Core\Domain\Messaging\Message\SyncCampaignProcessorMessage': sync
+            'PhpList\Core\Domain\Subscription\Message\DynamicTableMessage': sync
 

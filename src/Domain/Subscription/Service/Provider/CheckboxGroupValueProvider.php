@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Service\Provider;
 
+use PhpList\Core\Domain\Common\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;
 use PhpList\Core\Domain\Subscription\Repository\DynamicListAttrRepository;
@@ -16,9 +17,7 @@ class CheckboxGroupValueProvider implements AttributeValueProvider
 
     public function supports(SubscriberAttributeDefinition $attribute): bool
     {
-        // phpcs:ignore Generic.Commenting.Todo
-        // @todo: check what real types exist in the database
-        return $attribute->getType() === 'checkboxgroup';
+        return $attribute->getType() === AttributeTypeEnum::CheckboxGroup;
     }
 
     public function getValue(SubscriberAttributeDefinition $attribute, SubscriberAttributeValue $userValue): string

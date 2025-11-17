@@ -8,22 +8,6 @@
 
     <!-- rules from the "clean code" rule set -->
     <rule ref="rulesets/cleancode.xml/BooleanArgumentFlag"/>
-    <rule ref="rulesets/cleancode.xml/StaticAccess">
-        <properties>
-            <property name="exceptions" value="
-                      \Doctrine\ORM\EntityManager,
-                      \Doctrine\ORM\Tools\Setup,
-                      \FOS\RestBundle\View\View,
-                      \PhpList\Core\Core\Bootstrap,
-                      \PhpList\Core\Core\Environment,
-                      \PHPUnit\DbUnit\Operation\Factory,
-                      \Symfony\Component\Debug\Debug,
-                      \Symfony\Component\Yaml\Yaml,
-                      \League\Csv\Reader,
-            "/>
-        </properties>
-    </rule>
-
     <rule ref="rulesets/codesize.xml/CyclomaticComplexity"/>
     <rule ref="rulesets/codesize.xml/NPathComplexity"/>
     <rule ref="rulesets/codesize.xml/ExcessiveMethodLength"/>

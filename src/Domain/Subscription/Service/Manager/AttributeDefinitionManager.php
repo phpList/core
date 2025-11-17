@@ -16,15 +16,21 @@ class AttributeDefinitionManager
     private SubscriberAttributeDefinitionRepository $definitionRepository;
     private AttributeTypeValidator $attributeTypeValidator;
     private TranslatorInterface $translator;
+    private DynamicListAttrManager $dynamicListAttrManager;
+    private DynamicListAttrTablesManager $dynamicTablesManager;
 
     public function __construct(
         SubscriberAttributeDefinitionRepository $definitionRepository,
         AttributeTypeValidator $attributeTypeValidator,
         TranslatorInterface $translator,
+        DynamicListAttrManager $dynamicListAttrManager,
+        DynamicListAttrTablesManager $dynamicTablesManager,
     ) {
         $this->definitionRepository = $definitionRepository;
         $this->attributeTypeValidator = $attributeTypeValidator;
         $this->translator = $translator;
+        $this->dynamicListAttrManager = $dynamicListAttrManager;
+        $this->dynamicTablesManager = $dynamicTablesManager;
     }
 
     public function create(AttributeDefinitionDto $attributeDefinitionDto): SubscriberAttributeDefinition
@@ -32,11 +38,14 @@ class AttributeDefinitionManager
         $existingAttribute = $this->definitionRepository->findOneByName($attributeDefinitionDto->name);
         if ($existingAttribute) {
             throw new AttributeDefinitionCreationException(
-                message: $this->translator->trans('Attribute definition already exists'),
+                message: $this->translator->trans('Attribute definition already exists.'),
                 statusCode: 409
             );
         }
         $this->attributeTypeValidator->validate($attributeDefinitionDto->type);
+
+        $tableName = $this->dynamicTablesManager
+            ->resolveTableName(name: $attributeDefinitionDto->name, type: $attributeDefinitionDto->type);
 
         $attributeDefinition = (new SubscriberAttributeDefinition())
             ->setName($attributeDefinitionDto->name)
@@ -44,11 +53,20 @@ class AttributeDefinitionManager
             ->setListOrder($attributeDefinitionDto->listOrder)
             ->setRequired($attributeDefinitionDto->required)
             ->setDefaultValue($attributeDefinitionDto->defaultValue)
-            ->setTableName($attributeDefinitionDto->tableName);
+            ->setTableName($tableName);
 
         $this->definitionRepository->persist($attributeDefinition);
 
-        return $attributeDefinition;
+        $insertedOptions = [];
+        if ($tableName) {
+            $this->dynamicTablesManager->createOptionsTableIfNotExists($tableName);
+            $insertedOptions = $this->dynamicListAttrManager->insertOptions(
+                $tableName,
+                $attributeDefinitionDto->options
+            );
+        }
+
+        return $attributeDefinition->setOptions($insertedOptions);
     }
 
     public function update(
@@ -69,10 +87,18 @@ class AttributeDefinitionManager
             ->setType($attributeDefinitionDto->type)
             ->setListOrder($attributeDefinitionDto->listOrder)
             ->setRequired($attributeDefinitionDto->required)
-            ->setDefaultValue($attributeDefinitionDto->defaultValue)
-            ->setTableName($attributeDefinitionDto->tableName);
+            ->setDefaultValue($attributeDefinitionDto->defaultValue);
 
-        return $attributeDefinition;
+        $syncedOptions = [];
+        if ($attributeDefinitionDto->type && $attributeDefinitionDto->type->isMultiValued()) {
+            $tableName = $attributeDefinition->getTableName() ?? $this->dynamicTablesManager
+                ->resolveTableName(name: $attributeDefinitionDto->name, type: $attributeDefinitionDto->type);
+            $this->dynamicTablesManager->createOptionsTableIfNotExists($tableName);
+
+            $syncedOptions = $this->dynamicListAttrManager->syncOptions($tableName, $attributeDefinitionDto->options);
+        }
+
+        return $attributeDefinition->setOptions($syncedOptions);
     }
 
     public function delete(SubscriberAttributeDefinition $attributeDefinition): void

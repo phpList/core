@@ -342,10 +342,6 @@
         <source>Subscription not found for this subscriber and list.</source>
         <target>Subscription not found for this subscriber and list.</target>
       </trans-unit>
-      <trans-unit id="xWcRIPk" resname="Attribute definition already exists">
-        <source>Attribute definition already exists</source>
-        <target>Attribute definition already exists</target>
-      </trans-unit>
       <trans-unit id="kQejNsl" resname="Another attribute with this name already exists.">
         <source>Another attribute with this name already exists.</source>
         <target>Another attribute with this name already exists.</target>
@@ -733,6 +729,14 @@ Thank you.</target>
       <trans-unit id="TBYUW2m" resname="Conflict: email and foreign key refer to different subscribers.">
         <source>Conflict: email and foreign key refer to different subscribers.</source>
         <target>__Conflict: email and foreign key refer to different subscribers.</target>
+      </trans-unit>
+      <trans-unit id="HHtgwG9" resname="Invalid email: %email%">
+        <source>Invalid email: %email%</source>
+        <target>__Invalid email: %email%</target>
+      </trans-unit>
+      <trans-unit id="VvdYY4S" resname="Value must be an AttributeTypeEnum or string.">
+        <source>Value must be an AttributeTypeEnum or string.</source>
+        <target>__Value must be an AttributeTypeEnum or string.</target>
       </trans-unit>
     </body>
   </file>

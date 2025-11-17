@@ -24,7 +24,6 @@ class SystemInfoCollector
 
     /**
      * Return key=>value pairs (already sanitized for safe logging/HTML display).
-     * @SuppressWarnings(PHPMD.StaticAccess)
      * @return array<string,string>
      */
     public function collect(): array

@@ -7,7 +7,6 @@ namespace PhpList\Core\Domain\Configuration\Service\Provider;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 // phpcs:disable Generic.Files.LineLength
-/** @SuppressWarnings(PHPMD.StaticAccess) */
 class DefaultConfigProvider
 {
     /**
