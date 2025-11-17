@@ -57,12 +57,16 @@ class AttributeDefinitionManager
 
         $this->definitionRepository->persist($attributeDefinition);
 
+        $insertedOptions = [];
         if ($tableName) {
             $this->dynamicTablesManager->createOptionsTableIfNotExists($tableName);
-            $this->dynamicListAttrManager->insertOptions($tableName, $attributeDefinitionDto->options);
+            $insertedOptions = $this->dynamicListAttrManager->insertOptions(
+                $tableName,
+                $attributeDefinitionDto->options
+            );
         }
 
-        return $attributeDefinition;
+        return $attributeDefinition->setOptions($insertedOptions);
     }
 
     public function update(
@@ -85,15 +89,16 @@ class AttributeDefinitionManager
             ->setRequired($attributeDefinitionDto->required)
             ->setDefaultValue($attributeDefinitionDto->defaultValue);
 
+        $syncedOptions = [];
         if ($attributeDefinitionDto->type && $attributeDefinitionDto->type->isMultiValued()) {
             $tableName = $attributeDefinition->getTableName() ?? $this->dynamicTablesManager
                 ->resolveTableName(name: $attributeDefinitionDto->name, type: $attributeDefinitionDto->type);
             $this->dynamicTablesManager->createOptionsTableIfNotExists($tableName);
 
-            $this->dynamicListAttrManager->syncOptions($tableName, $attributeDefinitionDto->options);
+            $syncedOptions = $this->dynamicListAttrManager->syncOptions($tableName, $attributeDefinitionDto->options);
         }
 
-        return $attributeDefinition;
+        return $attributeDefinition->setOptions($syncedOptions);
     }
 
     public function delete(SubscriberAttributeDefinition $attributeDefinition): void

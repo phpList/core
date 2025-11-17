@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Common\Model\AttributeTypeEnum;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
+use PhpList\Core\Domain\Subscription\Model\Dto\DynamicListAttrDto;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 
 #[ORM\Entity(repositoryClass: SubscriberAttributeDefinitionRepository::class)]
@@ -38,6 +39,14 @@ class SubscriberAttributeDefinition implements DomainModel, Identity
 
     #[ORM\Column(name: 'tablename', type: 'string', length: 255, nullable: true)]
     private ?string $tableName = null;
+
+    /**
+     * Doctrine does NOT map this property.
+     * It exists only for runtime usage (e.g. dynamic attribute options).
+     * Doctrine will ignore it completely.
+     * @var DynamicListAttrDto[]
+     */
+    private array $options = [];
 
     public function getId(): ?int
     {
@@ -119,5 +128,18 @@ class SubscriberAttributeDefinition implements DomainModel, Identity
     {
         $this->tableName = $tableName;
         return $this;
+    }
+
+    /** @param DynamicListAttrDto[] $options */
+    public function setOptions(array $options): self
+    {
+        $this->options = $options;
+        return $this;
+    }
+
+    /** @return DynamicListAttrDto[] */
+    public function getOptions(): array
+    {
+        return $this->options;
     }
 }

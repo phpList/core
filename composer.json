@@ -78,7 +78,8 @@
         "webklex/php-imap": "^6.2",
         "ext-imap": "*",
         "tatevikgr/rss-feed": "dev-main",
-        "ext-pdo": "*"
+        "ext-pdo": "*",
+        "ext-gd": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
