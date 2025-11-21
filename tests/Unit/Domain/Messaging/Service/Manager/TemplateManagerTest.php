@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Manager;
 
 use PhpList\Core\Domain\Messaging\Model\Dto\CreateTemplateDto;
+use PhpList\Core\Domain\Messaging\Model\Dto\UpdateTemplateDto;
 use PhpList\Core\Domain\Messaging\Model\Template;
 use PhpList\Core\Domain\Messaging\Repository\TemplateRepository;
 use PhpList\Core\Domain\Messaging\Service\Manager\TemplateImageManager;
@@ -30,11 +31,51 @@ class TemplateManagerTest extends TestCase
         $this->templateImageValidator = $this->createMock(TemplateImageValidator::class);
 
         $this->manager = new TemplateManager(
-            $this->templateRepository,
-            $this->templateImageManager,
-            $this->templateLinkValidator,
-            $this->templateImageValidator
+            templateRepository: $this->templateRepository,
+            templateImageManager: $this->templateImageManager,
+            templateLinkValidator: $this->templateLinkValidator,
+            templateImageValidator: $this->templateImageValidator
         );
+    }
+
+    public function testUpdateTemplateSuccessfully(): void
+    {
+        $existing = (new Template('Old Title'))
+            ->setContent('<html><body>Old</body></html>')
+            ->setText(null);
+
+        $dto = new UpdateTemplateDto(
+            title: 'New Title',
+            content: '<html><body>New</body></html>',
+            text: 'New text',
+            fileContent: null,
+            shouldCheckLinks: true,
+            shouldCheckImages: true,
+            shouldCheckExternalImages: true,
+        );
+
+        $this->templateLinkValidator->expects($this->once())
+            ->method('validate')
+            ->with($dto->content, $this->anything());
+
+        $this->templateImageManager->expects($this->once())
+            ->method('extractAllImages')
+            ->with($dto->content)
+            ->willReturn(['a.png']);
+
+        $this->templateImageValidator->expects($this->once())
+            ->method('validate')
+            ->with(['a.png'], $this->anything());
+
+        $this->templateImageManager->expects($this->once())
+            ->method('createImagesFromImagePaths')
+            ->with(['a.png'], $this->isInstanceOf(Template::class));
+
+        $updated = $this->manager->update(template: $existing, updateTemplateDto: $dto);
+
+        $this->assertSame('New Title', $updated->getTitle());
+        $this->assertSame('New text', $updated->getText());
+        $this->assertSame($dto->content, $updated->getContent());
     }
 
     public function testCreateTemplateSuccessfully(): void
