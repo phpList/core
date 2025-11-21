@@ -58,11 +58,11 @@ class SubscriberManager
         return $this->subscriberRepository->find($subscriberId);
     }
 
-    public function updateSubscriber(UpdateSubscriberDto $subscriberDto, Administrator $admin): Subscriber
-    {
-        /** @var Subscriber $subscriber */
-        $subscriber = $this->subscriberRepository->find($subscriberDto->subscriberId);
-
+    public function updateSubscriber(
+        Subscriber $subscriber,
+        UpdateSubscriberDto $subscriberDto,
+        Administrator $admin
+    ): Subscriber {
         $subscriber->setEmail($subscriberDto->email);
         $subscriber->setConfirmed($subscriberDto->confirmed);
         $subscriber->setBlacklisted($subscriberDto->blacklisted);

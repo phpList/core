@@ -18,18 +18,17 @@ use Symfony\Component\Translation\Translator;
 class SubscriberManagerTest extends TestCase
 {
     private SubscriberRepository|MockObject $subscriberRepository;
-    private EntityManagerInterface|MockObject $entityManager;
     private SubscriberManager $subscriberManager;
 
     protected function setUp(): void
     {
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
         $subscriberDeletionService = $this->createMock(SubscriberDeletionService::class);
 
         $this->subscriberManager = new SubscriberManager(
             subscriberRepository: $this->subscriberRepository,
-            entityManager: $this->entityManager,
+            entityManager: $entityManager,
             subscriberDeletionService: $subscriberDeletionService,
             translator: new Translator('en'),
             subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class)

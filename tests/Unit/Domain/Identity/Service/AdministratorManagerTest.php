@@ -54,7 +54,6 @@ class AdministratorManagerTest extends TestCase
         $admin->setPasswordHash('old_hash');
 
         $dto = new UpdateAdministratorDto(
-            administratorId: 1,
             loginName: 'new',
             password: 'newpass',
             email: 'new@example.com',

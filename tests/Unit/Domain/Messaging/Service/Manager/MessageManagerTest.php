@@ -104,7 +104,6 @@ class MessageManagerTest extends TestCase
         );
 
         $updateRequest = new UpdateMessageDto(
-            messageId: 1,
             content: $content,
             format: $format,
             metadata: $metadata,

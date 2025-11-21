@@ -13,7 +13,6 @@ use PhpList\Core\Domain\Messaging\Model\Dto\Message\MessageScheduleDto;
 class UpdateMessageDto implements MessageDtoInterface
 {
     public function __construct(
-        public readonly int $messageId,
         public readonly MessageContentDto $content,
         public readonly MessageFormatDto $format,
         public readonly MessageMetadataDto $metadata,
