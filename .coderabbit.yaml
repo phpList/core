@@ -73,3 +73,7 @@ reviews:
 #  code_guidelines:
 #    filePatterns:
 #      - ".github/AGENT.md"
+
+checks:
+  docstring_coverage:
+    enabled: false
