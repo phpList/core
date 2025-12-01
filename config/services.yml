@@ -50,3 +50,7 @@ services:
     lazy: true
     tags:
       - { name: 'doctrine.dbal.schema_filter', connection: 'default' }
+
+  PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler:
+    arguments:
+      $maxMailSize: '%messaging.max_mail_size%'
