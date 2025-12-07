@@ -140,3 +140,8 @@ services:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Messaging\Model\SendProcess
+
+  PhpList\Core\Domain\Messaging\Repository\MessageDataRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Messaging\Model\MessageData

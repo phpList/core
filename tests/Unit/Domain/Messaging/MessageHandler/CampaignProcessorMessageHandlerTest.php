@@ -6,6 +6,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\MessageHandler;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler;
 use PhpList\Core\Domain\Messaging\Model\Message;
@@ -15,6 +16,7 @@ use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
+use PhpList\Core\Domain\Messaging\Service\Manager\MessageDataManager;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
@@ -24,6 +26,7 @@ use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Psr\SimpleCache\CacheInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Translation\Translator;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -64,12 +67,16 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             subscriberProvider: $this->subscriberProvider,
             messagePreparator: $this->messagePreparator,
             logger: $this->logger,
+            cache: $this->createMock(CacheInterface::class),
             userMessageRepository: $this->userMessageRepository,
             timeLimiter: $this->timeLimiter,
             requeueHandler: $this->requeueHandler,
             translator: $this->translator,
             subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class),
             messageRepository: $this->messageRepository,
+            eventLogManager: $this->createMock(EventLogManager::class),
+            messageDataManager: $this->createMock(MessageDataManager::class),
+            maxMailSize: 0,
         );
     }
 
@@ -176,7 +183,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
 
         $this->messagePreparator->expects($this->once())
             ->method('processMessageLinks')
-            ->with($campaign, 1)
+            ->with($campaign, $subscriber)
             ->willReturn($campaign);
 
         $this->mailer->expects($this->once())
@@ -228,7 +235,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
 
         $this->messagePreparator->expects($this->once())
             ->method('processMessageLinks')
-            ->with($campaign, 1)
+            ->with($campaign, $subscriber)
             ->willReturn($campaign);
 
         $exception = new Exception('Test exception');

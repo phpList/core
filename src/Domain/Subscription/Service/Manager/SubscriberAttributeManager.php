@@ -38,7 +38,6 @@ class SubscriberAttributeManager
         SubscriberAttributeDefinition $definition,
         ?string $value = null
     ): SubscriberAttributeValue {
-        // phpcs:ignore Generic.Commenting.Todo
         // todo: clarify which attributes can be created/updated
         $subscriberAttribute = $this->attributeRepository
             ->findOneBySubscriberAndAttribute($subscriber, $definition);

@@ -34,6 +34,7 @@ class RateLimitedCampaignMailer
         return $email
             ->to($subscriber->getEmail())
             ->subject($processed->getContent()->getSubject())
+            // todo: check HTML2Text functionality
             ->text($processed->getContent()->getTextMessage())
             ->html($processed->getContent()->getText());
     }

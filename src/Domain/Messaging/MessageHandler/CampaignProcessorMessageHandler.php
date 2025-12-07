@@ -15,6 +15,7 @@ use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
+use PhpList\Core\Domain\Messaging\Service\Manager\MessageDataManager;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
@@ -23,6 +24,7 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use Psr\Log\LoggerInterface;
+use Psr\SimpleCache\CacheInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Mime\Email;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -35,47 +37,25 @@ use Throwable;
 #[AsMessageHandler]
 class CampaignProcessorMessageHandler
 {
-    private RateLimitedCampaignMailer $mailer;
-    private EntityManagerInterface $entityManager;
-    private SubscriberProvider $subscriberProvider;
-    private MessageProcessingPreparator $messagePreparator;
-    private LoggerInterface $logger;
-    private UserMessageRepository $userMessageRepository;
-    private MaxProcessTimeLimiter $timeLimiter;
-    private RequeueHandler $requeueHandler;
-    private TranslatorInterface $translator;
-    private SubscriberHistoryManager $subscriberHistoryManager;
-    private MessageRepository $messageRepository;
-    private EventLogManager $eventLogManager;
     private ?int $maxMailSize;
 
     public function __construct(
-        RateLimitedCampaignMailer $mailer,
-        EntityManagerInterface $entityManager,
-        SubscriberProvider $subscriberProvider,
-        MessageProcessingPreparator $messagePreparator,
-        LoggerInterface $logger,
-        UserMessageRepository $userMessageRepository,
-        MaxProcessTimeLimiter $timeLimiter,
-        RequeueHandler $requeueHandler,
-        TranslatorInterface $translator,
-        SubscriberHistoryManager $subscriberHistoryManager,
-        MessageRepository $messageRepository,
-        EventLogManager $eventLogManager,
+        private readonly RateLimitedCampaignMailer $mailer,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly SubscriberProvider $subscriberProvider,
+        private readonly MessageProcessingPreparator $messagePreparator,
+        private readonly LoggerInterface $logger,
+        private readonly CacheInterface $cache,
+        private readonly UserMessageRepository $userMessageRepository,
+        private readonly MaxProcessTimeLimiter $timeLimiter,
+        private readonly RequeueHandler $requeueHandler,
+        private readonly TranslatorInterface $translator,
+        private readonly SubscriberHistoryManager $subscriberHistoryManager,
+        private readonly MessageRepository $messageRepository,
+        private readonly EventLogManager $eventLogManager,
+        private readonly MessageDataManager $messageDataManager,
         ?int $maxMailSize = null,
     ) {
-        $this->mailer = $mailer;
-        $this->entityManager = $entityManager;
-        $this->subscriberProvider = $subscriberProvider;
-        $this->messagePreparator = $messagePreparator;
-        $this->logger = $logger;
-        $this->userMessageRepository = $userMessageRepository;
-        $this->timeLimiter = $timeLimiter;
-        $this->requeueHandler = $requeueHandler;
-        $this->translator = $translator;
-        $this->subscriberHistoryManager = $subscriberHistoryManager;
-        $this->messageRepository = $messageRepository;
-        $this->eventLogManager = $eventLogManager;
         $this->maxMailSize = $maxMailSize ?? 0;
     }
 
@@ -170,12 +150,13 @@ class CampaignProcessorMessageHandler
 
     private function handleEmailSending(mixed $campaign, Subscriber $subscriber, UserMessage $userMessage): void
     {
-        $processed = $this->messagePreparator->processMessageLinks($campaign, $subscriber->getId());
+        $processed = $this->messagePreparator->processMessageLinks($campaign, $subscriber);
+        // todo: precacheMessage
 
         try {
             $email = $this->mailer->composeEmail($processed, $subscriber);
             $this->mailer->send($email);
-            $this->checkMessageSizeOrSuspendCampaign($campaign, $email);
+            $this->checkMessageSizeOrSuspendCampaign($campaign, $email, $subscriber->hasHtmlEmail());
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
         } catch (MessageSizeLimitExceededException $e) {
             $this->updateMessageStatus($campaign, MessageStatus::Suspended);
@@ -194,12 +175,20 @@ class CampaignProcessorMessageHandler
     private function checkMessageSizeOrSuspendCampaign(
         Message $campaign,
         Email $email,
+        bool $hasHtmlEmail
     ): void {
         if ($this->maxMailSize <= 0) {
             return;
         }
+        $sizeName = $hasHtmlEmail ? 'htmlsize' : 'textsize';
+        $cacheKey = sprintf('messaging.size.%d.%s', $campaign->getId(), $sizeName);
+        if (!$this->cache->has($cacheKey)) {
+            $size = $this->calculateEmailSize($email);
+            $this->messageDataManager->setMessageData($campaign, $sizeName, $size);
+            $this->cache->set($cacheKey, $size);
+        }
 
-        $size = $this->calculateEmailSize($email);
+        $size = $this->cache->get($cacheKey);
         if ($size <= $this->maxMailSize) {
             return;
         }

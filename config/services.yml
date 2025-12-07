@@ -52,5 +52,6 @@ services:
       - { name: 'doctrine.dbal.schema_filter', connection: 'default' }
 
   PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler:
+    autowire: true
     arguments:
       $maxMailSize: '%messaging.max_mail_size%'
