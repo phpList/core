@@ -206,11 +206,11 @@ class MessageProcessingPreparatorTest extends TestCase
 
         $content->expects($this->once())
             ->method('setText')
-            ->with($this->stringContains('/' . MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=1'));
+            ->with($this->stringContains(MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=1'));
 
         $content->expects($this->once())
             ->method('setFooter')
-            ->with($this->stringContains('/' . MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=1'));
+            ->with($this->stringContains(MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=1'));
 
         $result = $this->preparator->processMessageLinks($message, $subscriber);
 

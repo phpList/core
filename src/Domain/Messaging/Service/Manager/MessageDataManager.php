@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Manager;
 
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\MessageData;
 use PhpList\Core\Domain\Messaging\Repository\MessageDataRepository;
@@ -12,6 +13,7 @@ class MessageDataManager
 {
     public function __construct(
         private readonly MessageDataRepository $messageDataRepository,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -91,7 +93,7 @@ class MessageDataManager
             'subject', 'campaigntitle' => is_string($value) ? strip_tags($value) : $value,
             'message' => is_string($value) ? $this->disableJavascript($value) : $value,
             'excludelist' => is_array($value) ? array_filter($value, fn ($val) => is_numeric($val)) : $value,
-            'footer' => preg_replace('/<!--.*-->/', '', $value),
+            'footer' => is_string($value) ? preg_replace('/<!--.*?-->/', '', $value) : $value,
             default => $value,
         };
     }
@@ -103,7 +105,7 @@ class MessageDataManager
             $entity = (new MessageData())
                 ->setId($campaign->getId())
                 ->setName($name);
-            $this->messageDataRepository->persist($entity);
+            $this->entityManager->persist($entity);
         }
 
         return $entity;

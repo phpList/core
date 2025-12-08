@@ -159,8 +159,11 @@ class CampaignProcessorMessageHandler
             $this->checkMessageSizeOrSuspendCampaign($campaign, $email, $subscriber->hasHtmlEmail());
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
         } catch (MessageSizeLimitExceededException $e) {
+            // stop after the first message if size is exceeded
             $this->updateMessageStatus($campaign, MessageStatus::Suspended);
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
+
+            throw $e;
         } catch (Throwable $e) {
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::NotSent);
             $this->logger->error($e->getMessage(), [

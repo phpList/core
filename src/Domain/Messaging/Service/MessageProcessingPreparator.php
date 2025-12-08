@@ -95,7 +95,7 @@ class MessageProcessingPreparator
     {
         foreach ($savedLinks as $linkTrack) {
             $originalUrl = $linkTrack->getUrl();
-            $trackUrl = '/' . self::LINK_TRACK_ENDPOINT . '?id=' . $linkTrack->getId();
+            $trackUrl = self::LINK_TRACK_ENDPOINT . '?id=' . $linkTrack->getId();
             $htmlText = str_replace('href="' . $originalUrl . '"', 'href="' . $trackUrl . '"', $htmlText);
         }
 
