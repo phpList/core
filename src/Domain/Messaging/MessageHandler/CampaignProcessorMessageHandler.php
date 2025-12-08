@@ -160,6 +160,7 @@ class CampaignProcessorMessageHandler
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
         } catch (MessageSizeLimitExceededException $e) {
             $this->updateMessageStatus($campaign, MessageStatus::Suspended);
+            $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
         } catch (Throwable $e) {
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::NotSent);
             $this->logger->error($e->getMessage(), [
