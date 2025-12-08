@@ -20,7 +20,7 @@ class RateLimitedCampaignMailer
         $this->limiter = $limiter;
     }
 
-    public function composeEmail(Message $processed, Subscriber $subscriber): Email
+    public function composeEmail(Message $processed, Subscriber $subscriber, Message\MessageContent $content): Email
     {
         $email = new Email();
         if ($processed->getOptions()->getFromField() !== '') {
@@ -33,10 +33,10 @@ class RateLimitedCampaignMailer
 
         return $email
             ->to($subscriber->getEmail())
-            ->subject($processed->getContent()->getSubject())
+            ->subject($content->getSubject())
             // todo: check HTML2Text functionality
-            ->text($processed->getContent()->getTextMessage())
-            ->html($processed->getContent()->getText());
+            ->text($content->getTextMessage())
+            ->html($content->getText());
     }
 
     /**

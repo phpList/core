@@ -128,7 +128,7 @@ class MessageProcessingPreparatorTest extends TestCase
 
     public function testProcessMessageLinksWhenLinkTrackingNotApplicable(): void
     {
-        $message = $this->createMock(Message::class);
+        $messageContent = $this->createMock(MessageContent::class);
         $subscriber = $this->createMock(Subscriber::class);
         $subscriber->method('getId')->willReturn(123);
         $subscriber->method('getEmail')->willReturn('test@example.com');
@@ -140,17 +140,18 @@ class MessageProcessingPreparatorTest extends TestCase
         $this->linkTrackService->expects($this->never())
             ->method('extractAndSaveLinks');
 
-        $message->expects($this->never())
-            ->method('getContent');
+        $messageContent->expects($this->never())
+            ->method('getText');
 
-        $result = $this->preparator->processMessageLinks($message, $subscriber);
+        $result = $this->preparator->processMessageLinks(1, $messageContent, $subscriber);
 
-        $this->assertSame($message, $result);
+        $this->assertSame($messageContent, $result);
     }
 
     public function testProcessMessageLinksWhenNoLinksExtracted(): void
     {
-        $message = $this->createMock(Message::class);
+        $messageId = 1;
+        $messageContent = $this->createMock(MessageContent::class);
         $subscriber = $this->createMock(Subscriber::class);
         $subscriber->method('getId')->willReturn(123);
         $subscriber->method('getEmail')->willReturn('test@example.com');
@@ -161,20 +162,19 @@ class MessageProcessingPreparatorTest extends TestCase
 
         $this->linkTrackService->expects($this->once())
             ->method('extractAndSaveLinks')
-            ->with($message, 123)
+            ->with($messageContent, 123, $messageId)
             ->willReturn([]);
 
-        $message->expects($this->never())
-            ->method('getContent');
+        $messageContent->expects($this->never())
+            ->method('getText');
 
-        $result = $this->preparator->processMessageLinks($message, $subscriber);
+        $result = $this->preparator->processMessageLinks($messageId, $messageContent, $subscriber);
 
-        $this->assertSame($message, $result);
+        $this->assertSame($messageContent, $result);
     }
 
     public function testProcessMessageLinksWithLinksExtracted(): void
     {
-        $message = $this->createMock(Message::class);
         $content = $this->createMock(MessageContent::class);
         $subscriber = $this->createMock(Subscriber::class);
         $subscriber->method('getId')->willReturn(123);
@@ -193,10 +193,8 @@ class MessageProcessingPreparatorTest extends TestCase
         $this->linkTrackService->method('isExtractAndSaveLinksApplicable')->willReturn(true);
         $this->linkTrackService
             ->method('extractAndSaveLinks')
-            ->with($message, 123)
+            ->with($content, 123)
             ->willReturn($savedLinks);
-
-        $message->method('getContent')->willReturn($content);
 
         $htmlContent = '<a href="https://example.com">Link 1</a> <a href="https://example.org">Link 2</a>';
         $content->method('getText')->willReturn($htmlContent);
@@ -212,8 +210,8 @@ class MessageProcessingPreparatorTest extends TestCase
             ->method('setFooter')
             ->with($this->stringContains(MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=1'));
 
-        $result = $this->preparator->processMessageLinks($message, $subscriber);
+        $result = $this->preparator->processMessageLinks(1, $content, $subscriber);
 
-        $this->assertSame($message, $result);
+        $this->assertSame($content, $result);
     }
 }

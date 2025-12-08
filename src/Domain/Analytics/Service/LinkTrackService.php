@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Analytics\Exception\MissingMessageIdException;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository;
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 
 class LinkTrackService
 {
@@ -38,14 +39,11 @@ class LinkTrackService
      * @return LinkTrack[] The saved LinkTrack entities
      * @throws MissingMessageIdException
      */
-    public function extractAndSaveLinks(Message $message, int $userId): array
+    public function extractAndSaveLinks(MessageContent $content, int $userId, ?int $messageId = null): array
     {
         if (!$this->isExtractAndSaveLinksApplicable()) {
             return [];
         }
-
-        $content = $message->getContent();
-        $messageId = $message->getId();
 
         if ($messageId === null) {
             throw new MissingMessageIdException();

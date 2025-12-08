@@ -17,6 +17,7 @@ use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\Manager\MessageDataManager;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
+use PhpList\Core\Domain\Messaging\Service\MessagePrecacheService;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
@@ -54,6 +55,7 @@ class CampaignProcessorMessageHandler
         private readonly MessageRepository $messageRepository,
         private readonly EventLogManager $eventLogManager,
         private readonly MessageDataManager $messageDataManager,
+        private readonly MessagePrecacheService $precacheService,
         ?int $maxMailSize = null,
     ) {
         $this->maxMailSize = $maxMailSize ?? 0;
@@ -70,6 +72,8 @@ class CampaignProcessorMessageHandler
 
             return;
         }
+
+        $messageContent = $this->precacheService->getOrCacheBaseMessageContent($campaign);
 
         $this->updateMessageStatus($campaign, MessageStatus::Prepared);
         $subscribers = $this->subscriberProvider->getSubscribersForMessage($campaign);
@@ -100,7 +104,7 @@ class CampaignProcessorMessageHandler
                 continue;
             }
 
-            $this->handleEmailSending($campaign, $subscriber, $userMessage);
+            $this->handleEmailSending($campaign, $subscriber, $userMessage, $messageContent);
         }
 
         if ($stoppedEarly && $this->requeueHandler->handle($campaign)) {
@@ -131,7 +135,7 @@ class CampaignProcessorMessageHandler
         $this->entityManager->flush();
     }
 
-    private function handleInvalidEmail(UserMessage $userMessage, Subscriber $subscriber, mixed $campaign): void
+    private function handleInvalidEmail(UserMessage $userMessage, Subscriber $subscriber, Message $campaign): void
     {
         $this->updateUserMessageStatus($userMessage, UserMessageStatus::InvalidEmailAddress);
         $this->unconfirmSubscriber($subscriber);
@@ -148,13 +152,16 @@ class CampaignProcessorMessageHandler
         );
     }
 
-    private function handleEmailSending(mixed $campaign, Subscriber $subscriber, UserMessage $userMessage): void
-    {
-        $processed = $this->messagePreparator->processMessageLinks($campaign, $subscriber);
-        // todo: precacheMessage
+    private function handleEmailSending(
+        Message $campaign,
+        Subscriber $subscriber,
+        UserMessage $userMessage,
+        Message\MessageContent $precachedContent,
+    ): void {
+        $processed = $this->messagePreparator->processMessageLinks($campaign->getId(), $precachedContent, $subscriber);
 
         try {
-            $email = $this->mailer->composeEmail($processed, $subscriber);
+            $email = $this->mailer->composeEmail($campaign, $subscriber, $processed);
             $this->mailer->send($email);
             $this->checkMessageSizeOrSuspendCampaign($campaign, $email, $subscriber->hasHtmlEmail());
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
@@ -225,7 +232,7 @@ class CampaignProcessorMessageHandler
         foreach ($email->toIterable() as $line) {
             $size += strlen($line);
         }
-        // todo: setMessageData($messageid, $sizename, $mail->mailsize);
+
         return $size;
     }
 }

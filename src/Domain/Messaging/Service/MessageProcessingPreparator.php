@@ -7,6 +7,7 @@ namespace PhpList\Core\Domain\Messaging\Service;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
 use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -60,19 +61,21 @@ class MessageProcessingPreparator
     /**
      * Process message content to extract URLs and replace them with link track URLs
      */
-    public function processMessageLinks(Message $message, Subscriber $subscriber): Message
-    {
+    public function processMessageLinks(
+        int $campaignId,
+        MessageContent $content,
+        Subscriber $subscriber
+    ): MessageContent {
         if (!$this->linkTrackService->isExtractAndSaveLinksApplicable()) {
-            return $message;
+            return $content;
         }
 
-        $savedLinks = $this->linkTrackService->extractAndSaveLinks($message, $subscriber->getId());
+        $savedLinks = $this->linkTrackService->extractAndSaveLinks($content, $subscriber->getId(), $campaignId);
 
         if (empty($savedLinks)) {
-            return $message;
+            return $content;
         }
 
-        $content = $message->getContent();
         $htmlText = $content->getText();
         $footer = $content->getFooter();
         // todo: check other configured data that should be used in mail formatting/creation
@@ -88,7 +91,7 @@ class MessageProcessingPreparator
             $content->setFooter($footer);
         }
 
-        return $message;
+        return $content;
     }
 
     private function replaceLinks(array $savedLinks, string $htmlText): string
