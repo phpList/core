@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
+use HTMLPurifier;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\MessageData;
 use PhpList\Core\Domain\Messaging\Repository\MessageDataRepository;
@@ -14,6 +15,7 @@ class MessageDataManager
     public function __construct(
         private readonly MessageDataRepository $messageDataRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly HTMLPurifier $purifier,
     ) {
     }
 
@@ -68,30 +70,11 @@ class MessageDataManager
         $entity->setData($value !== null ? (string) $value : null);
     }
 
-    /**
-     * Remove potentially harmful JavaScript from HTML content.
-     *
-     * This is a conservative cleaner: removes <script> blocks, javascript: URLs,
-     * and inline event handlers (on*) attributes.
-     */
-    private function disableJavascript(string $html): string
-    {
-        // Remove script tags and their content
-        $clean = preg_replace('#<script\b[^>]*>.*?</script>#is', '', $html) ?? $html;
-
-        // Remove on*="..." event handler attributes
-        $clean = preg_replace('/\s+on[a-zA-Z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $clean) ?? $clean;
-
-        // Neutralize javascript: and data: URIs in href/src/style
-        $clean = preg_replace('/\b(href|src)\s*=\s*("|\')\s*(javascript:|data:)[^\2]*\2/i', '$1="#"', $clean) ?? $clean;
-        return preg_replace('/\bstyle\s*=\s*("|\')[^\1]*\1/i', '', $clean) ?? $clean;
-    }
-
     private function normalizeValueByName(string $name, mixed $value)
     {
         return match ($name) {
             'subject', 'campaigntitle' => is_string($value) ? strip_tags($value) : $value,
-            'message' => is_string($value) ? $this->disableJavascript($value) : $value,
+            'message' => is_string($value) ? $this->purifier->purify($value) : $value,
             'excludelist' => is_array($value) ? array_filter($value, fn ($val) => is_numeric($val)) : $value,
             'footer' => is_string($value) ? preg_replace('/<!--.*?-->/', '', $value) : $value,
             default => $value,

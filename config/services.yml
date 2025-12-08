@@ -51,7 +51,20 @@ services:
     tags:
       - { name: 'doctrine.dbal.schema_filter', connection: 'default' }
 
-  PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler:
-    autowire: true
+  HTMLPurifier_Config:
+    class: HTMLPurifier_Config
+    factory: [ 'HTMLPurifier_Config', 'createDefault' ]
+    calls:
+      - [ set, [ 'Cache.SerializerPath', '%kernel.cache_dir%/htmlpurifier' ] ]
+      - [ set, [ 'HTML.ForbiddenElements', [ 'script', 'style' ] ] ]
+      - [ set, [ 'CSS.Disable', true ] ]
+      - [ set, [ 'URI.DisableJavaScript', true ] ]
+      - [ set, [ 'URI.DisableDataURI', true ] ]
+      - [ set, [ 'HTML.Doctype', 'HTML5' ] ]
+      - [ set, [ 'HTML.Allowed', 'p,br,b,strong,i,em,u,a[href|title],ul,ol,li,blockquote,img[src|alt|title],span,div'] ]
+
+  HTMLPurifier:
+    class: HTMLPurifier
     arguments:
-      $maxMailSize: '%messaging.max_mail_size%'
+      - '@HTMLPurifier_Config'
+

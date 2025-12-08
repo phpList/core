@@ -29,6 +29,11 @@ services:
         autoconfigure: true
         tags: [ 'messenger.message_handler' ]
 
+    PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler:
+        autowire: true
+        arguments:
+            $maxMailSize: '%messaging.max_mail_size%'
+
     PhpList\Core\Domain\Subscription\MessageHandler\DynamicTableMessageHandler:
         autowire: true
         autoconfigure: true
