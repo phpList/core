@@ -46,7 +46,7 @@ class RateLimitedCampaignMailerTest extends TestCase
         $subscriber = new Subscriber();
         $this->setSubscriberEmail($subscriber, 'user@example.com');
 
-        $email = $this->sut->composeEmail($message, $subscriber);
+        $email = $this->sut->composeEmail($message, $subscriber, $message->getContent());
 
         $this->assertInstanceOf(Email::class, $email);
         $this->assertSame('user@example.com', $email->getTo()[0]->getAddress());
@@ -70,7 +70,7 @@ class RateLimitedCampaignMailerTest extends TestCase
         $subscriber = new Subscriber();
         $this->setSubscriberEmail($subscriber, 'user2@example.com');
 
-        $email = $this->sut->composeEmail($message, $subscriber);
+        $email = $this->sut->composeEmail($message, $subscriber, $message->getContent());
 
         $this->assertSame('user2@example.com', $email->getTo()[0]->getAddress());
         $this->assertSame('No headers', $email->getSubject());

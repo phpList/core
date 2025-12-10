@@ -110,3 +110,7 @@ services:
   PhpList\Core\Domain\Messaging\Service\Manager\SendProcessManager:
     autowire: true
     autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\Manager\MessageDataManager:
+    autowire: true
+    autoconfigure: true

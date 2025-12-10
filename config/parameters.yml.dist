@@ -87,3 +87,5 @@ parameters:
     env(MAILQUEUE_THROTTLE): '5'
     messaging.max_process_time: '%%env(MESSAGING_MAX_PROCESS_TIME)%%'
     env(MESSAGING_MAX_PROCESS_TIME): '600'
+    messaging.max_mail_size: '%%env(MAX_MAILSIZE)%%'
+    env(MAX_MAILSIZE): '209715200'

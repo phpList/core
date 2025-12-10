@@ -44,7 +44,7 @@ class LinkTrackServiceTest extends TestCase
 
         $this->linkTrackRepository->expects(self::never())->method('persist');
 
-        $result = $this->subject->extractAndSaveLinks($message, $userId);
+        $result = $this->subject->extractAndSaveLinks($messageContent, $userId, $messageId);
 
         self::assertEmpty($result);
     }
@@ -71,7 +71,7 @@ class LinkTrackServiceTest extends TestCase
                 return null;
             });
 
-        $result = $this->subject->extractAndSaveLinks($message, $userId);
+        $result = $this->subject->extractAndSaveLinks($messageContent, $userId, $messageId);
 
         self::assertCount(2, $result);
         self::assertSame('https://example.com', $result[0]->getUrl());
@@ -100,7 +100,7 @@ class LinkTrackServiceTest extends TestCase
                 return null;
             });
 
-        $result = $this->subject->extractAndSaveLinks($message, $userId);
+        $result = $this->subject->extractAndSaveLinks($messageContent, $userId, $messageId);
 
         self::assertCount(2, $result);
         self::assertSame('https://example.com', $result[0]->getUrl());
@@ -128,7 +128,7 @@ class LinkTrackServiceTest extends TestCase
                 return null;
             });
 
-        $result = $this->subject->extractAndSaveLinks($message, $userId);
+        $result = $this->subject->extractAndSaveLinks($messageContent, $userId, $messageId);
 
         self::assertCount(1, $result);
         self::assertSame('https://example.com', $result[0]->getUrl());
@@ -155,7 +155,7 @@ class LinkTrackServiceTest extends TestCase
                 return null;
             });
 
-        $result = $this->subject->extractAndSaveLinks($message, $userId);
+        $result = $this->subject->extractAndSaveLinks($messageContent, $userId, $messageId);
 
         self::assertCount(1, $result);
         self::assertSame('https://footer.com', $result[0]->getUrl());
@@ -175,7 +175,7 @@ class LinkTrackServiceTest extends TestCase
         $this->expectException(MissingMessageIdException::class);
         $this->expectExceptionMessage('Message must have an ID');
 
-        $this->subject->extractAndSaveLinks($message, $userId);
+        $this->subject->extractAndSaveLinks($messageContent, $userId, $message->getId());
     }
 
     public function testIsExtractAndSaveLinksApplicableWhenClickTrackIsTrue(): void
@@ -221,7 +221,7 @@ class LinkTrackServiceTest extends TestCase
         $this->linkTrackRepository->expects(self::never())
             ->method('persist');
 
-        $result = $this->subject->extractAndSaveLinks($message, $userId);
+        $result = $this->subject->extractAndSaveLinks($messageContent, $userId, $message->getId());
 
         self::assertCount(1, $result);
         self::assertSame($existingLinkTrack, $result[0]);

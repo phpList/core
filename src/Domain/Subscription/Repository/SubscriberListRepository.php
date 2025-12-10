@@ -45,4 +45,12 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
             ->getQuery()
             ->getResult();
     }
+
+    public function getAllActive(): array
+    {
+        return $this->createQueryBuilder('l')
+            ->where('l.active = true')
+            ->getQuery()
+            ->getResult();
+    }
 }

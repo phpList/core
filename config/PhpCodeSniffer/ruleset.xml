@@ -30,7 +30,9 @@
 
     <!-- Commenting -->
     <rule ref="Generic.Commenting.Fixme"/>
-    <rule ref="Generic.Commenting.Todo"/>
+    <rule ref="Generic.Commenting.Todo">
+        <severity>0</severity>
+    </rule>
     <rule ref="PEAR.Commenting.InlineComment"/>
     <rule ref="Squiz.Commenting.DocCommentAlignment"/>
     <rule ref="Squiz.Commenting.EmptyCatchComment"/>
