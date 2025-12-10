@@ -70,6 +70,8 @@ class PermissionChecker
         }
 
         if ($resource instanceof Message && $relatedClass === SubscriberList::class) {
+            // todo: check which one is correct
+            // return $resource->getListMessages()->map(fn(ListMessage $lm) => $lm->getList())->toArray();
             return $resource->getListMessages()->map(fn($lm) => $lm->getSubscriberList())->toArray();
         }
 

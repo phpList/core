@@ -22,8 +22,9 @@ class MessagePrecacheService
     {
         $cacheKey = sprintf('messaging.message.base.%d', $campaign->getId());
 
-        if ($this->cache->has($cacheKey) && $this->getFromCache($cacheKey)) {
-            return $this->getFromCache($cacheKey);
+        $cached = $this->getFromCache($cacheKey);
+        if ($cached !== null) {
+            return $cached;
         }
 
         $content = $campaign->getContent();

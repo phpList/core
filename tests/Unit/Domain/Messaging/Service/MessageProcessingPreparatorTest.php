@@ -193,7 +193,7 @@ class MessageProcessingPreparatorTest extends TestCase
         $this->linkTrackService->method('isExtractAndSaveLinksApplicable')->willReturn(true);
         $this->linkTrackService
             ->method('extractAndSaveLinks')
-            ->with($content, 123)
+            ->with($content, 123, 1)
             ->willReturn($savedLinks);
 
         $htmlContent = '<a href="https://example.com">Link 1</a> <a href="https://example.org">Link 2</a>';
