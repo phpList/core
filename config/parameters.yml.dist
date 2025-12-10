@@ -89,3 +89,5 @@ parameters:
     env(MESSAGING_MAX_PROCESS_TIME): '600'
     messaging.max_mail_size: '%%env(MAX_MAILSIZE)%%'
     env(MAX_MAILSIZE): '209715200'
+    messaging.default_message_age: '%env(DEFAULT_MESSAGEAGE)%'
+    env(DEFAULT_MESSAGEAGE): '691200'

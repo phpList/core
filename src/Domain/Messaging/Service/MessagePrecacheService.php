@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service;
 
+use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use Psr\SimpleCache\CacheInterface;
 
 class MessagePrecacheService
 {
-    public function __construct(private readonly CacheInterface $cache)
-    {
+    public function __construct(
+        private readonly CacheInterface $cache,
+        private readonly MessageDataLoader $messageDataLoader,
+        private readonly ConfigProvider $configProvider,
+    ) {
     }
 
     /**
@@ -26,6 +31,10 @@ class MessagePrecacheService
         if ($cached !== null) {
             return $cached;
         }
+
+        $domain = $this->configProvider->getValue(ConfigOption::Domain);
+
+        $loadedMessageData = ($this->messageDataLoader)($campaign);
 
         $content = $campaign->getContent();
         $subject = $content->getSubject();
