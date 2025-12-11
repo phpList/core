@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service;
 
 use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
-use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
-use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -24,7 +22,6 @@ class MessageProcessingPreparator
         private readonly MessageRepository $messageRepository,
         private readonly LinkTrackService $linkTrackService,
         private readonly TranslatorInterface $translator,
-        private readonly UserPersonalizer $userPersonalizer,
     ) {
     }
 
@@ -78,16 +75,14 @@ class MessageProcessingPreparator
 
         $htmlText = $content->getText();
         $footer = $content->getFooter();
-        // todo: check other configured data that should be used in mail formatting/creation
+        // todo: check if getTextMessage should replace links as well
         if ($htmlText !== null) {
             $htmlText = $this->replaceLinks($savedLinks, $htmlText);
-            $htmlText = $this->userPersonalizer->personalize($htmlText, $subscriber->getEmail());
             $content->setText($htmlText);
         }
 
         if ($footer !== null) {
             $footer = $this->replaceLinks($savedLinks, $footer);
-            $footer = $this->userPersonalizer->personalize($footer, $subscriber->getEmail());
             $content->setFooter($footer);
         }
 
