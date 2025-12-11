@@ -7,6 +7,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\MessageHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
+use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler;
 use PhpList\Core\Domain\Messaging\Model\Message;
@@ -57,9 +58,17 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $requeueHandler = $this->createMock(RequeueHandler::class);
         $this->translator = $this->createMock(Translator::class);
         $this->precacheService = $this->createMock(MessagePrecacheService::class);
+        $userPersonalizer = $this->createMock(UserPersonalizer::class);
 
         $timeLimiter->method('start');
         $timeLimiter->method('shouldStop')->willReturn(false);
+
+        // Ensure personalization returns original text so assertions on replaced links remain valid
+        $userPersonalizer
+            ->method('personalize')
+            ->willReturnCallback(function (string $text) {
+                return $text;
+            });
 
         $this->handler = new CampaignProcessorMessageHandler(
             mailer: $this->mailer,
@@ -77,6 +86,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             eventLogManager: $this->createMock(EventLogManager::class),
             messageDataManager: $this->createMock(MessageDataManager::class),
             precacheService: $this->precacheService,
+            userPersonalizer: $userPersonalizer,
             maxMailSize: 0,
         );
     }
@@ -166,6 +176,8 @@ class CampaignProcessorMessageHandlerTest extends TestCase
     {
         $campaign = $this->createMock(Message::class);
         $content = $this->createContentMock();
+        $content->method('getText')->willReturn('<p>Test HTML message</p>');
+        $content->method('getFooter')->willReturn('<p>Test footer message</p>');
         $campaign->method('getContent')->willReturn($content);
         $metadata = $this->createMock(MessageMetadata::class);
         $campaign->method('getMetadata')->willReturn($metadata);
@@ -225,6 +237,8 @@ class CampaignProcessorMessageHandlerTest extends TestCase
     {
         $campaign = $this->createMock(Message::class);
         $content = $this->createContentMock();
+        $content->method('getText')->willReturn('<p>Test HTML message</p>');
+        $content->method('getFooter')->willReturn('<p>Test footer message</p>');
         $metadata = $this->createMock(MessageMetadata::class);
         $campaign->method('getContent')->willReturn($content);
         $campaign->method('getMetadata')->willReturn($metadata);
@@ -278,6 +292,8 @@ class CampaignProcessorMessageHandlerTest extends TestCase
     {
         $campaign = $this->createCampaignMock();
         $content = $this->createContentMock();
+        $content->method('getText')->willReturn('<p>Test HTML message</p>');
+        $content->method('getFooter')->willReturn('<p>Test footer message</p>');
         $metadata = $this->createMock(MessageMetadata::class);
         $campaign->method('getMetadata')->willReturn($metadata);
         $campaign->method('getId')->willReturn(1);

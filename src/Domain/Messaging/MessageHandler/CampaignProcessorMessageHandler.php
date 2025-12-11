@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\MessageHandler;
 
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Exception\MessageSizeLimitExceededException;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\Message\SyncCampaignProcessorMessage;
@@ -56,6 +57,7 @@ class CampaignProcessorMessageHandler
         private readonly EventLogManager $eventLogManager,
         private readonly MessageDataManager $messageDataManager,
         private readonly MessagePrecacheService $precacheService,
+        private readonly UserPersonalizer $userPersonalizer,
         ?int $maxMailSize = null,
     ) {
         $this->maxMailSize = $maxMailSize ?? 0;
@@ -159,6 +161,8 @@ class CampaignProcessorMessageHandler
         Message\MessageContent $precachedContent,
     ): void {
         $processed = $this->messagePreparator->processMessageLinks($campaign->getId(), $precachedContent, $subscriber);
+        $processed->setText($this->userPersonalizer->personalize($processed->getText(), $subscriber->getEmail()));
+        $processed->setFooter($this->userPersonalizer->personalize($processed->getFooter(), $subscriber->getEmail()));
 
         try {
             $email = $this->mailer->composeEmail($campaign, $subscriber, $processed);

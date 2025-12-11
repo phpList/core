@@ -20,23 +20,26 @@ class RateLimitedCampaignMailer
         $this->limiter = $limiter;
     }
 
-    public function composeEmail(Message $processed, Subscriber $subscriber, Message\MessageContent $content): Email
-    {
+    public function composeEmail(
+        Message $message,
+        Subscriber $subscriber,
+        Message\MessageContent $processedContent,
+    ): Email {
         $email = new Email();
-        if ($processed->getOptions()->getFromField() !== '') {
-            $email->from($processed->getOptions()->getFromField());
+        if ($message->getOptions()->getFromField() !== '') {
+            $email->from($message->getOptions()->getFromField());
         }
 
-        if ($processed->getOptions()->getReplyTo() !== '') {
-            $email->replyTo($processed->getOptions()->getReplyTo());
+        if ($message->getOptions()->getReplyTo() !== '') {
+            $email->replyTo($message->getOptions()->getReplyTo());
         }
 
         return $email
             ->to($subscriber->getEmail())
-            ->subject($content->getSubject())
+            ->subject($processedContent->getSubject())
             // todo: check HTML2Text functionality
-            ->text($content->getTextMessage())
-            ->html($content->getText());
+            ->text($processedContent->getTextMessage())
+            ->html($processedContent->getText());
     }
 
     /**
