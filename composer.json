@@ -79,7 +79,8 @@
         "ext-imap": "*",
         "tatevikgr/rss-feed": "dev-main",
         "ext-pdo": "*",
-        "ezyang/htmlpurifier": "^4.19"
+        "ezyang/htmlpurifier": "^4.19",
+        "ext-libxml": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",

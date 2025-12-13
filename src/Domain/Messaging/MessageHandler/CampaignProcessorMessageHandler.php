@@ -76,6 +76,11 @@ class CampaignProcessorMessageHandler
         }
 
         $messageContent = $this->precacheService->getOrCacheBaseMessageContent($campaign);
+        if (!$messageContent) {
+            $this->updateMessageStatus($campaign, MessageStatus::Suspended);
+
+            return;
+        }
 
         $this->updateMessageStatus($campaign, MessageStatus::Prepared);
         $subscribers = $this->subscriberProvider->getSubscribersForMessage($campaign);

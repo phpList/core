@@ -24,4 +24,5 @@ enum ConfigOption: string
     case NotifyStartDefault = 'notifystart_default';
     case NotifyEndDefault = 'notifyend_default';
     case WordWrap = 'wordwrap';
+    case RemoteUrlAppend = 'remoteurl_append';
 }
