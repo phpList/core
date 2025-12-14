@@ -96,3 +96,5 @@ parameters:
 
     phplist.upload_images_dir: '%%env(PHPLIST_UPLOADIMAGES_DIR)%%'
     env(PHPLIST_UPLOADIMAGES_DIR): 'images'
+    phplist.public_schema: '%%env(PUBLIC_SCHEMA)%%'
+    env(PUBLIC_SCHEMA): 'http'

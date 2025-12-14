@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service;
 
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
@@ -23,7 +24,7 @@ class RateLimitedCampaignMailer
     public function composeEmail(
         Message $message,
         Subscriber $subscriber,
-        Message\MessageContent $processedContent,
+        MessagePrecacheDto $processedContent,
     ): Email {
         $email = new Email();
         if ($message->getOptions()->getFromField() !== '') {
@@ -36,10 +37,10 @@ class RateLimitedCampaignMailer
 
         return $email
             ->to($subscriber->getEmail())
-            ->subject($processedContent->getSubject())
-            // todo: check HTML2Text functionality
-            ->text($processedContent->getTextMessage())
-            ->html($processedContent->getText());
+            ->subject($processedContent->subject)
+            ->text($processedContent->textContent)
+            // todo: check htmlFooterit should be html of textContent
+            ->html($processedContent->htmlFooter);
     }
 
     /**

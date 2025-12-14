@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Identity\Repository\AdminAttributeDefinitionRepository;
 use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\TemplateImage;
 use PhpList\Core\Domain\Messaging\Repository\TemplateImageRepository;
@@ -36,110 +37,99 @@ class MessagePrecacheService
         private readonly EntityManagerInterface $entityManager,
         private readonly bool $useManualTextPart,
         private readonly string $uploadImageDir,
+        private readonly string $publicSchema,
     ) {
     }
 
     /**
      * Retrieve the base (unpersonalized) message content for a campaign from cache,
-     * or cache it on first access. Legacy-like behavior: handle [URL:] token fetch
-     * and basic placeholder replacements.
+     * or cache it on first access. Handle [URL:] token fetch and basic placeholder replacements.
      */
-    public function getOrCacheBaseMessageContent(Message $campaign, ?bool $forwardContent = false): ?Message\MessageContent
+    public function getOrCacheBaseMessageContent(Message $campaign, ?bool $forwardContent = false): ?MessagePrecacheDto
     {
         $cacheKey = sprintf('messaging.message.base.%d', $campaign->getId());
 
-        $cached = $this->getFromCache($cacheKey);
+        $cached = $this->cache->get($cacheKey);
         if ($cached !== null) {
             return $cached;
         }
         $domain = $this->configProvider->getValue(ConfigOption::Domain);
-        $messageId = $campaign->getId();
 
         $loadedMessageData = ($this->messageDataLoader)($campaign);
+        $messagePrecacheDto = new MessagePrecacheDto();
 
         // parse the reply-to field into its components - email and name
         if (preg_match('/([^ ]+@[^ ]+)/', $loadedMessageData['replyto'], $regs)) {
             // if there is an email in the from, rewrite it as "name <email>"
             $loadedMessageData['replyto'] = str_replace($regs[0], '', $loadedMessageData['replyto']);
-            $cached[$messageId]['replytoemail'] = $regs[0];
+            $replyToEmail = $regs[0];
             // if the email has < and > take them out here
-            $cached[$messageId]['replytoemail'] = str_replace('<', '', $cached[$messageId]['replytoemail']);
-            $cached[$messageId]['replytoemail'] = str_replace('>', '', $cached[$messageId]['replytoemail']);
+            $replyToEmail = str_replace('<', '', $replyToEmail);
+            $replyToEmail = str_replace('>', '', $replyToEmail);
+            $messagePrecacheDto->replyToEmail = $replyToEmail;
             // make sure there are no quotes around the name
-            $cached[$messageId]['replytoname'] = str_replace('"', '', ltrim(rtrim($loadedMessageData['replyto'])));
+            $messagePrecacheDto->replyToName = str_replace('"', '', ltrim(rtrim($loadedMessageData['replyto'])));
         } elseif (strpos($loadedMessageData['replyto'], ' ')) {
             // if there is a space, we need to add the email
-            $cached[$messageId]['replytoname'] = $loadedMessageData['replyto'];
-            $cached[$messageId]['replytoemail'] = "listmaster@$domain";
-        } else {
-            if (!empty($loadedMessageData['replyto'])) {
-                $cached[$messageId]['replytoemail'] = $loadedMessageData['replyto']."@$domain";
-
-                //# makes more sense not to add the domain to the word, but the help says it does
-                //# so let's keep it for now
-                $cached[$messageId]['replytoname'] = $loadedMessageData['replyto']."@$domain";
-            }
+            $messagePrecacheDto->replyToName = $loadedMessageData['replyto'];
+            $messagePrecacheDto->replyToEmail = "listmaster@$domain";
+        } elseif (!empty($loadedMessageData['replyto'])) {
+            $messagePrecacheDto->replyToEmail = $loadedMessageData['replyto']."@$domain";
+            //# makes more sense not to add the domain to the word, but the help says it does
+            //# so let's keep it for now
+            $messagePrecacheDto->replyToName = $loadedMessageData['replyto']."@$domain";
         }
 
-        $cached[$messageId]['fromname'] = $loadedMessageData['fromname'];
-        $cached[$messageId]['fromemail'] = $loadedMessageData['fromemail'];
-        $cached[$messageId]['to'] = $loadedMessageData['tofield'];
+        $messagePrecacheDto->fromName = $loadedMessageData['fromname'];
+        $messagePrecacheDto->fromEmail = $loadedMessageData['fromemail'];
+        $messagePrecacheDto->to = $loadedMessageData['tofield'];
         //0013076: different content when forwarding 'to a friend'
-        $cached[$messageId]['subject'] = $forwardContent ? stripslashes($loadedMessageData['forwardsubject']) : $loadedMessageData['subject'];
+        $messagePrecacheDto->subject = $forwardContent ? stripslashes($loadedMessageData['forwardsubject']) : $loadedMessageData['subject'];
         //0013076: different content when forwarding 'to a friend'
-        $cached[$messageId]['content'] = $forwardContent ? stripslashes($loadedMessageData['forwardmessage']) : $loadedMessageData['message'];
+        $messagePrecacheDto->content = $forwardContent ? stripslashes($loadedMessageData['forwardmessage']) : $loadedMessageData['message'];
         if ($this->useManualTextPart && !$forwardContent) {
-            $cached[$messageId]['textcontent'] = $loadedMessageData['textmessage'];
-        } else {
-            $cached[$messageId]['textcontent'] = '';
+            $messagePrecacheDto->textContent = $loadedMessageData['textmessage'];
         }
         //0013076: different content when forwarding 'to a friend'
-        $cached[$messageId]['footer'] = $forwardContent ? stripslashes($loadedMessageData['forwardfooter']) : $loadedMessageData['footer'];
+        $messagePrecacheDto->footer = $forwardContent ? stripslashes($loadedMessageData['forwardfooter']) : $loadedMessageData['footer'];
 
-        if (strip_tags($cached[$messageId]['footer']) != $cached[$messageId]['footer']) {
-            $cached[$messageId]['textfooter'] = ($this->htmlToText)($cached[$messageId]['footer']);
-            $cached[$messageId]['htmlfooter'] = $cached[$messageId]['footer'];
+        if (strip_tags($messagePrecacheDto->footer ) !== $messagePrecacheDto->footer) {
+            $messagePrecacheDto->textFooter = ($this->htmlToText)($messagePrecacheDto->footer);
+            $messagePrecacheDto->htmlFooter = $messagePrecacheDto->footer;
         } else {
-            $cached[$messageId]['textfooter'] = $cached[$messageId]['footer'];
-            $cached[$messageId]['htmlfooter'] = ($this->textParser)($cached[$messageId]['footer']);
+            $messagePrecacheDto->textFooter = $messagePrecacheDto->footer;
+            $messagePrecacheDto->htmlFooter = ($this->textParser)($messagePrecacheDto->footer);
         }
 
-        $cached[$messageId]['htmlformatted'] = strip_tags($cached[$messageId]['content']) != $cached[$messageId]['content'];
-        $cached[$messageId]['sendformat'] = $loadedMessageData['sendformat'];
+        $messagePrecacheDto->htmlFormatted = strip_tags($messagePrecacheDto->content) !== $messagePrecacheDto->content;
+        $messagePrecacheDto->sendFormat = $loadedMessageData['sendformat'];
 
-        $cached[$messageId]['template'] = '';
-        $cached[$messageId]['template_text'] = '';
-        $cached[$messageId]['templateid'] = 0;
         if ($loadedMessageData['template']) {
             $template = $this->templateRepository->findOneById($loadedMessageData['template']);
             if ($template) {
-                $cached[$messageId]['template'] = stripslashes($template->getContent());
-                $cached[$messageId]['template_text'] = stripslashes($template->getText());
-                $cached[$messageId]['templateid'] = $template->getId();
+                $messagePrecacheDto->template = stripslashes($template->getContent());
+                $messagePrecacheDto->templateText = stripslashes($template->getText());
+                $messagePrecacheDto->templateId = $template->getId();
             }
         }
 
-        //# @@ put this here, so it can become editable per email sent out at a later stage
-        $cached[$messageId]['html_charset'] = 'UTF-8'; //getConfig("html_charset");
-        $cached[$messageId]['text_charset'] = 'UTF-8'; //getConfig("text_charset");
-
         //# if we are sending a URL that contains user attributes, we cannot pre-parse the message here
         //# but that has quite some impact on speed. So check if that's the case and apply
-        $cached[$messageId]['userspecific_url'] = preg_match('/\[.+\]/', $loadedMessageData['sendurl']);
+        $messagePrecacheDto->userSpecificUrl = preg_match('/\[.+\]/', $loadedMessageData['sendurl']);
 
-        if (!$cached[$messageId]['userspecific_url']) {
+        if (!$messagePrecacheDto->userSpecificUrl) {
             //# Fetch external content here, because URL does not contain placeholders
-            if (preg_match("/\[URL:([^\s]+)\]/i", $cached[$messageId]['content'], $regs)) {
+            if (preg_match("/\[URL:([^\s]+)\]/i", $messagePrecacheDto->content, $regs)) {
                 $remoteContent = ($this->remotePageFetcher)($regs[1], []);
 
                 if ($remoteContent) {
-                    $cached[$messageId]['content'] = str_replace($regs[0], $remoteContent, $cached[$messageId]['content']);
-                    $cached[$messageId]['htmlformatted'] = strip_tags($remoteContent) != $remoteContent;
+                    $messagePrecacheDto->content = str_replace($regs[0], $remoteContent, $messagePrecacheDto->content);
+                    $messagePrecacheDto->htmlFormatted = strip_tags($remoteContent) !== $remoteContent;
 
                     //# 17086 - disregard any template settings when we have a valid remote URL
-                    $cached[$messageId]['template'] = null;
-                    $cached[$messageId]['template_text'] = null;
-                    $cached[$messageId]['templateid'] = null;
+                    $messagePrecacheDto->template  = null;
+                    $messagePrecacheDto->templateText = null;
+                    $messagePrecacheDto->templateId = null;
                 } else {
                     $this->eventLogManager->log(
                         page: 'unknown page',
@@ -151,35 +141,25 @@ class MessagePrecacheService
             }
         }
 
-        $cached[$messageId]['google_track'] = $loadedMessageData['google_track'];
+        $messagePrecacheDto->googleTrack = $loadedMessageData['google_track'];
 
         foreach (['subject', 'id', 'fromname', 'fromemail'] as $key) {
             $val = $loadedMessageData[$key];
             // Replace in content except for user-specific URL
-            if (!$cached[$messageId]['userspecific_url']) {
-                $cached[$messageId]['content'] = str_ireplace("[$key]", $val, $cached[$messageId]['content']);
+            if (!$messagePrecacheDto->userSpecificUrl) {
+                $messagePrecacheDto->content = str_ireplace("[$key]", $val, $messagePrecacheDto->content);
             }
-            $cached[$messageId]['textcontent'] = str_ireplace("[$key]", $val, $cached[$messageId]['textcontent']);
-            $cached[$messageId]['textfooter'] = str_ireplace("[$key]", $val, $cached[$messageId]['textfooter']);
-            $cached[$messageId]['htmlfooter'] = str_ireplace("[$key]", $val, $cached[$messageId]['htmlfooter']);
+            $messagePrecacheDto->textContent = str_ireplace("[$key]", $val, $messagePrecacheDto->textContent);
+            $messagePrecacheDto->textFooter = str_ireplace("[$key]", $val, $messagePrecacheDto->textFooter);
+            $messagePrecacheDto->htmlFooter = str_ireplace("[$key]", $val, $messagePrecacheDto->htmlFooter);
         }
 
-        $cached[$messageId]['adminattributes'] = [];
         $ownerAttrValues = $this->adminAttributeDefRepository->getForAdmin($campaign->getOwner());
         foreach ($ownerAttrValues as $attr) {
-            $cached[$messageId]['adminattributes']['OWNER.'.$attr['name']] = $attr['value'];
+            $messagePrecacheDto->adminAttributes['OWNER.'.$attr['name']] = $attr['value'];
         }
 
-        $relatedAdmins = $this->adminRepository->createQueryBuilder('a')
-            ->select('DISTINCT a')
-            ->join('a.ownedLists', 'ag')
-            ->join('ag.listMessages', 'lm')
-            ->join('lm.message', 'm')
-            ->where('m.id = :messageId')
-            ->setParameter('messageId', $messageId)
-            ->getQuery()
-            ->getResult();
-
+        $relatedAdmins = $this->adminRepository->getMessageRelatedAdmins($campaign->getId());
         if (count($relatedAdmins) === 1) {
             $listOwnerAttrValues = $this->adminAttributeDefRepository->getForAdmin($relatedAdmins[0]);
         } else {
@@ -187,40 +167,32 @@ class MessagePrecacheService
         }
 
         foreach ($listOwnerAttrValues as $attr) {
-            $cached[$messageId]['adminattributes']['LISTOWNER.'.$attr['name']] = $attr['value'];
+            $messagePrecacheDto->adminAttributes['LISTOWNER.'.$attr['name']] = $attr['value'];
         }
 
         $baseurl = $this->configProvider->getValue(ConfigOption::Website);
         if ($this->uploadImageDir) {
             //# escape subdirectories, otherwise this renders empty
             $dir = str_replace('/', '\/', $this->uploadImageDir);
-            $cached[$messageId]['content'] = preg_replace('/<img(.*)src="\/'.$dir.'(.*)>/iU',
-                '<img\\1src="'.$GLOBALS['public_scheme'].'://'.$baseurl.'/'.$this->uploadImageDir.'\\2>',
-                $cached[$messageId]['content']);
+            $messagePrecacheDto->content = preg_replace(
+                '/<img(.*)src="\/'.$dir.'(.*)>/iU',
+                '<img\\1src="'.$this->publicSchema.'://'.$baseurl.'/'.$this->uploadImageDir.'\\2>',
+                $messagePrecacheDto->content
+            );
         }
 
-        foreach (['content', 'template', 'htmlfooter'] as $element) {
-            $cached[$messageId][$element] = $this->parseLogoPlaceholders($cached[$messageId][$element]);
-        }
+        $messagePrecacheDto->content = $this->parseLogoPlaceholders($messagePrecacheDto->content);
+        $messagePrecacheDto->template = $this->parseLogoPlaceholders($messagePrecacheDto->template);
+        $messagePrecacheDto->htmlFooter = $this->parseLogoPlaceholders($messagePrecacheDto->htmlFooter);
 
-        $this->cache->set($cacheKey, $cached);
+//        $replacements = $this->buildBasicReplacements($campaign, $subject);
+//        $html = $this->applyReplacements($html, $replacements);
+//        $text = $this->applyReplacements($text, $replacements);
+//        $footer = $this->applyReplacements($footer, $replacements);
 
-        // Replace basic placeholders [subject],[id],[fromname],[fromemail]
-        $replacements = $this->buildBasicReplacements($campaign, $subject);
-        $html = $this->applyReplacements($html, $replacements);
-        $text = $this->applyReplacements($text, $replacements);
-        $footer = $this->applyReplacements($footer, $replacements);
+        $this->cache->set($cacheKey, $messagePrecacheDto);
 
-        $snapshot = [
-            'subject' => $subject,
-            'text' => $html,
-            'textMessage' => $text,
-            'footer' => $footer,
-        ];
-
-        $this->cache->set($cacheKey, $snapshot);
-
-        return new Message\MessageContent($subject, $html, $text, $footer);
+        return $messagePrecacheDto;
     }
 
     private function buildBasicReplacements(Message $campaign, string $subject): array
@@ -253,45 +225,21 @@ class MessagePrecacheService
         return str_ireplace(array_keys($replacements), array_values($replacements), $input);
     }
 
-    private function getFromCache(string $cacheKey): ?Message\MessageContent
-    {
-        $cached = $this->cache->get($cacheKey);
-        if (is_array($cached)
-            && array_key_exists('subject', $cached)
-            && array_key_exists('text', $cached)
-            && array_key_exists('textMessage', $cached)
-            && array_key_exists('footer', $cached)
-        ) {
-            return new Message\MessageContent(
-                $cached['subject'],
-                $cached['text'],
-                $cached['textMessage'],
-                $cached['footer']
-            );
-        }
-
-        return null;
-    }
-
     private function parseLogoPlaceholders($content)
     {
         //# replace Logo placeholders
         preg_match_all('/\[LOGO\:?(\d+)?\]/', $content, $logoInstances);
         foreach ($logoInstances[0] as $index => $logoInstance) {
             $size = sprintf('%d', $logoInstances[1][$index]);
-            if (!empty($size)) {
-                $logoSize = $size;
-            } else {
-                $logoSize = '500';
-            }
-            $this->createCachedLogoImage($logoSize);
+            $logoSize = !empty($size) ? $size : '500';
+            $this->createCachedLogoImage((int)$logoSize);
             $content = str_replace($logoInstance, 'ORGANISATIONLOGO'.$logoSize.'.png', $content);
         }
 
         return $content;
     }
 
-    private function createCachedLogoImage($size): void
+    private function createCachedLogoImage(int $size): void
     {
         $logoImageId = $this->configProvider->getValue(ConfigOption::OrganisationLogo);
         if (empty($logoImageId)) {

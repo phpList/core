@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Exception\MessageSizeLimitExceededException;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\Message\SyncCampaignProcessorMessage;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Model\Message\UserMessageStatus;
@@ -75,8 +76,8 @@ class CampaignProcessorMessageHandler
             return;
         }
 
-        $messageContent = $this->precacheService->getOrCacheBaseMessageContent($campaign);
-        if (!$messageContent) {
+        $messagePrecacheDto = $this->precacheService->getOrCacheBaseMessageContent($campaign);
+        if (!$messagePrecacheDto) {
             $this->updateMessageStatus($campaign, MessageStatus::Suspended);
 
             return;
@@ -111,7 +112,7 @@ class CampaignProcessorMessageHandler
                 continue;
             }
 
-            $this->handleEmailSending($campaign, $subscriber, $userMessage, $messageContent);
+            $this->handleEmailSending($campaign, $subscriber, $userMessage, $messagePrecacheDto);
         }
 
         if ($stoppedEarly && $this->requeueHandler->handle($campaign)) {
@@ -163,11 +164,11 @@ class CampaignProcessorMessageHandler
         Message $campaign,
         Subscriber $subscriber,
         UserMessage $userMessage,
-        Message\MessageContent $precachedContent,
+        MessagePrecacheDto $precachedContent,
     ): void {
         $processed = $this->messagePreparator->processMessageLinks($campaign->getId(), $precachedContent, $subscriber);
-        $processed->setText($this->userPersonalizer->personalize($processed->getText(), $subscriber->getEmail()));
-        $processed->setFooter($this->userPersonalizer->personalize($processed->getFooter(), $subscriber->getEmail()));
+        $processed->textContent = $this->userPersonalizer->personalize($processed->textContent, $subscriber->getEmail());
+        $processed->footer = $this->userPersonalizer->personalize($processed->footer, $subscriber->getEmail());
 
         try {
             $email = $this->mailer->composeEmail($campaign, $subscriber, $processed);
