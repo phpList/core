@@ -8,12 +8,14 @@ use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Repository\MessageDataRepository;
+use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 
 class MessageDataLoader
 {
     public function __construct(
         private readonly ConfigProvider $configProvider,
         private readonly MessageDataRepository $messageDataRepository,
+        private readonly MessageRepository $messageRepository,
         private readonly int $defaultMessageAge,
     ) {
     }
@@ -84,11 +86,8 @@ class MessageDataLoader
             'excludelist'    => [],
             'sentastest'     => 0,
         ];
-        // todo: set correct values from entity
-        $nonEmptyFields = array_filter(
-            get_object_vars($message),
-            fn($v) => $v !== null && $v !== '',
-        );
+
+        $nonEmptyFields = $this->messageRepository->getNonEmptyFields($message->getId());
         foreach ($nonEmptyFields as $key => $val) {
             $messageData[$key] = $val;
         }
@@ -110,7 +109,7 @@ class MessageDataLoader
             }
         }
 
-        foreach (array('embargo', 'repeatuntil', 'requeueuntil') as $dateField) {
+        foreach (['embargo', 'repeatuntil', 'requeueuntil'] as $dateField) {
             if (!is_array($messageData[$dateField])) {
                 $messageData[$dateField] = [
                     'year'   => date('Y'),

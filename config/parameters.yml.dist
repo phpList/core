@@ -91,7 +91,7 @@ parameters:
     env(MAX_MAILSIZE): '209715200'
     messaging.default_message_age: '%%env(DEFAULT_MESSAGEAGE)%%'
     env(DEFAULT_MESSAGEAGE): '691200'
-    messaging.use_manual_text_part : '%%env(USE_MANUAL_TEXT_PART)%%'
+    messaging.use_manual_text_part: '%%env(USE_MANUAL_TEXT_PART)%%'
     env(USE_MANUAL_TEXT_PART): 0
 
     phplist.upload_images_dir: '%%env(PHPLIST_UPLOADIMAGES_DIR)%%'

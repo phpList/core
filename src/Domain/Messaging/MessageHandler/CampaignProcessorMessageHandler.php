@@ -19,6 +19,7 @@ use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\Manager\MessageDataManager;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
+use PhpList\Core\Domain\Messaging\Service\MessageDataLoader;
 use PhpList\Core\Domain\Messaging\Service\MessagePrecacheService;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
@@ -59,6 +60,7 @@ class CampaignProcessorMessageHandler
         private readonly MessageDataManager $messageDataManager,
         private readonly MessagePrecacheService $precacheService,
         private readonly UserPersonalizer $userPersonalizer,
+        private readonly MessageDataLoader $messageDataLoader,
         ?int $maxMailSize = null,
     ) {
         $this->maxMailSize = $maxMailSize ?? 0;
@@ -76,8 +78,29 @@ class CampaignProcessorMessageHandler
             return;
         }
 
-        $messagePrecacheDto = $this->precacheService->getOrCacheBaseMessageContent($campaign);
-        if (!$messagePrecacheDto) {
+        $loadedMessageData = ($this->messageDataLoader)($campaign);
+//        if (!empty($loadedMessageData['resetstats'])) {
+//            resetMessageStatistics($loadedMessageData['id']);
+//            setMessageData($loadedMessageData['id'], 'resetstats', 0);
+//        }
+//        $stopSending = false;
+//        if (!empty($loadedMessageData['finishsending'])) {
+//            $finishSendingBefore = mktime(
+//                $loadedMessageData['finishsending']['hour'],
+//                $loadedMessageData['finishsending']['minute'],
+//                0,
+//                $loadedMessageData['finishsending']['month'],
+//                $loadedMessageData['finishsending']['day'],
+//                $loadedMessageData['finishsending']['year'],
+//            );
+//            $secondsTogo = $finishSendingBefore - time();
+//            $stopSending = $secondsTogo < 0;
+//        }
+//        $userSelection = $loadedMessageData['userselection'];
+
+        $cacheKey = sprintf('messaging.message.base.%d', $campaign->getId());
+        $messagePrecached = $this->precacheService->precacheMessage($campaign, $loadedMessageData);
+        if (!$messagePrecached) {
             $this->updateMessageStatus($campaign, MessageStatus::Suspended);
 
             return;
@@ -112,6 +135,7 @@ class CampaignProcessorMessageHandler
                 continue;
             }
 
+            $messagePrecacheDto = $this->cache->get($cacheKey);
             $this->handleEmailSending($campaign, $subscriber, $userMessage, $messagePrecacheDto);
         }
 

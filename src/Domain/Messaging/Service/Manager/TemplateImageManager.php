@@ -6,6 +6,8 @@ namespace PhpList\Core\Domain\Messaging\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
 use DOMDocument;
+use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\Template;
 use PhpList\Core\Domain\Messaging\Model\TemplateImage;
 use PhpList\Core\Domain\Messaging\Repository\TemplateImageRepository;
@@ -24,15 +26,11 @@ class TemplateImageManager
         'swf'  => 'application/x-shockwave-flash',
     ];
 
-    private TemplateImageRepository $templateImageRepository;
-    private EntityManagerInterface $entityManager;
-
     public function __construct(
-        TemplateImageRepository $templateImageRepository,
-        EntityManagerInterface $entityManager
+        private readonly TemplateImageRepository $templateImageRepository,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly ConfigProvider $configProvider,
     ) {
-        $this->templateImageRepository = $templateImageRepository;
-        $this->entityManager = $entityManager;
     }
 
     /** @return TemplateImage[] */
@@ -98,5 +96,68 @@ class TemplateImageManager
     public function delete(TemplateImage $templateImage): void
     {
         $this->templateImageRepository->remove($templateImage);
+    }
+
+    public function createCachedLogoImage(int $size): void
+    {
+        $logoImageId = $this->configProvider->getValue(ConfigOption::OrganisationLogo);
+        if (empty($logoImageId)) {
+            return;
+        }
+
+        $orgLogoImage = $this->templateImageRepository->findByFilename("ORGANISATIONLOGO$size.png");
+        if (!empty($orgLogoImage->getData())) {
+            return;
+        }
+
+        $logoImage = $this->templateImageRepository->findById((int) $logoImageId);
+        $imageContent = base64_decode($logoImage->getData());
+        if (empty($imageContent)) {
+            //# fall back to a single pixel, so that there are no broken images
+            $imageContent = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABGdBTUEAALGPC/xhBQAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAAsSAAALEgHS3X78AAAAB3RJTUUH0gQCEx05cqKA8gAAAApJREFUeJxjYAAAAAIAAUivpHEAAAAASUVORK5CYII=');
+        }
+
+        $imgSize = getimagesizefromstring($imageContent);
+        $sizeW = $imgSize[0];
+        $sizeH = $imgSize[1];
+        if ($sizeH > $sizeW) {
+            $sizeFactor = (float) ($size / $sizeH);
+        } else {
+            $sizeFactor = (float) ($size / $sizeW);
+        }
+        $newWidth = (int) ($sizeW * $sizeFactor);
+        $newHeight = (int) ($sizeH * $sizeFactor);
+
+        if ($sizeFactor < 1) {
+            $original = imagecreatefromstring($imageContent);
+            //# creates a black image (why would you want that....)
+            $resized = imagecreatetruecolor($newWidth, $newHeight);
+            imagesavealpha($resized, true);
+            //# white. All the methods to make it transparent didn't work for me @@TODO really make transparent
+            $transparent = imagecolorallocatealpha($resized, 255, 255, 255, 127);
+            imagefill($resized, 0, 0, $transparent);
+
+            if (imagecopyresized($resized, $original, 0, 0, 0, 0, $newWidth, $newHeight, $sizeW, $sizeH)) {
+                $this->entityManager->remove($orgLogoImage);
+
+                //# rather convoluted way to get the image contents
+                $buffer = ob_get_contents();
+                ob_end_clean();
+                ob_start();
+                imagepng($resized);
+                $imageContent = ob_get_contents();
+                ob_end_clean();
+                echo $buffer;
+            }
+        }
+        // else copy original
+        $templateImage = (new TemplateImage())
+            ->setFilename("ORGANISATIONLOGO$size.png")
+            ->setMimetype($imgSize['mime'])
+            ->setData(base64_encode($imageContent))
+            ->setWidth($newWidth)
+            ->setHeight($newHeight);
+
+        $this->entityManager->persist($templateImage);
     }
 }
