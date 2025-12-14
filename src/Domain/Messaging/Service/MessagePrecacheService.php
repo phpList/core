@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service;
 
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Common\HtmlToText;
 use PhpList\Core\Domain\Common\RemotePageFetcher;
 use PhpList\Core\Domain\Common\TextParser;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Identity\Repository\AdminAttributeDefinitionRepository;
+use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Messaging\Model\TemplateImage;
+use PhpList\Core\Domain\Messaging\Repository\TemplateImageRepository;
 use PhpList\Core\Domain\Messaging\Repository\TemplateRepository;
 use Psr\SimpleCache\CacheInterface;
 
@@ -23,9 +28,14 @@ class MessagePrecacheService
         private readonly HtmlToText $htmlToText,
         private readonly TextParser $textParser,
         private readonly TemplateRepository $templateRepository,
+        private readonly TemplateImageRepository $templateImageRepository,
         private readonly RemotePageFetcher $remotePageFetcher,
         private readonly EventLogManager $eventLogManager,
+        private readonly AdminAttributeDefinitionRepository $adminAttributeDefRepository,
+        private readonly AdministratorRepository $adminRepository,
+        private readonly EntityManagerInterface $entityManager,
         private readonly bool $useManualTextPart,
+        private readonly string $uploadImageDir,
     ) {
     }
 
@@ -153,81 +163,47 @@ class MessagePrecacheService
             $cached[$messageId]['textfooter'] = str_ireplace("[$key]", $val, $cached[$messageId]['textfooter']);
             $cached[$messageId]['htmlfooter'] = str_ireplace("[$key]", $val, $cached[$messageId]['htmlfooter']);
         }
-        /*
-         *  cache message owner and list owner attribute values
-         */
+
         $cached[$messageId]['adminattributes'] = [];
-        $result = Sql_Query(
-            "SELECT a.name, aa.value
-        FROM {$tables['adminattribute']} a
-        LEFT JOIN {$tables['admin_attribute']} aa ON a.id = aa.adminattributeid AND aa.adminid = (
-            SELECT owner
-            FROM {$tables['message']}
-            WHERE id = $messageId
-        )"
-        );
-
-        if ($result !== false) {
-            while ($att = Sql_Fetch_Array($result)) {
-                $cached[$messageId]['adminattributes']['OWNER.'.$att['name']] = $att['value'];
-            }
+        $ownerAttrValues = $this->adminAttributeDefRepository->getForAdmin($campaign->getOwner());
+        foreach ($ownerAttrValues as $attr) {
+            $cached[$messageId]['adminattributes']['OWNER.'.$attr['name']] = $attr['value'];
         }
 
-        $result = Sql_Query(
-            "SELECT DISTINCT l.owner
-        FROM {$tables['list']} AS l
-        JOIN  {$tables['listmessage']} AS lm ON lm.listid = l.id
-        WHERE lm.messageid = $messageId"
-        );
+        $relatedAdmins = $this->adminRepository->createQueryBuilder('a')
+            ->select('DISTINCT a')
+            ->join('a.ownedLists', 'ag')
+            ->join('ag.listMessages', 'lm')
+            ->join('lm.message', 'm')
+            ->where('m.id = :messageId')
+            ->setParameter('messageId', $messageId)
+            ->getQuery()
+            ->getResult();
 
-        if ($result !== false && Sql_Num_Rows($result) == 1) {
-            $row = Sql_Fetch_Assoc($result);
-            $listOwner = $row['owner'];
-            $att_req = Sql_Query(
-                "SELECT a.name, aa.value
-            FROM {$tables['adminattribute']} a
-            LEFT JOIN {$tables['admin_attribute']} aa ON a.id = aa.adminattributeid AND aa.adminid = $listOwner"
-            );
+        if (count($relatedAdmins) === 1) {
+            $listOwnerAttrValues = $this->adminAttributeDefRepository->getForAdmin($relatedAdmins[0]);
         } else {
-            $att_req = Sql_Query(
-                "SELECT a.name, '' AS value
-            FROM {$tables['adminattribute']} a"
-            );
+            $listOwnerAttrValues = $this->adminAttributeDefRepository->getAllWIthEmptyValues();
         }
 
-        while ($att = Sql_Fetch_Array($att_req)) {
-            $cached[$messageId]['adminattributes']['LISTOWNER.'.$att['name']] = $att['value'];
+        foreach ($listOwnerAttrValues as $attr) {
+            $cached[$messageId]['adminattributes']['LISTOWNER.'.$attr['name']] = $attr['value'];
         }
 
-        $baseurl = $GLOBALS['website'];
-        if (defined('UPLOADIMAGES_DIR') && UPLOADIMAGES_DIR) {
+        $baseurl = $this->configProvider->getValue(ConfigOption::Website);
+        if ($this->uploadImageDir) {
             //# escape subdirectories, otherwise this renders empty
-            $dir = str_replace('/', '\/', UPLOADIMAGES_DIR);
+            $dir = str_replace('/', '\/', $this->uploadImageDir);
             $cached[$messageId]['content'] = preg_replace('/<img(.*)src="\/'.$dir.'(.*)>/iU',
-                '<img\\1src="'.$GLOBALS['public_scheme'].'://'.$baseurl.'/'.UPLOADIMAGES_DIR.'\\2>',
+                '<img\\1src="'.$GLOBALS['public_scheme'].'://'.$baseurl.'/'.$this->uploadImageDir.'\\2>',
                 $cached[$messageId]['content']);
         }
 
-        foreach (array('content', 'template', 'htmlfooter') as $element) {
-            $cached[$messageId][$element] = parseLogoPlaceholders($cached[$messageId][$element]);
+        foreach (['content', 'template', 'htmlfooter'] as $element) {
+            $cached[$messageId][$element] = $this->parseLogoPlaceholders($cached[$messageId][$element]);
         }
 
-        return 1;
-
-        $content = $campaign->getContent();
-        $subject = $content->getSubject();
-        $html = $content->getText();
-        $text = $content->getTextMessage();
-        $footer = $content->getFooter();
-
-        // If content contains a [URL:...] token, try to fetch and replace with remote content
-        if (is_string($html) && preg_match('/\[URL:([^\s\]]+)\]/i', $html, $match)) {
-            $remoteUrl = $match[1];
-            $fetched = $this->fetchRemoteContent($remoteUrl);
-            if ($fetched !== null) {
-                $html = str_replace($match[0], $fetched, $html);
-            }
-        }
+        $this->cache->set($cacheKey, $cached);
 
         // Replace basic placeholders [subject],[id],[fromname],[fromemail]
         $replacements = $this->buildBasicReplacements($campaign, $subject);
@@ -245,31 +221,6 @@ class MessagePrecacheService
         $this->cache->set($cacheKey, $snapshot);
 
         return new Message\MessageContent($subject, $html, $text, $footer);
-    }
-
-    private function fetchRemoteContent(string $url): ?string
-    {
-        $ctx = stream_context_create([
-            'http' => ['timeout' => 5],
-            'https' => ['timeout' => 5],
-        ]);
-
-        // Ignore warnings from file_get_contents only inside this block
-        set_error_handler(static function () {
-            return true;
-        });
-
-        try {
-            $data = file_get_contents($url, false, $ctx);
-        } finally {
-            restore_error_handler();
-        }
-
-        if ($data === false) {
-            return null;
-        }
-
-        return $data;
     }
 
     private function buildBasicReplacements(Message $campaign, string $subject): array
@@ -320,5 +271,87 @@ class MessagePrecacheService
         }
 
         return null;
+    }
+
+    private function parseLogoPlaceholders($content)
+    {
+        //# replace Logo placeholders
+        preg_match_all('/\[LOGO\:?(\d+)?\]/', $content, $logoInstances);
+        foreach ($logoInstances[0] as $index => $logoInstance) {
+            $size = sprintf('%d', $logoInstances[1][$index]);
+            if (!empty($size)) {
+                $logoSize = $size;
+            } else {
+                $logoSize = '500';
+            }
+            $this->createCachedLogoImage($logoSize);
+            $content = str_replace($logoInstance, 'ORGANISATIONLOGO'.$logoSize.'.png', $content);
+        }
+
+        return $content;
+    }
+
+    private function createCachedLogoImage($size): void
+    {
+        $logoImageId = $this->configProvider->getValue(ConfigOption::OrganisationLogo);
+        if (empty($logoImageId)) {
+            return;
+        }
+
+        $orgLogoImage = $this->templateImageRepository->findByFilename("ORGANISATIONLOGO$size.png");
+        if (!empty($orgLogoImage->getData())) {
+            return;
+        }
+
+        $logoImage = $this->templateImageRepository->findById((int) $logoImageId);
+        $imageContent = base64_decode($logoImage->getData());
+        if (empty($imageContent)) {
+            //# fall back to a single pixel, so that there are no broken images
+            $imageContent = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABGdBTUEAALGPC/xhBQAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAAsSAAALEgHS3X78AAAAB3RJTUUH0gQCEx05cqKA8gAAAApJREFUeJxjYAAAAAIAAUivpHEAAAAASUVORK5CYII=');
+        }
+
+        $imgSize = getimagesizefromstring($imageContent);
+        $sizeW = $imgSize[0];
+        $sizeH = $imgSize[1];
+        if ($sizeH > $sizeW) {
+            $sizeFactor = (float) ($size / $sizeH);
+        } else {
+            $sizeFactor = (float) ($size / $sizeW);
+        }
+        $newWidth = (int) ($sizeW * $sizeFactor);
+        $newHeight = (int) ($sizeH * $sizeFactor);
+
+        if ($sizeFactor < 1) {
+            $original = imagecreatefromstring($imageContent);
+            //# creates a black image (why would you want that....)
+            $resized = imagecreatetruecolor($newWidth, $newHeight);
+            imagesavealpha($resized, true);
+            //# white. All the methods to make it transparent didn't work for me @@TODO really make transparent
+            $transparent = imagecolorallocatealpha($resized, 255, 255, 255, 127);
+            imagefill($resized, 0, 0, $transparent);
+
+            if (imagecopyresized($resized, $original, 0, 0, 0, 0, $newWidth, $newHeight, $sizeW, $sizeH)) {
+                $this->entityManager->remove($orgLogoImage);
+
+                //# rather convoluted way to get the image contents
+                $buffer = ob_get_contents();
+                ob_end_clean();
+                ob_start();
+                imagepng($resized);
+                $imageContent = ob_get_contents();
+                ob_end_clean();
+                echo $buffer;
+            }
+        }
+        // else copy original
+        $templateImage = (new TemplateImage())
+            ->setFilename("ORGANISATIONLOGO$size.png")
+            ->setMimetype($imgSize['mime'])
+            ->setData(base64_encode($imageContent))
+            ->setWidth($newWidth)
+            ->setHeight($newHeight);
+
+        $this->entityManager->persist($templateImage);
+
     }
 }

@@ -80,7 +80,8 @@
         "tatevikgr/rss-feed": "dev-main",
         "ext-pdo": "*",
         "ezyang/htmlpurifier": "^4.19",
-        "ext-libxml": "*"
+        "ext-libxml": "*",
+        "ext-gd": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",

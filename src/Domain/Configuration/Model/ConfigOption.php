@@ -25,4 +25,5 @@ enum ConfigOption: string
     case NotifyEndDefault = 'notifyend_default';
     case WordWrap = 'wordwrap';
     case RemoteUrlAppend = 'remoteurl_append';
+    case OrganisationLogo = 'organisation_logo';
 }
