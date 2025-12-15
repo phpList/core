@@ -210,6 +210,7 @@ class SubscriberCsvImporter
 
         [$listLines, $addedNewSubscriberToList] = $this->getHistoryListLines($subscriber, $options);
 
+        // todo: use isBlacklisted logic (grace time) not function from Subscriber class
         if ($subscriber->isBlacklisted()) {
             $stats['blacklisted']++;
         }
