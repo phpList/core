@@ -16,6 +16,9 @@ enum ConfigOption: string
     case Domain = 'domain';
     case Website = 'website';
     case MessageFromAddress = 'message_from_address';
+    case MessageFromName = 'message_from_name';
+    case MessageReplyToAddress = 'message_replyto_address';
+    case SystemMessageTemplate = 'systemmessagetemplate';
     case AlwaysAddGoogleTracking = 'always_add_googletracking';
     case AdminAddress = 'admin_address';
     case DefaultMessageTemplate = 'defaultmessagetemplate';
@@ -26,4 +29,6 @@ enum ConfigOption: string
     case WordWrap = 'wordwrap';
     case RemoteUrlAppend = 'remoteurl_append';
     case OrganisationLogo = 'organisation_logo';
+    case PoweredByImage = 'PoweredByImage';
+    case PoweredByText = 'PoweredByText';
 }

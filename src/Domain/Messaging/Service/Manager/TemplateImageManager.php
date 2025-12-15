@@ -98,6 +98,20 @@ class TemplateImageManager
         $this->templateImageRepository->remove($templateImage);
     }
 
+    public function parseLogoPlaceholders($content)
+    {
+        //# replace Logo placeholders
+        preg_match_all('/\[LOGO\:?(\d+)?\]/', $content, $logoInstances);
+        foreach ($logoInstances[0] as $index => $logoInstance) {
+            $size = sprintf('%d', $logoInstances[1][$index]);
+            $logoSize = !empty($size) ? $size : '500';
+            $this->createCachedLogoImage((int)$logoSize);
+            $content = str_replace($logoInstance, 'ORGANISATIONLOGO'.$logoSize.'.png', $content);
+        }
+
+        return $content;
+    }
+
     public function createCachedLogoImage(int $size): void
     {
         $logoImageId = $this->configProvider->getValue(ConfigOption::OrganisationLogo);

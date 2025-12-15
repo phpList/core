@@ -7,7 +7,7 @@ namespace PhpList\Core\Domain\Common;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 
-class HtmlToText
+class Html2Text
 {
     private const WORD_WRAP = 70;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service;
 
-use PhpList\Core\Domain\Common\HtmlToText;
+use PhpList\Core\Domain\Common\Html2Text;
 use PhpList\Core\Domain\Common\RemotePageFetcher;
 use PhpList\Core\Domain\Common\TextParser;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
@@ -23,7 +23,7 @@ class MessagePrecacheService
     public function __construct(
         private readonly CacheInterface $cache,
         private readonly ConfigProvider $configProvider,
-        private readonly HtmlToText $htmlToText,
+        private readonly Html2Text $html2Text,
         private readonly TextParser $textParser,
         private readonly TemplateRepository $templateRepository,
         private readonly RemotePageFetcher $remotePageFetcher,
@@ -89,7 +89,7 @@ class MessagePrecacheService
         $messagePrecacheDto->footer = $forwardContent ? stripslashes($loadedMessageData['forwardfooter']) : $loadedMessageData['footer'];
 
         if (strip_tags($messagePrecacheDto->footer ) !== $messagePrecacheDto->footer) {
-            $messagePrecacheDto->textFooter = ($this->htmlToText)($messagePrecacheDto->footer);
+            $messagePrecacheDto->textFooter = ($this->html2Text)($messagePrecacheDto->footer);
             $messagePrecacheDto->htmlFooter = $messagePrecacheDto->footer;
         } else {
             $messagePrecacheDto->textFooter = $messagePrecacheDto->footer;
@@ -176,9 +176,9 @@ class MessagePrecacheService
             );
         }
 
-        $messagePrecacheDto->content = $this->parseLogoPlaceholders($messagePrecacheDto->content);
-        $messagePrecacheDto->template = $this->parseLogoPlaceholders($messagePrecacheDto->template);
-        $messagePrecacheDto->htmlFooter = $this->parseLogoPlaceholders($messagePrecacheDto->htmlFooter);
+        $messagePrecacheDto->content = $this->templateImageManager->parseLogoPlaceholders($messagePrecacheDto->content);
+        $messagePrecacheDto->template = $this->templateImageManager->parseLogoPlaceholders($messagePrecacheDto->template);
+        $messagePrecacheDto->htmlFooter = $this->templateImageManager->parseLogoPlaceholders($messagePrecacheDto->htmlFooter);
 
 //        $replacements = $this->buildBasicReplacements($campaign, $subject);
 //        $html = $this->applyReplacements($html, $replacements);
@@ -220,19 +220,5 @@ class MessagePrecacheService
         }
 
         return str_ireplace(array_keys($replacements), array_values($replacements), $input);
-    }
-
-    private function parseLogoPlaceholders($content)
-    {
-        //# replace Logo placeholders
-        preg_match_all('/\[LOGO\:?(\d+)?\]/', $content, $logoInstances);
-        foreach ($logoInstances[0] as $index => $logoInstance) {
-            $size = sprintf('%d', $logoInstances[1][$index]);
-            $logoSize = !empty($size) ? $size : '500';
-            $this->templateImageManager->createCachedLogoImage((int)$logoSize);
-            $content = str_replace($logoInstance, 'ORGANISATIONLOGO'.$logoSize.'.png', $content);
-        }
-
-        return $content;
     }
 }
