@@ -36,7 +36,7 @@ parameters:
     app.mailer_from: '%%env(MAILER_FROM)%%'
     env(MAILER_FROM): 'noreply@phplist.com'
     app.mailer_dsn: '%%env(MAILER_DSN)%%'
-    env(MAILER_DSN): 'null://null'
+    env(MAILER_DSN): 'null://null' # set local_domain on transport
     app.confirmation_url: '%%env(CONFIRMATION_URL)%%'
     env(CONFIRMATION_URL): 'https://example.com/subscriber/confirm/'
     app.subscription_confirmation_url: '%%env(SUBSCRIPTION_CONFIRMATION_URL)%%'
@@ -101,6 +101,12 @@ parameters:
     env(USE_MANUAL_TEXT_PART): 0
     messaging.blacklist_grace_time: '%%env(MESSAGING_BLACKLIST_GRACE_TIME)%%'
     env(MESSAGING_BLACKLIST_GRACE_TIME):
+    messaging.google_sender_id: '%%env(GOOGLE_SENDERID)%%'
+    env(GOOGLE_SENDERID): ''
+    messaging.use_amazon_ses: '%%env(USE_AMAZONSES)%%'
+    env(USE_AMAZONSES): 0
+    messaging.embed_external_images: '%%env(EMBEDEXTERNALIMAGES)%%'
+    env(EMBEDEXTERNALIMAGES): 0
 
     phplist.upload_images_dir: '%%env(PHPLIST_UPLOADIMAGES_DIR)%%'
     env(PHPLIST_UPLOADIMAGES_DIR): 'images'
