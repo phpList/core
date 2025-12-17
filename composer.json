@@ -81,7 +81,8 @@
         "ext-pdo": "*",
         "ezyang/htmlpurifier": "^4.19",
         "ext-libxml": "*",
-        "ext-gd": "*"
+        "ext-gd": "*",
+        "ext-curl": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",

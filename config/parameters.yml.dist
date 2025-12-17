@@ -107,6 +107,14 @@ parameters:
     env(USE_AMAZONSES): 0
     messaging.embed_external_images: '%%env(EMBEDEXTERNALIMAGES)%%'
     env(EMBEDEXTERNALIMAGES): 0
+    messaging.embed_uploaded_images: '%%env(EMBEDUPLOADIMAGES)%%'
+    env(EMBEDUPLOADIMAGES): 0
+    messaging.external_image_max_age: '%%env(EXTERNALIMAGE_MAXAGE)%%'
+    env(EXTERNALIMAGE_MAXAGE): 0
+    messaging.external_image_timeout: '%%env(EXTERNALIMAGE_TIMEOUT)%%'
+    env(EXTERNALIMAGE_TIMEOUT): 30
+    messaging.external_image_max_size: '%%env(EXTERNALIMAGE_MAXSIZE)%%'
+    env(EXTERNALIMAGE_MAXSIZE): 2048
 
     phplist.upload_images_dir: '%%env(PHPLIST_UPLOADIMAGES_DIR)%%'
     env(PHPLIST_UPLOADIMAGES_DIR): 'images'
