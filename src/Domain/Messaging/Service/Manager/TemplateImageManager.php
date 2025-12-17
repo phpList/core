@@ -151,7 +151,18 @@ class TemplateImageManager
             $transparent = imagecolorallocatealpha($resized, 255, 255, 255, 127);
             imagefill($resized, 0, 0, $transparent);
 
-            if (imagecopyresized($resized, $original, 0, 0, 0, 0, $newWidth, $newHeight, $sizeW, $sizeH)) {
+            if (imagecopyresized(
+                $resized,
+                $original,
+                0,
+                0,
+                0,
+                0,
+                $newWidth,
+                $newHeight,
+                $sizeW,
+                $sizeH,
+            )) {
                 $this->entityManager->remove($orgLogoImage);
 
                 //# rather convoluted way to get the image contents
