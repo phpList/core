@@ -32,4 +32,15 @@ class TemplateImageRepository extends AbstractRepository implements PaginatableR
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function findByTemplateIdAndFilename(int $templateId, string $filename): ?TemplateImage
+    {
+        return $this->createQueryBuilder('ti')
+            ->andWhere('IDENTITY(ti.template) = :templateId')
+            ->setParameter('templateId', $templateId)
+            ->andWhere('ti.filename IN (:filenames)')
+            ->setParameter('filenames', [$filename, basename($filename)])
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

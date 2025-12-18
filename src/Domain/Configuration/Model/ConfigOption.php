@@ -31,4 +31,6 @@ enum ConfigOption: string
     case OrganisationLogo = 'organisation_logo';
     case PoweredByImage = 'PoweredByImage';
     case PoweredByText = 'PoweredByText';
+    case UploadImageRoot = 'uploadimageroot';
+    case PageRoot = 'pageroot';
 }

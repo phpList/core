@@ -82,7 +82,8 @@
         "ezyang/htmlpurifier": "^4.19",
         "ext-libxml": "*",
         "ext-gd": "*",
-        "ext-curl": "*"
+        "ext-curl": "*",
+        "ext-fileinfo": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",

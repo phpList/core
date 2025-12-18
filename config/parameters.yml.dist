@@ -118,5 +118,7 @@ parameters:
 
     phplist.upload_images_dir: '%%env(PHPLIST_UPLOADIMAGES_DIR)%%'
     env(PHPLIST_UPLOADIMAGES_DIR): 'images'
+    phplist.editor_images_dir: '%%env(FCKIMAGES_DIR)%%'
+    env(FCKIMAGES_DIR): 'uploadimages'
     phplist.public_schema: '%%env(PUBLIC_SCHEMA)%%'
     env(PUBLIC_SCHEMA): 'http'
