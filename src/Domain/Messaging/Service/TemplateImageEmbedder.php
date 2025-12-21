@@ -43,11 +43,9 @@ class TemplateImageEmbedder
     ) {
     }
 
-    public function embedTemplateImages(
-        string $html,
-        int $templateId,
-        int $messageId,
-    ): string {
+    public function __invoke(string $html, int $messageId): string
+    {
+        $templateId= (int)$this->configProvider->getValue(ConfigOption::SystemMessageTemplate);
         $extensions = implode('|', array_keys($this->mimeMap));
         $htmlImages = [];
         $filesystemImages = [];
@@ -144,7 +142,7 @@ class TemplateImageEmbedder
         return $html;
     }
 
-    public function getFilesystemImage(string $filename): string
+    private function getFilesystemImage(string $filename): string
     {
         //# get the image contents
         $localFile = basename(urldecode($filename));
@@ -199,7 +197,7 @@ class TemplateImageEmbedder
         return '';
     }
 
-    public function addHtmlImage(string $contents, $name = '', $content_type = 'application/octet-stream'): string
+    private function addHtmlImage(string $contents, $name = '', $content_type = 'application/octet-stream'): string
     {
         $cid = bin2hex(random_bytes(16));
         $this->addStringEmbeddedImage(base64_decode($contents), $cid, $name, 'base64', $content_type);
@@ -207,43 +205,39 @@ class TemplateImageEmbedder
         return $cid;
     }
 
-    public function addStringEmbeddedImage(
+    /**
+     * @throws Exception
+     */
+    private function addStringEmbeddedImage(
         $string,
         $cid,
         $name = '',
         $encoding = 'base64',
         $type = '',
         $disposition = 'inline'
-    ): bool {
-        try {
-            //If a MIME type is not specified, try to work it out from the name
-            if ('' === $type && !empty($name)) {
-                $type = mime_content_type($name);
-            }
-
-            if (ContentTransferEncoding::tryFrom($encoding) === null) {
-                throw new Exception('encoding ' . $encoding);
-            }
-
-            //Append to $attachment array
-            $this->attachment[] = [
-                0 => $string,
-                1 => $name,
-                2 => $name,
-                3 => $encoding,
-                4 => $type,
-                5 => true, //isStringAttachment
-                6 => $disposition,
-                7 => $cid,
-            ];
-        } catch (Exception $exc) {
-            return false;
+    ): void {
+        //If a MIME type is not specified, try to work it out from the name
+        if ('' === $type && !empty($name)) {
+            $type = mime_content_type($name);
         }
 
-        return true;
+        if (ContentTransferEncoding::tryFrom($encoding) === null) {
+            throw new Exception('encoding ' . $encoding);
+        }
+
+        $this->attachment[] = [
+            0 => $string,
+            1 => $name,
+            2 => $name,
+            3 => $encoding,
+            4 => $type,
+            5 => true,
+            6 => $disposition,
+            7 => $cid,
+        ];
     }
 
-    public function filesystemImageExists($filename): bool
+    private function filesystemImageExists($filename): bool
     {
         //#  find the image referenced and see if it's on the server
         $imageRoot = $this->configProvider->getValue(ConfigOption::UploadImageRoot);
@@ -268,7 +262,7 @@ class TemplateImageEmbedder
         }
     }
 
-    public function getTemplateImage($templateId, $filename): ?TemplateImage
+    private function getTemplateImage($templateId, $filename): ?TemplateImage
     {
         if (basename($filename) === 'powerphplist.png' || str_starts_with($filename, 'ORGANISATIONLOGO')) {
             $templateId = 0;

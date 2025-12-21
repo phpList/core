@@ -26,7 +26,7 @@ parameters:
     list_table_prefix: '%%env(LIST_TABLE_PREFIX)%%'
     env(LIST_TABLE_PREFIX): 'listattr_'
     app.dev_version: '%%env(APP_DEV_VERSION)%%'
-    env(APP_DEV_VERSION): 0
+    env(APP_DEV_VERSION): '0'
     app.dev_email: '%%env(APP_DEV_EMAIL)%%'
     env(APP_DEV_EMAIL): 'dev@dev.com'
     app.powered_by_phplist: '%%env(APP_POWERED_BY_PHPLIST)%%'

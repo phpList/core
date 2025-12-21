@@ -43,7 +43,7 @@ class MessagePrecacheService
      */
     public function precacheMessage(Message $campaign, $loadedMessageData, ?bool $forwardContent = false): bool
     {
-        $cacheKey = sprintf('messaging.message.base.%d', $campaign->getId());
+        $cacheKey = sprintf('messaging.message.base.%d.%d', $campaign->getId(), (int) $forwardContent);
 
         $cached = $this->cache->get($cacheKey);
         if ($cached !== null) {

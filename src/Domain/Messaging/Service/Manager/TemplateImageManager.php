@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Manager;
 
-use Doctrine\ORM\EntityManagerInterface;
 use DOMDocument;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
@@ -28,7 +27,6 @@ class TemplateImageManager
 
     public function __construct(
         private readonly TemplateImageRepository $templateImageRepository,
-        private readonly EntityManagerInterface $entityManager,
         private readonly ConfigProvider $configProvider,
     ) {
     }
@@ -44,7 +42,7 @@ class TemplateImageManager
             $image->setMimeType($this->guessMimeType($path));
             $image->setData(null);
 
-            $this->entityManager->persist($image);
+            $this->templateImageRepository->persist($image);
             $templateImages[] = $image;
         }
 
@@ -120,12 +118,16 @@ class TemplateImageManager
         }
 
         $orgLogoImage = $this->templateImageRepository->findByFilename("ORGANISATIONLOGO$size.png");
-        if (!empty($orgLogoImage->getData())) {
+        if ($orgLogoImage !== null && !empty($orgLogoImage->getData())) {
             return;
         }
 
         $logoImage = $this->templateImageRepository->findById((int) $logoImageId);
-        $imageContent = base64_decode($logoImage->getData());
+        if ($logoImage === null) {
+            return;
+        }
+        $logoData = $logoImage->getData();
+        $imageContent = base64_decode($logoData ?? '');
         if (empty($imageContent)) {
             //# fall back to a single pixel, so that there are no broken images
             $imageContent = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABGdBTUEAALGPC/xhBQAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAAsSAAALEgHS3X78AAAAB3RJTUUH0gQCEx05cqKA8gAAAApJREFUeJxjYAAAAAIAAUivpHEAAAAASUVORK5CYII=');
@@ -163,7 +165,9 @@ class TemplateImageManager
                 $sizeW,
                 $sizeH,
             )) {
-                $this->entityManager->remove($orgLogoImage);
+                if ($orgLogoImage !== null) {
+                    $this->templateImageRepository->remove($orgLogoImage);
+                }
 
                 //# rather convoluted way to get the image contents
                 $buffer = ob_get_contents();
@@ -183,6 +187,6 @@ class TemplateImageManager
             ->setWidth($newWidth)
             ->setHeight($newHeight);
 
-        $this->entityManager->persist($templateImage);
+        $this->templateImageRepository->persist($templateImage);
     }
 }

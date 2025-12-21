@@ -90,10 +90,8 @@ class RemotePageFetcher
     {
         try {
             $response = $this->httpClient->request('GET', $url, [
-//                'timeout' => 10,
-                'timeout' => 600,
-                'allowRedirects' => 1,
-                'method' => 'HEAD',
+                'max_redirects' => 5,
+                'timeout' => 10,
             ]);
 
             return $response->getContent(false);

@@ -39,24 +39,24 @@ class Html2Text
 
         // find all URLs and replace them back
         preg_match_all('~\[URLTEXT\](.*)\[ENDURLTEXT\]\[LINK\](.*)\[ENDLINK\]~Umis', $text, $links);
-        foreach ($links[0] as $matchindex => $fullmatch) {
-            $linktext = $links[1][$matchindex];
-            $linkurl = $links[2][$matchindex];
+        foreach ($links[0] as $matchIndex => $fullMatch) {
+            $linkText = $links[1][$matchIndex];
+            $linkUrl = $links[2][$matchIndex];
             // check if the text linked is a repetition of the URL
-            if (trim($linktext) == trim($linkurl) ||
-                'https://'.trim($linktext) == trim($linkurl) ||
-                'http://'.trim($linktext) == trim($linkurl)
+            if (trim($linkText) == trim($linkUrl) ||
+                'https://'.trim($linkText) == trim($linkUrl) ||
+                'http://'.trim($linkText) == trim($linkUrl)
             ) {
-                $linkreplace = $linkurl;
+                $linkReplace = $linkUrl;
             } else {
                 //# if link is an anchor only, take it out
-                if (strpos($linkurl, '#') === 0) {
-                    $linkreplace = $linktext;
+                if (str_starts_with($linkUrl, '#')) {
+                    $linkReplace = $linkText;
                 } else {
-                    $linkreplace = $linktext.' <'.$linkurl.'>';
+                    $linkReplace = $linkText.' <'.$linkUrl.'>';
                 }
             }
-            $text = str_replace($fullmatch, $linkreplace, $text);
+            $text = str_replace($fullMatch, $linkReplace, $text);
         }
         $text = preg_replace(
             "/<a href=[\"\'](.*?)[\"\'][^>]*>(.*?)<\/a>/is",
@@ -78,8 +78,8 @@ class Html2Text
         while (preg_match("/\n\s*\n\s*\n/", $text)) {
             $text = preg_replace("/\n\s*\n\s*\n/", "\n\n", $text);
         }
-        $ww = $this->configProvider->getValue(ConfigOption::WordWrap) ?? self::WORD_WRAP;
+        $wordWrap = $this->configProvider->getValue(ConfigOption::WordWrap) ?? self::WORD_WRAP;
 
-        return wordwrap($text, $ww);
+        return wordwrap($text, (int) $wordWrap);
     }
 }

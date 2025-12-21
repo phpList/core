@@ -77,6 +77,7 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->execute();
     }
 
+    /** @return Message[] */
     public function getByStatusAndEmbargo(Message\MessageStatus $status, DateTimeImmutable $embargo): array
     {
         return $this->createQueryBuilder('m')
@@ -88,7 +89,7 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->getResult();
     }
 
-    public function findByIdAndStatus(int $id, Message\MessageStatus $status)
+    public function findByIdAndStatus(int $id, Message\MessageStatus $status): ?Message
     {
         return $this->createQueryBuilder('m')
             ->where('m.id = :id')
