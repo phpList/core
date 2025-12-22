@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
@@ -25,6 +26,7 @@ class EmailBuilder
         private readonly SubscriberRepository $subscriberRepository,
         private readonly SystemMailConstructor $systemMailConstructor,
         private readonly TemplateImageEmbedder $templateImageEmbedder,
+        private readonly LoggerInterface $logger,
         private readonly string $googleSenderId,
         private readonly bool $useAmazonSes,
         private readonly bool $usePrecedenceHeader,
@@ -64,6 +66,11 @@ class EmailBuilder
         if (!$skipBlacklistCheck && $this->blacklistRepository->isEmailBlacklisted($to)) {
             $this->eventLogManager->log('', sprintf('Error, %s is blacklisted, not sending', $to));
             $subscriber = $this->subscriberRepository->findOneByEmail($to);
+            if (!$subscriber) {
+                $this->logger->error('Error: subscriber not found', ['email' => $to]);
+
+                return null;
+            }
             $subscriber->setBlacklisted(true);
 
             $this->subscriberHistoryManager->addHistory(

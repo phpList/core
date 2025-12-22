@@ -77,8 +77,8 @@ class MessageProcessingPreparator
             $cachedMessageDto->content = $this->replaceLinks($savedLinks, $cachedMessageDto->content);
         }
 
-        if ($cachedMessageDto->footer) {
-            $cachedMessageDto->footer = $this->replaceLinks($savedLinks, $cachedMessageDto->footer);
+        if ($cachedMessageDto->htmlFooter) {
+            $cachedMessageDto->htmlFooter = $this->replaceLinks($savedLinks, $cachedMessageDto->htmlFooter);
         }
 
         return $cachedMessageDto;

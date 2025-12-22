@@ -68,7 +68,7 @@ class SystemMailConstructor
                 } else {
                     $phpListPowered = $this->configProvider->getValue(ConfigOption::PoweredByText);
                 }
-                if (strpos($htmlContent, '[SIGNATURE]')) {
+                if (str_contains($htmlContent, '[SIGNATURE]')) {
                     $htmlContent = str_replace('[SIGNATURE]', $phpListPowered, $htmlContent);
                 } elseif (strpos($htmlContent, '</body>')) {
                     $htmlContent = str_replace('</body>', $phpListPowered.'</body>', $htmlContent);
@@ -80,7 +80,7 @@ class SystemMailConstructor
                 $textContent = str_replace('[SUBJECT]', $subject, $textContent);
                 $textContent = str_replace('[FOOTER]', '', $textContent);
                 $phpListPowered = trim(($this->html2Text)($this->configProvider->getValue(ConfigOption::PoweredByText)));
-                if (strpos($textContent, '[SIGNATURE]')) {
+                if (str_contains($textContent, '[SIGNATURE]')) {
                     $textContent = str_replace('[SIGNATURE]', $phpListPowered, $textContent);
                 } else {
                     $textContent .= "\n\n" . $phpListPowered;

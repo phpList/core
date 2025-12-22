@@ -35,7 +35,15 @@ class RemotePageFetcher
 
         foreach ($userData as $key => $val) {
             if ($key !== 'password') {
-                $url = utf8_encode(str_ireplace("[$key]", urlencode($val), utf8_decode($url)));
+                $url = mb_convert_encoding(
+                    str_ireplace(
+                        "[$key]",
+                        urlencode($val),
+                        mb_convert_encoding($url, 'ISO-8859-1', 'UTF-8')
+                    ),
+                    'ISO-8859-1',
+                    'UTF-8'
+                );
             }
         }
 

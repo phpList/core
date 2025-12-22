@@ -112,7 +112,9 @@ class TemplateImageEmbedder
             sort($htmlImages);
             for ($i = 0; $i < count($htmlImages); ++$i) {
                 if ($image = $this->getTemplateImage($templateId, $htmlImages[$i])) {
-                    $content_type = $this->mimeMap[strtolower(substr($htmlImages[$i],  strrpos($htmlImages[$i], '.') + 1))];
+                    $content_type = $this->mimeMap[strtolower(
+                        substr($htmlImages[$i], strrpos($htmlImages[$i], '.') + 1)
+                    )];
                     $cid = $this->addHtmlImage($image->getData(), basename($htmlImages[$i]), $content_type);
                     if (!empty($cid)) {
                         $html = str_replace(basename($htmlImages[$i]), "cid:$cid", $html);
@@ -146,6 +148,7 @@ class TemplateImageEmbedder
     {
         //# get the image contents
         $localFile = basename(urldecode($filename));
+        $pageRoot = $this->configProvider->getValue(ConfigOption::PageRoot);
         if ($this->uploadImagesDir) {
             $imageRoot = $this->configProvider->getValue(ConfigOption::UploadImageRoot);
             if (is_file($imageRoot.$localFile)) {
@@ -161,15 +164,17 @@ class TemplateImageEmbedder
                     );
 
                     return base64_encode(file_get_contents($this->documentRoot.$localFile));
-                } elseif (is_file($this->documentRoot.'/'.$this->uploadImagesDir.'/image/'.$localFile)) {
+                } elseif (is_file($this->documentRoot . '/' . $this->uploadImagesDir . '/image/' . $localFile)) {
                     $this->configManager->create(
                         ConfigOption::UploadImageRoot->value,
-                        $this->documentRoot.'/'.$this->uploadImagesDir.'/image/',
+                        $this->documentRoot . '/' . $this->uploadImagesDir . '/image/',
                         false,
                         'string',
                     );
 
-                    return base64_encode(file_get_contents($this->documentRoot.'/'.$this->uploadImagesDir.'/image/'.$localFile));
+                    return base64_encode(
+                        file_get_contents($this->documentRoot . '/' . $this->uploadImagesDir . '/image/' . $localFile)
+                    );
                 } elseif (is_file($this->documentRoot.'/'.$this->uploadImagesDir.'/'.$localFile)) {
                     $this->configManager->create(
                         ConfigOption::UploadImageRoot->value,
@@ -178,20 +183,26 @@ class TemplateImageEmbedder
                         'string',
                     );
 
-                    return base64_encode(file_get_contents($this->documentRoot.'/'.$this->uploadImagesDir.'/'.$localFile));
+                    return base64_encode(
+                        file_get_contents($this->documentRoot . '/' . $this->uploadImagesDir . '/' . $localFile)
+                    );
                 }
             }
-        } elseif (is_file($this->documentRoot.$this->configProvider->getValue(ConfigOption::PageRoot).'/'.$this->editorImagesDir.'/'.$localFile)) {
+        } elseif (is_file($this->documentRoot . $pageRoot . '/' . $this->editorImagesDir . '/' . $localFile)) {
             $elements = parse_url($filename);
             $localFile = basename($elements['path']);
 
-            return base64_encode(file_get_contents($this->documentRoot.$this->configProvider->getValue(ConfigOption::PageRoot).'/'.$this->editorImagesDir.'/'.$localFile));
-        } elseif (is_file($this->documentRoot.$this->configProvider->getValue(ConfigOption::PageRoot).'/'.$this->editorImagesDir.'/image/'.$localFile)) {
-            return base64_encode(file_get_contents($this->documentRoot.$this->configProvider->getValue(ConfigOption::PageRoot).'/'.$this->editorImagesDir.'/image/'.$localFile));
-        } elseif (is_file('../'.$this->editorImagesDir.'/'.$localFile)) {
-            return base64_encode(file_get_contents('../'.$this->editorImagesDir.'/'.$localFile));
-        } elseif (is_file('../'.$this->editorImagesDir.'/image/'.$localFile)) {
-            return base64_encode(file_get_contents('../'.$this->editorImagesDir.'/image/'.$localFile));
+            return base64_encode(
+                file_get_contents($this->documentRoot . $pageRoot . '/' . $this->editorImagesDir . '/' . $localFile)
+            );
+        } elseif (is_file($this->documentRoot . $pageRoot . '/' . $this->editorImagesDir . '/image/' . $localFile)) {
+            return base64_encode(
+                file_get_contents($this->documentRoot . $pageRoot . '/' . $this->editorImagesDir . '/image/' . $localFile)
+            );
+        } elseif (is_file('../' . $this->editorImagesDir . '/' . $localFile)) {
+            return base64_encode(file_get_contents('../' . $this->editorImagesDir. '/' . $localFile));
+        } elseif (is_file('../' . $this->editorImagesDir . '/image/' . $localFile)) {
+            return base64_encode(file_get_contents('../' . $this->editorImagesDir . '/image/' . $localFile));
         }
 
         return '';
@@ -241,6 +252,7 @@ class TemplateImageEmbedder
     {
         //#  find the image referenced and see if it's on the server
         $imageRoot = $this->configProvider->getValue(ConfigOption::UploadImageRoot);
+        $pageRoot = $this->configProvider->getValue(ConfigOption::UploadImageRoot);
 
         $elements = parse_url($filename);
         $localFile = basename($elements['path']);
@@ -254,11 +266,11 @@ class TemplateImageEmbedder
                 || is_file($imageRoot.'/'.$localFile);
         } else {
             return
-                is_file($this->documentRoot.$this->configProvider->getValue(ConfigOption::PageRoot).'/'.$this->editorImagesDir.'/image/'.$localFile)
-                || is_file($this->documentRoot.$this->configProvider->getValue(ConfigOption::PageRoot).'/'.$this->editorImagesDir.'/'.$localFile)
+                is_file($this->documentRoot . $pageRoot . '/' . $this->editorImagesDir . '/image/' . $localFile)
+                || is_file($pageRoot . '/' . $this->editorImagesDir . '/' . $localFile)
                 //# commandline
-                || is_file('../'.$this->editorImagesDir.'/image/'.$localFile)
-                || is_file('../'.$this->editorImagesDir.'/'.$localFile);
+                || is_file('../' . $this->editorImagesDir . '/image/' . $localFile)
+                || is_file('../' . $this->editorImagesDir . '/' . $localFile);
         }
     }
 

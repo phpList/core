@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
+use PhpList\Core\Domain\Messaging\Exception\MessageCacheMissingException;
 use PhpList\Core\Domain\Messaging\Exception\MessageSizeLimitExceededException;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\Message\SyncCampaignProcessorMessage;
@@ -200,6 +201,9 @@ class CampaignProcessorMessageHandler
             }
 
             $messagePrecacheDto = $this->cache->get($cacheKey);
+            if ($messagePrecacheDto === null) {
+                throw new MessageCacheMissingException();
+            }
             $this->handleEmailSending($campaign, $subscriber, $userMessage, $messagePrecacheDto);
         }
 

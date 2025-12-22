@@ -40,7 +40,7 @@ class RateLimitedCampaignMailer
             ->subject($processedContent->subject)
             ->text($processedContent->textContent)
             // todo: check htmlFooterit should be html of textContent
-            ->html($processedContent->htmlFooter);
+            ->html($processedContent->content);
     }
 
     /**

@@ -76,7 +76,7 @@ class MessageDataLoader
         $storedMessageData = $this->messageDataRepository->getForMessage($message->getId());
         foreach ($storedMessageData as $storedMessageDatum) {
             if (str_starts_with($storedMessageDatum->getData(), 'SER:')) {
-                $unserialized = unserialize(substr($storedMessageDatum->getData(), 4));
+                $unserialized = unserialize(substr($storedMessageDatum->getData(), 4), ['allowed_classes' => false]);
                 array_walk_recursive($unserialized, function (&$val) {
                     $val = stripslashes($val);
                 });
@@ -123,7 +123,7 @@ class MessageDataLoader
             $messageData['fromemail'] = str_replace('>', '', $messageData['fromemail']);
             // make sure there are no quotes around the name
             $messageData['fromname'] = str_replace('"', '', ltrim(rtrim($messageData['fromname'])));
-        } elseif (strpos($messageData['fromfield'], ' ')) {
+        } elseif (str_contains($messageData['fromfield'], ' ')) {
             // if there is a space, we need to add the email
             $messageData['fromname'] = $messageData['fromfield'];
             $messageData['fromemail'] = $defaultFrom;
