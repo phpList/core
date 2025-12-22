@@ -16,7 +16,7 @@ class MessagePrecacheDto
     public string $textContent = '';
     public string $footer;
     public string $textFooter;
-    public string $htmlFooter;
+    public string $htmlFooter = '';
     public bool $htmlFormatted;
     public string $sendFormat;
     public ?string $template = null;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
 
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageFormat;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
@@ -46,7 +47,12 @@ class RateLimitedCampaignMailerTest extends TestCase
         $subscriber = new Subscriber();
         $this->setSubscriberEmail($subscriber, 'user@example.com');
 
-        $email = $this->sut->composeEmail($message, $subscriber, $message->getContent());
+        $precached = new MessagePrecacheDto();
+        $precached->subject = 'Subject';
+        $precached->textContent = 'Plain text';
+        $precached->content = '<p>HTML</p>';
+
+        $email = $this->sut->composeEmail($message, $subscriber, $precached);
 
         $this->assertInstanceOf(Email::class, $email);
         $this->assertSame('user@example.com', $email->getTo()[0]->getAddress());
@@ -70,7 +76,12 @@ class RateLimitedCampaignMailerTest extends TestCase
         $subscriber = new Subscriber();
         $this->setSubscriberEmail($subscriber, 'user2@example.com');
 
-        $email = $this->sut->composeEmail($message, $subscriber, $message->getContent());
+        $precached = new MessagePrecacheDto();
+        $precached->subject = 'No headers';
+        $precached->textContent = 'text';
+        $precached->content = '<b>h</b>';
+
+        $email = $this->sut->composeEmail($message, $subscriber, $precached);
 
         $this->assertSame('user2@example.com', $email->getTo()[0]->getAddress());
         $this->assertSame('No headers', $email->getSubject());

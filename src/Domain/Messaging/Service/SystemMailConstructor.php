@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Messaging\Service\Manager\TemplateImageManager;
 
 class SystemMailConstructor
 {
+    /** @SuppressWarnings("BooleanArgumentFlag") */
     public function __construct(
         private readonly Html2Text $html2Text,
         private readonly ConfigProvider $configProvider,

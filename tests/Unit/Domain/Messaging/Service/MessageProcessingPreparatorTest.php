@@ -6,7 +6,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
 
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
-use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -118,7 +118,7 @@ class MessageProcessingPreparatorTest extends TestCase
 
     public function testProcessMessageLinksWhenLinkTrackingNotApplicable(): void
     {
-        $messageContent = $this->createMock(MessageContent::class);
+        $messageContent = new MessagePrecacheDto();
         $subscriber = $this->createMock(Subscriber::class);
         $subscriber->method('getId')->willReturn(123);
         $subscriber->method('getEmail')->willReturn('test@example.com');
@@ -130,9 +130,6 @@ class MessageProcessingPreparatorTest extends TestCase
         $this->linkTrackService->expects($this->never())
             ->method('extractAndSaveLinks');
 
-        $messageContent->expects($this->never())
-            ->method('getText');
-
         $result = $this->preparator->processMessageLinks(1, $messageContent, $subscriber);
 
         $this->assertSame($messageContent, $result);
@@ -141,7 +138,7 @@ class MessageProcessingPreparatorTest extends TestCase
     public function testProcessMessageLinksWhenNoLinksExtracted(): void
     {
         $messageId = 1;
-        $messageContent = $this->createMock(MessageContent::class);
+        $messageContent = new MessagePrecacheDto();
         $subscriber = $this->createMock(Subscriber::class);
         $subscriber->method('getId')->willReturn(123);
         $subscriber->method('getEmail')->willReturn('test@example.com');
@@ -155,9 +152,6 @@ class MessageProcessingPreparatorTest extends TestCase
             ->with($messageContent, 123, $messageId)
             ->willReturn([]);
 
-        $messageContent->expects($this->never())
-            ->method('getText');
-
         $result = $this->preparator->processMessageLinks($messageId, $messageContent, $subscriber);
 
         $this->assertSame($messageContent, $result);
@@ -165,7 +159,7 @@ class MessageProcessingPreparatorTest extends TestCase
 
     public function testProcessMessageLinksWithLinksExtracted(): void
     {
-        $content = $this->createMock(MessageContent::class);
+        $content = new MessagePrecacheDto();
         $subscriber = $this->createMock(Subscriber::class);
         $subscriber->method('getId')->willReturn(123);
         $subscriber->method('getEmail')->willReturn('test@example.com');
@@ -186,22 +180,14 @@ class MessageProcessingPreparatorTest extends TestCase
             ->with($content, 123, 1)
             ->willReturn($savedLinks);
 
-        $htmlContent = '<a href="https://example.com">Link 1</a> <a href="https://example.org">Link 2</a>';
-        $content->method('getText')->willReturn($htmlContent);
-
-        $footer = '<a href="https://example.com">Footer Link</a>';
-        $content->method('getFooter')->willReturn($footer);
-
-        $content->expects($this->once())
-            ->method('setText')
-            ->with($this->stringContains(MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=1'));
-
-        $content->expects($this->once())
-            ->method('setFooter')
-            ->with($this->stringContains(MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=1'));
+        $content->content = '<a href="https://example.com">Link 1</a> <a href="https://example.org">Link 2</a>';
+        $content->htmlFooter = '<a href="https://example.com">Footer Link</a>';
 
         $result = $this->preparator->processMessageLinks(1, $content, $subscriber);
 
         $this->assertSame($content, $result);
+        $this->assertStringContainsString(MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=1', $content->content);
+        $this->assertStringContainsString(MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=2', $content->content);
+        $this->assertStringContainsString(MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=1', $content->htmlFooter);
     }
 }

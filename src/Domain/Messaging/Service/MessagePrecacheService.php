@@ -40,6 +40,7 @@ class MessagePrecacheService
     /**
      * Retrieve the base (unpersonalized) message content for a campaign from cache,
      * or cache it on first access. Handle [URL:] token fetch and basic placeholder replacements.
+     *
      */
     public function precacheMessage(Message $campaign, $loadedMessageData, ?bool $forwardContent = false): bool
     {
@@ -190,35 +191,35 @@ class MessagePrecacheService
         return true;
     }
 
-    private function buildBasicReplacements(Message $campaign, string $subject): array
-    {
-        [$fromName, $fromEmail] = $this->parseFromField($campaign->getOptions()->getFromField());
-        return [
-            '[subject]' => $subject,
-            '[id]' => (string)($campaign->getId() ?? ''),
-            '[fromname]' => $fromName,
-            '[fromemail]' => $fromEmail,
-        ];
-    }
-
-    private function parseFromField(string $fromField): array
-    {
-        $email = '';
-        if (preg_match('/([^\s<>"]+@[^\s<>"]+)/', $fromField, $match)) {
-            $email = str_replace(['<', '>'], '', $match[0]);
-        }
-        $name = trim(str_replace([$email, '"'], ['', ''], $fromField));
-        $name = trim(str_replace(['<', '>'], '', $name));
-
-        return [$name, $email];
-    }
-
-    private function applyReplacements(?string $input, array $replacements): ?string
-    {
-        if ($input === null) {
-            return null;
-        }
-
-        return str_ireplace(array_keys($replacements), array_values($replacements), $input);
-    }
+//    private function buildBasicReplacements(Message $campaign, string $subject): array
+//    {
+//        [$fromName, $fromEmail] = $this->parseFromField($campaign->getOptions()->getFromField());
+//        return [
+//            '[subject]' => $subject,
+//            '[id]' => (string)($campaign->getId() ?? ''),
+//            '[fromname]' => $fromName,
+//            '[fromemail]' => $fromEmail,
+//        ];
+//    }
+//
+//    private function parseFromField(string $fromField): array
+//    {
+//        $email = '';
+//        if (preg_match('/([^\s<>"]+@[^\s<>"]+)/', $fromField, $match)) {
+//            $email = str_replace(['<', '>'], '', $match[0]);
+//        }
+//        $name = trim(str_replace([$email, '"'], ['', ''], $fromField));
+//        $name = trim(str_replace(['<', '>'], '', $name));
+//
+//        return [$name, $email];
+//    }
+//
+//    private function applyReplacements(?string $input, array $replacements): ?string
+//    {
+//        if ($input === null) {
+//            return null;
+//        }
+//
+//        return str_ireplace(array_keys($replacements), array_values($replacements), $input);
+//    }
 }

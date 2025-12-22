@@ -30,6 +30,7 @@ class TemplateImageEmbedder
     ];
     public array $attachment = [];
 
+    /** @SuppressWarnings("BooleanArgumentFlag") */
     public function __construct(
         private readonly ConfigProvider $configProvider,
         private readonly ConfigManager $configManager,
@@ -112,10 +113,10 @@ class TemplateImageEmbedder
             sort($htmlImages);
             for ($i = 0; $i < count($htmlImages); ++$i) {
                 if ($image = $this->getTemplateImage($templateId, $htmlImages[$i])) {
-                    $content_type = $this->mimeMap[strtolower(
+                    $contentType = $this->mimeMap[strtolower(
                         substr($htmlImages[$i], strrpos($htmlImages[$i], '.') + 1)
                     )];
-                    $cid = $this->addHtmlImage($image->getData(), basename($htmlImages[$i]), $content_type);
+                    $cid = $this->addHtmlImage($image->getData(), basename($htmlImages[$i]), $contentType);
                     if (!empty($cid)) {
                         $html = str_replace(basename($htmlImages[$i]), "cid:$cid", $html);
                     }
@@ -208,10 +209,10 @@ class TemplateImageEmbedder
         return '';
     }
 
-    private function addHtmlImage(string $contents, $name = '', $content_type = 'application/octet-stream'): string
+    private function addHtmlImage(string $contents, $name = '', $contentType = 'application/octet-stream'): string
     {
         $cid = bin2hex(random_bytes(16));
-        $this->addStringEmbeddedImage(base64_decode($contents), $cid, $name, 'base64', $content_type);
+        $this->addStringEmbeddedImage(base64_decode($contents), $cid, $name, 'base64', $contentType);
 
         return $cid;
     }

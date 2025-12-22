@@ -24,7 +24,7 @@ class RateLimitedCampaignMailer
     public function composeEmail(
         Message $message,
         Subscriber $subscriber,
-        MessagePrecacheDto $processedContent,
+        MessagePrecacheDto $messagePrecacheDto,
     ): Email {
         $email = new Email();
         if ($message->getOptions()->getFromField() !== '') {
@@ -37,10 +37,10 @@ class RateLimitedCampaignMailer
 
         return $email
             ->to($subscriber->getEmail())
-            ->subject($processedContent->subject)
-            ->text($processedContent->textContent)
+            ->subject($messagePrecacheDto->subject)
+            ->text($messagePrecacheDto->textContent)
             // todo: check htmlFooterit should be html of textContent
-            ->html($processedContent->content);
+            ->html($messagePrecacheDto->content);
     }
 
     /**
