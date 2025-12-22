@@ -35,7 +35,7 @@ class AdminAttributeDefinitionRepository extends AbstractRepository implements P
             ->getResult();
     }
 
-    public function getAllWIthEmptyValues(): array
+    public function getAllWithEmptyValues(): array
     {
         return $this->createQueryBuilder('ad')
             ->select("ad.name AS name", "'' AS value")

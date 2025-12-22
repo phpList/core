@@ -6,7 +6,7 @@ namespace PhpList\Core\Domain\Messaging\Model\Dto;
 
 class MessagePrecacheDto
 {
-    public string $replyToEmail;
+    public string $replyToEmail = '';
     public string $replyToName;
     public string $fromName;
     public string $fromEmail;
@@ -19,9 +19,9 @@ class MessagePrecacheDto
     public string $htmlFooter;
     public bool $htmlFormatted;
     public string $sendFormat;
-    public ?string $template = '';
-    public ?string $templateText = '';
-    public ?int $templateId = 0;
+    public ?string $template = null;
+    public ?string $templateText = null;
+    public ?int $templateId = null;
     public string $htmlCharset= 'UTF-8';
     public string $textCharset= 'UTF-8';
     public bool $userSpecificUrl;

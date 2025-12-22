@@ -158,7 +158,7 @@ class MessagePrecacheService
         if (count($relatedAdmins) === 1) {
             $listOwnerAttrValues = $this->adminAttributeDefRepository->getForAdmin($relatedAdmins[0]);
         } else {
-            $listOwnerAttrValues = $this->adminAttributeDefRepository->getAllWIthEmptyValues();
+            $listOwnerAttrValues = $this->adminAttributeDefRepository->getAllWithEmptyValues();
         }
 
         foreach ($listOwnerAttrValues as $attr) {
