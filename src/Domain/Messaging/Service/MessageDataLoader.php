@@ -12,6 +12,9 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 
 class MessageDataLoader
 {
+    private const AS_FORMAT_FIELDS = ['astext', 'ashtml', 'astextandhtml', 'aspdf', 'astextandpdf'];
+    private const SCHEDULE_FIELDS = ['embargo', 'repeatuntil', 'requeueuntil'];
+
     public function __construct(
         private readonly ConfigProvider $configProvider,
         private readonly MessageDataRepository $messageDataRepository,
@@ -28,63 +31,39 @@ class MessageDataLoader
         $finishSending = time() + $this->defaultMessageAge;
 
         $messageData = [
-            'template'       => $this->configProvider->getValue(ConfigOption::DefaultMessageTemplate),
-            'sendformat'     => 'HTML',
-            'message'        => '',
+            'template' => $this->configProvider->getValue(ConfigOption::DefaultMessageTemplate),
+            'sendformat' => 'HTML',
+            'message' => '',
             'forwardmessage' => '',
-            'textmessage'    => '',
-            'rsstemplate'    => '',
-            'embargo'        => [
-                'year'   => date('Y'),
-                'month'  => date('m'),
-                'day'    => date('d'),
-                'hour'   => date('H'),
-                'minute' => date('i'),
-            ],
+            'textmessage' => '',
+            'rsstemplate' => '',
+            'embargo' => $this->getDateArray(),
             'repeatinterval' => 0,
-            'repeatuntil'    => [
-                'year'   => date('Y'),
-                'month'  => date('m'),
-                'day'    => date('d'),
-                'hour'   => date('H'),
-                'minute' => date('i'),
-            ],
+            'repeatuntil' => $this->getDateArray(),
             'requeueinterval' => 0,
-            'requeueuntil'    => [
-                'year'   => date('Y'),
-                'month'  => date('m'),
-                'day'    => date('d'),
-                'hour'   => date('H'),
-                'minute' => date('i'),
-            ],
-            'finishsending' => [
-                'year'   => date('Y', $finishSending),
-                'month'  => date('m', $finishSending),
-                'day'    => date('d', $finishSending),
-                'hour'   => date('H', $finishSending),
-                'minute' => date('i', $finishSending),
-            ],
-            'fromfield'      => '',
-            'subject'        => '',
+            'requeueuntil' => $this->getDateArray(),
+            'finishsending' => $this->getDateArray($finishSending),
+            'fromfield' => '',
+            'subject' => '',
             'forwardsubject' => '',
-            'footer'         => $this->configProvider->getValue(ConfigOption::MessageFooter),
-            'forwardfooter'  => $this->configProvider->getValue(ConfigOption::ForwardFooter),
-            'status'         => '',
-            'tofield'        => '',
-            'replyto'        => '',
-            'targetlist'     => [],
+            'footer' => $this->configProvider->getValue(ConfigOption::MessageFooter),
+            'forwardfooter' => $this->configProvider->getValue(ConfigOption::ForwardFooter),
+            'status' => '',
+            'tofield' => '',
+            'replyto' => '',
+            'targetlist' => [],
             'criteria_match' => '',
-            'sendurl'        => '',
-            'sendmethod'     => 'inputhere',
-            'testtarget'     => '',
-            'notify_start'   => $this->configProvider->getValue(ConfigOption::NotifyStartDefault),
-            'notify_end'     => $this->configProvider->getValue(ConfigOption::NotifyEndDefault),
-            'google_track'   => filter_var(
+            'sendurl' => '',
+            'sendmethod' => 'inputhere',
+            'testtarget' => '',
+            'notify_start' => $this->configProvider->getValue(ConfigOption::NotifyStartDefault),
+            'notify_end' => $this->configProvider->getValue(ConfigOption::NotifyEndDefault),
+            'google_track' => filter_var(
                 value: $this->configProvider->getValue(ConfigOption::AlwaysAddGoogleTracking),
                 filter: FILTER_VALIDATE_BOOL
             ),
-            'excludelist'    => [],
-            'sentastest'     => 0,
+            'excludelist' => [],
+            'sentastest' => 0,
         ];
 
         $nonEmptyFields = $this->messageRepository->getNonEmptyFields($message->getId());
@@ -98,26 +77,23 @@ class MessageDataLoader
         foreach ($storedMessageData as $storedMessageDatum) {
             if (str_starts_with($storedMessageDatum->getData(), 'SER:')) {
                 $unserialized = unserialize(substr($storedMessageDatum->getData(), 4));
-                $data = array_walk_recursive($unserialized, 'stripslashes');
+                array_walk_recursive($unserialized, function (&$val) {
+                    $val = stripslashes($val);
+                });
+
+                $data = $unserialized;
             } else {
                 $data = stripslashes($storedMessageDatum->getData());
             }
-            if (!in_array($storedMessageDatum->getName(), ['astext', 'ashtml', 'astextandhtml', 'aspdf', 'astextandpdf']))
-            {
+            if (!in_array($storedMessageDatum->getName(), self::AS_FORMAT_FIELDS)) {
                 //# don't overwrite counters in the message table from the data table
                 $messageData[stripslashes($storedMessageDatum->getName())] = $data;
             }
         }
 
-        foreach (['embargo', 'repeatuntil', 'requeueuntil'] as $dateField) {
+        foreach (self::SCHEDULE_FIELDS as $dateField) {
             if (!is_array($messageData[$dateField])) {
-                $messageData[$dateField] = [
-                    'year'   => date('Y'),
-                    'month'  => date('m'),
-                    'day'    => date('d'),
-                    'hour'   => date('H'),
-                    'minute' => date('i'),
-                ];
+                $messageData[$dateField] = $this->getDateArray();
             }
         }
 
@@ -150,7 +126,6 @@ class MessageDataLoader
         } elseif (strpos($messageData['fromfield'], ' ')) {
             // if there is a space, we need to add the email
             $messageData['fromname'] = $messageData['fromfield'];
-            //  $cached[$messageid]["fromemail"] = "listmaster@$domain";
             $messageData['fromemail'] = $defaultFrom;
         } else {
             $messageData['fromemail'] = $defaultFrom;
@@ -196,5 +171,16 @@ class MessageDataLoader
         }
 
         return $messageData;
+    }
+
+    private function getDateArray(?int $timestamp = null): array
+    {
+        return [
+            'year' => date('Y', $timestamp),
+            'month' => date('m', $timestamp),
+            'day' => date('d', $timestamp),
+            'hour' => date('H', $timestamp),
+            'minute' => date('i', $timestamp),
+        ];
     }
 }

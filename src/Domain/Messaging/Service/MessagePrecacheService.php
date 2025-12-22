@@ -64,7 +64,7 @@ class MessagePrecacheService
             $messagePrecacheDto->replyToEmail = $replyToEmail;
             // make sure there are no quotes around the name
             $messagePrecacheDto->replyToName = str_replace('"', '', ltrim(rtrim($loadedMessageData['replyto'])));
-        } elseif (strpos($loadedMessageData['replyto'], ' ')) {
+        } elseif (str_contains($loadedMessageData['replyto'], ' ')) {
             // if there is a space, we need to add the email
             $messagePrecacheDto->replyToName = $loadedMessageData['replyto'];
             $messagePrecacheDto->replyToEmail = "listmaster@$domain";
