@@ -102,18 +102,17 @@ class RemotePageFetcher
 
     private function expandURL(string $url): string
     {
-        $url_append = $this->configProvider->getValue(ConfigOption::RemoteUrlAppend);
-        $url_append = strip_tags($url_append);
-        $url_append = preg_replace('/\W/', '', $url_append);
-        if ($url_append) {
-            if (strpos($url, '?')) {
-                $url = $url.$url_append;
-            } else {
-                $url = $url.'?'.$url_append;
-            }
+        $append = $this->configProvider->getValue(ConfigOption::RemoteUrlAppend);
+        $append = strip_tags($append);
+        $append = trim($append);
+
+        if ($append === '') {
+            return $url;
         }
 
-        return $url;
+        $delimiter = (str_contains($url, '?')) ? '&' : '?';
+        $append = ltrim($append, '?&');
+
+        return $url . $delimiter . $append;
     }
 }
-
