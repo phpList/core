@@ -126,14 +126,56 @@ class TemplateImageManager
         if ($logoImage === null) {
             return;
         }
-        $logoData = $logoImage->getData();
-        $imageContent = base64_decode($logoData ?? '');
-        if (empty($imageContent)) {
-            //# fall back to a single pixel, so that there are no broken images
-            $imageContent = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABGdBTUEAALGPC/xhBQAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAAsSAAALEgHS3X78AAAAB3RJTUUH0gQCEx05cqKA8gAAAApJREFUeJxjYAAAAAIAAUivpHEAAAAASUVORK5CYII=');
+
+        $imageContent = $this->decodeLogoImageData($logoImage->getData());
+        if ($imageContent === null) {
+            return;
         }
 
         $imgSize = getimagesizefromstring($imageContent);
+        if ($imgSize === false) {
+            return;
+        }
+
+        [$newWidth, $newHeight, $sizeFactor] = $this->calculateDimensions($imgSize, $size);
+
+        $imageContent = $this->resizeImageIfNecessary(
+            $imageContent,
+            $imgSize,
+            $newWidth,
+            $newHeight,
+            $sizeFactor,
+            $orgLogoImage
+        );
+
+        // else copy original
+        $templateImage = (new TemplateImage())
+            ->setFilename('ORGANISATIONLOGO' . $size . '.png')
+            ->setMimetype($imgSize['mime'])
+            ->setData(base64_encode($imageContent))
+            ->setWidth($newWidth)
+            ->setHeight($newHeight);
+
+        $this->templateImageRepository->persist($templateImage);
+    }
+
+    private function decodeLogoImageData(?string $logoData): ?string
+    {
+        $imageContent = base64_decode($logoData ?? '', true);
+
+        if (!empty($imageContent)) {
+            return $imageContent;
+        }
+
+        $fallback = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABGdBTUEAALGPC/xhBQAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAAsSAAALEgHS3X78AAAAB3RJTUUH0gQCEx05cqKA8gAAAApJREFUeJxjYAAAAAIAAUivpHEAAAAASUVORK5CYII=');
+
+        $fallbackContent = base64_decode($fallback, true);
+
+        return $fallbackContent !== false ? $fallbackContent : null;
+    }
+
+    private function calculateDimensions(array $imgSize, int $size): array
+    {
         $sizeW = $imgSize[0];
         $sizeH = $imgSize[1];
         if ($sizeH > $sizeW) {
@@ -144,49 +186,56 @@ class TemplateImageManager
         $newWidth = (int) ($sizeW * $sizeFactor);
         $newHeight = (int) ($sizeH * $sizeFactor);
 
-        if ($sizeFactor < 1) {
-            $original = imagecreatefromstring($imageContent);
-            //# creates a black image (why would you want that....)
-            $resized = imagecreatetruecolor($newWidth, $newHeight);
-            imagesavealpha($resized, true);
-            //# white. All the methods to make it transparent didn't work for me @@TODO really make transparent
-            $transparent = imagecolorallocatealpha($resized, 255, 255, 255, 127);
-            imagefill($resized, 0, 0, $transparent);
+        return [$newWidth, $newHeight, $sizeFactor];
+    }
 
-            if (imagecopyresized(
-                $resized,
-                $original,
-                0,
-                0,
-                0,
-                0,
-                $newWidth,
-                $newHeight,
-                $sizeW,
-                $sizeH,
-            )) {
-                if ($orgLogoImage !== null) {
-                    $this->templateImageRepository->remove($orgLogoImage);
-                }
-
-                //# rather convoluted way to get the image contents
-                $buffer = ob_get_contents();
-                ob_end_clean();
-                ob_start();
-                imagepng($resized);
-                $imageContent = ob_get_contents();
-                ob_end_clean();
-                echo $buffer;
-            }
+    private function resizeImageIfNecessary(
+        string $imageContent,
+        array $imgSize,
+        mixed $newWidth,
+        mixed $newHeight,
+        mixed $sizeFactor,
+        ?TemplateImage $orgLogoImage
+    ): string {
+        if ($sizeFactor >= 1) {
+            return $imageContent;
         }
-        // else copy original
-        $templateImage = (new TemplateImage())
-            ->setFilename("ORGANISATIONLOGO$size.png")
-            ->setMimetype($imgSize['mime'])
-            ->setData(base64_encode($imageContent))
-            ->setWidth($newWidth)
-            ->setHeight($newHeight);
 
-        $this->templateImageRepository->persist($templateImage);
+        $original = imagecreatefromstring($imageContent);
+        //# creates a black image (why would you want that....)
+        $resized = imagecreatetruecolor($newWidth, $newHeight);
+        imagesavealpha($resized, true);
+        //# white. All the methods to make it transparent didn't work for me @@TODO really make transparent
+        $transparent = imagecolorallocatealpha($resized, 255, 255, 255, 127);
+        imagefill($resized, 0, 0, $transparent);
+        [$sizeW, $sizeH] = [$imgSize[0], $imgSize[1]];
+
+        if (imagecopyresized(
+            $resized,
+            $original,
+            0,
+            0,
+            0,
+            0,
+            $newWidth,
+            $newHeight,
+            $sizeW,
+            $sizeH,
+        )) {
+            if ($orgLogoImage !== null) {
+                $this->templateImageRepository->remove($orgLogoImage);
+            }
+
+            //# rather convoluted way to get the image contents
+            $buffer = ob_get_contents();
+            ob_end_clean();
+            ob_start();
+            imagepng($resized);
+            $imageContent = ob_get_contents();
+            ob_end_clean();
+            echo $buffer;
+        }
+
+        return $imageContent;
     }
 }

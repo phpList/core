@@ -28,9 +28,36 @@ class MessageDataLoader
         $defaultFrom = $this->configProvider->getValue(ConfigOption::MessageFromAddress)
                 ?? $this->configProvider->getValue(ConfigOption::AdminAddress);
 
+        $messageData = $this->buildDefaultMessageData();
+
+        $this->mergeNonEmptyFields($messageData, $message);
+        $this->mergeStoredMessageData($messageData, $message);
+        $this->normaliseScheduleFields($messageData);
+        $this->populateTargetLists($messageData, $message);
+        $this->ensureSendUrlAndMethod($messageData);
+        $this->normaliseFromField($messageData, $defaultFrom);
+        $this->cleanupSelections($messageData);
+        $this->deriveCampaignTitle($messageData);
+
+        return $messageData;
+    }
+
+    private function getDateArray(?int $timestamp = null): array
+    {
+        return [
+            'year' => date('Y', $timestamp),
+            'month' => date('m', $timestamp),
+            'day' => date('d', $timestamp),
+            'hour' => date('H', $timestamp),
+            'minute' => date('i', $timestamp),
+        ];
+    }
+
+    private function buildDefaultMessageData(): array
+    {
         $finishSending = time() + $this->defaultMessageAge;
 
-        $messageData = [
+        return [
             'template' => $this->configProvider->getValue(ConfigOption::DefaultMessageTemplate),
             'sendformat' => 'HTML',
             'message' => '',
@@ -65,14 +92,22 @@ class MessageDataLoader
             'excludelist' => [],
             'sentastest' => 0,
         ];
+    }
 
+    private function mergeNonEmptyFields(array &$messageData, Message $message): void
+    {
         $nonEmptyFields = $this->messageRepository->getNonEmptyFields($message->getId());
         foreach ($nonEmptyFields as $key => $val) {
             $messageData[$key] = $val;
         }
 
-        $messageData['subject'] = $messageData['subject'] === '(no title)' ? '(no subject)' : $messageData['subject'];
+        if ($messageData['subject'] === '(no title)') {
+            $messageData['subject'] = '(no subject)';
+        }
+    }
 
+    private function mergeStoredMessageData(array &$messageData, Message $message): void
+    {
         $storedMessageData = $this->messageDataRepository->getForMessage($message->getId());
         foreach ($storedMessageData as $storedMessageDatum) {
             if (str_starts_with($storedMessageDatum->getData(), 'SER:')) {
@@ -90,17 +125,26 @@ class MessageDataLoader
                 $messageData[stripslashes($storedMessageDatum->getName())] = $data;
             }
         }
+    }
 
+    private function normaliseScheduleFields(array &$messageData): void
+    {
         foreach (self::SCHEDULE_FIELDS as $dateField) {
             if (!is_array($messageData[$dateField])) {
                 $messageData[$dateField] = $this->getDateArray();
             }
         }
+    }
 
+    private function populateTargetLists(array &$messageData, Message $message): void
+    {
         foreach($message->getListMessages() as $listMessage) {
             $messageData['targetlist'][$listMessage->getListId()] = 1;
         }
+    }
 
+    private function ensureSendUrlAndMethod(array &$messageData): void
+    {
         //# backwards, check that the content has a url and use it to fill the sendurl
         if (empty($messageData['sendurl'])) {
             //# can't do "ungreedy matching, in case the URL has placeholders, but this can potentially throw problems
@@ -112,7 +156,10 @@ class MessageDataLoader
             // if there's a message and no url, make sure to show the editor, and not the URL input
             $messageData['sendmethod'] = 'inputhere';
         }
+    }
 
+    private function normaliseFromField(array &$messageData, ?string $defaultFrom): void
+    {
         //## parse the from field into it's components - email and name
         if (preg_match('/([^ ]+@[^ ]+)/', $messageData['fromfield'], $regs)) {
             // if there is an email in the from, rewrite it as "name <email>"
@@ -150,14 +197,20 @@ class MessageDataLoader
         if (empty($messageData['fromname'])) {
             $messageData['fromname'] = $messageData['fromemail'];
         }
+    }
 
+    private function cleanupSelections(array &$messageData): void
+    {
         if (isset($messageData['targetlist']['unselect'])) {
             unset($messageData['targetlist']['unselect']);
         }
         if (isset($messageData['excludelist']['unselect'])) {
             unset($messageData['excludelist']['unselect']);
         }
+    }
 
+    private function deriveCampaignTitle(array &$messageData): void
+    {
         if (empty($messageData['campaigntitle'])) {
             if ($messageData['subject'] != '(no subject)') {
                 $messageData['campaigntitle'] = $messageData['subject'];
@@ -166,21 +219,8 @@ class MessageDataLoader
             }
         }
         //# copy subject to title
-        if ($messageData['campaigntitle'] == '(no title)' && $messageData['subject'] != '(no subject)') {
+        if ($messageData['campaigntitle'] === '(no title)' && $messageData['subject'] !== '(no subject)') {
             $messageData['campaigntitle'] = $messageData['subject'];
         }
-
-        return $messageData;
-    }
-
-    private function getDateArray(?int $timestamp = null): array
-    {
-        return [
-            'year' => date('Y', $timestamp),
-            'month' => date('m', $timestamp),
-            'day' => date('d', $timestamp),
-            'hour' => date('H', $timestamp),
-            'minute' => date('i', $timestamp),
-        ];
     }
 }

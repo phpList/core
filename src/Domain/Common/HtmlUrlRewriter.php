@@ -84,18 +84,11 @@ class HtmlUrlRewriter
     public function absolutizeUrl(string $url, string $baseUrl): string
     {
         $url = trim($url);
-        if ($url === '' || $url[0] === '#') return $url;
-        if (preg_match('/\[[^\]]+\]/', $url)) return $url;
-
-        // already has a scheme (http:, https:, mailto:, data:, etc.)
-        if (preg_match('#^[a-z][a-z0-9+.-]*:#i', $url)) return $url;
-
-        $base = parse_url($baseUrl);
-        if (!$base || empty($base['scheme']) || empty($base['host'])) {
-            // If base is invalid, bail out rather than corrupt URLs
+        if ($this->shouldReturnAsIs($url, $baseUrl)) {
             return $url;
         }
 
+        $base = parse_url($baseUrl);
         // protocol-relative
         if (str_starts_with($url, '//')) {
             return $base['scheme'] . ':' . $url;
@@ -107,25 +100,17 @@ class HtmlUrlRewriter
             $basePath = preg_replace('#/[^/]*$#', '/', $basePath);
         }
 
-        if (str_starts_with($url, '/')) {
-            $path = $url;
-        } else {
-            $path = $basePath . $url;
-        }
-
-        $path = $this->normalizePath($path);
-
+        $path = str_starts_with($url, '/') ? $url : $basePath . $url;
         $port = isset($base['port']) ? ':' . $base['port'] : '';
-        return $base['scheme'] . '://' . $base['host'] . $port . $path;
+
+        return $base['scheme'] . '://' . $base['host'] . $port . $this->normalizePath($path);
     }
 
-    function normalizePath(string $path): string
+    private function normalizePath(string $path): string
     {
         // Keep query/fragment if present
         $parts = parse_url($path);
-        $p = $parts['path'] ?? $path;
-
-        $segments = explode('/', $p);
+        $segments = explode('/', $parts['path'] ?? $path);
         $out = [];
         foreach ($segments as $seg) {
             if ($seg === '' || $seg === '.') continue;
@@ -137,37 +122,45 @@ class HtmlUrlRewriter
         }
         $norm = '/' . implode('/', $out);
 
-        if (isset($parts['query'])) $norm .= '?' . $parts['query'];
-        if (isset($parts['fragment'])) $norm .= '#' . $parts['fragment'];
+        if (isset($parts['query'])) {
+            $norm .= '?' . $parts['query'];
+        }
+        if (isset($parts['fragment'])) {
+            $norm .= '#' . $parts['fragment'];
+        }
+
         return $norm;
     }
 
-    public function rewriteSrcset(string $srcset, string $baseUrl): string
+    private function rewriteSrcset(string $srcset, string $baseUrl): string
     {
         // "a.jpg 1x, /b.jpg 2x" => absolutize each URL part
         $candidates = array_map('trim', explode(',', $srcset));
-        foreach ($candidates as &$cand) {
-            if ($cand === '') continue;
+        foreach ($candidates as &$candidate) {
+            if ($candidate === '') {
+                continue;
+            }
             // split at first whitespace: "url descriptor..."
-            if (preg_match('/^(\S+)(\s+.*)?$/', $cand, $m)) {
-                $u = $m[1];
-                $d = $m[2] ?? '';
-                $cand = $this->absolutizeUrl($u, $baseUrl) . $d;
+            if (preg_match('/^(\S+)(\s+.*)?$/', $candidate, $matches)) {
+                $url = $matches[1];
+                $descriptor = $matches[2] ?? '';
+                $candidate = $this->absolutizeUrl($url, $baseUrl) . $descriptor;
             }
         }
         return implode(', ', $candidates);
     }
 
-    public function rewriteCssUrls(string $css, string $baseUrl): string
+    private function rewriteCssUrls(string $css, string $baseUrl): string
     {
         // url(...) handling (supports quotes or no quotes)
         $css = preg_replace_callback(
             '#url\(\s*(["\']?)(.*?)\1\s*\)#i',
-            function ($m) use ($baseUrl) {
-                $q = $m[1];
-                $u = $m[2];
-                $abs = $this->absolutizeUrl($u, $baseUrl);
-                return 'url(' . ($q !== '' ? $q : '') . $abs . ($q !== '' ? $q : '') . ')';
+            function ($matches) use ($baseUrl) {
+                $quotes = $matches[1];
+                $url = $matches[2];
+                $abs = $this->absolutizeUrl($url, $baseUrl);
+
+                return 'url(' . ($quotes !== '' ? $quotes : '') . $abs . ($quotes !== '' ? $quotes : '') . ')';
             },
             $css
         );
@@ -175,16 +168,40 @@ class HtmlUrlRewriter
         // @import "..."; or @import url("..."); etc.
         return preg_replace_callback(
             '#@import\s+(?:url\()?(\s*["\']?)([^"\')\s;]+)\1\)?#i',
-            function ($m) use ($baseUrl) {
-                $q = trim($m[1]);
-                $u = $m[2];
-                $abs = $this->absolutizeUrl($u, $baseUrl);
+            function ($matches) use ($baseUrl) {
+                $quotes = trim($matches[1]);
+                $url = $matches[2];
+                $abs = $this->absolutizeUrl($url, $baseUrl);
                 // Preserve original form loosely
-                return str_starts_with($m[0], '@import url')
-                    ? '@import url(' . ($q ?: '') . $abs . ($q ?: '') . ')'
-                    : '@import ' . ($q ?: '') . $abs . ($q ?: '');
+                return str_starts_with($matches[0], '@import url')
+                    ? '@import url(' . ($quotes ?: '') . $abs . ($quotes ?: '') . ')'
+                    : '@import ' . ($quotes ?: '') . $abs . ($quotes ?: '');
             },
             $css
         );
+    }
+
+    private function shouldReturnAsIs(string $url, string $baseUrl): bool
+    {
+        if ($url === '' || $url[0] === '#') {
+            return true;
+        }
+        if (preg_match('/\[[^\]]+\]/', $url)) {
+            return true;
+        }
+
+        // already has a scheme (http:, https:, mailto:, data:, etc.)
+        if (preg_match('#^[a-z][a-z0-9+.-]*:#i', $url)) {
+            return true;
+        }
+
+
+        $base = parse_url($baseUrl);
+        if (!$base || empty($base['scheme']) || empty($base['host'])) {
+            // If base is invalid, bail out rather than corrupt URLs
+            return true;
+        }
+
+        return false;
     }
 }

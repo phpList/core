@@ -12,7 +12,6 @@ use PhpList\Core\Domain\Messaging\Service\Manager\TemplateImageManager;
 
 class SystemMailConstructor
 {
-    /** @SuppressWarnings("BooleanArgumentFlag") */
     public function __construct(
         private readonly Html2Text $html2Text,
         private readonly ConfigProvider $configProvider,
@@ -22,35 +21,13 @@ class SystemMailConstructor
     ) {
     }
 
-    public function __invoke($message, $subject = ''): array
+    public function __invoke($message, string $subject = ''): array
     {
-        $hasHTML = strip_tags($message) !== $message;
-
-        if ($hasHTML) {
-            $message = stripslashes($message);
-            $textMessage = ($this->html2Text)($message);
-            $htmlMessage = $message;
-        } else {
-            $textMessage = $message;
-            $htmlMessage = $message;
-            //  $htmlMessage = str_replace("\n\n","\n",$htmlMessage);
-            $htmlMessage = nl2br($htmlMessage);
-            //# make links clickable:
-            $htmlMessage = preg_replace('~https?://[^\s<]+~i', '<a href="$0">$0</a>', $htmlMessage);
-        }
-        //# add li-s around the lists
-        if (preg_match('/<ul>\s+(\*.*)<\/ul>/imsxU', $htmlMessage, $listsmatch)) {
-            $lists = $listsmatch[1];
-            $listsHTML = '';
-            preg_match_all('/\*([^\*]+)/', $lists, $matches);
-            for ($i = 0; $i < count($matches[0]); ++$i) {
-                $listsHTML .= '<li>'.$matches[1][$i].'</li>';
-            }
-            $htmlMessage = str_replace($listsmatch[0], '<ul>'.$listsHTML.'</ul>', $htmlMessage);
-        }
+        [$htmlMessage, $textMessage] = $this->buildMessageBodies($message);
 
         $htmlContent = $htmlMessage;
         $textContent = $textMessage;
+
         $templateId = $this->configProvider->getValue(ConfigOption::SystemMessageTemplate);
         if ($templateId) {
             $template = $this->templateRepository->findOneById((int)$templateId);
@@ -90,5 +67,35 @@ class SystemMailConstructor
         }
 
         return [$htmlContent, $textContent];
+    }
+
+    private function buildMessageBodies($message): array
+    {
+        $hasHTML = strip_tags($message) !== $message;
+
+        if ($hasHTML) {
+            $message = stripslashes($message);
+            $textMessage = ($this->html2Text)($message);
+            $htmlMessage = $message;
+        } else {
+            $textMessage = $message;
+            $htmlMessage = $message;
+            //  $htmlMessage = str_replace("\n\n","\n",$htmlMessage);
+            $htmlMessage = nl2br($htmlMessage);
+            //# make links clickable:
+            $htmlMessage = preg_replace('~https?://[^\s<]+~i', '<a href="$0">$0</a>', $htmlMessage);
+        }
+        //# add li-s around the lists
+        if (preg_match('/<ul>\s+(\*.*)<\/ul>/imsxU', $htmlMessage, $listsMatch)) {
+            $lists = $listsMatch[1];
+            $listsHTML = '';
+            preg_match_all('/\*([^\*]+)/', $lists, $matches);
+            for ($index = 0; $index < count($matches[0]); ++$index) {
+                $listsHTML .= '<li>' . $matches[1][$index] . '</li>';
+            }
+            $htmlMessage = str_replace($listsMatch[0], '<ul>' . $listsHTML . '</ul>', $htmlMessage);
+        }
+
+        return [$htmlMessage, $textMessage];
     }
 }

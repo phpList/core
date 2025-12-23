@@ -16,6 +16,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
+/** @SuppressWarnings("ExcessiveParameterList") */
 class EmailBuilder
 {
     public function __construct(
@@ -43,33 +44,73 @@ class EmailBuilder
         ?bool $skipBlacklistCheck = false,
         ?bool $inBlast = true,
     ): ?Email {
+        if (!$this->validateRecipientAndSubject($to, $subject)) {
+            return null;
+        }
+
+        if (!$this->passesBlacklistCheck($to, $skipBlacklistCheck)) {
+            return null;
+        }
+
+        $fromEmail = $this->configProvider->getValue(ConfigOption::MessageFromAddress);
+        $fromName = $this->configProvider->getValue(ConfigOption::MessageFromName);
+//        $messageReplyToAddress = $this->configProvider->getValue(ConfigOption::MessageReplyToAddress);
+//        $replyTo = $messageReplyToAddress ?: $fromEmail;
+
+        [$destinationEmail, $message] = $this->resolveDestinationEmailAndMessage($to, $message);
+
+        [$htmlMessage, $textMessage] = ($this->systemMailConstructor)($message, $subject);
+
+        $email = $this->createBaseEmail(
+            $messageId,
+            $destinationEmail,
+            $fromEmail,
+            $fromName,
+            $subject,
+            $inBlast
+        );
+
+        $this->applyContentAndFormatting($email, $htmlMessage, $textMessage, $messageId);
+
+        return $email;
+    }
+
+    private function validateRecipientAndSubject(?string $to, ?string $subject): bool
+    {
         if (preg_match("/\n/", $to)) {
             $this->eventLogManager->log('', 'Error: invalid recipient, containing newlines, email blocked');
 
-            return null;
+            return false;
         }
         if (preg_match("/\n/", $subject)) {
             $this->eventLogManager->log('', 'Error: invalid subject, containing newlines, email blocked');
 
-            return null;
+            return false;
         }
         if (!$to) {
             $this->eventLogManager->log('', sprintf('Error: empty To: in message with subject %s to send', $subject));
 
-            return null;
+            return false;
         }
         if (!$subject) {
             $this->eventLogManager->log('', "Error: empty Subject: in message to send to $to");
 
-            return null;
+            return false;
         }
+
+        return true;
+    }
+
+    private function passesBlacklistCheck(?string $to, ?bool $skipBlacklistCheck): bool
+    {
+
         if (!$skipBlacklistCheck && $this->blacklistRepository->isEmailBlacklisted($to)) {
             $this->eventLogManager->log('', sprintf('Error, %s is blacklisted, not sending', $to));
             $subscriber = $this->subscriberRepository->findOneByEmail($to);
             if (!$subscriber) {
                 $this->logger->error('Error: subscriber not found', ['email' => $to]);
 
-                return null;
+                return false;
             }
             $subscriber->setBlacklisted(true);
 
@@ -79,17 +120,14 @@ class EmailBuilder
                 details: 'Found user in blacklist while trying to send an email, marked black listed',
             );
 
-            return null;
+            return false;
         }
 
-        $fromEmail = $this->configProvider->getValue(ConfigOption::MessageFromAddress);
-        $fromName = $this->configProvider->getValue(ConfigOption::MessageFromName);
-        $messageReplyToAddress = $this->configProvider->getValue(ConfigOption::MessageReplyToAddress);
-        if ($messageReplyToAddress) {
-            $reply_to = $messageReplyToAddress;
-        } else {
-            $reply_to = $fromEmail;
-        }
+        return true;
+    }
+
+    private function resolveDestinationEmailAndMessage(?string $to, ?string $message): array
+    {
         $destinationEmail = '';
 
         if ($this->devVersion) {
@@ -101,8 +139,17 @@ class EmailBuilder
             $destinationEmail = $to;
         }
 
-        list($htmlMessage, $textMessage) = ($this->systemMailConstructor)($message, $subject);
+        return [$destinationEmail, $message];
+    }
 
+    private function createBaseEmail(
+        int $messageId,
+        mixed $destinationEmail,
+        ?string $fromEmail,
+        ?string $fromName,
+        ?string $subject,
+        ?bool $inBlast
+    ) : Email {
         $email = (new Email());
 
         $email->getHeaders()->addTextHeader('X-MessageID', (string)$messageId);
@@ -131,6 +178,16 @@ class EmailBuilder
             $email->getHeaders()->addTextHeader('X-Originally to', $destinationEmail);
         }
 
+        $email->to($destinationEmail);
+        $email->from(new Address($fromEmail, $fromName));
+        $email->subject($subject);
+
+        return $email;
+    }
+
+    private function applyContentAndFormatting(Email $email, $htmlMessage, $textMessage, int $messageId): void
+    {
+
         $newWrap = $this->configProvider->getValue(ConfigOption::WordWrap);
         if ($newWrap) {
             $textMessage = wordwrap($textMessage, (int)$newWrap);
@@ -145,11 +202,5 @@ class EmailBuilder
             $email->text($textMessage);
         }
         $email->text($textMessage);
-
-        $email->to($destinationEmail);
-        $email->from(new Address($fromEmail, $fromName));
-        $email->subject($subject);
-
-        return $email;
     }
 }

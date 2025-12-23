@@ -39,18 +39,11 @@ class ExternalImageService
 
     public function cache($filename, $messageId): bool
     {
-        if (
-            !(str_starts_with($filename, 'http'))
-            || str_contains($filename, '://' . $this->configProvider->getValue(ConfigOption::Website) . '/')
-        ) {
+        if (!$this->isCacheableUrl($filename)) {
             return false;
         }
 
-        if (!file_exists($this->externalCacheDir)) {
-            @mkdir($this->externalCacheDir);
-        }
-
-        if (!file_exists($this->externalCacheDir) || !is_writable($this->externalCacheDir)) {
+        if (!$this->ensureCacheDirectory()) {
             return false;
         }
 
@@ -73,22 +66,10 @@ class ExternalImageService
                 $cacheFileContent = 'MAX_SIZE';
             }
 
-            $cacheFileHandle = @fopen($cacheFileName, 'wb');
-            if ($cacheFileHandle !== false) {
-                if (flock($cacheFileHandle, LOCK_EX)) {
-                    fwrite($cacheFileHandle, $cacheFileContent);
-                    fflush($cacheFileHandle);
-                    flock($cacheFileHandle, LOCK_UN);
-                }
-                fclose($cacheFileHandle);
-            }
+            $this->writeCacheFile($cacheFileName, $cacheFileContent);
         }
 
-        if (file_exists($cacheFileName) && (@filesize($cacheFileName) > 64)) {
-            return true;
-        }
-
-        return false;
+        return $this->isValidCacheFile($cacheFileName);
     }
 
     private function removeOldFilesInCache(): void
@@ -173,5 +154,54 @@ class ExternalImageService
         }
 
         return $cacheFileContent;
+    }
+
+    private function isCacheableUrl($filename): bool
+    {
+        if (
+            !(str_starts_with($filename, 'http'))
+            || str_contains($filename, '://' . $this->configProvider->getValue(ConfigOption::Website) . '/')
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function ensureCacheDirectory(): bool
+    {
+
+        if (!file_exists($this->externalCacheDir)) {
+            @mkdir($this->externalCacheDir);
+        }
+
+        if (!file_exists($this->externalCacheDir) || !is_writable($this->externalCacheDir)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function isValidCacheFile(string $cacheFileName): bool
+    {
+
+        if (file_exists($cacheFileName) && (@filesize($cacheFileName) > 64)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function writeCacheFile(string $cacheFileName, $content): void
+    {
+        $cacheFileHandle = @fopen($cacheFileName, 'wb');
+        if ($cacheFileHandle !== false) {
+            if (flock($cacheFileHandle, LOCK_EX)) {
+                fwrite($cacheFileHandle, $content);
+                fflush($cacheFileHandle);
+                flock($cacheFileHandle, LOCK_UN);
+            }
+            fclose($cacheFileHandle);
+        }
     }
 }

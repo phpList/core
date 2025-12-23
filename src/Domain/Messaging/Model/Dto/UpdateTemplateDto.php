@@ -6,9 +6,6 @@ namespace PhpList\Core\Domain\Messaging\Model\Dto;
 
 class UpdateTemplateDto
 {
-    /**
-     * @SuppressWarnings("BooleanArgumentFlag")
-     */
     public function __construct(
         public readonly ?string $title = null,
         public readonly ?string $content = null,

@@ -30,24 +30,8 @@ class RemotePageFetcher
 
     public function __invoke(string $url, array $userData): string
     {
-        //# fix the Editor replacing & with &amp;
-        $url = str_ireplace('&amp;', '&', $url);
+        $url = $this->prepareUrl($url, $userData);
 
-        foreach ($userData as $key => $val) {
-            if ($key !== 'password') {
-                $url = mb_convert_encoding(
-                    str_ireplace(
-                        "[$key]",
-                        urlencode($val),
-                        mb_convert_encoding($url, 'ISO-8859-1', 'UTF-8')
-                    ),
-                    'ISO-8859-1',
-                    'UTF-8'
-                );
-            }
-        }
-
-        $url = $this->expandUrl($url);
         $cacheKey = md5($url);
 
         $item = $this->cache->get($cacheKey);
@@ -122,5 +106,27 @@ class RemotePageFetcher
         $append = ltrim($append, '?&');
 
         return $url . $delimiter . $append;
+    }
+
+    private function prepareUrl(string $url, array $userData): string
+    {
+        //# fix the Editor replacing & with &amp;
+        $url = str_ireplace('&amp;', '&', $url);
+
+        foreach ($userData as $key => $val) {
+            if ($key !== 'password') {
+                $url = mb_convert_encoding(
+                    str_ireplace(
+                        '[' . $key . ']',
+                        urlencode($val),
+                        mb_convert_encoding($url, 'ISO-8859-1', 'UTF-8')
+                    ),
+                    'ISO-8859-1',
+                    'UTF-8'
+                );
+            }
+        }
+
+        return $this->expandUrl($url);
     }
 }

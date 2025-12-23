@@ -42,7 +42,6 @@ class UserBlacklistRepository extends AbstractRepository
         ]);
     }
 
-    /** @SuppressWarnings("BooleanArgumentFlag") */
     public function isEmailBlacklisted(string $email, ?bool $immediate = true): bool
     {
         // allow 5 minutes to send the last message acknowledging unsubscription

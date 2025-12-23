@@ -117,39 +117,7 @@ class CampaignProcessorMessageHandler
             return;
         }
 
-        if (!empty($loadedMessageData['notify_start']) && !isset($loadedMessageData['start_notified'])) {
-            $notifications = explode(',', $loadedMessageData['notify_start']);
-            foreach ($notifications as $notification) {
-                $email = $this->emailBuilder->buildPhplistEmail(
-                    messageId: $campaign->getId(),
-                    to: $notification,
-                    subject: $this->translator->trans('Campaign started'),
-                    message: $this->translator->trans(
-                        'phplist has started sending the campaign with subject %s',
-                        $loadedMessageData['subject']
-                    ),
-                    inBlast: false,
-                );
-
-                // todo: check if from name should be from config
-                $envelope = new Envelope(
-                    sender: new Address($this->messageEnvelope, 'PHPList'),
-                    recipients: [new Address($email->getTo()[0]->getAddress())],
-                );
-                $this->mailer->send(message: $email, envelope: $envelope);
-            }
-            $messageData = new MessageData();
-            $messageData->setName('start_notified');
-            $messageData->setId($message->getMessageId());
-            $messageData->setData((new DateTimeImmutable())->format('Y-m-d H:i:s'));
-
-            try {
-                $this->entityManager->persist($messageData);
-                $this->entityManager->flush();
-            } catch (UniqueConstraintViolationException $e) {
-                // equivalent to IGNORE — do nothing
-            }
-        }
+        $this->handleAdminNotifications($campaign, $loadedMessageData, $message->getMessageId());
 
         $this->updateMessageStatus($campaign, MessageStatus::Prepared);
         $subscribers = $this->subscriberProvider->getSubscribersForMessage($campaign);
@@ -176,36 +144,7 @@ class CampaignProcessorMessageHandler
 //            }
 //        }
 
-        $this->timeLimiter->start();
-        $stoppedEarly = false;
-
-        foreach ($subscribers as $subscriber) {
-            if ($this->timeLimiter->shouldStop()) {
-                $stoppedEarly = true;
-                break;
-            }
-
-            $existing = $this->userMessageRepository->findOneByUserAndMessage($subscriber, $campaign);
-            if ($existing && $existing->getStatus() !== UserMessageStatus::Todo) {
-                continue;
-            }
-
-            $userMessage = $existing ?? new UserMessage($subscriber, $campaign);
-            $userMessage->setStatus(UserMessageStatus::Active);
-            $this->userMessageRepository->save($userMessage);
-
-            if (!filter_var($subscriber->getEmail(), FILTER_VALIDATE_EMAIL)) {
-                $this->handleInvalidEmail($userMessage, $subscriber, $campaign);
-                $this->entityManager->flush();
-                continue;
-            }
-
-            $messagePrecacheDto = $this->cache->get($cacheKey);
-            if ($messagePrecacheDto === null) {
-                throw new MessageCacheMissingException();
-            }
-            $this->handleEmailSending($campaign, $subscriber, $userMessage, $messagePrecacheDto);
-        }
+        $stoppedEarly = $this->processSubscribersForCampaign($campaign, $subscribers, $cacheKey);
 
         if ($stoppedEarly && $this->requeueHandler->handle($campaign)) {
             $this->entityManager->flush();
@@ -339,5 +278,78 @@ class CampaignProcessorMessageHandler
         }
 
         return $size;
+    }
+
+    private function handleAdminNotifications(Message $campaign, array $loadedMessageData, int $messageId): void
+    {
+        if (!empty($loadedMessageData['notify_start']) && !isset($loadedMessageData['start_notified'])) {
+            $notifications = explode(',', $loadedMessageData['notify_start']);
+            foreach ($notifications as $notification) {
+                $email = $this->emailBuilder->buildPhplistEmail(
+                    messageId: $campaign->getId(),
+                    to: $notification,
+                    subject: $this->translator->trans('Campaign started'),
+                    message: $this->translator->trans(
+                        'phplist has started sending the campaign with subject %s',
+                        $loadedMessageData['subject']
+                    ),
+                    inBlast: false,
+                );
+
+                // todo: check if from name should be from config
+                $envelope = new Envelope(
+                    sender: new Address($this->messageEnvelope, 'PHPList'),
+                    recipients: [new Address($email->getTo()[0]->getAddress())],
+                );
+                $this->mailer->send(message: $email, envelope: $envelope);
+            }
+            $messageData = new MessageData();
+            $messageData->setName('start_notified');
+            $messageData->setId($messageId);
+            $messageData->setData((new DateTimeImmutable())->format('Y-m-d H:i:s'));
+
+            try {
+                $this->entityManager->persist($messageData);
+                $this->entityManager->flush();
+            } catch (UniqueConstraintViolationException $e) {
+                // equivalent to IGNORE — do nothing
+            }
+        }
+    }
+
+    private function processSubscribersForCampaign(Message $campaign, array $subscribers, string $cacheKey): bool
+    {
+        $this->timeLimiter->start();
+        $stoppedEarly = false;
+
+        foreach ($subscribers as $subscriber) {
+            if ($this->timeLimiter->shouldStop()) {
+                $stoppedEarly = true;
+                break;
+            }
+
+            $existing = $this->userMessageRepository->findOneByUserAndMessage($subscriber, $campaign);
+            if ($existing && $existing->getStatus() !== UserMessageStatus::Todo) {
+                continue;
+            }
+
+            $userMessage = $existing ?? new UserMessage($subscriber, $campaign);
+            $userMessage->setStatus(UserMessageStatus::Active);
+            $this->userMessageRepository->save($userMessage);
+
+            if (!filter_var($subscriber->getEmail(), FILTER_VALIDATE_EMAIL)) {
+                $this->handleInvalidEmail($userMessage, $subscriber, $campaign);
+                $this->entityManager->flush();
+                continue;
+            }
+
+            $messagePrecacheDto = $this->cache->get($cacheKey);
+            if ($messagePrecacheDto === null) {
+                throw new MessageCacheMissingException();
+            }
+            $this->handleEmailSending($campaign, $subscriber, $userMessage, $messagePrecacheDto);
+        }
+
+        return $stoppedEarly;
     }
 }

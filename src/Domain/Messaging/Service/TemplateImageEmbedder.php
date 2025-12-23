@@ -30,7 +30,6 @@ class TemplateImageEmbedder
     ];
     public array $attachment = [];
 
-    /** @SuppressWarnings("BooleanArgumentFlag") */
     public function __construct(
         private readonly ConfigProvider $configProvider,
         private readonly ConfigManager $configManager,
@@ -46,100 +45,33 @@ class TemplateImageEmbedder
 
     public function __invoke(string $html, int $messageId): string
     {
-        $templateId= (int)$this->configProvider->getValue(ConfigOption::SystemMessageTemplate);
+        $templateId = (int)$this->configProvider->getValue(ConfigOption::SystemMessageTemplate);
         $extensions = implode('|', array_keys($this->mimeMap));
-        $htmlImages = [];
-        $filesystemImages = [];
 
-        //# addition for external images
         if ($this->embedExternalImages) {
-            $externalImages = [];
-            $matchedImages = [];
-            $pattern = sprintf(
-                '~="(https?://(?!%s)([^"]+\.(%s))([\\?/][^"]+)?)"~Ui',
-                preg_quote($this->configProvider->getValue(ConfigOption::Website)),
-                $extensions
-            );
-            preg_match_all($pattern, $html, $matchedImages);
-
-            for ($index = 0; $index < count($matchedImages[1]); ++$index) {
-                if ($this->externalImageService->cache($matchedImages[1][$index], $messageId)) {
-                    $externalImages[] = $matchedImages[1][$index]
-                        . '~^~'
-                        . basename($matchedImages[2][$index])
-                        . '~^~'
-                        . strtolower($matchedImages[3][$index]);
-                }
-            }
-
-            if (!empty($externalImages)) {
-                $externalImages = array_unique($externalImages);
-
-                for ($index = 0; $index < count($externalImages); ++$index) {
-                    $externalImage = explode('~^~', $externalImages[$index]);
-                    $image = $this->externalImageService->getFromCache($externalImage[0], $messageId);
-                    if ($image) {
-                        $contentType = $this->mimeMap[$externalImage[2]];
-                        $cid = $this->addHtmlImage($image, $externalImage[1], $contentType);
-
-                        if (!empty($cid)) {
-                            $html = str_replace($externalImage[0], 'cid:' . $cid, $html);
-                        }
-                    }
-                }
-            }
+            $html = $this->embedExternalImages($html, $messageId, $extensions);
         }
-        //# end addition
 
         preg_match_all('/"([^"]+\.('.$extensions.'))"/Ui', $html, $images);
-
+        $htmlImages = [];
+        $filesystemImages = [];
         for ($i = 0; $i < count($images[1]); ++$i) {
             if ($this->getTemplateImage($templateId, $images[1][$i]) !== null) {
                 $htmlImages[] = $images[1][$i];
                 $html = str_replace($images[1][$i], basename($images[1][$i]), $html);
             }
-            //# addition for filesystem images
-            if ($this->embedUploadedImages) {
-                if ($this->filesystemImageExists($images[1][$i])) {
-                    $filesystemImages[] = $images[1][$i];
-                    $html = str_replace($images[1][$i], basename($images[1][$i]), $html);
-                }
+            if ($this->embedUploadedImages && $this->filesystemImageExists($images[1][$i])) {
+                $filesystemImages[] = $images[1][$i];
+                $html = str_replace($images[1][$i], basename($images[1][$i]), $html);
             }
-            //# end addition
         }
+
         if (!empty($htmlImages)) {
-            // If duplicate images are embedded, they may show up as attachments, so remove them.
-            $htmlImages = array_unique($htmlImages);
-            sort($htmlImages);
-            for ($i = 0; $i < count($htmlImages); ++$i) {
-                if ($image = $this->getTemplateImage($templateId, $htmlImages[$i])) {
-                    $contentType = $this->mimeMap[strtolower(
-                        substr($htmlImages[$i], strrpos($htmlImages[$i], '.') + 1)
-                    )];
-                    $cid = $this->addHtmlImage($image->getData(), basename($htmlImages[$i]), $contentType);
-                    if (!empty($cid)) {
-                        $html = str_replace(basename($htmlImages[$i]), "cid:$cid", $html);
-                    }
-                }
-            }
+            $html = $this->embedTemplateImages($html, $templateId, $htmlImages);
         }
-        //# addition for filesystem images
+
         if (!empty($filesystemImages)) {
-            // If duplicate images are embedded, they may show up as attachments, so remove them.
-            $filesystemImages = array_unique($filesystemImages);
-            sort($filesystemImages);
-            for ($i = 0; $i < count($filesystemImages); ++$i) {
-                if ($image = $this->getFilesystemImage($filesystemImages[$i])) {
-                    $contentType = $this->mimeMap[strtolower(
-                        substr($filesystemImages[$i],
-                        strrpos($filesystemImages[$i], '.') + 1)
-                    )];
-                    $cid = $this->addHtmlImage($image, basename($filesystemImages[$i]), $contentType);
-                    if (!empty($cid)) {
-                        $html = str_replace(basename($filesystemImages[$i]), "cid:$cid", $html);
-                    }
-                }
-            }
+            $html = $this->embedFilesystemImages($html, $filesystemImages);
         }
 
         return $html;
@@ -147,63 +79,69 @@ class TemplateImageEmbedder
 
     private function getFilesystemImage(string $filename): string
     {
-        //# get the image contents
         $localFile = basename(urldecode($filename));
         $pageRoot = $this->configProvider->getValue(ConfigOption::PageRoot);
+        $candidates = [];
+
         if ($this->uploadImagesDir) {
             $imageRoot = $this->configProvider->getValue(ConfigOption::UploadImageRoot);
-            if (is_file($imageRoot.$localFile)) {
-                return base64_encode(file_get_contents($imageRoot.$localFile));
-            } else {
-                if (is_file($this->documentRoot.$localFile)) {
-                    //# save the document root to be able to retrieve the file later from commandline
+            $candidates[] = [
+                'path' => $imageRoot . $localFile,
+                'config' => null,
+            ];
+
+            $candidates[] = [
+                'path' => $this->documentRoot . $localFile,
+                'config' => $this->documentRoot,
+            ];
+
+            $candidates[] = [
+                'path' => $this->documentRoot . '/' . $this->uploadImagesDir . '/image/' . $localFile,
+                'config' => $this->documentRoot . '/' . $this->uploadImagesDir . '/image/',
+            ];
+
+            $candidates[] = [
+                'path' => $this->documentRoot . '/' . $this->uploadImagesDir . '/' . $localFile,
+                'config' => $this->documentRoot . '/' . $this->uploadImagesDir . '/',
+            ];
+        } else {
+            $elements = parse_url($filename);
+            $parsedFile = basename($elements['path'] ?? $localFile);
+
+            $candidates[] = [
+                'path' => $this->documentRoot . $pageRoot . '/' . $this->editorImagesDir . '/' . $parsedFile,
+                'config' => null,
+            ];
+
+            $candidates[] = [
+                'path' => $this->documentRoot . $pageRoot . '/' . $this->editorImagesDir . '/image/' . $parsedFile,
+                'config' => null,
+            ];
+
+            $candidates[] = [
+                'path' => '../' . $this->editorImagesDir . '/' . $parsedFile,
+                'config' => null,
+            ];
+
+            $candidates[] = [
+                'path' => '../' . $this->editorImagesDir . '/image/' . $parsedFile,
+                'config' => null,
+            ];
+        }
+
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate['path'])) {
+                if ($candidate['config'] !== null) {
                     $this->configManager->create(
                         ConfigOption::UploadImageRoot->value,
-                        $this->documentRoot,
+                        $candidate['config'],
                         false,
-                        'string',
-                    );
-
-                    return base64_encode(file_get_contents($this->documentRoot.$localFile));
-                } elseif (is_file($this->documentRoot . '/' . $this->uploadImagesDir . '/image/' . $localFile)) {
-                    $this->configManager->create(
-                        ConfigOption::UploadImageRoot->value,
-                        $this->documentRoot . '/' . $this->uploadImagesDir . '/image/',
-                        false,
-                        'string',
-                    );
-
-                    return base64_encode(
-                        file_get_contents($this->documentRoot . '/' . $this->uploadImagesDir . '/image/' . $localFile)
-                    );
-                } elseif (is_file($this->documentRoot.'/'.$this->uploadImagesDir.'/'.$localFile)) {
-                    $this->configManager->create(
-                        ConfigOption::UploadImageRoot->value,
-                        $this->documentRoot.'/'.$this->uploadImagesDir.'/',
-                        false,
-                        'string',
-                    );
-
-                    return base64_encode(
-                        file_get_contents($this->documentRoot . '/' . $this->uploadImagesDir . '/' . $localFile)
+                        'string'
                     );
                 }
-            }
-        } elseif (is_file($this->documentRoot . $pageRoot . '/' . $this->editorImagesDir . '/' . $localFile)) {
-            $elements = parse_url($filename);
-            $localFile = basename($elements['path']);
 
-            return base64_encode(
-                file_get_contents($this->documentRoot . $pageRoot . '/' . $this->editorImagesDir . '/' . $localFile)
-            );
-        } elseif (is_file($this->documentRoot . $pageRoot . '/' . $this->editorImagesDir . '/image/' . $localFile)) {
-            return base64_encode(
-                file_get_contents($this->documentRoot . $pageRoot . '/' . $this->editorImagesDir . '/image/' . $localFile)
-            );
-        } elseif (is_file('../' . $this->editorImagesDir . '/' . $localFile)) {
-            return base64_encode(file_get_contents('../' . $this->editorImagesDir. '/' . $localFile));
-        } elseif (is_file('../' . $this->editorImagesDir . '/image/' . $localFile)) {
-            return base64_encode(file_get_contents('../' . $this->editorImagesDir . '/image/' . $localFile));
+                return base64_encode(file_get_contents($candidate['path']));
+            }
         }
 
         return '';
@@ -282,5 +220,87 @@ class TemplateImageEmbedder
         }
 
         return $this->templateImageRepository->findByTemplateIdAndFilename($templateId, $filename);
+    }
+
+    private function embedExternalImages(string $html, int $messageId, string $extensions): string
+    {
+        $externalImages = [];
+        $matchedImages = [];
+        $pattern = sprintf(
+            '~="(https?://(?!%s)([^"]+\.(%s))([\\?/][^"]+)?)"~Ui',
+            preg_quote($this->configProvider->getValue(ConfigOption::Website)),
+            $extensions
+        );
+        preg_match_all($pattern, $html, $matchedImages);
+
+        for ($index = 0; $index < count($matchedImages[1]); ++$index) {
+            if ($this->externalImageService->cache($matchedImages[1][$index], $messageId)) {
+                $externalImages[] = $matchedImages[1][$index]
+                    . '~^~'
+                    . basename($matchedImages[2][$index])
+                    . '~^~'
+                    . strtolower($matchedImages[3][$index]);
+            }
+        }
+
+        if (!empty($externalImages)) {
+            $externalImages = array_unique($externalImages);
+
+            for ($index = 0; $index < count($externalImages); ++$index) {
+                $externalImage = explode('~^~', $externalImages[$index]);
+                $image = $this->externalImageService->getFromCache($externalImage[0], $messageId);
+                if ($image) {
+                    $contentType = $this->mimeMap[$externalImage[2]];
+                    $cid = $this->addHtmlImage($image, $externalImage[1], $contentType);
+
+                    if (!empty($cid)) {
+                        $html = str_replace($externalImage[0], 'cid:' . $cid, $html);
+                    }
+                }
+            }
+        }
+
+        return $html;
+    }
+
+    private function embedTemplateImages(string $html, int $templateId, array $htmlImages): string
+    {
+        // If duplicate images are embedded, they may show up as attachments, so remove them.
+        $htmlImages = array_unique($htmlImages);
+        sort($htmlImages);
+        for ($index = 0; $index < count($htmlImages); ++$index) {
+            if ($image = $this->getTemplateImage($templateId, $htmlImages[$index])) {
+                $contentType = $this->mimeMap[strtolower(
+                    substr($htmlImages[$index], strrpos($htmlImages[$index], '.') + 1)
+                )];
+                $cid = $this->addHtmlImage($image->getData(), basename($htmlImages[$index]), $contentType);
+                if (!empty($cid)) {
+                    $html = str_replace(basename($htmlImages[$index]), "cid:$cid", $html);
+                }
+            }
+        }
+
+        return $html;
+    }
+
+    private function embedFilesystemImages(array|string $html, array $filesystemImages): string
+    {
+        // If duplicate images are embedded, they may show up as attachments, so remove them.
+        $filesystemImages = array_unique($filesystemImages);
+        sort($filesystemImages);
+        for ($index = 0; $index < count($filesystemImages); ++$index) {
+            if ($image = $this->getFilesystemImage($filesystemImages[$index])) {
+                $contentType = $this->mimeMap[strtolower(
+                    substr($filesystemImages[$index],
+                        strrpos($filesystemImages[$index], '.') + 1)
+                )];
+                $cid = $this->addHtmlImage($image, basename($filesystemImages[$index]), $contentType);
+                if (!empty($cid)) {
+                    $html = str_replace(basename($filesystemImages[$index]), "cid:$cid", $html);
+                }
+            }
+        }
+
+        return $html;
     }
 }

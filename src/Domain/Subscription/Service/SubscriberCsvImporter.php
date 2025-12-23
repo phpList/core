@@ -137,7 +137,6 @@ class SubscriberCsvImporter
 
     /**
      * Import subscribers with an update strategy.
-     * @SuppressWarnings("BooleanArgumentFlag")
      * @param UploadedFile $file The uploaded CSV file
      * @return array Import statistics
      */
@@ -156,7 +155,6 @@ class SubscriberCsvImporter
 
     /**
      * Import subscribers without updating existing ones.
-     * @SuppressWarnings("BooleanArgumentFlag")
      * @param UploadedFile $file The uploaded CSV file
      * @return array Import statistics
      */

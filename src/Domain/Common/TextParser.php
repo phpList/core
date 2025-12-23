@@ -72,9 +72,9 @@ class TextParser
         // so for now, just make it two br/s, which will be done by replacing
         // \n with <br/>
         // $paragraph = '<p class="x">';
-        $br = '<br />';
+        $break = '<br />';
         $text = preg_replace("/\r/", '', $text);
-        $text = preg_replace("/\n/", "$br\n", $text);
+        $text = preg_replace("/\n/", $break . "\n", $text);
 
         // reverse our previous placeholders
         $text = str_replace('<!--LB-->', '(', $text);
