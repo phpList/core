@@ -14,6 +14,7 @@ class MessageDataLoader
 {
     private const AS_FORMAT_FIELDS = ['astext', 'ashtml', 'astextandhtml', 'aspdf', 'astextandpdf'];
     private const SCHEDULE_FIELDS = ['embargo', 'repeatuntil', 'requeueuntil'];
+    private ?string $messageFromAddress;
 
     public function __construct(
         private readonly ConfigProvider $configProvider,
@@ -21,12 +22,12 @@ class MessageDataLoader
         private readonly MessageRepository $messageRepository,
         private readonly int $defaultMessageAge,
     ) {
+        $this->messageFromAddress = $configProvider->getValue(ConfigOption::MessageFromAddress);
     }
 
     public function __invoke(Message $message): array
     {
-        $defaultFrom = $this->configProvider->getValue(ConfigOption::MessageFromAddress)
-                ?? $this->configProvider->getValue(ConfigOption::AdminAddress);
+        $defaultFrom = $this->messageFromAddress ?? $this->configProvider->getValue(ConfigOption::AdminAddress);
 
         $messageData = $this->buildDefaultMessageData();
 
@@ -138,7 +139,7 @@ class MessageDataLoader
 
     private function populateTargetLists(array &$messageData, Message $message): void
     {
-        foreach($message->getListMessages() as $listMessage) {
+        foreach ($message->getListMessages() as $listMessage) {
             $messageData['targetlist'][$listMessage->getListId()] = 1;
         }
     }

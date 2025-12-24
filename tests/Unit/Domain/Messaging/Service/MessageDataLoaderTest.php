@@ -71,7 +71,10 @@ class MessageDataLoaderTest extends TestCase
         $message->method('getListMessages')->willReturn(
             new ArrayCollection([
                 new class {
-                    public function getListId(): int { return 42; }
+                    public function getListId(): int
+                    {
+                        return 42;
+                    }
                 },
             ])
         );
@@ -120,7 +123,11 @@ class MessageDataLoaderTest extends TestCase
         $this->assertIsArray($fs);
         $fsTimestamp = strtotime(sprintf(
             '%s-%s-%s %s:%s:00',
-            $fs['year'], $fs['month'], $fs['day'], $fs['hour'], $fs['minute']
+            $fs['year'],
+            $fs['month'],
+            $fs['day'],
+            $fs['hour'],
+            $fs['minute']
         ));
 
         $expectedMin = $before + $defaultMessageAge - 120;

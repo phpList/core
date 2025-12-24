@@ -186,8 +186,17 @@ class MessageProcessingPreparatorTest extends TestCase
         $result = $this->preparator->processMessageLinks(1, $content, $subscriber);
 
         $this->assertSame($content, $result);
-        $this->assertStringContainsString(MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=1', $content->content);
-        $this->assertStringContainsString(MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=2', $content->content);
-        $this->assertStringContainsString(MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=1', $content->htmlFooter);
+        $this->assertStringContainsString(
+            MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=1',
+            $content->content
+        );
+        $this->assertStringContainsString(
+            MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=2',
+            $content->content
+        );
+        $this->assertStringContainsString(
+            MessageProcessingPreparator::LINK_TRACK_ENDPOINT . '?id=1',
+            $content->htmlFooter
+        );
     }
 }

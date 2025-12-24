@@ -91,8 +91,10 @@ class MessagePrecacheService
         }
 
         $messagePrecacheDto->content = $this->templateImageManager->parseLogoPlaceholders($messagePrecacheDto->content);
-        $messagePrecacheDto->template = $this->templateImageManager->parseLogoPlaceholders($messagePrecacheDto->template);
-        $messagePrecacheDto->htmlFooter = $this->templateImageManager->parseLogoPlaceholders($messagePrecacheDto->htmlFooter);
+        $messagePrecacheDto->template = $this->templateImageManager
+            ->parseLogoPlaceholders($messagePrecacheDto->template);
+        $messagePrecacheDto->htmlFooter = $this->templateImageManager
+            ->parseLogoPlaceholders($messagePrecacheDto->htmlFooter);
 
         $this->cache->set($cacheKey, $messagePrecacheDto);
 
@@ -131,8 +133,8 @@ class MessagePrecacheService
 
     private function populateBasicFields(
         MessagePrecacheDto $messagePrecacheDto,
-        $loadedMessageData,
-        bool $forwardContent
+        array $loadedMessageData,
+        bool $forwardContent,
     ): void {
         $messagePrecacheDto->fromName = $loadedMessageData['fromname'];
         $messagePrecacheDto->fromEmail = $loadedMessageData['fromemail'];
@@ -156,7 +158,7 @@ class MessagePrecacheService
             ? stripslashes($loadedMessageData['forwardfooter'])
             : $loadedMessageData['footer'];
 
-        if ($this->isHtml($messagePrecacheDto->footer )) {
+        if ($this->isHtml($messagePrecacheDto->footer)) {
             $messagePrecacheDto->textFooter = ($this->html2Text)($messagePrecacheDto->footer);
             $messagePrecacheDto->htmlFooter = $messagePrecacheDto->footer;
         } else {
@@ -179,7 +181,7 @@ class MessagePrecacheService
 
     private function applyRemoteContentIfPresent(MessagePrecacheDto $messagePrecacheDto, $loadedMessageData): bool
     {
-        if (preg_match("/\[URL:([^\s]+)\]/i", $messagePrecacheDto->content, $regs)) {
+        if (preg_match('/\[URL:([^\s]+)\]/i', $messagePrecacheDto->content, $regs)) {
             $remoteContent = ($this->remotePageFetcher)($regs[1], []);
 
             if ($remoteContent) {

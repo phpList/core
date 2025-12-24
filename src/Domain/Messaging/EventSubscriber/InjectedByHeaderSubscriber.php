@@ -30,18 +30,16 @@ class InjectedByHeaderSubscriber implements EventSubscriberInterface
         // todo: add custom header only to messages sent individually not from campaigns
         // when the email is generated from a webpage (quite possible :-) add a "received line" to identify the origin
         $msg = $event->getMessage();
-        if (!$msg instanceof Email)
-        {
+        if (!$msg instanceof Email) {
             return;
         }
 
         // Only when triggered by HTTP request context (not CLI workers)
-        if (PHP_SAPI === 'cli')
-        {
+        if (PHP_SAPI === 'cli') {
             return;
         }
 
-        $ip   = $request->getClientIp() ?? 'unknown';
+        $ip = $request->getClientIp() ?? 'unknown';
         $host = gethostname() ?: 'unknown-host';
 
         $timestamp = $request->server->get('REQUEST_TIME') ?? time();

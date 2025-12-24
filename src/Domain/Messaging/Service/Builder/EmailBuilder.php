@@ -93,7 +93,7 @@ class EmailBuilder
             return false;
         }
         if (!$subject) {
-            $this->eventLogManager->log('', "Error: empty Subject: in message to send to $to");
+            $this->eventLogManager->log('', sprintf('Error: empty Subject: in message to send to %s', $to));
 
             return false;
         }
@@ -131,7 +131,7 @@ class EmailBuilder
         $destinationEmail = '';
 
         if ($this->devVersion) {
-            $message = "To: $to\n".$message;
+            $message = 'To: ' . $to . PHP_EOL . $message;
             if ($this->devEmail) {
                 $destinationEmail = $this->devEmail;
             }
@@ -197,7 +197,8 @@ class EmailBuilder
             $email->html($htmlMessage);
             $email->text($textMessage);
             ($this->templateImageEmbedder)(html: $htmlMessage, messageId: $messageId);
-            //# In the above phpMailer strips all tags, which removes the links which are wrapped in < and > by HTML2text
+            //# In the above phpMailer strips all tags, which removes the links
+            // which are wrapped in < and > by HTML2text
             //# so add it again
             $email->text($textMessage);
         }

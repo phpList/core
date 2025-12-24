@@ -117,7 +117,7 @@ class TemplateImageManager
             return;
         }
 
-        $orgLogoImage = $this->templateImageRepository->findByFilename("ORGANISATIONLOGO$size.png");
+        $orgLogoImage = $this->templateImageRepository->findByFilename(sprintf('ORGANISATIONLOGO%s.png', $size));
         if ($orgLogoImage !== null && !empty($orgLogoImage->getData())) {
             return;
         }
@@ -167,7 +167,9 @@ class TemplateImageManager
             return $imageContent;
         }
 
-        $fallback = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABGdBTUEAALGPC/xhBQAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAAsSAAALEgHS3X78AAAAB3RJTUUH0gQCEx05cqKA8gAAAApJREFUeJxjYAAAAAIAAUivpHEAAAAASUVORK5CYII=');
+        $fallback = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABGdBTUEAALGPC/'
+         . 'xhBQAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAAsSAAALEgHS3X78'
+         . 'AAAAB3RJTUUH0gQCEx05cqKA8gAAAApJREFUeJxjYAAAAAIAAUivpHEAAAAASUVORK5CYII=');
 
         $fallbackContent = base64_decode($fallback, true);
 

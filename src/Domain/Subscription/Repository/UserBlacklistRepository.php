@@ -45,7 +45,8 @@ class UserBlacklistRepository extends AbstractRepository
     public function isEmailBlacklisted(string $email, ?bool $immediate = true): bool
     {
         // allow 5 minutes to send the last message acknowledging unsubscription
-        $grace = $immediate ? 0 : ((($grTime = $this->blacklistGraceTime) >= 1 && $grTime <= 15) ? $grTime : 5);
+        $grTime = $this->blacklistGraceTime;
+        $grace = $immediate ? 0 : (($grTime >= 1 && $grTime <= 15) ? $grTime : 5);
         $cutoff = (new DateTimeImmutable())->modify('-' . $grace .' minutes');
 
         return $this->createQueryBuilder('ub')

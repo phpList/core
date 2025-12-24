@@ -55,14 +55,14 @@ class TemplateImageEmbedder
         preg_match_all('/"([^"]+\.('.$extensions.'))"/Ui', $html, $images);
         $htmlImages = [];
         $filesystemImages = [];
-        for ($i = 0; $i < count($images[1]); ++$i) {
-            if ($this->getTemplateImage($templateId, $images[1][$i]) !== null) {
-                $htmlImages[] = $images[1][$i];
-                $html = str_replace($images[1][$i], basename($images[1][$i]), $html);
+        foreach ($images[1] as $img) {
+            if ($this->getTemplateImage($templateId, $img) !== null) {
+                $htmlImages[] = $img;
+                $html = str_replace($img, basename($img), $html);
             }
-            if ($this->embedUploadedImages && $this->filesystemImageExists($images[1][$i])) {
-                $filesystemImages[] = $images[1][$i];
-                $html = str_replace($images[1][$i], basename($images[1][$i]), $html);
+            if ($this->embedUploadedImages && $this->filesystemImageExists($img)) {
+                $filesystemImages[] = $img;
+                $html = str_replace($img, basename($img), $html);
             }
         }
 
@@ -233,9 +233,9 @@ class TemplateImageEmbedder
         );
         preg_match_all($pattern, $html, $matchedImages);
 
-        for ($index = 0; $index < count($matchedImages[1]); ++$index) {
-            if ($this->externalImageService->cache($matchedImages[1][$index], $messageId)) {
-                $externalImages[] = $matchedImages[1][$index]
+        foreach ($matchedImages[1] as $index => $url) {
+            if ($this->externalImageService->cache($url, $messageId)) {
+                $externalImages[] = $url
                     . '~^~'
                     . basename($matchedImages[2][$index])
                     . '~^~'
@@ -246,15 +246,15 @@ class TemplateImageEmbedder
         if (!empty($externalImages)) {
             $externalImages = array_unique($externalImages);
 
-            for ($index = 0; $index < count($externalImages); ++$index) {
-                $externalImage = explode('~^~', $externalImages[$index]);
+            foreach ($externalImages as $file) {
+                $externalImage = explode('~^~', $file);
                 $image = $this->externalImageService->getFromCache($externalImage[0], $messageId);
                 if ($image) {
                     $contentType = $this->mimeMap[$externalImage[2]];
                     $cid = $this->addHtmlImage($image, $externalImage[1], $contentType);
 
                     if (!empty($cid)) {
-                        $html = str_replace($externalImage[0], 'cid:' . $cid, $html);
+                        $html = str_replace($externalImage[0], sprintf('cid:%s', $cid), $html);
                     }
                 }
             }
@@ -268,14 +268,15 @@ class TemplateImageEmbedder
         // If duplicate images are embedded, they may show up as attachments, so remove them.
         $htmlImages = array_unique($htmlImages);
         sort($htmlImages);
-        for ($index = 0; $index < count($htmlImages); ++$index) {
-            if ($image = $this->getTemplateImage($templateId, $htmlImages[$index])) {
+        foreach ($htmlImages as $file) {
+            $image = $this->getTemplateImage($templateId, $file);
+            if ($image) {
                 $contentType = $this->mimeMap[strtolower(
-                    substr($htmlImages[$index], strrpos($htmlImages[$index], '.') + 1)
+                    substr($file, strrpos($file, '.') + 1)
                 )];
-                $cid = $this->addHtmlImage($image->getData(), basename($htmlImages[$index]), $contentType);
+                $cid = $this->addHtmlImage($image->getData(), basename($file), $contentType);
                 if (!empty($cid)) {
-                    $html = str_replace(basename($htmlImages[$index]), "cid:$cid", $html);
+                    $html = str_replace(basename($file), sprintf('cid:%s', $cid), $html);
                 }
             }
         }
@@ -288,15 +289,15 @@ class TemplateImageEmbedder
         // If duplicate images are embedded, they may show up as attachments, so remove them.
         $filesystemImages = array_unique($filesystemImages);
         sort($filesystemImages);
-        for ($index = 0; $index < count($filesystemImages); ++$index) {
-            if ($image = $this->getFilesystemImage($filesystemImages[$index])) {
+        foreach ($filesystemImages as $file) {
+            $image = $this->getFilesystemImage($file);
+            if ($image) {
                 $contentType = $this->mimeMap[strtolower(
-                    substr($filesystemImages[$index],
-                        strrpos($filesystemImages[$index], '.') + 1)
+                    substr($file, strrpos($file, '.') + 1)
                 )];
-                $cid = $this->addHtmlImage($image, basename($filesystemImages[$index]), $contentType);
+                $cid = $this->addHtmlImage($image, basename($file), $contentType);
                 if (!empty($cid)) {
-                    $html = str_replace(basename($filesystemImages[$index]), "cid:$cid", $html);
+                    $html = str_replace(basename($file), sprintf('cid:%s', $cid), $html);
                 }
             }
         }

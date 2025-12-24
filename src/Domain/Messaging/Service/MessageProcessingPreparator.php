@@ -67,7 +67,11 @@ class MessageProcessingPreparator
             return $cachedMessageDto;
         }
 
-        $savedLinks = $this->linkTrackService->extractAndSaveLinks($cachedMessageDto, $subscriber->getId(), $campaignId);
+        $savedLinks = $this->linkTrackService->extractAndSaveLinks(
+            $cachedMessageDto,
+            $subscriber->getId(),
+            $campaignId,
+        );
         if (empty($savedLinks)) {
             return $cachedMessageDto;
         }

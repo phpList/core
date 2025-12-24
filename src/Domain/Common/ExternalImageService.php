@@ -6,6 +6,8 @@ namespace PhpList\Core\Domain\Common;
 
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use Psr\Log\LoggerInterface;
+use Throwable;
 
 class ExternalImageService
 {
@@ -13,6 +15,7 @@ class ExternalImageService
 
     public function __construct(
         private readonly ConfigProvider $configProvider,
+        private readonly LoggerInterface  $logger,
         private readonly string $tempDir,
         private readonly int $externalImageMaxAge,
         private readonly int $externalImageMaxSize,
@@ -74,26 +77,31 @@ class ExternalImageService
 
     private function removeOldFilesInCache(): void
     {
+        // phpcs:ignore Generic.PHP.NoSilencedErrors
         $extCacheDirHandle = @opendir($this->externalCacheDir);
         if (!$this->externalImageMaxAge || !$extCacheDirHandle) {
-           return;
+            return;
         }
 
-        while (($cacheFile = @readdir($extCacheDirHandle)) !== false) {
+        while (true) {
+            // phpcs:ignore Generic.PHP.NoSilencedErrors
+            $cacheFile = @readdir($extCacheDirHandle);
+
+            if ($cacheFile === false) {
+                break;
+            }
             // todo: make sure that this is what we need
             if (!str_starts_with($cacheFile, '.')) {
-                $cacheFileMTime = @filemtime($this->externalCacheDir.'/'.$cacheFile);
+                // phpcs:ignore Generic.PHP.NoSilencedErrors
+                $cfmt = @filemtime($this->externalCacheDir . '/' . $cacheFile);
 
-                if (
-                    is_numeric($cacheFileMTime)
-                    && ($cacheFileMTime > 0)
-                    && ((time() - $cacheFileMTime) > $this->externalImageMaxAge)
-                ) {
-                    @unlink($this->externalCacheDir.'/'.$cacheFile);
+                if (is_numeric($cfmt) && ($cfmt > 0) && ((time() - $cfmt) > $this->externalImageMaxAge)) {
+                    // phpcs:ignore Generic.PHP.NoSilencedErrors
+                    @unlink($this->externalCacheDir . '/' . $cacheFile);
                 }
             }
         }
-
+        // phpcs:ignore Generic.PHP.NoSilencedErrors
         @closedir($extCacheDirHandle);
     }
 
@@ -158,8 +166,7 @@ class ExternalImageService
 
     private function isCacheableUrl($filename): bool
     {
-        if (
-            !(str_starts_with($filename, 'http'))
+        if (!(str_starts_with($filename, 'http'))
             || str_contains($filename, '://' . $this->configProvider->getValue(ConfigOption::Website) . '/')
         ) {
             return false;
@@ -172,6 +179,7 @@ class ExternalImageService
     {
 
         if (!file_exists($this->externalCacheDir)) {
+            // phpcs:ignore Generic.PHP.NoSilencedErrors
             @mkdir($this->externalCacheDir);
         }
 
@@ -184,7 +192,7 @@ class ExternalImageService
 
     private function isValidCacheFile(string $cacheFileName): bool
     {
-
+        // phpcs:ignore Generic.PHP.NoSilencedErrors
         if (file_exists($cacheFileName) && (@filesize($cacheFileName) > 64)) {
             return true;
         }
@@ -194,14 +202,28 @@ class ExternalImageService
 
     private function writeCacheFile(string $cacheFileName, $content): void
     {
-        $cacheFileHandle = @fopen($cacheFileName, 'wb');
-        if ($cacheFileHandle !== false) {
-            if (flock($cacheFileHandle, LOCK_EX)) {
-                fwrite($cacheFileHandle, $content);
-                fflush($cacheFileHandle);
-                flock($cacheFileHandle, LOCK_UN);
+        try {
+            $handle = fopen($cacheFileName, 'wb');
+
+            if ($handle === false) {
+                $this->logger->error('Cannot open cache file', [
+                    'file' => $cacheFileName,
+                ]);
+                return;
             }
-            fclose($cacheFileHandle);
+
+            if (flock($handle, LOCK_EX)) {
+                fwrite($handle, $content);
+                fflush($handle);
+                flock($handle, LOCK_UN);
+            }
+
+            fclose($handle);
+        } catch (Throwable $e) {
+            $this->logger->error('Cache file write failed', [
+                'file' => $cacheFileName,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 }

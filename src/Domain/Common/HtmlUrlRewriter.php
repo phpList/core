@@ -12,7 +12,7 @@ class HtmlUrlRewriter
 {
     public function addAbsoluteResources(string $html, string $baseUrl): string
     {
-        $baseUrl = rtrim($baseUrl, "/");
+        $baseUrl = rtrim($baseUrl, '/');
 
         // 1) Rewrite HTML attributes via DOM (handles quotes, whitespace, etc.)
         $dom = new DOMDocument();
@@ -113,7 +113,9 @@ class HtmlUrlRewriter
         $segments = explode('/', $parts['path'] ?? $path);
         $out = [];
         foreach ($segments as $seg) {
-            if ($seg === '' || $seg === '.') continue;
+            if ($seg === '' || $seg === '.') {
+                continue;
+            }
             if ($seg === '..') {
                 array_pop($out);
                 continue;
@@ -172,10 +174,9 @@ class HtmlUrlRewriter
                 $quotes = trim($matches[1]);
                 $url = $matches[2];
                 $abs = $this->absolutizeUrl($url, $baseUrl);
+                $import = ($quotes ?: '') . $abs . ($quotes ?: '');
                 // Preserve original form loosely
-                return str_starts_with($matches[0], '@import url')
-                    ? '@import url(' . ($quotes ?: '') . $abs . ($quotes ?: '') . ')'
-                    : '@import ' . ($quotes ?: '') . $abs . ($quotes ?: '');
+                return '@import ' . (str_starts_with($matches[0], '@import url') ? 'url(' . $import . ')' : $import);
             },
             $css
         );

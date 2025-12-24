@@ -138,7 +138,8 @@ class CampaignProcessorMessageHandler
 //                }
 //                $req = Sql_Query($query);
 //                while ($row = Sql_Fetch_Row($req)) {
-//                    $um = Sql_Query(sprintf('replace into %s (entered,userid,messageid,status) values(now(),%d,%d,"excluded")',
+//                    $um = Sql_Query(sprintf('replace into %s (entered,userid,messageid,status)
+//                           values(now(),%d,%d,"excluded")',
 //                        $tables['usermessage'], $row[0], $messageid));
 //                }
 //            }
@@ -200,8 +201,15 @@ class CampaignProcessorMessageHandler
         UserMessage $userMessage,
         MessagePrecacheDto $precachedContent,
     ): void {
-        $processed = $this->messagePreparator->processMessageLinks($campaign->getId(), $precachedContent, $subscriber);
-        $processed->textContent = $this->userPersonalizer->personalize($processed->textContent, $subscriber->getEmail());
+        $processed = $this->messagePreparator->processMessageLinks(
+            $campaign->getId(),
+            $precachedContent,
+            $subscriber
+        );
+        $processed->textContent = $this->userPersonalizer->personalize(
+            $processed->textContent,
+            $subscriber->getEmail(),
+        );
         $processed->footer = $this->userPersonalizer->personalize($processed->footer, $subscriber->getEmail());
 
         try {
@@ -312,7 +320,9 @@ class CampaignProcessorMessageHandler
                 $this->entityManager->persist($messageData);
                 $this->entityManager->flush();
             } catch (UniqueConstraintViolationException $e) {
-                // equivalent to IGNORE — do nothing
+                $this->logger->debug('Duplicate message ignored', [
+                    'exception' => $e,
+                ]);
             }
         }
     }

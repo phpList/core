@@ -23,8 +23,8 @@ class MessagePrecacheDto
     public ?string $template = null;
     public ?string $templateText = null;
     public ?int $templateId = null;
-    public string $htmlCharset= 'UTF-8';
-    public string $textCharset= 'UTF-8';
+//    public string $htmlCharset= 'UTF-8';
+//    public string $textCharset= 'UTF-8';
     public bool $userSpecificUrl;
     public string $googleTrack;
     public array $adminAttributes = [];
