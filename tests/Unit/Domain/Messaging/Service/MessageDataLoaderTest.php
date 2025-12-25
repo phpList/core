@@ -14,6 +14,7 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\MessageDataLoader;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class MessageDataLoaderTest extends TestCase
 {
@@ -83,7 +84,8 @@ class MessageDataLoaderTest extends TestCase
             configProvider: $this->config,
             messageDataRepository: $this->messageDataRepository,
             messageRepository: $this->messageRepository,
-            defaultMessageAge: $defaultMessageAge,
+            logger: $this->createMock(LoggerInterface::class),
+            defaultMessageAge: $defaultMessageAge
         );
 
         $before = time();

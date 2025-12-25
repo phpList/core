@@ -12,10 +12,10 @@ class MessagePrecacheDto
     public ?string $fromName = null;
     public ?string $fromEmail = null;
     public ?string $to = null;
-    public ?string $subject = null;
+    public string $subject = '';
     public ?string $content = null;
     public string $textContent = '';
-    public ?string $footer = null;
+    public string $footer = '';
     public ?string $textFooter = null;
     public string $htmlFooter = '';
     public bool $htmlFormatted = false;

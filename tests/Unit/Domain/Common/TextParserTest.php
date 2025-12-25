@@ -22,7 +22,7 @@ class TextParserTest extends TestCase
         $out = ($this->parser)($input);
 
         $this->assertSame(
-            'Contact me at <a href="mailto:foo.bar-1@example.co.uk" class="email">foo.bar-1@example.co.uk</a>',
+            'Contact me at <a href="mailto:foo.bar-1%40example.co.uk" class="email">foo.bar-1@example.co.uk</a>',
             $out
         );
     }

@@ -7,6 +7,7 @@ namespace PhpList\Core\Domain\Messaging\Service\Builder;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Messaging\Exception\DevEmailNotConfiguredException;
 use PhpList\Core\Domain\Messaging\Service\SystemMailConstructor;
 use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -128,15 +129,14 @@ class EmailBuilder
 
     private function resolveDestinationEmailAndMessage(?string $to, ?string $message): array
     {
-        $destinationEmail = '';
+        $destinationEmail = $to;
 
         if ($this->devVersion) {
             $message = 'To: ' . $to . PHP_EOL . $message;
-            if ($this->devEmail) {
-                $destinationEmail = $this->devEmail;
+            if (!$this->devEmail) {
+                throw new DevEmailNotConfiguredException();
             }
-        } else {
-            $destinationEmail = $to;
+            $destinationEmail = $this->devEmail;
         }
 
         return [$destinationEmail, $message];

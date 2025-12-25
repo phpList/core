@@ -202,6 +202,7 @@ class ExternalImageService
 
     private function writeCacheFile(string $cacheFileName, $content): void
     {
+        // phpcs:ignore Generic.PHP.NoSilencedErrors
         $bytes = @file_put_contents($cacheFileName, $content, LOCK_EX);
 
         if ($bytes === false) {
