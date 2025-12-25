@@ -77,16 +77,6 @@ class EmailBuilder
 
     private function validateRecipientAndSubject(?string $to, ?string $subject): bool
     {
-        if (preg_match("/\n/", $to)) {
-            $this->eventLogManager->log('', 'Error: invalid recipient, containing newlines, email blocked');
-
-            return false;
-        }
-        if (preg_match("/\n/", $subject)) {
-            $this->eventLogManager->log('', 'Error: invalid subject, containing newlines, email blocked');
-
-            return false;
-        }
         if (!$to) {
             $this->eventLogManager->log('', sprintf('Error: empty To: in message with subject %s to send', $subject));
 
@@ -94,6 +84,16 @@ class EmailBuilder
         }
         if (!$subject) {
             $this->eventLogManager->log('', sprintf('Error: empty Subject: in message to send to %s', $to));
+
+            return false;
+        }
+        if (preg_match("/\n/", $to)) {
+            $this->eventLogManager->log('', 'Error: invalid recipient, containing newlines, email blocked');
+
+            return false;
+        }
+        if (preg_match("/\n/", $subject)) {
+            $this->eventLogManager->log('', 'Error: invalid subject, containing newlines, email blocked');
 
             return false;
         }

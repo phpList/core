@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Repository\MessageDataRepository;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
+use Psr\Log\LoggerInterface;
 
 class MessageDataLoader
 {
@@ -20,6 +21,7 @@ class MessageDataLoader
         private readonly ConfigProvider $configProvider,
         private readonly MessageDataRepository $messageDataRepository,
         private readonly MessageRepository $messageRepository,
+        private readonly LoggerInterface $logger,
         private readonly int $defaultMessageAge,
     ) {
         $this->messageFromAddress = $configProvider->getValue(ConfigOption::MessageFromAddress);
@@ -45,6 +47,8 @@ class MessageDataLoader
 
     private function getDateArray(?int $timestamp = null): array
     {
+        $timestamp = $timestamp ?? time();
+
         return [
             'year' => date('Y', $timestamp),
             'month' => date('m', $timestamp),
@@ -113,6 +117,10 @@ class MessageDataLoader
         foreach ($storedMessageData as $storedMessageDatum) {
             if (str_starts_with($storedMessageDatum->getData(), 'SER:')) {
                 $unserialized = unserialize(substr($storedMessageDatum->getData(), 4), ['allowed_classes' => false]);
+                if (!is_array($unserialized)) {
+                    $this->logger->warning('Invalid serialized data for message ID: ' . $message->getId());
+                    continue;
+                }
                 array_walk_recursive($unserialized, function (&$val) {
                     $val = stripslashes($val);
                 });
@@ -190,7 +198,7 @@ class MessageDataLoader
         $messageData['fromname'] = trim($messageData['fromname']);
 
         // erase double spacing
-        while (strpos($messageData['fromname'], '  ')) {
+        while (str_contains($messageData['fromname'], '  ')) {
             $messageData['fromname'] = str_replace('  ', ' ', $messageData['fromname']);
         }
 

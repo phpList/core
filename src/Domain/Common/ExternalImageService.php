@@ -202,27 +202,19 @@ class ExternalImageService
 
     private function writeCacheFile(string $cacheFileName, $content): void
     {
-        try {
-            $handle = fopen($cacheFileName, 'wb');
+        $bytes = @file_put_contents($cacheFileName, $content, LOCK_EX);
 
-            if ($handle === false) {
-                $this->logger->error('Cannot open cache file', [
-                    'file' => $cacheFileName,
-                ]);
-                return;
-            }
+        if ($bytes === false) {
+            $this->logger->error('Cache file write failed', ['file' => $cacheFileName]);
+            return;
+        }
 
-            if (flock($handle, LOCK_EX)) {
-                fwrite($handle, $content);
-                fflush($handle);
-                flock($handle, LOCK_UN);
-            }
-
-            fclose($handle);
-        } catch (Throwable $e) {
-            $this->logger->error('Cache file write failed', [
+        $expected = strlen($content);
+        if ($bytes !== $expected) {
+            $this->logger->error('Cache file partial write', [
                 'file' => $cacheFileName,
-                'error' => $e->getMessage(),
+                'expected' => $expected,
+                'written' => $bytes,
             ]);
         }
     }

@@ -8,24 +8,24 @@ namespace PhpList\Core\Domain\Messaging\Model\Dto;
 class MessagePrecacheDto
 {
     public string $replyToEmail = '';
-    public string $replyToName;
-    public string $fromName;
-    public string $fromEmail;
-    public string $to;
-    public string $subject;
-    public string $content;
+    public ?string $replyToName = null;
+    public ?string $fromName = null;
+    public ?string $fromEmail = null;
+    public ?string $to = null;
+    public ?string $subject = null;
+    public ?string $content = null;
     public string $textContent = '';
-    public string $footer;
-    public string $textFooter;
+    public ?string $footer = null;
+    public ?string $textFooter = null;
     public string $htmlFooter = '';
-    public bool $htmlFormatted;
-    public string $sendFormat;
+    public bool $htmlFormatted = false;
+    public ?string $sendFormat = null;
     public ?string $template = null;
     public ?string $templateText = null;
     public ?int $templateId = null;
 //    public string $htmlCharset= 'UTF-8';
 //    public string $textCharset= 'UTF-8';
-    public bool $userSpecificUrl;
-    public string $googleTrack;
+    public bool $userSpecificUrl = false;
+    public ?string $googleTrack = null;
     public array $adminAttributes = [];
 }

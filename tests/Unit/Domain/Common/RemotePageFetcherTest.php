@@ -128,7 +128,7 @@ class RemotePageFetcherTest extends TestCase
             ->with('<h1>hello</h1>', $url)
             ->willReturn('rewritten:<h1>hello</h1>');
 
-        $this->entityManager->expects($this->once())->method('persist')
+        $this->urlCacheRepository->expects($this->once())->method('persist')
             ->with($this->isInstanceOf(UrlCache::class));
 
         $this->cache->expects($this->once())->method('set')

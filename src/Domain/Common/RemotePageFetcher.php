@@ -67,7 +67,7 @@ class RemotePageFetcher
                 $this->entityManager->remove($cache);
             }
             $urlCache = (new UrlCache())->setUrl($url)->setContent($content)->setLastModified($lastModified);
-            $this->entityManager->persist($urlCache);
+            $this->urlCacheRepository->persist($urlCache);
 
             $this->cache->set($cacheKey, [
                 'fetched' => time(),
@@ -115,15 +115,8 @@ class RemotePageFetcher
 
         foreach ($userData as $key => $val) {
             if ($key !== 'password') {
-                $url = mb_convert_encoding(
-                    str_ireplace(
-                        '[' . $key . ']',
-                        urlencode($val),
-                        mb_convert_encoding($url, 'ISO-8859-1', 'UTF-8')
-                    ),
-                    'ISO-8859-1',
-                    'UTF-8'
-                );
+                $url = str_replace('[' . $key . ']', rawurlencode($val), $url);
+                $url = mb_convert_encoding($url, 'ISO-8859-1', 'UTF-8');
             }
         }
 

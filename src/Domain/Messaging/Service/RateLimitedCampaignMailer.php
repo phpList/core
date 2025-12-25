@@ -35,12 +35,13 @@ class RateLimitedCampaignMailer
             $email->replyTo($message->getOptions()->getReplyTo());
         }
 
+        $html = $messagePrecacheDto->content . $messagePrecacheDto->htmlFooter;
+
         return $email
             ->to($subscriber->getEmail())
             ->subject($messagePrecacheDto->subject)
             ->text($messagePrecacheDto->textContent)
-            // todo: check htmlFooterit should be html of textContent
-            ->html($messagePrecacheDto->content);
+            ->html($html);
     }
 
     /**

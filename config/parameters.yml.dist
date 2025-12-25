@@ -30,7 +30,7 @@ parameters:
     app.dev_email: '%%env(APP_DEV_EMAIL)%%'
     env(APP_DEV_EMAIL): 'dev@dev.com'
     app.powered_by_phplist: '%%env(APP_POWERED_BY_PHPLIST)%%'
-    env(APP_POWERED_BY_PHPLIST): 0
+    env(APP_POWERED_BY_PHPLIST): '0'
 
     # Email configuration
     app.mailer_from: '%%env(MAILER_FROM)%%'
@@ -98,23 +98,23 @@ parameters:
     messaging.default_message_age: '%%env(DEFAULT_MESSAGEAGE)%%'
     env(DEFAULT_MESSAGEAGE): '691200'
     messaging.use_manual_text_part: '%%env(USE_MANUAL_TEXT_PART)%%'
-    env(USE_MANUAL_TEXT_PART): 0
+    env(USE_MANUAL_TEXT_PART): '0'
     messaging.blacklist_grace_time: '%%env(MESSAGING_BLACKLIST_GRACE_TIME)%%'
     env(MESSAGING_BLACKLIST_GRACE_TIME): '600'
     messaging.google_sender_id: '%%env(GOOGLE_SENDERID)%%'
     env(GOOGLE_SENDERID): ''
     messaging.use_amazon_ses: '%%env(USE_AMAZONSES)%%'
-    env(USE_AMAZONSES): 0
+    env(USE_AMAZONSES): '0'
     messaging.embed_external_images: '%%env(EMBEDEXTERNALIMAGES)%%'
-    env(EMBEDEXTERNALIMAGES): 0
+    env(EMBEDEXTERNALIMAGES): '0'
     messaging.embed_uploaded_images: '%%env(EMBEDUPLOADIMAGES)%%'
-    env(EMBEDUPLOADIMAGES): 0
+    env(EMBEDUPLOADIMAGES): '0'
     messaging.external_image_max_age: '%%env(EXTERNALIMAGE_MAXAGE)%%'
-    env(EXTERNALIMAGE_MAXAGE): 0
+    env(EXTERNALIMAGE_MAXAGE): '0'
     messaging.external_image_timeout: '%%env(EXTERNALIMAGE_TIMEOUT)%%'
-    env(EXTERNALIMAGE_TIMEOUT): 30
+    env(EXTERNALIMAGE_TIMEOUT): '30'
     messaging.external_image_max_size: '%%env(EXTERNALIMAGE_MAXSIZE)%%'
-    env(EXTERNALIMAGE_MAXSIZE): 204800
+    env(EXTERNALIMAGE_MAXSIZE): '204800'
 
     phplist.upload_images_dir: '%%env(PHPLIST_UPLOADIMAGES_DIR)%%'
     env(PHPLIST_UPLOADIMAGES_DIR): 'images'

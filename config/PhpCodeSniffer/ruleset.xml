@@ -54,11 +54,6 @@
     <!-- Functions -->
     <rule ref="Squiz.Functions.FunctionDuplicateArgument"/>
     <rule ref="Squiz.Functions.GlobalFunction"/>
-    <rule ref="Squiz.WhiteSpace.OperatorSpacing">
-        <properties>
-            <property name="ignoreNewlines" value="true"/>
-        </properties>
-    </rule>
 
     <!-- Metrics -->
     <rule ref="Generic.Metrics.CyclomaticComplexity"/>
@@ -108,6 +103,10 @@
     <rule ref="PEAR.WhiteSpace.ScopeClosingBrace"/>
     <rule ref="Squiz.WhiteSpace.CastSpacing"/>
     <rule ref="Squiz.WhiteSpace.LogicalOperatorSpacing"/>
-    <rule ref="Squiz.WhiteSpace.OperatorSpacing"/>
+    <rule ref="Squiz.WhiteSpace.OperatorSpacing">
+        <properties>
+            <property name="ignoreNewlines" value="true"/>
+        </properties>
+    </rule>
     <rule ref="Squiz.WhiteSpace.SemicolonSpacing"/>
 </ruleset>

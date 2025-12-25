@@ -110,7 +110,7 @@ class CampaignProcessorMessageHandler
 //        }
 //        $userSelection = $loadedMessageData['userselection'];
 
-        $cacheKey = sprintf('messaging.message.base.%d', $campaign->getId());
+        $cacheKey = sprintf('messaging.message.base.%d.%d', $campaign->getId(), 0);
         if (!$this->precacheService->precacheMessage($campaign, $loadedMessageData)) {
             $this->updateMessageStatus($campaign, MessageStatus::Suspended);
 
@@ -298,11 +298,15 @@ class CampaignProcessorMessageHandler
                     to: $notification,
                     subject: $this->translator->trans('Campaign started'),
                     message: $this->translator->trans(
-                        'phplist has started sending the campaign with subject %s',
-                        $loadedMessageData['subject']
+                        'phplist has started sending the campaign with subject %subject%',
+                        ['%subject%' => $loadedMessageData['subject']]
                     ),
                     inBlast: false,
                 );
+
+                if (!$email) {
+                    continue;
+                }
 
                 // todo: check if from name should be from config
                 $envelope = new Envelope(
