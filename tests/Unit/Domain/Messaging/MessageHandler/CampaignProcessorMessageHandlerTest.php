@@ -6,10 +6,10 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\MessageHandler;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
@@ -18,7 +18,7 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
-use PhpList\Core\Domain\Messaging\Service\Manager\MessageDataManager;
+use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
 use PhpList\Core\Domain\Messaging\Service\MessageDataLoader;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
@@ -91,14 +91,12 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             translator: $this->translator,
             subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class),
             messageRepository: $this->messageRepository,
-            eventLogManager: $this->createMock(EventLogManager::class),
-            messageDataManager: $this->createMock(MessageDataManager::class),
             precacheService: $this->precacheService,
             userPersonalizer: $userPersonalizer,
             messageDataLoader: $this->createMock(MessageDataLoader::class),
             emailBuilder: $this->createMock(EmailBuilder::class),
+            mailSizeChecker: $this->createMock(MailSizeChecker::class),
             messageEnvelope: 'messageEnvelope',
-            maxMailSize: 0,
         );
     }
 
@@ -196,7 +194,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
     public function testInvokeWithValidSubscriberEmail(): void
     {
         $campaign = $this->createMock(Message::class);
-        $precached = new \PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto();
+        $precached = new MessagePrecacheDto();
         $precached->subject = 'Test Subject';
         $precached->content = '<p>Test HTML message</p>';
         $precached->textContent = 'Test text message';
@@ -267,7 +265,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
     public function testInvokeWithMailerException(): void
     {
         $campaign = $this->createMock(Message::class);
-        $precached = new \PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto();
+        $precached = new MessagePrecacheDto();
         $precached->subject = 'Test Subject';
         $precached->content = '<p>Test HTML message</p>';
         $precached->textContent = 'Test text message';
@@ -326,7 +324,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
     public function testInvokeWithMultipleSubscribers(): void
     {
         $campaign = $this->createCampaignMock();
-        $precached = new \PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto();
+        $precached = new MessagePrecacheDto();
         $precached->subject = 'Test Subject';
         $precached->content = '<p>Test HTML message</p>';
         $precached->textContent = 'Test text message';

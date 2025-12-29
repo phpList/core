@@ -133,3 +133,9 @@ services:
     arguments: [ '@cache.app' ]
 
   Psr\SimpleCache\CacheInterface: '@cache.app.simple'
+
+  PhpList\Core\Domain\Messaging\Service\MailSizeChecker:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $maxMailSize: '%messaging.max_mail_size%'

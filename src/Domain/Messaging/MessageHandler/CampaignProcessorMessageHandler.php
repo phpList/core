@@ -23,13 +23,12 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
-use PhpList\Core\Domain\Messaging\Service\Manager\MessageDataManager;
+use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
 use PhpList\Core\Domain\Messaging\Service\MessageDataLoader;
 use PhpList\Core\Domain\Messaging\Service\MessagePrecacheService;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
-use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
@@ -39,7 +38,6 @@ use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Mime\Address;
-use Symfony\Component\Mime\Email;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
@@ -50,8 +48,6 @@ use Throwable;
 #[AsMessageHandler]
 class CampaignProcessorMessageHandler
 {
-    private ?int $maxMailSize;
-
     public function __construct(
         private readonly MailerInterface $mailer,
         private readonly RateLimitedCampaignMailer $rateLimitedCampaignMailer,
@@ -66,16 +62,13 @@ class CampaignProcessorMessageHandler
         private readonly TranslatorInterface $translator,
         private readonly SubscriberHistoryManager $subscriberHistoryManager,
         private readonly MessageRepository $messageRepository,
-        private readonly EventLogManager $eventLogManager,
-        private readonly MessageDataManager $messageDataManager,
         private readonly MessagePrecacheService $precacheService,
         private readonly UserPersonalizer $userPersonalizer,
         private readonly MessageDataLoader $messageDataLoader,
         private readonly EmailBuilder $emailBuilder,
+        private readonly MailSizeChecker $mailSizeChecker,
         private readonly string $messageEnvelope,
-        ?int $maxMailSize = null,
     ) {
-        $this->maxMailSize = $maxMailSize ?? 0;
     }
 
     public function __invoke(CampaignProcessorMessage|SyncCampaignProcessorMessage $message): void
@@ -215,7 +208,7 @@ class CampaignProcessorMessageHandler
         try {
             $email = $this->rateLimitedCampaignMailer->composeEmail($campaign, $subscriber, $processed);
             $this->mailer->send($email);
-            $this->checkMessageSizeOrSuspendCampaign($campaign, $email, $subscriber->hasHtmlEmail());
+            ($this->mailSizeChecker)($campaign, $email, $subscriber->hasHtmlEmail());
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
         } catch (MessageSizeLimitExceededException $e) {
             // stop after the first message if size is exceeded
@@ -233,59 +226,6 @@ class CampaignProcessorMessageHandler
                 '%email%' => $subscriber->getEmail(),
             ]));
         }
-    }
-
-    private function checkMessageSizeOrSuspendCampaign(
-        Message $campaign,
-        Email $email,
-        bool $hasHtmlEmail
-    ): void {
-        if ($this->maxMailSize <= 0) {
-            return;
-        }
-        $sizeName = $hasHtmlEmail ? 'htmlsize' : 'textsize';
-        $cacheKey = sprintf('messaging.size.%d.%s', $campaign->getId(), $sizeName);
-        if (!$this->cache->has($cacheKey)) {
-            $size = $this->calculateEmailSize($email);
-            $this->messageDataManager->setMessageData($campaign, $sizeName, $size);
-            $this->cache->set($cacheKey, $size);
-        }
-
-        $size = $this->cache->get($cacheKey);
-        if ($size <= $this->maxMailSize) {
-            return;
-        }
-
-        $this->logger->warning(sprintf(
-            'Message too large (%d is over %d), suspending campaign %d',
-            $size,
-            $this->maxMailSize,
-            $campaign->getId()
-        ));
-
-        $this->eventLogManager->log('send', sprintf(
-            'Message too large (%d is over %d), suspending',
-            $size,
-            $this->maxMailSize
-        ));
-
-        $this->eventLogManager->log('send', sprintf(
-            'Campaign %d suspended. Message too large',
-            $campaign->getId()
-        ));
-
-        throw new MessageSizeLimitExceededException($size, $this->maxMailSize);
-    }
-
-    private function calculateEmailSize(Email $email): int
-    {
-        $size = 0;
-
-        foreach ($email->toIterable() as $line) {
-            $size += strlen($line);
-        }
-
-        return $size;
     }
 
     private function handleAdminNotifications(Message $campaign, array $loadedMessageData, int $messageId): void
