@@ -52,9 +52,9 @@ class InjectedByHeaderSubscriberTest extends TestCase
 
         // RawMessage has no headers; the subscriber should return early
         $subscriber->onMessage($event);
-
-        $this->assertSame('raw', $raw->toString()); // sanity check to use the variable
-        // Nothing to assert on headers (RawMessage has none), but the lack of exceptions is success
+        // sanity check to use the variable
+        $this->assertSame('raw', $raw->toString());
+        // Nothing to assert on headers (RawMessage has none), but the lack of exceptions is a success
         $this->addToAssertionCount(1);
     }
 

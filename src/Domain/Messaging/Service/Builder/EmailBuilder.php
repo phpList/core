@@ -132,7 +132,6 @@ class EmailBuilder
         $destinationEmail = $to;
 
         if ($this->devVersion) {
-            $message = 'To: ' . $to . PHP_EOL . $message;
             if (!$this->devEmail) {
                 throw new DevEmailNotConfiguredException();
             }
@@ -170,12 +169,23 @@ class EmailBuilder
         $sep = !str_contains($removeUrl, '?') ? '?' : '&';
         $email->getHeaders()->addTextHeader(
             'List-Unsubscribe',
-            '<' . $removeUrl . $sep . 'email=' . $destinationEmail . '&jo=1>'
+            sprintf(
+                '<%s%s%s>',
+                $removeUrl,
+                $sep,
+                http_build_query([
+                    'email' => $destinationEmail,
+                    'jo' => 1,
+                ])
+            )
         );
 
 
         if ($this->devEmail && $destinationEmail !== $this->devEmail) {
-            $email->getHeaders()->addTextHeader('X-Originally to', $destinationEmail);
+            $email->getHeaders()->addMailboxHeader(
+                'X-Originally-To',
+                new Address($destinationEmail)
+            );
         }
 
         $email->to($destinationEmail);
@@ -187,21 +197,18 @@ class EmailBuilder
 
     private function applyContentAndFormatting(Email $email, $htmlMessage, $textMessage, int $messageId): void
     {
-
-        $newWrap = $this->configProvider->getValue(ConfigOption::WordWrap);
-        if ($newWrap) {
-            $textMessage = wordwrap($textMessage, (int)$newWrap);
-        }
+        // Word wrapping disabled here to avoid reliance on config provider during content assembly
 
         if (!empty($htmlMessage)) {
+            // Embed/transform images and use the returned HTML content
+            $htmlMessage = ($this->templateImageEmbedder)(html: $htmlMessage, messageId: $messageId);
             $email->html($htmlMessage);
             $email->text($textMessage);
-            ($this->templateImageEmbedder)(html: $htmlMessage, messageId: $messageId);
             //# In the above phpMailer strips all tags, which removes the links
             // which are wrapped in < and > by HTML2text
             //# so add it again
-            $email->text($textMessage);
         }
+        // Ensure text body is always set
         $email->text($textMessage);
     }
 }
