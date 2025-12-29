@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Identity\Model;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
@@ -37,6 +39,13 @@ class AdminAttributeDefinition implements DomainModel, Identity
     #[ORM\Column(name:'tablename', type: 'string', length: 255, nullable: true)]
     private ?string $tableName;
 
+    #[ORM\OneToMany(
+        targetEntity: AdminAttributeValue::class,
+        mappedBy: 'attributeDefinition',
+        orphanRemoval: true
+    )]
+    private Collection $attributeValues;
+
     public function __construct(
         string $name,
         ?string $type = null,
@@ -51,6 +60,7 @@ class AdminAttributeDefinition implements DomainModel, Identity
         $this->defaultValue = $defaultValue;
         $this->required = $required;
         $this->tableName = $tableName;
+        $this->attributeValues = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -121,5 +131,11 @@ class AdminAttributeDefinition implements DomainModel, Identity
         $this->required = $required;
 
         return $this;
+    }
+
+    /** @return Collection<int, AdminAttributeValue> */
+    public function getAttributeValues(): Collection
+    {
+        return $this->attributeValues;
     }
 }

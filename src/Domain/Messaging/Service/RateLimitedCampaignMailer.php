@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service;
 
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
@@ -20,23 +21,27 @@ class RateLimitedCampaignMailer
         $this->limiter = $limiter;
     }
 
-    public function composeEmail(Message $processed, Subscriber $subscriber, Message\MessageContent $content): Email
-    {
+    public function composeEmail(
+        Message $message,
+        Subscriber $subscriber,
+        MessagePrecacheDto $messagePrecacheDto,
+    ): Email {
         $email = new Email();
-        if ($processed->getOptions()->getFromField() !== '') {
-            $email->from($processed->getOptions()->getFromField());
+        if ($message->getOptions()->getFromField() !== '') {
+            $email->from($message->getOptions()->getFromField());
         }
 
-        if ($processed->getOptions()->getReplyTo() !== '') {
-            $email->replyTo($processed->getOptions()->getReplyTo());
+        if ($message->getOptions()->getReplyTo() !== '') {
+            $email->replyTo($message->getOptions()->getReplyTo());
         }
+
+        $html = $messagePrecacheDto->content . $messagePrecacheDto->htmlFooter;
 
         return $email
             ->to($subscriber->getEmail())
-            ->subject($content->getSubject())
-            // todo: check HTML2Text functionality
-            ->text($content->getTextMessage())
-            ->html($content->getText());
+            ->subject($messagePrecacheDto->subject)
+            ->text($messagePrecacheDto->textContent)
+            ->html($html);
     }
 
     /**

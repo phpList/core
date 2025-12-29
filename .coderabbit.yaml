@@ -13,13 +13,13 @@ reviews:
       instructions: |
         You are reviewing PHP domain-layer code. Enforce domain purity, with a relaxed policy for DynamicListAttr:
 
-        - ❌ Do not allow persistence or transaction side effects here for *normal* domain models.
-        - Flag ANY usage of Doctrine persistence APIs on regular domain entities, especially:
+        - ❌ Do not allow, flag ANY DB write / finalization:
           - `$entityManager->flush(...)`, `$this->entityManager->flush(...)`
-          - `$em->persist(...)`, `$em->remove(...)`
-          - `$em->beginTransaction()`, `$em->commit()`, `$em->rollback()`
+          - `$em->beginTransaction()`, `$em->commit()`, `$em->rollback()`, `$em->transactional(...)`
+          - `$em->getConnection()->executeStatement(...)` for DML/DDL (INSERT/UPDATE/DELETE/ALTER/...)
         - ✅ Accessing Doctrine *metadata*, *schema manager*, or *read-only schema info* is acceptable
-          as long as it does not modify state or perform writes.
+          as long as it does not modify state or perform writes. Accessing Doctrine *persistence APIs* 
+          persist, remove, etc.) is acceptable, allow scheduling changes in the UnitOfWork (no DB writes)
 
         - ✅ **Relaxed rule for DynamicListAttr-related code**:
           - DynamicListAttr is a special case dealing with dynamic tables/attrs.

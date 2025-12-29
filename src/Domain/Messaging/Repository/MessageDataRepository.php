@@ -17,4 +17,10 @@ class MessageDataRepository extends AbstractRepository implements PaginatableRep
     {
         return $this->findOneBy(['id' => $messageId, 'name' => $name]);
     }
+
+    /** @return MessageData[] */
+    public function getForMessage(int $messageId): array
+    {
+        return $this->findBy(['id' => $messageId]);
+    }
 }

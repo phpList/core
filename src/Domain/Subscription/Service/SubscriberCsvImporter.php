@@ -137,7 +137,6 @@ class SubscriberCsvImporter
 
     /**
      * Import subscribers with an update strategy.
-     * @SuppressWarnings("BooleanArgumentFlag")
      * @param UploadedFile $file The uploaded CSV file
      * @return array Import statistics
      */
@@ -156,7 +155,6 @@ class SubscriberCsvImporter
 
     /**
      * Import subscribers without updating existing ones.
-     * @SuppressWarnings("BooleanArgumentFlag")
      * @param UploadedFile $file The uploaded CSV file
      * @return array Import statistics
      */
@@ -210,6 +208,7 @@ class SubscriberCsvImporter
 
         [$listLines, $addedNewSubscriberToList] = $this->getHistoryListLines($subscriber, $options);
 
+        // todo: use isBlacklisted logic (grace time) not function from Subscriber class
         if ($subscriber->isBlacklisted()) {
             $stats['blacklisted']++;
         }

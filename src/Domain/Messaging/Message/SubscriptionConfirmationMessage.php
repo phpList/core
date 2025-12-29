@@ -14,9 +14,6 @@ class SubscriptionConfirmationMessage
     private array $listIds;
     private bool $htmlEmail;
 
-    /**
-     * @SuppressWarnings("BooleanArgumentFlag")
-     */
     public function __construct(
         string $email,
         string $uniqueId,

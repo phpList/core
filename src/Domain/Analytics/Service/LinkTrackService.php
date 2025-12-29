@@ -8,8 +8,7 @@ use PhpList\Core\Core\ParameterProvider;
 use PhpList\Core\Domain\Analytics\Exception\MissingMessageIdException;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository;
-use PhpList\Core\Domain\Messaging\Model\Message;
-use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 
 class LinkTrackService
 {
@@ -39,7 +38,7 @@ class LinkTrackService
      * @return LinkTrack[] The saved LinkTrack entities
      * @throws MissingMessageIdException
      */
-    public function extractAndSaveLinks(MessageContent $content, int $userId, ?int $messageId = null): array
+    public function extractAndSaveLinks(MessagePrecacheDto $content, int $userId, ?int $messageId = null): array
     {
         if (!$this->isExtractAndSaveLinksApplicable()) {
             return [];
@@ -49,10 +48,10 @@ class LinkTrackService
             throw new MissingMessageIdException();
         }
 
-        $links = $this->extractLinksFromHtml($content->getText() ?? '');
+        $links = $this->extractLinksFromHtml($content->content ?? '');
 
-        if ($content->getFooter() !== null) {
-            $links = array_merge($links, $this->extractLinksFromHtml($content->getFooter()));
+        if ($content->htmlFooter) {
+            $links = array_merge($links, $this->extractLinksFromHtml($content->htmlFooter));
         }
 
         $links = array_unique($links);

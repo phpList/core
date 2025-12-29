@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Identity\Model;
 
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Interfaces\CreationDate;
@@ -13,6 +15,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Common\Model\Interfaces\ModificationDate;
 use PhpList\Core\Domain\Common\Model\Interfaces\OwnableInterface;
 use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
+use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 
 /**
  * This class represents an administrator who can log to the system, is allowed to administer
@@ -65,11 +68,15 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     #[ORM\Column(name: 'privileges', type: 'text', nullable: true)]
     private ?string $privileges = null;
 
+    #[ORM\OneToMany(targetEntity: SubscriberList::class, mappedBy: 'owner')]
+    private Collection $ownedLists;
+
     public function __construct()
     {
         $this->createdAt = new DateTime();
         $this->updatedAt = new DateTime();
         $this->email = '';
+        $this->ownedLists = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -210,5 +217,13 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     public function setUpdatedAt(): void
     {
         $this->updatedAt = new DateTime();
+    }
+
+    /**
+     * @return Collection<int, SubscriberList>
+     */
+    public function getOwnedLists(): Collection
+    {
+        return $this->ownedLists;
     }
 }
