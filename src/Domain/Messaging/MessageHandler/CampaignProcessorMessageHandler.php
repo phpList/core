@@ -8,6 +8,7 @@ use DateTime;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Exception\MessageCacheMissingException;
 use PhpList\Core\Domain\Messaging\Exception\MessageSizeLimitExceededException;
@@ -200,10 +201,15 @@ class CampaignProcessorMessageHandler
             subscriber: $subscriber
         );
         $processed->textContent = $this->userPersonalizer->personalize(
-            $processed->textContent,
-            $subscriber->getEmail(),
+            value: $processed->textContent,
+            email: $subscriber->getEmail(),
+            format:OutputFormat::Text,
         );
-        $processed->footer = $this->userPersonalizer->personalize($processed->footer, $subscriber->getEmail());
+        $processed->footer = $this->userPersonalizer->personalize(
+            value: $processed->footer,
+            email: $subscriber->getEmail(),
+            format: OutputFormat::Text,
+        );
 
         try {
             $email = $this->rateLimitedCampaignMailer->composeEmail($campaign, $subscriber, $processed);

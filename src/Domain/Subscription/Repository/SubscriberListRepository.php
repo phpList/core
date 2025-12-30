@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 
 /**
@@ -68,5 +69,26 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
             ->getScalarResult();
 
         return array_column($lists, 'name');
+    }
+
+    /**
+     * Returns the names of lists the given subscriber is subscribed to.
+     * If $showPrivate is false, only active/public lists are included.
+     */
+    public function getActiveListNamesForSubscriber(Subscriber $subscriber, bool $showPrivate): array
+    {
+        $qb = $this->createQueryBuilder('l')
+            ->select('l.name')
+            ->innerJoin('l.subscriptions', 's')
+            ->where('IDENTITY(s.subscriber) = :subscriberId')
+            ->setParameter('subscriberId', $subscriber->getId());
+
+        if (!$showPrivate) {
+            $qb->andWhere('l.active = true');
+        }
+
+        $rows = $qb->getQuery()->getScalarResult();
+
+        return array_column($rows, 'name');
     }
 }

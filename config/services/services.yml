@@ -123,6 +123,8 @@ services:
   PhpList\Core\Domain\Configuration\Service\UserPersonalizer:
     autowire: true
     autoconfigure: true
+    arguments:
+      $preferencePageShowPrivateLists: '%app.preference_page_show_private_lists%'
 
   PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder:
     autowire: true

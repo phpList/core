@@ -195,7 +195,7 @@ class MessagePrecacheService
             } else {
                 $this->eventLogManager->log(
                     page: 'unknown page',
-                    entry: 'Error fetching URL: '.$loadedMessageData['sendurl'].' cannot proceed',
+                    entry: 'Error fetching URL: ' . $loadedMessageData['sendurl'] . ' cannot proceed',
                 );
 
                 return false;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\MessageHandler;
 
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Message\SubscriptionConfirmationMessage;
@@ -36,14 +37,19 @@ class SubscriptionConfirmationMessageHandler
     {
         $subject = $this->configProvider->getValue(ConfigOption::SubscribeEmailSubject);
         $textContent = $this->configProvider->getValue(ConfigOption::SubscribeMessage);
-        $personalizedTextContent = $this->userPersonalizer->personalize($textContent, $message->getUniqueId());
         $listOfLists = $this->getListNames($message->getListIds());
-        $replacedTextContent = str_replace('[LISTS]', $listOfLists, $personalizedTextContent);
+        $replacedTextContent = str_replace('[LISTS]', $listOfLists, $textContent);
+
+        $personalizedTextContent = $this->userPersonalizer->personalize(
+            value: $replacedTextContent,
+            email: $message->getUniqueId(),
+            format: OutputFormat::Text,
+        );
 
         $email = (new Email())
             ->to($message->getEmail())
             ->subject($subject)
-            ->text($replacedTextContent);
+            ->text($personalizedTextContent);
 
         $this->emailService->sendEmail($email);
 
