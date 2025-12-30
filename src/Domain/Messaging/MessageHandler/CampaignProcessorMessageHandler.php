@@ -195,9 +195,9 @@ class CampaignProcessorMessageHandler
         MessagePrecacheDto $precachedContent,
     ): void {
         $processed = $this->messagePreparator->processMessageLinks(
-            $campaign->getId(),
-            $precachedContent,
-            $subscriber
+            campaignId: $campaign->getId(),
+            cachedMessageDto: $precachedContent,
+            subscriber: $subscriber
         );
         $processed->textContent = $this->userPersonalizer->personalize(
             $processed->textContent,

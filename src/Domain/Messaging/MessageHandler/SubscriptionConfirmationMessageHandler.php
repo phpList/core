@@ -20,24 +20,13 @@ use Symfony\Component\Mime\Email;
 #[AsMessageHandler]
 class SubscriptionConfirmationMessageHandler
 {
-    private EmailService $emailService;
-    private ConfigProvider $configProvider;
-    private LoggerInterface $logger;
-    private UserPersonalizer $userPersonalizer;
-    private SubscriberListRepository $subscriberListRepository;
-
     public function __construct(
-        EmailService $emailService,
-        ConfigProvider $configProvider,
-        LoggerInterface $logger,
-        UserPersonalizer $userPersonalizer,
-        SubscriberListRepository $subscriberListRepository,
+        private readonly EmailService $emailService,
+        private readonly ConfigProvider $configProvider,
+        private readonly LoggerInterface $logger,
+        private readonly UserPersonalizer $userPersonalizer,
+        private readonly SubscriberListRepository $subscriberListRepository,
     ) {
-        $this->emailService = $emailService;
-        $this->configProvider = $configProvider;
-        $this->logger = $logger;
-        $this->userPersonalizer = $userPersonalizer;
-        $this->subscriberListRepository = $subscriberListRepository;
     }
 
     /**
@@ -63,14 +52,6 @@ class SubscriptionConfirmationMessageHandler
 
     private function getListNames(array $listIds): string
     {
-        $listNames = [];
-        foreach ($listIds as $id) {
-            $list = $this->subscriberListRepository->find($id);
-            if ($list) {
-                $listNames[] = $list->getName();
-            }
-        }
-
-        return implode(', ', $listNames);
+        return implode(', ', $this->subscriberListRepository->getListNames($listIds));
     }
 }

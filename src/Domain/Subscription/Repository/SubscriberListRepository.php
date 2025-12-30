@@ -53,4 +53,20 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
             ->getQuery()
             ->getResult();
     }
+
+    public function getListNames(array $listIds): array
+    {
+        if ($listIds === []) {
+            return [];
+        }
+
+        $lists = $this->createQueryBuilder('l')
+            ->select('l.name')
+            ->where('l.id IN (:ids)')
+            ->setParameter('ids', $listIds)
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_column($lists, 'name');
+    }
 }
