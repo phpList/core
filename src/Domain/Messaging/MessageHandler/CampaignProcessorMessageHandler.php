@@ -8,6 +8,7 @@ use DateTime;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Exception\MessageCacheMissingException;
 use PhpList\Core\Domain\Messaging\Exception\MessageSizeLimitExceededException;
@@ -195,19 +196,29 @@ class CampaignProcessorMessageHandler
         MessagePrecacheDto $precachedContent,
     ): void {
         $processed = $this->messagePreparator->processMessageLinks(
-            $campaign->getId(),
-            $precachedContent,
-            $subscriber
+            campaignId: $campaign->getId(),
+            cachedMessageDto: $precachedContent,
+            subscriber: $subscriber
         );
         $processed->textContent = $this->userPersonalizer->personalize(
-            $processed->textContent,
-            $subscriber->getEmail(),
+            value: $processed->textContent,
+            email: $subscriber->getEmail(),
+            format:OutputFormat::Text,
         );
-        $processed->footer = $this->userPersonalizer->personalize($processed->footer, $subscriber->getEmail());
+        $processed->footer = $this->userPersonalizer->personalize(
+            value: $processed->footer,
+            email: $subscriber->getEmail(),
+            format: OutputFormat::Text,
+        );
 
         try {
-            $email = $this->rateLimitedCampaignMailer->composeEmail($campaign, $subscriber, $processed);
-            $this->mailer->send($email);
+            $email = $this->emailBuilder->buildPhplistEmail(
+                $campaign->getId(),
+                $subscriber->getEmail(),
+                $processed->subject,
+                $processed->textContent,
+            );
+            $this->rateLimitedCampaignMailer->send($email);
             ($this->mailSizeChecker)($campaign, $email, $subscriber->hasHtmlEmail());
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
         } catch (MessageSizeLimitExceededException $e) {

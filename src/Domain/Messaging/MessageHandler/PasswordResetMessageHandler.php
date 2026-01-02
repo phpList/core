@@ -13,15 +13,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AsMessageHandler]
 class PasswordResetMessageHandler
 {
-    private EmailService $emailService;
-    private TranslatorInterface $translator;
-    private string $passwordResetUrl;
-
-    public function __construct(EmailService $emailService, TranslatorInterface $translator, string $passwordResetUrl)
-    {
-        $this->emailService = $emailService;
-        $this->translator = $translator;
-        $this->passwordResetUrl = $passwordResetUrl;
+    public function __construct(
+        private readonly EmailService $emailService,
+        private readonly TranslatorInterface $translator,
+        private readonly string $passwordResetUrl
+    ) {
     }
 
     /**

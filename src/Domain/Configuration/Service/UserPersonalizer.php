@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Configuration\Service;
 
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Resolver\AttributeValueResolver;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class UserPersonalizer
 {
@@ -19,11 +22,14 @@ class UserPersonalizer
         private readonly LegacyUrlBuilder $urlBuilder,
         private readonly SubscriberRepository $subscriberRepository,
         private readonly SubscriberAttributeValueRepository $attributesRepository,
-        private readonly AttributeValueResolver $attributeValueResolver
+        private readonly AttributeValueResolver $attributeValueResolver,
+        private readonly SubscriberListRepository $subscriberListRepository,
+        private readonly TranslatorInterface $translator,
+        private readonly bool $preferencePageShowPrivateLists = false
     ) {
     }
 
-    public function personalize(string $value, string $email): string
+    public function personalize(string $value, string $email, OutputFormat $format): string
     {
         $user = $this->subscriberRepository->findOneByEmail($email);
         if (!$user) {
@@ -33,18 +39,49 @@ class UserPersonalizer
         $resolver = new PlaceholderResolver();
         $resolver->register('EMAIL', fn() => $user->getEmail());
 
-        $resolver->register('UNSUBSCRIBEURL', function () use ($user) {
+        $resolver->register('UNSUBSCRIBEURL', function () use ($user, $format) {
             $base = $this->config->getValue(ConfigOption::UnsubscribeUrl) ?? '';
-            return $this->urlBuilder->withUid($base, $user->getUniqueId()) . self::PHP_SPACE;
+            $url = $this->urlBuilder->withUid($base, $user->getUniqueId());
+
+            if ($format === OutputFormat::Html) {
+                $label = $this->translator->trans('Unsubscribe');
+                $safeUrl = htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+                $safeLabel = htmlspecialchars($label, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+                return '<a href="' . $safeUrl . '">' . $safeLabel . '</a>' . self::PHP_SPACE;
+            }
+
+            return $url . self::PHP_SPACE;
         });
 
-        $resolver->register('CONFIRMATIONURL', function () use ($user) {
+        $resolver->register('CONFIRMATIONURL', function () use ($user, $format) {
             $base = $this->config->getValue(ConfigOption::ConfirmationUrl) ?? '';
-            return $this->urlBuilder->withUid($base, $user->getUniqueId()) . self::PHP_SPACE;
+            $url = $this->urlBuilder->withUid($base, $user->getUniqueId());
+
+            if ($format === OutputFormat::Html) {
+                $label = $this->translator->trans('Confirm');
+                $safeUrl = htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+                $safeLabel = htmlspecialchars($label, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+                return '<a href="' . $safeUrl . '">' . $safeLabel . '</a>' . self::PHP_SPACE;
+            }
+
+            return $url . self::PHP_SPACE;
         });
-        $resolver->register('PREFERENCESURL', function () use ($user) {
+
+        $resolver->register('PREFERENCESURL', function () use ($user, $format) {
             $base = $this->config->getValue(ConfigOption::PreferencesUrl) ?? '';
-            return $this->urlBuilder->withUid($base, $user->getUniqueId()) . self::PHP_SPACE;
+            $url = $this->urlBuilder->withUid($base, $user->getUniqueId());
+
+            if ($format === OutputFormat::Html) {
+                $label = $this->translator->trans('Update preferences');
+                $safeUrl = htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+                $safeLabel = htmlspecialchars($label, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+                return '<a href="' . $safeUrl . '">' . $safeLabel . '</a>' . self::PHP_SPACE;
+            }
+
+            return $url . self::PHP_SPACE;
         });
 
         $resolver->register(
@@ -53,6 +90,29 @@ class UserPersonalizer
         );
         $resolver->register('DOMAIN', fn() => $this->config->getValue(ConfigOption::Domain) ?? '');
         $resolver->register('WEBSITE', fn() => $this->config->getValue(ConfigOption::Website) ?? '');
+
+        $resolver->register('LISTS', function () use ($user, $format) {
+            $names = $this->subscriberListRepository->getActiveListNamesForSubscriber(
+                subscriber: $user,
+                showPrivate: $this->preferencePageShowPrivateLists
+            );
+
+            if ($names === []) {
+                return $this->translator
+                    ->trans('Sorry, you are not subscribed to any of our newsletters with this email address.');
+            }
+
+            $separator = $format === OutputFormat::Html ? '<br/>' : "\n";
+
+            if ($format === OutputFormat::Html) {
+                $names = array_map(
+                    static fn(string $name) => htmlspecialchars($name, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+                    $names
+                );
+            }
+
+            return implode($separator, $names);
+        });
 
         $userAttributes = $this->attributesRepository->getForSubscriber($user);
         foreach ($userAttributes as $userAttribute) {

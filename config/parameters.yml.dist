@@ -31,6 +31,8 @@ parameters:
     env(APP_DEV_EMAIL): 'dev@dev.com'
     app.powered_by_phplist: '%%env(APP_POWERED_BY_PHPLIST)%%'
     env(APP_POWERED_BY_PHPLIST): '0'
+    app.preference_page_show_private_lists: '%%env(PREFERENCEPAGE_SHOW_PRIVATE_LISTS)%%'
+    env(PREFERENCEPAGE_SHOW_PRIVATE_LISTS): '0'
 
     # Email configuration
     app.mailer_from: '%%env(MAILER_FROM)%%'
