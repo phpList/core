@@ -212,8 +212,13 @@ class CampaignProcessorMessageHandler
         );
 
         try {
-            $email = $this->rateLimitedCampaignMailer->composeEmail($campaign, $subscriber, $processed);
-            $this->mailer->send($email);
+            $email = $this->emailBuilder->buildPhplistEmail(
+                $campaign->getId(),
+                $subscriber->getEmail(),
+                $processed->subject,
+                $processed->textContent,
+            );
+            $this->rateLimitedCampaignMailer->send($email);
             ($this->mailSizeChecker)($campaign, $email, $subscriber->hasHtmlEmail());
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
         } catch (MessageSizeLimitExceededException $e) {
