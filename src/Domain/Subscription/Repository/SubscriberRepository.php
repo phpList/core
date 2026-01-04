@@ -205,4 +205,14 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->getQuery()
             ->execute();
     }
+
+    public function getDataById(int $subscriberId): array
+    {
+        return $this->createQueryBuilder('s')
+            ->select('s')
+            ->where('s.id = :subscriberId')
+            ->setParameter('subscriberId', $subscriberId)
+            ->getQuery()
+            ->getArrayResult();
+    }
 }
