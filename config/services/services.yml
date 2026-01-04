@@ -43,6 +43,39 @@ services:
     autowire: true
     autoconfigure: true
 
+  # Html to Text converter used by mail constructors
+  PhpList\Core\Domain\Common\Html2Text:
+    autowire: true
+    autoconfigure: true
+
+  # Rewrites relative asset URLs in fetched HTML to absolute ones
+  PhpList\Core\Domain\Common\HtmlUrlRewriter:
+    autowire: true
+    autoconfigure: true
+
+  # External image caching/downloading helper used by TemplateImageEmbedder
+  PhpList\Core\Domain\Common\ExternalImageService:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $tempDir: '%kernel.cache_dir%'
+      # Use literal defaults if parameters are not defined in this environment
+      $externalImageMaxAge: 0
+      $externalImageMaxSize: 204800
+      $externalImageTimeout: 30
+
+  # Embed images from templates and filesystem into HTML emails
+  PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $documentRoot: '%kernel.project_dir%/public'
+      # Reuse upload_images_dir for editorImagesDir if a dedicated parameter is absent
+      $editorImagesDir: '%phplist.upload_images_dir%'
+      $embedExternalImages: '%messaging.embed_external_images%'
+      $embedUploadedImages: '%messaging.embed_uploaded_images%'
+      $uploadImagesDir: '%phplist.upload_images_dir%'
+
   PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer:
     autowire: true
     autoconfigure: true
@@ -141,3 +174,28 @@ services:
     autoconfigure: true
     arguments:
       $maxMailSize: '%messaging.max_mail_size%'
+
+  # Loads and normalises message data for campaigns
+  PhpList\Core\Domain\Messaging\Service\MessageDataLoader:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $defaultMessageAge: '%app.config.default_message_age%'
+
+  # Common helpers required by precache/message building
+  PhpList\Core\Domain\Common\TextParser:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Common\RemotePageFetcher:
+    autowire: true
+    autoconfigure: true
+
+  # Pre-caches base message content (HTML/Text/template) for campaigns
+  PhpList\Core\Domain\Messaging\Service\MessagePrecacheService:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $useManualTextPart: '%messaging.use_manual_text_part%'
+      $uploadImageDir: '%phplist.upload_images_dir%'
+      $publicSchema: '%phplist.public_schema%'

@@ -117,6 +117,8 @@ parameters:
     env(EXTERNALIMAGE_TIMEOUT): '30'
     messaging.external_image_max_size: '%%env(EXTERNALIMAGE_MAXSIZE)%%'
     env(EXTERNALIMAGE_MAXSIZE): '204800'
+    messaging.forward_alternative_content: '%%env(FORWARD_ALTERNATIVE_CONTENT)%%'
+    env(FORWARD_ALTERNATIVE_CONTENT): '0'
 
     phplist.upload_images_dir: '%%env(PHPLIST_UPLOADIMAGES_DIR)%%'
     env(PHPLIST_UPLOADIMAGES_DIR): 'images'

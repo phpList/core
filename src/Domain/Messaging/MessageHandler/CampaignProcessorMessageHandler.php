@@ -212,11 +212,10 @@ class CampaignProcessorMessageHandler
         );
 
         try {
-            $email = $this->emailBuilder->buildPhplistEmail(
-                $campaign->getId(),
-                $subscriber->getEmail(),
-                $processed->subject,
-                $processed->textContent,
+            $email = $this->rateLimitedCampaignMailer->composeEmail(
+                message: $campaign,
+                subscriber: $subscriber,
+                messagePrecacheDto: $processed
             );
             $this->rateLimitedCampaignMailer->send($email);
             ($this->mailSizeChecker)($campaign, $email, $subscriber->hasHtmlEmail());

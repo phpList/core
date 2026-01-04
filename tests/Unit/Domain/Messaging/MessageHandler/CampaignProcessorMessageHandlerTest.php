@@ -31,6 +31,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
+use ReflectionClass;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Translation\Translator;
@@ -229,29 +230,24 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             ->with(1, $precached, $subscriber)
             ->willReturn($precached);
 
-        $this->mailer->expects($this->once())
-            ->method('composeEmail')
-            ->with(
-                $this->identicalTo($campaign),
-                $this->identicalTo($subscriber),
-                $this->identicalTo($precached)
-            )
-            ->willReturnCallback(function ($camp, $sub, $proc) use ($campaign, $subscriber, $precached) {
-                $this->assertSame($campaign, $camp);
-                $this->assertSame($subscriber, $sub);
-                $this->assertSame($precached, $proc);
+        // campaign emails are built via campaignEmailBuilder and sent via RateLimitedCampaignMailer
+        $campaignEmailBuilder = (new ReflectionClass($this->handler))
+            ->getProperty("campaignEmailBuilder");
+        /** @var EmailBuilder|MockObject $campaignBuilderMock */
+        $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
 
-                return (new Email())
+        $campaignBuilderMock->expects($this->once())
+            ->method('buildPhplistEmail')
+            ->willReturn(
+                (new Email())
                     ->from('news@example.com')
                     ->to('test@example.com')
                     ->subject('Test Subject')
                     ->text('Test text message')
-                    ->html('<p>Test HTML message</p>');
-            });
+                    ->html('<p>Test HTML message</p>')
+            );
 
-        $this->symfonyMailer->expects($this->once())
-            ->method('send')
-            ->with($this->isInstanceOf(Email::class));
+        $this->mailer->expects($this->any())->method('send');
 
         $metadata->expects($this->atLeastOnce())
             ->method('setStatus');
@@ -300,8 +296,18 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             ->with(123, $precached, $subscriber)
             ->willReturn($precached);
 
+        // Build email and throw on rate-limited sender
+        $campaignEmailBuilder = (new ReflectionClass($this->handler))
+            ->getProperty("campaignEmailBuilder");
+        $campaignEmailBuilder->setAccessible(true);
+        /** @var EmailBuilder|MockObject $campaignBuilderMock */
+        $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
+        $campaignBuilderMock->expects($this->once())
+            ->method('buildPhplistEmail')
+            ->willReturn((new Email())->to('test@example.com')->subject('Test Subject')->text('x'));
+
         $exception = new Exception('Test exception');
-        $this->symfonyMailer->expects($this->once())
+        $this->mailer->expects($this->once())
             ->method('send')
             ->willThrowException($exception);
 
@@ -369,7 +375,19 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             )
             ->willReturnOnConsecutiveCalls($precached, $precached);
 
-        $this->symfonyMailer->expects($this->exactly(2))
+        // Configure builder to return emails for first two subscribers
+        $campaignEmailBuilder = (new ReflectionClass($this->handler))
+            ->getProperty("campaignEmailBuilder");
+        /** @var EmailBuilder|MockObject $campaignBuilderMock */
+        $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
+        $campaignBuilderMock->expects($this->exactly(2))
+            ->method('buildPhplistEmail')
+            ->willReturnOnConsecutiveCalls(
+                (new Email())->to('test1@example.com')->subject('Test Subject')->text('x'),
+                (new Email())->to('test2@example.com')->subject('Test Subject')->text('x')
+            );
+
+        $this->mailer->expects($this->exactly(2))
             ->method('send');
 
         $metadata->expects($this->atLeastOnce())

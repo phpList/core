@@ -8,7 +8,7 @@ use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
-use PhpList\Core\Domain\Messaging\Service\SystemMailConstructor;
+use PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailConstructor;
 use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -69,7 +69,7 @@ class EmailBuilderTest extends TestCase
             blacklistRepository: $this->blacklistRepository,
             subscriberHistoryManager: $this->subscriberHistoryManager,
             subscriberRepository: $this->subscriberRepository,
-            systemMailConstructor: $this->systemMailConstructor,
+            mailConstructor: $this->systemMailConstructor,
             templateImageEmbedder: $this->templateImageEmbedder,
             logger: $this->logger,
             googleSenderId: $googleSenderId,
