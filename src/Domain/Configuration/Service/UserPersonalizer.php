@@ -7,6 +7,8 @@ namespace PhpList\Core\Domain\Configuration\Service;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Configuration\Model\Dto\PlaceholderContext;
+use PhpList\Core\Domain\Configuration\Service\Placeholder\PlaceholderValueResolverInterface;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -25,6 +27,8 @@ class UserPersonalizer
         private readonly AttributeValueResolver $attributeValueResolver,
         private readonly SubscriberListRepository $subscriberListRepository,
         private readonly TranslatorInterface $translator,
+        /** @var iterable<PlaceholderValueResolverInterface> */
+        private readonly iterable $placeholderResolvers,
         private readonly bool $preferencePageShowPrivateLists = false
     ) {
     }
@@ -37,22 +41,11 @@ class UserPersonalizer
         }
 
         $resolver = new PlaceholderResolver();
-        $resolver->register('EMAIL', fn() => $user->getEmail());
+        $resolver->register('EMAIL', fn(PlaceholderContext $ctx) => $ctx->subscriber->getEmail());
 
-        $resolver->register('UNSUBSCRIBEURL', function () use ($user, $format) {
-            $base = $this->config->getValue(ConfigOption::UnsubscribeUrl) ?? '';
-            $url = $this->urlBuilder->withUid($base, $user->getUniqueId());
-
-            if ($format === OutputFormat::Html) {
-                $label = $this->translator->trans('Unsubscribe');
-                $safeUrl = htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-                $safeLabel = htmlspecialchars($label, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-
-                return '<a href="' . $safeUrl . '">' . $safeLabel . '</a>' . self::PHP_SPACE;
-            }
-
-            return $url . self::PHP_SPACE;
-        });
+        foreach ($this->placeholderResolvers as $placeholderResolver) {
+            $resolver->register($placeholderResolver->name(), $placeholderResolver);
+        }
 
         $resolver->register('CONFIRMATIONURL', function () use ($user, $format) {
             $base = $this->config->getValue(ConfigOption::ConfirmationUrl) ?? '';
@@ -91,6 +84,7 @@ class UserPersonalizer
         $resolver->register('DOMAIN', fn() => $this->config->getValue(ConfigOption::Domain) ?? '');
         $resolver->register('WEBSITE', fn() => $this->config->getValue(ConfigOption::Website) ?? '');
 
+        // need in PersonalizedContentConstructor
         $resolver->register('LISTS', function () use ($user, $format) {
             $names = $this->subscriberListRepository->getActiveListNamesForSubscriber(
                 subscriber: $user,
@@ -122,8 +116,6 @@ class UserPersonalizer
             );
         }
 
-        $out = $resolver->resolve($value);
-
-        return (string) $out;
+        return $resolver->resolve($value, new PlaceholderContext($user, $format));
     }
 }

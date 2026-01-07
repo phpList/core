@@ -2,67 +2,44 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Messaging\Service;
+namespace PhpList\Core\Domain\Messaging\Service\Constructor;
 
 use PhpList\Core\Domain\Common\RemotePageFetcher;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
+use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Exception\RemotePageFetchException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
-
-class RateLimitedCampaignMailer
+// todo: check this class
+class PersonalizedContentConstructor
 {
     public function __construct(
-        private readonly MailerInterface $mailer,
-        private readonly SendRateLimiter $limiter,
-        private readonly RemotePageFetcher $remotePageFetcher,
         private readonly SubscriberRepository $subscriberRepository,
+        private readonly RemotePageFetcher $remotePageFetcher,
         private readonly EventLogManager $eventLogManager,
+        private readonly UserPersonalizer $userPersonalizer,
     ) {
     }
 
-    // todo: remove this method
-    public function composeEmail(
+    public function build(
         Message $message,
         Subscriber $subscriber,
         MessagePrecacheDto $messagePrecacheDto,
     ): Email {
-        $email = new Email();
+        $content = $messagePrecacheDto->content;
+
         if ($messagePrecacheDto->userSpecificUrl) {
             $userData = $this->subscriberRepository->getDataById($subscriber->getId());
             $this->replaceUserSpecificRemoteContent($messagePrecacheDto, $subscriber, $userData);
         }
 
-        if ($message->getOptions()->getFromField() !== '') {
-            $email->from($message->getOptions()->getFromField());
-        }
 
-        if ($message->getOptions()->getReplyTo() !== '') {
-            $email->replyTo($message->getOptions()->getReplyTo());
-        }
 
-        $html = $messagePrecacheDto->content . $messagePrecacheDto->htmlFooter;
-
-        return $email
-            ->to($subscriber->getEmail())
-            ->subject($messagePrecacheDto->subject)
-            ->text($messagePrecacheDto->textContent)
-            ->html($html);
-    }
-
-    /**
-     * @throws TransportExceptionInterface
-     */
-    public function send(Email $email): void
-    {
-        $this->limiter->awaitTurn();
-        $this->mailer->send($email);
-        $this->limiter->afterSend();
+        $mail = new Email();
+        return $mail;
     }
 
     private function replaceUserSpecificRemoteContent(

@@ -4,30 +4,36 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Configuration\Service;
 
+use PhpList\Core\Domain\Configuration\Model\Dto\PlaceholderContext;
+
 class PlaceholderResolver
 {
-    /** @var array<string, callable():string> */
-    private array $providers = [];
+    /** @var array<string, callable> */
+    private array $resolvers = [];
 
-    public function register(string $token, callable $provider): void
+    public function register(string $name, callable $resolver): void
     {
-        // tokens like [UNSUBSCRIBEURL] (case-insensitive)
-        $this->providers[strtoupper($token)] = $provider;
+        $this->resolvers[$name] = $resolver;
     }
 
-    public function resolve(?string $input): ?string
+    public function resolve(string $value, PlaceholderContext $context): string
     {
-        if ($input === null || $input === '') {
-            return $input;
+        if (!str_contains($value, '[')) {
+            return $value;
         }
 
-        // Replace [TOKEN] (case-insensitive)
-        return preg_replace_callback('/\[(\w+)\]/i', function ($map) {
-            $key = strtoupper($map[1]);
-            if (!isset($this->providers[$key])) {
-                return $map[0];
-            }
-            return (string) ($this->providers[$key])();
-        }, $input);
+        return preg_replace_callback(
+            '/\[([A-Z0-9_]+)\]/',
+            function (array $m) use ($context) {
+                $key = $m[1];
+
+                if (!isset($this->resolvers[$key])) {
+                    return $m[0];
+                }
+
+                return (string) ($this->resolvers[$key])($context);
+            },
+            $value
+        );
     }
 }

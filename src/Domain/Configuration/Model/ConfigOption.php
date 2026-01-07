@@ -10,6 +10,7 @@ enum ConfigOption: string
     case SubscribeMessage = 'subscribemessage';
     case SubscribeEmailSubject = 'subscribesubject';
     case UnsubscribeUrl = 'unsubscribeurl';
+    case BlacklistUrl = 'blacklisturl';
     case ConfirmationUrl = 'confirmationurl';
     case PreferencesUrl = 'preferencesurl';
     case SubscribeUrl = 'subscribeurl';
