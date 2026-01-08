@@ -35,4 +35,6 @@ enum ConfigOption: string
     case PoweredByText = 'PoweredByText';
     case UploadImageRoot = 'uploadimageroot';
     case PageRoot = 'pageroot';
+    case OrganisationName = 'organisation_name';
+    case VCardUrl = 'vcardurl';
 }
