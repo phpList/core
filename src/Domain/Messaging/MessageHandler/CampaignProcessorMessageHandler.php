@@ -23,7 +23,6 @@ use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
-use PhpList\Core\Domain\Messaging\Service\Constructor\PersonalizedContentConstructor;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
@@ -59,18 +58,17 @@ class CampaignProcessorMessageHandler
         private readonly LoggerInterface $logger,
         private readonly CacheInterface $cache,
         private readonly UserMessageRepository $userMessageRepository,
-        private readonly MaxProcessTimeLimiter          $timeLimiter,
-        private readonly RequeueHandler                 $requeueHandler,
-        private readonly TranslatorInterface            $translator,
-        private readonly SubscriberHistoryManager       $subscriberHistoryManager,
-        private readonly MessageRepository              $messageRepository,
-        private readonly MessagePrecacheService         $precacheService,
-        private readonly UserPersonalizer               $userPersonalizer,
-        private readonly MessageDataLoader              $messageDataLoader,
-        private readonly EmailBuilder                   $emailBuilder,
-        private readonly MailSizeChecker                $mailSizeChecker,
-        private readonly PersonalizedContentConstructor $personalizedContentBuilder,
-        private readonly string                         $messageEnvelope,
+        private readonly MaxProcessTimeLimiter $timeLimiter,
+        private readonly RequeueHandler $requeueHandler,
+        private readonly TranslatorInterface $translator,
+        private readonly SubscriberHistoryManager $subscriberHistoryManager,
+        private readonly MessageRepository $messageRepository,
+        private readonly MessagePrecacheService $precacheService,
+        private readonly UserPersonalizer $userPersonalizer,
+        private readonly MessageDataLoader $messageDataLoader,
+        private readonly EmailBuilder $emailBuilder,
+        private readonly MailSizeChecker $mailSizeChecker,
+        private readonly string $messageEnvelope,
     ) {
     }
 
@@ -214,7 +212,8 @@ class CampaignProcessorMessageHandler
         );
 
         try {
-            $email = $this->personalizedContentBuilder->build(
+            // todo: use correct service
+            $email = $this->rateLimitedCampaignMailer->composeEmail(
                 message: $campaign,
                 subscriber: $subscriber,
                 messagePrecacheDto: $processed

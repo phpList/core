@@ -750,6 +750,26 @@ Thank you.</target>
         <source>phplist has started sending the campaign with subject %subject%</source>
         <target>__phplist has started sending the campaign with subject %subject%</target>
       </trans-unit>
+      <trans-unit id="PpLvt2Z" resname="Unsubscribe">
+        <source>Unsubscribe</source>
+        <target>__Unsubscribe</target>
+      </trans-unit>
+      <trans-unit id="njfOwly" resname="This link">
+        <source>This link</source>
+        <target>__This link</target>
+      </trans-unit>
+      <trans-unit id="7r3SSnf" resname="Confirm">
+        <source>Confirm</source>
+        <target>__Confirm</target>
+      </trans-unit>
+      <trans-unit id="YibbDEd" resname="Update preferences">
+        <source>Update preferences</source>
+        <target>__Update preferences</target>
+      </trans-unit>
+      <trans-unit id="BkWF7jw" resname="Sorry, you are not subscribed to any of our newsletters with this email address.">
+        <source>Sorry, you are not subscribed to any of our newsletters with this email address.</source>
+        <target>__Sorry, you are not subscribed to any of our newsletters with this email address.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

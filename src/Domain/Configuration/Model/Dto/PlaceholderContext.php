@@ -10,10 +10,10 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 final class PlaceholderContext
 {
     public function __construct(
-        public readonly Subscriber $subscriber,
+        public readonly Subscriber $user,
         public readonly OutputFormat $format,
         public readonly string $locale = 'en',
-        public readonly array $options = [],
+        private readonly ?string $forwardedBy = null
     ) {}
 
     public function isHtml(): bool
@@ -26,13 +26,13 @@ final class PlaceholderContext
         return $this->format === OutputFormat::Text;
     }
 
-    public function option(string $key, mixed $default = null): mixed
+    public function forwardedBy(): ?string
     {
-        return $this->options[$key] ?? $default;
+        return $this->forwardedBy;
     }
 
     public function getUser(): Subscriber
     {
-        return $this->subscriber;
+        return $this->user;
     }
 }

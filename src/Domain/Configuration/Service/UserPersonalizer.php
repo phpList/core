@@ -33,7 +33,7 @@ class UserPersonalizer
     ) {
     }
 
-    public function personalize(string $value, string $email, OutputFormat $format): string
+    public function personalize(string $value, string $email, OutputFormat $format, ?string $forwardedBy = null): string
     {
         $user = $this->subscriberRepository->findOneByEmail($email);
         if (!$user) {
@@ -41,7 +41,8 @@ class UserPersonalizer
         }
 
         $resolver = new PlaceholderResolver();
-        $resolver->register('EMAIL', fn(PlaceholderContext $ctx) => $ctx->subscriber->getEmail());
+        $resolver->register('EMAIL', fn(PlaceholderContext $ctx) => $ctx->user->getEmail());
+        $resolver->register('FORWARDEDBY', fn(PlaceholderContext $ctx) => $ctx->forwardedBy());
 
         foreach ($this->placeholderResolvers as $placeholderResolver) {
             $resolver->register($placeholderResolver->name(), $placeholderResolver);
@@ -77,10 +78,6 @@ class UserPersonalizer
             return $url . self::PHP_SPACE;
         });
 
-        $resolver->register(
-            'SUBSCRIBEURL',
-            fn() => ($this->config->getValue(ConfigOption::SubscribeUrl) ?? '') . self::PHP_SPACE
-        );
         $resolver->register('DOMAIN', fn() => $this->config->getValue(ConfigOption::Domain) ?? '');
         $resolver->register('WEBSITE', fn() => $this->config->getValue(ConfigOption::Website) ?? '');
 
@@ -116,6 +113,9 @@ class UserPersonalizer
             );
         }
 
-        return $resolver->resolve($value, new PlaceholderContext($user, $format));
+        return $resolver->resolve(
+            value: $value,
+            context: new PlaceholderContext(user: $user, format: $format, forwardedBy: $forwardedBy)
+        );
     }
 }
