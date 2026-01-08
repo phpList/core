@@ -33,8 +33,13 @@ class UserPersonalizer
     ) {
     }
 
-    public function personalize(string $value, string $email, OutputFormat $format, ?string $forwardedBy = null): string
-    {
+    public function personalize(
+        string $value,
+        string $email,
+        OutputFormat $format,
+        ?int $messageId = null,
+        ?string $forwardedBy = null,
+    ): string {
         $user = $this->subscriberRepository->findOneByEmail($email);
         if (!$user) {
             return $value;
@@ -43,6 +48,9 @@ class UserPersonalizer
         $resolver = new PlaceholderResolver();
         $resolver->register('EMAIL', fn(PlaceholderContext $ctx) => $ctx->user->getEmail());
         $resolver->register('FORWARDEDBY', fn(PlaceholderContext $ctx) => $ctx->forwardedBy());
+        $resolver->register('MESSAGEID', fn(PlaceholderContext $ctx) => $ctx->messageId());
+        $resolver->register('FORWARDFORM', fn(PlaceholderContext $ctx) => '');
+        $resolver->register('SIGNATURE', fn(PlaceholderContext $ctx) => "\n\n-- powered by phpList, www.phplist.com --\n\n");
 
         foreach ($this->placeholderResolvers as $placeholderResolver) {
             $resolver->register($placeholderResolver->name(), $placeholderResolver);
@@ -115,7 +123,7 @@ class UserPersonalizer
 
         return $resolver->resolve(
             value: $value,
-            context: new PlaceholderContext(user: $user, format: $format, forwardedBy: $forwardedBy)
+            context: new PlaceholderContext(user: $user, format: $format, forwardedBy: $forwardedBy, messageId: $messageId)
         );
     }
 }

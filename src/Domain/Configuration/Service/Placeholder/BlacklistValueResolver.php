@@ -8,7 +8,7 @@ use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Configuration\Model\Dto\PlaceholderContext;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class BlacklistValueResolver implements PlaceholderValueResolverInterface
 {

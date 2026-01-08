@@ -13,7 +13,8 @@ final class PlaceholderContext
         public readonly Subscriber $user,
         public readonly OutputFormat $format,
         public readonly string $locale = 'en',
-        private readonly ?string $forwardedBy = null
+        private readonly ?string $forwardedBy = null,
+        private readonly ?int $messageId = null,
     ) {}
 
     public function isHtml(): bool
@@ -29,6 +30,11 @@ final class PlaceholderContext
     public function forwardedBy(): ?string
     {
         return $this->forwardedBy;
+    }
+
+    public function messageId(): ?int
+    {
+        return $this->messageId;
     }
 
     public function getUser(): Subscriber

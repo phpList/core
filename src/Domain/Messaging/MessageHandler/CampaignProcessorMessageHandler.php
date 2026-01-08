@@ -204,11 +204,13 @@ class CampaignProcessorMessageHandler
             value: $processed->textContent,
             email: $subscriber->getEmail(),
             format:OutputFormat::Text,
+            messageId: $campaign->getId(),
         );
         $processed->footer = $this->userPersonalizer->personalize(
             value: $processed->footer,
             email: $subscriber->getEmail(),
             format: OutputFormat::Text,
+            messageId: $campaign->getId(),
         );
 
         try {
