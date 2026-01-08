@@ -119,6 +119,8 @@ parameters:
     env(EXTERNALIMAGE_MAXSIZE): '204800'
     messaging.forward_alternative_content: '%%env(FORWARD_ALTERNATIVE_CONTENT)%%'
     env(FORWARD_ALTERNATIVE_CONTENT): '0'
+    messaging.email_text_credits: '%%env(EMAILTEXTCREDITS)%%'
+    env(EMAILTEXTCREDITS): '0'
 
     phplist.upload_images_dir: '%%env(PHPLIST_UPLOADIMAGES_DIR)%%'
     env(PHPLIST_UPLOADIMAGES_DIR): 'images'

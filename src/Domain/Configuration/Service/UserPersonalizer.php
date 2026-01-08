@@ -42,10 +42,6 @@ class UserPersonalizer
         $resolver->register('FORWARDEDBY', fn(PlaceholderContext $ctx) => $ctx->forwardedBy());
         $resolver->register('MESSAGEID', fn(PlaceholderContext $ctx) => $ctx->messageId());
         $resolver->register('FORWARDFORM', fn(PlaceholderContext $ctx) => '');
-        $resolver->register(
-            name: 'SIGNATURE',
-            resolver: fn(PlaceholderContext $ctx) => "\n\n-- powered by phpList, www.phplist.com --\n\n"
-        );
         $resolver->register('USERID', fn(PlaceholderContext $ctx) => $ctx->user->getUniqueId());
         $resolver->register(
             name: 'WEBSITE',
