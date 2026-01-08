@@ -42,7 +42,7 @@ services:
   Core.EmailBuilder.campaign:
     class: PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder
     arguments:
-      $mailConstructor: '@PhpList\Core\Domain\Messaging\Service\Constructor\CampaignMailConstructor'
+      $mailConstructor: '@MailConstructor'
       $googleSenderId: '%messaging.google_sender_id%'
       $useAmazonSes: '%messaging.use_amazon_ses%'
       $usePrecedenceHeader: '%messaging.use_precedence_header%'

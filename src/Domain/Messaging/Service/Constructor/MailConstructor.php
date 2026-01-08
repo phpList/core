@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Constructor;
 
+use PhpList\Core\Domain\Common\Html2Text;
 use PhpList\Core\Domain\Common\RemotePageFetcher;
+use PhpList\Core\Domain\Common\TextParser;
+use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Exception\RemotePageFetchException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
@@ -14,13 +18,17 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use Symfony\Component\Mime\Email;
 // todo: check this class
-class PersonalizedContentConstructor
+class MailConstructor
 {
     public function __construct(
         private readonly SubscriberRepository $subscriberRepository,
         private readonly RemotePageFetcher $remotePageFetcher,
         private readonly EventLogManager $eventLogManager,
+        private readonly ConfigProvider $configProvider,
+        private readonly Html2Text $html2Text,
+        private readonly TextParser $textParser,
         private readonly UserPersonalizer $userPersonalizer,
+        private readonly bool $forwardAlternativeContent,
     ) {
     }
 
@@ -28,14 +36,60 @@ class PersonalizedContentConstructor
         Message $message,
         Subscriber $subscriber,
         MessagePrecacheDto $messagePrecacheDto,
+        ?string $hash = null
     ): Email {
-        $content = $messagePrecacheDto->content;
+        $defaultstyle = $this->configProvider->getValue(ConfigOption::HtmlEmailStyle);
+        $adddefaultstyle = 0;
 
+        $content = $messagePrecacheDto->content;
+        $text = [];
+        $html = [];
         if ($messagePrecacheDto->userSpecificUrl) {
             $userData = $this->subscriberRepository->getDataById($subscriber->getId());
             $this->replaceUserSpecificRemoteContent($messagePrecacheDto, $subscriber, $userData);
         }
 
+        if ($hash !== 'forwarded') {
+            $text['footer'] = $messagePrecacheDto->textFooter;
+            $html['footer'] = $messagePrecacheDto->htmlFooter;
+        } else {
+            //0013076: different content when forwarding 'to a friend'
+            if ($this->forwardAlternativeContent) {
+                $text['footer'] = stripslashes($messagePrecacheDto->footer);
+            } else {
+                $text['footer'] = $this->configProvider->getValue(ConfigOption::ForwardFooter);
+            }
+            $html['footer'] = $text['footer'];
+        }
+
+        $hasText = !empty($messagePrecacheDto->textContent);
+        if ($messagePrecacheDto->htmlFormatted) {
+            $textcontent = $hasText ? $messagePrecacheDto->textContent : ($this->html2Text)($content);
+            $htmlcontent = $content;
+        } else {
+            $textcontent = $hasText ? $content : $messagePrecacheDto->textContent;
+            $htmlcontent = ($this->textParser)($content);
+        }
+
+        if ($messagePrecacheDto->template) {
+            // template used
+            // use only the content of the body element if it is present
+            if (preg_match('|<body.*?>(.+)</body>|is', $htmlcontent, $matches)) {
+                $htmlcontent = $matches[1];
+            }
+            $htmlmessage = str_replace('[CONTENT]', $htmlcontent, $messagePrecacheDto->template);
+        } else {
+            // no template used
+            $htmlmessage = $htmlcontent;
+            $adddefaultstyle = 1;
+        }
+        if ($messagePrecacheDto->templateText) {
+            // text template used
+            $textmessage = str_replace('[CONTENT]', $textcontent, $messagePrecacheDto->templateText);
+        } else {
+            // no text template used
+            $textmessage = $textcontent;
+        }
 
 
         $mail = new Email();

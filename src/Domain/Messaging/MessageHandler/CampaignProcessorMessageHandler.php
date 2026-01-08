@@ -8,8 +8,6 @@ use DateTime;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
-use PhpList\Core\Domain\Configuration\Model\OutputFormat;
-use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Exception\MessageCacheMissingException;
 use PhpList\Core\Domain\Messaging\Exception\MessageSizeLimitExceededException;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
@@ -23,6 +21,7 @@ use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
+use PhpList\Core\Domain\Messaging\Service\Constructor\MailConstructor;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
@@ -64,10 +63,10 @@ class CampaignProcessorMessageHandler
         private readonly SubscriberHistoryManager $subscriberHistoryManager,
         private readonly MessageRepository $messageRepository,
         private readonly MessagePrecacheService $precacheService,
-        private readonly UserPersonalizer $userPersonalizer,
         private readonly MessageDataLoader $messageDataLoader,
         private readonly EmailBuilder $emailBuilder,
         private readonly MailSizeChecker $mailSizeChecker,
+        private readonly MailConstructor $mailConstructor,
         private readonly string $messageEnvelope,
     ) {
     }
@@ -200,22 +199,10 @@ class CampaignProcessorMessageHandler
             cachedMessageDto: $precachedContent,
             subscriber: $subscriber
         );
-        $processed->textContent = $this->userPersonalizer->personalize(
-            value: $processed->textContent,
-            email: $subscriber->getEmail(),
-            format:OutputFormat::Text,
-            messageId: $campaign->getId(),
-        );
-        $processed->footer = $this->userPersonalizer->personalize(
-            value: $processed->footer,
-            email: $subscriber->getEmail(),
-            format: OutputFormat::Text,
-            messageId: $campaign->getId(),
-        );
 
         try {
             // todo: use correct service
-            $email = $this->rateLimitedCampaignMailer->composeEmail(
+            $email = $this->mailConstructor->build(
                 message: $campaign,
                 subscriber: $subscriber,
                 messagePrecacheDto: $processed

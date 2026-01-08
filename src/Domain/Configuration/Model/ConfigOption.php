@@ -37,4 +37,5 @@ enum ConfigOption: string
     case PageRoot = 'pageroot';
     case OrganisationName = 'organisation_name';
     case VCardUrl = 'vcardurl';
+    case HtmlEmailStyle = 'html_email_style';
 }
