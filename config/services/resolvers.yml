@@ -13,3 +13,7 @@ services:
   PhpList\Core\Bounce\Service\BounceActionResolver:
     arguments:
       - !tagged_iterator { tag: 'phplist.bounce_action_handler' }
+
+  _instanceof:
+    PhpList\Core\Domain\Configuration\Service\Placeholder\PlaceholderValueResolverInterface:
+      tags: ['phplist.placeholder_resolver']

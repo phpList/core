@@ -14,11 +14,8 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler]
 class AsyncEmailMessageHandler
 {
-    private EmailService $emailService;
-
-    public function __construct(EmailService $emailService)
+    public function __construct(private readonly EmailService $emailService)
     {
-        $this->emailService = $emailService;
     }
 
     /**

@@ -9,8 +9,8 @@ use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\Template;
 use PhpList\Core\Domain\Messaging\Repository\TemplateRepository;
+use PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailConstructor;
 use PhpList\Core\Domain\Messaging\Service\Manager\TemplateImageManager;
-use PhpList\Core\Domain\Messaging\Service\SystemMailConstructor;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 

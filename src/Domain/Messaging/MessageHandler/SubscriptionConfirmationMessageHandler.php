@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\MessageHandler;
 
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Message\SubscriptionConfirmationMessage;
@@ -20,24 +21,13 @@ use Symfony\Component\Mime\Email;
 #[AsMessageHandler]
 class SubscriptionConfirmationMessageHandler
 {
-    private EmailService $emailService;
-    private ConfigProvider $configProvider;
-    private LoggerInterface $logger;
-    private UserPersonalizer $userPersonalizer;
-    private SubscriberListRepository $subscriberListRepository;
-
     public function __construct(
-        EmailService $emailService,
-        ConfigProvider $configProvider,
-        LoggerInterface $logger,
-        UserPersonalizer $userPersonalizer,
-        SubscriberListRepository $subscriberListRepository,
+        private readonly EmailService $emailService,
+        private readonly ConfigProvider $configProvider,
+        private readonly LoggerInterface $logger,
+        private readonly UserPersonalizer $userPersonalizer,
+        private readonly SubscriberListRepository $subscriberListRepository,
     ) {
-        $this->emailService = $emailService;
-        $this->configProvider = $configProvider;
-        $this->logger = $logger;
-        $this->userPersonalizer = $userPersonalizer;
-        $this->subscriberListRepository = $subscriberListRepository;
     }
 
     /**
@@ -47,14 +37,19 @@ class SubscriptionConfirmationMessageHandler
     {
         $subject = $this->configProvider->getValue(ConfigOption::SubscribeEmailSubject);
         $textContent = $this->configProvider->getValue(ConfigOption::SubscribeMessage);
-        $personalizedTextContent = $this->userPersonalizer->personalize($textContent, $message->getUniqueId());
         $listOfLists = $this->getListNames($message->getListIds());
-        $replacedTextContent = str_replace('[LISTS]', $listOfLists, $personalizedTextContent);
+        $replacedTextContent = str_replace('[LISTS]', $listOfLists, $textContent);
+
+        $personalizedTextContent = $this->userPersonalizer->personalize(
+            value: $replacedTextContent,
+            email: $message->getUniqueId(),
+            format: OutputFormat::Text,
+        );
 
         $email = (new Email())
             ->to($message->getEmail())
             ->subject($subject)
-            ->text($replacedTextContent);
+            ->text($personalizedTextContent);
 
         $this->emailService->sendEmail($email);
 
@@ -63,14 +58,6 @@ class SubscriptionConfirmationMessageHandler
 
     private function getListNames(array $listIds): string
     {
-        $listNames = [];
-        foreach ($listIds as $id) {
-            $list = $this->subscriberListRepository->find($id);
-            if ($list) {
-                $listNames[] = $list->getName();
-            }
-        }
-
-        return implode(', ', $listNames);
+        return implode(', ', $this->subscriberListRepository->getListNames($listIds));
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Messaging\Service;
+namespace PhpList\Core\Domain\Messaging\Service\Constructor;
 
 use PhpList\Core\Domain\Common\Html2Text;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
@@ -10,7 +10,7 @@ use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Repository\TemplateRepository;
 use PhpList\Core\Domain\Messaging\Service\Manager\TemplateImageManager;
 
-class SystemMailConstructor
+class SystemMailConstructor implements MailConstructorInterface
 {
     private ?string $poweredByText;
 
@@ -24,9 +24,9 @@ class SystemMailConstructor
         $this->poweredByText = $configProvider->getValue(ConfigOption::PoweredByText);
     }
 
-    public function __invoke($message, string $subject = ''): array
+    public function __invoke(string $content, string $subject = ''): array
     {
-        [$htmlMessage, $textMessage] = $this->buildMessageBodies($message);
+        [$htmlMessage, $textMessage] = $this->buildMessageBodies($content);
 
         $htmlContent = $htmlMessage;
         $textContent = $textMessage;
@@ -72,7 +72,7 @@ class SystemMailConstructor
         return [$htmlContent, $textContent];
     }
 
-    private function buildMessageBodies($message): array
+    private function buildMessageBodies(string $message): array
     {
         $hasHTML = strip_tags($message) !== $message;
 

@@ -34,36 +34,17 @@ use Throwable;
  */
 class SubscriberCsvImporter
 {
-    private SubscriberManager $subscriberManager;
-    private SubscriberAttributeManager $attributeManager;
-    private SubscriptionManager $subscriptionManager;
-    private SubscriberRepository $subscriberRepository;
-    private CsvToDtoImporter $csvToDtoImporter;
-    private EntityManagerInterface $entityManager;
-    private TranslatorInterface $translator;
-    private MessageBusInterface $messageBus;
-    private SubscriberHistoryManager $subscriberHistoryManager;
-
     public function __construct(
-        SubscriberManager $subscriberManager,
-        SubscriberAttributeManager $attributeManager,
-        SubscriptionManager $subscriptionManager,
-        SubscriberRepository $subscriberRepository,
-        CsvToDtoImporter $csvToDtoImporter,
-        EntityManagerInterface $entityManager,
-        TranslatorInterface $translator,
-        MessageBusInterface $messageBus,
-        SubscriberHistoryManager $subscriberHistoryManager,
+        private readonly SubscriberManager $subscriberManager,
+        private readonly SubscriberAttributeManager $attributeManager,
+        private readonly SubscriptionManager $subscriptionManager,
+        private readonly SubscriberRepository $subscriberRepository,
+        private readonly CsvToDtoImporter $csvToDtoImporter,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly TranslatorInterface $translator,
+        private readonly MessageBusInterface $messageBus,
+        private readonly SubscriberHistoryManager $subscriberHistoryManager,
     ) {
-        $this->subscriberManager = $subscriberManager;
-        $this->attributeManager = $attributeManager;
-        $this->subscriptionManager = $subscriptionManager;
-        $this->subscriberRepository = $subscriberRepository;
-        $this->csvToDtoImporter = $csvToDtoImporter;
-        $this->entityManager = $entityManager;
-        $this->translator = $translator;
-        $this->messageBus = $messageBus;
-        $this->subscriberHistoryManager = $subscriberHistoryManager;
     }
 
     /**

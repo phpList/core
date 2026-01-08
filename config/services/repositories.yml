@@ -22,6 +22,11 @@ services:
     arguments:
       - PhpList\Core\Domain\Configuration\Model\EventLog
 
+  PhpList\Core\Domain\Configuration\Repository\UrlCacheRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Configuration\Model\UrlCache
+
 
   PhpList\Core\Domain\Identity\Repository\AdministratorRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository

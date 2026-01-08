@@ -31,6 +31,8 @@ parameters:
     env(APP_DEV_EMAIL): 'dev@dev.com'
     app.powered_by_phplist: '%%env(APP_POWERED_BY_PHPLIST)%%'
     env(APP_POWERED_BY_PHPLIST): '0'
+    app.preference_page_show_private_lists: '%%env(PREFERENCEPAGE_SHOW_PRIVATE_LISTS)%%'
+    env(PREFERENCEPAGE_SHOW_PRIVATE_LISTS): '0'
 
     # Email configuration
     app.mailer_from: '%%env(MAILER_FROM)%%'
@@ -115,6 +117,10 @@ parameters:
     env(EXTERNALIMAGE_TIMEOUT): '30'
     messaging.external_image_max_size: '%%env(EXTERNALIMAGE_MAXSIZE)%%'
     env(EXTERNALIMAGE_MAXSIZE): '204800'
+    messaging.forward_alternative_content: '%%env(FORWARD_ALTERNATIVE_CONTENT)%%'
+    env(FORWARD_ALTERNATIVE_CONTENT): '0'
+    messaging.email_text_credits: '%%env(EMAILTEXTCREDITS)%%'
+    env(EMAILTEXTCREDITS): '0'
 
     phplist.upload_images_dir: '%%env(PHPLIST_UPLOADIMAGES_DIR)%%'
     env(PHPLIST_UPLOADIMAGES_DIR): 'images'

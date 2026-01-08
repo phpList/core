@@ -16,15 +16,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AsMessageHandler]
 class SubscriberConfirmationMessageHandler
 {
-    private EmailService $emailService;
-    private TranslatorInterface $translator;
-    private string $confirmationUrl;
-
-    public function __construct(EmailService $emailService, TranslatorInterface $translator, string $confirmationUrl)
-    {
-        $this->emailService = $emailService;
-        $this->translator = $translator;
-        $this->confirmationUrl = $confirmationUrl;
+    public function __construct(
+        private readonly EmailService $emailService,
+        private readonly TranslatorInterface $translator,
+        private readonly string $confirmationUrl
+    ) {
     }
 
     /**

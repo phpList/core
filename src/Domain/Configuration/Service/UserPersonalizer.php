@@ -5,65 +5,78 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Configuration\Service;
 
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Configuration\Model\Dto\PlaceholderContext;
+use PhpList\Core\Domain\Configuration\Service\Placeholder\PlaceholderValueResolverInterface;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Resolver\AttributeValueResolver;
 
 class UserPersonalizer
 {
-    private const PHP_SPACE = ' ';
-
     public function __construct(
         private readonly ConfigProvider $config,
-        private readonly LegacyUrlBuilder $urlBuilder,
         private readonly SubscriberRepository $subscriberRepository,
         private readonly SubscriberAttributeValueRepository $attributesRepository,
-        private readonly AttributeValueResolver $attributeValueResolver
+        private readonly AttributeValueResolver $attributeValueResolver,
+        /** @var iterable<PlaceholderValueResolverInterface> */
+        private readonly iterable $placeholderResolvers,
     ) {
     }
 
-    public function personalize(string $value, string $email): string
-    {
+    public function personalize(
+        string $value,
+        string $email,
+        OutputFormat $format,
+        ?int $messageId = null,
+        ?string $forwardedBy = null,
+    ): string {
         $user = $this->subscriberRepository->findOneByEmail($email);
         if (!$user) {
             return $value;
         }
 
         $resolver = new PlaceholderResolver();
-        $resolver->register('EMAIL', fn() => $user->getEmail());
-
-        $resolver->register('UNSUBSCRIBEURL', function () use ($user) {
-            $base = $this->config->getValue(ConfigOption::UnsubscribeUrl) ?? '';
-            return $this->urlBuilder->withUid($base, $user->getUniqueId()) . self::PHP_SPACE;
-        });
-
-        $resolver->register('CONFIRMATIONURL', function () use ($user) {
-            $base = $this->config->getValue(ConfigOption::ConfirmationUrl) ?? '';
-            return $this->urlBuilder->withUid($base, $user->getUniqueId()) . self::PHP_SPACE;
-        });
-        $resolver->register('PREFERENCESURL', function () use ($user) {
-            $base = $this->config->getValue(ConfigOption::PreferencesUrl) ?? '';
-            return $this->urlBuilder->withUid($base, $user->getUniqueId()) . self::PHP_SPACE;
-        });
-
+        $resolver->register('EMAIL', fn(PlaceholderContext $ctx) => $ctx->user->getEmail());
+        $resolver->register('FORWARDEDBY', fn(PlaceholderContext $ctx) => $ctx->forwardedBy());
+        $resolver->register('MESSAGEID', fn(PlaceholderContext $ctx) => $ctx->messageId());
+        $resolver->register('FORWARDFORM', fn(PlaceholderContext $ctx) => '');
+        $resolver->register('USERID', fn(PlaceholderContext $ctx) => $ctx->user->getUniqueId());
         $resolver->register(
-            'SUBSCRIBEURL',
-            fn() => ($this->config->getValue(ConfigOption::SubscribeUrl) ?? '') . self::PHP_SPACE
+            name: 'WEBSITE',
+            resolver: fn(PlaceholderContext $ctx) => $this->config->getValue(ConfigOption::Website) ?? ''
         );
-        $resolver->register('DOMAIN', fn() => $this->config->getValue(ConfigOption::Domain) ?? '');
-        $resolver->register('WEBSITE', fn() => $this->config->getValue(ConfigOption::Website) ?? '');
+        $resolver->register(
+            name: 'DOMAIN',
+            resolver: fn(PlaceholderContext $ctx) => $this->config->getValue(ConfigOption::Domain) ?? ''
+        );
+        $resolver->register(
+            name: 'ORGANIZATION_NAME',
+            resolver: fn(PlaceholderContext $ctx) => $this->config->getValue(ConfigOption::OrganisationName) ?? ''
+        );
+        $resolver->register(
+            name: 'CONTACTURL',
+            resolver: fn(PlaceholderContext $ctx) => htmlspecialchars(
+                $this->config->getValue(ConfigOption::VCardUrl) ?? ''
+            )
+        );
+
+        foreach ($this->placeholderResolvers as $placeholderResolver) {
+            $resolver->register($placeholderResolver->name(), $placeholderResolver);
+        }
 
         $userAttributes = $this->attributesRepository->getForSubscriber($user);
         foreach ($userAttributes as $userAttribute) {
             $resolver->register(
-                strtoupper($userAttribute->getAttributeDefinition()->getName()),
-                fn() => $this->attributeValueResolver->resolve($userAttribute)
+                name: strtoupper($userAttribute->getAttributeDefinition()->getName()),
+                resolver: fn(PlaceholderContext $ctx) => $this->attributeValueResolver->resolve($userAttribute)
             );
         }
 
-        $out = $resolver->resolve($value);
-
-        return (string) $out;
+        return $resolver->resolve(
+            value: $value,
+            context: new PlaceholderContext(user: $user, format: $format, forwardedBy: $forwardedBy, messageId: $messageId)
+        );
     }
 }

@@ -8,7 +8,7 @@ use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Exception\DevEmailNotConfiguredException;
-use PhpList\Core\Domain\Messaging\Service\SystemMailConstructor;
+use PhpList\Core\Domain\Messaging\Service\Constructor\MailConstructorInterface;
 use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository;
@@ -26,7 +26,7 @@ class EmailBuilder
         private readonly UserBlacklistRepository $blacklistRepository,
         private readonly SubscriberHistoryManager $subscriberHistoryManager,
         private readonly SubscriberRepository $subscriberRepository,
-        private readonly SystemMailConstructor $systemMailConstructor,
+        private readonly MailConstructorInterface $mailConstructor,
         private readonly TemplateImageEmbedder $templateImageEmbedder,
         private readonly LoggerInterface $logger,
         private readonly string $googleSenderId,
@@ -60,15 +60,15 @@ class EmailBuilder
 
         [$destinationEmail, $message] = $this->resolveDestinationEmailAndMessage($to, $message);
 
-        [$htmlMessage, $textMessage] = ($this->systemMailConstructor)($message, $subject);
+        [$htmlMessage, $textMessage] = ($this->mailConstructor)($message, $subject);
 
         $email = $this->createBaseEmail(
-            $messageId,
-            $destinationEmail,
-            $fromEmail,
-            $fromName,
-            $subject,
-            $inBlast
+            messageId: $messageId,
+            destinationEmail: $destinationEmail,
+            fromEmail: $fromEmail,
+            fromName: $fromName,
+            subject: $subject,
+            inBlast: $inBlast
         );
 
         $this->applyContentAndFormatting($email, $htmlMessage, $textMessage, $messageId);
