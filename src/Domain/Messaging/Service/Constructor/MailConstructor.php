@@ -13,7 +13,6 @@ use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Exception\RemotePageFetchException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
-use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use Symfony\Component\Mime\Email;
@@ -33,7 +32,6 @@ class MailConstructor
     }
 
     public function build(
-        Message $message,
         Subscriber $subscriber,
         MessagePrecacheDto $messagePrecacheDto,
         ?string $hash = null
@@ -91,6 +89,8 @@ class MailConstructor
             $textmessage = $textcontent;
         }
 
+        $htmlmessage = str_ireplace('[FOOTER]', $html['footer'], $htmlmessage);
+        $textmessage = str_ireplace('[FOOTER]', $text['footer'], $textmessage);
 
         $mail = new Email();
         return $mail;

@@ -37,6 +37,16 @@ class UserPersonalizer
             return $value;
         }
 
+        if (!strpos($value, '[FOOTER]')) {
+            $sep = $format === OutputFormat::Html ? '<br />' : "\n\n";
+            $value = $this->appendContent($value, $sep . '[FOOTER]');
+        }
+
+        if (!strpos($value, '[SIGNATURE]')) {
+            $sep = $format === OutputFormat::Html ? ' ' : "\n";
+            $value = $this->appendContent($value, $sep . '[SIGNATURE]');
+        }
+
         $resolver = new PlaceholderResolver();
         $resolver->register('EMAIL', fn(PlaceholderContext $ctx) => $ctx->user->getEmail());
         $resolver->register('FORWARDEDBY', fn(PlaceholderContext $ctx) => $ctx->forwardedBy());
@@ -78,5 +88,16 @@ class UserPersonalizer
             value: $value,
             context: new PlaceholderContext(user: $user, format: $format, forwardedBy: $forwardedBy, messageId: $messageId)
         );
+    }
+
+    private function appendContent(string $message, string $append): string
+    {
+        if (preg_match('#</body>#i', $message)) {
+            $message = preg_replace('#</body>#i', $append . '</body>', $message);
+        } else {
+            $message .= $append;
+        }
+
+        return $message;
     }
 }

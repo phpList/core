@@ -203,7 +203,6 @@ class CampaignProcessorMessageHandler
         try {
             // todo: use correct service
             $email = $this->mailConstructor->build(
-                message: $campaign,
                 subscriber: $subscriber,
                 messagePrecacheDto: $processed
             );
