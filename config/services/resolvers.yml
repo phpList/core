@@ -17,3 +17,5 @@ services:
   _instanceof:
     PhpList\Core\Domain\Configuration\Service\Placeholder\PlaceholderValueResolverInterface:
       tags: ['phplist.placeholder_resolver']
+    PhpList\Core\Domain\Configuration\Service\Placeholder\PatternValueResolverInterface:
+      tags: [ 'phplist.pattern_resolver' ]

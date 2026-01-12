@@ -153,12 +153,12 @@ services:
     autoconfigure: true
     public: true
 
-  PhpList\Core\Domain\Configuration\Service\UserPersonalizer:
+  PhpList\Core\Domain\Configuration\Service\MessagePlaceholderProcessor:
     autowire: true
     autoconfigure: true
     arguments:
-      $preferencePageShowPrivateLists: '%app.preference_page_show_private_lists%'
       $placeholderResolvers: !tagged_iterator phplist.placeholder_resolver
+      $patternResolvers: !tagged_iterator phplist.pattern_resolver
 
   PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder:
     autowire: true

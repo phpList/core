@@ -194,6 +194,7 @@ class CampaignProcessorMessageHandler
         UserMessage $userMessage,
         MessagePrecacheDto $precachedContent,
     ): void {
+        // todo: check at which point link tracking should be applied (maybe after constructing ful text?)
         $processed = $this->messagePreparator->processMessageLinks(
             campaignId: $campaign->getId(),
             cachedMessageDto: $precachedContent,

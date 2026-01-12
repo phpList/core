@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Configuration\Service;
 
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Model\OutputFormat;
+use PhpList\Core\Domain\Configuration\Service\Placeholder\PatternValueResolverInterface;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Configuration\Model\Dto\PlaceholderContext;
 use PhpList\Core\Domain\Configuration\Service\Placeholder\PlaceholderValueResolverInterface;
@@ -22,6 +23,8 @@ class MessagePlaceholderProcessor
         private readonly AttributeValueResolver $attributeValueResolver,
         /** @var iterable<PlaceholderValueResolverInterface> */
         private readonly iterable $placeholderResolvers,
+        /** @var iterable<PatternValueResolverInterface> */
+        private readonly iterable $patternResolvers,
     ) {
     }
 
@@ -74,6 +77,10 @@ class MessagePlaceholderProcessor
 
         foreach ($this->placeholderResolvers as $placeholderResolver) {
             $resolver->register($placeholderResolver->name(), $placeholderResolver);
+        }
+
+        foreach ($this->patternResolvers as $patternResolver) {
+            $resolver->register($patternResolver->pattern(), $patternResolver);
         }
 
         $userAttributes = $this->attributesRepository->getForSubscriber($user);
