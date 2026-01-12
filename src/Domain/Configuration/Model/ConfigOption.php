@@ -15,6 +15,7 @@ enum ConfigOption: string
     case ConfirmationUrl = 'confirmationurl';
     case PreferencesUrl = 'preferencesurl';
     case SubscribeUrl = 'subscribeurl';
+    // todo: check where is this defined
     case Domain = 'domain';
     case Website = 'website';
     case MessageFromAddress = 'message_from_address';

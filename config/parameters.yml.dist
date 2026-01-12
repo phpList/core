@@ -33,6 +33,8 @@ parameters:
     env(APP_POWERED_BY_PHPLIST): '0'
     app.preference_page_show_private_lists: '%%env(PREFERENCEPAGE_SHOW_PRIVATE_LISTS)%%'
     env(PREFERENCEPAGE_SHOW_PRIVATE_LISTS): '0'
+    app.rest_api_domain: '%%env(REST_API_DOMAIN)%%'
+    env(REST_API_DOMAIN): 'https://example.com/api/v2'
 
     # Email configuration
     app.mailer_from: '%%env(MAILER_FROM)%%'
