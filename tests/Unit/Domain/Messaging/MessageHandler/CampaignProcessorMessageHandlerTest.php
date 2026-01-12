@@ -6,7 +6,6 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\MessageHandler;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
@@ -17,6 +16,7 @@ use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
+use PhpList\Core\Domain\Messaging\Service\Constructor\MailConstructor;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
@@ -66,17 +66,10 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $this->precacheService = $this->createMock(MessagePrecacheService::class);
         $this->cache = $this->createMock(CacheInterface::class);
         $this->symfonyMailer = $this->createMock(MailerInterface::class);
-        $userPersonalizer = $this->createMock(UserPersonalizer::class);
+        $this->mailConstructor = $this->createMock(MailConstructor::class);
 
         $timeLimiter->method('start');
         $timeLimiter->method('shouldStop')->willReturn(false);
-
-        // Ensure personalization returns original text so assertions on replaced links remain valid
-        $userPersonalizer
-            ->method('personalize')
-            ->willReturnCallback(function (string $text) {
-                return $text;
-            });
 
         $this->handler = new CampaignProcessorMessageHandler(
             mailer: $this->symfonyMailer,
@@ -93,10 +86,10 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class),
             messageRepository: $this->messageRepository,
             precacheService: $this->precacheService,
-            userPersonalizer: $userPersonalizer,
             messageDataLoader: $this->createMock(MessageDataLoader::class),
             emailBuilder: $this->createMock(EmailBuilder::class),
             mailSizeChecker: $this->createMock(MailSizeChecker::class),
+            mailConstructor: $this->mailConstructor,
             messageEnvelope: 'messageEnvelope',
         );
     }
@@ -299,7 +292,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         // Build email and throw on rate-limited sender
         $campaignEmailBuilder = (new ReflectionClass($this->handler))
             ->getProperty("campaignEmailBuilder");
-        $campaignEmailBuilder->setAccessible(true);
+
         /** @var EmailBuilder|MockObject $campaignBuilderMock */
         $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
         $campaignBuilderMock->expects($this->once())

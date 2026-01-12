@@ -10,7 +10,7 @@ use PhpList\Core\Domain\Common\TextParser;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
-use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
+use PhpList\Core\Domain\Configuration\Service\MessagePlaceholderProcessor;
 use PhpList\Core\Domain\Messaging\Exception\RemotePageFetchException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -26,7 +26,7 @@ class MailConstructor
         private readonly ConfigProvider $configProvider,
         private readonly Html2Text $html2Text,
         private readonly TextParser $textParser,
-        private readonly UserPersonalizer $userPersonalizer,
+        private readonly MessagePlaceholderProcessor $placeholderProcessor,
         private readonly bool $forwardAlternativeContent,
     ) {
     }

@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 use PhpList\Core\Domain\Messaging\MessageHandler\SubscriptionConfirmationMessageHandler;
 use PhpList\Core\Domain\Messaging\Service\EmailService;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
-use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
+use PhpList\Core\Domain\Configuration\Service\MessagePlaceholderProcessor;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use Psr\Log\LoggerInterface;
@@ -26,14 +26,14 @@ class SubscriptionConfirmationMessageHandlerTest extends TestCase
         $emailService = $this->createMock(EmailService::class);
         $configProvider = $this->createMock(ConfigProvider::class);
         $logger = $this->createMock(LoggerInterface::class);
-        $personalizer = $this->createMock(UserPersonalizer::class);
+        $placeholderProcessor = $this->createMock(MessagePlaceholderProcessor::class);
         $listRepo = $this->createMock(SubscriberListRepository::class);
 
         $handler = new SubscriptionConfirmationMessageHandler(
             emailService: $emailService,
             configProvider: $configProvider,
             logger: $logger,
-            userPersonalizer: $personalizer,
+            placeholderProcessor: $placeholderProcessor,
             subscriberListRepository: $listRepo
         );
         $configProvider
@@ -46,7 +46,7 @@ class SubscriptionConfirmationMessageHandlerTest extends TestCase
 
         $message = new SubscriptionConfirmationMessage('alice@example.com', 'user-123', [10, 11]);
 
-        $personalizer->expects($this->once())
+        $placeholderProcessor->expects($this->once())
             ->method('personalize')
             ->with('Hi {{name}}, you subscribed to: [LISTS]', 'user-123')
             ->willReturn('Hi Alice, you subscribed to: [LISTS]');
@@ -95,14 +95,14 @@ class SubscriptionConfirmationMessageHandlerTest extends TestCase
         $emailService = $this->createMock(EmailService::class);
         $configProvider = $this->createMock(ConfigProvider::class);
         $logger = $this->createMock(LoggerInterface::class);
-        $personalizer = $this->createMock(UserPersonalizer::class);
+        $placeholderProcessor = $this->createMock(MessagePlaceholderProcessor::class);
         $listRepo = $this->createMock(SubscriberListRepository::class);
 
         $handler = new SubscriptionConfirmationMessageHandler(
             emailService: $emailService,
             configProvider: $configProvider,
             logger: $logger,
-            userPersonalizer: $personalizer,
+            placeholderProcessor: $placeholderProcessor,
             subscriberListRepository: $listRepo
         );
 
@@ -117,7 +117,7 @@ class SubscriptionConfirmationMessageHandlerTest extends TestCase
         $message->method('getUniqueId')->willReturn('user-456');
         $message->method('getListIds')->willReturn([42]);
 
-        $personalizer->method('personalize')
+        $placeholderProcessor->method('personalize')
             ->with('Lists: [LISTS]', 'user-456')
             ->willReturn('Lists: [LISTS]');
 

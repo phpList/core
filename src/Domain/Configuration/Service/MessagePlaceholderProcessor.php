@@ -13,7 +13,7 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueReposito
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Resolver\AttributeValueResolver;
 
-class UserPersonalizer
+class MessagePlaceholderProcessor
 {
     public function __construct(
         private readonly ConfigProvider $config,

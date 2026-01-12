@@ -7,7 +7,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Configuration\Service;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
-use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
+use PhpList\Core\Domain\Configuration\Service\MessagePlaceholderProcessor;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;
