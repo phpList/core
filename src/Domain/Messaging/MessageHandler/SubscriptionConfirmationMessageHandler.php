@@ -7,7 +7,7 @@ namespace PhpList\Core\Domain\Messaging\MessageHandler;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
-use PhpList\Core\Domain\Configuration\Service\MessagePlaceholderProcessor;
+use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Message\SubscriptionConfirmationMessage;
 use PhpList\Core\Domain\Messaging\Service\EmailService;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
@@ -25,7 +25,7 @@ class SubscriptionConfirmationMessageHandler
         private readonly EmailService $emailService,
         private readonly ConfigProvider $configProvider,
         private readonly LoggerInterface $logger,
-        private readonly MessagePlaceholderProcessor $placeholderProcessor,
+        private readonly UserPersonalizer $userPersonalizer,
         private readonly SubscriberListRepository $subscriberListRepository,
     ) {
     }
@@ -40,9 +40,9 @@ class SubscriptionConfirmationMessageHandler
         $listOfLists = $this->getListNames($message->getListIds());
         $replacedTextContent = str_replace('[LISTS]', $listOfLists, $textContent);
 
-        $personalizedTextContent = $this->placeholderProcessor->personalize(
+        $personalizedTextContent = $this->userPersonalizer->personalize(
             value: $replacedTextContent,
-            email: $message->getUniqueId(),
+            email: $message->getEmail(),
             format: OutputFormat::Text,
         );
 
