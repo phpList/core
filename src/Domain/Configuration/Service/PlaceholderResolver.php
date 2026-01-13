@@ -16,7 +16,8 @@ class PlaceholderResolver
 
     public function register(string $name, callable $resolver): void
     {
-        $this->resolvers[$name] = $resolver;
+        $name = $this->normalizePlaceholderKey($name);
+        $this->resolvers[strtoupper($name)] = $resolver;
     }
 
     public function registerPattern(string $pattern, callable $resolver): void
@@ -39,17 +40,37 @@ class PlaceholderResolver
         }
 
         return preg_replace_callback(
-            '/\[([A-Z0-9_]+)\]/',
-            function (array $m) use ($context) {
-                $key = $m[1];
+            '/\[([^\]%%]+)(?:%%([^\]]+))?\]/i',
+            function (array $matches) use ($context) {
+                $rawKey = $matches[1];
+                $default = $matches[2] ?? null;
 
-                if (!isset($this->resolvers[$key])) {
-                    return $m[0];
+                $key = $this->normalizePlaceholderKey($rawKey);
+
+                $resolver = $this->resolvers[$key]
+                    ?? $this->resolvers[strtoupper($key)]
+                    ?? $this->resolvers[strtolower($key)]
+                    ?? null;
+
+                $resolved = (string) $resolver($context);
+
+                if ($default !== null && $resolved === '') {
+                    return $default;
                 }
 
-                return (string) ($this->resolvers[$key])($context);
+                return $resolved;
             },
             $value
         );
+    }
+
+    private function normalizePlaceholderKey(string $rawKey): string
+    {
+        $key = trim($rawKey);
+        $key = html_entity_decode($key, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $key = str_ireplace("\xC2\xA0", ' ', $key);
+        $key = str_ireplace('&nbsp;', ' ', $key);
+
+        return preg_replace('/\s+/u', ' ', $key) ?? $key;
     }
 }

@@ -25,7 +25,7 @@ class MessagePlaceholderProcessor
         private readonly iterable $placeholderResolvers,
         /** @var iterable<PatternValueResolverInterface> */
         private readonly iterable $patternResolvers,
-        private readonly bool $alwaysAddUsertrack,
+        private readonly bool $alwaysAddUserTrack,
     ) {
     }
 
@@ -51,7 +51,7 @@ class MessagePlaceholderProcessor
             $value = $this->appendContent($value, $sep . '[SIGNATURE]');
         }
 
-        if ($this->alwaysAddUsertrack && $format === OutputFormat::Html && !strpos($value, '[USERTRACK]')) {
+        if ($this->alwaysAddUserTrack && $format === OutputFormat::Html && !strpos($value, '[USERTRACK]')) {
             $value = $this->appendContent($value, '[USERTRACK]');
         }
 
