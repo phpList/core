@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Configuration\Service;
 
 use PhpList\Core\Domain\Configuration\Model\Dto\PlaceholderContext;
+use PhpList\Core\Domain\Configuration\Service\Placeholder\SupportingPlaceholderResolverInterface;
 
 class PlaceholderResolver
 {
@@ -13,6 +14,9 @@ class PlaceholderResolver
 
     /** @var array<int, array{pattern: string, resolver: callable}> */
     private array $patternResolvers = [];
+
+    /** @var SupportingPlaceholderResolverInterface[] */
+    private array $supportingResolvers = [];
 
     public function register(string $name, callable $resolver): void
     {
@@ -23,6 +27,11 @@ class PlaceholderResolver
     public function registerPattern(string $pattern, callable $resolver): void
     {
         $this->patternResolvers[] = ['pattern' => $pattern, 'resolver' => $resolver];
+    }
+
+    public function registerSupporting(SupportingPlaceholderResolverInterface $resolver): void
+    {
+        $this->supportingResolvers[] = $resolver;
     }
 
     public function resolve(string $value, PlaceholderContext $context): string
@@ -45,21 +54,36 @@ class PlaceholderResolver
                 $rawKey = $matches[1];
                 $default = $matches[2] ?? null;
 
-                $key = $this->normalizePlaceholderKey($rawKey);
+                $keyNormalized = $this->normalizePlaceholderKey($rawKey);
+                $canon = strtoupper($this->normalizePlaceholderKey($rawKey));
 
-                $resolver = $this->resolvers[$key]
-                    ?? $this->resolvers[strtoupper($key)]
-                    ?? $this->resolvers[strtolower($key)]
-                    ?? null;
+                // 1) Exact resolver (system placeholders)
+                if (isset($this->resolvers[$canon])) {
+                    $resolved = (string) ($this->resolvers[$canon])($context);
 
-                $resolved = (string) $resolver($context);
-
-                if ($default !== null && $resolved === '') {
-                    return $default;
+                    if ($default !== null && $resolved === '') {
+                        return $default;
+                    }
+                    return $resolved;
                 }
 
-                return $resolved;
-            },
+                // 2) Supporting resolvers (userdata, attributes, etc.)
+                foreach ($this->supportingResolvers as $resolver) {
+                    if (!$resolver->supports($keyNormalized, $context) && !$resolver->supports($canon, $context)) {
+                        continue;
+                    }
+
+                    $resolved = $resolver->resolve($keyNormalized, $context);
+                    $resolved = $resolved ?? '';
+
+                    if ($default !== null && $resolved === '') {
+                        return $default;
+                    }
+                    return $resolved;
+                }
+
+                // 3) if there is a %%default, use it; otherwise keep placeholder unchanged
+                return $default ?? $matches[0];            },
             $value
         );
     }
