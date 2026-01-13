@@ -7,6 +7,7 @@ namespace PhpList\Core\Domain\Configuration\Service;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\Placeholder\PatternValueResolverInterface;
+use PhpList\Core\Domain\Configuration\Service\Placeholder\SupportingPlaceholderResolverInterface;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Configuration\Model\Dto\PlaceholderContext;
 use PhpList\Core\Domain\Configuration\Service\Placeholder\PlaceholderValueResolverInterface;
@@ -25,11 +26,13 @@ class MessagePlaceholderProcessor
         private readonly iterable $placeholderResolvers,
         /** @var iterable<PatternValueResolverInterface> */
         private readonly iterable $patternResolvers,
+        /** @var iterable<SupportingPlaceholderResolverInterface> */
+        private readonly iterable $supportingResolvers,
         private readonly bool $alwaysAddUserTrack,
     ) {
     }
 
-    public function personalize(
+    public function process(
         string $value,
         string $email,
         OutputFormat $format,
@@ -85,7 +88,11 @@ class MessagePlaceholderProcessor
         }
 
         foreach ($this->patternResolvers as $patternResolver) {
-            $resolver->register($patternResolver->pattern(), $patternResolver);
+            $resolver->registerPattern($patternResolver->pattern(), $patternResolver);
+        }
+
+        foreach ($this->supportingResolvers as $supportingResolver) {
+            $resolver->registerSupporting($supportingResolver);
         }
 
         $userAttributes = $this->attributesRepository->getForSubscriber($user);
