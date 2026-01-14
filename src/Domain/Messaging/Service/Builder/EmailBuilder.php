@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service\Builder;
 
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Exception\DevEmailNotConfiguredException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Service\Constructor\MailContentBuilderInterface;
 use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
+use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
@@ -30,6 +32,8 @@ class EmailBuilder
         private readonly MailContentBuilderInterface $mailConstructor,
         private readonly TemplateImageEmbedder $templateImageEmbedder,
         private readonly LoggerInterface $logger,
+        private readonly ConfigProvider $config,
+        private readonly LegacyUrlBuilder $urlBuilder,
         private readonly string $googleSenderId,
         private readonly bool $useAmazonSes,
         private readonly bool $usePrecedenceHeader,
@@ -76,6 +80,28 @@ class EmailBuilder
             textMessage: $textMessage,
             messageId: $messageId,
         );
+
+        return $email;
+    }
+
+    public function applyCampaignHeaders(Email $email, Subscriber $subscriber): Email
+    {
+        $preferencesUrl = $this->config->getValue(ConfigOption::PreferencesUrl) ?? '';
+        $unsubscribeUrl = $this->config->getValue(ConfigOption::UnsubscribeUrl) ?? '';
+        $subscribeUrl = $this->config->getValue(ConfigOption::SubscribeUrl) ?? '';
+        $adminAddress = $this->config->getValue(ConfigOption::UnsubscribeUrl) ?? '';
+
+        $email->getHeaders()->addTextHeader(
+            'List-Help',
+            '<' . $this->urlBuilder->withUid($preferencesUrl, $subscriber->getUniqueId()) . '>'
+        );
+        $email->getHeaders()->addTextHeader(
+            'List-Unsubscribe',
+            '<' . $this->urlBuilder->withUid($unsubscribeUrl, $subscriber->getUniqueId()) . '&jo=1>'
+        );
+        $email->getHeaders()->addTextHeader('List-Unsubscribe-Post', 'List-Unsubscribe=One-Click');
+        $email->getHeaders()->addTextHeader('List-Subscribe', '<'. $subscribeUrl . '>');
+        $email->getHeaders()->addTextHeader('List-Owner', '<mailto:'. $adminAddress .'>');
 
         return $email;
     }

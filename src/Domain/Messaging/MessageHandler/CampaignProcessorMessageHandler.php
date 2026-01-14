@@ -201,10 +201,14 @@ class CampaignProcessorMessageHandler
         );
 
         try {
-            $email = ($this->campaignEmailBuilder)(
-                messagePrecacheDto: $processed,
-                campaignId: $campaign->getId(),
+            $email = $this->campaignEmailBuilder->buildPhplistEmail(
+                messageId: $campaign->getId(),
+                data: $processed,
+                skipBlacklistCheck: false,
+                inBlast: true,
             );
+            $email = $this->campaignEmailBuilder->applyCampaignHeaders(email: $email, subscriber: $subscriber);
+
             $this->rateLimitedCampaignMailer->send($email);
             ($this->mailSizeChecker)($campaign, $email, $subscriber->hasHtmlEmail());
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
