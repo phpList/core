@@ -237,7 +237,7 @@ class CampaignProcessorMessageHandler
                     messageId: $campaign->getId(),
                     to: $notification,
                     subject: $this->translator->trans('Campaign started'),
-                    message: $this->translator->trans(
+                    content: $this->translator->trans(
                         'phplist has started sending the campaign with subject %subject%',
                         ['%subject%' => $loadedMessageData['subject']]
                     ),

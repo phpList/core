@@ -41,15 +41,15 @@ class EmailBuilder
         int $messageId,
         ?string $to = null,
         ?string $subject = null,
-        ?string $message = null,
+        ?string $content = null,
         ?bool $skipBlacklistCheck = false,
         ?bool $inBlast = true,
     ): ?Email {
-        if (!$this->validateRecipientAndSubject($to, $subject)) {
+        if (!$this->validateRecipientAndSubject(to: $to, subject: $subject)) {
             return null;
         }
 
-        if (!$this->passesBlacklistCheck($to, $skipBlacklistCheck)) {
+        if (!$this->passesBlacklistCheck(to: $to, skipBlacklistCheck: $skipBlacklistCheck)) {
             return null;
         }
 
@@ -58,9 +58,9 @@ class EmailBuilder
 //        $messageReplyToAddress = $this->configProvider->getValue(ConfigOption::MessageReplyToAddress);
 //        $replyTo = $messageReplyToAddress ?: $fromEmail;
 
-        [$destinationEmail, $message] = $this->resolveDestinationEmailAndMessage($to, $message);
+        $destinationEmail = $this->resolveDestinationEmail($to);
 
-        [$htmlMessage, $textMessage] = ($this->mailConstructor)($message, $subject);
+        [$htmlMessage, $textMessage] = ($this->mailConstructor)(content: $content, subject: $subject);
 
         $email = $this->createBaseEmail(
             messageId: $messageId,
@@ -71,19 +71,24 @@ class EmailBuilder
             inBlast: $inBlast
         );
 
-        $this->applyContentAndFormatting($email, $htmlMessage, $textMessage, $messageId);
+        $this->applyContentAndFormatting(
+            email: $email,
+            htmlMessage: $htmlMessage,
+            textMessage: $textMessage,
+            messageId: $messageId,
+        );
 
         return $email;
     }
 
     private function validateRecipientAndSubject(?string $to, ?string $subject): bool
     {
-        if (!$to) {
+        if (!$to || trim($to) === '') {
             $this->eventLogManager->log('', sprintf('Error: empty To: in message with subject %s to send', $subject));
 
             return false;
         }
-        if (!$subject) {
+        if (!$subject || trim($subject) === '') {
             $this->eventLogManager->log('', sprintf('Error: empty Subject: in message to send to %s', $to));
 
             return false;
@@ -102,7 +107,7 @@ class EmailBuilder
         return true;
     }
 
-    private function passesBlacklistCheck(?string $to, ?bool $skipBlacklistCheck): bool
+    private function passesBlacklistCheck(string $to, ?bool $skipBlacklistCheck): bool
     {
 
         if (!$skipBlacklistCheck && $this->blacklistRepository->isEmailBlacklisted($to)) {
@@ -127,7 +132,7 @@ class EmailBuilder
         return true;
     }
 
-    private function resolveDestinationEmailAndMessage(?string $to, ?string $message): array
+    private function resolveDestinationEmail(?string $to): string
     {
         $destinationEmail = $to;
 
@@ -138,7 +143,7 @@ class EmailBuilder
             $destinationEmail = $this->devEmail;
         }
 
-        return [$destinationEmail, $message];
+        return $destinationEmail;
     }
 
     private function createBaseEmail(
@@ -180,7 +185,6 @@ class EmailBuilder
             )
         );
 
-
         if ($this->devEmail && $destinationEmail !== $this->devEmail) {
             $email->getHeaders()->addMailboxHeader(
                 'X-Originally-To',
@@ -198,7 +202,6 @@ class EmailBuilder
     private function applyContentAndFormatting(Email $email, $htmlMessage, $textMessage, int $messageId): void
     {
         // Word wrapping disabled here to avoid reliance on config provider during content assembly
-
         if (!empty($htmlMessage)) {
             // Embed/transform images and use the returned HTML content
             $htmlMessage = ($this->templateImageEmbedder)(html: $htmlMessage, messageId: $messageId);
