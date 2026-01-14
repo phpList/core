@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Configuration\Service\Placeholder\SupportingPlaceholderR
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Configuration\Model\Dto\PlaceholderContext;
 use PhpList\Core\Domain\Configuration\Service\Placeholder\PlaceholderValueResolverInterface;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
 use PhpList\Core\Domain\Subscription\Service\Resolver\AttributeValueResolver;
@@ -35,6 +36,7 @@ class MessagePlaceholderProcessor
         string $value,
         Subscriber $user,
         OutputFormat $format,
+        MessagePrecacheDto $messagePrecacheDto,
         ?int $campaignId = null,
         ?string $forwardedBy = null,
     ): string {
@@ -99,7 +101,13 @@ class MessagePlaceholderProcessor
 
         return $resolver->resolve(
             value: $value,
-            context: new PlaceholderContext(user: $user, format: $format, forwardedBy: $forwardedBy, messageId: $campaignId)
+            context: new PlaceholderContext(
+                user: $user,
+                format: $format,
+                messagePrecacheDto: $messagePrecacheDto,
+                forwardedBy: $forwardedBy,
+                messageId: $campaignId,
+            )
         );
     }
 
