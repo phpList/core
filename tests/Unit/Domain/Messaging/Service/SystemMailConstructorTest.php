@@ -9,7 +9,7 @@ use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\Template;
 use PhpList\Core\Domain\Messaging\Repository\TemplateRepository;
-use PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailConstructor;
+use PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailContentBuilder;
 use PhpList\Core\Domain\Messaging\Service\Manager\TemplateImageManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -35,7 +35,7 @@ class SystemMailConstructorTest extends TestCase
             ->getMock();
     }
 
-    private function createConstructor(bool $poweredByPhplist = false): SystemMailConstructor
+    private function createConstructor(bool $poweredByPhplist = false): SystemMailContentBuilder
     {
         // Defaults needed by constructor
         $this->configProvider->method('getValue')->willReturnMap([
@@ -43,7 +43,7 @@ class SystemMailConstructorTest extends TestCase
             [ConfigOption::SystemMessageTemplate, null],
         ]);
 
-        return new SystemMailConstructor(
+        return new SystemMailContentBuilder(
             html2Text: $this->html2Text,
             configProvider: $this->configProvider,
             templateRepository: $this->templateRepository,
@@ -107,7 +107,7 @@ class SystemMailConstructorTest extends TestCase
             ->with('<b>Powered</b>')
             ->willReturn('Powered');
 
-        $constructor = new SystemMailConstructor(
+        $constructor = new SystemMailContentBuilder(
             html2Text: $this->html2Text,
             configProvider: $this->configProvider,
             templateRepository: $this->templateRepository,
@@ -149,7 +149,7 @@ class SystemMailConstructorTest extends TestCase
             )
             ->willReturnOnConsecutiveCalls('Hello World', 'PB');
 
-        $constructor = new SystemMailConstructor(
+        $constructor = new SystemMailContentBuilder(
             html2Text: $this->html2Text,
             configProvider: $this->configProvider,
             templateRepository: $this->templateRepository,

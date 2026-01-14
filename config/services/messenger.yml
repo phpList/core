@@ -33,7 +33,8 @@ services:
         autowire: true
         autoconfigure: true
         arguments:
-            $emailBuilder: '@Core.EmailBuilder.system'
+            $campaignEmailBuilder: '@Core.EmailBuilder.campaign'
+            $systemEmailBuilder: '@Core.EmailBuilder.system'
             $messageEnvelope: '%app.config.message_from_address%'
 
     PhpList\Core\Domain\Subscription\MessageHandler\DynamicTableMessageHandler:

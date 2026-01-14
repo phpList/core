@@ -8,7 +8,7 @@ use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
-use PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailConstructor;
+use PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailContentBuilder;
 use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -26,7 +26,7 @@ class EmailBuilderTest extends TestCase
     private UserBlacklistRepository&MockObject $blacklistRepository;
     private SubscriberHistoryManager&MockObject $subscriberHistoryManager;
     private SubscriberRepository&MockObject $subscriberRepository;
-    private SystemMailConstructor&MockObject $systemMailConstructor;
+    private SystemMailContentBuilder&MockObject $systemMailConstructor;
     private TemplateImageEmbedder&MockObject $templateImageEmbedder;
     private LoggerInterface&MockObject $logger;
 
@@ -37,7 +37,7 @@ class EmailBuilderTest extends TestCase
         $this->blacklistRepository = $this->createMock(UserBlacklistRepository::class);
         $this->subscriberHistoryManager = $this->createMock(SubscriberHistoryManager::class);
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
-        $this->systemMailConstructor = $this->getMockBuilder(SystemMailConstructor::class)
+        $this->systemMailConstructor = $this->getMockBuilder(SystemMailContentBuilder::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['__invoke'])
             ->getMock();

@@ -15,9 +15,9 @@ use PhpList\Core\Domain\Messaging\Exception\RemotePageFetchException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
-use Symfony\Component\Mime\Email;
+
 // todo: check this class
-class MailConstructor
+class CampaignMailContentBuilder implements MailContentBuilderInterface
 {
     public function __construct(
         private readonly SubscriberRepository $subscriberRepository,
@@ -31,11 +31,11 @@ class MailConstructor
     ) {
     }
 
-    public function build(
-        Subscriber $subscriber,
+    public function __invoke(
         MessagePrecacheDto $messagePrecacheDto,
-        ?string $hash = null
-    ): Email {
+        ?int $campaignId = null,
+    ): array {
+        $subscriber = $this->subscriberRepository->findOneByEmail($messagePrecacheDto->to);
         $defaultstyle = $this->configProvider->getValue(ConfigOption::HtmlEmailStyle);
         $adddefaultstyle = 0;
 
@@ -92,8 +92,18 @@ class MailConstructor
         $htmlmessage = str_ireplace('[FOOTER]', $html['footer'], $htmlmessage);
         $textmessage = str_ireplace('[FOOTER]', $text['footer'], $textmessage);
 
-        $mail = new Email();
-        return $mail;
+        $destinationemail = '';
+        if (!$destinationemail) {
+            $destinationemail = $subscriber->getEmail();
+        }
+
+        // this should move into a plugin
+        if (strpos($destinationemail, '@') === false && isset($GLOBALS['expand_unqualifiedemail'])) {
+            $destinationemail .= $GLOBALS['expand_unqualifiedemail'];
+        }
+
+
+        return [$htmlmessage, $textmessage];
     }
 
     private function replaceUserSpecificRemoteContent(

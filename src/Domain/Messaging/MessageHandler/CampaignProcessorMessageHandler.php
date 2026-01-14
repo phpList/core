@@ -21,7 +21,6 @@ use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
-use PhpList\Core\Domain\Messaging\Service\Constructor\MailConstructor;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
@@ -64,9 +63,9 @@ class CampaignProcessorMessageHandler
         private readonly MessageRepository $messageRepository,
         private readonly MessagePrecacheService $precacheService,
         private readonly MessageDataLoader $messageDataLoader,
-        private readonly EmailBuilder $emailBuilder,
+        private readonly EmailBuilder $systemEmailBuilder,
+        private readonly EmailBuilder $campaignEmailBuilder,
         private readonly MailSizeChecker $mailSizeChecker,
-        private readonly MailConstructor $mailConstructor,
         private readonly string $messageEnvelope,
     ) {
     }
@@ -202,10 +201,9 @@ class CampaignProcessorMessageHandler
         );
 
         try {
-            // todo: use correct service
-            $email = $this->mailConstructor->build(
-                subscriber: $subscriber,
-                messagePrecacheDto: $processed
+            $email = ($this->campaignEmailBuilder)(
+                messagePrecacheDto: $processed,
+                campaignId: $campaign->getId(),
             );
             $this->rateLimitedCampaignMailer->send($email);
             ($this->mailSizeChecker)($campaign, $email, $subscriber->hasHtmlEmail());
@@ -233,14 +231,17 @@ class CampaignProcessorMessageHandler
         if (!empty($loadedMessageData['notify_start']) && !isset($loadedMessageData['start_notified'])) {
             $notifications = explode(',', $loadedMessageData['notify_start']);
             foreach ($notifications as $notification) {
-                $email = $this->emailBuilder->buildPhplistEmail(
+                $data = new MessagePrecacheDto();
+                $data->to = $notification;
+                $data->subject = $this->translator->trans('Campaign started');
+                $data->content = $this->translator->trans(
+                    'phplist has started sending the campaign with subject %subject%',
+                    ['%subject%' => $loadedMessageData['subject']]
+                );
+
+                $email = $this->systemEmailBuilder->buildPhplistEmail(
                     messageId: $campaign->getId(),
-                    to: $notification,
-                    subject: $this->translator->trans('Campaign started'),
-                    content: $this->translator->trans(
-                        'phplist has started sending the campaign with subject %subject%',
-                        ['%subject%' => $loadedMessageData['subject']]
-                    ),
+                    data: $data,
                     inBlast: false,
                 );
 

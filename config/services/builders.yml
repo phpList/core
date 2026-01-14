@@ -25,14 +25,14 @@ services:
     autoconfigure: true
 
   # Concrete mail constructors
-  PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailConstructor: ~
-  PhpList\Core\Domain\Messaging\Service\Constructor\MailConstructor: ~
+  PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailContentBuilder: ~
+  PhpList\Core\Domain\Messaging\Service\Constructor\CampaignMailContentBuilder: ~
 
   # Two EmailBuilder services with different constructors injected
   Core.EmailBuilder.system:
     class: PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder
     arguments:
-      $mailConstructor: '@PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailConstructor'
+      $mailConstructor: '@PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailContentBuilder'
       $googleSenderId: '%messaging.google_sender_id%'
       $useAmazonSes: '%messaging.use_amazon_ses%'
       $usePrecedenceHeader: '%messaging.use_precedence_header%'
@@ -42,7 +42,7 @@ services:
   Core.EmailBuilder.campaign:
     class: PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder
     arguments:
-      $mailConstructor: '@MailConstructor'
+      $mailConstructor: '@PhpList\Core\Domain\Messaging\Service\Constructor\CampaignMailContentBuilder'
       $googleSenderId: '%messaging.google_sender_id%'
       $useAmazonSes: '%messaging.use_amazon_ses%'
       $usePrecedenceHeader: '%messaging.use_precedence_header%'

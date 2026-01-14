@@ -8,7 +8,8 @@ use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Exception\DevEmailNotConfiguredException;
-use PhpList\Core\Domain\Messaging\Service\Constructor\MailConstructorInterface;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
+use PhpList\Core\Domain\Messaging\Service\Constructor\MailContentBuilderInterface;
 use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository;
@@ -26,7 +27,7 @@ class EmailBuilder
         private readonly UserBlacklistRepository $blacklistRepository,
         private readonly SubscriberHistoryManager $subscriberHistoryManager,
         private readonly SubscriberRepository $subscriberRepository,
-        private readonly MailConstructorInterface $mailConstructor,
+        private readonly MailContentBuilderInterface $mailConstructor,
         private readonly TemplateImageEmbedder $templateImageEmbedder,
         private readonly LoggerInterface $logger,
         private readonly string $googleSenderId,
@@ -39,17 +40,15 @@ class EmailBuilder
 
     public function buildPhplistEmail(
         int $messageId,
-        ?string $to = null,
-        ?string $subject = null,
-        ?string $content = null,
+        MessagePrecacheDto $data,
         ?bool $skipBlacklistCheck = false,
         ?bool $inBlast = true,
     ): ?Email {
-        if (!$this->validateRecipientAndSubject(to: $to, subject: $subject)) {
+        if (!$this->validateRecipientAndSubject(to: $data->to, subject: $data->subject)) {
             return null;
         }
 
-        if (!$this->passesBlacklistCheck(to: $to, skipBlacklistCheck: $skipBlacklistCheck)) {
+        if (!$this->passesBlacklistCheck(to: $data->to, skipBlacklistCheck: $skipBlacklistCheck)) {
             return null;
         }
 
@@ -58,16 +57,16 @@ class EmailBuilder
 //        $messageReplyToAddress = $this->configProvider->getValue(ConfigOption::MessageReplyToAddress);
 //        $replyTo = $messageReplyToAddress ?: $fromEmail;
 
-        $destinationEmail = $this->resolveDestinationEmail($to);
+        $destinationEmail = $this->resolveDestinationEmail($data->to);
 
-        [$htmlMessage, $textMessage] = ($this->mailConstructor)(content: $content, subject: $subject);
+        [$htmlMessage, $textMessage] = ($this->mailConstructor)(messagePrecacheDto: $data);
 
         $email = $this->createBaseEmail(
             messageId: $messageId,
             destinationEmail: $destinationEmail,
             fromEmail: $fromEmail,
             fromName: $fromName,
-            subject: $subject,
+            subject: $data->subject,
             inBlast: $inBlast
         );
 
