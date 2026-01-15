@@ -83,7 +83,8 @@
         "ext-libxml": "*",
         "ext-gd": "*",
         "ext-curl": "*",
-        "ext-fileinfo": "*"
+        "ext-fileinfo": "*",
+        "setasign/fpdf": "^1.8"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",

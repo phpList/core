@@ -770,6 +770,30 @@ Thank you.</target>
         <source>Sorry, you are not subscribed to any of our newsletters with this email address.</source>
         <target>__Sorry, you are not subscribed to any of our newsletters with this email address.</target>
       </trans-unit>
+      <trans-unit id="6LBFI8k" resname="This message contains attachments that can be viewed with a webbrowser">
+        <source>This message contains attachments that can be viewed with a webbrowser</source>
+        <target>__This message contains attachments that can be viewed with a webbrowser</target>
+      </trans-unit>
+      <trans-unit id="QLlIQQh" resname="Insufficient memory to add attachment to campaign %campaignId% %tatalSize% - %memLimit%">
+        <source>Insufficient memory to add attachment to campaign %campaignId% %tatalSize% - %memLimit%</source>
+        <target>__Insufficient memory to add attachment to campaign %campaignId% %tatalSize% - %memLimit%</target>
+      </trans-unit>
+      <trans-unit id="HhEWxtR" resname="Add us to your address book">
+        <source>Add us to your address book</source>
+        <target>__Add us to your address book</target>
+      </trans-unit>
+      <trans-unit id="TNQR4ZC" resname="phpList system error">
+        <source>phpList system error</source>
+        <target>__phpList system error</target>
+      </trans-unit>
+      <trans-unit id="_DfkneV" resname="Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be copied to the repository. Check for permissions.">
+        <source>Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be copied to the repository. Check for permissions.</source>
+        <target>__Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be copied to the repository. Check for permissions.</target>
+      </trans-unit>
+      <trans-unit id="VXRuG2l" resname="failed to open attachment (%remoteFile%) to add to campaign %campaignId%">
+        <source>failed to open attachment (%remoteFile%) to add to campaign %campaignId%</source>
+        <target>__failed to open attachment (%remoteFile%) to add to campaign %campaignId%</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

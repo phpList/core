@@ -39,4 +39,6 @@ enum ConfigOption: string
     case OrganisationName = 'organisation_name';
     case VCardUrl = 'vcardurl';
     case HtmlEmailStyle = 'html_email_style';
+    case AlwaysSendTextDomains = 'alwayssendtextto';
+    case ReportAddress = 'report_address';
 }

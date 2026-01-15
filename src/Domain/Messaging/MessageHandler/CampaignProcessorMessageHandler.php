@@ -8,6 +8,9 @@ use DateTime;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Messaging\Exception\AttachmentCopyException;
 use PhpList\Core\Domain\Messaging\Exception\MessageCacheMissingException;
 use PhpList\Core\Domain\Messaging\Exception\MessageSizeLimitExceededException;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
@@ -67,6 +70,7 @@ class CampaignProcessorMessageHandler
         private readonly EmailBuilder $campaignEmailBuilder,
         private readonly MailSizeChecker $mailSizeChecker,
         private readonly string $messageEnvelope,
+        private readonly ConfigProvider $configProvider,
     ) {
     }
 
@@ -218,6 +222,29 @@ class CampaignProcessorMessageHandler
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
 
             throw $e;
+        } catch (AttachmentCopyException $e) {
+            // stop after the first message if size is exceeded
+            $this->updateMessageStatus($campaign, MessageStatus::Suspended);
+            $this->updateUserMessageStatus($userMessage, UserMessageStatus::NotSent);
+
+            $data = new MessagePrecacheDto();
+            $data->to = $this->configProvider->getValue(ConfigOption::ReportAddress);
+            $data->subject = $this->translator->trans('phpList system error');
+            $data->content = $this->translator->trans($e->getMessage());
+
+            $email = $this->systemEmailBuilder->buildPhplistEmail(
+                messageId: $campaign->getId(),
+                data: $data,
+                inBlast: false,
+            );
+
+            $envelope = new Envelope(
+                sender: new Address($this->messageEnvelope, 'PHPList'),
+                recipients: [new Address($email->getTo()[0]->getAddress())],
+            );
+            $this->mailer->send(message: $email, envelope: $envelope);
+
+            throw $e;
         } catch (Throwable $e) {
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::NotSent);
             $this->logger->error($e->getMessage(), [
@@ -306,6 +333,7 @@ class CampaignProcessorMessageHandler
             if ($messagePrecacheDto === null) {
                 throw new MessageCacheMissingException();
             }
+            // todo: maybe catch exception and return false to stop early?
             $this->handleEmailSending($campaign, $subscriber, $userMessage, $messagePrecacheDto);
         }
 

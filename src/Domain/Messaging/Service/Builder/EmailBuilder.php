@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Builder;
 
+use PhpList\Core\Domain\Common\PdfGenerator;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Messaging\Exception\AttachmentException;
 use PhpList\Core\Domain\Messaging\Exception\DevEmailNotConfiguredException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
+use PhpList\Core\Domain\Messaging\Service\AttachmentAdder;
 use PhpList\Core\Domain\Messaging\Service\Constructor\MailContentBuilderInterface;
 use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -34,6 +38,8 @@ class EmailBuilder
         private readonly LoggerInterface $logger,
         private readonly ConfigProvider $config,
         private readonly LegacyUrlBuilder $urlBuilder,
+        private readonly PdfGenerator $pdfGenerator,
+        private readonly AttachmentAdder $attachmentAdder,
         private readonly string $googleSenderId,
         private readonly bool $useAmazonSes,
         private readonly bool $usePrecedenceHeader,
@@ -79,6 +85,7 @@ class EmailBuilder
             htmlMessage: $htmlMessage,
             textMessage: $textMessage,
             messageId: $messageId,
+            data: $data,
         );
 
         return $email;
