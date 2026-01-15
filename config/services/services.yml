@@ -53,6 +53,18 @@ services:
     autowire: true
     autoconfigure: true
 
+  PhpList\Core\Domain\Common\PdfGenerator:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\AttachmentAdder:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Configuration\Service\UserPersonalizer:
+    autowire: true
+    autoconfigure: true
+
   # External image caching/downloading helper used by TemplateImageEmbedder
   PhpList\Core\Domain\Common\ExternalImageService:
     autowire: true
@@ -159,6 +171,7 @@ services:
     arguments:
       $placeholderResolvers: !tagged_iterator phplist.placeholder_resolver
       $patternResolvers: !tagged_iterator phplist.pattern_resolver
+      $supportingResolvers: !tagged_iterator phplist.supporting_placeholder_resolver
 
   PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder:
     autowire: true

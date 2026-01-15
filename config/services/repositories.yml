@@ -150,3 +150,13 @@ services:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Messaging\Model\MessageData
+
+  PhpList\Core\Domain\Messaging\Repository\AttachmentRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Messaging\Model\Attachment
+
+  PhpList\Core\Domain\Messaging\Repository\MessageAttachmentRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Messaging\Model\MessageAttachment

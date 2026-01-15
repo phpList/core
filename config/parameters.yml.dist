@@ -123,6 +123,8 @@ parameters:
     env(FORWARD_ALTERNATIVE_CONTENT): '0'
     messaging.email_text_credits: '%%env(EMAILTEXTCREDITS)%%'
     env(EMAILTEXTCREDITS): '0'
+    messaging.always_add_user_track: '%%env(ALWAYS_ADD_USERTRACK)%%'
+    env(ALWAYS_ADD_USERTRACK): '1'
 
     phplist.upload_images_dir: '%%env(PHPLIST_UPLOADIMAGES_DIR)%%'
     env(PHPLIST_UPLOADIMAGES_DIR): 'images'

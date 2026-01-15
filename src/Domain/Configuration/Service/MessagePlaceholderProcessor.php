@@ -15,6 +15,7 @@ use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
 use PhpList\Core\Domain\Subscription\Service\Resolver\AttributeValueResolver;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class MessagePlaceholderProcessor
 {
@@ -28,7 +29,7 @@ class MessagePlaceholderProcessor
         private readonly iterable $patternResolvers,
         /** @var iterable<SupportingPlaceholderResolverInterface> */
         private readonly iterable $supportingResolvers,
-        private readonly bool $alwaysAddUserTrack,
+        #[Autowire('messaging.always_add_user_track')] private readonly bool $alwaysAddUserTrack,
     ) {
     }
 
