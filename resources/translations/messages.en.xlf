@@ -794,6 +794,22 @@ Thank you.</target>
         <source>failed to open attachment (%remoteFile%) to add to campaign %campaignId%</source>
         <target>__failed to open attachment (%remoteFile%) to add to campaign %campaignId%</target>
       </trans-unit>
+      <trans-unit id="28lDkjt" resname="Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%">
+        <source>Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%</source>
+        <target>__Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%</target>
+      </trans-unit>
+      <trans-unit id="DmqU7IE" resname="Attachment %remoteFile% does not exist">
+        <source>Attachment %remoteFile% does not exist</source>
+        <target>__Attachment %remoteFile% does not exist</target>
+      </trans-unit>
+      <trans-unit id="021aois" resname="Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be found in the repository.">
+        <source>Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be found in the repository.</source>
+        <target>__Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be found in the repository.</target>
+      </trans-unit>
+      <trans-unit id="FbYZdLJ" resname="Location">
+        <source>Location</source>
+        <target>__Location</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

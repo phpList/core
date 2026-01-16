@@ -1,4 +1,9 @@
 services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
   PhpList\Core\Domain\Subscription\Service\SubscriberCsvExporter:
     autowire: true
     autoconfigure: true
@@ -12,9 +17,6 @@ services:
   PhpList\Core\Domain\Messaging\Service\EmailService:
     autowire: true
     autoconfigure: true
-    arguments:
-      $defaultFromEmail: '%app.mailer_from%'
-      $bounceEmail: '%imap_bounce.email%'
 
   PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService:
     autowire: true
@@ -40,6 +42,10 @@ services:
       $mailqueueThrottle: '%messaging.mail_queue_throttle%'
 
   PhpList\Core\Domain\Common\SystemInfoCollector:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Common\OnceCacheGuard:
     autowire: true
     autoconfigure: true
 

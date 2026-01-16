@@ -5,39 +5,9 @@ services:
         resource: '../../src/Domain/Messaging/MessageHandler'
         tags: [ 'messenger.message_handler' ]
 
-    PhpList\Core\Domain\Messaging\MessageHandler\SubscriberConfirmationMessageHandler:
-        autowire: true
-        autoconfigure: true
-        tags: [ 'messenger.message_handler' ]
-        arguments:
-            $confirmationUrl: '%app.confirmation_url%'
-
-    PhpList\Core\Domain\Messaging\MessageHandler\AsyncEmailMessageHandler:
-        autowire: true
-        autoconfigure: true
-        tags: [ 'messenger.message_handler' ]
-
-    PhpList\Core\Domain\Messaging\MessageHandler\PasswordResetMessageHandler:
-        autowire: true
-        autoconfigure: true
-        tags: [ 'messenger.message_handler' ]
-        arguments:
-            $passwordResetUrl: '%app.password_reset_url%'
-
-    PhpList\Core\Domain\Messaging\MessageHandler\SubscriptionConfirmationMessageHandler:
-        autowire: true
-        autoconfigure: true
-        tags: [ 'messenger.message_handler' ]
-
     PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler:
         autowire: true
         autoconfigure: true
         arguments:
             $campaignEmailBuilder: '@Core.EmailBuilder.campaign'
             $systemEmailBuilder: '@Core.EmailBuilder.system'
-            $messageEnvelope: '%app.config.message_from_address%'
-
-    PhpList\Core\Domain\Subscription\MessageHandler\DynamicTableMessageHandler:
-        autowire: true
-        autoconfigure: true
-        tags: [ 'messenger.message_handler' ]

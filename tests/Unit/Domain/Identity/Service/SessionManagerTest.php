@@ -8,7 +8,7 @@ use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Identity\Model\AdministratorToken;
 use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
 use PhpList\Core\Domain\Identity\Repository\AdministratorTokenRepository;
-use PhpList\Core\Domain\Identity\Service\SessionManager;
+use PhpList\Core\Domain\Identity\Service\Manager\SessionManager;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service;
 
 use PhpList\Core\Domain\Messaging\Message\AsyncEmailMessage;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -13,21 +14,12 @@ use Symfony\Component\Mime\Address;
 
 class EmailService
 {
-    private MailerInterface $mailer;
-    private MessageBusInterface $messageBus;
-    private string $defaultFromEmail;
-    private string $bounceEmail;
-
     public function __construct(
-        MailerInterface $mailer,
-        MessageBusInterface $messageBus,
-        string $defaultFromEmail,
-        string $bounceEmail,
+        private readonly MailerInterface $mailer,
+        private readonly MessageBusInterface $messageBus,
+        #[Autowire('%app.mailer_from%')] private readonly string $defaultFromEmail,
+        #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
     ) {
-        $this->mailer = $mailer;
-        $this->messageBus = $messageBus;
-        $this->defaultFromEmail = $defaultFromEmail;
-        $this->bounceEmail = $bounceEmail;
     }
 
     public function sendEmail(

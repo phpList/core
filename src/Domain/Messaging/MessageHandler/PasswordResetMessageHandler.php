@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Messaging\MessageHandler;
 
 use PhpList\Core\Domain\Messaging\Message\PasswordResetMessage;
 use PhpList\Core\Domain\Messaging\Service\EmailService;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Mime\Email;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -16,7 +17,7 @@ class PasswordResetMessageHandler
     public function __construct(
         private readonly EmailService $emailService,
         private readonly TranslatorInterface $translator,
-        private readonly string $passwordResetUrl
+        #[Autowire('%app.password_reset_url%')] private readonly string $passwordResetUrl
     ) {
     }
 

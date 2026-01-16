@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Messaging\MessageHandler;
 
 use PhpList\Core\Domain\Messaging\Message\SubscriberConfirmationMessage;
 use PhpList\Core\Domain\Messaging\Service\EmailService;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Mime\Email;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -19,7 +20,7 @@ class SubscriberConfirmationMessageHandler
     public function __construct(
         private readonly EmailService $emailService,
         private readonly TranslatorInterface $translator,
-        private readonly string $confirmationUrl
+        #[Autowire('%app.confirmation_url%')]private readonly string $confirmationUrl
     ) {
     }
 

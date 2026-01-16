@@ -4,25 +4,8 @@ services:
     autoconfigure: true
     public: false
 
-  PhpList\Core\Domain\Messaging\Service\Builder\MessageBuilder:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\Builder\MessageFormatBuilder:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\Builder\MessageScheduleBuilder:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\Builder\MessageContentBuilder:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\Builder\MessageOptionsBuilder:
-    autowire: true
-    autoconfigure: true
+  PhpList\Core\Domain\:
+    resource: '../../src/Domain/*/Service/Builder/*'
 
   # Concrete mail constructors
   PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailContentBuilder: ~

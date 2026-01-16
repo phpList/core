@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Identity\Service;
+namespace PhpList\Core\Domain\Identity\Service\Manager;
 
+use PhpList\Core\Domain\Identity\Exception\AttributeDefinitionCreationException;
 use PhpList\Core\Domain\Identity\Model\AdminAttributeDefinition;
 use PhpList\Core\Domain\Identity\Model\Dto\AdminAttributeDefinitionDto;
 use PhpList\Core\Domain\Identity\Repository\AdminAttributeDefinitionRepository;
-use PhpList\Core\Domain\Identity\Exception\AttributeDefinitionCreationException;
 use PhpList\Core\Domain\Identity\Validator\AttributeTypeValidator;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
