@@ -211,6 +211,7 @@ class CampaignProcessorMessageHandler
                 data: $processed,
                 skipBlacklistCheck: false,
                 inBlast: true,
+                htmlPref: $subscriber->hasHtmlEmail(),
             );
             $email = $this->campaignEmailBuilder->applyCampaignHeaders(email: $email, subscriber: $subscriber);
 
@@ -237,6 +238,7 @@ class CampaignProcessorMessageHandler
                 messageId: $campaign->getId(),
                 data: $data,
                 inBlast: false,
+                htmlPref: true,
             );
 
             $envelope = new Envelope(
@@ -275,6 +277,7 @@ class CampaignProcessorMessageHandler
                     messageId: $campaign->getId(),
                     data: $data,
                     inBlast: false,
+                    htmlPref: true,
                 );
 
                 if (!$email) {
@@ -283,7 +286,7 @@ class CampaignProcessorMessageHandler
 
                 // todo: check if from name should be from config
                 $envelope = new Envelope(
-                    sender: new Address($this->messageEnvelope, 'PHPList'),
+                    sender: new Address($this->bounceEmail, 'PHPList'),
                     recipients: [new Address($email->getTo()[0]->getAddress())],
                 );
                 $this->mailer->send(message: $email, envelope: $envelope);
