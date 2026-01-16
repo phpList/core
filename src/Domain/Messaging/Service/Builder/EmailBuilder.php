@@ -231,8 +231,148 @@ class EmailBuilder
         return $email;
     }
 
-    private function applyContentAndFormatting(Email $email, $htmlMessage, $textMessage, int $messageId): void
-    {
+    private function applyContentAndFormatting(
+        Email $email,
+        ?string $htmlMessage,
+        ?string $textMessage,
+        int $messageId,
+        MessagePrecacheDto $data,
+    ): void {
+        $htmlpref = false;
+        $domain = substr(strrchr($email->getTo()[0]->getAddress(), "@"), 1);
+        $textDomains = explode("\n", trim($this->configProvider->getValue(ConfigOption::AlwaysSendTextDomains)));
+        if (in_array($domain, $textDomains)) {
+            $htmlpref = 0;
+        }
+
+        $sentAs = '';
+        // so what do we actually send?
+        switch ($data->sendFormat) {
+            case 'PDF':
+                // send a PDF file to users who want html and text to everyone else
+                if ($htmlpref) {
+                    $sentAs = 'aspdf';
+                    $pdffile = $this->pdfGenerator->createPdfBytes($textMessage);
+                    if (is_file($pdffile) && filesize($pdffile)) {
+                        $fp = fopen($pdffile, 'r');
+                        if ($fp) {
+                            $contents = fread($fp, filesize($pdffile));
+                            fclose($fp);
+                            unlink($pdffile);
+                            $html = '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+              <html lang="">
+              <head>
+                <title></title>
+              </head>
+              <body>
+              <embed src="message.pdf" width="450" height="450" href="message.pdf"></embed>
+              </body>
+              </html>';
+
+                            $email->attach($contents, 'message.pdf', 'application/pdf');
+                        }
+                    }
+                    if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Html)) {
+                        throw new AttachmentException();
+                    }
+                } else {
+                    $sentAs = 'astext';
+                    $mail->add_text($textmessage);
+                    if (!addAttachments($messageid, $mail, 'text',$hash)) {
+                        throw new AttachmentException();
+                    }
+                }
+                break;
+            case 'text and PDF':
+                // send a PDF file to users who want html and text to everyone else
+                if ($htmlpref) {
+                    $sentAs = 'astextandpdf';
+                    $pdffile = createPdf($textmessage);
+                    if (is_file($pdffile) && filesize($pdffile)) {
+                        $fp = fopen($pdffile, 'r');
+                        if ($fp) {
+                            $contents = fread($fp, filesize($pdffile));
+                            fclose($fp);
+                            unlink($pdffile);
+                            $html = '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+              <html lang="">
+              <head>
+                <title></title>
+              </head>
+              <body>
+              <embed src="message.pdf" width="450" height="450" href="message.pdf"></embed>
+              </body>
+              </html>';
+                            //           $mail->add_html($html,$textmessage);
+                            $mail->add_text($textmessage);
+                            $mail->add_attachment($contents,
+                                'message.pdf',
+                                'application/pdf');
+                        }
+                    }
+                    if (!addAttachments($messageid, $mail, 'HTML',$hash)) {
+                        throw new AttachmentException();
+                    }
+                } else {
+                    $sentAs = 'astext';
+                    $mail->add_text($textmessage);
+                    if (!addAttachments($messageid, $mail, 'text',$hash)) {
+                        throw new AttachmentException();
+                    }
+                }
+                break;
+            case 'text':
+                // send as text
+                $sentAs = 'astext';
+                $mail->add_text($textmessage);
+                if (!addAttachments($messageid, $mail, 'text',$hash)) {
+                    throw new AttachmentException();
+                }
+                break;
+            case 'both':
+            case 'text and HTML':
+            case 'HTML':
+            default:
+                $handled_by_plugin = 0;
+                if (!empty($GLOBALS['pluginsendformats'][$cached[$messageid]['sendformat']])) {
+                    // possibly handled by plugin
+                    $pl = $GLOBALS['plugins'][$GLOBALS['pluginsendformats'][$cached[$messageid]['sendformat']]];
+                    if (is_object($pl) && method_exists($pl, 'parseFinalMessage')) {
+                        $handled_by_plugin = $pl->parseFinalMessage($cached[$messageid]['sendformat'], $htmlmessage,
+                            $textmessage, $mail, $messageid);
+                    }
+                }
+
+                if (!$handled_by_plugin) {
+                    // send one big file to users who want html and text to everyone else
+                    if ($htmlpref) {
+                        $sentAs = 'astextandhtml';
+                        //  dbg("Adding HTML ".$cached[$messageid]["templateid"]);
+                        if (WORDWRAP_HTML) {
+                            //# wrap it: http://mantis.phplist.com/view.php?id=15528
+                            //# some reports say, this fixes things and others say it breaks things https://mantis.phplist.com/view.php?id=15617
+                            //# so for now, only switch on if requested.
+                            //# it probably has to do with the MTA used
+                            $htmlmessage = wordwrap($htmlmessage, WORDWRAP_HTML, "\r\n");
+                        }
+                        $mail->add_html($htmlmessage, $textmessage, $cached[$messageid]['templateid']);
+                        if (!addAttachments($messageid, $mail, 'HTML',$hash)) {
+                            throw new AttachmentException();
+                        }
+                    } else {
+                        $sentAs = 'astext';
+                        $mail->add_text($textmessage);
+//          $mail->setText($textmessage);
+//          $mail->Encoding = TEXTEMAIL_ENCODING;
+                        if (!addAttachments($messageid, $mail, 'text',$hash)) {
+                            throw new AttachmentException();
+                        }
+                    }
+                }
+                break;
+        }
+
+
         // Word wrapping disabled here to avoid reliance on config provider during content assembly
         if (!empty($htmlMessage)) {
             // Embed/transform images and use the returned HTML content

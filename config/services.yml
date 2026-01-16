@@ -7,6 +7,9 @@ services:
     autoconfigure: true
     public: false
 
+  PhpList\Core\Domain\:
+    resource: '../src/Domain'
+
   PhpList\Core\Core\ApplicationStructure:
     public: true
 

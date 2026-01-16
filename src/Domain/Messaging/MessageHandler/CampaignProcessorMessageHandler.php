@@ -36,6 +36,7 @@ use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -69,8 +70,8 @@ class CampaignProcessorMessageHandler
         private readonly EmailBuilder $systemEmailBuilder,
         private readonly EmailBuilder $campaignEmailBuilder,
         private readonly MailSizeChecker $mailSizeChecker,
-        private readonly string $messageEnvelope,
         private readonly ConfigProvider $configProvider,
+        #[Autowire('imap_bounce.email')] private readonly string $bounceEmail,
     ) {
     }
 
@@ -239,7 +240,7 @@ class CampaignProcessorMessageHandler
             );
 
             $envelope = new Envelope(
-                sender: new Address($this->messageEnvelope, 'PHPList'),
+                sender: new Address($this->bounceEmail, 'PHPList'),
                 recipients: [new Address($email->getTo()[0]->getAddress())],
             );
             $this->mailer->send(message: $email, envelope: $envelope);
