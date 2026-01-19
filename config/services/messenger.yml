@@ -5,6 +5,12 @@ services:
         resource: '../../src/Domain/Messaging/MessageHandler'
         tags: [ 'messenger.message_handler' ]
 
+    # Register Subscription message handlers (e.g., DynamicTableMessageHandler)
+    PhpList\Core\Domain\Subscription\MessageHandler\:
+        autowire: true
+        resource: '../../src/Domain/Subscription/MessageHandler'
+        tags: [ 'messenger.message_handler' ]
+
     PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler:
         autowire: true
         autoconfigure: true

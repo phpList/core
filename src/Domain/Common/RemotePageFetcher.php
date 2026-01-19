@@ -28,7 +28,7 @@ class RemotePageFetcher
     ) {
     }
 
-    public function __invoke(string $url, array $userData): ?string
+    public function __invoke(string $url, array $userData): string
     {
         $url = $this->prepareUrl($url, $userData);
 
@@ -75,10 +75,10 @@ class RemotePageFetcher
             ]);
         }
 
-        return $content;
+        return $content ?? '';
     }
 
-    private function fetchUrlDirect(string $url): ?string
+    private function fetchUrlDirect(string $url): string
     {
         try {
             $response = $this->httpClient->request('GET', $url, [
@@ -88,7 +88,7 @@ class RemotePageFetcher
 
             return $response->getContent(false);
         } catch (Throwable $e) {
-            return null;
+            return '';
         }
     }
 

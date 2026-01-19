@@ -8,7 +8,7 @@ use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 
-final class PlaceholderContext
+class PlaceholderContext
 {
     public function __construct(
         public readonly Subscriber $user,

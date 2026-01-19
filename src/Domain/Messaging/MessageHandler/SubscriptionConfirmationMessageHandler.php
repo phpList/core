@@ -37,14 +37,15 @@ class SubscriptionConfirmationMessageHandler
     {
         $subject = $this->configProvider->getValue(ConfigOption::SubscribeEmailSubject);
         $textContent = $this->configProvider->getValue(ConfigOption::SubscribeMessage);
-        $listOfLists = $this->getListNames($message->getListIds());
-        $replacedTextContent = str_replace('[LISTS]', $listOfLists, $textContent);
 
         $personalizedTextContent = $this->userPersonalizer->personalize(
-            value: $replacedTextContent,
+            value: $textContent,
             email: $message->getEmail(),
             format: OutputFormat::Text,
         );
+
+        $listOfLists = $this->getListNames($message->getListIds());
+        $personalizedTextContent = str_replace('[LISTS]', $listOfLists, $personalizedTextContent);
 
         $email = (new Email())
             ->to($message->getEmail())
@@ -58,6 +59,14 @@ class SubscriptionConfirmationMessageHandler
 
     private function getListNames(array $listIds): string
     {
-        return implode(', ', $this->subscriberListRepository->getListNames($listIds));
+        $names = [];
+        foreach ($listIds as $listId) {
+            $list = $this->subscriberListRepository->find($listId);
+            if ($list !== null) {
+                $names[] = $list->getName();
+            }
+        }
+
+        return implode(', ', $names);
     }
 }

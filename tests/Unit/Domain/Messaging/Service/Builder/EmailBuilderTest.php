@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Builder;
 
+use PhpList\Core\Domain\Common\PdfGenerator;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
+use PhpList\Core\Domain\Messaging\Service\AttachmentAdder;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
 use PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailContentBuilder;
 use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
@@ -28,6 +32,7 @@ class EmailBuilderTest extends TestCase
     private SubscriberRepository&MockObject $subscriberRepository;
     private SystemMailContentBuilder&MockObject $systemMailConstructor;
     private TemplateImageEmbedder&MockObject $templateImageEmbedder;
+    private AttachmentAdder&MockObject $attachmentAdder;
     private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
@@ -37,6 +42,7 @@ class EmailBuilderTest extends TestCase
         $this->blacklistRepository = $this->createMock(UserBlacklistRepository::class);
         $this->subscriberHistoryManager = $this->createMock(SubscriberHistoryManager::class);
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
+        $this->attachmentAdder = $this->createMock(AttachmentAdder::class);
         $this->systemMailConstructor = $this->getMockBuilder(SystemMailContentBuilder::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['__invoke'])
@@ -72,6 +78,9 @@ class EmailBuilderTest extends TestCase
             mailConstructor: $this->systemMailConstructor,
             templateImageEmbedder: $this->templateImageEmbedder,
             logger: $this->logger,
+            urlBuilder: $this->createMock(LegacyUrlBuilder::class),
+            pdfGenerator: $this->createMock(PdfGenerator::class),
+            attachmentAdder: $this->attachmentAdder,
             googleSenderId: $googleSenderId,
             useAmazonSes: $useAmazonSes,
             usePrecedenceHeader: $usePrecedenceHeader,
@@ -83,18 +92,25 @@ class EmailBuilderTest extends TestCase
     public function testReturnsNullWhenMissingRecipient(): void
     {
         $this->eventLogManager->expects($this->once())->method('log');
+        $dto = new MessagePrecacheDto();
+        $dto->to = null;
+        $dto->subject = 'Subj';
+        $dto->content = 'Body';
 
         $builder = $this->createBuilder();
-        $result = $builder->buildPhplistEmail(messageId: 123, to: null, subject: 'Subj', message: 'Body');
+        $result = $builder->buildPhplistEmail(messageId: 123, data: $dto);
         $this->assertNull($result);
     }
 
     public function testReturnsNullWhenMissingSubject(): void
     {
         $this->eventLogManager->expects($this->once())->method('log');
+        $dto = new MessagePrecacheDto();
+        $dto->to = 'user@example.com';
+        $dto->content = 'Body';
 
         $builder = $this->createBuilder();
-        $result = $builder->buildPhplistEmail(messageId: 123, to: 'user@example.com', subject: null, message: 'Body');
+        $result = $builder->buildPhplistEmail(messageId: 123, data: $dto);
         $this->assertNull($result);
     }
 
@@ -110,20 +126,29 @@ class EmailBuilderTest extends TestCase
 
         $this->subscriberRepository->method('findOneByEmail')->with('user@example.com')->willReturn($subscriber);
         $this->subscriberHistoryManager->expects($this->once())->method('addHistory');
+        $dto = new MessagePrecacheDto();
+        $dto->to = 'user@example.com';
+        $dto->subject = 'Hi';
+        $dto->content = 'Body';
 
         $builder = $this->createBuilder();
-        $result = $builder->buildPhplistEmail(messageId: 55, to: 'user@example.com', subject: 'Hi', message: 'Body');
+        $result = $builder->buildPhplistEmail(messageId: 55, data: $dto);
         $this->assertNull($result);
     }
 
     public function testBuildsEmailWithExpectedHeadersAndBodiesInDevMode(): void
     {
         $this->blacklistRepository->method('isEmailBlacklisted')->willReturn(false);
+        $this->attachmentAdder->method('add')->willReturn(true);
+        $dto = new MessagePrecacheDto();
+        $dto->to = 'real@example.com';
+        $dto->subject = 'Subject';
+        $dto->content = 'TEXT';
 
         // SystemMailConstructor returns both html and text bodies
         $this->systemMailConstructor->expects($this->once())
             ->method('__invoke')
-            ->with('Body', 'Subject')
+            ->with($dto)
             ->willReturn(['<p>HTML</p>', 'TEXT']);
 
         // TemplateImageEmbedder invoked when HTML present
@@ -142,9 +167,7 @@ class EmailBuilderTest extends TestCase
 
         $email = $builder->buildPhplistEmail(
             messageId: 777,
-            to: 'real@example.com',
-            subject: 'Subject',
-            message: 'Body',
+            data: $dto,
             skipBlacklistCheck: false,
             inBlast: true
         );

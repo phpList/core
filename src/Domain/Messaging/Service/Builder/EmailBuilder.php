@@ -90,8 +90,10 @@ class EmailBuilder extends SystemEmailBuilder
         MessagePrecacheDto $data,
         bool $htmlPref = false
     ): void {
+        // Prefer HTML when HTML content is available, unless explicitly forced to text
+        $htmlPref = $htmlPref || (is_string($htmlMessage) && trim($htmlMessage) !== '');
         $domain = substr(strrchr($email->getTo()[0]->getAddress(), "@"), 1);
-        $textDomains = explode("\n", trim($this->configProvider->getValue(ConfigOption::AlwaysSendTextDomains)));
+        $textDomains = explode("\n", trim($this->configProvider->getValue(ConfigOption::AlwaysSendTextDomains) ?? ''));
         if (in_array($domain, $textDomains)) {
             $htmlPref = false;
         }

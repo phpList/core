@@ -6,6 +6,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\MessageHandler;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
@@ -16,6 +17,7 @@ use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
+use PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder;
 use PhpList\Core\Domain\Messaging\Service\Constructor\CampaignMailContentBuilder;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
@@ -87,10 +89,11 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             messageRepository: $this->messageRepository,
             precacheService: $this->precacheService,
             messageDataLoader: $this->createMock(MessageDataLoader::class),
-            emailBuilder: $this->createMock(EmailBuilder::class),
+            systemEmailBuilder: $this->createMock(SystemEmailBuilder::class),
+            campaignEmailBuilder: $this->createMock(EmailBuilder::class),
             mailSizeChecker: $this->createMock(MailSizeChecker::class),
-            mailConstructor: $this->mailConstructor,
-            messageEnvelope: 'messageEnvelope',
+            configProvider: $this->createMock(ConfigProvider::class),
+            bounceEmail: 'bounce@email.com',
         );
     }
 

@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Configuration\Service;
 
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
-use PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
-use PhpList\Core\Domain\Configuration\Service\MessagePlaceholderProcessor;
+use PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder;
+use PhpList\Core\Domain\Configuration\Service\Placeholder\ConfirmationUrlValueResolver;
+use PhpList\Core\Domain\Configuration\Service\Placeholder\PreferencesUrlValueResolver;
+use PhpList\Core\Domain\Configuration\Service\Placeholder\SubscribeUrlValueResolver;
+use PhpList\Core\Domain\Configuration\Service\Placeholder\UnsubscribeUrlValueResolver;
+use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;
@@ -20,7 +25,6 @@ use PHPUnit\Framework\TestCase;
 final class UserPersonalizerTest extends TestCase
 {
     private ConfigProvider&MockObject $config;
-    private LegacyUrlBuilder&MockObject $urlBuilder;
     private SubscriberRepository&MockObject $subRepo;
     private SubscriberAttributeValueRepository&MockObject $attrRepo;
     private AttributeValueResolver&MockObject $attrResolver;
@@ -29,17 +33,22 @@ final class UserPersonalizerTest extends TestCase
     protected function setUp(): void
     {
         $this->config = $this->createMock(ConfigProvider::class);
-        $this->urlBuilder = $this->createMock(LegacyUrlBuilder::class);
         $this->subRepo = $this->createMock(SubscriberRepository::class);
         $this->attrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
         $this->attrResolver = $this->createMock(AttributeValueResolver::class);
 
         $this->personalizer = new UserPersonalizer(
-            $this->config,
-            $this->urlBuilder,
-            $this->subRepo,
-            $this->attrRepo,
-            $this->attrResolver
+            config: $this->config,
+            subscriberRepository: $this->subRepo,
+            attributesRepository: $this->attrRepo,
+            attributeValueResolver: $this->attrResolver,
+            unsubscribeUrlValueResolver: new UnsubscribeUrlValueResolver(
+                config: $this->config,
+                urlBuilder: new LegacyUrlBuilder()
+            ),
+            confirmationUrlValueResolver: new ConfirmationUrlValueResolver($this->config),
+            preferencesUrlValueResolver: new PreferencesUrlValueResolver($this->config),
+            subscribeUrlValueResolver: new SubscribeUrlValueResolver($this->config),
         );
     }
 
@@ -51,7 +60,7 @@ final class UserPersonalizerTest extends TestCase
             ->with('nobody@example.com')
             ->willReturn(null);
 
-        $result = $this->personalizer->personalize('Hello [EMAIL]', 'nobody@example.com');
+        $result = $this->personalizer->personalize('Hello [EMAIL]', 'nobody@example.com', OutputFormat::Text);
 
         $this->assertSame('Hello [EMAIL]', $result);
     }
@@ -84,11 +93,6 @@ final class UserPersonalizerTest extends TestCase
             };
         });
 
-        // LegacyUrlBuilder glue behavior
-        $this->urlBuilder
-            ->method('withUid')
-            ->willReturnCallback(fn(string $base, string $u) => $base . '?uid=' . $u);
-
         $this->attrRepo
             ->expects($this->once())
             ->method('getForSubscriber')
@@ -97,21 +101,20 @@ final class UserPersonalizerTest extends TestCase
 
         $input = 'Email: [EMAIL]
             Unsub: [UNSUBSCRIBEURL]
-            Conf: [confirmationurl]
+            Conf: [CONFIRMATIONURL]
             Prefs: [PREFERENCESURL]
             Sub: [SUBSCRIBEURL]
             Domain: [DOMAIN]
             Website: [WEBSITE]';
 
 
-        $result = $this->personalizer->personalize($input, $email);
+        $result = $this->personalizer->personalize($input, $email, OutputFormat::Text);
 
         $this->assertStringContainsString('Email: ada@example.com', $result);
-        // trailing space is expected after URL placeholders
-        $this->assertStringContainsString('Unsub: https://u.example/unsub?uid=U123 ', $result);
-        $this->assertStringContainsString('Conf: https://u.example/confirm?uid=U123 ', $result);
-        $this->assertStringContainsString('Prefs: https://u.example/prefs?uid=U123 ', $result);
-        $this->assertStringContainsString('Sub: https://u.example/subscribe ', $result);
+        $this->assertStringContainsString('Unsub: https://u.example/unsub?uid=U123', $result);
+        $this->assertStringContainsString('Conf: https://u.example/confirm?uid=U123', $result);
+        $this->assertStringContainsString('Prefs: https://u.example/prefs?uid=U123', $result);
+        $this->assertStringContainsString('Sub: https://u.example/subscribe', $result);
         $this->assertStringContainsString('Domain: example.org', $result);
         $this->assertStringContainsString('Website: site.example.org', $result);
     }
@@ -141,8 +144,6 @@ final class UserPersonalizerTest extends TestCase
             [ConfigOption::Website, 'site.example.org'],
         ]);
 
-        $this->urlBuilder->method('withUid')->willReturnCallback(fn(string $b, string $u) => $b . '?uid=' . $u);
-
         // Build a fake attribute value entity with definition NAME => "Full Name"
         $attrDefinition = $this->createMock(SubscriberAttributeDefinition::class);
         $attrDefinition->method('getName')->willReturn('Full_Name2');
@@ -163,7 +164,7 @@ final class UserPersonalizerTest extends TestCase
             ->willReturn('Bob #2');
 
         $input = 'Hello [full_name2], your email is [email].';
-        $result = $this->personalizer->personalize($input, $email);
+        $result = $this->personalizer->personalize($input, $email, OutputFormat::Text);
 
         $this->assertSame('Hello Bob #2, your email is bob@example.com.', $result);
     }
@@ -188,8 +189,6 @@ final class UserPersonalizerTest extends TestCase
             [ConfigOption::Website, 'w.x.tld'],
         ]);
 
-        $this->urlBuilder->method('withUid')->willReturnCallback(fn(string $b, string $u) => $b . '?uid=' . $u);
-
         // Two attributes: FOO & BAR
         $defFoo = $this->createMock(SubscriberAttributeDefinition::class);
         $defFoo->method('getName')->willReturn('FOO');
@@ -211,8 +210,8 @@ final class UserPersonalizerTest extends TestCase
             ]);
 
         $input = '[foo][BAR]-[email]-[UNSUBSCRIBEURL]';
-        $out = $this->personalizer->personalize($input, $email);
+        $out = $this->personalizer->personalize($input, $email, OutputFormat::Text);
 
-        $this->assertSame('FVALBVAL-eve@example.com-https://x/unsub?uid=UID42 ', $out);
+        $this->assertSame('FVALBVAL-eve@example.com-https://x/unsub?uid=UID42', $out);
     }
 }

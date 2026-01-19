@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\MessageHandler;
 
+use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
 use PhpList\Core\Domain\Messaging\Message\SubscriptionConfirmationMessage;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 use PHPUnit\Framework\TestCase;
 use PhpList\Core\Domain\Messaging\MessageHandler\SubscriptionConfirmationMessageHandler;
 use PhpList\Core\Domain\Messaging\Service\EmailService;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
-use PhpList\Core\Domain\Configuration\Service\MessagePlaceholderProcessor;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use Psr\Log\LoggerInterface;
@@ -26,14 +26,14 @@ class SubscriptionConfirmationMessageHandlerTest extends TestCase
         $emailService = $this->createMock(EmailService::class);
         $configProvider = $this->createMock(ConfigProvider::class);
         $logger = $this->createMock(LoggerInterface::class);
-        $placeholderProcessor = $this->createMock(MessagePlaceholderProcessor::class);
+        $userPersonalizer = $this->createMock(UserPersonalizer::class);
         $listRepo = $this->createMock(SubscriberListRepository::class);
 
         $handler = new SubscriptionConfirmationMessageHandler(
             emailService: $emailService,
             configProvider: $configProvider,
             logger: $logger,
-            placeholderProcessor: $placeholderProcessor,
+            userPersonalizer: $userPersonalizer,
             subscriberListRepository: $listRepo
         );
         $configProvider
@@ -44,11 +44,11 @@ class SubscriptionConfirmationMessageHandlerTest extends TestCase
                 [ConfigOption::SubscribeMessage, 'Hi {{name}}, you subscribed to: [LISTS]'],
             ]);
 
-        $message = new SubscriptionConfirmationMessage('alice@example.com', 'user-123', [10, 11]);
+        $message = new SubscriptionConfirmationMessage(email: 'alice@example.com', uniqueId: 'user-123', listIds: [10, 11]);
 
-        $placeholderProcessor->expects($this->once())
+        $userPersonalizer->expects($this->once())
             ->method('personalize')
-            ->with('Hi {{name}}, you subscribed to: [LISTS]', 'user-123')
+            ->with('Hi {{name}}, you subscribed to: [LISTS]', 'alice@example.com')
             ->willReturn('Hi Alice, you subscribed to: [LISTS]');
 
         $listA = $this->createMock(SubscriberList::class);
@@ -95,14 +95,14 @@ class SubscriptionConfirmationMessageHandlerTest extends TestCase
         $emailService = $this->createMock(EmailService::class);
         $configProvider = $this->createMock(ConfigProvider::class);
         $logger = $this->createMock(LoggerInterface::class);
-        $placeholderProcessor = $this->createMock(MessagePlaceholderProcessor::class);
+        $userPersonalizer = $this->createMock(UserPersonalizer::class);
         $listRepo = $this->createMock(SubscriberListRepository::class);
 
         $handler = new SubscriptionConfirmationMessageHandler(
             emailService: $emailService,
             configProvider: $configProvider,
             logger: $logger,
-            placeholderProcessor: $placeholderProcessor,
+            userPersonalizer: $userPersonalizer,
             subscriberListRepository: $listRepo
         );
 
@@ -117,11 +117,11 @@ class SubscriptionConfirmationMessageHandlerTest extends TestCase
         $message->method('getUniqueId')->willReturn('user-456');
         $message->method('getListIds')->willReturn([42]);
 
-        $placeholderProcessor->method('personalize')
-            ->with('Lists: [LISTS]', 'user-456')
+        $userPersonalizer->method('personalize')
+            ->with('Lists: [LISTS]', 'bob@example.com')
             ->willReturn('Lists: [LISTS]');
 
-        $listRepo->method('find')->with(42)->willReturn(null);
+        $listRepo->method('getListNames')->with([42])->willReturn([]);
 
         $emailService->expects($this->once())
             ->method('sendEmail')
