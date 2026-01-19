@@ -13,7 +13,7 @@ final class ListsValueResolver implements PlaceholderValueResolverInterface
     public function __construct(
         private readonly SubscriberListRepository $subscriberListRepository,
         private readonly TranslatorInterface $translator,
-        private readonly bool $preferencePageShowPrivateLists = false,
+        private readonly bool $showPrivateLists = false,
     ) {}
 
     public function name(): string
@@ -25,7 +25,7 @@ final class ListsValueResolver implements PlaceholderValueResolverInterface
     {
         $names = $this->subscriberListRepository->getActiveListNamesForSubscriber(
             subscriber: $ctx->getUser(),
-            showPrivate: $this->preferencePageShowPrivateLists
+            showPrivate: $this->showPrivateLists
         );
 
         if ($names === []) {

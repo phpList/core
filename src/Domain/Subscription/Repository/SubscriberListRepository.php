@@ -77,17 +77,17 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
      */
     public function getActiveListNamesForSubscriber(Subscriber $subscriber, bool $showPrivate): array
     {
-        $qb = $this->createQueryBuilder('l')
+        $queryBuilder = $this->createQueryBuilder('l')
             ->select('l.name')
             ->innerJoin('l.subscriptions', 's')
             ->where('IDENTITY(s.subscriber) = :subscriberId')
             ->setParameter('subscriberId', $subscriber->getId());
 
         if (!$showPrivate) {
-            $qb->andWhere('l.active = true');
+            $queryBuilder->andWhere('l.active = true');
         }
 
-        $rows = $qb->getQuery()->getScalarResult();
+        $rows = $queryBuilder->getQuery()->getScalarResult();
 
         return array_column($rows, 'name');
     }

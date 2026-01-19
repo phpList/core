@@ -104,15 +104,11 @@ class CampaignMailContentBuilder implements MailContentBuilderInterface
             $token = $match[0];
             $rawUrl = $match[1];
 
-            if (!$rawUrl) {
-                continue;
-            }
-
             $url = preg_match('/^https?:\/\//i', $rawUrl) ? $rawUrl : 'https://' . $rawUrl;
 
             $remoteContent = ($this->remotePageFetcher)($url, $userData);
 
-            if ($remoteContent === null) {
+            if ($remoteContent === '') {
                 $this->eventLogManager->log(
                     '',
                     sprintf('Error fetching URL: %s to send to %s', $rawUrl, $subscriber->getEmail())

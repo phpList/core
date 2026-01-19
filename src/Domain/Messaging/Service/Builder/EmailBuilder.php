@@ -98,7 +98,6 @@ class EmailBuilder extends SystemEmailBuilder
             $htmlPref = false;
         }
 
-        $sentAs = '';
         // so what do we actually send?
         switch ($data->sendFormat) {
             case 'PDF':
@@ -107,21 +106,11 @@ class EmailBuilder extends SystemEmailBuilder
                     $sentAs = 'aspdf';
                     $pdfFile = $this->pdfGenerator->createPdfBytes($textMessage);
                     if (is_file($pdfFile) && filesize($pdfFile)) {
-                        $fp = fopen($pdfFile, 'r');
-                        if ($fp) {
-                            $contents = fread($fp, filesize($pdfFile));
-                            fclose($fp);
+                        $filePointer = fopen($pdfFile, 'r');
+                        if ($filePointer) {
+                            $contents = fread($filePointer, filesize($pdfFile));
+                            fclose($filePointer);
                             unlink($pdfFile);
-                            $html = '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-                            <html lang="">
-                                <head>
-                                    <title></title>
-                                </head>
-                                <body>
-                                    <embed src="message.pdf" width="450" height="450" href="message.pdf"></embed>
-                                </body>
-                            </html>';
-
                             $email->attach($contents, 'message.pdf', 'application/pdf');
                         }
                     }
@@ -142,20 +131,11 @@ class EmailBuilder extends SystemEmailBuilder
                     $sentAs = 'astextandpdf';
                     $pdfFile = $this->pdfGenerator->createPdfBytes($textMessage);
                     if (is_file($pdfFile) && filesize($pdfFile)) {
-                        $fp = fopen($pdfFile, 'r');
-                        if ($fp) {
-                            $contents = fread($fp, filesize($pdfFile));
-                            fclose($fp);
+                        $filePointer = fopen($pdfFile, 'r');
+                        if ($filePointer) {
+                            $contents = fread($filePointer, filesize($pdfFile));
+                            fclose($filePointer);
                             unlink($pdfFile);
-                            $html = '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-                            <html lang="">
-                                <head>
-                                    <title></title>
-                                </head>
-                                <body>
-                                    <embed src="message.pdf" width="450" height="450" href="message.pdf"></embed>
-                                </body>
-                            </html>';
                             $email->text($textMessage);
                             $email->attach($contents, 'message.pdf', 'application/pdf');
                         }

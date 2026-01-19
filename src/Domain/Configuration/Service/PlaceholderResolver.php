@@ -40,10 +40,10 @@ class PlaceholderResolver
             return $value;
         }
 
-        foreach ($this->patternResolvers as $r) {
+        foreach ($this->patternResolvers as $resolver) {
             $value = preg_replace_callback(
-                $r['pattern'],
-                fn(array $m) => (string) ($r['resolver'])($context, $m),
+                $resolver['pattern'],
+                fn(array $match) => (string) ($resolver['resolver'])($context, $match),
                 $value
             );
         }

@@ -18,7 +18,6 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
 use PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder;
-use PhpList\Core\Domain\Messaging\Service\Constructor\CampaignMailContentBuilder;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
@@ -68,7 +67,6 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $this->precacheService = $this->createMock(MessagePrecacheService::class);
         $this->cache = $this->createMock(CacheInterface::class);
         $this->symfonyMailer = $this->createMock(MailerInterface::class);
-        $this->mailConstructor = $this->createMock(CampaignMailContentBuilder::class);
 
         $timeLimiter->method('start');
         $timeLimiter->method('shouldStop')->willReturn(false);
