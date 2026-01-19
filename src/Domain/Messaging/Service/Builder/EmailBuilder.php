@@ -22,7 +22,7 @@ use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mime\Email;
 
-/** @SuppressWarnings("ExcessiveParameterList") */
+/** @SuppressWarnings("ExcessiveParameterList") @SuppressWarnings("PHPMD.CouplingBetweenObjects") */
 class EmailBuilder extends SystemEmailBuilder
 {
     public function __construct(
@@ -90,66 +90,16 @@ class EmailBuilder extends SystemEmailBuilder
         MessagePrecacheDto $data,
         bool $htmlPref = false
     ): void {
-        // Prefer HTML when HTML content is available, unless explicitly forced to text
-        $htmlPref = $htmlPref || (is_string($htmlMessage) && trim($htmlMessage) !== '');
-        $domain = substr(strrchr($email->getTo()[0]->getAddress(), "@"), 1);
-        $textDomains = explode("\n", trim($this->configProvider->getValue(ConfigOption::AlwaysSendTextDomains) ?? ''));
-        if (in_array($domain, $textDomains)) {
-            $htmlPref = false;
-        }
+        $htmlPref = $this->shouldPreferHtml($htmlMessage, $htmlPref, $email);
+        $normalizedFormat = $this->normalizeSendFormat($data->sendFormat);
 
         // so what do we actually send?
-        switch ($data->sendFormat) {
-            case 'PDF':
-                // send a PDF file to users who want html and text to everyone else
-                if ($htmlPref) {
-                    $sentAs = 'aspdf';
-                    $pdfFile = $this->pdfGenerator->createPdfBytes($textMessage);
-                    if (is_file($pdfFile) && filesize($pdfFile)) {
-                        $filePointer = fopen($pdfFile, 'r');
-                        if ($filePointer) {
-                            $contents = fread($filePointer, filesize($pdfFile));
-                            fclose($filePointer);
-                            unlink($pdfFile);
-                            $email->attach($contents, 'message.pdf', 'application/pdf');
-                        }
-                    }
-                    if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Html)) {
-                        throw new AttachmentException();
-                    }
-                } else {
-                    $sentAs = 'astext';
-                    $email->text($textMessage);
-                    if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Text)) {
-                        throw new AttachmentException();
-                    }
-                }
+        switch ($normalizedFormat) {
+            case 'pdf':
+                $sentAs = $this->applyPdfFormat($email, $textMessage, $messageId, $htmlPref);
                 break;
-            case 'text and PDF':
-                // send a PDF file to users who want html and text to everyone else
-                if ($htmlPref) {
-                    $sentAs = 'astextandpdf';
-                    $pdfFile = $this->pdfGenerator->createPdfBytes($textMessage);
-                    if (is_file($pdfFile) && filesize($pdfFile)) {
-                        $filePointer = fopen($pdfFile, 'r');
-                        if ($filePointer) {
-                            $contents = fread($filePointer, filesize($pdfFile));
-                            fclose($filePointer);
-                            unlink($pdfFile);
-                            $email->text($textMessage);
-                            $email->attach($contents, 'message.pdf', 'application/pdf');
-                        }
-                    }
-                    if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Html)) {
-                        throw new AttachmentException();
-                    }
-                } else {
-                    $sentAs = 'astext';
-                    $email->text($textMessage);
-                    if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Text)) {
-                        throw new AttachmentException();
-                    }
-                }
+            case 'text_and_pdf':
+                $sentAs = $this->applyTextAndPdfFormat($email, $textMessage, $messageId, $htmlPref);
                 break;
             case 'text':
                 $sentAs = 'astext';
@@ -158,9 +108,6 @@ class EmailBuilder extends SystemEmailBuilder
                     throw new AttachmentException();
                 }
                 break;
-            case 'both':
-            case 'text and HTML':
-            case 'HTML':
             default:
                 if ($htmlPref && $htmlMessage) {
                     $sentAs = 'astextandhtml';
@@ -179,5 +126,96 @@ class EmailBuilder extends SystemEmailBuilder
                 }
                 break;
         }
+    }
+
+    private function shouldPreferHtml(
+        ?string $htmlMessage,
+        bool $htmlPref,
+        Email $email
+    ): bool {
+        // If we have HTML content, default to preferring HTML
+        $htmlPref = $htmlPref || (is_string($htmlMessage) && trim($htmlMessage) !== '');
+
+        // Domain-based text-only override
+        $domain = substr(strrchr($email->getTo()[0]->getAddress(), "@"), 1);
+        $textDomains = explode("\n", trim($this->configProvider->getValue(ConfigOption::AlwaysSendTextDomains) ?? ''));
+
+        if (in_array($domain, $textDomains, true)) {
+            return false;
+        }
+
+        return $htmlPref;
+    }
+
+    private function normalizeSendFormat(?string $sendFormat): string
+    {
+        $format = strtolower(trim((string) $sendFormat));
+
+        return match ($format) {
+            'pdf'              => 'pdf',
+            'text and pdf'     => 'text_and_pdf',
+            'text'             => 'text',
+            // 'both', 'html', 'text and html',
+            default            => 'html_and_text',
+        };
+    }
+
+    private function applyPdfFormat(Email $email, ?string $textMessage, int $messageId, bool $htmlPref): string
+    {
+        // send a PDF file to users who want html and text to everyone else
+        if ($htmlPref) {
+            $sentAs = 'aspdf';
+            $pdfFile = $this->pdfGenerator->createPdfBytes($textMessage);
+            if (is_file($pdfFile) && filesize($pdfFile)) {
+                $filePointer = fopen($pdfFile, 'r');
+                if ($filePointer) {
+                    $contents = fread($filePointer, filesize($pdfFile));
+                    fclose($filePointer);
+                    unlink($pdfFile);
+                    $email->attach($contents, 'message.pdf', 'application/pdf');
+                }
+            }
+            if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Html)) {
+                throw new AttachmentException();
+            }
+        } else {
+            $sentAs = 'astext';
+            $email->text($textMessage);
+            if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Text)) {
+                throw new AttachmentException();
+            }
+        }
+
+        return $sentAs;
+    }
+
+    private function applyTextAndPdfFormat(Email $email, ?string $textMessage, int $messageId, bool $htmlPref): string
+    {
+        // send a PDF file to users who want html and text to everyone else
+        if ($htmlPref) {
+            $sentAs = 'astextandpdf';
+            $pdfFile = $this->pdfGenerator->createPdfBytes($textMessage);
+            if (is_file($pdfFile) && filesize($pdfFile)) {
+                $filePointer = fopen($pdfFile, 'r');
+                if ($filePointer) {
+                    $contents = fread($filePointer, filesize($pdfFile));
+                    fclose($filePointer);
+                    unlink($pdfFile);
+                    $email->text($textMessage);
+                    $email->attach($contents, 'message.pdf', 'application/pdf');
+                }
+            }
+            if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Html)) {
+                throw new AttachmentException();
+            }
+        } else {
+            $sentAs = 'astext';
+            $email->text($textMessage);
+            if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Text)) {
+                throw new AttachmentException();
+            }
+        }
+
+        return $sentAs;
     }
 }

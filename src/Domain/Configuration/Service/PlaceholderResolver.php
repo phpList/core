@@ -50,40 +50,7 @@ class PlaceholderResolver
 
         return preg_replace_callback(
             '/\[([^\]%%]+)(?:%%([^\]]+))?\]/i',
-            function (array $matches) use ($context) {
-                $rawKey = $matches[1];
-                $default = $matches[2] ?? null;
-
-                $keyNormalized = $this->normalizePlaceholderKey($rawKey);
-                $canon = strtoupper($this->normalizePlaceholderKey($rawKey));
-
-                // 1) Exact resolver (system placeholders)
-                if (isset($this->resolvers[$canon])) {
-                    $resolved = (string) ($this->resolvers[$canon])($context);
-
-                    if ($default !== null && $resolved === '') {
-                        return $default;
-                    }
-                    return $resolved;
-                }
-
-                // 2) Supporting resolvers (userdata, attributes, etc.)
-                foreach ($this->supportingResolvers as $resolver) {
-                    if (!$resolver->supports($keyNormalized, $context) && !$resolver->supports($canon, $context)) {
-                        continue;
-                    }
-
-                    $resolved = $resolver->resolve($keyNormalized, $context);
-                    $resolved = $resolved ?? '';
-
-                    if ($default !== null && $resolved === '') {
-                        return $default;
-                    }
-                    return $resolved;
-                }
-
-                // 3) if there is a %%default, use it; otherwise keep placeholder unchanged
-                return $default ?? $matches[0];            },
+            fn(array $matches) => $this->resolveSinglePlaceholder($matches, $context),
             $value
         );
     }
@@ -96,5 +63,42 @@ class PlaceholderResolver
         $key = str_ireplace('&nbsp;', ' ', $key);
 
         return preg_replace('/\s+/u', ' ', $key) ?? $key;
+    }
+
+    private function resolveSinglePlaceholder(array $matches, PlaceholderContext $context): string
+    {
+        $rawKey = $matches[1];
+        $default = $matches[2] ?? null;
+
+        $keyNormalized = $this->normalizePlaceholderKey($rawKey);
+        $canon = strtoupper($this->normalizePlaceholderKey($rawKey));
+
+        // 1) Exact resolver (system placeholders)
+        if (isset($this->resolvers[$canon])) {
+            $resolved = (string) ($this->resolvers[$canon])($context);
+
+            if ($default !== null && $resolved === '') {
+                return $default;
+            }
+            return $resolved;
+        }
+
+        // 2) Supporting resolvers (userdata, attributes, etc.)
+        foreach ($this->supportingResolvers as $resolver) {
+            if (!$resolver->supports($keyNormalized, $context) && !$resolver->supports($canon, $context)) {
+                continue;
+            }
+
+            $resolved = $resolver->resolve($keyNormalized, $context);
+            $resolved = $resolved ?? '';
+
+            if ($default !== null && $resolved === '') {
+                return $default;
+            }
+            return $resolved;
+        }
+
+        // 3) if there is a %%default, use it; otherwise keep placeholder unchanged
+        return $default ?? $matches[0];
     }
 }

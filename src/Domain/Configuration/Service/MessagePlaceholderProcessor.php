@@ -41,19 +41,7 @@ class MessagePlaceholderProcessor
         ?int $campaignId = null,
         ?string $forwardedBy = null,
     ): string {
-        if (!strpos($value, '[FOOTER]')) {
-            $sep = $format === OutputFormat::Html ? '<br />' : "\n\n";
-            $value = $this->appendContent($value, $sep . '[FOOTER]');
-        }
-
-        if (!strpos($value, '[SIGNATURE]')) {
-            $sep = $format === OutputFormat::Html ? ' ' : "\n";
-            $value = $this->appendContent($value, $sep . '[SIGNATURE]');
-        }
-
-        if ($this->alwaysAddUserTrack && $format === OutputFormat::Html && !strpos($value, '[USERTRACK]')) {
-            $value = $this->appendContent($value, '[USERTRACK]');
-        }
+        $value = $this->ensureStandardPlaceholders($value, $format);
 
         $resolver = new PlaceholderResolver();
         $resolver->register('EMAIL', fn(PlaceholderContext $ctx) => $ctx->user->getEmail());
@@ -121,5 +109,24 @@ class MessagePlaceholderProcessor
         }
 
         return $message;
+    }
+
+    private function ensureStandardPlaceholders(string $value, OutputFormat $format): string
+    {
+        if (!strpos($value, '[FOOTER]')) {
+            $sep = $format === OutputFormat::Html ? '<br />' : "\n\n";
+            $value = $this->appendContent($value, $sep . '[FOOTER]');
+        }
+
+        if (!strpos($value, '[SIGNATURE]')) {
+            $sep = $format === OutputFormat::Html ? ' ' : "\n";
+            $value = $this->appendContent($value, $sep . '[SIGNATURE]');
+        }
+
+        if ($this->alwaysAddUserTrack && $format === OutputFormat::Html && !strpos($value, '[USERTRACK]')) {
+            $value = $this->appendContent($value, '[USERTRACK]');
+        }
+
+        return $value;
     }
 }
