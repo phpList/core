@@ -13,7 +13,7 @@ services:
 
   # Two EmailBuilder services with different constructors injected
   Core.EmailBuilder.system:
-    class: PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder
+    class: PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder
     arguments:
       $mailConstructor: '@PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailContentBuilder'
       $googleSenderId: '%messaging.google_sender_id%'

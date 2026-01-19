@@ -24,6 +24,7 @@ use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
+use PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
@@ -67,7 +68,7 @@ class CampaignProcessorMessageHandler
         private readonly MessageRepository $messageRepository,
         private readonly MessagePrecacheService $precacheService,
         private readonly MessageDataLoader $messageDataLoader,
-        private readonly EmailBuilder $systemEmailBuilder,
+        private readonly SystemEmailBuilder $systemEmailBuilder,
         private readonly EmailBuilder $campaignEmailBuilder,
         private readonly MailSizeChecker $mailSizeChecker,
         private readonly ConfigProvider $configProvider,

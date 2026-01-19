@@ -6,6 +6,7 @@ services:
 
   PhpList\Core\Domain\:
     resource: '../../src/Domain/*/Service/Manager/*'
+    exclude: '../../src/Domain/*/Service/Manager/Builder/*'
 
   PhpList\Core\Bounce\Service\Manager\BounceManager: ~
 
