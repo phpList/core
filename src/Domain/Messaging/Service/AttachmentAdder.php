@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service;
 
+use PhpList\Core\Domain\Common\FileHelper;
 use PhpList\Core\Domain\Common\OnceCacheGuard;
 use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
@@ -21,6 +22,7 @@ class AttachmentAdder
         private readonly TranslatorInterface $translator,
         private readonly EventLogManager $eventLogManager,
         private readonly OnceCacheGuard $onceCacheGuard,
+        private readonly FileHelper $fileHelper,
         #[Autowire('attachment_download_url')] private readonly string $attachmentDownloadUrl,
         #[Autowire('attachment_repository_path')] private readonly string $attachmentRepositoryPath = '/tmp',
     ) {
@@ -47,7 +49,6 @@ class AttachmentAdder
                 return false;
             }
 
-            // todo: throw exception instead of returning false, return false to continue, true to stop
             switch ($format) {
                 case OutputFormat::Html:
                     if (!$this->handleHtmlAttachment($email, $att, $campaignId)) {
@@ -106,6 +107,7 @@ class AttachmentAdder
                     ]
                 )
             );
+
             return false;
         }
 
@@ -115,64 +117,49 @@ class AttachmentAdder
     private function handleHtmlAttachment(Email $email, Attachment $att, int $campaignId): bool
     {
         $key = 'attaching_fail:' . sha1($campaignId . '|' . $att->getRemoteFile());
-        $attachmentPath = $this->attachmentRepositoryPath . '/' . $att->getFilename();
-        if (is_file($attachmentPath) && filesize($attachmentPath)) {
-            $filePointer = fopen($attachmentPath, 'r');
-            if ($filePointer) {
-                $contents = fread($filePointer, filesize($attachmentPath));
-                fclose($filePointer);
-                $email->attachFromPath($contents, basename($att->getRemoteFile()), $att->getMimeType());
-            }
-
+        if ($this->attachFromRepository($email, $att)) {
             return true;
         }
 
-        if (is_file($att->getRemoteFile()) && filesize($att->getRemoteFile())) {
-            // handle local filesystem attachments
-            $filePointer = fopen($att->getRemoteFile(), 'r');
-            if ($filePointer) {
-                $contents = fread($filePointer, filesize($att->getRemoteFile()));
-                fclose($filePointer);
-                $email->attachFromPath($contents, basename($att->getRemoteFile()), $att->getMimeType());
-                [$name, $ext] = explode('.', basename($att->getRemoteFile()));
-                // create a temporary file to make sure to use a unique file name to store with
-                $newFile = tempnam($this->attachmentRepositoryPath, $name);
-                $newFile .= '.'.$ext;
-                $newFile = basename($newFile);
-                $fileHandle = fopen($this->attachmentRepositoryPath . '/' . $newFile, 'w');
-                fwrite($fileHandle, $contents);
-                fclose($fileHandle);
-                // check that it was successful
-                if (filesize($this->attachmentRepositoryPath . '/' . $newFile)) {
-                    $att->setFilename($newFile);
-                    return true;
-                }
+        if ($this->fileHelper->isValidFile($att->getRemoteFile())) {
+            return $this->handleLocalAttachment($email, $att, $campaignId, $key);
+        }
 
-                if ($this->onceCacheGuard->firstTime($key, 3600)) {
-                    $this->eventLogManager->log(
-                        page: '',
-                        entry: 'Unable to make a copy of attachment ' . $att->getRemoteFile() . ' in repository'
-                    );
-                    $errorMessage = $this->translator->trans(
-                        'Error, when trying to send campaign %campaignId% the attachment (%remoteFile%)'
-                        . ' could not be copied to the repository. Check for permissions.',
-                        [
-                            '%campaignId%' => $campaignId,
-                            '%remoteFile%' => $att->getRemoteFile(),
-                        ]
-                    );
-                    throw new AttachmentCopyException($errorMessage);
-                }
+        $this->handleMissingAttachment($att, $campaignId, $key);
 
-                return true;
-            }
+        return false;
+    }
 
+    private function attachFromRepository(Email $email, Attachment $att): bool
+    {
+        $attachmentPath = $this->attachmentRepositoryPath . '/' . $att->getFilename();
+
+        if (!$this->fileHelper->isValidFile($attachmentPath)) {
+            return false;
+        }
+
+        $contents = $this->fileHelper->readFileContents($attachmentPath);
+        if ($contents === null) {
+            return false;
+        }
+
+        $email->attachFromPath($contents, basename($att->getRemoteFile()), $att->getMimeType());
+
+        return true;
+    }
+
+    private function handleLocalAttachment(Email $email, Attachment $att, int $campaignId, string $key): bool
+    {
+        $remoteFile = $att->getRemoteFile();
+        $contents = $this->fileHelper->readFileContents($remoteFile);
+
+        if ($contents === null) {
             $this->eventLogManager->log(
                 page: '',
                 entry: $this->translator->trans(
                     'failed to open attachment (%remoteFile%) to add to campaign %campaignId%',
                     [
-                        '%remoteFile%' => $att->getRemoteFile(),
+                        '%remoteFile%' => $remoteFile,
                         '%campaignId%' => $campaignId,
                     ]
                 )
@@ -181,28 +168,88 @@ class AttachmentAdder
             return false;
         }
 
-        //# as above, avoid sending it many times
+        $email->attachFromPath($contents, basename($remoteFile), $att->getMimeType());
+        $this->copyAttachmentToRepository($att, $contents, $campaignId, $key);
+
+        return true;
+    }
+
+    private function copyAttachmentToRepository(Attachment $att, string $contents, int $campaignId, string $key): void
+    {
+        $remoteFile = $att->getRemoteFile();
+        [$name, $ext] = explode('.', basename($remoteFile));
+
+        $newFile = tempnam($this->attachmentRepositoryPath, $name);
+        $newFile .= '.' . $ext;
+        $relativeName = basename($newFile);
+
+        $fullPath = $this->attachmentRepositoryPath . '/' . $relativeName;
+
+        $fileHandle = fopen($fullPath, 'w');
+        if ($fileHandle === false) {
+            $this->handleCopyFailure($remoteFile, $campaignId, $key);
+            return;
+        }
+
+        fwrite($fileHandle, $contents);
+        fclose($fileHandle);
+
+        if (filesize($fullPath)) {
+            $att->setFilename($relativeName);
+            return;
+        }
+
+        $this->handleCopyFailure($remoteFile, $campaignId, $key);
+    }
+
+    private function handleCopyFailure(string $remoteFile, int $campaignId, string $key): void
+    {
+        if ($this->onceCacheGuard->firstTime($key, 3600)) {
+            $this->eventLogManager->log(
+                page: '',
+                entry: 'Unable to make a copy of attachment ' . $remoteFile . ' in repository'
+            );
+
+            $errorMessage = $this->translator->trans(
+                'Error, when trying to send campaign %campaignId% the attachment (%remoteFile%)'
+                . ' could not be copied to the repository. Check for permissions.',
+                [
+                    '%campaignId%' => $campaignId,
+                    '%remoteFile%' => $remoteFile,
+                ]
+            );
+
+            throw new AttachmentCopyException($errorMessage);
+        }
+
+        // Not the first time => silently allow send to continue
+    }
+
+    private function handleMissingAttachment(Attachment $att, int $campaignId, string $key): void
+    {
+        $remoteFile = $att->getRemoteFile();
+
         if ($this->onceCacheGuard->firstTime($key, 3600)) {
             $this->eventLogManager->log(
                 page: '',
                 entry: $this->translator->trans(
                     'Attachment %remoteFile% does not exist',
                     [
-                        '%remoteFile%' => $att->getRemoteFile(),
+                        '%remoteFile%' => $remoteFile,
                     ]
                 )
             );
+
             $errorMessage = $this->translator->trans(
                 'Error, when trying to send campaign %campaignId% the attachment (%remoteFile%)'
                 . ' could not be found in the repository.',
                 [
                     '%campaignId%' => $campaignId,
-                    '%remoteFile%' => $att->getRemoteFile(),
+                    '%remoteFile%' => $remoteFile,
                 ]
             );
+
             throw new AttachmentCopyException($errorMessage);
         }
-
-        return false;
     }
 }
