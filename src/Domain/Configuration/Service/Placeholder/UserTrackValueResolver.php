@@ -14,7 +14,8 @@ final class UserTrackValueResolver implements PlaceholderValueResolverInterface
     public function __construct(
         private readonly ConfigProvider $config,
         #[Autowire('%rest_api_domain%')] private readonly string $restApiDomain,
-    ) {}
+    ) {
+    }
 
     public function name(): string
     {

@@ -17,7 +17,8 @@ class PlaceholderContext
         public readonly string $locale = 'en',
         private readonly ?string $forwardedBy = null,
         private readonly ?int $messageId = null,
-    ) {}
+    ) {
+    }
 
     public function isHtml(): bool
     {

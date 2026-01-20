@@ -14,7 +14,8 @@ final class ForwardMessageIdValueResolver implements PatternValueResolverInterfa
     public function __construct(
         private readonly ConfigProvider $config,
         private readonly TranslatorInterface $translator,
-    ) {}
+    ) {
+    }
 
     public function pattern(): string
     {
@@ -45,7 +46,8 @@ final class ForwardMessageIdValueResolver implements PatternValueResolverInterfa
         $uid = $ctx->getUser()->getUniqueId();
 
         if ($ctx->isHtml()) {
-            $forwardUrl = sprintf('%s%suid=%s&amp;mid=%d',
+            $forwardUrl = sprintf(
+                '%s%suid=%s&amp;mid=%d',
                 htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
                 htmlspecialchars($sep, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
                 $uid,

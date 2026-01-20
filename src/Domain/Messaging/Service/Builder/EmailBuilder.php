@@ -137,7 +137,7 @@ class EmailBuilder extends SystemEmailBuilder
         $htmlPref = $htmlPref || (is_string($htmlMessage) && trim($htmlMessage) !== '');
 
         // Domain-based text-only override
-        $domain = substr(strrchr($email->getTo()[0]->getAddress(), "@"), 1);
+        $domain = substr(strrchr($email->getTo()[0]->getAddress(), '@'), 1);
         $textDomains = explode("\n", trim($this->configProvider->getValue(ConfigOption::AlwaysSendTextDomains) ?? ''));
 
         if (in_array($domain, $textDomains, true)) {
@@ -155,7 +155,7 @@ class EmailBuilder extends SystemEmailBuilder
             'pdf'              => 'pdf',
             'text and pdf'     => 'text_and_pdf',
             'text'             => 'text',
-            // 'both', 'html', 'text and html',
+            // the default is for these too:  'both', 'html', 'text and html',
             default            => 'html_and_text',
         };
     }

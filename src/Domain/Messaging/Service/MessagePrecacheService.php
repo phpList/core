@@ -179,8 +179,7 @@ class MessagePrecacheService
 
     private function applyRemoteContentIfPresent(MessagePrecacheDto $messagePrecacheDto, $loadedMessageData): bool
     {
-        if (
-            $messagePrecacheDto->userSpecificUrl
+        if ($messagePrecacheDto->userSpecificUrl
             || !preg_match('/\[URL:([^\s]+)\]/i', $messagePrecacheDto->content, $regs)
         ) {
             return true;

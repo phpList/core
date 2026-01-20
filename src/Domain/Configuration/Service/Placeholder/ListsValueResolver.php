@@ -14,7 +14,8 @@ final class ListsValueResolver implements PlaceholderValueResolverInterface
         private readonly SubscriberListRepository $subscriberListRepository,
         private readonly TranslatorInterface $translator,
         private readonly bool $showPrivateLists = false,
-    ) {}
+    ) {
+    }
 
     public function name(): string
     {

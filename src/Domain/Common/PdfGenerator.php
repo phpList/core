@@ -16,6 +16,6 @@ class PdfGenerator
         $pdf->SetFont('Arial', '', 12);
         $pdf->Write(6, $text);
 
-        return $pdf->Output('','S');
+        return $pdf->Output('', 'S');
     }
 }

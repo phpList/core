@@ -226,7 +226,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
 
         // campaign emails are built via campaignEmailBuilder and sent via RateLimitedCampaignMailer
         $campaignEmailBuilder = (new ReflectionClass($this->handler))
-            ->getProperty("campaignEmailBuilder");
+            ->getProperty('campaignEmailBuilder');
         /** @var EmailBuilder|MockObject $campaignBuilderMock */
         $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
 
@@ -292,7 +292,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
 
         // Build email and throw on rate-limited sender
         $campaignEmailBuilder = (new ReflectionClass($this->handler))
-            ->getProperty("campaignEmailBuilder");
+            ->getProperty('campaignEmailBuilder');
 
         /** @var EmailBuilder|MockObject $campaignBuilderMock */
         $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
@@ -371,7 +371,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
 
         // Configure builder to return emails for first two subscribers
         $campaignEmailBuilder = (new ReflectionClass($this->handler))
-            ->getProperty("campaignEmailBuilder");
+            ->getProperty('campaignEmailBuilder');
         /** @var EmailBuilder|MockObject $campaignBuilderMock */
         $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
         $campaignBuilderMock->expects($this->exactly(2))

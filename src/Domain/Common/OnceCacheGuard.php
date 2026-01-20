@@ -8,7 +8,9 @@ use Psr\SimpleCache\CacheInterface;
 
 class OnceCacheGuard
 {
-    public function __construct(private readonly CacheInterface $cache) {}
+    public function __construct(private readonly CacheInterface $cache)
+    {
+    }
 
     /**
      * Returns true if this key has NOT been seen recently, and records it.

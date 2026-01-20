@@ -14,7 +14,8 @@ final class PreferencesValueResolver implements PlaceholderValueResolverInterfac
     public function __construct(
         private readonly ConfigProvider $config,
         private readonly TranslatorInterface $translator,
-    ) {}
+    ) {
+    }
 
     public function name(): string
     {

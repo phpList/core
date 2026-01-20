@@ -79,11 +79,11 @@ class AttachmentAdder
         sscanf($val, '%f%c', $number, $unit);
 
         return (int)($number * match (strtolower($unit ?? '')) {
-                'g'     => 1024 ** 3,
-                'm'     => 1024 ** 2,
-                'k'     => 1024,
-                default => 1,
-            });
+            'g'     => 1024 ** 3,
+            'm'     => 1024 ** 2,
+            'k'     => 1024,
+            default => 1,
+        });
     }
 
     private function prependTextAttachmentNotice(Email $email): void
@@ -103,7 +103,7 @@ class AttachmentAdder
                     [
                         '%campaignId%' => $campaignId,
                         '%totalSize%' => $totalSize,
-                        '%memLimit%' =>  $memoryLimit
+                        '%memLimit%' => $memoryLimit
                     ]
                 )
             );

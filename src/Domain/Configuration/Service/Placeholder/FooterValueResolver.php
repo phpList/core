@@ -13,7 +13,8 @@ final class FooterValueResolver implements PlaceholderValueResolverInterface
     public function __construct(
         private readonly ConfigProvider $config,
         private readonly bool $forwardAlternativeContent,
-    ) {}
+    ) {
+    }
 
     public function name(): string
     {

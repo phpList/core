@@ -25,7 +25,10 @@ class UserDataSupportingResolver implements SupportingPlaceholderResolverInterfa
         'FOREIGNKEY',
     ];
 
-    public function __construct(private readonly SubscriberRepository $subscriberRepository) {}
+    public function __construct(private readonly SubscriberRepository $subscriberRepository)
+    {
+    }
+
     public function supports(string $key, PlaceholderContext $ctx): bool
     {
         return in_array(strtoupper($key), $this->supportedKeys);

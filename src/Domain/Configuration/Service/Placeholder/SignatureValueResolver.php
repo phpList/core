@@ -13,7 +13,8 @@ final class SignatureValueResolver implements PlaceholderValueResolverInterface
     public function __construct(
         private readonly ConfigProvider $config,
         private readonly bool $emailTextCredits = false,
-    ) {}
+    ) {
+    }
 
     public function name(): string
     {

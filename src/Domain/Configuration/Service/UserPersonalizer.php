@@ -43,8 +43,14 @@ class UserPersonalizer
         $resolver->register($this->confirmationUrlValueResolver->name(), $this->confirmationUrlValueResolver);
         $resolver->register($this->preferencesUrlValueResolver->name(), $this->preferencesUrlValueResolver);
         $resolver->register($this->subscribeUrlValueResolver->name(), $this->subscribeUrlValueResolver);
-        $resolver->register('DOMAIN', fn(PlaceholderContext $ctx) => $this->config->getValue(ConfigOption::Domain) ?? '');
-        $resolver->register('WEBSITE', fn(PlaceholderContext $ctx) => $this->config->getValue(ConfigOption::Website) ?? '');
+        $resolver->register(
+            'DOMAIN',
+            fn(PlaceholderContext $ctx) => $this->config->getValue(ConfigOption::Domain) ?? ''
+        );
+        $resolver->register(
+            'WEBSITE',
+            fn(PlaceholderContext $ctx) => $this->config->getValue(ConfigOption::Website) ?? ''
+        );
 
         $userAttributes = $this->attributesRepository->getForSubscriber($user);
         foreach ($userAttributes as $userAttribute) {

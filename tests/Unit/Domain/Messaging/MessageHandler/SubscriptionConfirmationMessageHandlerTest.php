@@ -44,7 +44,11 @@ class SubscriptionConfirmationMessageHandlerTest extends TestCase
                 [ConfigOption::SubscribeMessage, 'Hi {{name}}, you subscribed to: [LISTS]'],
             ]);
 
-        $message = new SubscriptionConfirmationMessage(email: 'alice@example.com', uniqueId: 'user-123', listIds: [10, 11]);
+        $message = new SubscriptionConfirmationMessage(
+            email: 'alice@example.com',
+            uniqueId: 'user-123',
+            listIds: [10, 11],
+        );
 
         $userPersonalizer->expects($this->once())
             ->method('personalize')

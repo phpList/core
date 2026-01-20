@@ -14,7 +14,8 @@ final class ContactValueResolver implements PatternValueResolverInterface
     public function __construct(
         private readonly ConfigProvider $config,
         private readonly TranslatorInterface $translator,
-    ) {}
+    ) {
+    }
 
     public function pattern(): string
     {

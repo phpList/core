@@ -14,7 +14,8 @@ final class BlacklistUrlValueResolver implements PlaceholderValueResolverInterfa
     public function __construct(
         private readonly ConfigProvider $config,
         private readonly LegacyUrlBuilder $urlBuilder,
-    ) {}
+    ) {
+    }
 
     public function name(): string
     {

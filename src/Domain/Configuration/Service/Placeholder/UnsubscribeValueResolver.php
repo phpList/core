@@ -16,7 +16,8 @@ final class UnsubscribeValueResolver implements PlaceholderValueResolverInterfac
         private readonly ConfigProvider $config,
         private readonly LegacyUrlBuilder $urlBuilder,
         private readonly TranslatorInterface $translator,
-    ) {}
+    ) {
+    }
 
     public function name(): string
     {
