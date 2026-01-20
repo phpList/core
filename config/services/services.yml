@@ -71,6 +71,10 @@ services:
     autowire: true
     autoconfigure: true
 
+  PhpList\Core\Domain\Common\FileHelper:
+    autowire: true
+    autoconfigure: true
+
   # External image caching/downloading helper used by TemplateImageEmbedder
   PhpList\Core\Domain\Common\ExternalImageService:
     autowire: true

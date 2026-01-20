@@ -49,53 +49,48 @@ class MessageFixture extends Fixture
             $template = $templateRepository->find($row['template']);
 
             $format = new MessageFormat(
-                (bool)$row['htmlformatted'],
-                $row['sendformat'],
-                array_keys(array_filter([
-                    MessageFormat::FORMAT_TEXT => $row['astext'],
-                    MessageFormat::FORMAT_HTML => $row['ashtml'],
-                    MessageFormat::FORMAT_PDF => $row['aspdf'],
-                ]))
+                htmlFormatted: (bool)$row['htmlformatted'],
+                sendFormat: $row['sendformat'],
             );
 
             $schedule = new MessageSchedule(
-                (int)$row['repeatinterval'],
-                new DateTime($row['repeatuntil']),
-                (int)$row['requeueinterval'],
-                new DateTime($row['requeueuntil']),
-                new DateTime($row['embargo']),
+                repeatInterval: (int)$row['repeatinterval'],
+                repeatUntil: new DateTime($row['repeatuntil']),
+                requeueInterval: (int)$row['requeueinterval'],
+                requeueUntil: new DateTime($row['requeueuntil']),
+                embargo: new DateTime($row['embargo']),
             );
             $metadata = new MessageMetadata(
-                $row['status'],
-                (int)$row['bouncecount'],
-                new DateTime($row['entered']),
-                new DateTime($row['sent']),
-                new DateTime($row['sendstart']),
+                status: $row['status'],
+                bounceCount: (int)$row['bouncecount'],
+                entered: new DateTime($row['entered']),
+                sent: new DateTime($row['sent']),
+                sendStart: new DateTime($row['sendstart']),
             );
             $metadata->setProcessed((bool) $row['processed']);
             $metadata->setViews($row['viewed']);
             $content = new MessageContent(
-                $row['subject'],
-                $row['message'],
-                $row['textmessage'],
-                $row['footer']
+                subject: $row['subject'],
+                text: $row['message'],
+                textMessage: $row['textmessage'],
+                footer: $row['footer']
             );
             $options = new MessageOptions(
-                $row['fromfield'],
-                $row['tofield'],
-                $row['replyto'],
-                $row['userselection'],
-                $row['rsstemplate'],
+                fromField: $row['fromfield'],
+                toField: $row['tofield'],
+                replyTo: $row['replyto'],
+                userSelection: $row['userselection'],
+                rssTemplate: $row['rsstemplate'],
             );
 
             $message = new Message(
-                $format,
-                $schedule,
-                $metadata,
-                $content,
-                $options,
-                $admin,
-                $template,
+                format: $format,
+                schedule: $schedule,
+                metadata: $metadata,
+                content: $content,
+                options: $options,
+                owner: $admin,
+                template: $template,
             );
             $this->setSubjectId($message, (int)$row['id']);
             $this->setSubjectProperty($message, 'uuid', $row['uuid']);

@@ -207,18 +207,23 @@ class CampaignProcessorMessageHandler
         );
 
         try {
-            $email = $this->campaignEmailBuilder->buildPhplistEmail(
+            $result = $this->campaignEmailBuilder->buildPhplistEmail(
                 messageId: $campaign->getId(),
                 data: $processed,
                 skipBlacklistCheck: false,
                 inBlast: true,
                 htmlPref: $subscriber->hasHtmlEmail(),
             );
+            if ($result === null) {
+                return;
+            }
+            [$email, $sentAs] = $result;
             $email = $this->campaignEmailBuilder->applyCampaignHeaders(email: $email, subscriber: $subscriber);
 
             $this->rateLimitedCampaignMailer->send($email);
             ($this->mailSizeChecker)($campaign, $email, $subscriber->hasHtmlEmail());
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
+            $campaign->incrementSentCount($sentAs);
         } catch (MessageSizeLimitExceededException $e) {
             // stop after the first message if size is exceeded
             $this->updateMessageStatus($campaign, MessageStatus::Suspended);

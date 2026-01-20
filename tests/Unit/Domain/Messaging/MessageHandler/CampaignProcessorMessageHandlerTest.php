@@ -6,6 +6,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\MessageHandler;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler;
@@ -232,14 +233,15 @@ class CampaignProcessorMessageHandlerTest extends TestCase
 
         $campaignBuilderMock->expects($this->once())
             ->method('buildPhplistEmail')
-            ->willReturn(
+            ->willReturn([
                 (new Email())
                     ->from('news@example.com')
                     ->to('test@example.com')
                     ->subject('Test Subject')
                     ->text('Test text message')
-                    ->html('<p>Test HTML message</p>')
-            );
+                    ->html('<p>Test HTML message</p>'),
+                OutputFormat::Html
+            ]);
 
         $this->mailer->expects($this->any())->method('send');
 
@@ -298,7 +300,10 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
         $campaignBuilderMock->expects($this->once())
             ->method('buildPhplistEmail')
-            ->willReturn((new Email())->to('test@example.com')->subject('Test Subject')->text('x'));
+            ->willReturn([
+                (new Email())->to('test@example.com')->subject('Test Subject')->text('x'),
+                OutputFormat::Text
+            ]);
 
         $exception = new Exception('Test exception');
         $this->mailer->expects($this->once())
@@ -377,8 +382,14 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $campaignBuilderMock->expects($this->exactly(2))
             ->method('buildPhplistEmail')
             ->willReturnOnConsecutiveCalls(
-                (new Email())->to('test1@example.com')->subject('Test Subject')->text('x'),
-                (new Email())->to('test2@example.com')->subject('Test Subject')->text('x')
+                [
+                    (new Email())->to('test1@example.com')->subject('Test Subject')->text('x'),
+                    OutputFormat::Text
+                ],
+                [
+                    (new Email())->to('test2@example.com')->subject('Test Subject')->text('x'),
+                    OutputFormat::Text
+                ],
             );
 
         $this->mailer->expects($this->exactly(2))

@@ -8,4 +8,7 @@ enum OutputFormat: string
 {
     case Html = 'html';
     case Text = 'text';
+    case Pdf = 'pdf';
+    case TextAndPdf = 'textandpdf';
+    case TextAndHtml = 'textandhtml';
 }

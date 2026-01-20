@@ -22,6 +22,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mime\Address;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class EmailBuilderTest extends TestCase
 {
@@ -75,12 +76,13 @@ class EmailBuilderTest extends TestCase
             blacklistRepository: $this->blacklistRepository,
             subscriberHistoryManager: $this->subscriberHistoryManager,
             subscriberRepository: $this->subscriberRepository,
+            logger: $this->logger,
             mailConstructor: $this->systemMailConstructor,
             templateImageEmbedder: $this->templateImageEmbedder,
-            logger: $this->logger,
             urlBuilder: $this->createMock(LegacyUrlBuilder::class),
             pdfGenerator: $this->createMock(PdfGenerator::class),
             attachmentAdder: $this->attachmentAdder,
+            translator: $this->createMock(TranslatorInterface::class),
             googleSenderId: $googleSenderId,
             useAmazonSes: $useAmazonSes,
             usePrecedenceHeader: $usePrecedenceHeader,
@@ -144,6 +146,7 @@ class EmailBuilderTest extends TestCase
         $dto->to = 'real@example.com';
         $dto->subject = 'Subject';
         $dto->content = 'TEXT';
+        $dto->fromEmail = 'sender@example.com';
 
         // SystemMailConstructor returns both html and text bodies
         $this->systemMailConstructor->expects($this->once())
@@ -165,14 +168,15 @@ class EmailBuilderTest extends TestCase
             devEmail: 'dev@example.com'
         );
 
-        $email = $builder->buildPhplistEmail(
+        $result = $builder->buildPhplistEmail(
             messageId: 777,
             data: $dto,
             skipBlacklistCheck: false,
             inBlast: true
         );
 
-        $this->assertNotNull($email);
+        $this->assertNotNull($result);
+        [$email, $sentAs] = $result;
 
         // Recipient is redirected to dev email in dev mode
         $this->assertCount(1, $email->getTo());
