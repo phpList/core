@@ -24,7 +24,7 @@ final class BlacklistUrlValueResolver implements PlaceholderValueResolverInterfa
 
     public function __invoke(PlaceholderContext $ctx): string
     {
-        $base = $this->config->getValue(ConfigOption::UnsubscribeUrl) ?? '';
+        $base = $this->config->getValue(ConfigOption::BlacklistUrl) ?? '';
         $url = $this->urlBuilder->withEmail($base, $ctx->getUser()->getEmail());
 
         if ($ctx->isHtml()) {

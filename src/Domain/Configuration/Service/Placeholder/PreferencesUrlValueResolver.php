@@ -25,7 +25,12 @@ final class PreferencesUrlValueResolver implements PlaceholderValueResolverInter
         $sep = !str_contains($url, '?') ? '?' : '&';
 
         if ($ctx->isHtml()) {
-            return sprintf('%s%suid=%s', $url, htmlspecialchars($sep), $ctx->getUser()->getUniqueId());
+            return sprintf(
+                '%s%suid=%s',
+                htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+                htmlspecialchars($sep),
+                $ctx->getUser()->getUniqueId(),
+            );
         }
 
         return sprintf('%s%suid=%s', $url, $sep, $ctx->getUser()->getUniqueId());

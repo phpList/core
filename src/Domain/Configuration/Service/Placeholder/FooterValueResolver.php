@@ -28,6 +28,6 @@ final class FooterValueResolver implements PlaceholderValueResolverInterface
             return stripslashes($ctx->messagePrecacheDto->footer);
         }
 
-        return $this->config->getValue(ConfigOption::ForwardFooter);
+        return $this->config->getValue(ConfigOption::ForwardFooter) ?? '';
     }
 }

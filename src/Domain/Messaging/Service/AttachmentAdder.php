@@ -23,8 +23,8 @@ class AttachmentAdder
         private readonly EventLogManager $eventLogManager,
         private readonly OnceCacheGuard $onceCacheGuard,
         private readonly FileHelper $fileHelper,
-        #[Autowire('attachment_download_url')] private readonly string $attachmentDownloadUrl,
-        #[Autowire('attachment_repository_path')] private readonly string $attachmentRepositoryPath = '/tmp',
+        #[Autowire('%phplist.attachment_download_url%')] private readonly string $attachmentDownloadUrl,
+        #[Autowire('%phplist.attachment_repository_path%')] private readonly string $attachmentRepositoryPath = '/tmp',
     ) {
     }
 
@@ -143,7 +143,7 @@ class AttachmentAdder
             return false;
         }
 
-        $email->attachFromPath($contents, basename($att->getRemoteFile()), $att->getMimeType());
+        $email->attach($contents, basename($att->getRemoteFile()), $att->getMimeType());
 
         return true;
     }
@@ -168,7 +168,7 @@ class AttachmentAdder
             return false;
         }
 
-        $email->attachFromPath($contents, basename($remoteFile), $att->getMimeType());
+        $email->attach($contents, basename($remoteFile), $att->getMimeType());
         $this->copyAttachmentToRepository($att, $contents, $campaignId, $key);
 
         return true;
@@ -177,29 +177,22 @@ class AttachmentAdder
     private function copyAttachmentToRepository(Attachment $att, string $contents, int $campaignId, string $key): void
     {
         $remoteFile = $att->getRemoteFile();
-        [$name, $ext] = explode('.', basename($remoteFile));
+        if ($remoteFile === null) {
+            return;
+        }
 
-        $newFile = tempnam($this->attachmentRepositoryPath, $name);
-        $newFile .= '.' . $ext;
-        $relativeName = basename($newFile);
+        $relativeName = $this->fileHelper->writeFileToDirectory(
+            directory: $this->attachmentRepositoryPath,
+            originalFilename: $remoteFile,
+            contents: $contents
+        );
 
-        $fullPath = $this->attachmentRepositoryPath . '/' . $relativeName;
-
-        $fileHandle = fopen($fullPath, 'w');
-        if ($fileHandle === false) {
+        if ($relativeName === null) {
             $this->handleCopyFailure($remoteFile, $campaignId, $key);
             return;
         }
 
-        fwrite($fileHandle, $contents);
-        fclose($fileHandle);
-
-        if (filesize($fullPath)) {
-            $att->setFilename($relativeName);
-            return;
-        }
-
-        $this->handleCopyFailure($remoteFile, $campaignId, $key);
+        $att->setFilename($relativeName);
     }
 
     private function handleCopyFailure(string $remoteFile, int $campaignId, string $key): void

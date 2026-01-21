@@ -20,6 +20,7 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Mailer\Exception\LogicException;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -81,13 +82,11 @@ class EmailBuilder extends BaseEmailBuilder
         $fromName = $data->fromName;
         $subject = (!$isTestMail ? '' : $this->translator->trans('(test)') .  ' ') . $data->subject;
 
-        $destinationEmail = $this->resolveDestinationEmail($data->to);
-
         [$htmlMessage, $textMessage] = ($this->mailConstructor)(messagePrecacheDto: $data);
 
         $email = $this->createBaseEmail(
             messageId: $messageId,
-            destinationEmail: $destinationEmail,
+            originalTo: $data->to,
             fromEmail: $fromEmail,
             fromName: $fromName,
             subject: $subject,
@@ -185,11 +184,11 @@ class EmailBuilder extends BaseEmailBuilder
         return $sentAs;
     }
 
-    private function shouldPreferHtml(
-        ?string $htmlMessage,
-        bool $htmlPref,
-        Email $email
-    ): bool {
+    private function shouldPreferHtml(?string $htmlMessage, bool $htmlPref, Email $email): bool
+    {
+        if (empty($email->getTo())) {
+            throw new LogicException('No recipients specified');
+        }
         // If we have HTML content, default to preferring HTML
         $htmlPref = $htmlPref || (is_string($htmlMessage) && trim($htmlMessage) !== '');
 
@@ -222,16 +221,9 @@ class EmailBuilder extends BaseEmailBuilder
         // send a PDF file to users who want html and text to everyone else
         if ($htmlPref) {
             $sentAs = OutputFormat::Pdf;
-            $pdfFile = $this->pdfGenerator->createPdfBytes($textMessage);
-            if (is_file($pdfFile) && filesize($pdfFile)) {
-                $filePointer = fopen($pdfFile, 'r');
-                if ($filePointer) {
-                    $contents = fread($filePointer, filesize($pdfFile));
-                    fclose($filePointer);
-                    unlink($pdfFile);
-                    $email->attach($contents, 'message.pdf', 'application/pdf');
-                }
-            }
+            $pdfBytes = $this->pdfGenerator->createPdfBytes($textMessage);
+            $email->attach($pdfBytes, 'message.pdf', 'application/pdf');
+
             if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Html)) {
                 throw new AttachmentException();
             }
@@ -255,17 +247,10 @@ class EmailBuilder extends BaseEmailBuilder
         // send a PDF file to users who want html and text to everyone else
         if ($htmlPref) {
             $sentAs = OutputFormat::TextAndPdf;
-            $pdfFile = $this->pdfGenerator->createPdfBytes($textMessage);
-            if (is_file($pdfFile) && filesize($pdfFile)) {
-                $filePointer = fopen($pdfFile, 'r');
-                if ($filePointer) {
-                    $contents = fread($filePointer, filesize($pdfFile));
-                    fclose($filePointer);
-                    unlink($pdfFile);
-                    $email->text($textMessage);
-                    $email->attach($contents, 'message.pdf', 'application/pdf');
-                }
-            }
+            $pdfBytes = $this->pdfGenerator->createPdfBytes($textMessage);
+            $email->attach($pdfBytes, 'message.pdf', 'application/pdf');
+            $email->text($textMessage);
+
             if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Html)) {
                 throw new AttachmentException();
             }

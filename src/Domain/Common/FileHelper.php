@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Common;
 
+use Throwable;
+
 class FileHelper
 {
     public function isValidFile(string $path): bool
@@ -13,14 +15,47 @@ class FileHelper
 
     public function readFileContents(string $path): ?string
     {
-        $filePointer = fopen($path, 'r');
+        $filePointer = fopen($path, 'rb');
         if ($filePointer === false) {
             return null;
         }
 
-        $contents = fread($filePointer, filesize($path));
-        fclose($filePointer);
+        try {
+            $contents = stream_get_contents($filePointer);
+            if ($contents === false) {
+                return null;
+            }
+            return $contents;
+        } catch (Throwable) {
+            return null;
+        } finally {
+            fclose($filePointer);
+        }
+    }
 
-        return $contents === false ? null : $contents;
+    public function writeFileToDirectory(string $directory, string $originalFilename, string $contents): ?string
+    {
+        $pathInfo = pathinfo($originalFilename);
+        $name = $pathInfo['filename'] === '' ? 'file' : $pathInfo['filename'];
+        $ext = $pathInfo['extension'] ?? '';
+
+        $newFile = tempnam($directory, $name);
+        if ($newFile === false) {
+            return null;
+        }
+
+        if ($ext !== '') {
+            $newFile .= '.' . $ext;
+        }
+        $relativeName = basename($newFile);
+
+        $fullPath = $directory . '/' . $relativeName;
+
+        $fileHandle = fopen($fullPath, 'w');
+
+        fwrite($fileHandle, $contents);
+        fclose($fileHandle);
+
+        return $fullPath;
     }
 }

@@ -16,6 +16,7 @@ use PhpList\Core\Domain\Messaging\Exception\RemotePageFetchException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Messaging\Exception\SubscriberNotFoundException;
 
 class CampaignMailContentBuilder implements MailContentBuilderInterface
 {
@@ -30,11 +31,14 @@ class CampaignMailContentBuilder implements MailContentBuilderInterface
     ) {
     }
 
-    public function __invoke(
-        MessagePrecacheDto $messagePrecacheDto,
-        ?int $campaignId = null,
-    ): array {
+    public function __invoke(MessagePrecacheDto $messagePrecacheDto, ?int $campaignId = null,): array
+    {
         $subscriber = $this->subscriberRepository->findOneByEmail($messagePrecacheDto->to);
+        if (!$subscriber) {
+            throw new SubscriberNotFoundException(
+                sprintf('Subscriber with email %s not found', $messagePrecacheDto->to)
+            );
+        }
         $addDefaultStyle = false;
 
         if ($messagePrecacheDto->userSpecificUrl) {
@@ -48,7 +52,7 @@ class CampaignMailContentBuilder implements MailContentBuilderInterface
             $textContent = $hasText ? $messagePrecacheDto->textContent : ($this->html2Text)($content);
             $htmlContent = $content;
         } else {
-            $textContent = $hasText ? $content : $messagePrecacheDto->textContent;
+            $textContent = $hasText ? $messagePrecacheDto->textContent : $content;
             $htmlContent = ($this->textParser)($content);
         }
 
@@ -95,7 +99,7 @@ class CampaignMailContentBuilder implements MailContentBuilderInterface
         Subscriber $subscriber,
         array $userData
     ): void {
-        if (!preg_match_all('/\[URL:(^\s]+)]/i', $messagePrecacheDto->content, $matches, PREG_SET_ORDER)) {
+        if (!preg_match_all('/\[URL:([^\s]+)]/i', $messagePrecacheDto->content, $matches, PREG_SET_ORDER)) {
             return;
         }
 

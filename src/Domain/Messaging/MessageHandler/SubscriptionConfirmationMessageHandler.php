@@ -38,6 +38,11 @@ class SubscriptionConfirmationMessageHandler
         $subject = $this->configProvider->getValue(ConfigOption::SubscribeEmailSubject);
         $textContent = $this->configProvider->getValue(ConfigOption::SubscribeMessage);
 
+        if (empty($subject) || empty($textContent)) {
+            $this->logger->error('Subscription email configuration is missing. Email not sent.');
+            return;
+        }
+
         $personalizedTextContent = $this->userPersonalizer->personalize(
             value: $textContent,
             email: $message->getEmail(),

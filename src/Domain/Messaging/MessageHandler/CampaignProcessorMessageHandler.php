@@ -72,7 +72,7 @@ class CampaignProcessorMessageHandler
         private readonly EmailBuilder $campaignEmailBuilder,
         private readonly MailSizeChecker $mailSizeChecker,
         private readonly ConfigProvider $configProvider,
-        #[Autowire('imap_bounce.email')] private readonly string $bounceEmail,
+        #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
     ) {
     }
 

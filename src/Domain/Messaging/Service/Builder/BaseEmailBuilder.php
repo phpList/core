@@ -100,13 +100,14 @@ class BaseEmailBuilder
 
     protected function createBaseEmail(
         int $messageId,
-        mixed $destinationEmail,
+        string $originalTo,
         ?string $fromEmail,
         ?string $fromName,
         ?string $subject,
         ?bool $inBlast
     ) : Email {
         $email = (new Email());
+        $destinationEmail = $this->resolveDestinationEmail($originalTo);
 
         $email->getHeaders()->addTextHeader('X-MessageID', (string)$messageId);
         $email->getHeaders()->addTextHeader('X-ListMember', $destinationEmail);
@@ -137,10 +138,10 @@ class BaseEmailBuilder
             )
         );
 
-        if ($this->devEmail && $destinationEmail !== $this->devEmail) {
+        if ($this->devEmail && $destinationEmail === $this->devEmail && $originalTo !== $this->devEmail) {
             $email->getHeaders()->addMailboxHeader(
                 'X-Originally-To',
-                new Address($destinationEmail)
+                new Address($originalTo)
             );
         }
 

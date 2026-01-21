@@ -25,13 +25,13 @@ final class SignatureValueResolver implements PlaceholderValueResolverInterface
     {
         if ($ctx->isHtml()) {
             if ($this->emailTextCredits) {
-                return $this->config->getValue(ConfigOption::PoweredByText);
+                return $this->config->getValue(ConfigOption::PoweredByText) ?? '';
             }
 
             return preg_replace(
                 '/src=".*power-phplist.png"/',
                 'src="powerphplist.png"',
-                $this->config->getValue(ConfigOption::PoweredByImage)
+                $this->config->getValue(ConfigOption::PoweredByImage) ?? ''
             );
         }
 

@@ -32,13 +32,14 @@ final class PreferencesValueResolver implements PlaceholderValueResolverInterfac
             $safeLabel = htmlspecialchars($label, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
             $safeUrl = htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-            return sprintf(
-                '<a href="%s%suid=%s">%s</a> ',
-                $safeUrl,
-                htmlspecialchars($sep),
-                $ctx->getUser()->getUniqueId(),
-                $safeLabel,
-            );
+            return '<a href="'
+                . $safeUrl
+                . htmlspecialchars($sep)
+                . 'uid='
+                . $ctx->getUser()->getUniqueId()
+                . '">'
+                . $safeLabel
+                . '</a> ';
         }
 
         return sprintf('%s%suid=%s', $url, $sep, $ctx->getUser()->getUniqueId());

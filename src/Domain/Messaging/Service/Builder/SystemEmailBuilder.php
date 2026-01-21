@@ -69,13 +69,11 @@ class SystemEmailBuilder extends BaseEmailBuilder
 //        $messageReplyToAddress = $this->configProvider->getValue(ConfigOption::MessageReplyToAddress);
 //        $replyTo = $messageReplyToAddress ?: $fromEmail;
 
-        $destinationEmail = $this->resolveDestinationEmail($data->to);
-
         [$htmlMessage, $textMessage] = ($this->mailConstructor)(messagePrecacheDto: $data);
 
         $email = $this->createBaseEmail(
             messageId: $messageId,
-            destinationEmail: $destinationEmail,
+            originalTo: $data->to,
             fromEmail: $fromEmail,
             fromName: $fromName,
             subject: $data->subject,
@@ -103,7 +101,6 @@ class SystemEmailBuilder extends BaseEmailBuilder
             // Embed/transform images and use the returned HTML content
             $htmlMessage = ($this->templateImageEmbedder)(html: $htmlMessage, messageId: $messageId);
             $email->html($htmlMessage);
-            $email->text($textMessage);
             //# In the above phpMailer strips all tags, which removes the links
             // which are wrapped in < and > by HTML2text so add it again
         }

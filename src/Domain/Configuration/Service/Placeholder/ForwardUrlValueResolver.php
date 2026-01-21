@@ -34,6 +34,6 @@ final class ForwardUrlValueResolver implements PlaceholderValueResolverInterface
             );
         }
 
-        return sprintf('%s%suid=%s&mid=%d ', $url, $sep, $ctx->getUser()->getUniqueId(), $ctx->messageId());
+        return sprintf('%s%suid=%s&mid=%d', $url, $sep, $ctx->getUser()->getUniqueId(), $ctx->messageId());
     }
 }

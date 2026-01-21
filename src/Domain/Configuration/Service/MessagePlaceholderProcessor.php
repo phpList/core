@@ -29,7 +29,7 @@ class MessagePlaceholderProcessor
         private readonly iterable $patternResolvers,
         /** @var iterable<SupportingPlaceholderResolverInterface> */
         private readonly iterable $supportingResolvers,
-        #[Autowire('messaging.always_add_user_track')] private readonly bool $alwaysAddUserTrack,
+        #[Autowire('%messaging.always_add_user_track%')] private readonly bool $alwaysAddUserTrack,
     ) {
     }
 
@@ -60,12 +60,6 @@ class MessagePlaceholderProcessor
         $resolver->register(
             name: 'ORGANIZATION_NAME',
             resolver: fn(PlaceholderContext $ctx) => $this->config->getValue(ConfigOption::OrganisationName) ?? ''
-        );
-        $resolver->register(
-            name: 'CONTACTURL',
-            resolver: fn(PlaceholderContext $ctx) => htmlspecialchars(
-                $this->config->getValue(ConfigOption::VCardUrl) ?? ''
-            )
         );
 
         foreach ($this->placeholderResolvers as $placeholderResolver) {
@@ -100,6 +94,25 @@ class MessagePlaceholderProcessor
         );
     }
 
+    private function ensureStandardPlaceholders(string $value, OutputFormat $format): string
+    {
+        if (!str_contains($value, '[FOOTER]')) {
+            $sep = $format === OutputFormat::Html ? '<br />' : "\n\n";
+            $value = $this->appendContent($value, $sep . '[FOOTER]');
+        }
+
+        if (!str_contains($value, '[SIGNATURE]')) {
+            $sep = $format === OutputFormat::Html ? ' ' : "\n";
+            $value = $this->appendContent($value, $sep . '[SIGNATURE]');
+        }
+
+        if ($this->alwaysAddUserTrack && $format === OutputFormat::Html && !str_contains($value, '[USERTRACK]')) {
+            $value = $this->appendContent($value, '[USERTRACK]');
+        }
+
+        return $value;
+    }
+
     private function appendContent(string $message, string $append): string
     {
         if (preg_match('#</body>#i', $message)) {
@@ -109,24 +122,5 @@ class MessagePlaceholderProcessor
         }
 
         return $message;
-    }
-
-    private function ensureStandardPlaceholders(string $value, OutputFormat $format): string
-    {
-        if (!strpos($value, '[FOOTER]')) {
-            $sep = $format === OutputFormat::Html ? '<br />' : "\n\n";
-            $value = $this->appendContent($value, $sep . '[FOOTER]');
-        }
-
-        if (!strpos($value, '[SIGNATURE]')) {
-            $sep = $format === OutputFormat::Html ? ' ' : "\n";
-            $value = $this->appendContent($value, $sep . '[SIGNATURE]');
-        }
-
-        if ($this->alwaysAddUserTrack && $format === OutputFormat::Html && !strpos($value, '[USERTRACK]')) {
-            $value = $this->appendContent($value, '[USERTRACK]');
-        }
-
-        return $value;
     }
 }

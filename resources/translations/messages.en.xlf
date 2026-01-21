@@ -774,9 +774,9 @@ Thank you.</target>
         <source>This message contains attachments that can be viewed with a webbrowser</source>
         <target>__This message contains attachments that can be viewed with a webbrowser</target>
       </trans-unit>
-      <trans-unit id="QLlIQQh" resname="Insufficient memory to add attachment to campaign %campaignId% %tatalSize% - %memLimit%">
-        <source>Insufficient memory to add attachment to campaign %campaignId% %tatalSize% - %memLimit%</source>
-        <target>__Insufficient memory to add attachment to campaign %campaignId% %tatalSize% - %memLimit%</target>
+      <trans-unit id="QLlIQQh" resname="Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%">
+        <source>Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%</source>
+        <target>__Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%</target>
       </trans-unit>
       <trans-unit id="HhEWxtR" resname="Add us to your address book">
         <source>Add us to your address book</source>
