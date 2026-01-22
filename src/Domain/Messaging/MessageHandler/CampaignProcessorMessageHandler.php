@@ -4,30 +4,44 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\MessageHandler;
 
+use DateTime;
+use DateTimeImmutable;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Messaging\Exception\AttachmentCopyException;
+use PhpList\Core\Domain\Messaging\Exception\MessageCacheMissingException;
 use PhpList\Core\Domain\Messaging\Exception\MessageSizeLimitExceededException;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\Message\SyncCampaignProcessorMessage;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Model\Message\UserMessageStatus;
+use PhpList\Core\Domain\Messaging\Model\MessageData;
 use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
+use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
+use PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
-use PhpList\Core\Domain\Messaging\Service\Manager\MessageDataManager;
+use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
+use PhpList\Core\Domain\Messaging\Service\MessageDataLoader;
 use PhpList\Core\Domain\Messaging\Service\MessagePrecacheService;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
-use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Mailer\Envelope;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Address;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
@@ -38,10 +52,9 @@ use Throwable;
 #[AsMessageHandler]
 class CampaignProcessorMessageHandler
 {
-    private ?int $maxMailSize;
-
     public function __construct(
-        private readonly RateLimitedCampaignMailer $mailer,
+        private readonly MailerInterface $mailer,
+        private readonly RateLimitedCampaignMailer $rateLimitedCampaignMailer,
         private readonly EntityManagerInterface $entityManager,
         private readonly SubscriberProvider $subscriberProvider,
         private readonly MessageProcessingPreparator $messagePreparator,
@@ -53,12 +66,14 @@ class CampaignProcessorMessageHandler
         private readonly TranslatorInterface $translator,
         private readonly SubscriberHistoryManager $subscriberHistoryManager,
         private readonly MessageRepository $messageRepository,
-        private readonly EventLogManager $eventLogManager,
-        private readonly MessageDataManager $messageDataManager,
         private readonly MessagePrecacheService $precacheService,
-        ?int $maxMailSize = null,
+        private readonly MessageDataLoader $messageDataLoader,
+        private readonly SystemEmailBuilder $systemEmailBuilder,
+        private readonly EmailBuilder $campaignEmailBuilder,
+        private readonly MailSizeChecker $mailSizeChecker,
+        private readonly ConfigProvider $configProvider,
+        #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
     ) {
-        $this->maxMailSize = $maxMailSize ?? 0;
     }
 
     public function __invoke(CampaignProcessorMessage|SyncCampaignProcessorMessage $message): void
@@ -73,39 +88,62 @@ class CampaignProcessorMessageHandler
             return;
         }
 
-        $messageContent = $this->precacheService->getOrCacheBaseMessageContent($campaign);
+        $loadedMessageData = ($this->messageDataLoader)($campaign);
+//        if (!empty($loadedMessageData['resetstats'])) {
+//            resetMessageStatistics($loadedMessageData['id']);
+//            setMessageData($loadedMessageData['id'], 'resetstats', 0);
+//        }
+//        $stopSending = false;
+//        if (!empty($loadedMessageData['finishsending'])) {
+//            $finishSendingBefore = mktime(
+//                $loadedMessageData['finishsending']['hour'],
+//                $loadedMessageData['finishsending']['minute'],
+//                0,
+//                $loadedMessageData['finishsending']['month'],
+//                $loadedMessageData['finishsending']['day'],
+//                $loadedMessageData['finishsending']['year'],
+//            );
+//            $secondsTogo = $finishSendingBefore - time();
+//            $stopSending = $secondsTogo < 0;
+//        }
+//        $userSelection = $loadedMessageData['userselection'];
+
+        $cacheKey = sprintf('messaging.message.base.%d.%d', $campaign->getId(), 0);
+        if (!$this->precacheService->precacheMessage($campaign, $loadedMessageData)) {
+            $this->updateMessageStatus($campaign, MessageStatus::Suspended);
+
+            return;
+        }
+
+        $this->handleAdminNotifications($campaign, $loadedMessageData, $message->getMessageId());
 
         $this->updateMessageStatus($campaign, MessageStatus::Prepared);
         $subscribers = $this->subscriberProvider->getSubscribersForMessage($campaign);
 
         $this->updateMessageStatus($campaign, MessageStatus::InProcess);
 
-        $this->timeLimiter->start();
-        $stoppedEarly = false;
+//        if (USE_LIST_EXCLUDE) {
+//            if (VERBOSE) {
+//                processQueueOutput(s('looking for users who can be excluded from this mailing'));
+//            }
+//            if (count($msgdata['excludelist'])) {
+//                $query
+//                    = ' select userid'
+//                    .' from '.$GLOBALS['tables']['listuser']
+//                    .' where listid in ('.implode(',', $msgdata['excludelist']).')';
+//                if (VERBOSE) {
+//                    processQueueOutput('Exclude query '.$query);
+//                }
+//                $req = Sql_Query($query);
+//                while ($row = Sql_Fetch_Row($req)) {
+//                    $um = Sql_Query(sprintf('replace into %s (entered,userid,messageid,status)
+//                           values(now(),%d,%d,"excluded")',
+//                        $tables['usermessage'], $row[0], $messageid));
+//                }
+//            }
+//        }
 
-        foreach ($subscribers as $subscriber) {
-            if ($this->timeLimiter->shouldStop()) {
-                $stoppedEarly = true;
-                break;
-            }
-
-            $existing = $this->userMessageRepository->findOneByUserAndMessage($subscriber, $campaign);
-            if ($existing && $existing->getStatus() !== UserMessageStatus::Todo) {
-                continue;
-            }
-
-            $userMessage = $existing ?? new UserMessage($subscriber, $campaign);
-            $userMessage->setStatus(UserMessageStatus::Active);
-            $this->userMessageRepository->save($userMessage);
-
-            if (!filter_var($subscriber->getEmail(), FILTER_VALIDATE_EMAIL)) {
-                $this->handleInvalidEmail($userMessage, $subscriber, $campaign);
-                $this->entityManager->flush();
-                continue;
-            }
-
-            $this->handleEmailSending($campaign, $subscriber, $userMessage, $messageContent);
-        }
+        $stoppedEarly = $this->processSubscribersForCampaign($campaign, $subscribers, $cacheKey);
 
         if ($stoppedEarly && $this->requeueHandler->handle($campaign)) {
             $this->entityManager->flush();
@@ -125,6 +163,9 @@ class CampaignProcessorMessageHandler
 
     private function updateMessageStatus(Message $message, MessageStatus $status): void
     {
+        if ($status === MessageStatus::InProcess && $message->getMetadata()->getSendStart() === null) {
+            $message->getMetadata()->setSendStart(new DateTime());
+        }
         $message->getMetadata()->setStatus($status);
         $this->entityManager->flush();
     }
@@ -156,19 +197,61 @@ class CampaignProcessorMessageHandler
         Message $campaign,
         Subscriber $subscriber,
         UserMessage $userMessage,
-        Message\MessageContent $precachedContent,
+        MessagePrecacheDto $precachedContent,
     ): void {
-        $processed = $this->messagePreparator->processMessageLinks($campaign->getId(), $precachedContent, $subscriber);
+        // todo: check at which point link tracking should be applied (maybe after constructing ful text?)
+        $processed = $this->messagePreparator->processMessageLinks(
+            campaignId: $campaign->getId(),
+            cachedMessageDto: $precachedContent,
+            subscriber: $subscriber
+        );
 
         try {
-            $email = $this->mailer->composeEmail($campaign, $subscriber, $processed);
-            $this->mailer->send($email);
-            $this->checkMessageSizeOrSuspendCampaign($campaign, $email, $subscriber->hasHtmlEmail());
+            $result = $this->campaignEmailBuilder->buildPhplistEmail(
+                messageId: $campaign->getId(),
+                data: $processed,
+                skipBlacklistCheck: false,
+                inBlast: true,
+                htmlPref: $subscriber->hasHtmlEmail(),
+            );
+            if ($result === null) {
+                return;
+            }
+            [$email, $sentAs] = $result;
+            $email = $this->campaignEmailBuilder->applyCampaignHeaders(email: $email, subscriber: $subscriber);
+
+            $this->rateLimitedCampaignMailer->send($email);
+            ($this->mailSizeChecker)($campaign, $email, $subscriber->hasHtmlEmail());
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
+            $campaign->incrementSentCount($sentAs);
         } catch (MessageSizeLimitExceededException $e) {
             // stop after the first message if size is exceeded
             $this->updateMessageStatus($campaign, MessageStatus::Suspended);
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
+
+            throw $e;
+        } catch (AttachmentCopyException $e) {
+            // stop after the first message if size is exceeded
+            $this->updateMessageStatus($campaign, MessageStatus::Suspended);
+            $this->updateUserMessageStatus($userMessage, UserMessageStatus::NotSent);
+
+            $data = new MessagePrecacheDto();
+            $data->to = $this->configProvider->getValue(ConfigOption::ReportAddress);
+            $data->subject = $this->translator->trans('phpList system error');
+            $data->content = $this->translator->trans($e->getMessage());
+
+            $email = $this->systemEmailBuilder->buildPhplistEmail(
+                messageId: $campaign->getId(),
+                data: $data,
+                inBlast: false,
+                htmlPref: true,
+            );
+
+            $envelope = new Envelope(
+                sender: new Address($this->bounceEmail, 'PHPList'),
+                recipients: [new Address($email->getTo()[0]->getAddress())],
+            );
+            $this->mailer->send(message: $email, envelope: $envelope);
 
             throw $e;
         } catch (Throwable $e) {
@@ -183,56 +266,87 @@ class CampaignProcessorMessageHandler
         }
     }
 
-    private function checkMessageSizeOrSuspendCampaign(
-        Message $campaign,
-        Email $email,
-        bool $hasHtmlEmail
-    ): void {
-        if ($this->maxMailSize <= 0) {
-            return;
+    private function handleAdminNotifications(Message $campaign, array $loadedMessageData, int $messageId): void
+    {
+        if (!empty($loadedMessageData['notify_start']) && !isset($loadedMessageData['start_notified'])) {
+            $notifications = explode(',', $loadedMessageData['notify_start']);
+            foreach ($notifications as $notification) {
+                $data = new MessagePrecacheDto();
+                $data->to = $notification;
+                $data->subject = $this->translator->trans('Campaign started');
+                $data->content = $this->translator->trans(
+                    'phplist has started sending the campaign with subject %subject%',
+                    ['%subject%' => $loadedMessageData['subject']]
+                );
+
+                $email = $this->systemEmailBuilder->buildPhplistEmail(
+                    messageId: $campaign->getId(),
+                    data: $data,
+                    inBlast: false,
+                    htmlPref: true,
+                );
+
+                if (!$email) {
+                    continue;
+                }
+
+                // todo: check if from name should be from config
+                $envelope = new Envelope(
+                    sender: new Address($this->bounceEmail, 'PHPList'),
+                    recipients: [new Address($email->getTo()[0]->getAddress())],
+                );
+                $this->mailer->send(message: $email, envelope: $envelope);
+            }
+            $messageData = new MessageData();
+            $messageData->setName('start_notified');
+            $messageData->setId($messageId);
+            $messageData->setData((new DateTimeImmutable())->format('Y-m-d H:i:s'));
+
+            try {
+                $this->entityManager->persist($messageData);
+                $this->entityManager->flush();
+            } catch (UniqueConstraintViolationException $e) {
+                $this->logger->debug('Duplicate message ignored', [
+                    'exception' => $e,
+                ]);
+            }
         }
-        $sizeName = $hasHtmlEmail ? 'htmlsize' : 'textsize';
-        $cacheKey = sprintf('messaging.size.%d.%s', $campaign->getId(), $sizeName);
-        if (!$this->cache->has($cacheKey)) {
-            $size = $this->calculateEmailSize($email);
-            $this->messageDataManager->setMessageData($campaign, $sizeName, $size);
-            $this->cache->set($cacheKey, $size);
-        }
-
-        $size = $this->cache->get($cacheKey);
-        if ($size <= $this->maxMailSize) {
-            return;
-        }
-
-        $this->logger->warning(sprintf(
-            'Message too large (%d is over %d), suspending campaign %d',
-            $size,
-            $this->maxMailSize,
-            $campaign->getId()
-        ));
-
-        $this->eventLogManager->log('send', sprintf(
-            'Message too large (%d is over %d), suspending',
-            $size,
-            $this->maxMailSize
-        ));
-
-        $this->eventLogManager->log('send', sprintf(
-            'Campaign %d suspended. Message too large',
-            $campaign->getId()
-        ));
-
-        throw new MessageSizeLimitExceededException($size, $this->maxMailSize);
     }
 
-    private function calculateEmailSize(Email $email): int
+    private function processSubscribersForCampaign(Message $campaign, array $subscribers, string $cacheKey): bool
     {
-        $size = 0;
+        $this->timeLimiter->start();
+        $stoppedEarly = false;
 
-        foreach ($email->toIterable() as $line) {
-            $size += strlen($line);
+        foreach ($subscribers as $subscriber) {
+            if ($this->timeLimiter->shouldStop()) {
+                $stoppedEarly = true;
+                break;
+            }
+
+            $existing = $this->userMessageRepository->findOneByUserAndMessage($subscriber, $campaign);
+            if ($existing && $existing->getStatus() !== UserMessageStatus::Todo) {
+                continue;
+            }
+
+            $userMessage = $existing ?? new UserMessage($subscriber, $campaign);
+            $userMessage->setStatus(UserMessageStatus::Active);
+            $this->userMessageRepository->save($userMessage);
+
+            if (!filter_var($subscriber->getEmail(), FILTER_VALIDATE_EMAIL)) {
+                $this->handleInvalidEmail($userMessage, $subscriber, $campaign);
+                $this->entityManager->flush();
+                continue;
+            }
+
+            $messagePrecacheDto = $this->cache->get($cacheKey);
+            if ($messagePrecacheDto === null) {
+                throw new MessageCacheMissingException();
+            }
+            // todo: maybe catch exception and return false to stop early?
+            $this->handleEmailSending($campaign, $subscriber, $userMessage, $messagePrecacheDto);
         }
 
-        return $size;
+        return $stoppedEarly;
     }
 }

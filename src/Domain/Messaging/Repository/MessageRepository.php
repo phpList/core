@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Repository;
 
 use DateTimeImmutable;
+use Doctrine\ORM\AbstractQuery;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
@@ -76,6 +77,7 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->execute();
     }
 
+    /** @return Message[] */
     public function getByStatusAndEmbargo(Message\MessageStatus $status, DateTimeImmutable $embargo): array
     {
         return $this->createQueryBuilder('m')
@@ -87,7 +89,7 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->getResult();
     }
 
-    public function findByIdAndStatus(int $id, Message\MessageStatus $status)
+    public function findByIdAndStatus(int $id, Message\MessageStatus $status): ?Message
     {
         return $this->createQueryBuilder('m')
             ->where('m.id = :id')
@@ -96,5 +98,22 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->setParameter('status', $status->value)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function getNonEmptyFields(int $id): array
+    {
+        $message = $this->createQueryBuilder('m')
+            ->where('m.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY) ?? [];
+
+        foreach ($message as $key => $value) {
+            if ($value === null || $value === '') {
+                unset($message[$key]);
+            }
+        }
+
+        return $message;
     }
 }

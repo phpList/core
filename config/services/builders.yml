@@ -4,22 +4,30 @@ services:
     autoconfigure: true
     public: false
 
-  PhpList\Core\Domain\Messaging\Service\Builder\MessageBuilder:
-    autowire: true
-    autoconfigure: true
+  PhpList\Core\Domain\:
+    resource: '../../src/Domain/*/Service/Builder/*'
 
-  PhpList\Core\Domain\Messaging\Service\Builder\MessageFormatBuilder:
-    autowire: true
-    autoconfigure: true
+  # Concrete mail constructors
+  PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailContentBuilder: ~
+  PhpList\Core\Domain\Messaging\Service\Constructor\CampaignMailContentBuilder: ~
 
-  PhpList\Core\Domain\Messaging\Service\Builder\MessageScheduleBuilder:
-    autowire: true
-    autoconfigure: true
+  # Two EmailBuilder services with different constructors injected
+  Core.EmailBuilder.system:
+    class: PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder
+    arguments:
+      $mailConstructor: '@PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailContentBuilder'
+      $googleSenderId: '%messaging.google_sender_id%'
+      $useAmazonSes: '%messaging.use_amazon_ses%'
+      $usePrecedenceHeader: '%messaging.use_precedence_header%'
+      $devVersion: '%app.dev_version%'
+      $devEmail: '%app.dev_email%'
 
-  PhpList\Core\Domain\Messaging\Service\Builder\MessageContentBuilder:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\Builder\MessageOptionsBuilder:
-    autowire: true
-    autoconfigure: true
+  Core.EmailBuilder.campaign:
+    class: PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder
+    arguments:
+      $mailConstructor: '@PhpList\Core\Domain\Messaging\Service\Constructor\CampaignMailContentBuilder'
+      $googleSenderId: '%messaging.google_sender_id%'
+      $useAmazonSes: '%messaging.use_amazon_ses%'
+      $usePrecedenceHeader: '%messaging.use_precedence_header%'
+      $devVersion: '%app.dev_version%'
+      $devEmail: '%app.dev_email%'

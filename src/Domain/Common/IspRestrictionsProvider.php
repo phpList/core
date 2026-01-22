@@ -6,12 +6,13 @@ namespace PhpList\Core\Domain\Common;
 
 use PhpList\Core\Domain\Common\Model\IspRestrictions;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class IspRestrictionsProvider
 {
     public function __construct(
-        private readonly string $confPath,
         private readonly LoggerInterface $logger,
+        #[Autowire('%app.phplist_isp_conf_path%')]private readonly string $confPath,
     ) {
     }
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Model;
 
 use DateTime;
-use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -13,6 +12,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Common\Model\Interfaces\ModificationDate;
 use PhpList\Core\Domain\Common\Model\Interfaces\OwnableInterface;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageFormat;
@@ -193,5 +193,16 @@ class Message implements DomainModel, Identity, ModificationDate, OwnableInterfa
     public function getListMessages(): Collection
     {
         return $this->listMessages;
+    }
+
+    public function incrementSentCount(OutputFormat $sentAs): void
+    {
+        match ($sentAs) {
+            OutputFormat::Html => $this->format->incrementAsHtml(),
+            OutputFormat::Text => $this->format->incrementAsText(),
+            OutputFormat::Pdf => $this->format->incrementAsPdf(),
+            OutputFormat::TextAndHtml => $this->format->incrementAsTextAndHtml(),
+            OutputFormat::TextAndPdf => $this->format->incrementAsTextAndPdf(),
+        };
     }
 }

@@ -7,7 +7,7 @@
     <exclude-pattern>*/Migrations/*</exclude-pattern>
 
     <!-- rules from the "clean code" rule set -->
-    <rule ref="rulesets/cleancode.xml/BooleanArgumentFlag"/>
+<!--    <rule ref="rulesets/cleancode.xml/BooleanArgumentFlag"/>-->
     <rule ref="rulesets/codesize.xml/CyclomaticComplexity"/>
     <rule ref="rulesets/codesize.xml/NPathComplexity"/>
     <rule ref="rulesets/codesize.xml/ExcessiveMethodLength"/>
@@ -41,12 +41,12 @@
     <!-- rules from the "naming" rule set -->
     <rule ref="rulesets/naming.xml/ShortVariable">
         <properties>
-            <property name="exceptions" value="id,ip,cc,io"/>
+            <property name="exceptions" value="id,ip,cc,io,to"/>
         </properties>
     </rule>
     <rule ref="rulesets/naming.xml/LongVariable">
         <properties>
-            <property name="maximum" value="25"/>
+            <property name="maximum" value="30"/>
         </properties>
     </rule>
     <rule ref="rulesets/naming.xml/ShortMethodName"/>

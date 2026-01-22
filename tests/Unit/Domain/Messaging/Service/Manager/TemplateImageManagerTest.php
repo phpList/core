@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Manager;
 
-use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\Template;
 use PhpList\Core\Domain\Messaging\Model\TemplateImage;
 use PhpList\Core\Domain\Messaging\Repository\TemplateImageRepository;
@@ -15,17 +15,17 @@ use PHPUnit\Framework\TestCase;
 class TemplateImageManagerTest extends TestCase
 {
     private TemplateImageRepository&MockObject $templateImageRepository;
-    private EntityManagerInterface&MockObject $entityManager;
+    private ConfigProvider&MockObject $configProvider;
     private TemplateImageManager $manager;
 
     protected function setUp(): void
     {
         $this->templateImageRepository = $this->createMock(TemplateImageRepository::class);
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->configProvider = $this->createMock(ConfigProvider::class);
 
         $this->manager = new TemplateImageManager(
             templateImageRepository: $this->templateImageRepository,
-            entityManager: $this->entityManager
+            configProvider: $this->configProvider,
         );
     }
 
@@ -33,7 +33,7 @@ class TemplateImageManagerTest extends TestCase
     {
         $template = $this->createMock(Template::class);
 
-        $this->entityManager->expects($this->exactly(2))
+        $this->templateImageRepository->expects($this->exactly(2))
             ->method('persist')
             ->with($this->isInstanceOf(TemplateImage::class));
 

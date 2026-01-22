@@ -4,53 +4,11 @@ services:
     autoconfigure: true
     public: false
 
-  PhpList\Core\Domain\Configuration\Service\Manager\ConfigManager:
-    autowire: true
-    autoconfigure: true
+  PhpList\Core\Domain\:
+    resource: '../../src/Domain/*/Service/Manager/*'
+    exclude: '../../src/Domain/*/Service/Manager/Builder/*'
 
-  PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Identity\Service\SessionManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Identity\Service\AdministratorManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Identity\Service\AdminAttributeDefinitionManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Identity\Service\AdminAttributeManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Identity\Service\PasswordManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberListManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Subscription\Service\Manager\SubscriptionManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Subscription\Service\Manager\AttributeDefinitionManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Subscription\Service\Manager\DynamicListAttrManager:
-    autowire: true
-    autoconfigure: true
+  PhpList\Core\Bounce\Service\Manager\BounceManager: ~
 
   Doctrine\DBAL\Schema\AbstractSchemaManager:
     factory: ['@doctrine.dbal.default_connection', 'createSchemaManager']
@@ -62,55 +20,3 @@ services:
     arguments:
       $dbPrefix: '%database_prefix%'
       $dynamicListTablePrefix: '%list_table_prefix%'
-
-  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Subscription\Service\Manager\SubscriberBlacklistManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Subscription\Service\Manager\SubscribePageManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\Manager\MessageManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\Manager\TemplateManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\Manager\TemplateImageManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\Manager\BounceRegexManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Bounce\Service\Manager\BounceManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\Manager\ListMessageManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\Manager\BounceRuleManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\Manager\SendProcessManager:
-    autowire: true
-    autoconfigure: true
-
-  PhpList\Core\Domain\Messaging\Service\Manager\MessageDataManager:
-    autowire: true
-    autoconfigure: true

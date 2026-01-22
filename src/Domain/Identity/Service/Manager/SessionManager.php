@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Identity\Service;
+namespace PhpList\Core\Domain\Identity\Service\Manager;
 
-use Symfony\Contracts\Translation\TranslatorInterface;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Identity\Model\AdministratorToken;
 use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
 use PhpList\Core\Domain\Identity\Repository\AdministratorTokenRepository;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SessionManager
 {

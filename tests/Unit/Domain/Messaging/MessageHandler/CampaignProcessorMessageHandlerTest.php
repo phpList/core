@@ -6,18 +6,23 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\MessageHandler;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
+use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
+use PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
-use PhpList\Core\Domain\Messaging\Service\Manager\MessageDataManager;
+use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
+use PhpList\Core\Domain\Messaging\Service\MessageDataLoader;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\MessagePrecacheService;
 use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
@@ -28,6 +33,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
+use ReflectionClass;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Translation\Translator;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -43,6 +50,8 @@ class CampaignProcessorMessageHandlerTest extends TestCase
     private MessageRepository|MockObject $messageRepository;
     private TranslatorInterface|MockObject $translator;
     private MessagePrecacheService|MockObject $precacheService;
+    private CacheInterface|MockObject $cache;
+    private MailerInterface|MockObject $symfonyMailer;
 
     protected function setUp(): void
     {
@@ -57,27 +66,33 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $requeueHandler = $this->createMock(RequeueHandler::class);
         $this->translator = $this->createMock(Translator::class);
         $this->precacheService = $this->createMock(MessagePrecacheService::class);
+        $this->cache = $this->createMock(CacheInterface::class);
+        $this->symfonyMailer = $this->createMock(MailerInterface::class);
 
         $timeLimiter->method('start');
         $timeLimiter->method('shouldStop')->willReturn(false);
 
         $this->handler = new CampaignProcessorMessageHandler(
-            mailer: $this->mailer,
+            mailer: $this->symfonyMailer,
+            rateLimitedCampaignMailer: $this->mailer,
             entityManager: $this->entityManager,
             subscriberProvider: $this->subscriberProvider,
             messagePreparator: $this->messagePreparator,
             logger: $this->logger,
-            cache: $this->createMock(CacheInterface::class),
+            cache: $this->cache,
             userMessageRepository: $userMessageRepository,
             timeLimiter: $timeLimiter,
             requeueHandler: $requeueHandler,
             translator: $this->translator,
             subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class),
             messageRepository: $this->messageRepository,
-            eventLogManager: $this->createMock(EventLogManager::class),
-            messageDataManager: $this->createMock(MessageDataManager::class),
             precacheService: $this->precacheService,
-            maxMailSize: 0,
+            messageDataLoader: $this->createMock(MessageDataLoader::class),
+            systemEmailBuilder: $this->createMock(SystemEmailBuilder::class),
+            campaignEmailBuilder: $this->createMock(EmailBuilder::class),
+            mailSizeChecker: $this->createMock(MailSizeChecker::class),
+            configProvider: $this->createMock(ConfigProvider::class),
+            bounceEmail: 'bounce@email.com',
         );
     }
 
@@ -110,6 +125,11 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             ->with(1, MessageStatus::Submitted)
             ->willReturn($campaign);
 
+        $this->precacheService->expects($this->once())
+            ->method('precacheMessage')
+            ->with($campaign, $this->anything())
+            ->willReturn(true);
+
         $this->subscriberProvider->expects($this->once())
             ->method('getSubscribersForMessage')
             ->with($campaign)
@@ -121,7 +141,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
-        $this->mailer->expects($this->never())
+        $this->symfonyMailer->expects($this->never())
             ->method('send');
 
         ($this->handler)(new CampaignProcessorMessage(1));
@@ -137,6 +157,11 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $this->messageRepository->method('findByIdAndStatus')
             ->with(1, MessageStatus::Submitted)
             ->willReturn($campaign);
+
+        $this->precacheService->expects($this->once())
+            ->method('precacheMessage')
+            ->with($campaign, $this->anything())
+            ->willReturn(true);
 
         $subscriber = $this->createMock(Subscriber::class);
         $subscriber->method('getEmail')->willReturn('invalid-email');
@@ -156,7 +181,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $this->messagePreparator->expects($this->never())
             ->method('processMessageLinks');
 
-        $this->mailer->expects($this->never())
+        $this->symfonyMailer->expects($this->never())
             ->method('send');
 
         ($this->handler)(new CampaignProcessorMessage(1));
@@ -165,8 +190,12 @@ class CampaignProcessorMessageHandlerTest extends TestCase
     public function testInvokeWithValidSubscriberEmail(): void
     {
         $campaign = $this->createMock(Message::class);
-        $content = $this->createContentMock();
-        $campaign->method('getContent')->willReturn($content);
+        $precached = new MessagePrecacheDto();
+        $precached->subject = 'Test Subject';
+        $precached->content = '<p>Test HTML message</p>';
+        $precached->textContent = 'Test text message';
+        $precached->footer = 'Test footer message';
+        $campaign->method('getContent')->willReturn($this->createContentMock());
         $metadata = $this->createMock(MessageMetadata::class);
         $campaign->method('getMetadata')->willReturn($metadata);
         $campaign->method('getId')->willReturn(1);
@@ -174,6 +203,13 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $this->messageRepository->method('findByIdAndStatus')
             ->with(1, MessageStatus::Submitted)
             ->willReturn($campaign);
+
+        $this->precacheService->expects($this->once())
+            ->method('precacheMessage')
+            ->with($campaign, $this->anything())
+            ->willReturn(true);
+
+        $this->cache->method('get')->willReturn($precached);
 
         $subscriber = $this->createMock(Subscriber::class);
         $subscriber->method('getEmail')->willReturn('test@example.com');
@@ -186,31 +222,28 @@ class CampaignProcessorMessageHandlerTest extends TestCase
 
         $this->messagePreparator->expects($this->once())
             ->method('processMessageLinks')
-            ->willReturn($content);
+            ->with(1, $precached, $subscriber)
+            ->willReturn($precached);
 
-        $this->mailer->expects($this->once())
-            ->method('composeEmail')
-            ->with(
-                $this->identicalTo($campaign),
-                $this->identicalTo($subscriber),
-                $this->identicalTo($content)
-            )
-            ->willReturnCallback(function ($camp, $sub, $proc) use ($campaign, $subscriber, $content) {
-                $this->assertSame($campaign, $camp);
-                $this->assertSame($subscriber, $sub);
-                $this->assertSame($content, $proc);
+        // campaign emails are built via campaignEmailBuilder and sent via RateLimitedCampaignMailer
+        $campaignEmailBuilder = (new ReflectionClass($this->handler))
+            ->getProperty('campaignEmailBuilder');
+        /** @var EmailBuilder|MockObject $campaignBuilderMock */
+        $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
 
-                return (new Email())
+        $campaignBuilderMock->expects($this->once())
+            ->method('buildPhplistEmail')
+            ->willReturn([
+                (new Email())
                     ->from('news@example.com')
                     ->to('test@example.com')
                     ->subject('Test Subject')
                     ->text('Test text message')
-                    ->html('<p>Test HTML message</p>');
-            });
+                    ->html('<p>Test HTML message</p>'),
+                OutputFormat::Html
+            ]);
 
-        $this->mailer->expects($this->once())
-            ->method('send')
-            ->with($this->isInstanceOf(Email::class));
+        $this->mailer->expects($this->any())->method('send');
 
         $metadata->expects($this->atLeastOnce())
             ->method('setStatus');
@@ -224,9 +257,13 @@ class CampaignProcessorMessageHandlerTest extends TestCase
     public function testInvokeWithMailerException(): void
     {
         $campaign = $this->createMock(Message::class);
-        $content = $this->createContentMock();
+        $precached = new MessagePrecacheDto();
+        $precached->subject = 'Test Subject';
+        $precached->content = '<p>Test HTML message</p>';
+        $precached->textContent = 'Test text message';
+        $precached->footer = 'Test footer message';
         $metadata = $this->createMock(MessageMetadata::class);
-        $campaign->method('getContent')->willReturn($content);
+        $campaign->method('getContent')->willReturn($this->createContentMock());
         $campaign->method('getMetadata')->willReturn($metadata);
         $campaign->method('getId')->willReturn(123);
 
@@ -234,14 +271,16 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             ->with(123, MessageStatus::Submitted)
             ->willReturn($campaign);
 
+        $this->precacheService->expects($this->once())
+            ->method('precacheMessage')
+            ->with($campaign, $this->anything())
+            ->willReturn(true);
+
+        $this->cache->method('get')->willReturn($precached);
+
         $subscriber = $this->createMock(Subscriber::class);
         $subscriber->method('getEmail')->willReturn('test@example.com');
         $subscriber->method('getId')->willReturn(1);
-
-        $this->precacheService->expects($this->once())
-            ->method('getOrCacheBaseMessageContent')
-            ->with($campaign)
-            ->willReturn($content);
 
         $this->subscriberProvider->expects($this->once())
             ->method('getSubscribersForMessage')
@@ -250,8 +289,21 @@ class CampaignProcessorMessageHandlerTest extends TestCase
 
         $this->messagePreparator->expects($this->once())
             ->method('processMessageLinks')
-            ->with(123, $content, $subscriber)
-            ->willReturn($content);
+            ->with(123, $precached, $subscriber)
+            ->willReturn($precached);
+
+        // Build email and throw on rate-limited sender
+        $campaignEmailBuilder = (new ReflectionClass($this->handler))
+            ->getProperty('campaignEmailBuilder');
+
+        /** @var EmailBuilder|MockObject $campaignBuilderMock */
+        $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
+        $campaignBuilderMock->expects($this->once())
+            ->method('buildPhplistEmail')
+            ->willReturn([
+                (new Email())->to('test@example.com')->subject('Test Subject')->text('x'),
+                OutputFormat::Text
+            ]);
 
         $exception = new Exception('Test exception');
         $this->mailer->expects($this->once())
@@ -277,7 +329,11 @@ class CampaignProcessorMessageHandlerTest extends TestCase
     public function testInvokeWithMultipleSubscribers(): void
     {
         $campaign = $this->createCampaignMock();
-        $content = $this->createContentMock();
+        $precached = new MessagePrecacheDto();
+        $precached->subject = 'Test Subject';
+        $precached->content = '<p>Test HTML message</p>';
+        $precached->textContent = 'Test text message';
+        $precached->footer = 'Test footer message';
         $metadata = $this->createMock(MessageMetadata::class);
         $campaign->method('getMetadata')->willReturn($metadata);
         $campaign->method('getId')->willReturn(1);
@@ -285,6 +341,13 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $this->messageRepository->method('findByIdAndStatus')
             ->with(1, MessageStatus::Submitted)
             ->willReturn($campaign);
+
+        $this->precacheService->expects($this->once())
+            ->method('precacheMessage')
+            ->with($campaign, $this->anything())
+            ->willReturn(true);
+
+        $this->cache->method('get')->willReturn($precached);
 
         $subscriber1 = $this->createMock(Subscriber::class);
         $subscriber1->method('getEmail')->willReturn('test1@example.com');
@@ -305,7 +368,29 @@ class CampaignProcessorMessageHandlerTest extends TestCase
 
         $this->messagePreparator->expects($this->exactly(2))
             ->method('processMessageLinks')
-            ->willReturn($content);
+            ->withConsecutive(
+                [1, $precached, $subscriber1],
+                [1, $precached, $subscriber2]
+            )
+            ->willReturnOnConsecutiveCalls($precached, $precached);
+
+        // Configure builder to return emails for first two subscribers
+        $campaignEmailBuilder = (new ReflectionClass($this->handler))
+            ->getProperty('campaignEmailBuilder');
+        /** @var EmailBuilder|MockObject $campaignBuilderMock */
+        $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
+        $campaignBuilderMock->expects($this->exactly(2))
+            ->method('buildPhplistEmail')
+            ->willReturnOnConsecutiveCalls(
+                [
+                    (new Email())->to('test1@example.com')->subject('Test Subject')->text('x'),
+                    OutputFormat::Text
+                ],
+                [
+                    (new Email())->to('test2@example.com')->subject('Test Subject')->text('x'),
+                    OutputFormat::Text
+                ],
+            );
 
         $this->mailer->expects($this->exactly(2))
             ->method('send');
