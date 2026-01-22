@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Messaging\Service;
+namespace PhpList\Core\Domain\Messaging\Service\Constructor;
 
 use PhpList\Core\Domain\Common\Html2Text;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Repository\TemplateRepository;
 use PhpList\Core\Domain\Messaging\Service\Manager\TemplateImageManager;
 
-class SystemMailConstructor
+class SystemMailContentBuilder implements MailContentBuilderInterface
 {
     private ?string $poweredByText;
 
@@ -24,9 +25,9 @@ class SystemMailConstructor
         $this->poweredByText = $configProvider->getValue(ConfigOption::PoweredByText);
     }
 
-    public function __invoke($message, string $subject = ''): array
+    public function __invoke(MessagePrecacheDto $messagePrecacheDto, ?int $campaignId = null): array
     {
-        [$htmlMessage, $textMessage] = $this->buildMessageBodies($message);
+        [$htmlMessage, $textMessage] = $this->buildMessageBodies($messagePrecacheDto->content);
 
         $htmlContent = $htmlMessage;
         $textContent = $textMessage;
@@ -38,7 +39,7 @@ class SystemMailConstructor
                 $htmlTemplate = stripslashes($template->getContent());
                 $textTemplate = stripslashes($template->getText());
                 $htmlContent = str_replace('[CONTENT]', $htmlMessage, $htmlTemplate);
-                $htmlContent = str_replace('[SUBJECT]', $subject, $htmlContent);
+                $htmlContent = str_replace('[SUBJECT]', $messagePrecacheDto->subject, $htmlContent);
                 $htmlContent = str_replace('[FOOTER]', '', $htmlContent);
                 if (!$this->poweredByPhplist) {
                     $phpListPowered = preg_replace(
@@ -58,7 +59,7 @@ class SystemMailConstructor
                 }
                 $htmlContent = $this->templateImageManager->parseLogoPlaceholders($htmlContent);
                 $textContent = str_replace('[CONTENT]', $textMessage, $textTemplate);
-                $textContent = str_replace('[SUBJECT]', $subject, $textContent);
+                $textContent = str_replace('[SUBJECT]', $messagePrecacheDto->subject, $textContent);
                 $textContent = str_replace('[FOOTER]', '', $textContent);
                 $phpListPowered = trim(($this->html2Text)($this->poweredByText));
                 if (str_contains($textContent, '[SIGNATURE]')) {
@@ -72,7 +73,7 @@ class SystemMailConstructor
         return [$htmlContent, $textContent];
     }
 
-    private function buildMessageBodies($message): array
+    private function buildMessageBodies(string $message): array
     {
         $hasHTML = strip_tags($message) !== $message;
 

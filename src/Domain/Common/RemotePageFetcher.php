@@ -75,7 +75,7 @@ class RemotePageFetcher
             ]);
         }
 
-        return $content;
+        return $content ?? '';
     }
 
     private function fetchUrlDirect(string $url): string

@@ -13,7 +13,7 @@ class MessagePrecacheDto
     public ?string $fromEmail = null;
     public ?string $to = null;
     public string $subject = '';
-    public ?string $content = null;
+    public string $content = '';
     public string $textContent = '';
     public string $footer = '';
     public ?string $textFooter = null;

@@ -5,34 +5,15 @@ services:
         resource: '../../src/Domain/Messaging/MessageHandler'
         tags: [ 'messenger.message_handler' ]
 
-    PhpList\Core\Domain\Messaging\MessageHandler\SubscriberConfirmationMessageHandler:
+    # Register Subscription message handlers (e.g., DynamicTableMessageHandler)
+    PhpList\Core\Domain\Subscription\MessageHandler\:
         autowire: true
-        autoconfigure: true
-        tags: [ 'messenger.message_handler' ]
-        arguments:
-            $confirmationUrl: '%app.confirmation_url%'
-
-    PhpList\Core\Domain\Messaging\MessageHandler\AsyncEmailMessageHandler:
-        autowire: true
-        autoconfigure: true
-        tags: [ 'messenger.message_handler' ]
-
-    PhpList\Core\Domain\Messaging\MessageHandler\PasswordResetMessageHandler:
-        autowire: true
-        autoconfigure: true
-        tags: [ 'messenger.message_handler' ]
-        arguments:
-            $passwordResetUrl: '%app.password_reset_url%'
-
-    PhpList\Core\Domain\Messaging\MessageHandler\SubscriptionConfirmationMessageHandler:
-        autowire: true
-        autoconfigure: true
+        resource: '../../src/Domain/Subscription/MessageHandler'
         tags: [ 'messenger.message_handler' ]
 
     PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler:
         autowire: true
-
-    PhpList\Core\Domain\Subscription\MessageHandler\DynamicTableMessageHandler:
-        autowire: true
         autoconfigure: true
-        tags: [ 'messenger.message_handler' ]
+        arguments:
+            $campaignEmailBuilder: '@Core.EmailBuilder.campaign'
+            $systemEmailBuilder: '@Core.EmailBuilder.system'

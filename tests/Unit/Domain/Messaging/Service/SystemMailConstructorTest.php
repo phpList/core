@@ -7,10 +7,11 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
 use PhpList\Core\Domain\Common\Html2Text;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Template;
 use PhpList\Core\Domain\Messaging\Repository\TemplateRepository;
+use PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailContentBuilder;
 use PhpList\Core\Domain\Messaging\Service\Manager\TemplateImageManager;
-use PhpList\Core\Domain\Messaging\Service\SystemMailConstructor;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -35,7 +36,7 @@ class SystemMailConstructorTest extends TestCase
             ->getMock();
     }
 
-    private function createConstructor(bool $poweredByPhplist = false): SystemMailConstructor
+    private function createConstructor(bool $poweredByPhplist = false): SystemMailContentBuilder
     {
         // Defaults needed by constructor
         $this->configProvider->method('getValue')->willReturnMap([
@@ -43,7 +44,7 @@ class SystemMailConstructorTest extends TestCase
             [ConfigOption::SystemMessageTemplate, null],
         ]);
 
-        return new SystemMailConstructor(
+        return new SystemMailContentBuilder(
             html2Text: $this->html2Text,
             configProvider: $this->configProvider,
             templateRepository: $this->templateRepository,
@@ -58,8 +59,11 @@ class SystemMailConstructorTest extends TestCase
 
         // Html2Text is not used when source is plain text
         $this->html2Text->expects($this->never())->method('__invoke');
+        $dto = new MessagePrecacheDto();
+        $dto->subject = 'Subject';
+        $dto->content = 'Line1' . "\n" . 'Visit http://example.com';
 
-        [$html, $text] = $constructor('Line1' . "\n" . 'Visit http://example.com', 'Subject');
+        [$html, $text] = $constructor($dto);
 
         $this->assertSame("Line1\nVisit http://example.com", $text);
         $this->assertStringContainsString('Line1<br', $html);
@@ -74,8 +78,11 @@ class SystemMailConstructorTest extends TestCase
             ->method('__invoke')
             ->with('<p><strong>Hello</strong></p>')
             ->willReturn('Hello');
+        $dto = new MessagePrecacheDto();
+        $dto->subject = 'Subject';
+        $dto->content = '<p><strong>Hello</strong></p>';
 
-        [$html, $text] = $constructor('<p><strong>Hello</strong></p>', 'Subject');
+        [$html, $text] = $constructor($dto);
 
         $this->assertSame('<p><strong>Hello</strong></p>', $html);
         $this->assertSame('Hello', $text);
@@ -107,15 +114,18 @@ class SystemMailConstructorTest extends TestCase
             ->with('<b>Powered</b>')
             ->willReturn('Powered');
 
-        $constructor = new SystemMailConstructor(
+        $constructor = new SystemMailContentBuilder(
             html2Text: $this->html2Text,
             configProvider: $this->configProvider,
             templateRepository: $this->templateRepository,
             templateImageManager: $this->templateImageManager,
             poweredByPhplist: false,
         );
+        $dto = new MessagePrecacheDto();
+        $dto->subject = 'Subject';
+        $dto->content = 'Body';
 
-        [$html, $text] = $constructor('Body', 'Subject');
+        [$html, $text] = $constructor($dto);
 
         // HTML should contain processed powered-by image (src rewritten to powerphplist.png) in place of [SIGNATURE]
         $this->assertStringContainsString('Subject: Body', $html);
@@ -149,15 +159,18 @@ class SystemMailConstructorTest extends TestCase
             )
             ->willReturnOnConsecutiveCalls('Hello World', 'PB');
 
-        $constructor = new SystemMailConstructor(
+        $constructor = new SystemMailContentBuilder(
             html2Text: $this->html2Text,
             configProvider: $this->configProvider,
             templateRepository: $this->templateRepository,
             templateImageManager: $this->templateImageManager,
             poweredByPhplist: true,
         );
+        $dto = new MessagePrecacheDto();
+        $dto->subject = 'Sub';
+        $dto->content = 'Hello <b>World</b>';
 
-        [$html, $text] = $constructor('Hello <b>World</b>', 'Sub');
+        [$html, $text] = $constructor($dto);
 
         // HTML path: since poweredByPhplist=true, raw PoweredByText should be inserted before </body>
         $this->assertStringContainsString('Hello <b>World</b>', $html);

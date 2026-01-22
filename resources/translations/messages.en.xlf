@@ -750,6 +750,66 @@ Thank you.</target>
         <source>phplist has started sending the campaign with subject %subject%</source>
         <target>__phplist has started sending the campaign with subject %subject%</target>
       </trans-unit>
+      <trans-unit id="PpLvt2Z" resname="Unsubscribe">
+        <source>Unsubscribe</source>
+        <target>__Unsubscribe</target>
+      </trans-unit>
+      <trans-unit id="njfOwly" resname="This link">
+        <source>This link</source>
+        <target>__This link</target>
+      </trans-unit>
+      <trans-unit id="7r3SSnf" resname="Confirm">
+        <source>Confirm</source>
+        <target>__Confirm</target>
+      </trans-unit>
+      <trans-unit id="YibbDEd" resname="Update preferences">
+        <source>Update preferences</source>
+        <target>__Update preferences</target>
+      </trans-unit>
+      <trans-unit id="BkWF7jw" resname="Sorry, you are not subscribed to any of our newsletters with this email address.">
+        <source>Sorry, you are not subscribed to any of our newsletters with this email address.</source>
+        <target>__Sorry, you are not subscribed to any of our newsletters with this email address.</target>
+      </trans-unit>
+      <trans-unit id="6LBFI8k" resname="This message contains attachments that can be viewed with a webbrowser">
+        <source>This message contains attachments that can be viewed with a webbrowser</source>
+        <target>__This message contains attachments that can be viewed with a webbrowser</target>
+      </trans-unit>
+      <trans-unit id="QLlIQQh" resname="Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%">
+        <source>Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%</source>
+        <target>__Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%</target>
+      </trans-unit>
+      <trans-unit id="HhEWxtR" resname="Add us to your address book">
+        <source>Add us to your address book</source>
+        <target>__Add us to your address book</target>
+      </trans-unit>
+      <trans-unit id="TNQR4ZC" resname="phpList system error">
+        <source>phpList system error</source>
+        <target>__phpList system error</target>
+      </trans-unit>
+      <trans-unit id="_DfkneV" resname="Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be copied to the repository. Check for permissions.">
+        <source>Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be copied to the repository. Check for permissions.</source>
+        <target>__Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be copied to the repository. Check for permissions.</target>
+      </trans-unit>
+      <trans-unit id="VXRuG2l" resname="failed to open attachment (%remoteFile%) to add to campaign %campaignId%">
+        <source>failed to open attachment (%remoteFile%) to add to campaign %campaignId%</source>
+        <target>__failed to open attachment (%remoteFile%) to add to campaign %campaignId%</target>
+      </trans-unit>
+      <trans-unit id="28lDkjt" resname="Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%">
+        <source>Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%</source>
+        <target>__Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%</target>
+      </trans-unit>
+      <trans-unit id="DmqU7IE" resname="Attachment %remoteFile% does not exist">
+        <source>Attachment %remoteFile% does not exist</source>
+        <target>__Attachment %remoteFile% does not exist</target>
+      </trans-unit>
+      <trans-unit id="021aois" resname="Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be found in the repository.">
+        <source>Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be found in the repository.</source>
+        <target>__Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be found in the repository.</target>
+      </trans-unit>
+      <trans-unit id="FbYZdLJ" resname="Location">
+        <source>Location</source>
+        <target>__Location</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

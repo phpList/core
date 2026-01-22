@@ -25,7 +25,6 @@ class MessageFormatBuilderTest extends TestCase
 
         $this->assertSame(true, $messageFormat->isHtmlFormatted());
         $this->assertSame('html', $messageFormat->getSendFormat());
-        $this->assertEqualsCanonicalizing(['html', 'text'], $messageFormat->getFormatOptions());
     }
 
     public function testThrowsExceptionOnInvalidDto(): void

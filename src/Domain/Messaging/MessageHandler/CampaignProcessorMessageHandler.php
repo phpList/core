@@ -8,7 +8,9 @@ use DateTime;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
-use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
+use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Messaging\Exception\AttachmentCopyException;
 use PhpList\Core\Domain\Messaging\Exception\MessageCacheMissingException;
 use PhpList\Core\Domain\Messaging\Exception\MessageSizeLimitExceededException;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
@@ -22,6 +24,7 @@ use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
+use PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
@@ -34,6 +37,7 @@ use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -63,11 +67,12 @@ class CampaignProcessorMessageHandler
         private readonly SubscriberHistoryManager $subscriberHistoryManager,
         private readonly MessageRepository $messageRepository,
         private readonly MessagePrecacheService $precacheService,
-        private readonly UserPersonalizer $userPersonalizer,
         private readonly MessageDataLoader $messageDataLoader,
-        private readonly EmailBuilder $emailBuilder,
+        private readonly SystemEmailBuilder $systemEmailBuilder,
+        private readonly EmailBuilder $campaignEmailBuilder,
         private readonly MailSizeChecker $mailSizeChecker,
-        private readonly string $messageEnvelope,
+        private readonly ConfigProvider $configProvider,
+        #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
     ) {
     }
 
@@ -194,26 +199,59 @@ class CampaignProcessorMessageHandler
         UserMessage $userMessage,
         MessagePrecacheDto $precachedContent,
     ): void {
+        // todo: check at which point link tracking should be applied (maybe after constructing ful text?)
         $processed = $this->messagePreparator->processMessageLinks(
-            $campaign->getId(),
-            $precachedContent,
-            $subscriber
+            campaignId: $campaign->getId(),
+            cachedMessageDto: $precachedContent,
+            subscriber: $subscriber
         );
-        $processed->textContent = $this->userPersonalizer->personalize(
-            $processed->textContent,
-            $subscriber->getEmail(),
-        );
-        $processed->footer = $this->userPersonalizer->personalize($processed->footer, $subscriber->getEmail());
 
         try {
-            $email = $this->rateLimitedCampaignMailer->composeEmail($campaign, $subscriber, $processed);
-            $this->mailer->send($email);
+            $result = $this->campaignEmailBuilder->buildPhplistEmail(
+                messageId: $campaign->getId(),
+                data: $processed,
+                skipBlacklistCheck: false,
+                inBlast: true,
+                htmlPref: $subscriber->hasHtmlEmail(),
+            );
+            if ($result === null) {
+                return;
+            }
+            [$email, $sentAs] = $result;
+            $email = $this->campaignEmailBuilder->applyCampaignHeaders(email: $email, subscriber: $subscriber);
+
+            $this->rateLimitedCampaignMailer->send($email);
             ($this->mailSizeChecker)($campaign, $email, $subscriber->hasHtmlEmail());
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
+            $campaign->incrementSentCount($sentAs);
         } catch (MessageSizeLimitExceededException $e) {
             // stop after the first message if size is exceeded
             $this->updateMessageStatus($campaign, MessageStatus::Suspended);
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
+
+            throw $e;
+        } catch (AttachmentCopyException $e) {
+            // stop after the first message if size is exceeded
+            $this->updateMessageStatus($campaign, MessageStatus::Suspended);
+            $this->updateUserMessageStatus($userMessage, UserMessageStatus::NotSent);
+
+            $data = new MessagePrecacheDto();
+            $data->to = $this->configProvider->getValue(ConfigOption::ReportAddress);
+            $data->subject = $this->translator->trans('phpList system error');
+            $data->content = $this->translator->trans($e->getMessage());
+
+            $email = $this->systemEmailBuilder->buildPhplistEmail(
+                messageId: $campaign->getId(),
+                data: $data,
+                inBlast: false,
+                htmlPref: true,
+            );
+
+            $envelope = new Envelope(
+                sender: new Address($this->bounceEmail, 'PHPList'),
+                recipients: [new Address($email->getTo()[0]->getAddress())],
+            );
+            $this->mailer->send(message: $email, envelope: $envelope);
 
             throw $e;
         } catch (Throwable $e) {
@@ -233,15 +271,19 @@ class CampaignProcessorMessageHandler
         if (!empty($loadedMessageData['notify_start']) && !isset($loadedMessageData['start_notified'])) {
             $notifications = explode(',', $loadedMessageData['notify_start']);
             foreach ($notifications as $notification) {
-                $email = $this->emailBuilder->buildPhplistEmail(
+                $data = new MessagePrecacheDto();
+                $data->to = $notification;
+                $data->subject = $this->translator->trans('Campaign started');
+                $data->content = $this->translator->trans(
+                    'phplist has started sending the campaign with subject %subject%',
+                    ['%subject%' => $loadedMessageData['subject']]
+                );
+
+                $email = $this->systemEmailBuilder->buildPhplistEmail(
                     messageId: $campaign->getId(),
-                    to: $notification,
-                    subject: $this->translator->trans('Campaign started'),
-                    message: $this->translator->trans(
-                        'phplist has started sending the campaign with subject %subject%',
-                        ['%subject%' => $loadedMessageData['subject']]
-                    ),
+                    data: $data,
                     inBlast: false,
+                    htmlPref: true,
                 );
 
                 if (!$email) {
@@ -250,7 +292,7 @@ class CampaignProcessorMessageHandler
 
                 // todo: check if from name should be from config
                 $envelope = new Envelope(
-                    sender: new Address($this->messageEnvelope, 'PHPList'),
+                    sender: new Address($this->bounceEmail, 'PHPList'),
                     recipients: [new Address($email->getTo()[0]->getAddress())],
                 );
                 $this->mailer->send(message: $email, envelope: $envelope);
@@ -301,6 +343,7 @@ class CampaignProcessorMessageHandler
             if ($messagePrecacheDto === null) {
                 throw new MessageCacheMissingException();
             }
+            // todo: maybe catch exception and return false to stop early?
             $this->handleEmailSending($campaign, $subscriber, $userMessage, $messagePrecacheDto);
         }
 

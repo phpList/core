@@ -68,10 +68,8 @@ class MessagePrecacheService
         //# but that has quite some impact on speed. So check if that's the case and apply
         $messagePrecacheDto->userSpecificUrl = preg_match('/\[.+\]/', $loadedMessageData['sendurl']);
 
-        if (!$messagePrecacheDto->userSpecificUrl) {
-            if (!$this->applyRemoteContentIfPresent($messagePrecacheDto, $loadedMessageData)) {
-                return false;
-            }
+        if (!$this->applyRemoteContentIfPresent($messagePrecacheDto, $loadedMessageData)) {
+            return false;
         }
 
         $messagePrecacheDto->googleTrack = $loadedMessageData['google_track'];
@@ -181,26 +179,29 @@ class MessagePrecacheService
 
     private function applyRemoteContentIfPresent(MessagePrecacheDto $messagePrecacheDto, $loadedMessageData): bool
     {
-        if (preg_match('/\[URL:([^\s]+)\]/i', $messagePrecacheDto->content, $regs)) {
-            $remoteContent = ($this->remotePageFetcher)($regs[1], []);
-
-            if ($remoteContent) {
-                $messagePrecacheDto->content = str_replace($regs[0], $remoteContent, $messagePrecacheDto->content);
-                $messagePrecacheDto->htmlFormatted = $this->isHtml($remoteContent);
-
-                //# 17086 - disregard any template settings when we have a valid remote URL
-                $messagePrecacheDto->template  = null;
-                $messagePrecacheDto->templateText = null;
-                $messagePrecacheDto->templateId = null;
-            } else {
-                $this->eventLogManager->log(
-                    page: 'unknown page',
-                    entry: 'Error fetching URL: '.$loadedMessageData['sendurl'].' cannot proceed',
-                );
-
-                return false;
-            }
+        if ($messagePrecacheDto->userSpecificUrl
+            || !preg_match('/\[URL:([^\s]+)\]/i', $messagePrecacheDto->content, $regs)
+        ) {
+            return true;
         }
+
+        $remoteContent = ($this->remotePageFetcher)($regs[1], []);
+        if (!$remoteContent) {
+            $this->eventLogManager->log(
+                page: 'unknown page',
+                entry: 'Error fetching URL: ' . $loadedMessageData['sendurl'] . ' cannot proceed',
+            );
+
+            return false;
+        }
+
+        $messagePrecacheDto->content = str_replace($regs[0], $remoteContent, $messagePrecacheDto->content);
+        $messagePrecacheDto->htmlFormatted = $this->isHtml($remoteContent);
+
+        //# 17086 - disregard any template settings when we have a valid remote URL
+        $messagePrecacheDto->template  = null;
+        $messagePrecacheDto->templateText = null;
+        $messagePrecacheDto->templateId = null;
 
         return true;
     }
