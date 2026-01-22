@@ -24,7 +24,10 @@ final class UnsubscribeUrlValueResolver implements PlaceholderValueResolverInter
 
     public function __invoke(PlaceholderContext $ctx): string
     {
-        $base = $this->config->getValue(ConfigOption::UnsubscribeUrl) ?? '';
+        $base = $this->config->getValue(ConfigOption::UnsubscribeUrl);
+        if (empty($base)) {
+            return '';
+        }
         $url = $this->urlBuilder->withUid($base, $ctx->getUser()->getUniqueId());
 
         if ($ctx->isHtml()) {

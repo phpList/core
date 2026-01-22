@@ -21,7 +21,10 @@ final class ConfirmationUrlValueResolver implements PlaceholderValueResolverInte
 
     public function __invoke(PlaceholderContext $ctx): string
     {
-        $url = $this->config->getValue(ConfigOption::ConfirmationUrl) ?? '';
+        $url = $this->config->getValue(ConfigOption::ConfirmationUrl);
+        if (empty($url)) {
+            return '';
+        }
         $sep = !str_contains($url, '?') ? '?' : '&';
 
         if ($ctx->isHtml()) {

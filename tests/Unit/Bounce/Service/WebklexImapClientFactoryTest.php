@@ -37,16 +37,20 @@ class WebklexImapClientFactoryTest extends TestCase
         $this->manager
             ->expects($this->once())
             ->method('make')
-            ->with($this->callback(function (array $cfg) {
-                $this->assertSame('imap.example.com', $cfg['host']);
-                $this->assertSame(993, $cfg['port']);
-                $this->assertSame('ssl', $cfg['encryption']);
-                $this->assertTrue($cfg['validate_cert']);
-                $this->assertSame('user', $cfg['username']);
-                $this->assertSame('pass', $cfg['password']);
-                $this->assertSame('imap', $cfg['protocol']);
-                return true;
-            }))
+            ->with(
+                $this->callback(
+                    function (array $cfg) {
+                        $this->assertSame('imap.example.com', $cfg['host']);
+                        $this->assertSame(993, $cfg['port']);
+                        $this->assertSame('ssl', $cfg['encryption']);
+                        $this->assertTrue($cfg['validate_cert']);
+                        $this->assertSame('user', $cfg['username']);
+                        $this->assertSame('pass', $cfg['password']);
+                        $this->assertSame('imap', $cfg['protocol']);
+                        return true;
+                    }
+                )
+            )
             ->willReturn($client);
 
         $out = $factory->makeForMailbox();

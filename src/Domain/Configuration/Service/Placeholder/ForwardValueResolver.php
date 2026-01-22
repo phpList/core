@@ -24,7 +24,10 @@ final class ForwardValueResolver implements PlaceholderValueResolverInterface
 
     public function __invoke(PlaceholderContext $ctx): string
     {
-        $url = $this->config->getValue(ConfigOption::ForwardUrl) ?? '';
+        $url = $this->config->getValue(ConfigOption::ForwardUrl);
+        if (empty($url)) {
+            return '';
+        }
         $sep = !str_contains($url, '?') ? '?' : '&';
 
         if ($ctx->isHtml()) {

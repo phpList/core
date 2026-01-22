@@ -26,7 +26,7 @@ final class UserTrackValueResolver implements PlaceholderValueResolverInterface
     {
         $base = $this->config->getValue(ConfigOption::Domain) ?? $this->restApiDomain;
 
-        if ($ctx->isText()) {
+        if ($ctx->isText() || empty($base)) {
             return '';
         }
 

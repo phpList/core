@@ -25,6 +25,9 @@ final class ContactValueResolver implements PatternValueResolverInterface
     public function __invoke(PlaceholderContext $ctx, array $matches): string
     {
         $url = (string) $this->config->getValue(ConfigOption::VCardUrl);
+        if (empty($url)) {
+            return '';
+        }
         $label = $this->translator->trans('Add us to your address book');
 
         if ($ctx->isHtml()) {

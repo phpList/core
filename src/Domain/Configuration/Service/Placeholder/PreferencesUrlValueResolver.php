@@ -21,7 +21,10 @@ final class PreferencesUrlValueResolver implements PlaceholderValueResolverInter
 
     public function __invoke(PlaceholderContext $ctx): string
     {
-        $url = $this->config->getValue(ConfigOption::PreferencesUrl) ?? '';
+        $url = $this->config->getValue(ConfigOption::PreferencesUrl);
+        if (empty($url)) {
+            return '';
+        }
         $sep = !str_contains($url, '?') ? '?' : '&';
 
         if ($ctx->isHtml()) {

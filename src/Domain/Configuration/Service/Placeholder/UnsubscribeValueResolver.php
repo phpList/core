@@ -26,10 +26,13 @@ final class UnsubscribeValueResolver implements PlaceholderValueResolverInterfac
 
     public function __invoke(PlaceholderContext $ctx): string
     {
-        $base = $this->config->getValue(ConfigOption::UnsubscribeUrl) ?? '';
+        $base = $this->config->getValue(ConfigOption::UnsubscribeUrl);
         if ($ctx->forwardedBy()) {
             //0013076: Problem found during testing: message part must be parsed correctly as well.
-            $base = $this->config->getValue(ConfigOption::BlacklistUrl) ?? '';
+            $base = $this->config->getValue(ConfigOption::BlacklistUrl);
+        }
+        if (empty($base)) {
+            return '';
         }
         $url = $this->urlBuilder->withUid($base, $ctx->getUser()->getUniqueId());
 

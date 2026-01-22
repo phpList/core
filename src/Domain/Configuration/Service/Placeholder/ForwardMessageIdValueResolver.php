@@ -41,7 +41,11 @@ final class ForwardMessageIdValueResolver implements PatternValueResolverInterfa
 
         $messageId = (int) $forwardMessage;
 
-        $url = $this->config->getValue(ConfigOption::ForwardUrl) ?? '';
+        $url = $this->config->getValue(ConfigOption::ForwardUrl);
+        if (empty($url)) {
+            return '';
+        }
+
         $sep = !str_contains($url, '?') ? '?' : '&';
         $uid = $ctx->getUser()->getUniqueId();
 

@@ -24,7 +24,11 @@ final class SubscribeValueResolver implements PlaceholderValueResolverInterface
 
     public function __invoke(PlaceholderContext $ctx): string
     {
-        $url = $this->config->getValue(ConfigOption::SubscribeUrl) ?? '';
+        $url = $this->config->getValue(ConfigOption::SubscribeUrl);
+
+        if (empty($url)) {
+            return '';
+        }
 
         if ($ctx->isHtml()) {
             $label = $this->translator->trans('This link');

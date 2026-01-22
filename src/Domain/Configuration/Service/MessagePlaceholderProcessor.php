@@ -107,7 +107,7 @@ class MessagePlaceholderProcessor
         }
 
         if ($this->alwaysAddUserTrack && $format === OutputFormat::Html && !str_contains($value, '[USERTRACK]')) {
-            $value = $this->appendContent($value, '[USERTRACK]');
+            $value = $this->appendContent($value, ' ' . '[USERTRACK]');
         }
 
         return $value;
