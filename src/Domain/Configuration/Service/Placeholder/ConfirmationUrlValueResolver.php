@@ -26,11 +26,12 @@ final class ConfirmationUrlValueResolver implements PlaceholderValueResolverInte
             return '';
         }
         $sep = !str_contains($url, '?') ? '?' : '&';
+        $uid = $ctx->forwardedBy() ? 'forwarded' : $ctx->getUser()->getUniqueId();
 
         if ($ctx->isHtml()) {
-            return sprintf('%s%suid=%s', $url, htmlspecialchars($sep), $ctx->getUser()->getUniqueId());
+            return sprintf('%s%suid=%s', $url, htmlspecialchars($sep), $uid);
         }
 
-        return sprintf('%s%suid=%s', $url, $sep, $ctx->getUser()->getUniqueId());
+        return sprintf('%s%suid=%s', $url, $sep, $uid);
     }
 }

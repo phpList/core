@@ -34,7 +34,8 @@ final class UnsubscribeValueResolver implements PlaceholderValueResolverInterfac
         if (empty($base)) {
             return '';
         }
-        $url = $this->urlBuilder->withUid($base, $ctx->getUser()->getUniqueId());
+        $uid = $ctx->forwardedBy() ? 'forwarded' : $ctx->getUser()->getUniqueId();
+        $url = $this->urlBuilder->withUid($base, $uid);
 
         if ($ctx->isHtml()) {
             $label = $this->translator->trans('Unsubscribe');

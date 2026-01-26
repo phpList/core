@@ -31,8 +31,11 @@ class CampaignMailContentBuilder implements MailContentBuilderInterface
     ) {
     }
 
-    public function __invoke(MessagePrecacheDto $messagePrecacheDto, ?int $campaignId = null,): array
-    {
+    public function __invoke(
+        MessagePrecacheDto $messagePrecacheDto,
+        ?int $campaignId = null,
+        ?Subscriber $forwardedBy = null,
+    ): array {
         $subscriber = $this->subscriberRepository->findOneByEmail($messagePrecacheDto->to);
         if (!$subscriber) {
             throw new SubscriberNotFoundException(
@@ -74,18 +77,20 @@ class CampaignMailContentBuilder implements MailContentBuilderInterface
 
         $textMessage = $this->placeholderProcessor->process(
             value: $textMessage,
-            user: $subscriber,
+            receiver: $subscriber,
             format: OutputFormat::Text,
             messagePrecacheDto: $messagePrecacheDto,
             campaignId: $campaignId,
+            forwardedBy: $forwardedBy,
         );
 
         $htmlMessage = $this->placeholderProcessor->process(
             value: $htmlMessage,
-            user: $subscriber,
+            receiver: $subscriber,
             format: OutputFormat::Html,
             messagePrecacheDto: $messagePrecacheDto,
             campaignId: $campaignId,
+            forwardedBy: $forwardedBy,
         );
 
         $htmlMessage = $this->ensureHtmlFormating(content: $htmlMessage, addDefaultStyle: $addDefaultStyle);

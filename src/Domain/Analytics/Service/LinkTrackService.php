@@ -40,6 +40,7 @@ class LinkTrackService
      */
     public function extractAndSaveLinks(MessagePrecacheDto $content, int $userId, ?int $messageId = null): array
     {
+        // todo: in case of forwarded message, we need to use 'forwarded' instead of  user id
         if (!$this->isExtractAndSaveLinksApplicable()) {
             return [];
         }
