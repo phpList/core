@@ -35,12 +35,12 @@ class EmailBuilder extends BaseEmailBuilder
         SubscriberHistoryManager $subscriberHistoryManager,
         SubscriberRepository $subscriberRepository,
         LoggerInterface $logger,
-        private readonly MailContentBuilderInterface $mailConstructor,
-        private readonly TemplateImageEmbedder $templateImageEmbedder,
-        private readonly LegacyUrlBuilder $urlBuilder,
-        private readonly PdfGenerator $pdfGenerator,
-        private readonly AttachmentAdder $attachmentAdder,
-        private readonly TranslatorInterface $translator,
+        protected readonly MailContentBuilderInterface $mailConstructor,
+        protected readonly TemplateImageEmbedder $templateImageEmbedder,
+        protected readonly LegacyUrlBuilder $urlBuilder,
+        protected readonly PdfGenerator $pdfGenerator,
+        protected readonly AttachmentAdder $attachmentAdder,
+        protected readonly TranslatorInterface $translator,
         string $googleSenderId,
         bool $useAmazonSes,
         bool $usePrecedenceHeader,
@@ -184,7 +184,7 @@ class EmailBuilder extends BaseEmailBuilder
         return $sentAs;
     }
 
-    private function shouldPreferHtml(?string $htmlMessage, bool $htmlPref, Email $email): bool
+    protected function shouldPreferHtml(?string $htmlMessage, bool $htmlPref, Email $email): bool
     {
         if (empty($email->getTo())) {
             throw new LogicException('No recipients specified');
@@ -203,7 +203,7 @@ class EmailBuilder extends BaseEmailBuilder
         return $htmlPref;
     }
 
-    private function normalizeSendFormat(?string $sendFormat): string
+    protected function normalizeSendFormat(?string $sendFormat): string
     {
         $format = strtolower(trim((string) $sendFormat));
 
@@ -216,7 +216,7 @@ class EmailBuilder extends BaseEmailBuilder
         };
     }
 
-    private function applyPdfFormat(Email $email, ?string $textMessage, int $messageId, bool $htmlPref): OutputFormat
+    protected function applyPdfFormat(Email $email, ?string $textMessage, int $messageId, bool $htmlPref): OutputFormat
     {
         // send a PDF file to users who want html and text to everyone else
         if ($htmlPref) {
@@ -238,7 +238,7 @@ class EmailBuilder extends BaseEmailBuilder
         return $sentAs;
     }
 
-    private function applyTextAndPdfFormat(
+    protected function applyTextAndPdfFormat(
         Email $email,
         ?string $textMessage,
         int $messageId,

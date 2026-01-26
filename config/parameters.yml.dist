@@ -134,6 +134,8 @@ parameters:
     env(FORWARD_EMAIL_COUNT): '1'
     phplist.forward_personal_note_size: '%%env(FORWARD_PERSONAL_NOTE_SIZE)%%'
     env(FORWARD_PERSONAL_NOTE_SIZE): '0'
+    phplist.forward_friend_count_attribute: '%%env(FORWARD_FRIEND_COUNT_ATTRIBUTE)%%'
+    env(FORWARD_FRIEND_COUNT_ATTRIBUTE) = ''
 
     phplist.upload_images_dir: '%%env(PHPLIST_UPLOADIMAGES_DIR)%%'
     env(PHPLIST_UPLOADIMAGES_DIR): 'images'
