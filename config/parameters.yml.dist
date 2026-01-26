@@ -128,6 +128,13 @@ parameters:
     messaging.always_add_user_track: '%%env(ALWAYS_ADD_USERTRACK)%%'
     env(ALWAYS_ADD_USERTRACK): '1'
 
+    phplist.forward_email_period: '%%env(FORWARD_EMAIL_PERIOD)%%'
+    env(FORWARD_EMAIL_PERIOD): '1 minute'
+    phplist.forward_email_count: '%%env(FORWARD_EMAIL_COUNT)%%'
+    env(FORWARD_EMAIL_COUNT): '1'
+    phplist.forward_personal_note_size: '%%env(FORWARD_PERSONAL_NOTE_SIZE)%%'
+    env(FORWARD_PERSONAL_NOTE_SIZE): '0'
+
     phplist.upload_images_dir: '%%env(PHPLIST_UPLOADIMAGES_DIR)%%'
     env(PHPLIST_UPLOADIMAGES_DIR): 'images'
     phplist.editor_images_dir: '%%env(FCKIMAGES_DIR)%%'
