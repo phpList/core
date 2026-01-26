@@ -8,7 +8,7 @@ use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
-use PhpList\Core\Domain\Messaging\Service\Constructor\MailContentBuilderInterface;
+use PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailContentBuilder;
 use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository;
@@ -25,7 +25,7 @@ class SystemEmailBuilder extends BaseEmailBuilder
         UserBlacklistRepository $blacklistRepository,
         SubscriberHistoryManager $subscriberHistoryManager,
         SubscriberRepository $subscriberRepository,
-        protected readonly MailContentBuilderInterface $mailConstructor,
+        protected readonly SystemMailContentBuilder $mailConstructor,
         protected readonly TemplateImageEmbedder $templateImageEmbedder,
         LoggerInterface $logger,
         string $googleSenderId,
@@ -54,7 +54,6 @@ class SystemEmailBuilder extends BaseEmailBuilder
         MessagePrecacheDto $data,
         ?bool $skipBlacklistCheck = false,
         ?bool $inBlast = true,
-        ?bool $htmlPref = false,
     ): ?Email {
         if (!$this->validateRecipientAndSubject(to: $data->to, subject: $data->subject)) {
             return null;

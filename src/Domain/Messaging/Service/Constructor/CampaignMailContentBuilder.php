@@ -18,7 +18,7 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Messaging\Exception\SubscriberNotFoundException;
 
-class CampaignMailContentBuilder implements MailContentBuilderInterface
+class CampaignMailContentBuilder
 {
     public function __construct(
         private readonly SubscriberRepository $subscriberRepository,

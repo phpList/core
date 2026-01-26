@@ -13,7 +13,7 @@ use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Exception\AttachmentException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Service\AttachmentAdder;
-use PhpList\Core\Domain\Messaging\Service\Constructor\MailContentBuilderInterface;
+use PhpList\Core\Domain\Messaging\Service\Constructor\CampaignMailContentBuilder;
 use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -35,7 +35,7 @@ class EmailBuilder extends BaseEmailBuilder
         SubscriberHistoryManager $subscriberHistoryManager,
         SubscriberRepository $subscriberRepository,
         LoggerInterface $logger,
-        protected readonly MailContentBuilderInterface $mailContentBuilder,
+        protected readonly CampaignMailContentBuilder $mailContentBuilder,
         protected readonly TemplateImageEmbedder $templateImageEmbedder,
         protected readonly LegacyUrlBuilder $urlBuilder,
         protected readonly PdfGenerator $pdfGenerator,

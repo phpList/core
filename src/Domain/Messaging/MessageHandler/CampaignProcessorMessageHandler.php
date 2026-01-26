@@ -244,7 +244,6 @@ class CampaignProcessorMessageHandler
                 messageId: $campaign->getId(),
                 data: $data,
                 inBlast: false,
-                htmlPref: true,
             );
 
             $envelope = new Envelope(
@@ -283,7 +282,6 @@ class CampaignProcessorMessageHandler
                     messageId: $campaign->getId(),
                     data: $data,
                     inBlast: false,
-                    htmlPref: true,
                 );
 
                 if (!$email) {
