@@ -36,7 +36,7 @@ class MessageForwardService
     ) {
     }
 
-    public function forward(array $emails, string $uid, Message $campaign, DateTimeInterface $cutoff): void
+    public function forward(array $emails, string $uid, Message $campaign, DateTimeInterface $cutoff, ?string $note = null): void
     {
         $loadedMessageData = ($this->messageDataLoader)($campaign);
         $subtitle = $this->translator->trans('Forwarding the message with subject') . ' ' . stripslashes($loadedMessageData['subject']);
@@ -85,6 +85,7 @@ class MessageForwardService
                     forwardedBy: $subscriber,
                     data: $processed,
                     htmlPref: $subscriber->hasHtmlEmail(),
+                    forwardedPersonalNote: $note,
                 );
             }
         }

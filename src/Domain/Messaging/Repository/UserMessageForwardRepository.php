@@ -8,6 +8,7 @@ use DateTimeInterface;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
+use PhpList\Core\Domain\Messaging\Model\UserMessageForward;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 
 class UserMessageForwardRepository extends AbstractRepository implements PaginatableRepositoryInterface
@@ -36,5 +37,10 @@ class UserMessageForwardRepository extends AbstractRepository implements Paginat
             ->setParameter('cutoff', $cutoff)
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    public function findByEmailAndMessage(string $email, int $messageId): ?UserMessageForward
+    {
+        return $this->findOneBy(['forward' => $email, 'messageId' => $messageId]);
     }
 }

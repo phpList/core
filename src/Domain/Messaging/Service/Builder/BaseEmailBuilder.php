@@ -16,7 +16,7 @@ use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
 /** @SuppressWarnings("ExcessiveParameterList") */
-class BaseEmailBuilder
+abstract class BaseEmailBuilder
 {
     public function __construct(
         protected readonly ConfigProvider $configProvider,

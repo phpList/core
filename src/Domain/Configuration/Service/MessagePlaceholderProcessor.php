@@ -46,7 +46,7 @@ class MessagePlaceholderProcessor
 
         $resolver = new PlaceholderResolver();
         $resolver->register('EMAIL', fn(PlaceholderContext $ctx) => $ctx->user->getEmail());
-        $resolver->register('FORWARDEDBY', fn(PlaceholderContext $ctx) => $ctx->forwardedBy());
+        $resolver->register('FORWARDEDBY', fn(PlaceholderContext $ctx) => $ctx->forwardedBy()->getEmail());
         $resolver->register('MESSAGEID', fn(PlaceholderContext $ctx) => $ctx->messageId());
         $resolver->register('FORWARDFORM', fn(PlaceholderContext $ctx) => '');
         $resolver->register(

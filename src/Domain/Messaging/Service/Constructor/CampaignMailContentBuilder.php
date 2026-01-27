@@ -17,6 +17,7 @@ use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Messaging\Exception\SubscriberNotFoundException;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class CampaignMailContentBuilder
 {
@@ -28,6 +29,7 @@ class CampaignMailContentBuilder
         private readonly Html2Text $html2Text,
         private readonly TextParser $textParser,
         private readonly MessagePlaceholderProcessor $placeholderProcessor,
+        #[Autowire('%hplist.forward_personal_note_size%')] private readonly ?bool $forwardPersonalNote = false,
     ) {
     }
 
@@ -35,6 +37,7 @@ class CampaignMailContentBuilder
         MessagePrecacheDto $messagePrecacheDto,
         ?int $campaignId = null,
         ?Subscriber $forwardedBy = null,
+        ?string $forwardedPersonalNote = null,
     ): array {
         $subscriber = $this->subscriberRepository->findOneByEmail($messagePrecacheDto->to);
         if (!$subscriber) {
@@ -95,6 +98,12 @@ class CampaignMailContentBuilder
 
         $htmlMessage = $this->ensureHtmlFormating(content: $htmlMessage, addDefaultStyle: $addDefaultStyle);
         // todo: add link CLICKTRACK to $htmlMessage
+
+        [$htmlMessage, $textMessage] = $this->ensureNoteInCaseOfForwarded(
+            htmlMessage: $htmlMessage,
+            textMessage: $textMessage,
+            note: $forwardedPersonalNote,
+        );
 
         return [$htmlMessage, $textMessage];
     }
@@ -160,5 +169,19 @@ class CampaignMailContentBuilder
         $content = str_ireplace('<p><!DOCTYPE', '<!DOCTYPE', $content);
 
         return str_ireplace('</html></p>', '</html>', $content);
+    }
+
+    private function ensureNoteInCaseOfForwarded(string $htmlMessage, string $textMessage, ?string $note): array
+    {
+        if ($note === null || $note === '') {
+            return [$htmlMessage, $textMessage];
+        }
+        //0011996: forward to friend - personal message
+        if ($this->forwardPersonalNote) {
+            $htmlMessage = nl2br($note) . '<br/>' . $htmlMessage;
+            $textMessage = $note . "\n" . $textMessage;
+        }
+
+        return [$htmlMessage, $textMessage];
     }
 }
