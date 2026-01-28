@@ -127,6 +127,8 @@ parameters:
     env(EMAILTEXTCREDITS): '0'
     messaging.always_add_user_track: '%%env(ALWAYS_ADD_USERTRACK)%%'
     env(ALWAYS_ADD_USERTRACK): '1'
+    messaging.send_list_admin_copy: '%%env(SEND_LISTADMIN_COPY)%%'
+    env(SEND_LISTADMIN_COPY): '0'
 
     phplist.forward_email_period: '%%env(FORWARD_EMAIL_PERIOD)%%'
     env(FORWARD_EMAIL_PERIOD): '1 minute'

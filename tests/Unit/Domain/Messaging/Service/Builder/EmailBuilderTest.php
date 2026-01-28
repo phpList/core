@@ -113,7 +113,7 @@ class EmailBuilderTest extends TestCase
         $dto->fromEmail = 'from@example.com';
 
         $builder = $this->makeBuilder();
-        $result = $builder->buildPhplistEmail(messageId: 1, data: $dto);
+        $result = $builder->buildCampaignEmail(messageId: 1, data: $dto);
         $this->assertNull($result);
     }
 
@@ -126,7 +126,7 @@ class EmailBuilderTest extends TestCase
         $dto->fromEmail = 'from@example.com';
 
         $builder = $this->makeBuilder();
-        $result = $builder->buildPhplistEmail(messageId: 1, data: $dto);
+        $result = $builder->buildCampaignEmail(messageId: 1, data: $dto);
         $this->assertNull($result);
     }
 
@@ -157,7 +157,7 @@ class EmailBuilderTest extends TestCase
         $dto->fromEmail = 'from@example.com';
 
         $builder = $this->makeBuilder();
-        $result = $builder->buildPhplistEmail(messageId: 5, data: $dto);
+        $result = $builder->buildCampaignEmail(messageId: 5, data: $dto);
         $this->assertNull($result);
     }
 
@@ -190,7 +190,7 @@ class EmailBuilderTest extends TestCase
             ->willReturn(true);
 
         $builder = $this->makeBuilder(devVersion: true, devEmail: 'dev@example.com');
-        [$email, $sentAs] = $builder->buildPhplistEmail(
+        [$email, $sentAs] = $builder->buildCampaignEmail(
             messageId: 777,
             data: $dto,
             skipBlacklistCheck: false,
@@ -239,7 +239,7 @@ class EmailBuilderTest extends TestCase
             ->willReturn(true);
 
         $builder = $this->makeBuilder(devVersion: false, devEmail: null);
-        [$email, $sentAs] = $builder->buildPhplistEmail(messageId: 9, data: $dto, htmlPref: true);
+        [$email, $sentAs] = $builder->buildCampaignEmail(messageId: 9, data: $dto, htmlPref: true);
 
         $this->assertSame(OutputFormat::Text, $sentAs);
         $this->assertSame('TEXT', $email->getTextBody());
@@ -274,7 +274,7 @@ class EmailBuilderTest extends TestCase
             ->willReturn(true);
 
         $builder = $this->makeBuilder(devVersion: false, devEmail: null);
-        [$email, $sentAs] = $builder->buildPhplistEmail(messageId: 42, data: $dto, htmlPref: true);
+        [$email, $sentAs] = $builder->buildCampaignEmail(messageId: 42, data: $dto, htmlPref: true);
 
         $this->assertSame(OutputFormat::Pdf, $sentAs);
         $this->assertCount(1, $email->getAttachments());
@@ -305,7 +305,7 @@ class EmailBuilderTest extends TestCase
             ->method('createPdfBytes');
 
         $builder = $this->makeBuilder(devVersion: false, devEmail: null);
-        [$email, $sentAs] = $builder->buildPhplistEmail(messageId: 43, data: $dto, htmlPref: false);
+        [$email, $sentAs] = $builder->buildCampaignEmail(messageId: 43, data: $dto, htmlPref: false);
 
         $this->assertSame(OutputFormat::Text, $sentAs);
         $this->assertSame('TEXT', $email->getTextBody());
@@ -334,7 +334,7 @@ class EmailBuilderTest extends TestCase
             ->willReturn(true);
 
         $builder = $this->makeBuilder(devVersion: false, devEmail: null);
-        [$email] = $builder->buildPhplistEmail(messageId: 50, data: $dto);
+        [$email] = $builder->buildCampaignEmail(messageId: 50, data: $dto);
         $this->assertSame('reply@example.com', $email->getReplyTo()[0]->getAddress());
 
         // no reply-to, but test mail -> uses AdminAddress
@@ -352,7 +352,7 @@ class EmailBuilderTest extends TestCase
             ->with('(test)')
             ->willReturn('(test)');
 
-        [$email2] = $builder->buildPhplistEmail(messageId: 51, data: $dto2, isTestMail: true);
+        [$email2] = $builder->buildCampaignEmail(messageId: 51, data: $dto2, isTestMail: true);
         $this->assertSame('admin@example.com', $email2->getReplyTo()[0]->getAddress());
         $this->assertStringStartsWith('(test) ', $email2->getSubject());
     }
@@ -415,6 +415,6 @@ class EmailBuilderTest extends TestCase
         $builder = $this->makeBuilder(devVersion: false, devEmail: null);
 
         $this->expectException(AttachmentException::class);
-        $builder->buildPhplistEmail(messageId: 60, data: $dto, htmlPref: true);
+        $builder->buildCampaignEmail(messageId: 60, data: $dto, htmlPref: true);
     }
 }

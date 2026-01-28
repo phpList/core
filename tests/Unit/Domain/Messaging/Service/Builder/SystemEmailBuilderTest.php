@@ -89,7 +89,7 @@ class SystemEmailBuilderTest extends TestCase
         $dto->content = 'Body';
 
         $builder = $this->makeBuilder();
-        $result = $builder->buildPhplistEmail(messageId: 1, data: $dto);
+        $result = $builder->buildCampaignEmail(messageId: 1, data: $dto);
         $this->assertNull($result);
     }
 
@@ -101,7 +101,7 @@ class SystemEmailBuilderTest extends TestCase
         $dto->content = 'Body';
 
         $builder = $this->makeBuilder();
-        $result = $builder->buildPhplistEmail(messageId: 1, data: $dto);
+        $result = $builder->buildCampaignEmail(messageId: 1, data: $dto);
         $this->assertNull($result);
     }
 
@@ -130,7 +130,7 @@ class SystemEmailBuilderTest extends TestCase
         $dto->content = 'B';
 
         $builder = $this->makeBuilder();
-        $result = $builder->buildPhplistEmail(messageId: 5, data: $dto);
+        $result = $builder->buildCampaignEmail(messageId: 5, data: $dto);
         $this->assertNull($result);
     }
 
@@ -162,7 +162,7 @@ class SystemEmailBuilderTest extends TestCase
             devEmail: 'dev@example.com'
         );
 
-        $email = $builder->buildPhplistEmail(
+        $email = $builder->buildCampaignEmail(
             messageId: 777,
             data: $dto,
             skipBlacklistCheck: false,

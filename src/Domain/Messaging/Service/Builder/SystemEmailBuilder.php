@@ -49,11 +49,10 @@ class SystemEmailBuilder extends BaseEmailBuilder
         );
     }
 
-    public function buildPhplistEmail(
+    public function buildCampaignEmail(
         int $messageId,
         MessagePrecacheDto $data,
         ?bool $skipBlacklistCheck = false,
-        ?bool $inBlast = true,
     ): ?Email {
         if (!$this->validateRecipientAndSubject(to: $data->to, subject: $data->subject)) {
             return null;
@@ -68,17 +67,22 @@ class SystemEmailBuilder extends BaseEmailBuilder
 //        $messageReplyToAddress = $this->configProvider->getValue(ConfigOption::MessageReplyToAddress);
 //        $replyTo = $messageReplyToAddress ?: $fromEmail;
 
-        [$htmlMessage, $textMessage] = ($this->mailConstructor)(messagePrecacheDto: $data);
-
         $email = $this->createBaseEmail(
-            messageId: $messageId,
             originalTo: $data->to,
             fromEmail: $fromEmail,
             fromName: $fromName,
             subject: $data->subject,
-            inBlast: $inBlast
         );
 
+        $this->addBaseCampaignHeaders(
+            email: $email,
+            messageId: $messageId,
+            originalTo: $data->to,
+            destinationEmail: $email->getTo()[0]->getAddress(),
+            inBlast: false,
+        );
+
+        [$htmlMessage, $textMessage] = ($this->mailConstructor)(messagePrecacheDto: $data);
         $this->applyContentAndFormatting(
             email: $email,
             htmlMessage: $htmlMessage,
@@ -87,6 +91,48 @@ class SystemEmailBuilder extends BaseEmailBuilder
         );
 
         return $email;
+    }
+
+    public function buildSystemEmail(
+        MessagePrecacheDto $data,
+        ?bool $skipBlacklistCheck = false,
+    ): ?Email {
+        if (!$this->validateRecipientAndSubject(to: $data->to, subject: $data->subject)) {
+            return null;
+        }
+
+        if (!$this->passesBlacklistCheck(to: $data->to, skipBlacklistCheck: $skipBlacklistCheck)) {
+            return null;
+        }
+
+        $fromEmail = $this->configProvider->getValue(ConfigOption::MessageFromAddress);
+        $fromName = $this->configProvider->getValue(ConfigOption::MessageFromName);
+//        $messageReplyToAddress = $this->configProvider->getValue(ConfigOption::MessageReplyToAddress);
+//        $replyTo = $messageReplyToAddress ?: $fromEmail;
+
+        $email = $this->createBaseEmail(
+            originalTo: $data->to,
+            fromEmail: $fromEmail,
+            fromName: $fromName,
+            subject: $data->subject,
+        );
+
+        $this->addSystemHeaders(
+            email: $email,
+            originalTo: $data->to,
+            destinationEmail: $email->getTo()[0]->getAddress(),
+            inBlast: false,
+        );
+
+        [$htmlMessage, $textMessage] = ($this->mailConstructor)(messagePrecacheDto: $data);
+        $email->text($textMessage);
+
+        return $email;
+    }
+
+    protected function addSystemHeaders(Email $email, string $originalTo, string $destinationEmail, bool $inBlast): void
+    {
+
     }
 
     protected function applyContentAndFormatting(

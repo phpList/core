@@ -96,16 +96,16 @@ class ForwardEmailBuilder extends EmailBuilder
         );
 
         $email = $this->createBaseEmail(
-            messageId: $messageId,
             originalTo: $data->to,
             fromEmail: $fromEmail,
             fromName: $fromName,
             subject: $subject,
-            inBlast: false
         );
 
+        $this->applyCampaignHeaders($email, $forwardedBy);
+
         $email->addReplyTo(new Address($fromEmail, $fromName));
-        $email = $this->applyCampaignHeaders($email, $forwardedBy);
+        $this->applyCampaignHeaders($email, $forwardedBy);
 
         $sentAs = $this->applyContentAndFormatting(
             email: $email,

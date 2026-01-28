@@ -36,6 +36,7 @@ class MessageForwardService
         private readonly MessagePrecacheService $precacheService,
         private readonly EventLogManager $eventLogManager,
         private readonly MailerInterface $mailer,
+        private readonly AdminCopyEmailSender $adminCopyEmailSender,
         #[Autowire('%phplist.forward_friend_count_attribute%')] private readonly string $forwardFriendCountAttribute,
         #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
     ) {
@@ -62,28 +63,38 @@ class MessageForwardService
                 ?->getValue();
         }
 
-        $messagelists = $this->subscriberListRepository->getListsByMessage($campaign);
-        if (!$this->precacheService->precacheMessage($campaign, $loadedMessageData, true)) {
-//            sendAdminCopy(s('Message Forwarded'),
-//                s('%s tried forwarding message %d to %s but failed', $userdata['email'], $mid, $email),
-//                $messagelists);
-//            Sql_Query(sprintf('insert into %s (user,message,forward,status)
-//                values(%d,%d,"%s","failed")',
-//                $tables['user_message_forward'], $userdata['id'], $mid, $email));
-            $ok = false;
-            $this->eventLogManager->log('forward', 'Error loading message '.$campaign->getId().'  in cache');
-        }
-        $messagePrecacheDto = $this->cache->get(sprintf('messaging.message.base.%d.%d', $campaign->getId(), 1));
-
-        $processed = $this->messagePreparator->processMessageLinks(
-            campaignId: $campaign->getId(),
-            cachedMessageDto: $messagePrecacheDto,
-            subscriber: $subscriber
-        );
+        $messageLists = $this->subscriberListRepository->getListsByMessage($campaign);
 
         foreach ($emails as $friendEmail) {
             $done = $this->forwardRepository->findByEmailAndMessage($friendEmail, $campaign->getId());
             if ($done === null) {
+                if (!$this->precacheService->precacheMessage($campaign, $loadedMessageData, true)) {
+                    ($this->adminCopyEmailSender)(
+                        $this->translator->trans('Message Forwarded'),
+                        $this->translator->trans(
+                            '%subscriber% tried forwarding message %campaignId% to %email% but failed',
+                            [
+                                '%subscriber%' => $subscriber->getEmail(),
+                                '%campaignId%' => $campaign->getId(),
+                                '%email%' => $friendEmail,
+                            ]
+                        ),
+                        $messageLists
+                    );
+
+//            Sql_Query(sprintf('insert into %s (user,message,forward,status)
+//                values(%d,%d,"%s","failed")',
+//                $tables['user_message_forward'], $userdata['id'], $mid, $email));
+                    $ok = false;
+                    $this->eventLogManager->log('forward', 'Error loading message '.$campaign->getId().'  in cache');
+                }
+                $messagePrecacheDto = $this->cache->get(sprintf('messaging.message.base.%d.%d', $campaign->getId(), 1));
+
+                $processed = $this->messagePreparator->processMessageLinks(
+                    campaignId: $campaign->getId(),
+                    cachedMessageDto: $messagePrecacheDto,
+                    subscriber: $subscriber
+                );
                 [$email, $sentAs] = $this->forwardEmailBuilder->buildForwardEmail(
                     messageId: $campaign->getId(),
                     email: $friendEmail,

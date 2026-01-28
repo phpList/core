@@ -99,16 +99,28 @@ abstract class BaseEmailBuilder
     }
 
     protected function createBaseEmail(
-        int $messageId,
         string $originalTo,
         ?string $fromEmail,
         ?string $fromName,
         ?string $subject,
-        ?bool $inBlast
     ) : Email {
         $email = (new Email());
         $destinationEmail = $this->resolveDestinationEmail($originalTo);
 
+        $email->to($destinationEmail);
+        $email->from(new Address($fromEmail, $fromName ?? ''));
+        $email->subject($subject);
+
+        return $email;
+    }
+
+    protected function addBaseCampaignHeaders(
+        Email $email,
+        int $messageId,
+        string $originalTo,
+        string $destinationEmail,
+        ?bool $inBlast
+    ): void {
         $email->getHeaders()->addTextHeader('X-MessageID', (string)$messageId);
         $email->getHeaders()->addTextHeader('X-ListMember', $destinationEmail);
         if ($this->googleSenderId !== '') {
@@ -144,11 +156,5 @@ abstract class BaseEmailBuilder
                 new Address($originalTo)
             );
         }
-
-        $email->to($destinationEmail);
-        $email->from(new Address($fromEmail, $fromName ?? ''));
-        $email->subject($subject);
-
-        return $email;
     }
 }

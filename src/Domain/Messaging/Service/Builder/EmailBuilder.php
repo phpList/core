@@ -65,7 +65,7 @@ class EmailBuilder extends BaseEmailBuilder
         );
     }
 
-    public function buildPhplistEmail(
+    public function buildCampaignEmail(
         int $messageId,
         MessagePrecacheDto $data,
         ?bool $skipBlacklistCheck = false,
@@ -85,15 +85,18 @@ class EmailBuilder extends BaseEmailBuilder
         $fromName = $data->fromName;
         $subject = (!$isTestMail ? '' : $this->translator->trans('(test)') .  ' ') . $data->subject;
 
-        [$htmlMessage, $textMessage] = ($this->mailContentBuilder)(messagePrecacheDto: $data, campaignId: $messageId);
-
         $email = $this->createBaseEmail(
-            messageId: $messageId,
             originalTo: $data->to,
             fromEmail: $fromEmail,
             fromName: $fromName,
             subject: $subject,
-            inBlast: $inBlast
+        );
+        $this->addBaseCampaignHeaders(
+            email: $email,
+            messageId: $messageId,
+            originalTo: $data->to,
+            destinationEmail: $email->getTo()[0]->getAddress(),
+            inBlast: $inBlast,
         );
 
         if (!empty($data->replyToEmail)) {
@@ -105,6 +108,7 @@ class EmailBuilder extends BaseEmailBuilder
             }
         }
 
+        [$htmlMessage, $textMessage] = ($this->mailContentBuilder)(messagePrecacheDto: $data, campaignId: $messageId);
         $sentAs = $this->applyContentAndFormatting(
             email: $email,
             htmlMessage: $htmlMessage,
