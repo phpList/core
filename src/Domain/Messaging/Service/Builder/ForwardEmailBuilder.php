@@ -19,6 +19,7 @@ use PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /** @SuppressWarnings("ExcessiveParameterList") @SuppressWarnings("PHPMD.CouplingBetweenObjects") */
@@ -37,6 +38,7 @@ class ForwardEmailBuilder extends EmailBuilder
         PdfGenerator $pdfGenerator,
         AttachmentAdder $attachmentAdder,
         TranslatorInterface $translator,
+        private readonly HttpReceivedStampBuilder $httpReceivedStampBuilder,
         string $googleSenderId,
         bool $useAmazonSes,
         bool $usePrecedenceHeader,
@@ -121,5 +123,15 @@ class ForwardEmailBuilder extends EmailBuilder
         );
 
         return [$email, $sentAs];
+    }
+
+    public function applyCampaignHeaders(Email $email, Subscriber $subscriber): Email
+    {
+        $email = parent::applyCampaignHeaders($email, $subscriber);
+
+        $receivedLine = $this->httpReceivedStampBuilder->buildStamp();
+        $email->getHeaders()->addTextHeader('Received', $receivedLine);
+
+        return $email;
     }
 }
