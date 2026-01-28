@@ -48,6 +48,20 @@ class SubscriberAttributeDefinition implements DomainModel, Identity
      */
     private array $options = [];
 
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'type' => $this->type,
+            'listOrder' => $this->listOrder,
+            'defaultValue' => $this->defaultValue,
+            'required' => $this->required,
+            'tableName' => $this->tableName,
+            'options' => $this->options,
+        ];
+    }
+
     public function getId(): ?int
     {
         return $this->id;

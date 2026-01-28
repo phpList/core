@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
+use PhpList\Core\Domain\Common\Model\AttributeTypeEnum;
+use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Subscription\Exception\SubscriberAttributeCreationException;
 use PhpList\Core\Domain\Subscription\Model\Dto\ChangeSetDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -16,21 +21,14 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SubscriberAttributeManager
 {
-    private SubscriberAttributeValueRepository $attributeRepository;
-    private SubscriberAttributeDefinitionRepository $attrDefinitionRepository;
-    private EntityManagerInterface $entityManager;
-    private TranslatorInterface $translator;
-
     public function __construct(
-        SubscriberAttributeValueRepository $attributeRepository,
-        SubscriberAttributeDefinitionRepository $attrDefinitionRepository,
-        EntityManagerInterface $entityManager,
-        TranslatorInterface $translator,
+        private readonly SubscriberAttributeValueRepository $attributeRepository,
+        private readonly SubscriberAttributeDefinitionRepository $attrDefinitionRepository,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly TranslatorInterface $translator,
+        private readonly ConfigProvider $configProvider,
+        private readonly DynamicListAttrTablesManager $dynamicTablesManager,
     ) {
-        $this->attributeRepository = $attributeRepository;
-        $this->attrDefinitionRepository = $attrDefinitionRepository;
-        $this->entityManager = $entityManager;
-        $this->translator = $translator;
     }
 
     public function createOrUpdate(
@@ -84,5 +82,80 @@ class SubscriberAttributeManager
                 );
             }
         }
+    }
+
+    public function saveUserAttribute(Subscriber $subscriber, string $attributeName, $data): bool
+    {
+        if (!is_array($data)) {
+            $tmp = $data;
+            $def = $this->attrDefinitionRepository->findOneByName($attributeName);
+            $data = $def ? $def->toArray() : [];
+            $data['value'] = $tmp;
+            $data['displayvalue'] = $tmp;
+        }
+
+        if ($data['nodbsave'] || in_array($attributeName, ['emailcheck', 'passwordcheck'], true)) {
+            return false;
+        }
+
+        if (!isset($data['type'])) {
+            $data['type'] = 'textline';
+        }
+
+        if (in_array($data['type'], ['static', 'password', 'htmlpref'], true)) {
+            if (!empty($this->configProvider->getValue(ConfigOption::DontSaveUserPassword)) && $data['type'] === 'password') {
+                $data['value'] = 'not authoritative';
+            }
+
+            switch ($attributeName) {
+                case 'email':
+                    $subscriber->setEmail($data['value']);
+                    break;
+
+                case 'htmlemail':
+                    $subscriber->setHtmlEmail((bool)$data['value']);
+                    break;
+
+                // todo: add more cases as needed (maybe all fields from the table?)
+                default:
+                    throw new InvalidArgumentException(sprintf('Unknown field "%s"', $attributeName));
+            }
+
+            if ($data['type'] === 'password') {
+                $subscriber->setPasswordChanged(new DateTime());
+                $subscriber->setPassword(hash('sha256', $data['value']));
+            }
+
+            return true;
+        }
+
+        $attributeType = $data['type'];
+        $attributeDefinition = $this->attrDefinitionRepository->findOneByName($attributeName);
+        $autoCreateAttributes = (bool) $this->configProvider->getValue(ConfigOption::AutoCreateAttributes);
+
+        if ($attributeDefinition === null && !empty($data['name']) && $autoCreateAttributes) {
+            $tableName = $this->dynamicTablesManager->resolveTableName(name: $data['name'], type: $data['type']);
+            $attributeDefinition = (new SubscriberAttributeDefinition())
+                ->setName($data['name'])
+                ->setType($data['type'])
+                ->setTableName($tableName);
+            $this->attrDefinitionRepository->persist($attributeDefinition);
+        } else {
+            $attid = $attributeDefinition->getId();
+            if (empty($attributeType)) {
+                $attributeType = $attributeDefinition->getType();
+            }
+            $tableName = $attributeDefinition->getTableName();
+        }
+
+        if ($tableName === null && !empty($data['name'])) {
+            $tableName = $this->dynamicTablesManager->resolveTableName(
+                name: $data['name'],
+                type: AttributeTypeEnum::Checkbox,
+            );
+            // fix attribute without tablename
+            $attributeDefinition->setTableName($tableName);
+        }
+
     }
 }

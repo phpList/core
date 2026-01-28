@@ -43,4 +43,6 @@ enum ConfigOption: string
     case AlwaysSendTextDomains = 'alwayssendtextto';
     case ReportAddress = 'report_address';
     case SendAdminCopies = 'send_admin_copies';
+    case DontSaveUserPassword = 'dontsave_userpassword';
+    case AutoCreateAttributes = 'autocreate_attributes';
 }

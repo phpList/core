@@ -119,7 +119,7 @@ class MessageForwardService
 
         if ($this->forwardFriendCountAttribute && isset($nFriends)) {
             $this->subscriberAttributeManager->saveUserAttribute(
-                user: $subscriber,
+                subscriber: $subscriber,
                 attributeName: $this->forwardFriendCountAttribute,
                 data: ['name' => $this->forwardFriendCountAttribute, 'value' => $nFriends]
             );
