@@ -25,7 +25,10 @@ use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-/** @SuppressWarnings("ExcessiveParameterList") @SuppressWarnings("PHPMD.CouplingBetweenObjects") */
+/**
+ * @SuppressWarnings("ExcessiveParameterList")
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
+ */
 class EmailBuilder extends BaseEmailBuilder
 {
     public function __construct(

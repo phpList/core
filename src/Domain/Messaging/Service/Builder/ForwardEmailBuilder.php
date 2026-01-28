@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service\Builder;
 
 use PhpList\Core\Domain\Common\PdfGenerator;
-use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
@@ -22,7 +21,10 @@ use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-/** @SuppressWarnings("ExcessiveParameterList") @SuppressWarnings("PHPMD.CouplingBetweenObjects") */
+/**
+ * @SuppressWarnings("ExcessiveParameterList")
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
+ */
 class ForwardEmailBuilder extends EmailBuilder
 {
     public function __construct(
@@ -72,7 +74,8 @@ class ForwardEmailBuilder extends EmailBuilder
         Subscriber $forwardedBy,
         MessagePrecacheDto $data,
         bool $htmlPref,
-        bool $isTestMail = false,
+        string $fromName,
+        string $fromEmail,
         ?string $forwardedPersonalNote = null,
     ): ?array {
         if (!$this->validateRecipientAndSubject(to: $email, subject: $data->subject)) {
@@ -83,11 +86,9 @@ class ForwardEmailBuilder extends EmailBuilder
             return null;
         }
 
-        $fromEmail = $data->fromEmail;
-        $fromName = $data->fromName;
-        $subject = (!$isTestMail ? '' : $this->translator->trans('(test)') .  ' ') . $data->subject;
+        $subject = $this->translator->trans('Fwd') . ': ' . stripslashes($data->subject);
 
-        [$htmlMessage, $textMessage] = ($this->mailContentBuilder)(
+        [$htmlMessage, $textMessage] = ($this->mailContentBuilder) (
             messagePrecacheDto: $data,
             campaignId: $messageId,
             forwardedBy: $forwardedBy,
@@ -103,14 +104,8 @@ class ForwardEmailBuilder extends EmailBuilder
             inBlast: false
         );
 
-        if (!empty($data->replyToEmail)) {
-            $email->addReplyTo(new Address($data->replyToEmail, $data->replyToName));
-        } elseif ($isTestMail) {
-            $testReplyAddress = $this->configProvider->getValue(ConfigOption::AdminAddress);
-            if (!empty($testReplyAddress)) {
-                $email->addReplyTo(new Address($testReplyAddress, ''));
-            }
-        }
+        $email->addReplyTo(new Address($fromEmail, $fromName));
+        $email = $this->applyCampaignHeaders($email, $forwardedBy);
 
         $sentAs = $this->applyContentAndFormatting(
             email: $email,

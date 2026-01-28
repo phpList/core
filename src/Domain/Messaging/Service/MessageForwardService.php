@@ -15,6 +15,9 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use Psr\SimpleCache\CacheInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Mailer\Envelope;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class MessageForwardService
@@ -32,11 +35,13 @@ class MessageForwardService
         private readonly ForwardEmailBuilder $forwardEmailBuilder,
         private readonly MessagePrecacheService $precacheService,
         private readonly EventLogManager $eventLogManager,
+        private readonly MailerInterface $mailer,
         #[Autowire('%phplist.forward_friend_count_attribute%')] private readonly string $forwardFriendCountAttribute,
+        #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
     ) {
     }
 
-    public function forward(array $emails, string $uid, Message $campaign, DateTimeInterface $cutoff, ?string $note = null): void
+    public function forward(array $emails, string $uid, Message $campaign, DateTimeInterface $cutoff, ?string $note = null, string $fromName, string $fromEmail): void
     {
         $loadedMessageData = ($this->messageDataLoader)($campaign);
         $subtitle = $this->translator->trans('Forwarding the message with subject') . ' ' . stripslashes($loadedMessageData['subject']);
@@ -76,17 +81,26 @@ class MessageForwardService
             subscriber: $subscriber
         );
 
-        foreach ($emails as $email) {
-            $done = $this->forwardRepository->findByEmailAndMessage($email, $campaign->getId());
+        foreach ($emails as $friendEmail) {
+            $done = $this->forwardRepository->findByEmailAndMessage($friendEmail, $campaign->getId());
             if ($done === null) {
-                $this->forwardEmailBuilder->buildForwardEmail(
+                [$email, $sentAs] = $this->forwardEmailBuilder->buildForwardEmail(
                     messageId: $campaign->getId(),
-                    email: $email,
+                    email: $friendEmail,
                     forwardedBy: $subscriber,
                     data: $processed,
                     htmlPref: $subscriber->hasHtmlEmail(),
-                    forwardedPersonalNote: $note,
+                    fromName: $fromName,
+                    fromEmail: $fromEmail,
+                    forwardedPersonalNote: $note
                 );
+
+                $envelope = new Envelope(
+                    sender: new Address($this->bounceEmail, 'PHPList'),
+                    recipients: [new Address($email->getAddress())],
+                );
+                $this->mailer->send(message: $friendEmail, envelope: $envelope);
+                $campaign->incrementSentCount($sentAs);
             }
         }
 
