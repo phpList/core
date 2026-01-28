@@ -10,9 +10,12 @@ use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\ForwardEmailBuilder;
+use PhpList\Core\Domain\Messaging\Service\Manager\UserMessageForwardManager;
+use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use Psr\SimpleCache\CacheInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\Envelope;
@@ -22,6 +25,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class MessageForwardService
 {
+    private readonly ?string $forwardFriendCountAttribute;
+
     public function __construct(
         private readonly UserMessageForwardRepository $forwardRepository,
         private readonly SubscriberRepository $subscriberRepository,
@@ -37,9 +42,13 @@ class MessageForwardService
         private readonly EventLogManager $eventLogManager,
         private readonly MailerInterface $mailer,
         private readonly AdminCopyEmailSender $adminCopyEmailSender,
-        #[Autowire('%phplist.forward_friend_count_attribute%')] private readonly string $forwardFriendCountAttribute,
+        private readonly UserMessageForwardManager $messageForwardManager,
+        private readonly SubscriberAttributeManager $subscriberAttributeManager,
+        #[Autowire('%phplist.forward_friend_count_attribute%')] string $forwardFriendCountAttr,
         #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
     ) {
+        $forwardFriendCountAttr = trim($forwardFriendCountAttr);
+        $this->forwardFriendCountAttribute = $forwardFriendCountAttr !== '' ? $forwardFriendCountAttr : null;
     }
 
     public function forward(array $emails, string $uid, Message $campaign, DateTimeInterface $cutoff, ?string $note = null, string $fromName, string $fromEmail): void
@@ -52,12 +61,7 @@ class MessageForwardService
             // todo: do something
         }
 
-        if ($this->forwardFriendCountAttribute && $this->forwardFriendCountAttribute !== '') {
-            $iCountFriends = $this->forwardFriendCountAttribute;
-        } else {
-            $iCountFriends = 0;
-        }
-        if ($iCountFriends) {
+        if ($this->forwardFriendCountAttribute) {
             $nFriends = $this->subscriberAttributeValueRepo
                 ->findOneBySubscriberAndAttributeName($subscriber, $this->forwardFriendCountAttribute)
                 ?->getValue();
@@ -66,56 +70,108 @@ class MessageForwardService
         $messageLists = $this->subscriberListRepository->getListsByMessage($campaign);
 
         foreach ($emails as $friendEmail) {
-            $done = $this->forwardRepository->findByEmailAndMessage($friendEmail, $campaign->getId());
-            if ($done === null) {
-                if (!$this->precacheService->precacheMessage($campaign, $loadedMessageData, true)) {
-                    ($this->adminCopyEmailSender)(
-                        $this->translator->trans('Message Forwarded'),
-                        $this->translator->trans(
-                            '%subscriber% tried forwarding message %campaignId% to %email% but failed',
-                            [
-                                '%subscriber%' => $subscriber->getEmail(),
-                                '%campaignId%' => $campaign->getId(),
-                                '%email%' => $friendEmail,
-                            ]
-                        ),
-                        $messageLists
-                    );
+            $existing = $this->forwardRepository->findByEmailAndMessage($friendEmail, $campaign->getId());
+            if ($existing !== null && $existing->getStatus() === 'sent') {
+                continue;
+            }
 
-//            Sql_Query(sprintf('insert into %s (user,message,forward,status)
-//                values(%d,%d,"%s","failed")',
-//                $tables['user_message_forward'], $userdata['id'], $mid, $email));
-                    $ok = false;
-                    $this->eventLogManager->log('forward', 'Error loading message '.$campaign->getId().'  in cache');
-                }
-                $messagePrecacheDto = $this->cache->get(sprintf('messaging.message.base.%d.%d', $campaign->getId(), 1));
+            if (!$this->precacheService->precacheMessage($campaign, $loadedMessageData, true)) {
+                $this->handleFail($campaign, $subscriber, $friendEmail, $messageLists);
+                $ok = false;
+            }
 
-                $processed = $this->messagePreparator->processMessageLinks(
-                    campaignId: $campaign->getId(),
-                    cachedMessageDto: $messagePrecacheDto,
-                    subscriber: $subscriber
-                );
-                [$email, $sentAs] = $this->forwardEmailBuilder->buildForwardEmail(
-                    messageId: $campaign->getId(),
-                    email: $friendEmail,
-                    forwardedBy: $subscriber,
-                    data: $processed,
-                    htmlPref: $subscriber->hasHtmlEmail(),
-                    fromName: $fromName,
-                    fromEmail: $fromEmail,
-                    forwardedPersonalNote: $note
-                );
+            $messagePrecacheDto = $this->cache->get(sprintf('messaging.message.base.%d.%d', $campaign->getId(), 1));
+            // todo: check how should links be handled in case of forwarding
+            $processed = $this->messagePreparator->processMessageLinks(
+                campaignId: $campaign->getId(),
+                cachedMessageDto: $messagePrecacheDto,
+                subscriber: $subscriber
+            );
 
-                $envelope = new Envelope(
-                    sender: new Address($this->bounceEmail, 'PHPList'),
-                    recipients: [new Address($email->getAddress())],
-                );
-                $this->mailer->send(message: $friendEmail, envelope: $envelope);
-                $campaign->incrementSentCount($sentAs);
+            $result = $this->forwardEmailBuilder->buildForwardEmail(
+                messageId: $campaign->getId(),
+                email: $friendEmail,
+                forwardedBy: $subscriber,
+                data: $processed,
+                htmlPref: $subscriber->hasHtmlEmail(),
+                fromName: $fromName,
+                fromEmail: $fromEmail,
+                forwardedPersonalNote: $note
+            );
+
+            if ($result === null) {
+                $this->handleFail($campaign, $subscriber, $friendEmail, $messageLists);
+                continue;
+            }
+
+            [$email, $sentAs] = $result;
+            $envelope = new Envelope(
+                sender: new Address($this->bounceEmail, 'PHPList'),
+                recipients: [new Address($email->getAddress())],
+            );
+            $this->mailer->send(message: $friendEmail, envelope: $envelope);
+            $this->handleSuccess($campaign, $subscriber, $friendEmail, $messageLists);
+            $campaign->incrementSentCount($sentAs);
+            if ($this->forwardFriendCountAttribute && isset($nFriends)) {
+                ++$nFriends;
             }
         }
 
-        $forwardPeriodCount = $this->forwardRepository->getCountByUserSince($subscriber, $cutoff);
+        if ($this->forwardFriendCountAttribute && isset($nFriends)) {
+            $this->subscriberAttributeManager->saveUserAttribute(
+                user: $subscriber,
+                attributeName: $this->forwardFriendCountAttribute,
+                data: ['name' => $this->forwardFriendCountAttribute, 'value' => $nFriends]
+            );
+        }
 
+        $forwardPeriodCount = $this->forwardRepository->getCountByUserSince($subscriber, $cutoff);
+    }
+
+    private function handleFail($campaign, $subscriber, $friendEmail, $messageLists): void
+    {
+        ($this->adminCopyEmailSender)(
+            subject: $this->translator->trans('Message Forwarded'),
+            message: $this->translator->trans(
+                '%subscriber% tried forwarding message %campaignId% to %email% but failed',
+                [
+                    '%subscriber%' => $subscriber->getEmail(),
+                    '%campaignId%' => $campaign->getId(),
+                    '%email%' => $friendEmail,
+                ]
+            ),
+            lists: $messageLists
+        );
+
+        $this->messageForwardManager->create(
+            subscriber: $subscriber,
+            campaign: $campaign,
+            friendEmail: $friendEmail,
+            status: 'failed'
+        );
+        $this->eventLogManager->log('forward', 'Error loading message ' . $campaign->getId().' in cache');
+    }
+
+    private function handleSuccess(Message $campaign, ?Subscriber $subscriber, mixed $friendEmail, array $messageLists): void
+    {
+        ($this->adminCopyEmailSender)(
+            subject: $this->translator->trans('Message Forwarded'),
+            message: $this->translator->trans(
+                '%subscriber% has forwarded message %campaignId% to %email%',
+                [
+                    '%subscriber%' => $subscriber->getEmail(),
+                    '%campaignId%' => $campaign->getId(),
+                    '%email%' => $friendEmail,
+                ]
+            ),
+            lists: $messageLists
+        );
+
+        $this->messageForwardManager->create(
+            subscriber: $subscriber,
+            campaign: $campaign,
+            friendEmail: $friendEmail,
+            status: 'sent'
+        );
     }
 }
