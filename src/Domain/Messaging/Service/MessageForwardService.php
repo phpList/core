@@ -46,19 +46,31 @@ class MessageForwardService
         private readonly SubscriberAttributeManager $subscriberAttributeManager,
         #[Autowire('%phplist.forward_friend_count_attribute%')] string $forwardFriendCountAttr,
         #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
+        #[Autowire('%phplist.forward_message_count%')] private readonly int $forwardMessageCount,
     ) {
         $forwardFriendCountAttr = trim($forwardFriendCountAttr);
         $this->forwardFriendCountAttribute = $forwardFriendCountAttr !== '' ? $forwardFriendCountAttr : null;
     }
 
-    public function forward(array $emails, string $uid, Message $campaign, DateTimeInterface $cutoff, ?string $note = null, string $fromName, string $fromEmail): void
-    {
+    public function forward(
+        array $emails,
+        string $uid,
+        Message $campaign,
+        DateTimeInterface $cutoff,
+        string $fromName,
+        string $fromEmail,
+        ?string $note = null
+    ): void {
         $loadedMessageData = ($this->messageDataLoader)($campaign);
-        $subtitle = $this->translator->trans('Forwarding the message with subject') . ' ' . stripslashes($loadedMessageData['subject']);
         $subscriber = $this->subscriberRepository->findOneByUniqueId($uid);
         $receivedMessage = $this->userMessageRepository->findOneByUserAndMessage($subscriber, $campaign);
         if ($receivedMessage === null) {
             // todo: do something
+        }
+
+        $forwardPeriodCount = $this->forwardRepository->getCountByUserSince($subscriber, $cutoff);
+        if ($forwardPeriodCount > $this->forwardMessageCount) {
+            return;
         }
 
         if ($this->forwardFriendCountAttribute) {
@@ -118,14 +130,12 @@ class MessageForwardService
         }
 
         if ($this->forwardFriendCountAttribute && isset($nFriends)) {
-            $this->subscriberAttributeManager->saveUserAttribute(
+            $this->subscriberAttributeManager->createOrUpdateByName(
                 subscriber: $subscriber,
                 attributeName: $this->forwardFriendCountAttribute,
-                data: ['name' => $this->forwardFriendCountAttribute, 'value' => $nFriends]
+                value: $nFriends
             );
         }
-
-        $forwardPeriodCount = $this->forwardRepository->getCountByUserSince($subscriber, $cutoff);
     }
 
     private function handleFail($campaign, $subscriber, $friendEmail, $messageLists): void

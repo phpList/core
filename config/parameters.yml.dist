@@ -151,3 +151,5 @@ parameters:
     env(PHPLIST_ATTACHMENT_DOWNLOAD_URL): 'https://example.com/download/'
     phplist.attachment_repository_path: '%%env(PHPLIST_ATTACHMENT_REPOSITORY_PATH)%%'
     env(PHPLIST_ATTACHMENT_REPOSITORY_PATH): '/tmp'
+    phplist.max_avatar_size: '%%env(MAX_AVATAR_SIZE)%%'
+    env(MAX_AVATAR_SIZE): '100000'

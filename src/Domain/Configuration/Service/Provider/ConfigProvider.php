@@ -63,6 +63,11 @@ class ConfigProvider
         return $this->defaultConfigs->has($key->value) ? $this->defaultConfigs->get($key->value)['value'] : null;
     }
 
+    public function getBoolValue(ConfigOption $key): bool
+    {
+        return filter_var($this->getValue($key), FILTER_VALIDATE_BOOLEAN);
+    }
+
     public function getValueWithNamespace(ConfigOption $key): ?string
     {
         $full = $this->getValue($key);

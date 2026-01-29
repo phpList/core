@@ -774,7 +774,7 @@ Thank you.</target>
         <source>This message contains attachments that can be viewed with a webbrowser</source>
         <target>__This message contains attachments that can be viewed with a webbrowser</target>
       </trans-unit>
-      <trans-unit id="QLlIQQh" resname="Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%">
+      <trans-unit id="28lDkjt" resname="Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%">
         <source>Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%</source>
         <target>__Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%</target>
       </trans-unit>
@@ -794,10 +794,6 @@ Thank you.</target>
         <source>failed to open attachment (%remoteFile%) to add to campaign %campaignId%</source>
         <target>__failed to open attachment (%remoteFile%) to add to campaign %campaignId%</target>
       </trans-unit>
-      <trans-unit id="28lDkjt" resname="Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%">
-        <source>Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%</source>
-        <target>__Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%</target>
-      </trans-unit>
       <trans-unit id="DmqU7IE" resname="Attachment %remoteFile% does not exist">
         <source>Attachment %remoteFile% does not exist</source>
         <target>__Attachment %remoteFile% does not exist</target>
@@ -809,6 +805,26 @@ Thank you.</target>
       <trans-unit id="FbYZdLJ" resname="Location">
         <source>Location</source>
         <target>__Location</target>
+      </trans-unit>
+      <trans-unit id="1eHD7_P" resname="Fwd">
+        <source>Fwd</source>
+        <target>__Fwd</target>
+      </trans-unit>
+      <trans-unit id="xBvzfdD" resname="(test)">
+        <source>(test)</source>
+        <target>__(test)</target>
+      </trans-unit>
+      <trans-unit id="gLiV1kM" resname="Message Forwarded">
+        <source>Message Forwarded</source>
+        <target>__Message Forwarded</target>
+      </trans-unit>
+      <trans-unit id="XbRAoq3" resname="%subscriber% tried forwarding message %campaignId% to %email% but failed">
+        <source>%subscriber% tried forwarding message %campaignId% to %email% but failed</source>
+        <target>__%subscriber% tried forwarding message %campaignId% to %email% but failed</target>
+      </trans-unit>
+      <trans-unit id="u7htSNe" resname="%subscriber% has forwarded message %campaignId% to %email%">
+        <source>%subscriber% has forwarded message %campaignId% to %email%</source>
+        <target>__%subscriber% has forwarded message %campaignId% to %email%</target>
       </trans-unit>
     </body>
   </file>
