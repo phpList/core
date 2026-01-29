@@ -35,10 +35,10 @@ final class MessagePlaceholderProcessorTest extends TestCase
 
     private function makeUser(string $email = 'user@example.com', string $uid = 'UID123'): Subscriber
     {
-        $u = new Subscriber();
-        $u->setEmail($email);
-        $u->setUniqueId($uid);
-        return $u;
+        $user = new Subscriber();
+        $user->setEmail($email);
+        $user->setUniqueId($uid);
+        return $user;
     }
 
     public function testEnsuresStandardPlaceholdersAndUsertrackInHtmlOnly(): void
@@ -55,12 +55,13 @@ final class MessagePlaceholderProcessorTest extends TestCase
             patternResolvers: [],
             supportingResolvers: [],
             alwaysAddUserTrack: true,
+            keepForwardedAttributes: false
         );
 
         $html = '<html><body>Hello</body></html>';
         $processedHtml = $processor->process(
             value: $html,
-            user: $user,
+            receiver: $user,
             format: OutputFormat::Html,
             messagePrecacheDto: $dto,
             campaignId: 42,
@@ -74,7 +75,7 @@ final class MessagePlaceholderProcessorTest extends TestCase
         $text = 'Hi';
         $processedText = $processor->process(
             value: $text,
-            user: $user,
+            receiver: $user,
             format: OutputFormat::Text,
             messagePrecacheDto: $dto,
         );
@@ -86,6 +87,7 @@ final class MessagePlaceholderProcessorTest extends TestCase
     public function testBuiltInResolversReplaceEmailUserIdAndConfigValues(): void
     {
         $user = $this->makeUser('alice@example.com', 'U-999');
+        $forwardedBy = $this->makeUser('bob@example.com', 'U-991');
         $dto = new MessagePrecacheDto();
 
         $this->config->method('getValue')->willReturnCallback(
@@ -107,20 +109,21 @@ final class MessagePlaceholderProcessorTest extends TestCase
             patternResolvers: [],
             supportingResolvers: [],
             alwaysAddUserTrack: false,
+            keepForwardedAttributes: false
         );
 
         $content = 'Hi [EMAIL], id=[USERID], web=[WEBSITE], dom=[DOMAIN], org=[ORGANIZATION_NAME].';
         $out = $processor->process(
             value: $content,
-            user: $user,
+            receiver: $user,
             format: OutputFormat::Text,
             messagePrecacheDto: $dto,
             campaignId: 101,
-            forwardedBy: 'bob@example.com',
+            forwardedBy: $forwardedBy,
         );
 
         $this->assertStringContainsString('Hi alice@example.com,', $out);
-        $this->assertStringContainsString('id=U-999,', $out);
+        $this->assertStringContainsString('id=forwarded,', $out);
         $this->assertStringContainsString('web=https://site.example,', $out);
         $this->assertStringContainsString('dom=example.com,', $out);
         $this->assertStringContainsString('org=ACME Inc.', $out);
@@ -175,12 +178,13 @@ final class MessagePlaceholderProcessorTest extends TestCase
             patternResolvers: [$pattern],
             supportingResolvers: [$supporting],
             alwaysAddUserTrack: false,
+            keepForwardedAttributes: false
         );
 
         $content = 'A [CUSTOM] B [UPPER:abc] C [SUPPORT]';
         $out = $processor->process(
             value: $content,
-            user: $user,
+            receiver: $user,
             format: OutputFormat::Text,
             messagePrecacheDto: $dto,
         );

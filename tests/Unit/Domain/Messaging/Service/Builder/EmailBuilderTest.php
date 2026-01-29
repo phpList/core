@@ -13,7 +13,7 @@ use PhpList\Core\Domain\Messaging\Exception\AttachmentException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Service\AttachmentAdder;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
-use PhpList\Core\Domain\Messaging\Service\Constructor\MailContentBuilderInterface;
+use PhpList\Core\Domain\Messaging\Service\Constructor\CampaignMailContentBuilder;
 use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -35,7 +35,7 @@ class EmailBuilderTest extends TestCase
     private SubscriberHistoryManager&MockObject $subscriberHistoryManager;
     private SubscriberRepository&MockObject $subscriberRepository;
     private LoggerInterface&MockObject $logger;
-    private MailContentBuilderInterface&MockObject $mailConstructor;
+    private CampaignMailContentBuilder&MockObject $mailConstructor;
     private TemplateImageEmbedder&MockObject $templateImageEmbedder;
     private LegacyUrlBuilder&MockObject $urlBuilder;
     private PdfGenerator&MockObject $pdfGenerator;
@@ -50,9 +50,7 @@ class EmailBuilderTest extends TestCase
         $this->subscriberHistoryManager = $this->createMock(SubscriberHistoryManager::class);
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
         $this->logger = $this->createMock(LoggerInterface::class);
-        $this->mailConstructor = $this->getMockBuilder(MailContentBuilderInterface::class)
-            ->onlyMethods(['__invoke'])
-            ->getMock();
+        $this->mailConstructor = $this->createMock(CampaignMailContentBuilder::class);
         $this->templateImageEmbedder = $this->getMockBuilder(TemplateImageEmbedder::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['__invoke'])
@@ -89,7 +87,7 @@ class EmailBuilderTest extends TestCase
             subscriberHistoryManager: $this->subscriberHistoryManager,
             subscriberRepository: $this->subscriberRepository,
             logger: $this->logger,
-            mailConstructor: $this->mailConstructor,
+            mailContentBuilder: $this->mailConstructor,
             templateImageEmbedder: $this->templateImageEmbedder,
             urlBuilder: $this->urlBuilder,
             pdfGenerator: $this->pdfGenerator,

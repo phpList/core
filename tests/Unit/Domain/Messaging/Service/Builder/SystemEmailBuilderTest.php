@@ -9,7 +9,7 @@ use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder;
-use PhpList\Core\Domain\Messaging\Service\Constructor\MailContentBuilderInterface;
+use PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailContentBuilder;
 use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -27,7 +27,7 @@ class SystemEmailBuilderTest extends TestCase
     private UserBlacklistRepository&MockObject $blacklistRepository;
     private SubscriberHistoryManager&MockObject $subscriberHistoryManager;
     private SubscriberRepository&MockObject $subscriberRepository;
-    private MailContentBuilderInterface&MockObject $mailConstructor;
+    private SystemMailContentBuilder&MockObject $mailConstructor;
     private TemplateImageEmbedder&MockObject $templateImageEmbedder;
     private LoggerInterface&MockObject $logger;
 
@@ -38,9 +38,7 @@ class SystemEmailBuilderTest extends TestCase
         $this->blacklistRepository = $this->createMock(UserBlacklistRepository::class);
         $this->subscriberHistoryManager = $this->createMock(SubscriberHistoryManager::class);
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
-        $this->mailConstructor = $this->getMockBuilder(MailContentBuilderInterface::class)
-            ->onlyMethods(['__invoke'])
-            ->getMock();
+        $this->mailConstructor = $this->createMock(SystemMailContentBuilder::class);
         $this->templateImageEmbedder = $this->getMockBuilder(TemplateImageEmbedder::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['__invoke'])
@@ -166,7 +164,6 @@ class SystemEmailBuilderTest extends TestCase
             messageId: 777,
             data: $dto,
             skipBlacklistCheck: false,
-            inBlast: true
         );
 
         $this->assertNotNull($email);
@@ -182,7 +179,6 @@ class SystemEmailBuilderTest extends TestCase
         $this->assertSame('dev@example.com', $headers->get('X-ListMember')->getBodyAsString());
         $this->assertSame('777:g-123', $headers->get('Feedback-ID')->getBodyAsString());
         $this->assertSame('bulk', $headers->get('Precedence')->getBodyAsString());
-        $this->assertSame('1', $headers->get('X-Blast')->getBodyAsString());
 
         $this->assertTrue($headers->has('X-Originally-To'));
         $this->assertSame('real@example.com', $headers->get('X-Originally-To')->getBodyAsString());
