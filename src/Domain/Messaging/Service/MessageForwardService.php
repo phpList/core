@@ -6,6 +6,8 @@ namespace PhpList\Core\Domain\Messaging\Service;
 
 use DateTimeInterface;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
+use PhpList\Core\Domain\Messaging\Exception\ForwardLimitExceededException;
+use PhpList\Core\Domain\Messaging\Exception\MessageNotReceivedException;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
@@ -65,12 +67,12 @@ class MessageForwardService
         $subscriber = $this->subscriberRepository->findOneByUniqueId($uid);
         $receivedMessage = $this->userMessageRepository->findOneByUserAndMessage($subscriber, $campaign);
         if ($receivedMessage === null) {
-            // todo: do something
+            throw new MessageNotReceivedException();
         }
 
         $forwardPeriodCount = $this->forwardRepository->getCountByUserSince($subscriber, $cutoff);
         if ($forwardPeriodCount > $this->forwardMessageCount) {
-            return;
+            throw new ForwardLimitExceededException();
         }
 
         if ($this->forwardFriendCountAttribute) {
@@ -89,7 +91,7 @@ class MessageForwardService
 
             if (!$this->precacheService->precacheMessage($campaign, $loadedMessageData, true)) {
                 $this->handleFail($campaign, $subscriber, $friendEmail, $messageLists);
-                $ok = false;
+                continue;
             }
 
             $messagePrecacheDto = $this->cache->get(sprintf('messaging.message.base.%d.%d', $campaign->getId(), 1));
