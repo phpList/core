@@ -44,9 +44,6 @@ class SubscriberAttributeManagerTest extends TestCase
             attrDefinitionRepository: $this->createMock(SubscriberAttributeDefinitionRepository::class),
             entityManager: $entityManager,
             translator: new Translator('en'),
-            configProvider: $this->createMock(ConfigProvider::class),
-            dynamicTablesManager: $this->createMock(DynamicListAttrTablesManager::class),
-            dynamicListAttrManager: $this->createMock(DynamicListAttrManager::class),
         );
         $attribute = $manager->createOrUpdate($subscriber, $definition, 'US');
 
@@ -78,9 +75,6 @@ class SubscriberAttributeManagerTest extends TestCase
             attrDefinitionRepository: $this->createMock(SubscriberAttributeDefinitionRepository::class),
             entityManager: $entityManager,
             translator: new Translator('en'),
-            configProvider: $this->createMock(ConfigProvider::class),
-            dynamicTablesManager: $this->createMock(DynamicListAttrTablesManager::class),
-            dynamicListAttrManager: $this->createMock(DynamicListAttrManager::class),
         );
         $result = $manager->createOrUpdate($subscriber, $definition, 'Updated');
 
@@ -102,9 +96,6 @@ class SubscriberAttributeManagerTest extends TestCase
             attrDefinitionRepository: $this->createMock(SubscriberAttributeDefinitionRepository::class),
             entityManager: $entityManager,
             translator: new Translator('en'),
-            configProvider: $this->createMock(ConfigProvider::class),
-            dynamicTablesManager: $this->createMock(DynamicListAttrTablesManager::class),
-            dynamicListAttrManager: $this->createMock(DynamicListAttrManager::class),
         );
 
         $this->expectException(SubscriberAttributeCreationException::class);
@@ -129,9 +120,6 @@ class SubscriberAttributeManagerTest extends TestCase
             attrDefinitionRepository: $this->createMock(SubscriberAttributeDefinitionRepository::class),
             entityManager: $entityManager,
             translator: new Translator('en'),
-            configProvider: $this->createMock(ConfigProvider::class),
-            dynamicTablesManager: $this->createMock(DynamicListAttrTablesManager::class),
-            dynamicListAttrManager: $this->createMock(DynamicListAttrManager::class),
         );
         $result = $manager->getSubscriberAttribute(5, 10);
 
@@ -153,9 +141,6 @@ class SubscriberAttributeManagerTest extends TestCase
             attrDefinitionRepository: $this->createMock(SubscriberAttributeDefinitionRepository::class),
             entityManager: $entityManager,
             translator: new Translator('en'),
-            configProvider: $this->createMock(ConfigProvider::class),
-            dynamicTablesManager: $this->createMock(DynamicListAttrTablesManager::class),
-            dynamicListAttrManager: $this->createMock(DynamicListAttrManager::class),
         );
         $manager->delete($attribute);
 

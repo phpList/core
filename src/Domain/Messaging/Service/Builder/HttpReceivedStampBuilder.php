@@ -13,7 +13,8 @@ class HttpReceivedStampBuilder
     public function __construct(
         private readonly RequestStack $requestStack,
         #[Autowire('%app.rest_api_domain%')] private readonly string $hostname,
-    ) {}
+    ) {
+    }
 
     public function buildStamp(): ?string
     {
@@ -28,7 +29,7 @@ class HttpReceivedStampBuilder
         }
 
         $remoteHost = $request->server->get('REMOTE_HOST');
-        $ipDomain = $remoteHost ?: @gethostbyaddr($ipAddress);
+        $ipDomain = $remoteHost ?: $this->getHostByAddr($ipAddress);
 
         if ($ipDomain && $ipDomain !== $ipAddress) {
             $from = sprintf('%s [%s]', $ipDomain, $ipAddress);
@@ -37,8 +38,29 @@ class HttpReceivedStampBuilder
         }
 
         $requestTime = $request->server->get('REQUEST_TIME') ?? time();
-        $date = (new DateTimeImmutable("@$requestTime"))->format(\DATE_RFC2822);
+        $date = (new DateTimeImmutable('@' . $requestTime))->format(\DATE_RFC2822);
 
         return sprintf('from %s by %s with HTTP; %s', $from, $this->hostname, $date);
+    }
+
+    private function getHostByAddr(string $ipAddress): ?string
+    {
+        $previousHandler = set_error_handler(static fn(): bool => true);
+
+        try {
+            $host = gethostbyaddr($ipAddress);
+        } finally {
+            if ($previousHandler !== null) {
+                set_error_handler($previousHandler);
+            } else {
+                restore_error_handler();
+            }
+        }
+
+        if ($host === false || $host === $ipAddress) {
+            return null;
+        }
+
+        return $host;
     }
 }

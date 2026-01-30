@@ -31,8 +31,11 @@ final class FooterValueResolverTest extends TestCase
         return $u;
     }
 
-    private function makeDto(string $textFooter = 'TEXT_FOOT', string $htmlFooter = 'HTML_FOOT', string $footer = ''): MessagePrecacheDto
-    {
+    private function makeDto(
+        string $textFooter = 'TEXT_FOOT',
+        string $htmlFooter = 'HTML_FOOT',
+        string $footer = ''
+    ): MessagePrecacheDto {
         $dto = new MessagePrecacheDto();
         $dto->textFooter = $textFooter;
         $dto->htmlFooter = $htmlFooter;
@@ -46,7 +49,7 @@ final class FooterValueResolverTest extends TestCase
         $this->assertSame('FOOTER', $resolver->name());
     }
 
-    public function testReturnsDtoFooterWhenNotForwarded_Text(): void
+    public function testReturnsDtoFooterWhenNotForwardedText(): void
     {
         $resolver = new FooterValueResolver($this->config, false);
         $ctx = new PlaceholderContext(
@@ -58,7 +61,7 @@ final class FooterValueResolverTest extends TestCase
         $this->assertSame('TF', $resolver($ctx));
     }
 
-    public function testReturnsDtoFooterWhenNotForwarded_Html(): void
+    public function testReturnsDtoFooterWhenNotForwardedHtml(): void
     {
         $resolver = new FooterValueResolver($this->config, false);
         $ctx = new PlaceholderContext(

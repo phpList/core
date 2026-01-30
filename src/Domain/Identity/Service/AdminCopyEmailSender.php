@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Messaging\Service;
+namespace PhpList\Core\Domain\Identity\Service;
 
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
@@ -29,45 +29,49 @@ class AdminCopyEmailSender
     /** @param SubscriberList[] $lists */
     public function __invoke(string $subject, string $message, array $lists = []): void
     {
-        $sendCopy = (bool) $this->configProvider->getValue(ConfigOption::SendAdminCopies);
-        if ($sendCopy === false) {
+        if (!$this->configProvider->getBoolValue(ConfigOption::SendAdminCopies)) {
             return;
         }
 
-        $mails = [];
-        if (count($lists) && $this->sendListAdminCopy) {
-            foreach ($lists as $list) {
-                $mails[] = $list->getOwner()->getEmail();
-            }
+        $mails = $this->resolveRecipientEmails($lists);
+
+        foreach ($mails as $adminMail) {
+            $data = new MessagePrecacheDto();
+            $data->to = $adminMail;
+            $data->subject = $this->installationName . ' ' . $subject;
+            $data->content = $message;
+
+            $email = $this->systemEmailBuilder->buildSystemEmail(data: $data);
+
+            $envelope = new Envelope(
+                sender: new Address($this->bounceEmail, 'PHPList'),
+                recipients: [new Address($adminMail)],
+            );
+            $this->mailer->send(message: $email, envelope: $envelope);
+        }
+    }
+
+    private function resolveRecipientEmails(array $lists): array
+    {
+        $emails = [];
+        if ($this->sendListAdminCopy) {
+            $emails = array_map(
+                static fn ($list) => $list->getOwner()->getEmail(),
+                $lists
+            );
         }
 
-        if (count($mails) === 0) {
+        if (count($emails) === 0) {
             $adminMail = $this->configProvider->getValue(ConfigOption::AdminAddress);
             $adminMailsString = $this->configProvider->getValue(ConfigOption::AdminAddresses);
 
-            $mails  = $adminMailsString ? explode(',', $adminMailsString) : [];
-            $mails[] = $adminMail;
+            $emails  = $adminMailsString ? explode(',', $adminMailsString) : [];
+            $emails[] = $adminMail;
         }
 
-        $sent = [];
-        foreach ($mails as $adminMail) {
-            $adminMail = trim($adminMail);
-            if (!isset($sent[$adminMail]) && !empty($adminMail)) {
-                $data = new MessagePrecacheDto();
-                $data->to = $adminMail;
-                $data->subject = $this->installationName . ' ' . $subject;
-                $data->content = $message;
+        $emails = array_map('trim', $emails);
+        $emails = array_filter($emails);
 
-                $email = $this->systemEmailBuilder->buildSystemEmail(data: $data);
-
-                $envelope = new Envelope(
-                    sender: new Address($this->bounceEmail, 'PHPList'),
-                    recipients: [new Address($adminMail)],
-                );
-                $this->mailer->send(message: $email, envelope: $envelope);
-
-                $sent[$adminMail] = 1;
-            }
-        }
+        return array_values(array_unique($emails));
     }
 }

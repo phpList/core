@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Builder;
 
+use PhpList\Core\Core\Version;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
@@ -64,8 +65,8 @@ class SystemEmailBuilder extends BaseEmailBuilder
 
         $fromEmail = $this->configProvider->getValue(ConfigOption::MessageFromAddress);
         $fromName = $this->configProvider->getValue(ConfigOption::MessageFromName);
-//        $messageReplyToAddress = $this->configProvider->getValue(ConfigOption::MessageReplyToAddress);
-//        $replyTo = $messageReplyToAddress ?: $fromEmail;
+        $messageReplyToAddress = $this->configProvider->getValue(ConfigOption::MessageReplyToAddress);
+        $replyTo = $messageReplyToAddress ?: $fromEmail;
 
         $email = $this->createBaseEmail(
             originalTo: $data->to,
@@ -73,6 +74,7 @@ class SystemEmailBuilder extends BaseEmailBuilder
             fromName: $fromName,
             subject: $data->subject,
         );
+        $email->replyTo($replyTo);
 
         $this->addBaseCampaignHeaders(
             email: $email,
@@ -107,8 +109,8 @@ class SystemEmailBuilder extends BaseEmailBuilder
 
         $fromEmail = $this->configProvider->getValue(ConfigOption::MessageFromAddress);
         $fromName = $this->configProvider->getValue(ConfigOption::MessageFromName);
-//        $messageReplyToAddress = $this->configProvider->getValue(ConfigOption::MessageReplyToAddress);
-//        $replyTo = $messageReplyToAddress ?: $fromEmail;
+        $messageReplyToAddress = $this->configProvider->getValue(ConfigOption::MessageReplyToAddress);
+        $replyTo = $messageReplyToAddress ?: $fromEmail;
 
         $email = $this->createBaseEmail(
             originalTo: $data->to,
@@ -116,23 +118,29 @@ class SystemEmailBuilder extends BaseEmailBuilder
             fromName: $fromName,
             subject: $data->subject,
         );
+        $email->replyTo($replyTo);
 
-        $this->addSystemHeaders(
-            email: $email,
-            originalTo: $data->to,
-            destinationEmail: $email->getTo()[0]->getAddress(),
-            inBlast: false,
-        );
+        $this->addSystemHeaders(email: $email, originalTo: $data->to,);
 
         [$htmlMessage, $textMessage] = ($this->mailConstructor)(messagePrecacheDto: $data);
         $email->text($textMessage);
+        $email->html($htmlMessage);
 
         return $email;
     }
 
-    protected function addSystemHeaders(Email $email, string $originalTo, string $destinationEmail, bool $inBlast): void
+    protected function addSystemHeaders(Email $email, string $originalTo): void
     {
+        $email->getHeaders()->addTextHeader(
+            'X-Mailer',
+            sprintf('phplist version %s (www.phplist.com)', Version::VERSION)
+        );
 
+        $email->getHeaders()->addTextHeader('X-MessageID', 'systemmessage');
+
+        if ($originalTo !== '') {
+            $email->getHeaders()->addTextHeader('X-User', $originalTo);
+        }
     }
 
     protected function applyContentAndFormatting(

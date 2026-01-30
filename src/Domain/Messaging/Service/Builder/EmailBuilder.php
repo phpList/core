@@ -65,6 +65,7 @@ class EmailBuilder extends BaseEmailBuilder
         );
     }
 
+    /** @return array{Email, OutputFormat}|null */
     public function buildCampaignEmail(
         int $messageId,
         MessagePrecacheDto $data,
@@ -224,8 +225,13 @@ class EmailBuilder extends BaseEmailBuilder
         };
     }
 
-    protected function applyPdfFormat(Email $email, ?string $textMessage, int $messageId, bool $htmlPref, bool $forwarded): OutputFormat
-    {
+    protected function applyPdfFormat(
+        Email $email,
+        ?string $textMessage,
+        int $messageId,
+        bool $htmlPref,
+        bool $forwarded
+    ): OutputFormat {
         // send a PDF file to users who want html and text to everyone else
         if ($htmlPref) {
             $sentAs = OutputFormat::Pdf;

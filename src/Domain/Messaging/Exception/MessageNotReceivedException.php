@@ -8,7 +8,8 @@ use RuntimeException;
 
 class MessageNotReceivedException extends RuntimeException
 {
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct('Cannot forward: user has not received this message');
     }
 }

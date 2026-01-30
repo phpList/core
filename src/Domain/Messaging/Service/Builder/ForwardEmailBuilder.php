@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service\Builder;
 
 use PhpList\Core\Domain\Common\PdfGenerator;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
@@ -68,6 +69,7 @@ class ForwardEmailBuilder extends EmailBuilder
         );
     }
 
+    /** @return array{Email, OutputFormat}|null */
     public function buildForwardEmail(
         int $messageId,
         string $email,
@@ -88,7 +90,7 @@ class ForwardEmailBuilder extends EmailBuilder
 
         $subject = $this->translator->trans('Fwd') . ': ' . stripslashes($data->subject);
 
-        [$htmlMessage, $textMessage] = ($this->mailContentBuilder) (
+        [$htmlMessage, $textMessage] = ($this->mailContentBuilder)(
             messagePrecacheDto: $data,
             campaignId: $messageId,
             forwardedBy: $forwardedBy,
