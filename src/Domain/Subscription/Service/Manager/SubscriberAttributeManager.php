@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use PhpList\Core\Domain\Subscription\Exception\SubscriberAttributeCreationException;
 use PhpList\Core\Domain\Subscription\Model\Dto\ChangeSetDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -16,21 +17,25 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SubscriberAttributeManager
 {
-    private SubscriberAttributeValueRepository $attributeRepository;
-    private SubscriberAttributeDefinitionRepository $attrDefinitionRepository;
-    private EntityManagerInterface $entityManager;
-    private TranslatorInterface $translator;
-
     public function __construct(
-        SubscriberAttributeValueRepository $attributeRepository,
-        SubscriberAttributeDefinitionRepository $attrDefinitionRepository,
-        EntityManagerInterface $entityManager,
-        TranslatorInterface $translator,
+        private readonly SubscriberAttributeValueRepository $attributeRepository,
+        private readonly SubscriberAttributeDefinitionRepository $attrDefinitionRepository,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly TranslatorInterface $translator,
     ) {
-        $this->attributeRepository = $attributeRepository;
-        $this->attrDefinitionRepository = $attrDefinitionRepository;
-        $this->entityManager = $entityManager;
-        $this->translator = $translator;
+    }
+
+    public function createOrUpdateByName(
+        Subscriber $subscriber,
+        string $attributeName,
+        ?string $value = null
+    ): SubscriberAttributeValue {
+        $definition = $this->attrDefinitionRepository->findOneByName($attributeName);
+        if (!$definition) {
+            throw new InvalidArgumentException('Attribute definition not found for name: ' . $attributeName);
+        }
+
+        return $this->createOrUpdate($subscriber, $definition, $value);
     }
 
     public function createOrUpdate(
@@ -59,7 +64,10 @@ class SubscriberAttributeManager
 
     public function getSubscriberAttribute(int $subscriberId, int $attributeDefinitionId): ?SubscriberAttributeValue
     {
-        return $this->attributeRepository->findOneBySubscriberIdAndAttributeId($subscriberId, $attributeDefinitionId);
+        return $this->attributeRepository->findOneBySubscriberIdAndAttributeId(
+            subscriberId: $subscriberId,
+            attributeDefinitionId: $attributeDefinitionId
+        );
     }
 
     public function delete(SubscriberAttributeValue $attribute): void

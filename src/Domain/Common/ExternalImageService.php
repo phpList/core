@@ -7,7 +7,7 @@ namespace PhpList\Core\Domain\Common;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use Psr\Log\LoggerInterface;
-use Throwable;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class ExternalImageService
 {
@@ -19,6 +19,7 @@ class ExternalImageService
         private readonly string $tempDir,
         private readonly int $externalImageMaxAge,
         private readonly int $externalImageMaxSize,
+        #[Autowire('%phplist.verify_ssl%')] private readonly bool $verifySsl = true,
         private readonly ?int $externalImageTimeout = 30,
     ) {
         $this->externalCacheDir = $this->tempDir . '/external_cache';
@@ -125,7 +126,7 @@ class ExternalImageService
             curl_setopt($cURLHandle, CURLOPT_TIMEOUT, $this->externalImageTimeout);
             curl_setopt($cURLHandle, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($cURLHandle, CURLOPT_MAXREDIRS, 10);
-            curl_setopt($cURLHandle, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($cURLHandle, CURLOPT_SSL_VERIFYPEER, $this->verifySsl);
             curl_setopt($cURLHandle, CURLOPT_FAILONERROR, true);
 
             $cacheFileContent = curl_exec($cURLHandle);

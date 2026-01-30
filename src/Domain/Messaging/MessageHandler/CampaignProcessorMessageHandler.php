@@ -207,7 +207,7 @@ class CampaignProcessorMessageHandler
         );
 
         try {
-            $result = $this->campaignEmailBuilder->buildPhplistEmail(
+            $result = $this->campaignEmailBuilder->buildCampaignEmail(
                 messageId: $campaign->getId(),
                 data: $processed,
                 skipBlacklistCheck: false,
@@ -218,7 +218,7 @@ class CampaignProcessorMessageHandler
                 return;
             }
             [$email, $sentAs] = $result;
-            $email = $this->campaignEmailBuilder->applyCampaignHeaders(email: $email, subscriber: $subscriber);
+            $this->campaignEmailBuilder->applyCampaignHeaders(email: $email, subscriber: $subscriber);
 
             $this->rateLimitedCampaignMailer->send($email);
             ($this->mailSizeChecker)($campaign, $email, $subscriber->hasHtmlEmail());
@@ -240,11 +240,9 @@ class CampaignProcessorMessageHandler
             $data->subject = $this->translator->trans('phpList system error');
             $data->content = $this->translator->trans($e->getMessage());
 
-            $email = $this->systemEmailBuilder->buildPhplistEmail(
+            $email = $this->systemEmailBuilder->buildCampaignEmail(
                 messageId: $campaign->getId(),
                 data: $data,
-                inBlast: false,
-                htmlPref: true,
             );
 
             $envelope = new Envelope(
@@ -279,11 +277,9 @@ class CampaignProcessorMessageHandler
                     ['%subject%' => $loadedMessageData['subject']]
                 );
 
-                $email = $this->systemEmailBuilder->buildPhplistEmail(
+                $email = $this->systemEmailBuilder->buildCampaignEmail(
                     messageId: $campaign->getId(),
                     data: $data,
-                    inBlast: false,
-                    htmlPref: true,
                 );
 
                 if (!$email) {

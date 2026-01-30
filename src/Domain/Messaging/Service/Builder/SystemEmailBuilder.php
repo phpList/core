@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Builder;
 
+use PhpList\Core\Core\Version;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
-use PhpList\Core\Domain\Messaging\Service\Constructor\MailContentBuilderInterface;
+use PhpList\Core\Domain\Messaging\Service\Constructor\SystemMailContentBuilder;
 use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository;
@@ -25,7 +26,7 @@ class SystemEmailBuilder extends BaseEmailBuilder
         UserBlacklistRepository $blacklistRepository,
         SubscriberHistoryManager $subscriberHistoryManager,
         SubscriberRepository $subscriberRepository,
-        protected readonly MailContentBuilderInterface $mailConstructor,
+        protected readonly SystemMailContentBuilder $mailConstructor,
         protected readonly TemplateImageEmbedder $templateImageEmbedder,
         LoggerInterface $logger,
         string $googleSenderId,
@@ -49,12 +50,10 @@ class SystemEmailBuilder extends BaseEmailBuilder
         );
     }
 
-    public function buildPhplistEmail(
+    public function buildCampaignEmail(
         int $messageId,
         MessagePrecacheDto $data,
         ?bool $skipBlacklistCheck = false,
-        ?bool $inBlast = true,
-        ?bool $htmlPref = false,
     ): ?Email {
         if (!$this->validateRecipientAndSubject(to: $data->to, subject: $data->subject)) {
             return null;
@@ -66,20 +65,26 @@ class SystemEmailBuilder extends BaseEmailBuilder
 
         $fromEmail = $this->configProvider->getValue(ConfigOption::MessageFromAddress);
         $fromName = $this->configProvider->getValue(ConfigOption::MessageFromName);
-//        $messageReplyToAddress = $this->configProvider->getValue(ConfigOption::MessageReplyToAddress);
-//        $replyTo = $messageReplyToAddress ?: $fromEmail;
-
-        [$htmlMessage, $textMessage] = ($this->mailConstructor)(messagePrecacheDto: $data);
+        $messageReplyToAddress = $this->configProvider->getValue(ConfigOption::MessageReplyToAddress);
+        $replyTo = $messageReplyToAddress ?: $fromEmail;
 
         $email = $this->createBaseEmail(
-            messageId: $messageId,
             originalTo: $data->to,
             fromEmail: $fromEmail,
             fromName: $fromName,
             subject: $data->subject,
-            inBlast: $inBlast
+        );
+        $email->replyTo($replyTo);
+
+        $this->addBaseCampaignHeaders(
+            email: $email,
+            messageId: $messageId,
+            originalTo: $data->to,
+            destinationEmail: $email->getTo()[0]->getAddress(),
+            inBlast: false,
         );
 
+        [$htmlMessage, $textMessage] = ($this->mailConstructor)(messagePrecacheDto: $data);
         $this->applyContentAndFormatting(
             email: $email,
             htmlMessage: $htmlMessage,
@@ -88,6 +93,54 @@ class SystemEmailBuilder extends BaseEmailBuilder
         );
 
         return $email;
+    }
+
+    public function buildSystemEmail(
+        MessagePrecacheDto $data,
+        ?bool $skipBlacklistCheck = false,
+    ): ?Email {
+        if (!$this->validateRecipientAndSubject(to: $data->to, subject: $data->subject)) {
+            return null;
+        }
+
+        if (!$this->passesBlacklistCheck(to: $data->to, skipBlacklistCheck: $skipBlacklistCheck)) {
+            return null;
+        }
+
+        $fromEmail = $this->configProvider->getValue(ConfigOption::MessageFromAddress);
+        $fromName = $this->configProvider->getValue(ConfigOption::MessageFromName);
+        $messageReplyToAddress = $this->configProvider->getValue(ConfigOption::MessageReplyToAddress);
+        $replyTo = $messageReplyToAddress ?: $fromEmail;
+
+        $email = $this->createBaseEmail(
+            originalTo: $data->to,
+            fromEmail: $fromEmail,
+            fromName: $fromName,
+            subject: $data->subject,
+        );
+        $email->replyTo($replyTo);
+
+        $this->addSystemHeaders(email: $email, originalTo: $data->to,);
+
+        [$htmlMessage, $textMessage] = ($this->mailConstructor)(messagePrecacheDto: $data);
+        $email->text($textMessage);
+        $email->html($htmlMessage);
+
+        return $email;
+    }
+
+    protected function addSystemHeaders(Email $email, string $originalTo): void
+    {
+        $email->getHeaders()->addTextHeader(
+            'X-Mailer',
+            sprintf('phplist version %s (www.phplist.com)', Version::VERSION)
+        );
+
+        $email->getHeaders()->addTextHeader('X-MessageID', 'systemmessage');
+
+        if ($originalTo !== '') {
+            $email->getHeaders()->addTextHeader('X-User', $originalTo);
+        }
     }
 
     protected function applyContentAndFormatting(

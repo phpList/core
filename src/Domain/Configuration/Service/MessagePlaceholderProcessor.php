@@ -30,25 +30,29 @@ class MessagePlaceholderProcessor
         /** @var iterable<SupportingPlaceholderResolverInterface> */
         private readonly iterable $supportingResolvers,
         #[Autowire('%messaging.always_add_user_track%')] private readonly bool $alwaysAddUserTrack,
+        #[Autowire('%phplist.keep_forwarded_attributes%')] private readonly bool $keepForwardedAttributes,
     ) {
     }
 
     public function process(
         string $value,
-        Subscriber $user,
+        Subscriber $receiver,
         OutputFormat $format,
         MessagePrecacheDto $messagePrecacheDto,
         ?int $campaignId = null,
-        ?string $forwardedBy = null,
+        ?Subscriber $forwardedBy = null,
     ): string {
         $value = $this->ensureStandardPlaceholders($value, $format);
 
         $resolver = new PlaceholderResolver();
         $resolver->register('EMAIL', fn(PlaceholderContext $ctx) => $ctx->user->getEmail());
-        $resolver->register('FORWARDEDBY', fn(PlaceholderContext $ctx) => $ctx->forwardedBy());
+        $resolver->register('FORWARDEDBY', fn(PlaceholderContext $ctx) => $ctx->forwardedBy()->getEmail());
         $resolver->register('MESSAGEID', fn(PlaceholderContext $ctx) => $ctx->messageId());
         $resolver->register('FORWARDFORM', fn(PlaceholderContext $ctx) => '');
-        $resolver->register('USERID', fn(PlaceholderContext $ctx) => $ctx->user->getUniqueId());
+        $resolver->register(
+            name: 'USERID',
+            resolver: fn(PlaceholderContext $ctx) => $ctx->forwardedBy() ? 'forwarded' : $ctx->user->getUniqueId()
+        );
         $resolver->register(
             name: 'WEBSITE',
             resolver: fn(PlaceholderContext $ctx) => $this->config->getValue(ConfigOption::Website) ?? ''
@@ -74,7 +78,8 @@ class MessagePlaceholderProcessor
             $resolver->registerSupporting($supportingResolver);
         }
 
-        $userAttributes = $this->attributesRepository->getForSubscriber($user);
+        $userForAttributes = ($forwardedBy && $this->keepForwardedAttributes) ? $forwardedBy : $receiver;
+        $userAttributes = $this->attributesRepository->getForSubscriber($userForAttributes);
         foreach ($userAttributes as $userAttribute) {
             $resolver->register(
                 name: strtoupper($userAttribute->getAttributeDefinition()->getName()),
@@ -85,7 +90,7 @@ class MessagePlaceholderProcessor
         return $resolver->resolve(
             value: $value,
             context: new PlaceholderContext(
-                user: $user,
+                user: $receiver,
                 format: $format,
                 messagePrecacheDto: $messagePrecacheDto,
                 forwardedBy: $forwardedBy,

@@ -15,7 +15,7 @@ class PlaceholderContext
         public readonly OutputFormat $format,
         public readonly ?MessagePrecacheDto $messagePrecacheDto = null,
         public readonly string $locale = 'en',
-        private readonly ?string $forwardedBy = null,
+        private readonly ?Subscriber $forwardedBy = null,
         private readonly ?int $messageId = null,
     ) {
     }
@@ -30,7 +30,7 @@ class PlaceholderContext
         return $this->format === OutputFormat::Text;
     }
 
-    public function forwardedBy(): ?string
+    public function forwardedBy(): ?Subscriber
     {
         return $this->forwardedBy;
     }

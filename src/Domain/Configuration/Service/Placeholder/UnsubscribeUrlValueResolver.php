@@ -28,7 +28,8 @@ final class UnsubscribeUrlValueResolver implements PlaceholderValueResolverInter
         if (empty($base)) {
             return '';
         }
-        $url = $this->urlBuilder->withUid($base, $ctx->getUser()->getUniqueId());
+        $uid = $ctx->forwardedBy() ? 'forwarded' : $ctx->getUser()->getUniqueId();
+        $url = $this->urlBuilder->withUid($base, $uid);
 
         if ($ctx->isHtml()) {
             return htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');

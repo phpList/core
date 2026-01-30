@@ -90,4 +90,19 @@ class SubscriberAttributeValueRepository extends AbstractRepository implements P
 
         return $row !== null;
     }
+
+    public function findOneBySubscriberAndAttributeName(
+        Subscriber $subscriber,
+        string $attributeName
+    ): ?SubscriberAttributeValue {
+        return $this->createQueryBuilder('sa')
+            ->join('sa.subscriber', 's')
+            ->join('sa.attributeDefinition', 'ad')
+            ->where('s = :subscriber')
+            ->andWhere('ad.name = :attributeName')
+            ->setParameter('subscriber', $subscriber)
+            ->setParameter('attributeName', $attributeName)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

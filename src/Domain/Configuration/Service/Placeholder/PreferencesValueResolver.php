@@ -29,6 +29,7 @@ final class PreferencesValueResolver implements PlaceholderValueResolverInterfac
             return '';
         }
         $sep = !str_contains($url, '?') ? '?' : '&';
+        $uid = $ctx->forwardedBy() ? 'forwarded' : $ctx->getUser()->getUniqueId();
 
         if ($ctx->isHtml()) {
             $label = $this->translator->trans('This link');
@@ -39,12 +40,12 @@ final class PreferencesValueResolver implements PlaceholderValueResolverInterfac
                 . $safeUrl
                 . htmlspecialchars($sep)
                 . 'uid='
-                . $ctx->getUser()->getUniqueId()
+                . $uid
                 . '">'
                 . $safeLabel
                 . '</a> ';
         }
 
-        return sprintf('%s%suid=%s', $url, $sep, $ctx->getUser()->getUniqueId());
+        return sprintf('%s%suid=%s', $url, $sep, $uid);
     }
 }

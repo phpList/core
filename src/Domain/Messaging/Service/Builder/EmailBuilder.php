@@ -13,7 +13,7 @@ use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Exception\AttachmentException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Service\AttachmentAdder;
-use PhpList\Core\Domain\Messaging\Service\Constructor\MailContentBuilderInterface;
+use PhpList\Core\Domain\Messaging\Service\Constructor\CampaignMailContentBuilder;
 use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -25,7 +25,10 @@ use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-/** @SuppressWarnings("ExcessiveParameterList") @SuppressWarnings("PHPMD.CouplingBetweenObjects") */
+/**
+ * @SuppressWarnings("ExcessiveParameterList")
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
+ */
 class EmailBuilder extends BaseEmailBuilder
 {
     public function __construct(
@@ -35,12 +38,12 @@ class EmailBuilder extends BaseEmailBuilder
         SubscriberHistoryManager $subscriberHistoryManager,
         SubscriberRepository $subscriberRepository,
         LoggerInterface $logger,
-        private readonly MailContentBuilderInterface $mailConstructor,
-        private readonly TemplateImageEmbedder $templateImageEmbedder,
-        private readonly LegacyUrlBuilder $urlBuilder,
-        private readonly PdfGenerator $pdfGenerator,
-        private readonly AttachmentAdder $attachmentAdder,
-        private readonly TranslatorInterface $translator,
+        protected readonly CampaignMailContentBuilder $mailContentBuilder,
+        protected readonly TemplateImageEmbedder $templateImageEmbedder,
+        protected readonly LegacyUrlBuilder $urlBuilder,
+        protected readonly PdfGenerator $pdfGenerator,
+        protected readonly AttachmentAdder $attachmentAdder,
+        protected readonly TranslatorInterface $translator,
         string $googleSenderId,
         bool $useAmazonSes,
         bool $usePrecedenceHeader,
@@ -62,7 +65,8 @@ class EmailBuilder extends BaseEmailBuilder
         );
     }
 
-    public function buildPhplistEmail(
+    /** @return array{Email, OutputFormat}|null */
+    public function buildCampaignEmail(
         int $messageId,
         MessagePrecacheDto $data,
         ?bool $skipBlacklistCheck = false,
@@ -82,15 +86,18 @@ class EmailBuilder extends BaseEmailBuilder
         $fromName = $data->fromName;
         $subject = (!$isTestMail ? '' : $this->translator->trans('(test)') .  ' ') . $data->subject;
 
-        [$htmlMessage, $textMessage] = ($this->mailConstructor)(messagePrecacheDto: $data);
-
         $email = $this->createBaseEmail(
-            messageId: $messageId,
             originalTo: $data->to,
             fromEmail: $fromEmail,
             fromName: $fromName,
             subject: $subject,
-            inBlast: $inBlast
+        );
+        $this->addBaseCampaignHeaders(
+            email: $email,
+            messageId: $messageId,
+            originalTo: $data->to,
+            destinationEmail: $email->getTo()[0]->getAddress(),
+            inBlast: $inBlast,
         );
 
         if (!empty($data->replyToEmail)) {
@@ -102,6 +109,7 @@ class EmailBuilder extends BaseEmailBuilder
             }
         }
 
+        [$htmlMessage, $textMessage] = ($this->mailContentBuilder)(messagePrecacheDto: $data, campaignId: $messageId);
         $sentAs = $this->applyContentAndFormatting(
             email: $email,
             htmlMessage: $htmlMessage,
@@ -142,7 +150,8 @@ class EmailBuilder extends BaseEmailBuilder
         ?string $textMessage,
         int $messageId,
         MessagePrecacheDto $data,
-        bool $htmlPref = false
+        bool $htmlPref = false,
+        bool $forwarded = false,
     ): OutputFormat {
         $htmlPref = $this->shouldPreferHtml($htmlMessage, $htmlPref, $email);
         $normalizedFormat = $this->normalizeSendFormat($data->sendFormat);
@@ -150,15 +159,15 @@ class EmailBuilder extends BaseEmailBuilder
         // so what do we actually send?
         switch ($normalizedFormat) {
             case 'pdf':
-                $sentAs = $this->applyPdfFormat($email, $textMessage, $messageId, $htmlPref);
+                $sentAs = $this->applyPdfFormat($email, $textMessage, $messageId, $htmlPref, $forwarded);
                 break;
             case 'text_and_pdf':
-                $sentAs = $this->applyTextAndPdfFormat($email, $textMessage, $messageId, $htmlPref);
+                $sentAs = $this->applyTextAndPdfFormat($email, $textMessage, $messageId, $htmlPref, $forwarded);
                 break;
             case 'text':
                 $sentAs = OutputFormat::Text;
                 $email->text($textMessage);
-                if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Text)) {
+                if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Text, $forwarded)) {
                     throw new AttachmentException();
                 }
                 break;
@@ -168,13 +177,13 @@ class EmailBuilder extends BaseEmailBuilder
                     $htmlMessage = ($this->templateImageEmbedder)(html: $htmlMessage, messageId: $messageId);
                     $email->html($htmlMessage);
                     $email->text($textMessage);
-                    if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Html)) {
+                    if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Html, $forwarded)) {
                         throw new AttachmentException();
                     }
                 } else {
                     $sentAs = OutputFormat::Text;
                     $email->text($textMessage);
-                    if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Text)) {
+                    if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Text, $forwarded)) {
                         throw new AttachmentException();
                     }
                 }
@@ -184,7 +193,7 @@ class EmailBuilder extends BaseEmailBuilder
         return $sentAs;
     }
 
-    private function shouldPreferHtml(?string $htmlMessage, bool $htmlPref, Email $email): bool
+    protected function shouldPreferHtml(?string $htmlMessage, bool $htmlPref, Email $email): bool
     {
         if (empty($email->getTo())) {
             throw new LogicException('No recipients specified');
@@ -203,7 +212,7 @@ class EmailBuilder extends BaseEmailBuilder
         return $htmlPref;
     }
 
-    private function normalizeSendFormat(?string $sendFormat): string
+    protected function normalizeSendFormat(?string $sendFormat): string
     {
         $format = strtolower(trim((string) $sendFormat));
 
@@ -216,21 +225,26 @@ class EmailBuilder extends BaseEmailBuilder
         };
     }
 
-    private function applyPdfFormat(Email $email, ?string $textMessage, int $messageId, bool $htmlPref): OutputFormat
-    {
+    protected function applyPdfFormat(
+        Email $email,
+        ?string $textMessage,
+        int $messageId,
+        bool $htmlPref,
+        bool $forwarded
+    ): OutputFormat {
         // send a PDF file to users who want html and text to everyone else
         if ($htmlPref) {
             $sentAs = OutputFormat::Pdf;
             $pdfBytes = $this->pdfGenerator->createPdfBytes($textMessage);
             $email->attach($pdfBytes, 'message.pdf', 'application/pdf');
 
-            if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Html)) {
+            if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Html, $forwarded)) {
                 throw new AttachmentException();
             }
         } else {
             $sentAs = OutputFormat::Text;
             $email->text($textMessage);
-            if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Text)) {
+            if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Text, $forwarded)) {
                 throw new AttachmentException();
             }
         }
@@ -238,11 +252,12 @@ class EmailBuilder extends BaseEmailBuilder
         return $sentAs;
     }
 
-    private function applyTextAndPdfFormat(
+    protected function applyTextAndPdfFormat(
         Email $email,
         ?string $textMessage,
         int $messageId,
-        bool $htmlPref
+        bool $htmlPref,
+        bool $forwarded,
     ): OutputFormat {
         // send a PDF file to users who want html and text to everyone else
         if ($htmlPref) {
@@ -251,13 +266,13 @@ class EmailBuilder extends BaseEmailBuilder
             $email->attach($pdfBytes, 'message.pdf', 'application/pdf');
             $email->text($textMessage);
 
-            if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Html)) {
+            if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Html, $forwarded)) {
                 throw new AttachmentException();
             }
         } else {
             $sentAs = OutputFormat::Text;
             $email->text($textMessage);
-            if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Text)) {
+            if (!$this->attachmentAdder->add($email, $messageId, OutputFormat::Text, $forwarded)) {
                 throw new AttachmentException();
             }
         }

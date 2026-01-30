@@ -29,11 +29,12 @@ final class UserTrackValueResolver implements PlaceholderValueResolverInterface
         if ($ctx->isText() || empty($base)) {
             return '';
         }
+        $uid = $ctx->forwardedBy() ? 'forwarded' : $ctx->getUser()->getUniqueId();
 
         return '<img src="'
             . $base
             . '/ut.php?u='
-            . $ctx->getUser()->getUniqueId()
+            . $uid
             . '&amp;m='
             . $ctx->messageId()
             . '" width="1" height="1" border="0" alt="" />';

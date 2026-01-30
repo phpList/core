@@ -81,6 +81,8 @@ parameters:
     # A secret key that's used to generate certain security-related tokens
     secret: '%%env(PHPLIST_SECRET)%%'
     env(PHPLIST_SECRET): %1$s
+    phplist.verify_ssl: '%%env(VERIFY_SSL)%%'
+    env(VERIFY_SSL): '1'
 
     graylog_host: 'graylog.example.com'
     graylog_port: 12201
@@ -127,6 +129,19 @@ parameters:
     env(EMAILTEXTCREDITS): '0'
     messaging.always_add_user_track: '%%env(ALWAYS_ADD_USERTRACK)%%'
     env(ALWAYS_ADD_USERTRACK): '1'
+    messaging.send_list_admin_copy: '%%env(SEND_LISTADMIN_COPY)%%'
+    env(SEND_LISTADMIN_COPY): '0'
+
+    phplist.forward_email_period: '%%env(FORWARD_EMAIL_PERIOD)%%'
+    env(FORWARD_EMAIL_PERIOD): '1 minute'
+    phplist.forward_email_count: '%%env(FORWARD_EMAIL_COUNT)%%'
+    env(FORWARD_EMAIL_COUNT): '1'
+    phplist.forward_personal_note_size: '%%env(FORWARD_PERSONAL_NOTE_SIZE)%%'
+    env(FORWARD_PERSONAL_NOTE_SIZE): '0'
+    phplist.forward_friend_count_attribute: '%%env(FORWARD_FRIEND_COUNT_ATTRIBUTE)%%'
+    env(FORWARD_FRIEND_COUNT_ATTRIBUTE): ''
+    phplist.keep_forwarded_attributes: '%%env(KEEPFORWARDERATTRIBUTES)%%'
+    env(KEEPFORWARDERATTRIBUTES): '0'
 
     phplist.upload_images_dir: '%%env(PHPLIST_UPLOADIMAGES_DIR)%%'
     env(PHPLIST_UPLOADIMAGES_DIR): 'images'
@@ -138,3 +153,5 @@ parameters:
     env(PHPLIST_ATTACHMENT_DOWNLOAD_URL): 'https://example.com/download/'
     phplist.attachment_repository_path: '%%env(PHPLIST_ATTACHMENT_REPOSITORY_PATH)%%'
     env(PHPLIST_ATTACHMENT_REPOSITORY_PATH): '/tmp'
+    phplist.max_avatar_size: '%%env(MAX_AVATAR_SIZE)%%'
+    env(MAX_AVATAR_SIZE): '100000'

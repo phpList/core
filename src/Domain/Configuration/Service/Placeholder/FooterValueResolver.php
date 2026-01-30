@@ -23,8 +23,12 @@ final class FooterValueResolver implements PlaceholderValueResolverInterface
 
     public function __invoke(PlaceholderContext $ctx): string
     {
+        if ($ctx->forwardedBy() === null) {
+            return $ctx->isText() ? $ctx->messagePrecacheDto->textFooter : $ctx->messagePrecacheDto->htmlFooter;
+        }
+
         //0013076: different content when forwarding 'to a friend'
-        if ($this->forwardAlternativeContent && $ctx->messagePrecacheDto) {
+        if ($this->forwardAlternativeContent) {
             return stripslashes($ctx->messagePrecacheDto->footer);
         }
 

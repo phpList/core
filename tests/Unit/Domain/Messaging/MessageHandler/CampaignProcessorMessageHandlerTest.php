@@ -232,7 +232,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
 
         $campaignBuilderMock->expects($this->once())
-            ->method('buildPhplistEmail')
+            ->method('buildCampaignEmail')
             ->willReturn([
                 (new Email())
                     ->from('news@example.com')
@@ -299,7 +299,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         /** @var EmailBuilder|MockObject $campaignBuilderMock */
         $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
         $campaignBuilderMock->expects($this->once())
-            ->method('buildPhplistEmail')
+            ->method('buildCampaignEmail')
             ->willReturn([
                 (new Email())->to('test@example.com')->subject('Test Subject')->text('x'),
                 OutputFormat::Text
@@ -380,7 +380,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         /** @var EmailBuilder|MockObject $campaignBuilderMock */
         $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
         $campaignBuilderMock->expects($this->exactly(2))
-            ->method('buildPhplistEmail')
+            ->method('buildCampaignEmail')
             ->willReturnOnConsecutiveCalls(
                 [
                     (new Email())->to('test1@example.com')->subject('Test Subject')->text('x'),

@@ -17,8 +17,9 @@ use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Messaging\Exception\SubscriberNotFoundException;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-class CampaignMailContentBuilder implements MailContentBuilderInterface
+class CampaignMailContentBuilder
 {
     public function __construct(
         private readonly SubscriberRepository $subscriberRepository,
@@ -28,11 +29,16 @@ class CampaignMailContentBuilder implements MailContentBuilderInterface
         private readonly Html2Text $html2Text,
         private readonly TextParser $textParser,
         private readonly MessagePlaceholderProcessor $placeholderProcessor,
+        #[Autowire('%hplist.forward_personal_note_size%')] private readonly ?bool $forwardPersonalNote = false,
     ) {
     }
 
-    public function __invoke(MessagePrecacheDto $messagePrecacheDto, ?int $campaignId = null,): array
-    {
+    public function __invoke(
+        MessagePrecacheDto $messagePrecacheDto,
+        ?int $campaignId = null,
+        ?Subscriber $forwardedBy = null,
+        ?string $forwardedPersonalNote = null,
+    ): array {
         $subscriber = $this->subscriberRepository->findOneByEmail($messagePrecacheDto->to);
         if (!$subscriber) {
             throw new SubscriberNotFoundException(
@@ -74,22 +80,30 @@ class CampaignMailContentBuilder implements MailContentBuilderInterface
 
         $textMessage = $this->placeholderProcessor->process(
             value: $textMessage,
-            user: $subscriber,
+            receiver: $subscriber,
             format: OutputFormat::Text,
             messagePrecacheDto: $messagePrecacheDto,
             campaignId: $campaignId,
+            forwardedBy: $forwardedBy,
         );
 
         $htmlMessage = $this->placeholderProcessor->process(
             value: $htmlMessage,
-            user: $subscriber,
+            receiver: $subscriber,
             format: OutputFormat::Html,
             messagePrecacheDto: $messagePrecacheDto,
             campaignId: $campaignId,
+            forwardedBy: $forwardedBy,
         );
 
         $htmlMessage = $this->ensureHtmlFormating(content: $htmlMessage, addDefaultStyle: $addDefaultStyle);
         // todo: add link CLICKTRACK to $htmlMessage
+
+        [$htmlMessage, $textMessage] = $this->ensureNoteInCaseOfForwarded(
+            htmlMessage: $htmlMessage,
+            textMessage: $textMessage,
+            note: $forwardedPersonalNote,
+        );
 
         return [$htmlMessage, $textMessage];
     }
@@ -155,5 +169,19 @@ class CampaignMailContentBuilder implements MailContentBuilderInterface
         $content = str_ireplace('<p><!DOCTYPE', '<!DOCTYPE', $content);
 
         return str_ireplace('</html></p>', '</html>', $content);
+    }
+
+    private function ensureNoteInCaseOfForwarded(string $htmlMessage, string $textMessage, ?string $note): array
+    {
+        if ($note === null || $note === '') {
+            return [$htmlMessage, $textMessage];
+        }
+        //0011996: forward to friend - personal message
+        if ($this->forwardPersonalNote) {
+            $htmlMessage = nl2br($note) . '<br/>' . $htmlMessage;
+            $textMessage = $note . "\n" . $textMessage;
+        }
+
+        return [$htmlMessage, $textMessage];
     }
 }

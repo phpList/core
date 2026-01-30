@@ -28,7 +28,7 @@ class AttachmentAdder
     ) {
     }
 
-    public function add(Email $email, int $campaignId, OutputFormat $format): bool
+    public function add(Email $email, int $campaignId, OutputFormat $format, bool $forwarded = false): bool
     {
         $attachments = $this->attachmentRepository->findAttachmentsForMessage($campaignId);
 
@@ -57,9 +57,9 @@ class AttachmentAdder
                     break;
 
                 case OutputFormat::Text:
-                    $userEmail = $email->getTo()[0]->getAddress();
+                    $hash = $forwarded ? 'forwarded' : $email->getTo()[0]->getAddress();
                     // todo: add endpoint in rest-api project
-                    $viewUrl = $this->attachmentDownloadUrl . '/?id=' . $att->getId() . '&uid=' . $userEmail;
+                    $viewUrl = $this->attachmentDownloadUrl . '/?id=' . $att->getId() . '&uid=' . $hash;
 
                     $email->text(
                         $email->getTextBody()
