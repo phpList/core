@@ -81,6 +81,8 @@ parameters:
     # A secret key that's used to generate certain security-related tokens
     secret: '%%env(PHPLIST_SECRET)%%'
     env(PHPLIST_SECRET): %1$s
+    phplist.verify_ssl: '%%env(VERIFY_SSL)%%'
+    env(VERIFY_SSL): '1'
 
     graylog_host: 'graylog.example.com'
     graylog_port: 12201
