@@ -55,10 +55,10 @@ class AdminCopyEmailSender
     {
         $emails = [];
         if ($this->sendListAdminCopy) {
-            $emails = array_map(
-                static fn ($list) => $list->getOwner()->getEmail(),
+            $emails = array_filter(array_map(
+                static fn ($list) => $list->getOwner()?->getEmail(),
                 $lists
-            );
+            ));
         }
 
         if (count($emails) === 0) {

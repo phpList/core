@@ -23,7 +23,7 @@ final class FooterValueResolver implements PlaceholderValueResolverInterface
 
     public function __invoke(PlaceholderContext $ctx): string
     {
-        if ($ctx->forwardedBy() === null) {
+        if ($ctx->forwardedBy() === null && $ctx->messagePrecacheDto) {
             return $ctx->isText() ? $ctx->messagePrecacheDto->textFooter : $ctx->messagePrecacheDto->htmlFooter;
         }
 
