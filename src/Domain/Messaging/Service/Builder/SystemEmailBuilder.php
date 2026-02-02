@@ -69,7 +69,7 @@ class SystemEmailBuilder extends BaseEmailBuilder
         $replyTo = $messageReplyToAddress ?: $fromEmail;
 
         $email = $this->createBaseEmail(
-            originalTo: $data->to,
+            to: $data->to,
             fromEmail: $fromEmail,
             fromName: $fromName,
             subject: $data->subject,
@@ -113,7 +113,7 @@ class SystemEmailBuilder extends BaseEmailBuilder
         $replyTo = $messageReplyToAddress ?: $fromEmail;
 
         $email = $this->createBaseEmail(
-            originalTo: $data->to,
+            to: $data->to,
             fromEmail: $fromEmail,
             fromName: $fromName,
             subject: $data->subject,

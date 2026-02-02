@@ -72,7 +72,7 @@ class ForwardEmailBuilder extends EmailBuilder
     /** @return array{Email, OutputFormat}|null */
     public function buildForwardEmail(
         int $messageId,
-        string $email,
+        string $friendEmail,
         Subscriber $forwardedBy,
         MessagePrecacheDto $data,
         bool $htmlPref,
@@ -80,11 +80,11 @@ class ForwardEmailBuilder extends EmailBuilder
         string $fromEmail,
         ?string $forwardedPersonalNote = null,
     ): ?array {
-        if (!$this->validateRecipientAndSubject(to: $email, subject: $data->subject)) {
+        if (!$this->validateRecipientAndSubject(to: $friendEmail, subject: $data->subject)) {
             return null;
         }
 
-        if (!$this->passesBlacklistCheck(to: $email, skipBlacklistCheck: false)) {
+        if (!$this->passesBlacklistCheck(to: $friendEmail, skipBlacklistCheck: false)) {
             return null;
         }
 
@@ -98,7 +98,7 @@ class ForwardEmailBuilder extends EmailBuilder
         );
 
         $email = $this->createBaseEmail(
-            originalTo: $data->to,
+            to: $friendEmail,
             fromEmail: $fromEmail,
             fromName: $fromName,
             subject: $subject,
@@ -107,7 +107,6 @@ class ForwardEmailBuilder extends EmailBuilder
         $this->applyCampaignHeaders($email, $forwardedBy);
 
         $email->addReplyTo(new Address($fromEmail, $fromName));
-        $this->applyCampaignHeaders($email, $forwardedBy);
 
         $sentAs = $this->applyContentAndFormatting(
             email: $email,
@@ -127,7 +126,9 @@ class ForwardEmailBuilder extends EmailBuilder
         $email = parent::applyCampaignHeaders($email, $subscriber);
 
         $receivedLine = $this->httpReceivedStampBuilder->buildStamp();
-        $email->getHeaders()->addTextHeader('Received', $receivedLine);
+        if ($receivedLine !== null) {
+            $email->getHeaders()->addTextHeader('Received', $receivedLine);
+        }
 
         return $email;
     }

@@ -99,13 +99,13 @@ abstract class BaseEmailBuilder
     }
 
     protected function createBaseEmail(
-        string $originalTo,
+        string $to,
         ?string $fromEmail,
         ?string $fromName,
         ?string $subject,
     ) : Email {
         $email = (new Email());
-        $destinationEmail = $this->resolveDestinationEmail($originalTo);
+        $destinationEmail = $this->resolveDestinationEmail($to);
 
         $email->to($destinationEmail);
         $email->from(new Address($fromEmail, $fromName ?? ''));

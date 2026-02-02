@@ -13,9 +13,14 @@ class ForwardingStatsService
 {
     private readonly ?string $forwardFriendCountAttribute;
     /**
-     * Cached friend counts for this request.
+     * Cached friend counts for this request / service instance.
      */
     private ?int $friendCount = null;
+
+    /**
+     * Subscriber ID for which the cache is valid.
+     */
+    private ?int $friendCountSubscriberId = null;
 
     public function __construct(
         private readonly SubscriberAttributeValueRepository $subscriberAttributeValueRepo,
@@ -32,8 +37,11 @@ class ForwardingStatsService
             return;
         }
 
-        if ($this->friendCount === null) {
+        $subscriberId = $subscriber->getId();
+
+        if ($this->friendCount === null || $this->friendCountSubscriberId !== $subscriberId) {
             $this->friendCount = $this->loadFriendsCount($subscriber);
+            $this->friendCountSubscriberId = $subscriberId;
         }
 
         $this->friendCount++;
@@ -45,7 +53,10 @@ class ForwardingStatsService
             return;
         }
 
-        if ($this->friendCount === null) {
+        $subscriberId = $subscriber->getId();
+
+        // No cached value or cache belongs to a different subscriber → nothing to update
+        if ($this->friendCount === null || $this->friendCountSubscriberId !== $subscriberId) {
             return;
         }
 
@@ -55,7 +66,9 @@ class ForwardingStatsService
             value: (string) $this->friendCount
         );
 
-        unset($this->friendCount);
+        // reset typed properties
+        $this->friendCount = null;
+        $this->friendCountSubscriberId = null;
     }
 
     private function loadFriendsCount(Subscriber $subscriber): int
@@ -65,8 +78,8 @@ class ForwardingStatsService
         }
 
         $attribute = $this->subscriberAttributeValueRepo->findOneBySubscriberAndAttributeName(
-            $subscriber,
-            $this->forwardFriendCountAttribute
+            subscriber: $subscriber,
+            attributeName: $this->forwardFriendCountAttribute
         );
 
         return (int) ($attribute?->getValue() ?? 0);

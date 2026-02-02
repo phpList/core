@@ -29,7 +29,7 @@ class AdminCopyEmailSender
     /** @param SubscriberList[] $lists */
     public function __invoke(string $subject, string $message, array $lists = []): void
     {
-        if (!$this->configProvider->getBoolValue(ConfigOption::SendAdminCopies)) {
+        if (!$this->configProvider->isEnabled(ConfigOption::SendAdminCopies)) {
             return;
         }
 
@@ -65,12 +65,16 @@ class AdminCopyEmailSender
             $adminMail = $this->configProvider->getValue(ConfigOption::AdminAddress);
             $adminMailsString = $this->configProvider->getValue(ConfigOption::AdminAddresses);
 
-            $emails  = $adminMailsString ? explode(',', $adminMailsString) : [];
-            $emails[] = $adminMail;
+            $emails = $adminMailsString
+                ? array_map('trim', explode(',', $adminMailsString))
+                : [];
+
+            if ($adminMail !== null && $adminMail !== '') {
+                $emails[] = trim($adminMail);
+            }
         }
 
-        $emails = array_map('trim', $emails);
-        $emails = array_filter($emails);
+        $emails = array_filter($emails, fn($email) => is_string($email) && $email !== '');
 
         return array_values(array_unique($emails));
     }

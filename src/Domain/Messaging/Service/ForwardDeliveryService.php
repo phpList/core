@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service;
 
+use LogicException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -24,6 +25,10 @@ class ForwardDeliveryService
 
     public function send(Email $friendEmail): void
     {
+        if (empty($friendEmail->getTo())) {
+            throw new LogicException('No recipient specified');
+        }
+
         $envelope = new Envelope(
             sender: new Address($this->bounceEmail, 'PHPList'),
             recipients: [new Address($friendEmail->getTo()[0]->getAddress())],

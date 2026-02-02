@@ -87,7 +87,7 @@ class EmailBuilder extends BaseEmailBuilder
         $subject = (!$isTestMail ? '' : $this->translator->trans('(test)') .  ' ') . $data->subject;
 
         $email = $this->createBaseEmail(
-            originalTo: $data->to,
+            to: $data->to,
             fromEmail: $fromEmail,
             fromName: $fromName,
             subject: $subject,

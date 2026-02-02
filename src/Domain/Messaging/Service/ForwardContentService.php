@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service;
 
 use PhpList\Core\Domain\Configuration\Model\OutputFormat;
+use PhpList\Core\Domain\Messaging\Exception\MessageCacheMissingException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessageForwardDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Service\Builder\ForwardEmailBuilder;
@@ -21,7 +22,9 @@ class ForwardContentService
     ) {
     }
 
-    /** @return array{Email, OutputFormat}|null */
+    /** @return array{Email, OutputFormat}|null
+     * @throws MessageCacheMissingException
+     */
     public function getContents(
         Message $campaign,
         Subscriber $forwardingSubscriber,
@@ -29,6 +32,10 @@ class ForwardContentService
         MessageForwardDto $forwardDto
     ): ?array {
         $messagePrecacheDto = $this->cache->get(sprintf('messaging.message.base.%d.%d', $campaign->getId(), 1));
+
+        if ($messagePrecacheDto === null) {
+            throw new MessageCacheMissingException();
+        }
 
         // todo: check how should links be handled in case of forwarding
         $processed = $this->messagePreparator->processMessageLinks(
@@ -39,7 +46,7 @@ class ForwardContentService
 
         return $this->forwardEmailBuilder->buildForwardEmail(
             messageId: $campaign->getId(),
-            email: $friendEmail,
+            friendEmail: $friendEmail,
             forwardedBy: $forwardingSubscriber,
             data: $processed,
             htmlPref: $forwardingSubscriber->hasHtmlEmail(),

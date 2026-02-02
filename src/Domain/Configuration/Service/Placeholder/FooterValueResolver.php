@@ -28,7 +28,7 @@ final class FooterValueResolver implements PlaceholderValueResolverInterface
         }
 
         //0013076: different content when forwarding 'to a friend'
-        if ($this->forwardAlternativeContent) {
+        if ($this->forwardAlternativeContent && $ctx->messagePrecacheDto) {
             return stripslashes($ctx->messagePrecacheDto->footer);
         }
 

@@ -29,7 +29,7 @@ class CampaignMailContentBuilder
         private readonly Html2Text $html2Text,
         private readonly TextParser $textParser,
         private readonly MessagePlaceholderProcessor $placeholderProcessor,
-        #[Autowire('%hplist.forward_personal_note_size%')] private readonly ?bool $forwardPersonalNote = false,
+        #[Autowire('%phplist.forward_personal_note_size%')] private readonly ?bool $forwardPersonalNote = false,
     ) {
     }
 
@@ -176,9 +176,10 @@ class CampaignMailContentBuilder
         if ($note === null || $note === '') {
             return [$htmlMessage, $textMessage];
         }
+        $escapedNote = htmlspecialchars($note, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         //0011996: forward to friend - personal message
         if ($this->forwardPersonalNote) {
-            $htmlMessage = nl2br($note) . '<br/>' . $htmlMessage;
+            $htmlMessage = nl2br($escapedNote) . '<br/>' . $htmlMessage;
             $textMessage = $note . "\n" . $textMessage;
         }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service;
 
+use DateTimeInterface;
 use PhpList\Core\Domain\Messaging\Exception\ForwardLimitExceededException;
 use PhpList\Core\Domain\Messaging\Exception\MessageNotReceivedException;
 use PhpList\Core\Domain\Messaging\Model\Message;
@@ -19,13 +20,16 @@ class ForwardingGuard
         private readonly SubscriberRepository $subscriberRepository,
         private readonly UserMessageRepository $userMessageRepository,
         private readonly UserMessageForwardRepository $forwardRepository,
-        #[Autowire('%phplist.forward_message_count%')] private readonly int $forwardMessageCount,
+        #[Autowire('%phplist.forward_email_count%')] private readonly int $forwardMessageCount,
     ) {
     }
 
-    public function assertCanForward(string $uid, Message $campaign, \DateTimeInterface $cutoff): Subscriber
+    public function assertCanForward(string $uid, Message $campaign, DateTimeInterface $cutoff): Subscriber
     {
         $subscriber = $this->subscriberRepository->findOneByUniqueId($uid);
+        if ($subscriber === null) {
+            throw new MessageNotReceivedException();
+        }
         $receivedMessage = $this->userMessageRepository->findOneByUserAndMessage($subscriber, $campaign);
 
         if ($receivedMessage === null) {
@@ -33,7 +37,7 @@ class ForwardingGuard
         }
 
         $forwardPeriodCount = $this->forwardRepository->getCountByUserSince($subscriber, $cutoff);
-        if ($forwardPeriodCount > $this->forwardMessageCount) {
+        if ($forwardPeriodCount >= $this->forwardMessageCount) {
             throw new ForwardLimitExceededException();
         }
 
