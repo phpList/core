@@ -15,5 +15,3 @@ services:
         autowire: true
         autoconfigure: true
         arguments:
-            $campaignEmailBuilder: '@Core.EmailBuilder.campaign'
-            $systemEmailBuilder: '@Core.EmailBuilder.system'

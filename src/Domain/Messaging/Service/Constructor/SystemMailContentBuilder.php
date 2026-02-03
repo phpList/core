@@ -11,7 +11,7 @@ use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Repository\TemplateRepository;
 use PhpList\Core\Domain\Messaging\Service\Manager\TemplateImageManager;
 
-class SystemMailContentBuilder implements MailContentBuilderInterface
+class SystemMailContentBuilder
 {
     private ?string $poweredByText;
 
@@ -25,7 +25,7 @@ class SystemMailContentBuilder implements MailContentBuilderInterface
         $this->poweredByText = $configProvider->getValue(ConfigOption::PoweredByText);
     }
 
-    public function __invoke(MessagePrecacheDto $messagePrecacheDto, ?int $campaignId = null): array
+    public function __invoke(MessagePrecacheDto $messagePrecacheDto): array
     {
         [$htmlMessage, $textMessage] = $this->buildMessageBodies($messagePrecacheDto->content);
 

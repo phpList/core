@@ -107,8 +107,8 @@ final class UnsubscribeValueResolverTest extends TestCase
         $this->urlBuilder
             ->expects($this->once())
             ->method('withUid')
-            ->with($blacklistBase, 'UID-FWD')
-            ->willReturn($blacklistBase . '?uid=UID-FWD');
+            ->with($blacklistBase, 'forwarded')
+            ->willReturn($blacklistBase . '?uid=forwarded');
 
         $this->translator
             ->method('trans')
@@ -120,7 +120,7 @@ final class UnsubscribeValueResolverTest extends TestCase
             format: OutputFormat::Html,
             messagePrecacheDto: null,
             locale: 'en',
-            forwardedBy: 'someone@example.com',
+            forwardedBy: (new Subscriber())->setEmail('someone@example.com'),
         );
 
         $resolver = new UnsubscribeValueResolver($this->config, $this->urlBuilder, $this->translator);
@@ -128,7 +128,7 @@ final class UnsubscribeValueResolverTest extends TestCase
 
         $this->assertStringContainsString(
             'href="'
-            . htmlspecialchars($blacklistBase . '?uid=UID-FWD', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
+            . htmlspecialchars($blacklistBase . '?uid=forwarded', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
             . '"',
             $out
         );

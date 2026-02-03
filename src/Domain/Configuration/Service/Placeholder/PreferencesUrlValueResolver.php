@@ -26,16 +26,17 @@ final class PreferencesUrlValueResolver implements PlaceholderValueResolverInter
             return '';
         }
         $sep = !str_contains($url, '?') ? '?' : '&';
+        $uid = $ctx->forwardedBy() ? 'forwarded' : $ctx->getUser()->getUniqueId();
 
         if ($ctx->isHtml()) {
             return sprintf(
                 '%s%suid=%s',
                 htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
                 htmlspecialchars($sep),
-                $ctx->getUser()->getUniqueId(),
+                $uid,
             );
         }
 
-        return sprintf('%s%suid=%s', $url, $sep, $ctx->getUser()->getUniqueId());
+        return sprintf('%s%suid=%s', $url, $sep, $uid);
     }
 }

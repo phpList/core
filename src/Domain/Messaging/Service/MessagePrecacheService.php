@@ -43,7 +43,6 @@ class MessagePrecacheService
     /**
      * Retrieve the base (unpersonalized) message content for a campaign from cache,
      * or cache it on first access. Handle [URL:] token fetch and basic placeholder replacements.
-     *
      */
     public function precacheMessage(Message $campaign, $loadedMessageData, ?bool $forwardContent = false): bool
     {

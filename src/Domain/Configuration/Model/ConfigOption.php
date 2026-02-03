@@ -24,6 +24,7 @@ enum ConfigOption: string
     case SystemMessageTemplate = 'systemmessagetemplate';
     case AlwaysAddGoogleTracking = 'always_add_googletracking';
     case AdminAddress = 'admin_address';
+    case AdminAddresses = 'admin_addresses';
     case DefaultMessageTemplate = 'defaultmessagetemplate';
     case MessageFooter = 'messagefooter';
     case ForwardFooter = 'forwardfooter';
@@ -41,4 +42,7 @@ enum ConfigOption: string
     case HtmlEmailStyle = 'html_email_style';
     case AlwaysSendTextDomains = 'alwayssendtextto';
     case ReportAddress = 'report_address';
+    case SendAdminCopies = 'send_admin_copies';
+    case DontSaveUserPassword = 'dontsave_userpassword';
+    case AutoCreateAttributes = 'autocreate_attributes';
 }

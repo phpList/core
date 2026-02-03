@@ -26,17 +26,18 @@ final class ForwardUrlValueResolver implements PlaceholderValueResolverInterface
             return '';
         }
         $sep = !str_contains($url, '?') ? '?' : '&';
+        $uid = $ctx->forwardedBy() ? 'forwarded' : $ctx->getUser()->getUniqueId();
 
         if ($ctx->isHtml()) {
             return sprintf(
                 '%s%suid=%s&amp;mid=%d',
                 htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
                 htmlspecialchars($sep),
-                $ctx->getUser()->getUniqueId(),
+                $uid,
                 $ctx->messageId(),
             );
         }
 
-        return sprintf('%s%suid=%s&mid=%d', $url, $sep, $ctx->getUser()->getUniqueId(), $ctx->messageId());
+        return sprintf('%s%suid=%s&mid=%d', $url, $sep, $uid, $ctx->messageId());
     }
 }

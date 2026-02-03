@@ -13,6 +13,7 @@ class ConfigProvider
 {
     private array $booleanValues = [
         ConfigOption::MaintenanceMode,
+        ConfigOption::SendAdminCopies,
     ];
 
     public function __construct(
@@ -28,16 +29,23 @@ class ConfigProvider
      */
     public function isEnabled(ConfigOption $key): bool
     {
-        if (!in_array($key, $this->booleanValues)) {
+        if (!in_array($key, $this->booleanValues, true)) {
             throw new InvalidArgumentException('Invalid boolean value key');
         }
         $config = $this->configRepository->findOneBy(['item' => $key->value]);
 
         if ($config !== null) {
-            return $config->getValue() === '1';
+            return filter_var($config->getValue(), FILTER_VALIDATE_BOOLEAN);
         }
 
-        return $this->defaultConfigs->has($key->value) && $this->defaultConfigs->get($key->value)['value'] === '1';
+        if ($this->defaultConfigs->has($key->value)) {
+            return filter_var(
+                $this->defaultConfigs->get($key->value)['value'],
+                FILTER_VALIDATE_BOOLEAN
+            );
+        }
+
+        return false;
     }
 
     /**

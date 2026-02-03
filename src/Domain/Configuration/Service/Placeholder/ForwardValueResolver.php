@@ -29,6 +29,7 @@ final class ForwardValueResolver implements PlaceholderValueResolverInterface
             return '';
         }
         $sep = !str_contains($url, '?') ? '?' : '&';
+        $uid = $ctx->forwardedBy() ? 'forwarded' : $ctx->getUser()->getUniqueId();
 
         if ($ctx->isHtml()) {
             $label = $this->translator->trans('This link');
@@ -37,7 +38,7 @@ final class ForwardValueResolver implements PlaceholderValueResolverInterface
                 . htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
                 . htmlspecialchars($sep)
                 . 'uid='
-                . $ctx->getUser()->getUniqueId()
+                . $uid
                 . '&amp;mid='
                 . $ctx->messageId()
                 . '">'
@@ -45,6 +46,6 @@ final class ForwardValueResolver implements PlaceholderValueResolverInterface
                 . '</a> ';
         }
 
-        return sprintf('%s%suid=%s&mid=%d ', $url, $sep, $ctx->getUser()->getUniqueId(), $ctx->messageId());
+        return sprintf('%s%suid=%s&mid=%d ', $url, $sep, $uid, $ctx->messageId());
     }
 }
