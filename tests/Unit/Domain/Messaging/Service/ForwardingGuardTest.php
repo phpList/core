@@ -38,6 +38,7 @@ class ForwardingGuardTest extends TestCase
             userMessageRepository: $this->userMessageRepo,
             forwardRepository: $this->forwardRepo,
             forwardMessageCount: 2,
+            forwardEmailPeriod: '1 day',
         );
 
         $uid = 'abc';
@@ -50,7 +51,7 @@ class ForwardingGuardTest extends TestCase
         );
         $this->forwardRepo->method('getCountByUserSince')->willReturn(1);
 
-        $result = $guard->assertCanForward($uid, $campaign, new DateTimeImmutable());
+        $result = $guard->assertCanForward($uid, $campaign);
         self::assertSame($subscriber, $result);
     }
 
@@ -61,12 +62,13 @@ class ForwardingGuardTest extends TestCase
             userMessageRepository: $this->userMessageRepo,
             forwardRepository: $this->forwardRepo,
             forwardMessageCount: 2,
+            forwardEmailPeriod: '1 day',
         );
 
         $this->subscriberRepo->method('findOneByUniqueId')->willReturn(null);
 
         $this->expectException(MessageNotReceivedException::class);
-        $guard->assertCanForward('uid', $this->createMock(Message::class), new DateTimeImmutable());
+        $guard->assertCanForward('uid', $this->createMock(Message::class));
     }
 
     public function testAssertCanForwardThrowsWhenMessageNotReceived(): void
@@ -76,13 +78,14 @@ class ForwardingGuardTest extends TestCase
             userMessageRepository: $this->userMessageRepo,
             forwardRepository: $this->forwardRepo,
             forwardMessageCount: 2,
+            forwardEmailPeriod: '1 day',
         );
 
         $this->subscriberRepo->method('findOneByUniqueId')->willReturn(new Subscriber());
         $this->userMessageRepo->method('findOneByUserAndMessage')->willReturn(null);
 
         $this->expectException(MessageNotReceivedException::class);
-        $guard->assertCanForward('uid', $this->createMock(Message::class), new DateTimeImmutable());
+        $guard->assertCanForward('uid', $this->createMock(Message::class));
     }
 
     public function testAssertCanForwardThrowsWhenLimitExceeded(): void
@@ -92,6 +95,7 @@ class ForwardingGuardTest extends TestCase
             userMessageRepository: $this->userMessageRepo,
             forwardRepository: $this->forwardRepo,
             forwardMessageCount: 2,
+            forwardEmailPeriod: '1 day',
         );
 
         $this->subscriberRepo->method('findOneByUniqueId')->willReturn(new Subscriber());
@@ -99,7 +103,7 @@ class ForwardingGuardTest extends TestCase
         $this->forwardRepo->method('getCountByUserSince')->willReturn(2);
 
         $this->expectException(ForwardLimitExceededException::class);
-        $guard->assertCanForward('uid', $this->createMock(Message::class), new DateTimeImmutable());
+        $guard->assertCanForward('uid', $this->createMock(Message::class));
     }
 
     public function testHasAlreadyBeenSentTrue(): void
@@ -109,6 +113,7 @@ class ForwardingGuardTest extends TestCase
             userMessageRepository: $this->userMessageRepo,
             forwardRepository: $this->forwardRepo,
             forwardMessageCount: 10,
+            forwardEmailPeriod: '1 day',
         );
 
         $campaign = $this->createMock(Message::class);
@@ -128,6 +133,7 @@ class ForwardingGuardTest extends TestCase
             userMessageRepository: $this->userMessageRepo,
             forwardRepository: $this->forwardRepo,
             forwardMessageCount: 10,
+            forwardEmailPeriod: '1 day',
         );
 
         $campaign = $this->createMock(Message::class);

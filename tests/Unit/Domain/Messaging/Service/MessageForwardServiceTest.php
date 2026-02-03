@@ -64,7 +64,6 @@ class MessageForwardServiceTest extends TestCase
         return new MessageForwardDto(
             emails: $emails,
             uid: 'uid-123',
-            cutoff: new DateTimeImmutable('-1 day'),
             fromName: 'Alice',
             fromEmail: 'alice@example.test'
         );

@@ -59,7 +59,6 @@ class ForwardContentServiceTest extends TestCase
             forwardDto: new MessageForwardDto(
                 [],
                 'uuid',
-                new DateTime(),
                 'from@example.com',
                 'From',
                 null
@@ -122,7 +121,6 @@ class ForwardContentServiceTest extends TestCase
             forwardDto: new MessageForwardDto(
                 ['f@example.com'],
                 'uuid',
-                new DateTime(),
                 'From Name',
                 'from@example.com',
                 'note'

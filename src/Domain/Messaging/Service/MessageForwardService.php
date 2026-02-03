@@ -29,7 +29,6 @@ class MessageForwardService
         $forwardingSubscriber = $this->guard->assertCanForward(
             uid: $messageForwardDto->getUid(),
             campaign: $campaign,
-            cutoff: $messageForwardDto->getCutoff(),
         );
         $messageLists = $this->subscriberListRepository->getListsByMessage($campaign);
 

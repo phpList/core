@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Model\Dto;
 
-use DateTimeInterface;
-
 class MessageForwardDto
 {
     /**
@@ -14,7 +12,6 @@ class MessageForwardDto
     public function __construct(
         private readonly array $emails,
         private readonly string $uid,
-        private readonly DateTimeInterface $cutoff,
         private readonly string $fromName,
         private readonly string $fromEmail,
         private readonly ?string $note = null
@@ -32,11 +29,6 @@ class MessageForwardDto
     public function getUid(): string
     {
         return $this->uid;
-    }
-
-    public function getCutoff(): DateTimeInterface
-    {
-        return $this->cutoff;
     }
 
     public function getFromName(): string
