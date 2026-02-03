@@ -31,10 +31,6 @@ class MessageFormat implements EmbeddableInterface
     #[ORM\Column(name: 'astextandpdf', type: 'integer')]
     private int $asTextAndPdf = 0;
 
-    public const FORMAT_TEXT = 'text';
-    public const FORMAT_HTML = 'html';
-    public const FORMAT_PDF = 'pdf';
-
     public function __construct(
         bool $htmlFormatted,
         ?string $sendFormat,
@@ -113,14 +109,5 @@ class MessageFormat implements EmbeddableInterface
     public function incrementAsTextAndPdf(): void
     {
         $this->asTextAndPdf++;
-    }
-
-    public function getFormatOptions(): array
-    {
-        return array_values(array_filter([
-            $this->asText ? self::FORMAT_TEXT : null,
-            $this->asHtml ? self::FORMAT_HTML : null,
-            $this->asPdf ? self::FORMAT_PDF : null,
-        ]));
     }
 }

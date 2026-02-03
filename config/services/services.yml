@@ -18,6 +18,26 @@ services:
     autowire: true
     autoconfigure: true
 
+  PhpList\Core\Domain\Messaging\Service\MessageForwardService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\ForwardingGuard:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\ForwardContentService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\ForwardDeliveryService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\ForwardingStatsService:
+    autowire: true
+    autoconfigure: true
+
   PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService:
     autowire: true
     autoconfigure: true
@@ -174,6 +194,14 @@ services:
     autowire: true
     autoconfigure: true
     public: true
+
+  PhpList\Core\Domain\Identity\Service\AdminNotifier:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Identity\Service\AdminCopyEmailSender:
+    autowire: true
+    autoconfigure: true
 
   PhpList\Core\Domain\Configuration\Service\MessagePlaceholderProcessor:
     autowire: true

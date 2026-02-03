@@ -8,6 +8,7 @@ use DateTime;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Common\Model\Interfaces\ModificationDate;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
@@ -29,7 +30,7 @@ class MessageTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->format = new MessageFormat(true, MessageFormat::FORMAT_TEXT);
+        $this->format = new MessageFormat(true, OutputFormat::Text->value);
         $this->schedule = new MessageSchedule(1, new DateTime(), 2, new DateTime(), null);
         $this->metadata = new MessageMetadata();
         $this->content = new MessageContent('This is the body');
