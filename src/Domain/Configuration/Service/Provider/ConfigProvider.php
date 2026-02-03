@@ -38,9 +38,9 @@ class ConfigProvider
             return filter_var($config->getValue(), FILTER_VALIDATE_BOOLEAN);
         }
 
-        if ($this->defaultConfigs->has($key->value)) {
+        if ($this->defaultConfigs->has($key)) {
             return filter_var(
-                $this->defaultConfigs->get($key->value)['value'],
+                $this->defaultConfigs->get($key)['value'],
                 FILTER_VALIDATE_BOOLEAN
             );
         }
@@ -68,7 +68,7 @@ class ConfigProvider
             return $value;
         }
 
-        return $this->defaultConfigs->has($key->value) ? $this->defaultConfigs->get($key->value)['value'] : null;
+        return $this->defaultConfigs->has($key) ? (string) $this->defaultConfigs->get($key)['value'] : null;
     }
 
     public function getValueWithNamespace(ConfigOption $key): ?string

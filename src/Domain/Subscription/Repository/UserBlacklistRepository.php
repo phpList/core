@@ -10,13 +10,14 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Subscription\Model\UserBlacklist;
 use PhpList\Core\Domain\Subscription\Model\UserBlacklistData;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class UserBlacklistRepository extends AbstractRepository
 {
     public function __construct(
         EntityManagerInterface $entityManager,
         ClassMetadata $class,
-        private readonly int $blacklistGraceTime,
+        #[Autowire('%messaging.blacklist_grace_time%')] private readonly int $blacklistGraceTime = 5,
     ) {
         parent::__construct($entityManager, $class);
     }

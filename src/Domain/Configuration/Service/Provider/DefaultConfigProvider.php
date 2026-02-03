@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Configuration\Service\Provider;
 
+use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 // phpcs:disable Generic.Files.LineLength
@@ -577,24 +578,24 @@ Thank you.'
     /**
      * Get a single default config item by key
      *
-     * @param string $key
+     * @param ConfigOption $key
      * @param mixed|null $default
      * @return mixed
      */
-    public function get(string $key, mixed $default = null): mixed
+    public function get(ConfigOption $key, mixed $default = null): mixed
     {
         $this->init();
 
-        return $this->defaults[$key] ?? $default;
+        return $this->defaults[$key->value] ?? $default;
     }
 
     /**
      * Check if a config key exists
      */
-    public function has(string $key): bool
+    public function has(ConfigOption $key): bool
     {
         $this->init();
 
-        return isset($this->defaults[$key]);
+        return isset($this->defaults[$key->value]);
     }
 }

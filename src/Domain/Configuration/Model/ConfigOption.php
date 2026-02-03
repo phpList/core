@@ -45,4 +45,6 @@ enum ConfigOption: string
     case SendAdminCopies = 'send_admin_copies';
     case DontSaveUserPassword = 'dontsave_userpassword';
     case AutoCreateAttributes = 'autocreate_attributes';
+    case RemoteProcessingSecret = 'remote_processing_secret';
+    case NotifyAdminLogin = 'notify_admin_login';
 }
