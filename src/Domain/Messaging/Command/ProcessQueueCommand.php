@@ -21,9 +21,6 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
-/**
- * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
- */
 #[AsCommand(
     name: 'phplist:process-queue',
     description: 'Processes the email campaign queue.'

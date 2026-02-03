@@ -22,7 +22,7 @@ class ForwardContentService
     ) {
     }
 
-    /** @return array{Email, OutputFormat}|null
+    /** @return array{Email, OutputFormat}
      * @throws MessageCacheMissingException
      */
     public function getContents(
@@ -30,7 +30,7 @@ class ForwardContentService
         Subscriber $forwardingSubscriber,
         string $friendEmail,
         MessageForwardDto $forwardDto
-    ): ?array {
+    ): array {
         $messagePrecacheDto = $this->cache->get(sprintf('messaging.message.base.%d.%d', $campaign->getId(), 1));
 
         if ($messagePrecacheDto === null) {

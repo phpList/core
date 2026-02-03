@@ -10,6 +10,8 @@ use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Messaging\Exception\EmailBlacklistedException;
+use PhpList\Core\Domain\Messaging\Exception\InvalidRecipientOrSubjectException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Service\AttachmentAdder;
 use PhpList\Core\Domain\Messaging\Service\Builder\ForwardEmailBuilder;
@@ -177,8 +179,11 @@ class ForwardEmailBuilderTest extends TestCase
 
         $this->eventLogManager->expects(self::once())->method('log');
 
+        $this->expectException(InvalidRecipientOrSubjectException::class);
+        $this->expectExceptionMessage('Invalid recipient or subject.');
+
         $builder = $this->makeBuilder();
-        $result = $builder->buildForwardEmail(
+        $builder->buildForwardEmail(
             messageId: 1,
             friendEmail: $friend,
             forwardedBy: new Subscriber(),
@@ -187,8 +192,6 @@ class ForwardEmailBuilderTest extends TestCase
             fromName: 'X',
             fromEmail: 'x@example.com',
         );
-
-        self::assertNull($result);
     }
 
     public function testBlacklistReturnsNullAndMarksHistory(): void
@@ -206,6 +209,8 @@ class ForwardEmailBuilderTest extends TestCase
 
         $dto = new MessagePrecacheDto();
         $dto->subject = 'S';
+        $this->expectException(EmailBlacklistedException::class);
+        $this->expectExceptionMessage('Email address is blacklisted.');
 
         $builder = $this->makeBuilder();
         $result = $builder->buildForwardEmail(
@@ -217,7 +222,5 @@ class ForwardEmailBuilderTest extends TestCase
             fromName: 'From',
             fromEmail: 'from@example.com',
         );
-
-        self::assertNull($result);
     }
 }

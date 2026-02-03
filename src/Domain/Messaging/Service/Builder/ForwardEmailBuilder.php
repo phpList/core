@@ -9,6 +9,8 @@ use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Messaging\Exception\EmailBlacklistedException;
+use PhpList\Core\Domain\Messaging\Exception\InvalidRecipientOrSubjectException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Service\AttachmentAdder;
 use PhpList\Core\Domain\Messaging\Service\Constructor\CampaignMailContentBuilder;
@@ -69,7 +71,11 @@ class ForwardEmailBuilder extends EmailBuilder
         );
     }
 
-    /** @return array{Email, OutputFormat}|null */
+    /**
+     * @return array{Email, OutputFormat}
+     * @throws InvalidRecipientOrSubjectException
+     * @throws EmailBlacklistedException
+     */
     public function buildForwardEmail(
         int $messageId,
         string $friendEmail,
@@ -79,13 +85,13 @@ class ForwardEmailBuilder extends EmailBuilder
         string $fromName,
         string $fromEmail,
         ?string $forwardedPersonalNote = null,
-    ): ?array {
+    ): array {
         if (!$this->validateRecipientAndSubject(to: $friendEmail, subject: $data->subject)) {
-            return null;
+            throw new InvalidRecipientOrSubjectException();
         }
 
         if (!$this->passesBlacklistCheck(to: $friendEmail, skipBlacklistCheck: false)) {
-            return null;
+            throw new EmailBlacklistedException();
         }
 
         $subject = $this->translator->trans('Fwd') . ': ' . stripslashes($data->subject);

@@ -6,10 +6,10 @@ namespace PhpList\Core\Domain\Messaging\Exception;
 
 use RuntimeException;
 
-class MessageCacheMissingException extends RuntimeException
+class InvalidRecipientOrSubjectException extends RuntimeException
 {
     public function __construct()
     {
-        parent::__construct('Message cache is missing or expired.');
+        parent::__construct('Invalid recipient or subject.');
     }
 }
