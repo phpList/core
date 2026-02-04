@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\MailerInterface;
@@ -20,6 +21,7 @@ class AdminCopyEmailSender
         private readonly ConfigProvider $configProvider,
         private readonly SystemEmailBuilder $systemEmailBuilder,
         private readonly MailerInterface $mailer,
+        private readonly LoggerInterface $logger,
         #[Autowire('%messaging.send_list_admin_copy%')] private readonly bool $sendListAdminCopy,
         #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
         private readonly string $installationName = 'phpList',
@@ -42,6 +44,10 @@ class AdminCopyEmailSender
             $data->content = $message;
 
             $email = $this->systemEmailBuilder->buildSystemEmail(data: $data);
+            if ($email === null) {
+                $this->logger->warning('Failed to build admin copy email for recipient ' . $adminMail);
+                continue;
+            }
 
             $envelope = new Envelope(
                 sender: new Address($this->bounceEmail, 'PHPList'),

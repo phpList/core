@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -36,6 +37,7 @@ class AdminCopyEmailSenderTest extends TestCase
             configProvider: $configProvider,
             systemEmailBuilder: $systemEmailBuilder,
             mailer: $mailer,
+            logger: $this->createMock(LoggerInterface::class),
             sendListAdminCopy: true,
             bounceEmail: 'bounce@example.com',
         );
@@ -96,6 +98,7 @@ class AdminCopyEmailSenderTest extends TestCase
             configProvider: $configProvider,
             systemEmailBuilder: $systemEmailBuilder,
             mailer: $mailer,
+            logger: $this->createMock(LoggerInterface::class),
             sendListAdminCopy: true,
             bounceEmail: $bounce,
         );
@@ -150,6 +153,7 @@ class AdminCopyEmailSenderTest extends TestCase
             configProvider: $configProvider,
             systemEmailBuilder: $systemEmailBuilder,
             mailer: $mailer,
+            logger: $this->createMock(LoggerInterface::class),
             // ensure fallback path regardless of list owners
             sendListAdminCopy: false,
             bounceEmail: $bounce,

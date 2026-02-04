@@ -33,6 +33,9 @@ class FileHelper
         }
     }
 
+    // todo: check - Handle temp-file rename and write failures.
+    // Appending an extension leaves the original temp file orphaned, and fopen/fwrite failures aren’t
+    // checked (so the method can return a path that wasn’t actually written)
     public function writeFileToDirectory(string $directory, string $originalFilename, string $contents): ?string
     {
         $pathInfo = pathinfo($originalFilename);

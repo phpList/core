@@ -133,6 +133,7 @@ class ForwardEmailBuilder extends EmailBuilder
 
         $receivedLine = $this->httpReceivedStampBuilder->buildStamp();
         if ($receivedLine !== null) {
+            $receivedLine = preg_replace('/[\r\n]+/', ' ', $receivedLine);
             $email->getHeaders()->addTextHeader('Received', $receivedLine);
         }
 

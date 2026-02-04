@@ -127,7 +127,7 @@ class EmailBuilder extends BaseEmailBuilder
         $preferencesUrl = $this->configProvider->getValue(ConfigOption::PreferencesUrl) ?? '';
         $unsubscribeUrl = $this->configProvider->getValue(ConfigOption::UnsubscribeUrl) ?? '';
         $subscribeUrl = $this->configProvider->getValue(ConfigOption::SubscribeUrl) ?? '';
-        $adminAddress = $this->configProvider->getValue(ConfigOption::UnsubscribeUrl) ?? '';
+        $adminAddress = $this->configProvider->getValue(ConfigOption::AdminAddress) ?? '';
 
         $email->getHeaders()->addTextHeader(
             'List-Help',

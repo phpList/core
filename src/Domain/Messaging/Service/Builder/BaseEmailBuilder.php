@@ -136,7 +136,7 @@ abstract class BaseEmailBuilder
         }
 
         $removeUrl = $this->configProvider->getValue(ConfigOption::UnsubscribeUrl);
-        $sep = !str_contains($removeUrl, '?') ? '?' : '&';
+        $sep = !str_contains($removeUrl ?? '#', '?') ? '?' : '&';
         $email->getHeaders()->addTextHeader(
             'List-Unsubscribe',
             sprintf(

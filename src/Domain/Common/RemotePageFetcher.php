@@ -118,7 +118,6 @@ class RemotePageFetcher
                 $url = str_replace('[' . $key . ']', rawurlencode($val), $url);
             }
         }
-        $url = mb_convert_encoding($url, 'ISO-8859-1', 'UTF-8');
 
         return $this->expandUrl($url);
     }

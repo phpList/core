@@ -158,6 +158,6 @@ class SystemEmailBuilder extends BaseEmailBuilder
             // which are wrapped in < and > by HTML2text so add it again
         }
         // Ensure text body is always set
-        $email->text($textMessage);
+        $email->text($textMessage ?? '');
     }
 }

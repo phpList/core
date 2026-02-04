@@ -49,7 +49,7 @@ class MessagePrecacheService
         $cacheKey = sprintf('messaging.message.base.%d.%d', $campaign->getId(), (int) $forwardContent);
         $cached = $this->cache->get($cacheKey);
         if ($cached !== null) {
-            return $cached;
+            return true;
         }
 
         $domain = $this->configProvider->getValue(ConfigOption::Domain);

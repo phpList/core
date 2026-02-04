@@ -386,7 +386,7 @@ class EmailBuilderTest extends TestCase
         $this->assertSame('List-Unsubscribe=One-Click', $headers->get('List-Unsubscribe-Post')->getBodyAsString());
         $this->assertSame('<https://example.com/subscribe>', $headers->get('List-Subscribe')->getBodyAsString());
         // In implementation, adminAddress uses UnsubscribeUrl option (likely a bug); we assert the behavior as-is
-        $this->assertSame('<mailto:https://example.com/unsubscribe>', $headers->get('List-Owner')->getBodyAsString());
+        $this->assertSame('<mailto:admin@example.com>', $headers->get('List-Owner')->getBodyAsString());
     }
 
     public function testAttachmentAdderFailureThrows(): void
