@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Messaging\Repository\MessageDataRepository;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use Psr\Log\LoggerInterface;
 
+// todo: check types
 class MessageDataLoader
 {
     private const AS_FORMAT_FIELDS = ['astext', 'ashtml', 'astextandhtml', 'aspdf', 'astextandpdf'];
@@ -70,9 +71,9 @@ class MessageDataLoader
             'textmessage' => '',
             'rsstemplate' => '',
             'embargo' => $this->getDateArray(),
-            'repeatinterval' => 0,
+            'repeatinterval' => '0',
             'repeatuntil' => $this->getDateArray(),
-            'requeueinterval' => 0,
+            'requeueinterval' => '0',
             'requeueuntil' => $this->getDateArray(),
             'finishsending' => $this->getDateArray($finishSending),
             'fromfield' => '',
@@ -95,7 +96,7 @@ class MessageDataLoader
                 filter: FILTER_VALIDATE_BOOL
             ),
             'excludelist' => [],
-            'sentastest' => 0,
+            'sentastest' => '0',
         ];
     }
 

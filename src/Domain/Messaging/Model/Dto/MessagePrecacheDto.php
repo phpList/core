@@ -26,6 +26,6 @@ class MessagePrecacheDto
 //    public string $htmlCharset= 'UTF-8';
 //    public string $textCharset= 'UTF-8';
     public bool $userSpecificUrl = false;
-    public ?string $googleTrack = null;
+    public bool $googleTrack = false;
     public array $adminAttributes = [];
 }

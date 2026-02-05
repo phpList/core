@@ -31,15 +31,11 @@ final class Version20260204094237 extends AbstractMigration
             get_class($platform)
         ));
 
-        $this->addSql('ALTER TABLE phplist_linktrack_forward ALTER url TYPE VARCHAR(255)');
-
         $this->addSql('ALTER TABLE phplist_message ALTER astext TYPE INT USING astext::integer');
         $this->addSql('ALTER TABLE phplist_message ALTER ashtml TYPE INT USING ashtml::integer');
         $this->addSql('ALTER TABLE phplist_message ALTER aspdf TYPE INT USING aspdf::integer');
         $this->addSql('ALTER TABLE phplist_message ALTER astextandhtml TYPE INT USING astextandhtml::integer');
         $this->addSql('ALTER TABLE phplist_message ALTER astextandpdf TYPE INT USING astextandpdf::integer');
-
-        $this->addSql('ALTER TABLE phplist_urlcache ALTER url TYPE VARCHAR(255)');
     }
 
     public function down(Schema $schema): void
@@ -50,14 +46,10 @@ final class Version20260204094237 extends AbstractMigration
             get_class($platform)
         ));
 
-        $this->addSql('ALTER TABLE phplist_linktrack_forward ALTER url TYPE VARCHAR(2083)');
-
         $this->addSql('ALTER TABLE phplist_message ALTER astext TYPE BOOLEAN USING (astext::integer <> 0)');
         $this->addSql('ALTER TABLE phplist_message ALTER ashtml TYPE BOOLEAN USING (ashtml::integer <> 0)');
         $this->addSql('ALTER TABLE phplist_message ALTER aspdf TYPE BOOLEAN USING (aspdf::integer <> 0)');
         $this->addSql('ALTER TABLE phplist_message ALTER astextandhtml TYPE BOOLEAN USING (astextandhtml::integer <> 0)');
         $this->addSql('ALTER TABLE phplist_message ALTER astextandpdf TYPE BOOLEAN USING (astextandpdf::integer <> 0)');
-
-        $this->addSql('ALTER TABLE phplist_urlcache ALTER url TYPE VARCHAR(2083)');
     }
 }

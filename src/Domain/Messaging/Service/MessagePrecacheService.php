@@ -44,7 +44,7 @@ class MessagePrecacheService
      * Retrieve the base (unpersonalized) message content for a campaign from cache,
      * or cache it on first access. Handle [URL:] token fetch and basic placeholder replacements.
      */
-    public function precacheMessage(Message $campaign, $loadedMessageData, ?bool $forwardContent = false): bool
+    public function precacheMessage(Message $campaign, array $loadedMessageData, ?bool $forwardContent = false): bool
     {
         $cacheKey = sprintf('messaging.message.base.%d.%d', $campaign->getId(), (int) $forwardContent);
         $cached = $this->cache->get($cacheKey);
@@ -65,7 +65,7 @@ class MessagePrecacheService
 
         //# if we are sending a URL that contains user attributes, we cannot pre-parse the message here
         //# but that has quite some impact on speed. So check if that's the case and apply
-        $messagePrecacheDto->userSpecificUrl = preg_match('/\[.+\]/', $loadedMessageData['sendurl']);
+        $messagePrecacheDto->userSpecificUrl = (bool) preg_match('/\[.+\]/', $loadedMessageData['sendurl']);
 
         if (!$this->applyRemoteContentIfPresent($messagePrecacheDto, $loadedMessageData)) {
             return false;
@@ -208,7 +208,7 @@ class MessagePrecacheService
     private function applyBasicReplacements(MessagePrecacheDto $messagePrecacheDto, $loadedMessageData): void
     {
         foreach (self::REPLACE_KEYS as $key) {
-            $replace = $loadedMessageData[$key];
+            $replace = (string) $loadedMessageData[$key];
             $searchKey = '['. $key . ']';
             // Replace in content except for user-specific URL
             if (!$messagePrecacheDto->userSpecificUrl) {

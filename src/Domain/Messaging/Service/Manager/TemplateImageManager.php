@@ -96,8 +96,11 @@ class TemplateImageManager
         $this->templateImageRepository->remove($templateImage);
     }
 
-    public function parseLogoPlaceholders(string $content): string
+    public function parseLogoPlaceholders(?string $content = null): ?string
     {
+        if ($content === null) {
+            return null;
+        }
         //# replace Logo placeholders
         preg_match_all('/\[LOGO\:?(\d+)?\]/', $content, $logoInstances);
         foreach ($logoInstances[0] as $index => $logoInstance) {
