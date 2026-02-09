@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 
 /**
@@ -52,5 +53,42 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
             ->where('l.active = true')
             ->getQuery()
             ->getResult();
+    }
+
+    public function getListNames(array $listIds): array
+    {
+        if ($listIds === []) {
+            return [];
+        }
+
+        $lists = $this->createQueryBuilder('l')
+            ->select('l.name')
+            ->where('l.id IN (:ids)')
+            ->setParameter('ids', $listIds)
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_column($lists, 'name');
+    }
+
+    /**
+     * Returns the names of lists the given subscriber is subscribed to.
+     * If $showPrivate is false, only active/public lists are included.
+     */
+    public function getActiveListNamesForSubscriber(Subscriber $subscriber, bool $showPrivate): array
+    {
+        $queryBuilder = $this->createQueryBuilder('l')
+            ->select('l.name')
+            ->innerJoin('l.subscriptions', 's')
+            ->where('IDENTITY(s.subscriber) = :subscriberId')
+            ->setParameter('subscriberId', $subscriber->getId());
+
+        if (!$showPrivate) {
+            $queryBuilder->andWhere('l.active = true');
+        }
+
+        $rows = $queryBuilder->getQuery()->getScalarResult();
+
+        return array_column($rows, 'name');
     }
 }

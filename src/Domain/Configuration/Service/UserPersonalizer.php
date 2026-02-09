@@ -5,6 +5,12 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Configuration\Service;
 
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Model\Dto\PlaceholderContext;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
+use PhpList\Core\Domain\Configuration\Service\Placeholder\ConfirmationUrlValueResolver;
+use PhpList\Core\Domain\Configuration\Service\Placeholder\PreferencesUrlValueResolver;
+use PhpList\Core\Domain\Configuration\Service\Placeholder\SubscribeUrlValueResolver;
+use PhpList\Core\Domain\Configuration\Service\Placeholder\UnsubscribeUrlValueResolver;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -12,18 +18,19 @@ use PhpList\Core\Domain\Subscription\Service\Resolver\AttributeValueResolver;
 
 class UserPersonalizer
 {
-    private const PHP_SPACE = ' ';
-
     public function __construct(
         private readonly ConfigProvider $config,
-        private readonly LegacyUrlBuilder $urlBuilder,
         private readonly SubscriberRepository $subscriberRepository,
         private readonly SubscriberAttributeValueRepository $attributesRepository,
-        private readonly AttributeValueResolver $attributeValueResolver
+        private readonly AttributeValueResolver $attributeValueResolver,
+        private readonly UnsubscribeUrlValueResolver $unsubscribeUrlValueResolver,
+        private readonly ConfirmationUrlValueResolver $confirmationUrlValueResolver,
+        private readonly PreferencesUrlValueResolver $preferencesUrlValueResolver,
+        private readonly SubscribeUrlValueResolver $subscribeUrlValueResolver,
     ) {
     }
 
-    public function personalize(string $value, string $email): string
+    public function personalize(string $value, string $email, OutputFormat $format): string
     {
         $user = $this->subscriberRepository->findOneByEmail($email);
         if (!$user) {
@@ -31,39 +38,31 @@ class UserPersonalizer
         }
 
         $resolver = new PlaceholderResolver();
-        $resolver->register('EMAIL', fn() => $user->getEmail());
-
-        $resolver->register('UNSUBSCRIBEURL', function () use ($user) {
-            $base = $this->config->getValue(ConfigOption::UnsubscribeUrl) ?? '';
-            return $this->urlBuilder->withUid($base, $user->getUniqueId()) . self::PHP_SPACE;
-        });
-
-        $resolver->register('CONFIRMATIONURL', function () use ($user) {
-            $base = $this->config->getValue(ConfigOption::ConfirmationUrl) ?? '';
-            return $this->urlBuilder->withUid($base, $user->getUniqueId()) . self::PHP_SPACE;
-        });
-        $resolver->register('PREFERENCESURL', function () use ($user) {
-            $base = $this->config->getValue(ConfigOption::PreferencesUrl) ?? '';
-            return $this->urlBuilder->withUid($base, $user->getUniqueId()) . self::PHP_SPACE;
-        });
-
+        $resolver->register('EMAIL', fn(PlaceholderContext $ctx) => $ctx->user->getEmail());
+        $resolver->register($this->unsubscribeUrlValueResolver->name(), $this->unsubscribeUrlValueResolver);
+        $resolver->register($this->confirmationUrlValueResolver->name(), $this->confirmationUrlValueResolver);
+        $resolver->register($this->preferencesUrlValueResolver->name(), $this->preferencesUrlValueResolver);
+        $resolver->register($this->subscribeUrlValueResolver->name(), $this->subscribeUrlValueResolver);
         $resolver->register(
-            'SUBSCRIBEURL',
-            fn() => ($this->config->getValue(ConfigOption::SubscribeUrl) ?? '') . self::PHP_SPACE
+            'DOMAIN',
+            fn(PlaceholderContext $ctx) => $this->config->getValue(ConfigOption::Domain) ?? ''
         );
-        $resolver->register('DOMAIN', fn() => $this->config->getValue(ConfigOption::Domain) ?? '');
-        $resolver->register('WEBSITE', fn() => $this->config->getValue(ConfigOption::Website) ?? '');
+        $resolver->register(
+            'WEBSITE',
+            fn(PlaceholderContext $ctx) => $this->config->getValue(ConfigOption::Website) ?? ''
+        );
 
         $userAttributes = $this->attributesRepository->getForSubscriber($user);
         foreach ($userAttributes as $userAttribute) {
             $resolver->register(
                 strtoupper($userAttribute->getAttributeDefinition()->getName()),
-                fn() => $this->attributeValueResolver->resolve($userAttribute)
+                fn(PlaceholderContext $ctx) => $this->attributeValueResolver->resolve($userAttribute)
             );
         }
 
-        $out = $resolver->resolve($value);
-
-        return (string) $out;
+        return $resolver->resolve(
+            value: $value,
+            context: new PlaceholderContext(user: $user, format: $format)
+        );
     }
 }

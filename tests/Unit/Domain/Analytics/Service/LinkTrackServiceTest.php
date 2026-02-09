@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Analytics\Exception\MissingMessageIdException;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -36,11 +37,13 @@ class LinkTrackServiceTest extends TestCase
         $messageId = 123;
         $userId = 456;
 
-        $messageContent = new MessageContent('Test Subject', 'No links here');
+        $messageContent = new MessagePrecacheDto();
+        $messageContent->subject = 'Test Subject';
+        $messageContent->content = 'No links here';
 
         $message = $this->createMock(Message::class);
         $message->method('getId')->willReturn($messageId);
-        $message->method('getContent')->willReturn($messageContent);
+        $message->method('getContent')->willReturn(new MessageContent('Test Subject', 'No links here'));
 
         $this->linkTrackRepository->expects(self::never())->method('persist');
 
@@ -57,6 +60,9 @@ class LinkTrackServiceTest extends TestCase
             . '<a href="https://test.com">this one</a>.</p>';
 
         $messageContent = new MessageContent('Test Subject', $htmlContent);
+        $messagePrecacheDto = new MessagePrecacheDto();
+        $messagePrecacheDto->subject = 'Test Subject';
+        $messagePrecacheDto->content = $htmlContent;
 
         $message = $this->createMock(Message::class);
         $message->method('getId')->willReturn($messageId);
@@ -71,7 +77,7 @@ class LinkTrackServiceTest extends TestCase
                 return null;
             });
 
-        $result = $this->subject->extractAndSaveLinks($messageContent, $userId, $messageId);
+        $result = $this->subject->extractAndSaveLinks($messagePrecacheDto, $userId, $messageId);
 
         self::assertCount(2, $result);
         self::assertSame('https://example.com', $result[0]->getUrl());
@@ -86,6 +92,10 @@ class LinkTrackServiceTest extends TestCase
         $footerContent = '<p>Footer with <a href="https://footer.com">another link</a>.</p>';
 
         $messageContent = new MessageContent('Test Subject', $htmlContent, null, $footerContent);
+        $messagePrecacheDto = new MessagePrecacheDto();
+        $messagePrecacheDto->subject = 'Test Subject';
+        $messagePrecacheDto->content = $htmlContent;
+        $messagePrecacheDto->htmlFooter = $footerContent;
 
         $message = $this->createMock(Message::class);
         $message->method('getId')->willReturn($messageId);
@@ -100,7 +110,7 @@ class LinkTrackServiceTest extends TestCase
                 return null;
             });
 
-        $result = $this->subject->extractAndSaveLinks($messageContent, $userId, $messageId);
+        $result = $this->subject->extractAndSaveLinks($messagePrecacheDto, $userId, $messageId);
 
         self::assertCount(2, $result);
         self::assertSame('https://example.com', $result[0]->getUrl());
@@ -114,6 +124,9 @@ class LinkTrackServiceTest extends TestCase
         $htmlContent = '<p><a href="https://example.com">Link 1</a> and <a href="https://example.com">Link 2</a>.</p>';
 
         $messageContent = new MessageContent('Test Subject', $htmlContent);
+        $messagePrecacheDto = new MessagePrecacheDto();
+        $messagePrecacheDto->subject = 'Test Subject';
+        $messagePrecacheDto->content = $htmlContent;
 
         $message = $this->createMock(Message::class);
         $message->method('getId')->willReturn($messageId);
@@ -128,7 +141,7 @@ class LinkTrackServiceTest extends TestCase
                 return null;
             });
 
-        $result = $this->subject->extractAndSaveLinks($messageContent, $userId, $messageId);
+        $result = $this->subject->extractAndSaveLinks($messagePrecacheDto, $userId, $messageId);
 
         self::assertCount(1, $result);
         self::assertSame('https://example.com', $result[0]->getUrl());
@@ -141,6 +154,9 @@ class LinkTrackServiceTest extends TestCase
         $footerContent = '<p>Footer with <a href="https://footer.com">a link</a>.</p>';
 
         $messageContent = new MessageContent('Test Subject', null, null, $footerContent);
+        $messagePrecacheDto = new MessagePrecacheDto();
+        $messagePrecacheDto->subject = 'Test Subject';
+        $messagePrecacheDto->htmlFooter = $footerContent;
 
         $message = $this->createMock(Message::class);
         $message->method('getId')->willReturn($messageId);
@@ -155,7 +171,7 @@ class LinkTrackServiceTest extends TestCase
                 return null;
             });
 
-        $result = $this->subject->extractAndSaveLinks($messageContent, $userId, $messageId);
+        $result = $this->subject->extractAndSaveLinks($messagePrecacheDto, $userId, $messageId);
 
         self::assertCount(1, $result);
         self::assertSame('https://footer.com', $result[0]->getUrl());
@@ -167,6 +183,9 @@ class LinkTrackServiceTest extends TestCase
         $htmlContent = '<p><a href="https://example.com">Link</a></p>';
 
         $messageContent = new MessageContent('Test Subject', $htmlContent);
+        $messagePrecacheDto = new MessagePrecacheDto();
+        $messagePrecacheDto->subject = 'Test Subject';
+        $messagePrecacheDto->content = $htmlContent;
 
         $message = $this->createMock(Message::class);
         $message->method('getId')->willReturn(null);
@@ -175,7 +194,7 @@ class LinkTrackServiceTest extends TestCase
         $this->expectException(MissingMessageIdException::class);
         $this->expectExceptionMessage('Message must have an ID');
 
-        $this->subject->extractAndSaveLinks($messageContent, $userId, $message->getId());
+        $this->subject->extractAndSaveLinks($messagePrecacheDto, $userId, $message->getId());
     }
 
     public function testIsExtractAndSaveLinksApplicableWhenClickTrackIsTrue(): void
@@ -207,6 +226,9 @@ class LinkTrackServiceTest extends TestCase
         $message = $this->createMock(Message::class);
         $message->method('getId')->willReturn($messageId);
         $message->method('getContent')->willReturn($messageContent);
+        $messagePrecacheDto = new MessagePrecacheDto();
+        $messagePrecacheDto->subject = 'Test Subject';
+        $messagePrecacheDto->content = $htmlContent;
 
         $existingLinkTrack = new LinkTrack();
         $existingLinkTrack->setMessageId($messageId);
@@ -221,7 +243,7 @@ class LinkTrackServiceTest extends TestCase
         $this->linkTrackRepository->expects(self::never())
             ->method('persist');
 
-        $result = $this->subject->extractAndSaveLinks($messageContent, $userId, $message->getId());
+        $result = $this->subject->extractAndSaveLinks($messagePrecacheDto, $userId, $messageId);
 
         self::assertCount(1, $result);
         self::assertSame($existingLinkTrack, $result[0]);

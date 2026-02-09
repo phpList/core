@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Identity\Service;
+namespace PhpList\Core\Domain\Identity\Service\Manager;
 
 use DateTime;
-use PhpList\Core\Domain\Identity\Model\AdminPasswordRequest;
 use PhpList\Core\Domain\Identity\Model\Administrator;
-use PhpList\Core\Domain\Identity\Repository\AdminPasswordRequestRepository;
+use PhpList\Core\Domain\Identity\Model\AdminPasswordRequest;
 use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
+use PhpList\Core\Domain\Identity\Repository\AdminPasswordRequestRepository;
 use PhpList\Core\Domain\Messaging\Message\PasswordResetMessage;
 use PhpList\Core\Security\HashGenerator;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;

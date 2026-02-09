@@ -55,4 +55,18 @@ class AdministratorRepository extends AbstractRepository implements PaginatableR
             ]
         );
     }
+
+    /** @return Administrator[] */
+    public function getMessageRelatedAdmins(int $messageId): array
+    {
+        return $this->createQueryBuilder('a')
+            ->select('DISTINCT a')
+            ->join('a.ownedLists', 'ag')
+            ->join('ag.listMessages', 'lm')
+            ->join('lm.message', 'm')
+            ->where('m.id = :messageId')
+            ->setParameter('messageId', $messageId)
+            ->getQuery()
+            ->getResult();
+    }
 }

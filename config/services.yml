@@ -57,10 +57,9 @@ services:
     calls:
       - [ set, [ 'Cache.SerializerPath', '%kernel.cache_dir%/htmlpurifier' ] ]
       - [ set, [ 'HTML.ForbiddenElements', [ 'script', 'style' ] ] ]
-      - [ set, [ 'CSS.Disable', true ] ]
-      - [ set, [ 'URI.DisableJavaScript', true ] ]
-      - [ set, [ 'URI.DisableDataURI', true ] ]
-      - [ set, [ 'HTML.Doctype', 'HTML5' ] ]
+      - [ set, [ 'CSS.AllowedProperties', [] ] ]
+      - [ set, [ 'URI.AllowedSchemes', { http: true, https: true, mailto: true } ] ]
+      - [ set, [ 'HTML.Doctype', 'XHTML 1.0 Transitional' ] ]
       - [ set, [ 'HTML.Allowed', 'p,br,b,strong,i,em,u,a[href|title],ul,ol,li,blockquote,img[src|alt|title],span,div'] ]
 
   HTMLPurifier:

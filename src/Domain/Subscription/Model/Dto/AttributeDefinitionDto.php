@@ -10,7 +10,6 @@ use PhpList\Core\Domain\Common\Model\AttributeTypeEnum;
 class AttributeDefinitionDto
 {
     /**
-     * @SuppressWarnings("BooleanArgumentFlag")
      * @param DynamicListAttrDto[] $options
      * @throws InvalidArgumentException
      */

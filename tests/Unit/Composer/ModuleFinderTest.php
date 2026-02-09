@@ -102,7 +102,7 @@ class ModuleFinderTest extends TestCase
     public function testFindBundleClassesForModulesWithInvalidBundlesConfigurationThrowsException(array $modules): void
     {
         $this->packageRepository
-            ->method('findModules')
+            ->method('findAll')
             ->willReturn($modules);
 
         $this->expectException(\InvalidArgumentException::class);
@@ -133,7 +133,7 @@ class ModuleFinderTest extends TestCase
         array $expectedBundles
     ): void {
         $this->packageRepository
-            ->method('findModules')
+            ->method('findAll')
             ->willReturn($modules);
 
         $result = $this->subject->findBundleClasses();
@@ -158,7 +158,7 @@ class ModuleFinderTest extends TestCase
     public function testCreateBundleConfigurationYamlReturnsYamlForBundles(array $modules, array $bundles): void
     {
         $this->packageRepository
-            ->method('findModules')
+            ->method('findAll')
             ->willReturn($modules);
 
         $result = $this->subject->createBundleConfigurationYaml();

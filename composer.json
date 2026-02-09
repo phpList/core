@@ -1,7 +1,7 @@
 {
     "name": "phplist/core",
     "description": "The core module of phpList, the world's most popular open source newsletter manager",
-    "type": "phplist-module",
+    "type": "symfony-bundle",
     "keywords": [
         "phplist",
         "email",
@@ -46,6 +46,7 @@
     },
     "require": {
         "php": "^8.1",
+        "symfony/framework-bundle": "^6.4",
         "symfony/dependency-injection": "^6.4",
         "symfony/config": "^6.4",
         "symfony/yaml": "^6.4",
@@ -79,7 +80,13 @@
         "ext-imap": "*",
         "tatevikgr/rss-feed": "dev-main",
         "ext-pdo": "*",
-        "ezyang/htmlpurifier": "^4.19"
+        "ezyang/htmlpurifier": "^4.19",
+        "ext-libxml": "*",
+        "ext-gd": "*",
+        "ext-curl": "*",
+        "ext-fileinfo": "*",
+        "setasign/fpdf": "^1.8",
+        "phpdocumentor/reflection-docblock": "^5.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
@@ -92,7 +99,6 @@
         "symfony/test-pack": "^1.1",
         "symfony/process": "^6.4",
         "composer/composer": "^2.7",
-        "symfony/framework-bundle": "^6.4",
         "symfony/http-kernel": "^6.4",
         "symfony/http-foundation": "^6.4",
         "symfony/routing": "^6.4",
@@ -152,8 +158,8 @@
                 "Doctrine\\Bundle\\DoctrineBundle\\DoctrineBundle",
                 "Doctrine\\Bundle\\MigrationsBundle\\DoctrineMigrationsBundle",
                 "PhpList\\Core\\EmptyStartPageBundle\\EmptyStartPageBundle",
-                "FOS\\RestBundle\\FOSRestBundle",
-                "TatevikGr\\RssFeedBundle\\RssFeedBundle"
+                "PhpList\\Core\\EmptyStartPageBundle\\PhpListCoreBundle",
+                "FOS\\RestBundle\\FOSRestBundle"
             ],
             "routes": {
                 "homepage": {

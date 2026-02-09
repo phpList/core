@@ -6,6 +6,7 @@ namespace PhpList\Core\Tests\Integration\Domain\Messaging\Repository;
 
 use DateTime;
 use Doctrine\ORM\Tools\SchemaTool;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
@@ -75,7 +76,7 @@ class MessageRepositoryTest extends KernelTestCase
         $this->entityManager->persist($admin2);
 
         $msg1 = new Message(
-            new MessageFormat(true, MessageFormat::FORMAT_TEXT),
+            new MessageFormat(true, OutputFormat::Text->value),
             new MessageSchedule(1, null, 3, null, null),
             new MessageMetadata(Message\MessageStatus::Sent),
             new MessageContent('Owned by Admin 1!'),
@@ -84,7 +85,7 @@ class MessageRepositoryTest extends KernelTestCase
         );
 
         $msg2 = new Message(
-            new MessageFormat(true, MessageFormat::FORMAT_TEXT),
+            new MessageFormat(true, OutputFormat::Text->value),
             new MessageSchedule(1, null, 3, null, null),
             new MessageMetadata(null),
             new MessageContent('Owned by Admin 2!'),
@@ -93,7 +94,7 @@ class MessageRepositoryTest extends KernelTestCase
         );
 
         $msg3 = new Message(
-            new MessageFormat(true, MessageFormat::FORMAT_TEXT),
+            new MessageFormat(true, OutputFormat::Text->value),
             new MessageSchedule(1, null, 3, null, null),
             new MessageMetadata(null),
             new MessageContent('Hello world!'),
@@ -118,7 +119,7 @@ class MessageRepositoryTest extends KernelTestCase
         $expectedDate = new DateTime();
 
         $message = new Message(
-            new MessageFormat(true, MessageFormat::FORMAT_TEXT),
+            new MessageFormat(true, OutputFormat::Text->value),
             new MessageSchedule(1, null, 3, null, null),
             new MessageMetadata(null),
             new MessageContent('Hello world!'),

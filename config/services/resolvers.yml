@@ -13,3 +13,27 @@ services:
   PhpList\Core\Bounce\Service\BounceActionResolver:
     arguments:
       - !tagged_iterator { tag: 'phplist.bounce_action_handler' }
+
+  PhpList\Core\Domain\Configuration\Service\Placeholder\UnsubscribeUrlValueResolver:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Configuration\Service\Placeholder\ConfirmationUrlValueResolver:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Configuration\Service\Placeholder\PreferencesUrlValueResolver:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Configuration\Service\Placeholder\SubscribeUrlValueResolver:
+    autowire: true
+    autoconfigure: true
+
+  _instanceof:
+    PhpList\Core\Domain\Configuration\Service\Placeholder\PlaceholderValueResolverInterface:
+      tags: ['phplist.placeholder_resolver']
+    PhpList\Core\Domain\Configuration\Service\Placeholder\PatternValueResolverInterface:
+      tags: [ 'phplist.pattern_resolver' ]
+    PhpList\Core\Domain\Configuration\Service\Placeholder\SupportingPlaceholderResolverInterface:
+      tags: [ 'phplist.supporting_placeholder_resolver' ]

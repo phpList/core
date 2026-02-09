@@ -119,13 +119,13 @@ final class ConfigProviderTest extends TestCase
         $this->defaults
             ->expects($this->once())
             ->method('has')
-            ->with($key->value)
+            ->with($key)
             ->willReturn(true);
 
         $this->defaults
             ->expects($this->once())
             ->method('get')
-            ->with($key->value)
+            ->with($key)
             ->willReturn(['value' => '1']);
 
         $this->assertTrue($this->provider->isEnabled($key));
@@ -210,13 +210,13 @@ final class ConfigProviderTest extends TestCase
         $this->defaults
             ->expects($this->once())
             ->method('has')
-            ->with($key->value)
+            ->with($key)
             ->willReturn(true);
 
         $this->defaults
             ->expects($this->once())
             ->method('get')
-            ->with($key->value)
+            ->with($key)
             ->willReturn(['value' => 'DEF']);
 
         $this->assertSame('DEF', $this->provider->getValue($key));
@@ -231,7 +231,7 @@ final class ConfigProviderTest extends TestCase
         $this->repo->expects($this->once())->method('findValueByItem')->with($key->value)->willReturn(null);
         $this->cache->expects($this->once())->method('set')->with($cacheKey, null, 300);
 
-        $this->defaults->expects($this->once())->method('has')->with($key->value)->willReturn(false);
+        $this->defaults->expects($this->once())->method('has')->with($key)->willReturn(false);
         $this->defaults->expects($this->never())->method('get');
 
         $this->assertNull($this->provider->getValue($key));

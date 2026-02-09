@@ -7,12 +7,6 @@ services:
     arguments:
       $config: '%app.config%'
 
-  PhpList\Core\Domain\Common\IspRestrictionsProvider:
-    autowire: true
-    autoconfigure: true
-    arguments:
-      $confPath: '%app.phplist_isp_conf_path%'
-
   PhpList\Core\Domain\Subscription\Service\Provider\CheckboxGroupValueProvider:
     autowire: true
   PhpList\Core\Domain\Subscription\Service\Provider\SelectOrRadioValueProvider:
@@ -29,4 +23,7 @@ services:
       $cache: '@Psr\SimpleCache\CacheInterface'
 
   PhpList\Core\Domain\Subscription\Service\Provider\SubscriberAttributeChangeSetProvider:
+    autowire: true
+
+  PhpList\Core\Domain\Common\IspRestrictionsProvider:
     autowire: true

@@ -6,9 +6,6 @@ namespace PhpList\Core\Domain\Subscription\Model\Dto;
 
 class CreateSubscriberListDto
 {
-    /**
-     * @SuppressWarnings("BooleanArgumentFlag")
-     */
     public function __construct(
         public readonly string $name,
         public readonly bool $isPublic = false,
