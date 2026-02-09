@@ -21,15 +21,26 @@ class AttachmentDownloadService
 
     public function getDownloadable(Attachment $attachment): DownloadableAttachment
     {
-        $filename = $attachment->getFilename();
-        if ($filename === null || $filename === '') {
+        $original = $attachment->getFilename();
+        $filename = basename($original);
+
+        if ($filename === '' || $filename !== $original) {
             throw new AttachmentFileNotFoundException();
         }
 
-        $path = rtrim($this->attachmentRepositoryPath, '/');
-        $filePath = $path . '/' . $filename;
+        $baseDir = realpath($this->attachmentRepositoryPath);
+        if ($baseDir === false) {
+            throw new \RuntimeException('Attachment repository path does not exist.');
+        }
 
-        if (!is_file($filePath) || !is_readable($filePath)) {
+        $filePath = $baseDir . DIRECTORY_SEPARATOR . $filename;
+        $realPath = realpath($filePath);
+
+        if ($realPath === false ||
+            !str_starts_with($realPath, $baseDir . DIRECTORY_SEPARATOR) ||
+            !is_file($realPath) ||
+            !is_readable($realPath)
+        ) {
             throw new AttachmentFileNotFoundException();
         }
 
