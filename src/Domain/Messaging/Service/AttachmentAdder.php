@@ -58,8 +58,7 @@ class AttachmentAdder
 
                 case OutputFormat::Text:
                     $hash = $forwarded ? 'forwarded' : $email->getTo()[0]->getAddress();
-                    // todo: add endpoint in rest-api project
-                    $viewUrl = $this->attachmentDownloadUrl . '/?id=' . $att->getId() . '&uid=' . $hash;
+                    $viewUrl = $this->attachmentDownloadUrl . '/' . $att->getId() . '/?uid=' . $hash;
 
                     $email->text(
                         $email->getTextBody()
