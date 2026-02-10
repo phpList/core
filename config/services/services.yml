@@ -87,6 +87,10 @@ services:
     autowire: true
     autoconfigure: true
 
+  PhpList\Core\Domain\Messaging\Service\AttachmentDownloadService:
+    autowire: true
+    autoconfigure: true
+
   PhpList\Core\Domain\Configuration\Service\UserPersonalizer:
     autowire: true
     autoconfigure: true

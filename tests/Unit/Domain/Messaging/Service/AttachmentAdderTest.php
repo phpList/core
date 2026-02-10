@@ -91,7 +91,7 @@ final class AttachmentAdderTest extends TestCase
         );
         $this->assertStringContainsString('Doc description', $body);
         $this->assertStringContainsString('Location', $body);
-        $this->assertStringContainsString('https://dl.example/42/?uid=user@example.com', $body);
+        $this->assertStringContainsString('https://dl.example/42/?uid=' . urlencode('user@example.com'), $body);
     }
 
     public function testHtmlUsesRepositoryFileIfExists(): void

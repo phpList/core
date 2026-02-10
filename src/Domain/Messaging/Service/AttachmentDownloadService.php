@@ -6,7 +6,7 @@ namespace PhpList\Core\Domain\Messaging\Service;
 
 use GuzzleHttp\Psr7\Utils;
 use PhpList\Core\Domain\Messaging\Exception\AttachmentFileNotFoundException;
-use PhpList\Core\Domain\Messaging\Exception\MessageNotReceivedException;
+use PhpList\Core\Domain\Messaging\Exception\SubscriberNotFoundException;
 use PhpList\Core\Domain\Messaging\Model\Attachment;
 use PhpList\Core\Domain\Messaging\Model\Dto\DownloadableAttachment;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -27,6 +27,9 @@ class AttachmentDownloadService
         $this->validateUid($uid);
 
         $original = $attachment->getFilename();
+        if ($original === null || $original === '') {
+            throw new AttachmentFileNotFoundException('Attachment has no filename.');
+        }
         $filename = basename($original);
         $filePath = $this->validateFilePath($filename, $original);
 
@@ -50,11 +53,13 @@ class AttachmentDownloadService
 
     private function validateUid(string $uid): void
     {
-        if ($uid !== Attachment::FORWARD) {
-            $subscriber = $this->subscriberRepository->findOneByEmail($uid);
-            if ($subscriber === null) {
-                throw new MessageNotReceivedException();
-            }
+        if ($uid === Attachment::FORWARD) {
+            return;
+        }
+
+        $subscriber = $this->subscriberRepository->findOneByEmail($uid);
+        if ($subscriber === null) {
+            throw new SubscriberNotFoundException();
         }
     }
 
