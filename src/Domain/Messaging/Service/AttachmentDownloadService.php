@@ -25,12 +25,12 @@ class AttachmentDownloadService
         $filename = basename($original);
 
         if ($filename === '' || $filename !== $original) {
-            throw new AttachmentFileNotFoundException();
+            throw new AttachmentFileNotFoundException('Invalid attachment filename: ' . $original);
         }
 
         $baseDir = realpath($this->attachmentRepositoryPath);
         if ($baseDir === false) {
-            throw new \RuntimeException('Attachment repository path does not exist.');
+            throw new AttachmentFileNotFoundException('Attachment repository path does not exist.');
         }
 
         $filePath = $baseDir . DIRECTORY_SEPARATOR . $filename;
@@ -41,7 +41,7 @@ class AttachmentDownloadService
             !is_file($realPath) ||
             !is_readable($realPath)
         ) {
-            throw new AttachmentFileNotFoundException();
+            throw new AttachmentFileNotFoundException('Attachment file not available');
         }
 
         $mimeType = $attachment->getMimeType()
