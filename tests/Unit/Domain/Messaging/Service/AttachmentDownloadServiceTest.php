@@ -7,6 +7,8 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
 use PhpList\Core\Domain\Messaging\Exception\AttachmentFileNotFoundException;
 use PhpList\Core\Domain\Messaging\Model\Attachment;
 use PhpList\Core\Domain\Messaging\Service\AttachmentDownloadService;
+use PhpList\Core\Domain\Subscription\Model\Subscriber;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PHPUnit\Framework\TestCase;
 
 final class AttachmentDownloadServiceTest extends TestCase
@@ -38,29 +40,33 @@ final class AttachmentDownloadServiceTest extends TestCase
 
     public function testThrowsWhenFilenameIsEmpty(): void
     {
-        $service = new AttachmentDownloadService($this->tempDir);
+        $subscriberRepo = $this->createMock(SubscriberRepository::class);
+        $service = new AttachmentDownloadService($subscriberRepo, $this->tempDir);
 
         $attachment = $this->createMock(Attachment::class);
         $attachment->method('getFilename')->willReturn('');
 
         $this->expectException(AttachmentFileNotFoundException::class);
-        $service->getDownloadable($attachment);
+        $service->getDownloadable($attachment, 'forwarded');
     }
 
     public function testThrowsWhenFileDoesNotExist(): void
     {
-        $service = new AttachmentDownloadService($this->tempDir);
+        $subscriberRepo = $this->createMock(SubscriberRepository::class);
+        $service = new AttachmentDownloadService($subscriberRepo, $this->tempDir);
 
         $attachment = $this->createMock(Attachment::class);
         $attachment->method('getFilename')->willReturn('missing-file.pdf');
 
         $this->expectException(AttachmentFileNotFoundException::class);
-        $service->getDownloadable($attachment);
+        $service->getDownloadable($attachment, 'forwarded');
     }
 
     public function testReturnsDownloadableWithExplicitMimeType(): void
     {
-        $service = new AttachmentDownloadService($this->tempDir);
+        $subscriberRepo = $this->createMock(SubscriberRepository::class);
+        $subscriberRepo->method('findOneByEmail')->with('user@example.com')->willReturn(new Subscriber());
+        $service = new AttachmentDownloadService($subscriberRepo, $this->tempDir);
 
         $filename = 'doc.pdf';
         $content = '%PDF-1.4\n';
@@ -70,7 +76,7 @@ final class AttachmentDownloadServiceTest extends TestCase
         $attachment->method('getFilename')->willReturn($filename);
         $attachment->method('getMimeType')->willReturn('application/pdf');
 
-        $dl = $service->getDownloadable($attachment);
+        $dl = $service->getDownloadable($attachment, 'user@example.com');
 
         $this->assertSame($filename, $dl->filename);
         $this->assertSame('application/pdf', $dl->mimeType);
@@ -80,7 +86,9 @@ final class AttachmentDownloadServiceTest extends TestCase
 
     public function testGuessesMimeTypeAndProvidesStream(): void
     {
-        $service = new AttachmentDownloadService($this->tempDir);
+        $subscriberRepo = $this->createMock(SubscriberRepository::class);
+        $subscriberRepo->method('findOneByEmail')->with('user@example.com')->willReturn(new Subscriber());
+        $service = new AttachmentDownloadService($subscriberRepo, $this->tempDir);
 
         $filename = 'note.txt';
         $content = "Hello, world!\n";
@@ -90,7 +98,7 @@ final class AttachmentDownloadServiceTest extends TestCase
         $attachment->method('getFilename')->willReturn($filename);
         $attachment->method('getMimeType')->willReturn(null);
 
-        $dl = $service->getDownloadable($attachment);
+        $dl = $service->getDownloadable($attachment, 'user@example.com');
 
         $this->assertSame($filename, $dl->filename);
         // Symfony MimeTypes should detect text/plain for .txt

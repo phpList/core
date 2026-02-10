@@ -57,7 +57,7 @@ class AttachmentAdder
                     break;
 
                 case OutputFormat::Text:
-                    $hash = $forwarded ? 'forwarded' : $email->getTo()[0]->getAddress();
+                    $hash = $forwarded ? Attachment::FORWARD : $email->getTo()[0]->getAddress();
                     $viewUrl = $this->attachmentDownloadUrl . '/' . $att->getId() . '/?uid=' . $hash;
 
                     $email->text(
