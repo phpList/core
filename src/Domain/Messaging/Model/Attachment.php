@@ -13,6 +13,8 @@ use PhpList\Core\Domain\Messaging\Repository\AttachmentRepository;
 #[ORM\Table(name: 'phplist_attachment')]
 class Attachment implements DomainModel, Identity
 {
+    public const FORWARD = 'forwarded';
+
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
