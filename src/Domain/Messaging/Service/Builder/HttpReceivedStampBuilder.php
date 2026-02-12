@@ -12,7 +12,7 @@ class HttpReceivedStampBuilder
 {
     public function __construct(
         private readonly RequestStack $requestStack,
-        #[Autowire('%app.rest_api_domain%')] private readonly string $hostname,
+        #[Autowire('%app.rest_api_base_url%')] private readonly string $restApiBaseUrl,
     ) {
     }
 
@@ -40,7 +40,7 @@ class HttpReceivedStampBuilder
         $requestTime = $request->server->get('REQUEST_TIME') ?? time();
         $date = (new DateTimeImmutable('@' . $requestTime))->format(\DATE_RFC2822);
 
-        return sprintf('from %s by %s with HTTP; %s', $from, $this->hostname, $date);
+        return sprintf('from %s by %s with HTTP; %s', $from, $this->restApiBaseUrl, $date);
     }
 
     private function getHostByAddr(string $ipAddress): ?string
