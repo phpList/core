@@ -81,6 +81,13 @@ class MessageMetadata implements EmbeddableInterface
         return $this;
     }
 
+    public function incrementViews(): self
+    {
+        $this->viewed += 1;
+
+        return $this;
+    }
+
     public function getViews(): int
     {
         return $this->viewed;

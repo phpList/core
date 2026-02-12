@@ -27,6 +27,7 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->getResult();
     }
 
+    /** @return Message[] */
     public function getByOwnerId(int $ownerId): array
     {
         return $this->createQueryBuilder('m')
@@ -34,6 +35,15 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->setParameter('ownerId', $ownerId)
             ->getQuery()
             ->getResult();
+    }
+
+    public function findById(int $id): ?Message
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     /** @return Message[] */

@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Analytics\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Analytics\Model\UserMessageView;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -23,7 +24,7 @@ class UserMessageService
     public function trackUserMessageView(string $uid, int $messageId, array $metadata): void
     {
         $subscriber = $this->subscriberRepository->findOneByUniqueId($uid);
-        $message = $this->messageRepository->find($messageId);
+        $message = $this->messageRepository->findById($messageId);
 
         if ($subscriber === null || $message === null) {
             return;
@@ -35,7 +36,7 @@ class UserMessageService
         }
 
         $userMessage->setViewedNow();
-        $message->incrementViews();
+        $message->getMetadata()->incrementViews();
 
         $data = [];
         foreach (['HTTP_USER_AGENT', 'HTTP_REFERER'] as $key) {
