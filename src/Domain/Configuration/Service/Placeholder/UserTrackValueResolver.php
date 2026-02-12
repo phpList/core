@@ -13,7 +13,7 @@ final class UserTrackValueResolver implements PlaceholderValueResolverInterface
 {
     public function __construct(
         private readonly ConfigProvider $config,
-        #[Autowire('%rest_api_base_url%')] private readonly string $restApiBaseUrl,
+        #[Autowire('%app.rest_api_base_url%')] private readonly string $restApiBaseUrl,
     ) {
     }
 

@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Analytics\Model\UserMessageView;
 use PhpList\Core\Domain\Analytics\Service\UserMessageService;
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
 use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
@@ -50,7 +51,7 @@ class UserMessageServiceTest extends TestCase
         // Service fetches message regardless, then returns early because subscriber is null
         $this->messageRepository
             ->expects(self::once())
-            ->method('find')
+            ->method('findById')
             ->with(123)
             ->willReturn($this->getMockBuilder(Message::class)->disableOriginalConstructor()->getMock());
         $this->userMessageRepository->expects(self::never())->method('findByUserAndMessage');
@@ -68,7 +69,7 @@ class UserMessageServiceTest extends TestCase
 
         $this->messageRepository
             ->expects(self::once())
-            ->method('find')
+            ->method('findById')
             ->with(123)
             ->willReturn(null);
 
@@ -83,11 +84,12 @@ class UserMessageServiceTest extends TestCase
         $subscriber = $this->createMock(Subscriber::class);
         $message = $this->getMockBuilder(Message::class)
             ->disableOriginalConstructor()
-            ->addMethods(['incrementViews'])
             ->getMock();
+        $metadata = $this->createMock(MessageMetadata::class);
 
         $this->subscriberRepository->method('findOneByUniqueId')->willReturn($subscriber);
-        $this->messageRepository->method('find')->willReturn($message);
+        $this->messageRepository->method('findById')->willReturn($message);
+        $message->method('getMetadata')->willReturn($metadata);
 
         $this->userMessageRepository
             ->expects(self::once())
@@ -95,7 +97,7 @@ class UserMessageServiceTest extends TestCase
             ->with($subscriber, $message)
             ->willReturn(null);
 
-        $message->expects(self::never())->method('incrementViews');
+        $metadata->expects(self::never())->method('incrementViews');
         $this->entityManager->expects(self::never())->method('persist');
 
         $this->subject->trackUserMessageView('sub-uid', 321, []);
@@ -111,17 +113,18 @@ class UserMessageServiceTest extends TestCase
 
         $message = $this->getMockBuilder(Message::class)
             ->disableOriginalConstructor()
-            ->addMethods(['incrementViews'])
             ->getMock();
+        $metadataObj = $this->createMock(MessageMetadata::class);
 
         $userMessage = $this->createMock(UserMessage::class);
 
         $this->subscriberRepository->method('findOneByUniqueId')->willReturn($subscriber);
-        $this->messageRepository->method('find')->willReturn($message);
+        $this->messageRepository->method('findById')->with($messageId)->willReturn($message);
+        $message->method('getMetadata')->willReturn($metadataObj);
         $this->userMessageRepository->method('findByUserAndMessage')->willReturn($userMessage);
 
         $userMessage->expects(self::once())->method('setViewedNow');
-        $message->expects(self::once())->method('incrementViews');
+        $metadataObj->expects(self::once())->method('incrementViews');
 
         $metadata = [
             'client_ip' => '203.0.113.10',
@@ -156,16 +159,17 @@ class UserMessageServiceTest extends TestCase
 
         $message = $this->getMockBuilder(Message::class)
             ->disableOriginalConstructor()
-            ->addMethods(['incrementViews'])
             ->getMock();
+        $metadataObj = $this->createMock(MessageMetadata::class);
 
         $userMessage = $this->createMock(UserMessage::class);
 
         $this->subscriberRepository->method('findOneByUniqueId')->willReturn($subscriber);
-        $this->messageRepository->method('find')->willReturn($message);
+        $this->messageRepository->method('findById')->willReturn($message);
+        $message->method('getMetadata')->willReturn($metadataObj);
         $this->userMessageRepository->method('findByUserAndMessage')->willReturn($userMessage);
 
-        $message->expects(self::once())->method('incrementViews');
+        $metadataObj->expects(self::once())->method('incrementViews');
         $userMessage->expects(self::once())->method('setViewedNow');
 
         // No HTTP_* keys and no client_ip

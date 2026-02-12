@@ -6,7 +6,6 @@ namespace PhpList\Core\Domain\Analytics\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Analytics\Model\UserMessageView;
-use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
