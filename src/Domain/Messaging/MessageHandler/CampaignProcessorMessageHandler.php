@@ -320,7 +320,7 @@ class CampaignProcessorMessageHandler
                 break;
             }
 
-            $existing = $this->userMessageRepository->findOneByUserAndMessage($subscriber, $campaign);
+            $existing = $this->userMessageRepository->findByUserAndMessage($subscriber, $campaign);
             if ($existing && $existing->getStatus() !== UserMessageStatus::Todo) {
                 continue;
             }

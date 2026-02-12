@@ -85,6 +85,11 @@ class UserMessageView implements DomainModel, Identity
         return $this;
     }
 
+    public function setViewedNow(): self
+    {
+        return $this->setViewed(new DateTime());
+    }
+
     public function setIp(?string $ip): self
     {
         $this->ip = $ip;

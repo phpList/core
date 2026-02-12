@@ -13,7 +13,7 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 
 class UserMessageRepository extends AbstractRepository
 {
-    public function findOneByUserAndMessage(Subscriber $subscriber, Message $campaign): ?UserMessage
+    public function findByUserAndMessage(Subscriber $subscriber, Message $campaign): ?UserMessage
     {
         return $this->findOneBy(['user' => $subscriber, 'message' => $campaign]);
     }

@@ -33,7 +33,7 @@ final class UserTrackValueResolver implements PlaceholderValueResolverInterface
 
         return '<img src="'
             . $base
-            . '/ut.php?u='
+            . '/t/open.gif?u='
             . $uid
             . '&amp;m='
             . $ctx->messageId()

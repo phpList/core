@@ -53,6 +53,10 @@ services:
     autoconfigure: true
     public: true
 
+  PhpList\Core\Domain\Analytics\Service\UserMessageService:
+    autowire: true
+    autoconfigure: true
+
   PhpList\Core\Domain\Messaging\Service\SendRateLimiter:
     autowire: true
     autoconfigure: true

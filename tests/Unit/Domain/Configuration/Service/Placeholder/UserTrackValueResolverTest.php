@@ -62,7 +62,7 @@ final class UserTrackValueResolverTest extends TestCase
 
         $result = $resolver($ctx);
 
-        $expected = '<img src="example.com/ut.php?u=UID-XYZ&amp;m=99" width="1" height="1" border="0" alt="" />';
+        $expected = '<img src="example.com/t/open.gif?u=UID-XYZ&amp;m=99" width="1" height="1" border="0" alt="" />';
         // Normalize double quotes for comparison
         $this->assertSame($expected, $result);
     }
@@ -86,7 +86,7 @@ final class UserTrackValueResolverTest extends TestCase
 
         $result = $resolver($ctx);
 
-        $expected = '<img src="https://api.example/ut.php?u=U1&amp;m=7" width="1" height="1" border="0" alt="" />';
+        $expected = '<img src="https://api.example/t/open.gif?u=U1&amp;m=7" width="1" height="1" border="0" alt="" />';
         $this->assertSame($expected, $result);
     }
 }

@@ -31,7 +31,7 @@ class ForwardingGuard
         if ($subscriber === null) {
             throw new MessageNotReceivedException();
         }
-        $receivedMessage = $this->userMessageRepository->findOneByUserAndMessage($subscriber, $campaign);
+        $receivedMessage = $this->userMessageRepository->findByUserAndMessage($subscriber, $campaign);
 
         if ($receivedMessage === null) {
             throw new MessageNotReceivedException();
