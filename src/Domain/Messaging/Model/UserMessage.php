@@ -82,4 +82,14 @@ class UserMessage implements DomainModel
         $this->status = $status->value;
         return $this;
     }
+
+    public function isViewed(): bool
+    {
+        return $this->viewed !== null;
+    }
+
+    public function setViewedNow(): self
+    {
+        return $this->setViewed(new DateTime());
+    }
 }

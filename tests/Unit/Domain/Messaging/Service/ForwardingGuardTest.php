@@ -46,7 +46,7 @@ class ForwardingGuardTest extends TestCase
         $subscriber = new Subscriber();
 
         $this->subscriberRepo->method('findOneByUniqueId')->with($uid)->willReturn($subscriber);
-        $this->userMessageRepo->method('findOneByUserAndMessage')->willReturn(
+        $this->userMessageRepo->method('findByUserAndMessage')->willReturn(
             $this->createMock(UserMessage::class)
         );
         $this->forwardRepo->method('getCountByUserSince')->willReturn(1);
@@ -82,7 +82,7 @@ class ForwardingGuardTest extends TestCase
         );
 
         $this->subscriberRepo->method('findOneByUniqueId')->willReturn(new Subscriber());
-        $this->userMessageRepo->method('findOneByUserAndMessage')->willReturn(null);
+        $this->userMessageRepo->method('findByUserAndMessage')->willReturn(null);
 
         $this->expectException(MessageNotReceivedException::class);
         $guard->assertCanForward('uid', $this->createMock(Message::class));
@@ -99,7 +99,7 @@ class ForwardingGuardTest extends TestCase
         );
 
         $this->subscriberRepo->method('findOneByUniqueId')->willReturn(new Subscriber());
-        $this->userMessageRepo->method('findOneByUserAndMessage')->willReturn($this->createMock(UserMessage::class));
+        $this->userMessageRepo->method('findByUserAndMessage')->willReturn($this->createMock(UserMessage::class));
         $this->forwardRepo->method('getCountByUserSince')->willReturn(2);
 
         $this->expectException(ForwardLimitExceededException::class);

@@ -13,7 +13,7 @@ final class UserTrackValueResolver implements PlaceholderValueResolverInterface
 {
     public function __construct(
         private readonly ConfigProvider $config,
-        #[Autowire('%rest_api_domain%')] private readonly string $restApiDomain,
+        #[Autowire('%app.rest_api_base_url%')] private readonly string $restApiBaseUrl,
     ) {
     }
 
@@ -24,7 +24,7 @@ final class UserTrackValueResolver implements PlaceholderValueResolverInterface
 
     public function __invoke(PlaceholderContext $ctx): string
     {
-        $base = $this->config->getValue(ConfigOption::Domain) ?? $this->restApiDomain;
+        $base = $this->config->getValue(ConfigOption::Domain) ?? $this->restApiBaseUrl;
 
         if ($ctx->isText() || empty($base)) {
             return '';
@@ -33,7 +33,7 @@ final class UserTrackValueResolver implements PlaceholderValueResolverInterface
 
         return '<img src="'
             . $base
-            . '/ut.php?u='
+            . '/t/open.gif?u='
             . $uid
             . '&amp;m='
             . $ctx->messageId()
