@@ -30,8 +30,7 @@ final class UnsubscribeValueResolverTest extends TestCase
 
     private function makeUser(string $uid = 'UID-U'): Subscriber
     {
-        $u = new Subscriber();
-        $u->setEmail('user@example.com');
+        $u = new Subscriber('user@example.com');
         $u->setUniqueId($uid);
         return $u;
     }
@@ -120,7 +119,7 @@ final class UnsubscribeValueResolverTest extends TestCase
             format: OutputFormat::Html,
             messagePrecacheDto: null,
             locale: 'en',
-            forwardedBy: (new Subscriber())->setEmail('someone@example.com'),
+            forwardedBy: (new Subscriber('someone@example.com')),
         );
 
         $resolver = new UnsubscribeValueResolver($this->config, $this->urlBuilder, $this->translator);

@@ -27,8 +27,7 @@ final class ContactValueResolverTest extends TestCase
 
     private function makeUser(): Subscriber
     {
-        $u = new Subscriber();
-        $u->setEmail('user@example.com');
+        $u = new Subscriber('user@example.com');
         $u->setUniqueId('UID-C');
         return $u;
     }

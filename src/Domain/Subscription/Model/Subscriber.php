@@ -109,8 +109,9 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     #[ORM\Column(name: 'foreignkey', type: 'string', length: 100, nullable: true)]
     private ?string $foreignKey = null;
 
-    public function __construct()
+    public function __construct(string $email)
     {
+        $this->email = $email;
         $this->subscriptions = new ArrayCollection();
         $this->attributes = new ArrayCollection();
         $this->extraData = '';

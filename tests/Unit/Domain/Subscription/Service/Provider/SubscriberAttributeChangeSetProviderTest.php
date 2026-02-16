@@ -39,7 +39,7 @@ final class SubscriberAttributeChangeSetProviderTest extends TestCase
 
     public function testNoChangesWhenNewAndExistingAreIdenticalCaseInsensitive(): void
     {
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('user@example.com');
         $existing = [
             $this->attr('Name', 'John', $subscriber),
             $this->attr('Age', '30', $subscriber),
@@ -64,7 +64,7 @@ final class SubscriberAttributeChangeSetProviderTest extends TestCase
 
     public function testAddedAttributeAppearsWithNullOldValue(): void
     {
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('user@example.com');
         $existing = [
             $this->attr('Name', 'John', $subscriber),
         ];
@@ -86,7 +86,7 @@ final class SubscriberAttributeChangeSetProviderTest extends TestCase
 
     public function testRemovedAttributeAppearsWithNullNewValue(): void
     {
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('user@example.com');
         $existing = [
             $this->attr('Country', 'US', $subscriber),
         ];
@@ -102,7 +102,7 @@ final class SubscriberAttributeChangeSetProviderTest extends TestCase
 
     public function testChangedAttributeShowsOldAndNewValues(): void
     {
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('user@example.com');
         $existing = [
             $this->attr('Phone', '123', $subscriber),
         ];
@@ -121,7 +121,7 @@ final class SubscriberAttributeChangeSetProviderTest extends TestCase
 
     public function testIgnoredAttributesAreExcluded(): void
     {
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('user@example.com');
         $existing = [
             $this->attr('Password', 'old', $subscriber),
             $this->attr('Modified', 'yesterday', $subscriber),
@@ -147,7 +147,7 @@ final class SubscriberAttributeChangeSetProviderTest extends TestCase
 
     public function testCaseInsensitiveKeyComparisonAndResultLowercasing(): void
     {
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('user@example.com');
         $existing = [
             $this->attr('FirstName', 'Ann', $subscriber),
         ];

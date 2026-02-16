@@ -35,8 +35,7 @@ class SubscriberCsvExportManagerTest extends KernelTestCase
 
     public function testExportToCsvReturnsStreamedResponse(): void
     {
-        $subscriber1 = new Subscriber();
-        $subscriber1->setEmail('test1@example.com');
+        $subscriber1 = new Subscriber('test1@example.com');
         $subscriber1->setConfirmed(true);
         $subscriber1->setHtmlEmail(true);
         $subscriber1->setBlacklisted(false);
@@ -44,8 +43,7 @@ class SubscriberCsvExportManagerTest extends KernelTestCase
         $subscriber1->setExtraData('Data 1');
         $this->entityManager->persist($subscriber1);
 
-        $subscriber2 = new Subscriber();
-        $subscriber2->setEmail('test2@example.com');
+        $subscriber2 = new Subscriber('test2@example.com');
         $subscriber2->setConfirmed(false);
         $subscriber2->setHtmlEmail(false);
         $subscriber2->setBlacklisted(true);

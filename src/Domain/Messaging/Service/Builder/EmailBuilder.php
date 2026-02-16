@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Configuration\Service\LegacyUrlBuilder;
 use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Exception\AttachmentException;
+use PhpList\Core\Domain\Messaging\Exception\SubscriberNotFoundException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Service\AttachmentAdder;
 use PhpList\Core\Domain\Messaging\Service\Constructor\CampaignMailContentBuilder;
@@ -65,7 +66,10 @@ class EmailBuilder extends BaseEmailBuilder
         );
     }
 
-    /** @return array{Email, OutputFormat}|null */
+    /**
+     * @return array{Email, OutputFormat}|null
+     * @throws SubscriberNotFoundException
+     */
     public function buildCampaignEmail(
         int $messageId,
         MessagePrecacheDto $data,
@@ -110,9 +114,16 @@ class EmailBuilder extends BaseEmailBuilder
             }
         }
 
+        $receiver = $this->subscriberRepository->findOneByEmail($toEmail);
+        if (!$receiver) {
+            throw new SubscriberNotFoundException(
+                sprintf('Subscriber with email %s not found', $toEmail)
+            );
+        }
+
         [$htmlMessage, $textMessage] = ($this->mailContentBuilder)(
             messagePrecacheDto: $data,
-            toEmail: $toEmail,
+            receiver: $receiver,
             campaignId: $messageId,
         );
         $sentAs = $this->applyContentAndFormatting(

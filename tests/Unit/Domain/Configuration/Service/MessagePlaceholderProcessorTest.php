@@ -35,8 +35,7 @@ final class MessagePlaceholderProcessorTest extends TestCase
 
     private function makeUser(string $email = 'user@example.com', string $uid = 'UID123'): Subscriber
     {
-        $user = new Subscriber();
-        $user->setEmail($email);
+        $user = new Subscriber($email);
         $user->setUniqueId($uid);
         return $user;
     }

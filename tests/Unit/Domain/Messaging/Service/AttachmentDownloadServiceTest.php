@@ -65,7 +65,10 @@ final class AttachmentDownloadServiceTest extends TestCase
     public function testReturnsDownloadableWithExplicitMimeType(): void
     {
         $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $subscriberRepo->method('findOneByEmail')->with('user@example.com')->willReturn(new Subscriber());
+        $subscriberRepo
+            ->method('findOneByEmail')
+            ->with('user@example.com')
+            ->willReturn(new Subscriber('user@example.com'));
         $service = new AttachmentDownloadService($subscriberRepo, $this->tempDir);
 
         $filename = 'doc.pdf';
@@ -87,7 +90,10 @@ final class AttachmentDownloadServiceTest extends TestCase
     public function testGuessesMimeTypeAndProvidesStream(): void
     {
         $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $subscriberRepo->method('findOneByEmail')->with('user@example.com')->willReturn(new Subscriber());
+        $subscriberRepo
+            ->method('findOneByEmail')
+            ->with('user@example.com')
+            ->willReturn(new Subscriber('user@example.com'));
         $service = new AttachmentDownloadService($subscriberRepo, $this->tempDir);
 
         $filename = 'note.txt';

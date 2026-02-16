@@ -42,7 +42,7 @@ class ForwardContentServiceTest extends TestCase
 
         $campaign = $this->createMock(Message::class);
         $campaign->method('getId')->willReturn(10);
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('alice@example.com');
 
         $this->cache
             ->expects(self::once())
@@ -76,7 +76,7 @@ class ForwardContentServiceTest extends TestCase
 
         $campaign = $this->createMock(Message::class);
         $campaign->method('getId')->willReturn(42);
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('alice@example.com');
         $subscriber->setHtmlEmail(true);
 
         $cached = new MessagePrecacheDto();

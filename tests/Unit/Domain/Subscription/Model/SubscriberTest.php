@@ -28,7 +28,7 @@ class SubscriberTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->subscriber = new Subscriber();
+        $this->subscriber = new Subscriber('test@example.com');
     }
 
     public function testIsDomainModel(): void

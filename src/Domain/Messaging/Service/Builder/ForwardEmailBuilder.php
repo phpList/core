@@ -96,9 +96,11 @@ class ForwardEmailBuilder extends EmailBuilder
 
         $subject = $this->translator->trans('Fwd') . ': ' . stripslashes($data->subject);
 
+        $receiver = $this->subscriberRepository->findOneByEmail($friendEmail) ?? (new Subscriber($friendEmail));
+
         [$htmlMessage, $textMessage] = ($this->mailContentBuilder)(
             messagePrecacheDto: $data,
-            toEmail: $friendEmail,
+            receiver: $receiver,
             campaignId: $messageId,
             forwardedBy: $forwardedBy,
             forwardedPersonalNote: $forwardedPersonalNote,

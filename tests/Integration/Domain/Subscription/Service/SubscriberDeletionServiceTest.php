@@ -66,8 +66,7 @@ class SubscriberDeletionServiceTest extends KernelTestCase
         );
         $this->entityManager->persist($msg);
 
-        $subscriber = new Subscriber();
-        $subscriber->setEmail('test-delete@example.com');
+        $subscriber = new Subscriber('test-delete@example.com');
         $subscriber->setConfirmed(true);
         $subscriber->setHtmlEmail(true);
         $subscriber->setBlacklisted(false);

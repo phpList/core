@@ -12,7 +12,6 @@ use PhpList\Core\Domain\Configuration\Service\Manager\EventLogManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Configuration\Service\MessagePlaceholderProcessor;
 use PhpList\Core\Domain\Messaging\Exception\RemotePageFetchException;
-use PhpList\Core\Domain\Messaging\Exception\SubscriberNotFoundException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Service\Constructor\CampaignMailContentBuilder;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -71,18 +70,6 @@ class CampaignMailContentBuilderTest extends TestCase
         );
     }
 
-    public function testThrowsWhenSubscriberNotFound(): void
-    {
-        $dto = new MessagePrecacheDto();
-        $dto->content = 'Hello';
-
-        $this->subscriberRepository->method('findOneByEmail')->willReturn(null);
-
-        $builder = $this->makeBuilder();
-        $this->expectException(SubscriberNotFoundException::class);
-        $builder($dto, 'missing@example.com', 10);
-    }
-
     public function testBuildsHtmlFormattedGeneratesTextViaHtml2Text(): void
     {
         $subscriber = $this->getMockBuilder(Subscriber::class)
@@ -113,7 +100,7 @@ class CampaignMailContentBuilderTest extends TestCase
             ->willReturn('Hi');
 
         $builder = $this->makeBuilder();
-        [$html, $text] = $builder($dto, 'user@example.com', 5);
+        [$html, $text] = $builder($dto, $subscriber, 5);
 
         $this->assertSame('Hi', $text);
         $this->assertStringContainsString('<b>Hi</b>', $html);
@@ -155,7 +142,7 @@ class CampaignMailContentBuilderTest extends TestCase
             ->willReturn('<p>Hello world</p>');
 
         $builder = $this->makeBuilder();
-        [$html, $text] = $builder($dto, 'user@example.com', 7);
+        [$html, $text] = $builder($dto, $subscriber, 7);
 
         $this->assertSame('Hello world', $text);
         $this->assertStringContainsString('<p>Hello world</p>', $html);
@@ -200,7 +187,7 @@ class CampaignMailContentBuilderTest extends TestCase
             );
 
         $builder = $this->makeBuilder();
-        [$html] = $builder($dto, 'user@example.com', 11);
+        [$html] = $builder($dto, $subscriber, 11);
         $this->assertStringContainsString('<!--https://example.com/path--><div>REMOTE</div>', $html);
 
         // Failure path (empty content) should log and throw
@@ -213,7 +200,7 @@ class CampaignMailContentBuilderTest extends TestCase
             ->method('log');
 
         $this->expectException(RemotePageFetchException::class);
-        $builder($dto2, 'user@example.com', 12);
+        $builder($dto2, $subscriber, 12);
     }
 
     public function testTemplatePreventsDefaultStyleInjection(): void
@@ -242,7 +229,7 @@ class CampaignMailContentBuilderTest extends TestCase
         $dto->template = '<html><head><title>T</title></head><body>BEFORE[CONTENT]AFTER</body></html>';
 
         $builder = $this->makeBuilder();
-        [$html, $text] = $builder($dto, 'user@example.com', 2);
+        [$html, $text] = $builder($dto, $subscriber, 2);
 
         $this->assertStringContainsString('BEFORE<p>Inner</p>AFTER', $html);
         $this->assertStringNotContainsString(

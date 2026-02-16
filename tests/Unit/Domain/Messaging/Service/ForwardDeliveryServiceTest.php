@@ -73,7 +73,7 @@ class ForwardDeliveryServiceTest extends TestCase
         );
 
         $campaign = $this->createMock(Message::class);
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('alice@example.com');
         $friendEmail = 'friend@example.test';
 
         $this->forwardManager->expects(self::once())
@@ -97,7 +97,7 @@ class ForwardDeliveryServiceTest extends TestCase
         );
 
         $campaign = $this->createMock(Message::class);
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('alice@example.com');
         $friendEmail = 'friend@example.test';
 
         $this->forwardManager->expects(self::once())
