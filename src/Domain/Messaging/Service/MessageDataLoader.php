@@ -82,7 +82,6 @@ class MessageDataLoader
             'footer' => $this->configProvider->getValue(ConfigOption::MessageFooter),
             'forwardfooter' => $this->configProvider->getValue(ConfigOption::ForwardFooter),
             'status' => '',
-            'tofield' => '',
             'replyto' => '',
             'targetlist' => [],
             'criteria_match' => '',

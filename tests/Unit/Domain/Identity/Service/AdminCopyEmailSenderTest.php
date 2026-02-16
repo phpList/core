@@ -59,8 +59,7 @@ class AdminCopyEmailSenderTest extends TestCase
         $systemEmailBuilder->expects(self::exactly(count($emails)))
             ->method('buildSystemEmail')
             ->with(self::callback(function (MessagePrecacheDto $data): bool {
-                return $data->to !== null
-                    && str_starts_with($data->subject, 'phpList ')
+                return str_starts_with($data->subject, 'phpList ')
                     && $data->content === 'Hello Admin';
             }))
             ->willReturn(new Email());
@@ -127,7 +126,7 @@ class AdminCopyEmailSenderTest extends TestCase
         $systemEmailBuilder->expects(self::exactly(count($expectedRecipients)))
             ->method('buildSystemEmail')
             ->with(self::callback(function (MessagePrecacheDto $data): bool {
-                return $data->to !== null && str_starts_with($data->subject, 'phpList ');
+                return str_starts_with($data->subject, 'phpList ');
             }))
             ->willReturn(new Email());
 

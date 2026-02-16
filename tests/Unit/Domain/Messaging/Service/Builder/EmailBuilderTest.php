@@ -105,13 +105,12 @@ class EmailBuilderTest extends TestCase
     {
         $this->eventLogManager->expects($this->once())->method('log');
         $dto = new MessagePrecacheDto();
-        $dto->to = null;
         $dto->subject = 'Subj';
         $dto->content = 'Body';
         $dto->fromEmail = 'from@example.com';
 
         $builder = $this->makeBuilder();
-        $result = $builder->buildCampaignEmail(messageId: 1, data: $dto);
+        $result = $builder->buildCampaignEmail(messageId: 1, data: $dto, toEmail: '');
         $this->assertNull($result);
     }
 
@@ -119,12 +118,11 @@ class EmailBuilderTest extends TestCase
     {
         $this->eventLogManager->expects($this->once())->method('log');
         $dto = new MessagePrecacheDto();
-        $dto->to = 'user@example.com';
         $dto->content = 'Body';
         $dto->fromEmail = 'from@example.com';
 
         $builder = $this->makeBuilder();
-        $result = $builder->buildCampaignEmail(messageId: 1, data: $dto);
+        $result = $builder->buildCampaignEmail(messageId: 1, data: $dto, toEmail: 'user@example.com');
         $this->assertNull($result);
     }
 
@@ -149,13 +147,12 @@ class EmailBuilderTest extends TestCase
             ->method('addHistory');
 
         $dto = new MessagePrecacheDto();
-        $dto->to = 'user@example.com';
         $dto->subject = 'Hello';
         $dto->content = 'B';
         $dto->fromEmail = 'from@example.com';
 
         $builder = $this->makeBuilder();
-        $result = $builder->buildCampaignEmail(messageId: 5, data: $dto);
+        $result = $builder->buildCampaignEmail(messageId: 5, data: $dto, toEmail: 'user@example.com');
         $this->assertNull($result);
     }
 
@@ -165,7 +162,6 @@ class EmailBuilderTest extends TestCase
             ->method('isEmailBlacklisted')
             ->willReturn(false);
         $dto = new MessagePrecacheDto();
-        $dto->to = 'real@example.com';
         $dto->subject = 'Subject';
         $dto->content = 'TEXT';
         $dto->fromEmail = 'from@example.com';
@@ -191,6 +187,7 @@ class EmailBuilderTest extends TestCase
         [$email, $sentAs] = $builder->buildCampaignEmail(
             messageId: 777,
             data: $dto,
+            toEmail: 'real@example.com',
             skipBlacklistCheck: false,
             inBlast: true,
             htmlPref: false,
@@ -221,7 +218,6 @@ class EmailBuilderTest extends TestCase
 
         $this->blacklistRepository->method('isEmailBlacklisted')->willReturn(false);
         $dto = new MessagePrecacheDto();
-        $dto->to = 'user@example.com';
         $dto->subject = 'Subject';
         $dto->content = 'TEXT';
         $dto->fromEmail = 'from@example.com';
@@ -237,7 +233,12 @@ class EmailBuilderTest extends TestCase
             ->willReturn(true);
 
         $builder = $this->makeBuilder(devVersion: false, devEmail: null);
-        [$email, $sentAs] = $builder->buildCampaignEmail(messageId: 9, data: $dto, htmlPref: true);
+        [$email, $sentAs] = $builder->buildCampaignEmail(
+            messageId: 9,
+            data: $dto,
+            htmlPref: true,
+            toEmail: 'user@example.com',
+        );
 
         $this->assertSame(OutputFormat::Text, $sentAs);
         $this->assertSame('TEXT', $email->getTextBody());
@@ -251,7 +252,6 @@ class EmailBuilderTest extends TestCase
             ->method('isEmailBlacklisted')
             ->willReturn(false);
         $dto = new MessagePrecacheDto();
-        $dto->to = 'user@example.com';
         $dto->subject = 'Subject';
         $dto->content = 'TEXT';
         $dto->fromEmail = 'from@example.com';
@@ -272,7 +272,12 @@ class EmailBuilderTest extends TestCase
             ->willReturn(true);
 
         $builder = $this->makeBuilder(devVersion: false, devEmail: null);
-        [$email, $sentAs] = $builder->buildCampaignEmail(messageId: 42, data: $dto, htmlPref: true);
+        [$email, $sentAs] = $builder->buildCampaignEmail(
+            messageId: 42,
+            data: $dto,
+            htmlPref: true,
+            toEmail: 'user@example.com',
+        );
 
         $this->assertSame(OutputFormat::Pdf, $sentAs);
         $this->assertCount(1, $email->getAttachments());
@@ -284,7 +289,6 @@ class EmailBuilderTest extends TestCase
             ->method('isEmailBlacklisted')
             ->willReturn(false);
         $dto = new MessagePrecacheDto();
-        $dto->to = 'user@example.com';
         $dto->subject = 'Subject';
         $dto->content = 'TEXT';
         $dto->fromEmail = 'from@example.com';
@@ -303,7 +307,12 @@ class EmailBuilderTest extends TestCase
             ->method('createPdfBytes');
 
         $builder = $this->makeBuilder(devVersion: false, devEmail: null);
-        [$email, $sentAs] = $builder->buildCampaignEmail(messageId: 43, data: $dto, htmlPref: false);
+        [$email, $sentAs] = $builder->buildCampaignEmail(
+            messageId: 43,
+            data: $dto,
+            htmlPref: false,
+            toEmail: 'user@example.com',
+        );
 
         $this->assertSame(OutputFormat::Text, $sentAs);
         $this->assertSame('TEXT', $email->getTextBody());
@@ -318,7 +327,6 @@ class EmailBuilderTest extends TestCase
 
         // explicit reply-to
         $dto = new MessagePrecacheDto();
-        $dto->to = 'user@example.com';
         $dto->subject = 'Subject';
         $dto->content = 'TEXT';
         $dto->fromEmail = 'from@example.com';
@@ -332,12 +340,11 @@ class EmailBuilderTest extends TestCase
             ->willReturn(true);
 
         $builder = $this->makeBuilder(devVersion: false, devEmail: null);
-        [$email] = $builder->buildCampaignEmail(messageId: 50, data: $dto);
+        [$email] = $builder->buildCampaignEmail(messageId: 50, data: $dto, toEmail: 'user@example.com');
         $this->assertSame('reply@example.com', $email->getReplyTo()[0]->getAddress());
 
         // no reply-to, but test mail -> uses AdminAddress
         $dto2 = new MessagePrecacheDto();
-        $dto2->to = 'user@example.com';
         $dto2->subject = 'Subject';
         $dto2->content = 'TEXT';
         $dto2->fromEmail = 'from@example.com';
@@ -350,7 +357,12 @@ class EmailBuilderTest extends TestCase
             ->with('(test)')
             ->willReturn('(test)');
 
-        [$email2] = $builder->buildCampaignEmail(messageId: 51, data: $dto2, isTestMail: true);
+        [$email2] = $builder->buildCampaignEmail(
+            messageId: 51,
+            data: $dto2,
+            toEmail: 'user@example.com',
+            isTestMail: true,
+        );
         $this->assertSame('admin@example.com', $email2->getReplyTo()[0]->getAddress());
         $this->assertStringStartsWith('(test) ', $email2->getSubject());
     }
@@ -395,7 +407,6 @@ class EmailBuilderTest extends TestCase
             ->method('isEmailBlacklisted')
             ->willReturn(false);
         $dto = new MessagePrecacheDto();
-        $dto->to = 'user@example.com';
         $dto->subject = 'Subject';
         $dto->content = 'TEXT';
         $dto->fromEmail = 'from@example.com';
@@ -413,6 +424,6 @@ class EmailBuilderTest extends TestCase
         $builder = $this->makeBuilder(devVersion: false, devEmail: null);
 
         $this->expectException(AttachmentException::class);
-        $builder->buildCampaignEmail(messageId: 60, data: $dto, htmlPref: true);
+        $builder->buildCampaignEmail(messageId: 60, data: $dto, htmlPref: true, toEmail: 'user@example.com');
     }
 }

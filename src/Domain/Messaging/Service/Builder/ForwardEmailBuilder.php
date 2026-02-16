@@ -98,6 +98,7 @@ class ForwardEmailBuilder extends EmailBuilder
 
         [$htmlMessage, $textMessage] = ($this->mailContentBuilder)(
             messagePrecacheDto: $data,
+            toEmail: $friendEmail,
             campaignId: $messageId,
             forwardedBy: $forwardedBy,
             forwardedPersonalNote: $forwardedPersonalNote,

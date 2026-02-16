@@ -35,14 +35,15 @@ class CampaignMailContentBuilder
 
     public function __invoke(
         MessagePrecacheDto $messagePrecacheDto,
+        string $toEmail,
         ?int $campaignId = null,
         ?Subscriber $forwardedBy = null,
         ?string $forwardedPersonalNote = null,
     ): array {
-        $subscriber = $this->subscriberRepository->findOneByEmail($messagePrecacheDto->to);
+        $subscriber = $this->subscriberRepository->findOneByEmail($toEmail);
         if (!$subscriber) {
             throw new SubscriberNotFoundException(
-                sprintf('Subscriber with email %s not found', $messagePrecacheDto->to)
+                sprintf('Subscriber with email %s not found', $toEmail)
             );
         }
         $addDefaultStyle = false;

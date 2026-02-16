@@ -135,7 +135,6 @@ class MessagePrecacheService
     ): void {
         $messagePrecacheDto->fromName = $loadedMessageData['fromname'];
         $messagePrecacheDto->fromEmail = $loadedMessageData['fromemail'];
-        $messagePrecacheDto->to = $loadedMessageData['tofield'];
 
         //0013076: different content when forwarding 'to a friend'
         $messagePrecacheDto->subject = $forwardContent

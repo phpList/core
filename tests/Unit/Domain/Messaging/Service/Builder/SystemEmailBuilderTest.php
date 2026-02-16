@@ -82,12 +82,11 @@ class SystemEmailBuilderTest extends TestCase
     {
         $this->eventLogManager->expects($this->once())->method('log');
         $dto = new MessagePrecacheDto();
-        $dto->to = null;
         $dto->subject = 'Subj';
         $dto->content = 'Body';
 
         $builder = $this->makeBuilder();
-        $result = $builder->buildCampaignEmail(messageId: 1, data: $dto);
+        $result = $builder->buildCampaignEmail(messageId: 1, data: $dto, toEmail: '');
         $this->assertNull($result);
     }
 
@@ -95,11 +94,10 @@ class SystemEmailBuilderTest extends TestCase
     {
         $this->eventLogManager->expects($this->once())->method('log');
         $dto = new MessagePrecacheDto();
-        $dto->to = 'user@example.com';
         $dto->content = 'Body';
 
         $builder = $this->makeBuilder();
-        $result = $builder->buildCampaignEmail(messageId: 1, data: $dto);
+        $result = $builder->buildCampaignEmail(messageId: 1, data: $dto, toEmail: 'user@example.com');
         $this->assertNull($result);
     }
 
@@ -123,12 +121,11 @@ class SystemEmailBuilderTest extends TestCase
             ->method('addHistory');
 
         $dto = new MessagePrecacheDto();
-        $dto->to = 'user@example.com';
         $dto->subject = 'Hello';
         $dto->content = 'B';
 
         $builder = $this->makeBuilder();
-        $result = $builder->buildCampaignEmail(messageId: 5, data: $dto);
+        $result = $builder->buildCampaignEmail(messageId: 5, data: $dto, toEmail: 'user@example.com');
         $this->assertNull($result);
     }
 
@@ -138,7 +135,6 @@ class SystemEmailBuilderTest extends TestCase
             ->method('isEmailBlacklisted')
             ->willReturn(false);
         $dto = new MessagePrecacheDto();
-        $dto->to = 'real@example.com';
         $dto->subject = 'Subject';
         $dto->content = 'TEXT';
 
@@ -164,6 +160,7 @@ class SystemEmailBuilderTest extends TestCase
             messageId: 777,
             data: $dto,
             skipBlacklistCheck: false,
+            toEmail: 'real@example.com'
         );
 
         $this->assertNotNull($email);
