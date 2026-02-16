@@ -243,7 +243,7 @@ class CampaignProcessorMessageHandler
             $email = $this->systemEmailBuilder->buildCampaignEmail(
                 messageId: $campaign->getId(),
                 data: $data,
-                toEmail: $this->configProvider->getValue(ConfigOption::ReportAddress),
+                toEmail: $this->configProvider->getValue(ConfigOption::ReportAddress) ?? '',
             );
 
             $envelope = new Envelope(
