@@ -75,7 +75,7 @@ class MessageForwardServiceTest extends TestCase
     {
         $service = $this->createService();
         $campaign = $this->createMock(Message::class);
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('alice@example.com');
 
         $this->loader->expects(self::once())
             ->method('__invoke')
@@ -114,7 +114,7 @@ class MessageForwardServiceTest extends TestCase
     {
         $service = $this->createService();
         $campaign = $this->createMock(Message::class);
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('alice@example.com');
 
         $this->loader->method('__invoke')->willReturn(['ok' => true]);
         $this->guard->method('assertCanForward')->willReturn($subscriber);
@@ -142,7 +142,7 @@ class MessageForwardServiceTest extends TestCase
     {
         $service = $this->createService();
         $campaign = $this->createMock(Message::class);
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('alice@example.com');
 
         $this->loader->method('__invoke')->willReturn(['ok' => true]);
         $this->guard->method('assertCanForward')->willReturn($subscriber);
@@ -181,7 +181,7 @@ class MessageForwardServiceTest extends TestCase
     {
         $service = $this->createService();
         $campaign = $this->createMock(Message::class);
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('alice@example.com');
 
         $this->loader->method('__invoke')->willReturn(['ok' => true]);
         $this->guard->method('assertCanForward')->willReturn($subscriber);
@@ -214,7 +214,7 @@ class MessageForwardServiceTest extends TestCase
     {
         $service = $this->createService();
         $campaign = $this->createMock(Message::class);
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('alice@example.com');
 
         $this->loader->method('__invoke')->willReturn(['ok' => true]);
         $this->guard->method('assertCanForward')->willReturn($subscriber);
@@ -245,7 +245,7 @@ class MessageForwardServiceTest extends TestCase
     {
         $service = $this->createService();
         $campaign = $this->createMock(Message::class);
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('alice@example.com');
 
         $this->loader->method('__invoke')->willReturn(['data' => true]);
         $this->guard->method('assertCanForward')->willReturn($subscriber);
@@ -272,7 +272,7 @@ class MessageForwardServiceTest extends TestCase
     {
         $service = $this->createService();
         $campaign = $this->createMock(Message::class);
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('alice@example.com');
 
         $this->loader->method('__invoke')->willReturn(['ok' => 1]);
         $this->guard->method('assertCanForward')->willReturn($subscriber);

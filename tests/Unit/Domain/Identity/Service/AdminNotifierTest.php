@@ -33,8 +33,7 @@ final class AdminNotifierTest extends TestCase
         $campaign = $this->createMock(Message::class);
         $campaign->method('getId')->willReturn(42);
 
-        $subscriber = new Subscriber();
-        $subscriber->setEmail('john@example.com');
+        $subscriber = new Subscriber('john@example.com');
 
         $friendEmail = 'friend@example.com';
         $lists = [new SubscriberList()];
@@ -105,8 +104,7 @@ final class AdminNotifierTest extends TestCase
         $campaign = $this->createMock(Message::class);
         $campaign->method('getId')->willReturn(777);
 
-        $subscriber = new Subscriber();
-        $subscriber->setEmail('alice@example.com');
+        $subscriber = new Subscriber('alice@example.com');
 
         $friendEmail = 'bob@example.net';
         $lists = [new SubscriberList(), new SubscriberList()];

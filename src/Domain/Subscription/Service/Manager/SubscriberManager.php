@@ -40,8 +40,7 @@ class SubscriberManager
 
     public function createSubscriber(CreateSubscriberDto $subscriberDto): Subscriber
     {
-        $subscriber = new Subscriber();
-        $subscriber->setEmail($subscriberDto->email);
+        $subscriber = new Subscriber($subscriberDto->email);
         $confirmed = (bool)$subscriberDto->requestConfirmation;
         $subscriber->setConfirmed(!$confirmed);
         $subscriber->setBlacklisted(false);
@@ -106,8 +105,7 @@ class SubscriberManager
 
     public function createFromImport(ImportSubscriberDto $subscriberDto): Subscriber
     {
-        $subscriber = new Subscriber();
-        $subscriber->setEmail($subscriberDto->email);
+        $subscriber = new Subscriber($subscriberDto->email);
         $subscriber->setConfirmed($subscriberDto->confirmed);
         $subscriber->setBlacklisted($subscriberDto->blacklisted);
         $subscriber->setHtmlEmail($subscriberDto->htmlEmail);

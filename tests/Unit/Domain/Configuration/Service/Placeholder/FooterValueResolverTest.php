@@ -25,8 +25,7 @@ final class FooterValueResolverTest extends TestCase
 
     private function makeUser(string $email = 'user@example.com', string $uid = 'UID-1'): Subscriber
     {
-        $u = new Subscriber();
-        $u->setEmail($email);
+        $u = new Subscriber($email);
         $u->setUniqueId($uid);
         return $u;
     }
@@ -84,7 +83,7 @@ final class FooterValueResolverTest extends TestCase
             user: $this->makeUser(),
             format: OutputFormat::Text,
             messagePrecacheDto: $dto,
-            forwardedBy: (new Subscriber())->setEmail('fwd@example.com'),
+            forwardedBy: (new Subscriber('fwd@example.com')),
         );
         $this->assertSame(stripslashes($raw), $resolver($ctx));
     }
@@ -100,7 +99,7 @@ final class FooterValueResolverTest extends TestCase
             user: $this->makeUser(),
             format: OutputFormat::Html,
             messagePrecacheDto: $this->makeDto('TF', 'HF', 'Alt'),
-            forwardedBy: (new Subscriber())->setEmail('fwd@example.com'),
+            forwardedBy: (new Subscriber('fwd@example.com')),
         );
 
         $this->assertSame('Forward footer set by config', $resolver($ctx));
@@ -117,7 +116,7 @@ final class FooterValueResolverTest extends TestCase
             user: $this->makeUser(),
             format: OutputFormat::Html,
             messagePrecacheDto: $this->makeDto('TF', 'HF', 'Alt'),
-            forwardedBy: (new Subscriber())->setEmail('fwd@example.com'),
+            forwardedBy: (new Subscriber('fwd@example.com')),
         );
 
         $this->assertSame('', $resolver($ctx));

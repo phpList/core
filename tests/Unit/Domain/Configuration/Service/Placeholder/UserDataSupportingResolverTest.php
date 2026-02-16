@@ -24,8 +24,7 @@ final class UserDataSupportingResolverTest extends TestCase
     private function makeCtx(Subscriber $user = null): PlaceholderContext
     {
         $u = $user ?? (function () {
-            $s = new Subscriber();
-            $s->setEmail('user@example.com');
+            $s = new Subscriber('user@example.com');
             $s->setUniqueId('UID-X');
             // Ensure the entity has a non-null ID for repository lookup
             $rp = new \ReflectionProperty(Subscriber::class, 'id');

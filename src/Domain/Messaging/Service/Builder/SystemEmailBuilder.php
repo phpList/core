@@ -53,13 +53,14 @@ class SystemEmailBuilder extends BaseEmailBuilder
     public function buildCampaignEmail(
         int $messageId,
         MessagePrecacheDto $data,
+        string $toEmail,
         ?bool $skipBlacklistCheck = false,
     ): ?Email {
-        if (!$this->validateRecipientAndSubject(to: $data->to, subject: $data->subject)) {
+        if (!$this->validateRecipientAndSubject(to: $toEmail, subject: $data->subject)) {
             return null;
         }
 
-        if (!$this->passesBlacklistCheck(to: $data->to, skipBlacklistCheck: $skipBlacklistCheck)) {
+        if (!$this->passesBlacklistCheck(to: $toEmail, skipBlacklistCheck: $skipBlacklistCheck)) {
             return null;
         }
 
@@ -69,7 +70,7 @@ class SystemEmailBuilder extends BaseEmailBuilder
         $replyTo = $messageReplyToAddress ?: $fromEmail;
 
         $email = $this->createBaseEmail(
-            to: $data->to,
+            to: $toEmail,
             fromEmail: $fromEmail,
             fromName: $fromName,
             subject: $data->subject,
@@ -79,7 +80,7 @@ class SystemEmailBuilder extends BaseEmailBuilder
         $this->addBaseCampaignHeaders(
             email: $email,
             messageId: $messageId,
-            originalTo: $data->to,
+            originalTo: $toEmail,
             destinationEmail: $email->getTo()[0]->getAddress(),
             inBlast: false,
         );
@@ -97,13 +98,14 @@ class SystemEmailBuilder extends BaseEmailBuilder
 
     public function buildSystemEmail(
         MessagePrecacheDto $data,
+        string $toEmail,
         ?bool $skipBlacklistCheck = false,
     ): ?Email {
-        if (!$this->validateRecipientAndSubject(to: $data->to, subject: $data->subject)) {
+        if (!$this->validateRecipientAndSubject(to: $toEmail, subject: $data->subject)) {
             return null;
         }
 
-        if (!$this->passesBlacklistCheck(to: $data->to, skipBlacklistCheck: $skipBlacklistCheck)) {
+        if (!$this->passesBlacklistCheck(to: $toEmail, skipBlacklistCheck: $skipBlacklistCheck)) {
             return null;
         }
 
@@ -113,14 +115,14 @@ class SystemEmailBuilder extends BaseEmailBuilder
         $replyTo = $messageReplyToAddress ?: $fromEmail;
 
         $email = $this->createBaseEmail(
-            to: $data->to,
+            to: $toEmail,
             fromEmail: $fromEmail,
             fromName: $fromName,
             subject: $data->subject,
         );
         $email->replyTo($replyTo);
 
-        $this->addSystemHeaders(email: $email, originalTo: $data->to,);
+        $this->addSystemHeaders(email: $email, originalTo: $toEmail);
 
         [$htmlMessage, $textMessage] = ($this->mailConstructor)(messagePrecacheDto: $data);
         $email->text($textMessage);

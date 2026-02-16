@@ -61,7 +61,6 @@ abstract class BaseEmailBuilder
 
     protected function passesBlacklistCheck(string $to, ?bool $skipBlacklistCheck): bool
     {
-
         if (!$skipBlacklistCheck && $this->blacklistRepository->isEmailBlacklisted($to)) {
             $this->eventLogManager->log('', sprintf('Error, %s is blacklisted, not sending', $to));
             $subscriber = $this->subscriberRepository->findOneByEmail($to);
@@ -103,7 +102,7 @@ abstract class BaseEmailBuilder
         ?string $fromEmail,
         ?string $fromName,
         ?string $subject,
-    ) : Email {
+    ): Email {
         $email = (new Email());
         $destinationEmail = $this->resolveDestinationEmail($to);
 

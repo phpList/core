@@ -130,6 +130,7 @@ class SubscriberBlacklistManagerTest extends TestCase
         $blacklist = $this->createMock(UserBlacklist::class);
         $blacklistData = $this->createMock(UserBlacklistData::class);
         $subscriber = $this->getMockBuilder(Subscriber::class)
+            ->setConstructorArgs(['test@example.com'])
             ->onlyMethods(['setBlacklisted'])
             ->getMock();
 

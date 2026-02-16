@@ -147,7 +147,7 @@ class ForwardEmailBuilderTest extends TestCase
         [$email, $sentAs] = $builder->buildForwardEmail(
             messageId: 99,
             friendEmail: $friendEmail,
-            forwardedBy: new Subscriber(),
+            forwardedBy: new Subscriber('alice@example.com'),
             data: $dto,
             htmlPref: true,
             fromName: $fromName,
@@ -186,7 +186,7 @@ class ForwardEmailBuilderTest extends TestCase
         $builder->buildForwardEmail(
             messageId: 1,
             friendEmail: $friend,
-            forwardedBy: new Subscriber(),
+            forwardedBy: new Subscriber('alice@example.com'),
             data: $dto,
             htmlPref: false,
             fromName: 'X',
@@ -216,7 +216,7 @@ class ForwardEmailBuilderTest extends TestCase
         $result = $builder->buildForwardEmail(
             messageId: 2,
             friendEmail: 'friend@example.com',
-            forwardedBy: new Subscriber(),
+            forwardedBy: new Subscriber('alice@example.com'),
             data: $dto,
             htmlPref: false,
             fromName: 'From',

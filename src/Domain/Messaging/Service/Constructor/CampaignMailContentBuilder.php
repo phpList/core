@@ -16,7 +16,6 @@ use PhpList\Core\Domain\Messaging\Exception\RemotePageFetchException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
-use PhpList\Core\Domain\Messaging\Exception\SubscriberNotFoundException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class CampaignMailContentBuilder
@@ -35,21 +34,16 @@ class CampaignMailContentBuilder
 
     public function __invoke(
         MessagePrecacheDto $messagePrecacheDto,
+        Subscriber $receiver,
         ?int $campaignId = null,
         ?Subscriber $forwardedBy = null,
         ?string $forwardedPersonalNote = null,
     ): array {
-        $subscriber = $this->subscriberRepository->findOneByEmail($messagePrecacheDto->to);
-        if (!$subscriber) {
-            throw new SubscriberNotFoundException(
-                sprintf('Subscriber with email %s not found', $messagePrecacheDto->to)
-            );
-        }
         $addDefaultStyle = false;
 
-        if ($messagePrecacheDto->userSpecificUrl) {
-            $userData = $this->subscriberRepository->getDataById($subscriber->getId());
-            $this->replaceUserSpecificRemoteContent($messagePrecacheDto, $subscriber, $userData);
+        if ($messagePrecacheDto->userSpecificUrl && $receiver->getId()) {
+            $userData = $this->subscriberRepository->getDataById($receiver->getId());
+            $this->replaceUserSpecificRemoteContent($messagePrecacheDto, $receiver, $userData);
         }
 
         $content = $messagePrecacheDto->content;
@@ -80,7 +74,7 @@ class CampaignMailContentBuilder
 
         $textMessage = $this->placeholderProcessor->process(
             value: $textMessage,
-            receiver: $subscriber,
+            receiver: $receiver,
             format: OutputFormat::Text,
             messagePrecacheDto: $messagePrecacheDto,
             campaignId: $campaignId,
@@ -89,7 +83,7 @@ class CampaignMailContentBuilder
 
         $htmlMessage = $this->placeholderProcessor->process(
             value: $htmlMessage,
-            receiver: $subscriber,
+            receiver: $receiver,
             format: OutputFormat::Html,
             messagePrecacheDto: $messagePrecacheDto,
             campaignId: $campaignId,

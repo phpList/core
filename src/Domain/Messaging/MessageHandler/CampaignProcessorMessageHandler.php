@@ -210,6 +210,7 @@ class CampaignProcessorMessageHandler
             $result = $this->campaignEmailBuilder->buildCampaignEmail(
                 messageId: $campaign->getId(),
                 data: $processed,
+                toEmail: $subscriber->getEmail(),
                 skipBlacklistCheck: false,
                 inBlast: true,
                 htmlPref: $subscriber->hasHtmlEmail(),
@@ -236,13 +237,13 @@ class CampaignProcessorMessageHandler
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::NotSent);
 
             $data = new MessagePrecacheDto();
-            $data->to = $this->configProvider->getValue(ConfigOption::ReportAddress);
             $data->subject = $this->translator->trans('phpList system error');
             $data->content = $this->translator->trans($e->getMessage());
 
             $email = $this->systemEmailBuilder->buildCampaignEmail(
                 messageId: $campaign->getId(),
                 data: $data,
+                toEmail: $this->configProvider->getValue(ConfigOption::ReportAddress) ?? '',
             );
 
             $envelope = new Envelope(
@@ -270,7 +271,6 @@ class CampaignProcessorMessageHandler
             $notifications = explode(',', $loadedMessageData['notify_start']);
             foreach ($notifications as $notification) {
                 $data = new MessagePrecacheDto();
-                $data->to = $notification;
                 $data->subject = $this->translator->trans('Campaign started');
                 $data->content = $this->translator->trans(
                     'phplist has started sending the campaign with subject %subject%',
@@ -280,6 +280,7 @@ class CampaignProcessorMessageHandler
                 $email = $this->systemEmailBuilder->buildCampaignEmail(
                     messageId: $campaign->getId(),
                     data: $data,
+                    toEmail: $notification
                 );
 
                 if (!$email) {

@@ -79,8 +79,7 @@ class SubscriberRepositoryTest extends KernelTestCase
 
     public function testCreationDateOfNewModelIsSetToNowOnPersist()
     {
-        $model = new Subscriber();
-        $model->setEmail('sam@example.com');
+        $model = new Subscriber('sam@example.com');
         $expectedCreationDate = new DateTime();
 
         $this->entityManager->persist($model);
@@ -90,8 +89,7 @@ class SubscriberRepositoryTest extends KernelTestCase
 
     public function testModificationDateOfNewModelIsSetToNowOnPersist()
     {
-        $model = new Subscriber();
-        $model->setEmail('oliver@example.com');
+        $model = new Subscriber('oliver@example.com');
         $expectedModificationDate = new DateTime();
 
         $this->entityManager->persist($model);
@@ -101,8 +99,7 @@ class SubscriberRepositoryTest extends KernelTestCase
 
     public function testSavePersistsAndFlushesModel()
     {
-        $model = new Subscriber();
-        $model->setEmail('michiel@example.com');
+        $model = new Subscriber('michiel@example.com');
         $this->subscriberRepository->save($model);
 
         self::assertSame($model, $this->subscriberRepository->find($model->getId()));
@@ -115,9 +112,8 @@ class SubscriberRepositoryTest extends KernelTestCase
         /** @var Subscriber $model */
         $model = $this->subscriberRepository->find(1);
 
-        $otherModel = new Subscriber();
+        $otherModel = new Subscriber($model->getEmail());
         $otherModel->generateUniqueId();
-        $otherModel->setEmail($model->getEmail());
 
         $this->expectException(UniqueConstraintViolationException::class);
 
@@ -126,9 +122,7 @@ class SubscriberRepositoryTest extends KernelTestCase
 
     public function testUniqueIdOfNewModelIsGeneratedOnPersist()
     {
-        $model = new Subscriber();
-        $model->setEmail('oliver@example.com');
-
+        $model = new Subscriber('oliver@example.com');
         $this->entityManager->persist($model);
 
         self::assertMatchesRegularExpression('/^[0-9a-f]{32}$/', $model->getUniqueId());

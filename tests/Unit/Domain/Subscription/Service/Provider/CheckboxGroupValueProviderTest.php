@@ -40,7 +40,7 @@ class CheckboxGroupValueProviderTest extends TestCase
 
     private function createUserAttr(SubscriberAttributeDefinition $def, ?string $value): SubscriberAttributeValue
     {
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('user@example.com');
         $userAttr = new SubscriberAttributeValue($def, $subscriber);
         $userAttr->setValue($value);
 

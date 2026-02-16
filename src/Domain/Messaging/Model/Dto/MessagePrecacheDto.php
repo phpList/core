@@ -11,7 +11,6 @@ class MessagePrecacheDto
     public ?string $replyToName = null;
     public ?string $fromName = null;
     public ?string $fromEmail = null;
-    public ?string $to = null;
     public string $subject = '';
     public string $content = '';
     public string $textContent = '';
@@ -23,8 +22,6 @@ class MessagePrecacheDto
     public ?string $template = null;
     public ?string $templateText = null;
     public ?int $templateId = null;
-//    public string $htmlCharset= 'UTF-8';
-//    public string $textCharset= 'UTF-8';
     public bool $userSpecificUrl = false;
     public bool $googleTrack = false;
     public array $adminAttributes = [];

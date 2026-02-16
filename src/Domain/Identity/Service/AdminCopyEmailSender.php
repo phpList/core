@@ -39,11 +39,10 @@ class AdminCopyEmailSender
 
         foreach ($mails as $adminMail) {
             $data = new MessagePrecacheDto();
-            $data->to = $adminMail;
             $data->subject = $this->installationName . ' ' . $subject;
             $data->content = $message;
 
-            $email = $this->systemEmailBuilder->buildSystemEmail(data: $data);
+            $email = $this->systemEmailBuilder->buildSystemEmail(data: $data, toEmail: $adminMail);
             if ($email === null) {
                 $this->logger->warning('Failed to build admin copy email for recipient ' . $adminMail);
                 continue;

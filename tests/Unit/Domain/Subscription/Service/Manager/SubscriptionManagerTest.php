@@ -44,7 +44,7 @@ class SubscriptionManagerTest extends TestCase
     public function testCreateSubscriptionWhenSubscriberExists(): void
     {
         $email = 'test@example.com';
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber($email);
         $list = new SubscriberList();
 
         $this->subscriberRepository->method('findOneBy')->with(['email' => $email])->willReturn($subscriber);
@@ -106,7 +106,7 @@ class SubscriptionManagerTest extends TestCase
     {
         $subscriberList = $this->createMock(SubscriberList::class);
         $subscriberList->method('getId')->willReturn(1);
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('user@example.com');
 
         $this->subscriberRepository
             ->method('getSubscribersBySubscribedListId')

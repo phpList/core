@@ -43,7 +43,7 @@ class ForwardingGuardTest extends TestCase
 
         $uid = 'abc';
         $campaign = $this->createMock(Message::class);
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('alice@example.com');
 
         $this->subscriberRepo->method('findOneByUniqueId')->with($uid)->willReturn($subscriber);
         $this->userMessageRepo->method('findByUserAndMessage')->willReturn(
@@ -81,7 +81,7 @@ class ForwardingGuardTest extends TestCase
             forwardEmailPeriod: '1 day',
         );
 
-        $this->subscriberRepo->method('findOneByUniqueId')->willReturn(new Subscriber());
+        $this->subscriberRepo->method('findOneByUniqueId')->willReturn(new Subscriber('alice@example.com'));
         $this->userMessageRepo->method('findByUserAndMessage')->willReturn(null);
 
         $this->expectException(MessageNotReceivedException::class);
@@ -98,7 +98,7 @@ class ForwardingGuardTest extends TestCase
             forwardEmailPeriod: '1 day',
         );
 
-        $this->subscriberRepo->method('findOneByUniqueId')->willReturn(new Subscriber());
+        $this->subscriberRepo->method('findOneByUniqueId')->willReturn(new Subscriber('alice@example.com'));
         $this->userMessageRepo->method('findByUserAndMessage')->willReturn($this->createMock(UserMessage::class));
         $this->forwardRepo->method('getCountByUserSince')->willReturn(2);
 

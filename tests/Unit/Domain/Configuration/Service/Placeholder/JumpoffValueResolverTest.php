@@ -27,8 +27,7 @@ final class JumpoffValueResolverTest extends TestCase
 
     private function makeUser(string $uid = 'UID-JO'): Subscriber
     {
-        $u = new Subscriber();
-        $u->setEmail('user@example.com');
+        $u = new Subscriber('user@example.com');
         $u->setUniqueId($uid);
         return $u;
     }

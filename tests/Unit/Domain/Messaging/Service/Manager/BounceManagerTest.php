@@ -179,7 +179,7 @@ class BounceManagerTest extends TestCase
 
     public function testGetUserMessageHistoryWithBouncesDelegates(): void
     {
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('alice@example.com');
         $expected = [];
         $this->userMessageBounceRepository->expects($this->once())
             ->method('getUserMessageHistoryWithBounces')

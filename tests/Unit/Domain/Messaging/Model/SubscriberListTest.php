@@ -181,7 +181,7 @@ class SubscriberListTest extends TestCase
 
     public function testSetSubscribersSetsSubscribers(): void
     {
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('alice@example.com');
         $subscription = new Subscription();
         $subscription->setSubscriber($subscriber);
 

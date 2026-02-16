@@ -22,7 +22,7 @@ class SubscriberAttributeManagerTest extends TestCase
 {
     public function testCreateNewSubscriberAttribute(): void
     {
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('test@example.com');
         $definition = new SubscriberAttributeDefinition();
 
         $subscriberAttrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
@@ -53,7 +53,7 @@ class SubscriberAttributeManagerTest extends TestCase
 
     public function testUpdateExistingSubscriberAttribute(): void
     {
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('test@example.com');
         $definition = new SubscriberAttributeDefinition();
         $existing = new SubscriberAttributeValue($definition, $subscriber);
         $existing->setValue('Old');
@@ -83,7 +83,7 @@ class SubscriberAttributeManagerTest extends TestCase
 
     public function testCreateFailsWhenValueAndDefaultAreNull(): void
     {
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('test@example.com');
         $definition = new SubscriberAttributeDefinition();
 
         $subscriberAttrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
@@ -109,7 +109,10 @@ class SubscriberAttributeManagerTest extends TestCase
         $subscriberAttrRepo = $this->createMock(SubscriberAttributeValueRepository::class);
         $entityManager = $this->createMock(EntityManagerInterface::class);
 
-        $expected = new SubscriberAttributeValue(new SubscriberAttributeDefinition(), new Subscriber());
+        $expected = new SubscriberAttributeValue(
+            new SubscriberAttributeDefinition(),
+            new Subscriber('test@example.com')
+        );
         $subscriberAttrRepo->expects(self::once())
             ->method('findOneBySubscriberIdAndAttributeId')
             ->with(5, 10)

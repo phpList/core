@@ -30,8 +30,7 @@ final class BlacklistValueResolverTest extends TestCase
 
     private function makeUser(string $email = 'user@example.com'): Subscriber
     {
-        $u = new Subscriber();
-        $u->setEmail($email);
+        $u = new Subscriber($email);
         $u->setUniqueId('UID-1');
         return $u;
     }

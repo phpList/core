@@ -27,8 +27,7 @@ final class ForwardMessageIdValueResolverTest extends TestCase
 
     private function makeUser(string $uid = 'U-FWD'): Subscriber
     {
-        $u = new Subscriber();
-        $u->setEmail('user@example.com');
+        $u = new Subscriber('user@example.com');
         $u->setUniqueId($uid);
         return $u;
     }
