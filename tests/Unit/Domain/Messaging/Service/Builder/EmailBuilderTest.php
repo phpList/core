@@ -161,6 +161,7 @@ class EmailBuilderTest extends TestCase
         $this->blacklistRepository
             ->method('isEmailBlacklisted')
             ->willReturn(false);
+        $this->subscriberRepository->method('findOneByEmail')->willReturn(new Subscriber('user@example.com'));
         $dto = new MessagePrecacheDto();
         $dto->subject = 'Subject';
         $dto->content = 'TEXT';
@@ -215,7 +216,7 @@ class EmailBuilderTest extends TestCase
                 [ConfigOption::AdminAddress, 'admin@example.com'],
                 [ConfigOption::AlwaysSendTextDomains, ''],
             ]);
-
+        $this->subscriberRepository->method('findOneByEmail')->willReturn(new Subscriber('user@example.com'));
         $this->blacklistRepository->method('isEmailBlacklisted')->willReturn(false);
         $dto = new MessagePrecacheDto();
         $dto->subject = 'Subject';
@@ -236,8 +237,8 @@ class EmailBuilderTest extends TestCase
         [$email, $sentAs] = $builder->buildCampaignEmail(
             messageId: 9,
             data: $dto,
-            htmlPref: true,
             toEmail: 'user@example.com',
+            htmlPref: true,
         );
 
         $this->assertSame(OutputFormat::Text, $sentAs);
@@ -251,6 +252,7 @@ class EmailBuilderTest extends TestCase
         $this->blacklistRepository
             ->method('isEmailBlacklisted')
             ->willReturn(false);
+        $this->subscriberRepository->method('findOneByEmail')->willReturn(new Subscriber('user@example.com'));
         $dto = new MessagePrecacheDto();
         $dto->subject = 'Subject';
         $dto->content = 'TEXT';
@@ -275,8 +277,8 @@ class EmailBuilderTest extends TestCase
         [$email, $sentAs] = $builder->buildCampaignEmail(
             messageId: 42,
             data: $dto,
-            htmlPref: true,
             toEmail: 'user@example.com',
+            htmlPref: true,
         );
 
         $this->assertSame(OutputFormat::Pdf, $sentAs);
@@ -288,6 +290,7 @@ class EmailBuilderTest extends TestCase
         $this->blacklistRepository
             ->method('isEmailBlacklisted')
             ->willReturn(false);
+        $this->subscriberRepository->method('findOneByEmail')->willReturn(new Subscriber('user@example.com'));
         $dto = new MessagePrecacheDto();
         $dto->subject = 'Subject';
         $dto->content = 'TEXT';
@@ -310,8 +313,8 @@ class EmailBuilderTest extends TestCase
         [$email, $sentAs] = $builder->buildCampaignEmail(
             messageId: 43,
             data: $dto,
-            htmlPref: false,
             toEmail: 'user@example.com',
+            htmlPref: false,
         );
 
         $this->assertSame(OutputFormat::Text, $sentAs);
@@ -324,6 +327,7 @@ class EmailBuilderTest extends TestCase
         $this->blacklistRepository
             ->method('isEmailBlacklisted')
             ->willReturn(false);
+        $this->subscriberRepository->method('findOneByEmail')->willReturn(new Subscriber('user@example.com'));
 
         // explicit reply-to
         $dto = new MessagePrecacheDto();
@@ -406,6 +410,8 @@ class EmailBuilderTest extends TestCase
         $this->blacklistRepository
             ->method('isEmailBlacklisted')
             ->willReturn(false);
+        $this->subscriberRepository->method('findOneByEmail')->willReturn(new Subscriber('user@example.com'));
+
         $dto = new MessagePrecacheDto();
         $dto->subject = 'Subject';
         $dto->content = 'TEXT';
