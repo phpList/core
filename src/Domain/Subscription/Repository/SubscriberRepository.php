@@ -81,8 +81,8 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
         }
 
         $queryBuilder = $this->createQueryBuilder('subscriber')
-            ->innerJoin('subscriber.subscriptions', 'subscription')
-            ->innerJoin('subscription.subscriberList', 'list');
+            ->leftJoin('subscriber.subscriptions', 'subscription')
+            ->leftJoin('subscription.subscriberList', 'list');
 
         if ($filter->getListId() !== null) {
             $queryBuilder->where('list.id = :listId')
