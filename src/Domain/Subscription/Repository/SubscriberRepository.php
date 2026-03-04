@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Repository;
 
+use Doctrine\ORM\QueryBuilder;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
@@ -73,6 +74,8 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
     /**
      * @return Subscriber[]
      * @throws InvalidArgumentException
+     * @SuppressWarnings("CyclomaticComplexity")
+     * @SuppressWarnings("NPathComplexity")
      */
     public function getFilteredAfterId(int $lastId, int $limit, ?FilterRequestInterface $filter = null): array
     {
@@ -96,21 +99,23 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
                     ->setParameter('subscribedAtTo', $filter->getSubscribedDateTo());
             }
         }
-        if ($filter->getCreatedDateFrom() !== null) {
-            $queryBuilder->where('subscriber.createdAt > :createdAtFrom')
-                ->setParameter('createdAtFrom', $filter->getCreatedDateFrom());
+
+        $this->applyTimeFilter($filter, $queryBuilder);
+
+        if ($filter->getIsConfirmed() !== null) {
+            $queryBuilder->andWhere('subscriber.isConfirmed = :isConfirmed')
+                ->setParameter('isConfirmed', $filter->getIsConfirmed());
         }
-        if ($filter->getCreatedDateTo() !== null) {
-            $queryBuilder->where('subscriber.createdAt < :createdAtTo')
-                ->setParameter('createdAtTo', $filter->getCreatedDateTo());
+        if ($filter->getIsBlacklisted() !== null) {
+            $queryBuilder->andWhere('subscriber.isBlacklisted = :isBlacklisted')
+                ->setParameter('isBlacklisted', $filter->getIsBlacklisted());
         }
-        if ($filter->getUpdatedDateFrom() !== null) {
-            $queryBuilder->where('subscriber.updatedAt > :updatedAtFrom')
-                ->setParameter('updatedAtFrom', $filter->getUpdatedDateFrom());
+        if ($filter->getSortBy() !== null) {
+            $queryBuilder->orderBy('subscriber.' . $filter->getSortBy(), $filter->getSortDirection() ?? 'ASC');
         }
-        if ($filter->getUpdatedDateTo() !== null) {
-            $queryBuilder->where('subscriber.updatedAt < :updatedAtTo')
-                ->setParameter('updatedAtTo', $filter->getUpdatedDateTo());
+        if ($filter->getFindColumn() && $filter->getFindValue()) {
+            $queryBuilder->andWhere('subscriber.' . $filter->getFindColumn() . ' LIKE :search')
+                ->setParameter('search', '%' . $filter->getFindValue() . '%');
         }
 
         return $queryBuilder->andWhere('subscriber.id > :lastId')
@@ -119,6 +124,26 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    private function applyTimeFilter(SubscriberFilter $filter, QueryBuilder $queryBuilder): void
+    {
+        if ($filter->getCreatedDateFrom() !== null) {
+            $queryBuilder->andWhere('subscriber.createdAt > :createdAtFrom')
+                ->setParameter('createdAtFrom', $filter->getCreatedDateFrom());
+        }
+        if ($filter->getCreatedDateTo() !== null) {
+            $queryBuilder->andWhere('subscriber.createdAt < :createdAtTo')
+                ->setParameter('createdAtTo', $filter->getCreatedDateTo());
+        }
+        if ($filter->getUpdatedDateFrom() !== null) {
+            $queryBuilder->andWhere('subscriber.updatedAt > :updatedAtFrom')
+                ->setParameter('updatedAtFrom', $filter->getUpdatedDateFrom());
+        }
+        if ($filter->getUpdatedDateTo() !== null) {
+            $queryBuilder->andWhere('subscriber.updatedAt < :updatedAtTo')
+                ->setParameter('updatedAtTo', $filter->getUpdatedDateTo());
+        }
     }
 
     public function findSubscriberWithSubscriptions(int $id): ?Subscriber

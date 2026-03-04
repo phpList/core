@@ -7,6 +7,7 @@ namespace PhpList\Core\Domain\Subscription\Model\Filter;
 use DateTimeImmutable;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 
+/** @SuppressWarnings("ExcessiveParameterList") */
 class SubscriberFilter implements FilterRequestInterface
 {
     private ?int $listId;
@@ -16,7 +17,13 @@ class SubscriberFilter implements FilterRequestInterface
     private ?DateTimeImmutable $createdDateTo;
     private ?DateTimeImmutable $updatedDateFrom;
     private ?DateTimeImmutable $updatedDateTo;
+    private ?bool $isConfirmed;
+    private ?bool $isBlacklisted;
     private array $columns;
+    private ?string $sortBy;
+    private ?string $sortDirection;
+    private ?string $findColumn;
+    private ?string $findValue;
 
     public function __construct(
         ?int $listId = null,
@@ -26,7 +33,13 @@ class SubscriberFilter implements FilterRequestInterface
         ?DateTimeImmutable $createdDateTo = null,
         ?DateTimeImmutable $updatedDateFrom = null,
         ?DateTimeImmutable $updatedDateTo = null,
+        ?bool $isConfirmed = null,
+        ?bool $isBlacklisted = null,
         array $columns = [],
+        ?string $sortBy = null,
+        ?string $sortDirection = null,
+        ?string $findColumn = null,
+        ?string $findValue = null,
     ) {
         $this->listId = $listId;
         $this->subscribedDateFrom = $subscribedDateFrom;
@@ -35,7 +48,13 @@ class SubscriberFilter implements FilterRequestInterface
         $this->createdDateTo = $createdDateTo;
         $this->updatedDateFrom = $updatedDateFrom;
         $this->updatedDateTo = $updatedDateTo;
+        $this->isConfirmed = $isConfirmed;
+        $this->isBlacklisted = $isBlacklisted;
         $this->columns = $columns;
+        $this->sortBy = $sortBy;
+        $this->sortDirection = $sortDirection;
+        $this->findColumn = $findColumn;
+        $this->findValue = $findValue;
     }
 
     public function getListId(): ?int
@@ -73,8 +92,38 @@ class SubscriberFilter implements FilterRequestInterface
         return $this->updatedDateTo;
     }
 
+    public function getIsConfirmed(): ?bool
+    {
+        return $this->isConfirmed;
+    }
+
+    public function getIsBlacklisted(): ?bool
+    {
+        return $this->isBlacklisted;
+    }
+
     public function getColumns(): array
     {
         return $this->columns;
+    }
+
+    public function getSortBy(): ?string
+    {
+        return $this->sortBy;
+    }
+
+    public function getSortDirection(): ?string
+    {
+        return $this->sortDirection;
+    }
+
+    public function getFindColumn(): ?string
+    {
+        return $this->findColumn;
+    }
+
+    public function getFindValue(): ?string
+    {
+        return $this->findValue;
     }
 }
