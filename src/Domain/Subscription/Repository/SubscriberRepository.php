@@ -103,11 +103,11 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
         $this->applyTimeFilter($filter, $queryBuilder);
 
         if ($filter->getIsConfirmed() !== null) {
-            $queryBuilder->andWhere('subscriber.isConfirmed = :isConfirmed')
+            $queryBuilder->andWhere('subscriber.confirmed = :isConfirmed')
                 ->setParameter('isConfirmed', $filter->getIsConfirmed());
         }
         if ($filter->getIsBlacklisted() !== null) {
-            $queryBuilder->andWhere('subscriber.isBlacklisted = :isBlacklisted')
+            $queryBuilder->andWhere('subscriber.blacklisted = :isBlacklisted')
                 ->setParameter('isBlacklisted', $filter->getIsBlacklisted());
         }
         if ($filter->getSortBy() !== null) {
