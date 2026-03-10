@@ -114,9 +114,6 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             $queryBuilder->andWhere('subscriber.blacklisted = :isBlacklisted')
                 ->setParameter('isBlacklisted', $filter->getIsBlacklisted());
         }
-        if ($filter->getSortBy() !== null) {
-            $queryBuilder->orderBy('subscriber.' . $filter->getSortBy(), $filter->getSortDirection() ?? 'ASC');
-        }
         if ($filter->getFindColumn() && $filter->getFindValue()) {
             $queryBuilder->andWhere('subscriber.' . $filter->getFindColumn() . ' LIKE :search')
                 ->setParameter('search', '%' . $filter->getFindValue() . '%');

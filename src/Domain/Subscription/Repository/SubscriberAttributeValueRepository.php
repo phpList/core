@@ -64,15 +64,15 @@ class SubscriberAttributeValueRepository extends AbstractRepository implements P
 
         $countQb = clone $queryBuilder;
         $total = (int) $countQb
-            ->select('COUNT(DISTINCT sav.id)')
+            ->select('COUNT(DISTINCT ad.id)')
             ->getQuery()
             ->getSingleScalarResult();
 
         /** @var list<SubscriberAttributeValue> $items */
         $items = $queryBuilder
-            ->andWhere('sav.id > :lastId')
+            ->andWhere('ad.id > :lastId')
             ->setParameter('lastId', $lastId)
-            ->orderBy('sav.id', 'ASC')
+            ->orderBy('ad.id', 'ASC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();

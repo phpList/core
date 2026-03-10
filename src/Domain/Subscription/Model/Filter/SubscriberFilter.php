@@ -20,8 +20,6 @@ class SubscriberFilter implements FilterRequestInterface
     private ?bool $isConfirmed;
     private ?bool $isBlacklisted;
     private array $columns;
-    private ?string $sortBy;
-    private ?string $sortDirection;
     private ?string $findColumn;
     private ?string $findValue;
 
@@ -36,8 +34,6 @@ class SubscriberFilter implements FilterRequestInterface
         ?bool $isConfirmed = null,
         ?bool $isBlacklisted = null,
         array $columns = [],
-        ?string $sortBy = null,
-        ?string $sortDirection = null,
         ?string $findColumn = null,
         ?string $findValue = null,
     ) {
@@ -51,8 +47,6 @@ class SubscriberFilter implements FilterRequestInterface
         $this->isConfirmed = $isConfirmed;
         $this->isBlacklisted = $isBlacklisted;
         $this->columns = $columns;
-        $this->sortBy = $sortBy;
-        $this->sortDirection = $sortDirection;
         $this->findColumn = $findColumn;
         $this->findValue = $findValue;
     }
@@ -105,16 +99,6 @@ class SubscriberFilter implements FilterRequestInterface
     public function getColumns(): array
     {
         return $this->columns;
-    }
-
-    public function getSortBy(): ?string
-    {
-        return $this->sortBy;
-    }
-
-    public function getSortDirection(): ?string
-    {
-        return $this->sortDirection;
     }
 
     public function getFindColumn(): ?string
