@@ -6,6 +6,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Common\ClientIpResolver;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\SystemInfoCollector;
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberHistoryFilter;
 use PhpList\Core\Domain\Subscription\Model\SubscriberHistory;
@@ -43,7 +44,7 @@ class SubscriberHistoryManagerTest extends TestCase
             ->expects($this->once())
             ->method('getFilteredAfterId')
             ->with($lastId, $limit, $filter)
-            ->willReturn($expectedResult);
+            ->willReturn(new PaginatedResult($expectedResult, 1, 1, 1));
 
         $result = $this->subscriptionHistoryService->getHistory($lastId, $limit, $filter);
 
@@ -61,7 +62,7 @@ class SubscriberHistoryManagerTest extends TestCase
             ->expects($this->once())
             ->method('getFilteredAfterId')
             ->with($lastId, $limit, $filter)
-            ->willReturn($expectedResult);
+            ->willReturn(new PaginatedResult([], 0, 0, 0));
 
         $result = $this->subscriptionHistoryService->getHistory($lastId, $limit, $filter);
 

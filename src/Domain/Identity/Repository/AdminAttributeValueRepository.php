@@ -6,10 +6,12 @@ namespace PhpList\Core\Domain\Identity\Repository;
 
 use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Identity\Model\AdminAttributeValue;
 use PhpList\Core\Domain\Identity\Model\Filter\AdminAttributeValueFilter;
+use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;
 
 class AdminAttributeValueRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
@@ -26,29 +28,47 @@ class AdminAttributeValueRepository extends AbstractRepository implements Pagina
             ->getOneOrNullResult();
     }
 
-
     /**
-     * @return AdminAttributeValue[]
+     * @return PaginatedResult<SubscriberAttributeValue>
      * @throws InvalidArgumentException
      */
-    public function getFilteredAfterId(int $lastId, int $limit, ?FilterRequestInterface $filter = null): array
-    {
+    public function getFilteredAfterId(
+        int $lastId,
+        int $limit,
+        ?FilterRequestInterface $filter = null
+    ): PaginatedResult {
         if (!$filter instanceof AdminAttributeValueFilter) {
             throw new InvalidArgumentException('Expected AdminAttributeValueFilter.');
         }
-        $query = $this->createQueryBuilder('aav')
+        $queryBuilder = $this->createQueryBuilder('aav')
             ->join('aav.administrator', 'a')
-            ->join('aav.attributeDefinition', 'ad')
-            ->where('ad.id > :lastId')
-            ->setParameter('lastId', $lastId);
+            ->join('aav.attributeDefinition', 'ad');
 
         if ($filter->getAdminId() !== null) {
-            $query->andWhere('a.id = :adminId')
+            $queryBuilder->andWhere('a.id = :adminId')
                 ->setParameter('adminId', $filter->getAdminId());
         }
-        return $query->orderBy('ad.id', 'ASC')
+
+        $countQb = clone $queryBuilder;
+        $total = (int) $countQb
+            ->select('COUNT(DISTINCT ad.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        /** @var list<SubscriberAttributeValue> $items */
+        $items = $queryBuilder
+            ->andWhere('ad.id > :lastId')
+            ->setParameter('lastId', $lastId)
+            ->orderBy('ad.id', 'ASC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+
+        return new PaginatedResult(
+            items: $items,
+            total: $total,
+            limit: $limit,
+            lastId: $lastId,
+        );
     }
 }

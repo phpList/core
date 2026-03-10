@@ -41,7 +41,7 @@ final class CursorPaginationTraitTest extends TestCase
 
         $result = $this->repo->getAfterId(10, 2);
 
-        self::assertSame($expected, $result);
+        self::assertSame($expected, $result->getItems());
     }
 
     public function testGetFilteredAfterIdWithNullFilterDelegates(): void
@@ -52,7 +52,7 @@ final class CursorPaginationTraitTest extends TestCase
 
         $result = $this->repo->getFilteredAfterId(10, 2, null);
 
-        self::assertSame($expected, $result);
+        self::assertSame($expected, $result->getItems());
     }
 
     public function testGetFilteredAfterIdWithFilterThrows(): void

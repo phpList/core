@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Identity\Service\Manager;
 
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Identity\Exception\AttributeDefinitionCreationException;
 use PhpList\Core\Domain\Identity\Model\AdminAttributeDefinition;
 use PhpList\Core\Domain\Identity\Model\Dto\AdminAttributeDefinitionDto;
@@ -13,18 +14,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AdminAttributeDefinitionManager
 {
-    private AdminAttributeDefinitionRepository $definitionRepository;
-    private AttributeTypeValidator $attributeTypeValidator;
-    private TranslatorInterface $translator;
-
     public function __construct(
-        AdminAttributeDefinitionRepository $definitionRepository,
-        AttributeTypeValidator $attributeTypeValidator,
-        TranslatorInterface $translator
+        private readonly AdminAttributeDefinitionRepository $definitionRepository,
+        private readonly AttributeTypeValidator $attributeTypeValidator,
+        private readonly TranslatorInterface $translator
     ) {
-        $this->definitionRepository = $definitionRepository;
-        $this->attributeTypeValidator = $attributeTypeValidator;
-        $this->translator = $translator;
     }
 
     public function create(AdminAttributeDefinitionDto $attributeDefinitionDto): AdminAttributeDefinition
@@ -79,7 +73,7 @@ class AdminAttributeDefinitionManager
         return $this->definitionRepository->count();
     }
 
-    public function getAttributesAfterId(int $afterId, int $limit): array
+    public function getAttributesAfterId(int $afterId, int $limit): PaginatedResult
     {
         return $this->definitionRepository->getAfterId($afterId, $limit);
     }

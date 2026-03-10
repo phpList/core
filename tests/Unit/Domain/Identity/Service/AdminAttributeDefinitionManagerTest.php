@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Identity\Service;
 
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Identity\Exception\AttributeDefinitionCreationException;
 use PhpList\Core\Domain\Identity\Model\AdminAttributeDefinition;
 use PhpList\Core\Domain\Identity\Model\Dto\AdminAttributeDefinitionDto;
@@ -196,10 +197,10 @@ class AdminAttributeDefinitionManagerTest extends TestCase
         $this->repository->expects($this->once())
             ->method('getAfterId')
             ->with($afterId, $limit)
-            ->willReturn($attributes);
+            ->willReturn(new PaginatedResult($attributes, 2, 1, 2));
 
         $result = $this->subject->getAttributesAfterId($afterId, $limit);
 
-        $this->assertSame($attributes, $result);
+        $this->assertSame($attributes, $result->getItems());
     }
 }

@@ -11,11 +11,8 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 
 class SubscriberListManager
 {
-    private SubscriberListRepository $subscriberListRepository;
-
-    public function __construct(SubscriberListRepository $subscriberListRepository)
+    public function __construct(private readonly SubscriberListRepository $subscriberListRepository)
     {
-        $this->subscriberListRepository = $subscriberListRepository;
     }
 
     public function createSubscriberList(
@@ -39,7 +36,10 @@ class SubscriberListManager
      */
     public function getPaginated(int $afterId, int $limit): array
     {
-        return $this->subscriberListRepository->getAfterId($afterId, $limit);
+        /** @var SubscriberList[] $lists*/
+        $lists = $this->subscriberListRepository->getAfterId($afterId, $limit)->getItems();
+
+        return $lists;
     }
 
     public function getTotalCount(): int

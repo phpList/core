@@ -13,27 +13,14 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 
 class AnalyticsService
 {
-    private LinkTrackManager $linkTrackManager;
-    private UserMessageViewManager $userMessageViewManager;
-    private MessageRepository $messageRepository;
-    private UserMessageBounceRepository $messageBounceRepository;
-    private UserMessageForwardRepository $messageForwardRepository;
-    private SubscriberRepository $subscriberRepository;
-
     public function __construct(
-        LinkTrackManager $linkTrackManager,
-        UserMessageViewManager $userMessageViewManager,
-        MessageRepository $messageRepository,
-        UserMessageBounceRepository $messageBounceRepository,
-        UserMessageForwardRepository $messageForwardRepository,
-        SubscriberRepository $subscriberRepository
+        private readonly LinkTrackManager $linkTrackManager,
+        private readonly UserMessageViewManager $userMessageViewManager,
+        private readonly MessageRepository $messageRepository,
+        private readonly UserMessageBounceRepository $messageBounceRepository,
+        private readonly UserMessageForwardRepository $messageForwardRepository,
+        private readonly SubscriberRepository $subscriberRepository
     ) {
-        $this->linkTrackManager = $linkTrackManager;
-        $this->userMessageViewManager = $userMessageViewManager;
-        $this->messageRepository = $messageRepository;
-        $this->messageBounceRepository = $messageBounceRepository;
-        $this->messageForwardRepository = $messageForwardRepository;
-        $this->subscriberRepository = $subscriberRepository;
     }
 
     /**
@@ -55,10 +42,9 @@ class AnalyticsService
      */
     public function getCampaignStatistics(int $limit = 50, int $lastId = 0): array
     {
-        $messages = $this->messageRepository->getFilteredAfterId($lastId, $limit);
+        $messages = $this->messageRepository->getFilteredAfterId($lastId, $limit)->getItems();
 
         $campaignStats = [];
-
         foreach ($messages as $message) {
             $views = $this->userMessageViewManager->countViewsByMessageId($message->getId());
             $linkTracks = $this->linkTrackManager->getLinkTracksByMessageId($message->getId());
@@ -113,11 +99,10 @@ class AnalyticsService
      */
     public function getViewOpensStatistics(int $limit = 50, int $lastId = 0): array
     {
-        $messages = $this->messageRepository->getFilteredAfterId($lastId, $limit);
+        $messagesResult = $this->messageRepository->getFilteredAfterId($lastId, $limit);
 
         $viewStats = [];
-
-        foreach ($messages as $message) {
+        foreach ($messagesResult->getItems() as $message) {
             $views = $this->userMessageViewManager->countViewsByMessageId($message->getId());
             $sentCount = $message->getMetadata()->getBounceCount() + $views;
 
@@ -134,9 +119,9 @@ class AnalyticsService
 
         return [
             'campaigns' => $viewStats,
-            'total' => count($viewStats),
-            'hasMore' => count($messages) === $limit,
-            'lastId' => count($messages) > 0 ? $messages[count($messages) - 1]->getId() : $lastId,
+            'total' => $messagesResult->getTotal(),
+            'hasMore' => count($messagesResult->getItems()) === $limit,
+            'lastId' => $messagesResult->getLastId(),
         ];
     }
 
@@ -153,10 +138,9 @@ class AnalyticsService
      */
     public function getTopDomains(int $limit = 50, int $minSubscribers = 5): array
     {
-        $domains = [];
-
         $subscribers = $this->subscriberRepository->findAll();
 
+        $domains = [];
         foreach ($subscribers as $subscriber) {
             $email = $subscriber->getEmail();
             $domain = substr(strrchr($email, '@'), 1) ?: '';

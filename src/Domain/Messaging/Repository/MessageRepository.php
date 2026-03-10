@@ -7,6 +7,7 @@ namespace PhpList\Core\Domain\Messaging\Repository;
 use DateTimeImmutable;
 use Doctrine\ORM\AbstractQuery;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Messaging\Model\Filter\MessageFilter;
@@ -46,9 +47,12 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->getOneOrNullResult();
     }
 
-    /** @return Message[] */
-    public function getFilteredAfterId(int $lastId, int $limit, ?FilterRequestInterface $filter = null): array
-    {
+    /** @return PaginatedResult<Message> */
+    public function getFilteredAfterId(
+        int $lastId,
+        int $limit,
+        ?FilterRequestInterface $filter = null
+    ): PaginatedResult {
         $queryBuilder = $this->createQueryBuilder('m');
 
         if ($filter instanceof MessageFilter && $filter->getOwner() !== null) {
@@ -56,12 +60,27 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
                 ->setParameter('ownerId', $filter->getOwner()->getId());
         }
 
-        return $queryBuilder->andWhere('m.id > :lastId')
+        $countQb = clone $queryBuilder;
+        $total = (int) $countQb
+            ->select('COUNT(DISTINCT m.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        /** @var list<Message> $items */
+        $items = $queryBuilder
+            ->andWhere('m.id > :lastId')
             ->setParameter('lastId', $lastId)
             ->orderBy('m.id', 'ASC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+
+        return new PaginatedResult(
+            items: $items,
+            total: $total,
+            limit: $limit,
+            lastId: $lastId,
+        );
     }
 
     /** @return Message[] */

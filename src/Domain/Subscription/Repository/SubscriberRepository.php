@@ -7,6 +7,7 @@ namespace PhpList\Core\Domain\Subscription\Repository;
 use Doctrine\ORM\QueryBuilder;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberFilter;
@@ -72,13 +73,16 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
     }
 
     /**
-     * @return Subscriber[]
+     * @return PaginatedResult<Subscriber>
      * @throws InvalidArgumentException
      * @SuppressWarnings("CyclomaticComplexity")
      * @SuppressWarnings("NPathComplexity")
      */
-    public function getFilteredAfterId(int $lastId, int $limit, ?FilterRequestInterface $filter = null): array
-    {
+    public function getFilteredAfterId(
+        int $lastId,
+        int $limit,
+        ?FilterRequestInterface $filter = null,
+    ): PaginatedResult {
         if (!$filter instanceof SubscriberFilter) {
             throw new InvalidArgumentException('Expected SubscriberFilterRequest.');
         }
@@ -118,12 +122,27 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
                 ->setParameter('search', '%' . $filter->getFindValue() . '%');
         }
 
-        return $queryBuilder->andWhere('subscriber.id > :lastId')
+        $countQb = clone $queryBuilder;
+        $total = (int) $countQb
+            ->select('COUNT(DISTINCT subscriber.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        /** @var list<Subscriber> $items */
+        $items = $queryBuilder
+            ->andWhere('subscriber.id > :lastId')
             ->setParameter('lastId', $lastId)
             ->orderBy('subscriber.id', 'ASC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+
+        return new PaginatedResult(
+            items: $items,
+            total: $total,
+            limit: $limit,
+            lastId: $lastId,
+        );
     }
 
     private function applyTimeFilter(SubscriberFilter $filter, QueryBuilder $queryBuilder): void

@@ -20,21 +20,12 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
  */
 class SubscriberCsvExporter
 {
-    private SubscriberAttributeManager $attributeManager;
-    private SubscriberRepository $subscriberRepository;
-    private SubscriberAttributeDefinitionRepository $definitionRepository;
-    private LoggerInterface $logger;
-
     public function __construct(
-        SubscriberAttributeManager $attributeManager,
-        SubscriberRepository $subscriberRepository,
-        SubscriberAttributeDefinitionRepository $definitionRepository,
-        LoggerInterface $logger,
+        private readonly SubscriberAttributeManager $attributeManager,
+        private readonly SubscriberRepository $subscriberRepository,
+        private readonly SubscriberAttributeDefinitionRepository $definitionRepository,
+        private readonly LoggerInterface $logger,
     ) {
-        $this->attributeManager = $attributeManager;
-        $this->subscriberRepository = $subscriberRepository;
-        $this->definitionRepository = $definitionRepository;
-        $this->logger = $logger;
     }
 
     /**
@@ -160,7 +151,7 @@ class SubscriberCsvExporter
                 lastId: $lastId,
                 limit: $batchSize,
                 filter: $filter
-            );
+            )->getItems();
 
             $subscriberCount = count($subscribers);
             $this->logger->debug('Retrieved subscribers for batch', [

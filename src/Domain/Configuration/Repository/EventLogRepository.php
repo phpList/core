@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Configuration\Repository;
 
 use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
@@ -17,16 +18,15 @@ class EventLogRepository extends AbstractRepository implements PaginatableReposi
     use CursorPaginationTrait;
 
     /**
-     * @return EventLog[]
+     * @return PaginatedResult<EventLog>
      * @throws InvalidArgumentException
      */
-    public function getFilteredAfterId(int $lastId, int $limit, ?FilterRequestInterface $filter = null): array
-    {
-        $queryBuilder = $this->createQueryBuilder('e')
-            ->andWhere('e.id > :lastId')
-            ->setParameter('lastId', $lastId)
-            ->orderBy('e.id', 'ASC')
-            ->setMaxResults($limit);
+    public function getFilteredAfterId(
+        int $lastId,
+        int $limit,
+        ?FilterRequestInterface $filter = null
+    ): PaginatedResult {
+        $queryBuilder = $this->createQueryBuilder('e');
 
         if ($filter === null) {
             return $queryBuilder->getQuery()->getResult();
@@ -46,6 +46,26 @@ class EventLogRepository extends AbstractRepository implements PaginatableReposi
             $queryBuilder->andWhere('e.entered <= :dateTo')->setParameter('dateTo', $filter->getDateTo());
         }
 
-        return $queryBuilder->getQuery()->getResult();
+        $countQb = clone $queryBuilder;
+        $total = (int) $countQb
+            ->select('COUNT(DISTINCT e.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        /** @var list<EventLog> $items */
+        $items = $queryBuilder
+            ->andWhere('e.id > :lastId')
+            ->setParameter('lastId', $lastId)
+            ->orderBy('e.id', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return new PaginatedResult(
+            items: $items,
+            total: $total,
+            limit: $limit,
+            lastId: $lastId,
+        );
     }
 }

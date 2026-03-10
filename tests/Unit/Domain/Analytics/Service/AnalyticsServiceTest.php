@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Service\AnalyticsService;
 use PhpList\Core\Domain\Analytics\Service\Manager\LinkTrackManager;
 use PhpList\Core\Domain\Analytics\Service\Manager\UserMessageViewManager;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
@@ -66,6 +67,7 @@ class AnalyticsServiceTest extends TestCase
         $message->method('getId')->willReturn($messageId);
         $message->method('getMetadata')->willReturn($messageMetadata);
         $message->method('getContent')->willReturn($messageContent);
+        $messageResult = new PaginatedResult([$message], 1, 1, 1);
 
         $linkTrack1 = new LinkTrack();
         $linkTrack1->setUserId(1);
@@ -78,7 +80,7 @@ class AnalyticsServiceTest extends TestCase
         $this->messageRepository->expects(self::once())
             ->method('getFilteredAfterId')
             ->with($lastId, $limit)
-            ->willReturn([$message]);
+            ->willReturn($messageResult);
 
         $this->userMessageViewManager->expects(self::once())
             ->method('countViewsByMessageId')
@@ -136,11 +138,12 @@ class AnalyticsServiceTest extends TestCase
         $message->method('getId')->willReturn($messageId);
         $message->method('getMetadata')->willReturn($messageMetadata);
         $message->method('getContent')->willReturn($messageContent);
+        $messageResult = new PaginatedResult([$message], 1, 1, $messageId);
 
         $this->messageRepository->expects(self::once())
             ->method('getFilteredAfterId')
             ->with($lastId, $limit)
-            ->willReturn([$message]);
+            ->willReturn($messageResult);
 
         $this->userMessageViewManager->expects(self::once())
             ->method('countViewsByMessageId')

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service;
 
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberFilter;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
@@ -64,8 +65,8 @@ class SubscriberCsvExporterTest extends TestCase
             ->expects($this->exactly(2))
             ->method('getFilteredAfterId')
             ->willReturnOnConsecutiveCalls(
-                [$subscriber1, $subscriber2],
-                []
+                new PaginatedResult([$subscriber1, $subscriber2], 2, 1, 2),
+                new PaginatedResult([], 0, 0, 0)
             );
 
         $attributeDefinition = $this->createMock(SubscriberAttributeDefinition::class);
@@ -115,8 +116,8 @@ class SubscriberCsvExporterTest extends TestCase
             ->expects($this->exactly(1))
             ->method('getFilteredAfterId')
             ->willReturnOnConsecutiveCalls(
-                [$subscriber1],
-                []
+                new PaginatedResult([$subscriber1], 1, 1, 1),
+                new PaginatedResult([], 0, 0, 0)
             );
 
         $attributeDefinition = $this->createMock(SubscriberAttributeDefinition::class);
