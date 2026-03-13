@@ -20,6 +20,8 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
  * @author Oliver Klee <oliver@phplist.com>
  * @author Tatevik Grigoryan <tatevik@phplist.com>
  * @SuppressWarnings(TooManyFields)
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings(PHPMD.ExcessivePublicCount)
  */
 #[ORM\Entity(repositoryClass: SubscriberRepository::class)]
 #[ORM\Table(name: 'phplist_user_user')]
@@ -108,6 +110,9 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
 
     #[ORM\Column(name: 'foreignkey', type: 'string', length: 100, nullable: true)]
     private ?string $foreignKey = null;
+
+    /** @var SubscriberHistory[] */
+    private array $history = [];
 
     public function __construct(string $email)
     {
@@ -376,5 +381,21 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     public function setForeignKey(?string $foreignKey): void
     {
         $this->foreignKey = $foreignKey;
+    }
+
+    /**
+     * @return SubscriberHistory[]
+     */
+    public function getHistory(): array
+    {
+        return $this->history;
+    }
+
+    /**
+     * @param SubscriberHistory[] $history
+     */
+    public function setHistory(array $history): void
+    {
+        $this->history = $history;
     }
 }
