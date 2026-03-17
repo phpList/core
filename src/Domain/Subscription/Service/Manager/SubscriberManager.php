@@ -71,7 +71,6 @@ class SubscriberManager
         $subscriber->setBlacklisted($subscriberDto->blacklisted);
         $subscriber->setHtmlEmail($subscriberDto->htmlEmail);
         $subscriber->setDisabled($subscriberDto->disabled);
-        $subscriber->setExtraData($subscriberDto->additionalData);
 
         $uow = $this->entityManager->getUnitOfWork();
         $meta = $this->entityManager->getClassMetadata(Subscriber::class);
@@ -114,7 +113,7 @@ class SubscriberManager
         $subscriber->setBlacklisted($subscriberDto->blacklisted);
         $subscriber->setHtmlEmail($subscriberDto->htmlEmail);
         $subscriber->setDisabled($subscriberDto->disabled);
-        $subscriber->setExtraData($subscriberDto->extraData ?? '');
+        $subscriber->setExtraData($subscriberDto->extraData);
         if ($subscriberDto->foreignKey !== null) {
             $subscriber->setForeignKey($subscriberDto->foreignKey);
         }

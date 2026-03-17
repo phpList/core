@@ -244,12 +244,12 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this;
     }
 
-    public function getExtraData(): string
+    public function getExtraData(): ?string
     {
         return $this->extraData;
     }
 
-    public function setExtraData(string $extraData): self
+    public function setExtraData(?string $extraData): self
     {
         $this->extraData = $extraData;
 
