@@ -34,7 +34,9 @@ parameters:
     app.preference_page_show_private_lists: '%%env(PREFERENCEPAGE_SHOW_PRIVATE_LISTS)%%'
     env(PREFERENCEPAGE_SHOW_PRIVATE_LISTS): '0'
     app.rest_api_base_url: '%%env(REST_API_BASE_URL)%%'
-    env(REST_API_BASE_URL): 'https://example.com/api/v2'
+    env(REST_API_BASE_URL): 'http://api.phplist.local/api/v2'
+    app.frontend_base_url: '%%env(FRONT_END_BASE_URL)%%'
+    env(FRONT_END_BASE_URL): 'http://frontend.phplist.local'
 
     # Email configuration
     app.mailer_from: '%%env(MAILER_FROM)%%'
@@ -42,9 +44,9 @@ parameters:
     app.mailer_dsn: '%%env(MAILER_DSN)%%'
     env(MAILER_DSN): 'null://null' # set local_domain on transport
     app.confirmation_url: '%%env(CONFIRMATION_URL)%%'
-    env(CONFIRMATION_URL): 'https://example.com/subscriber/confirm/'
+    env(CONFIRMATION_URL): 'http://api.phplist.local/api/v2/subscriber/confirm/'
     app.subscription_confirmation_url: '%%env(SUBSCRIPTION_CONFIRMATION_URL)%%'
-    env(SUBSCRIPTION_CONFIRMATION_URL): 'https://example.com/subscription/confirm/'
+    env(SUBSCRIPTION_CONFIRMATION_URL): 'http://api.phplist.local/api/v2/subscription/confirm/'
     app.password_reset_url: '%%env(PASSWORD_RESET_URL)%%'
     env(PASSWORD_RESET_URL): 'https://example.com/reset/'
 
@@ -84,7 +86,7 @@ parameters:
     phplist.verify_ssl: '%%env(VERIFY_SSL)%%'
     env(VERIFY_SSL): '1'
 
-    graylog_host: 'graylog.example.com'
+    graylog_host: 'graylog.phplist.local'
     graylog_port: 12201
 
     app.phplist_isp_conf_path: '%%env(APP_PHPLIST_ISP_CONF_PATH)%%'
