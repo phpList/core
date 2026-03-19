@@ -19,6 +19,27 @@ class UserMessageRepository extends AbstractRepository
     }
 
     /**
+     * Counts how many user messages have status "sent" between the given dates.
+     *
+     * @param DateTimeInterface $start
+     * @param DateTimeInterface $end
+     * @return int
+     */
+    public function countSentBetween(DateTimeInterface $start, DateTimeInterface $end): int
+    {
+        return (int) $this->createQueryBuilder('um')
+            ->select('COUNT(um.createdAt)')
+            ->where('um.createdAt >= :start')
+            ->andWhere('um.createdAt <= :end')
+            ->andWhere('um.status = :status')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->setParameter('status', UserMessageStatus::Sent->value)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
      * Counts how many user messages have status "sent" since the given time.
      */
     public function countSentSince(DateTimeInterface $since): int

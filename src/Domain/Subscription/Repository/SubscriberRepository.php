@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Repository;
 
+use DateTimeInterface;
 use Doctrine\ORM\QueryBuilder;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
@@ -255,5 +256,24 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->setParameter('subscriberId', $subscriberId)
             ->getQuery()
             ->getArrayResult()[0] ?? [];
+    }
+
+    /**
+     * Counts subscribers created between two dates.
+     *
+     * @param DateTimeInterface $start
+     * @param DateTimeInterface $end
+     * @return int
+     */
+    public function countCreatedBetween(DateTimeInterface $start, DateTimeInterface $end): int
+    {
+        return (int) $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
+            ->where('s.createdAt >= :start')
+            ->andWhere('s.createdAt <= :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Repository;
 
 use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\ORM\AbstractQuery;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Model\PaginatedResult;
@@ -144,5 +145,25 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
         }
 
         return $message;
+    }
+
+    /**
+     * Counts active campaigns between two dates.
+     * "Active" here means messages that were sent (or in process) during this period.
+     *
+     * @param DateTimeInterface $start
+     * @param DateTimeInterface $end
+     * @return int
+     */
+    public function countActiveBetween(DateTimeInterface $start, DateTimeInterface $end): int
+    {
+        return (int) $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->where('m.metadata.sent >= :start')
+            ->andWhere('m.metadata.sent <= :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

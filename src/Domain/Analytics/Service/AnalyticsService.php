@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Analytics\Service;
 
+use DateTimeImmutable;
+use PhpList\Core\Domain\Analytics\Repository\UserMessageViewRepository;
 use PhpList\Core\Domain\Analytics\Service\Manager\LinkTrackManager;
 use PhpList\Core\Domain\Analytics\Service\Manager\UserMessageViewManager;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository;
+use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 
 class AnalyticsService
@@ -19,7 +22,9 @@ class AnalyticsService
         private readonly MessageRepository $messageRepository,
         private readonly UserMessageBounceRepository $messageBounceRepository,
         private readonly UserMessageForwardRepository $messageForwardRepository,
-        private readonly SubscriberRepository $subscriberRepository
+        private readonly SubscriberRepository $subscriberRepository,
+        private readonly UserMessageRepository $userMessageRepository,
+        private readonly UserMessageViewRepository $userMessageViewRepository
     ) {
     }
 
@@ -178,6 +183,86 @@ class AnalyticsService
             'domains' => $result,
             'total' => count($result),
         ];
+    }
+
+    public function getSummaryStatistics(): array
+    {
+        $now = new DateTimeImmutable();
+        $thisMonthStart = $now->modify('first day of this month 00:00:00');
+        $lastMonthStart = $now->modify('first day of last month 00:00:00');
+        $lastMonthEnd = $thisMonthStart->modify('-1 second');
+
+        $totalSubscribers = $this->subscriberRepository->count([]);
+        $subscribersThisMonth = $this->subscriberRepository->countCreatedBetween($thisMonthStart, $now);
+        $subscribersLastMonth = $this->subscriberRepository->countCreatedBetween($lastMonthStart, $lastMonthEnd);
+
+        $activeCampaigns = $this->messageRepository->countActiveBetween($thisMonthStart, $now);
+        $activeCampaignsLastMonth = $this->messageRepository->countActiveBetween($lastMonthStart, $lastMonthEnd);
+
+        $sentTotal = $this->userMessageRepository->countSentBetween($thisMonthStart, $now);
+        $openTotal = $this->userMessageViewRepository->countBetween($thisMonthStart, $now);
+        $bounceTotal = $this->messageBounceRepository->countBetween($thisMonthStart, $now);
+
+        $sentTotalLastMonth = $this->userMessageRepository->countSentBetween($lastMonthStart, $lastMonthEnd);
+        $openTotalLastMonth = $this->userMessageViewRepository->countBetween($lastMonthStart, $lastMonthEnd);
+        $bounceTotalLastMonth = $this->messageBounceRepository->countBetween($lastMonthStart, $lastMonthEnd);
+
+        $openRate = $this->calculateRate($openTotal, $sentTotal);
+        $openRateLastMonth = $this->calculateRate($openTotalLastMonth, $sentTotalLastMonth);
+
+        $bounceRate = $this->calculateRate($bounceTotal, $sentTotal);
+        $bounceRateLastMonth = $this->calculateRate($bounceTotalLastMonth, $sentTotalLastMonth);
+
+        return [
+            'total_subscribers' => [
+                'value' => $totalSubscribers,
+                'change_vs_last_month' => $this->calculateChange($subscribersThisMonth, $subscribersLastMonth),
+            ],
+            'active_campaigns' => [
+                'value' => $activeCampaigns,
+                'change_vs_last_month' => $this->calculateChange($activeCampaigns, $activeCampaignsLastMonth),
+            ],
+            'open_rate' => [
+                'value' => $openRate,
+                'change_vs_last_month' => $this->calculateChange($openRate, $openRateLastMonth),
+            ],
+            'bounce_rate' => [
+                'value' => $bounceRate,
+                'change_vs_last_month' => $this->calculateChange($bounceRate, $bounceRateLastMonth),
+            ],
+        ];
+    }
+
+    /**
+     * Calculate rate as a percentage.
+     *
+     * @param int $numerator
+     * @param int $denominator
+     * @return float
+     */
+    private function calculateRate(int $numerator, int $denominator): float
+    {
+        if ($denominator === 0) {
+            return 0.0;
+        }
+
+        return round(($numerator / $denominator) * 100, 2);
+    }
+
+    /**
+     * Calculate percentage change between current and previous value.
+     *
+     * @param float|int $current
+     * @param float|int $previous
+     * @return float
+     */
+    private function calculateChange(float|int $current, float|int $previous): float
+    {
+        if ($previous == 0) {
+            return $current > 0 ? 100.0 : 0.0;
+        }
+
+        return round((($current - $previous) / $previous) * 100, 2);
     }
 
     /**
