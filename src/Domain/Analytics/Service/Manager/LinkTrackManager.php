@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Analytics\Service\Manager;
 
+use DateTimeInterface;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository;
 
@@ -27,5 +28,10 @@ class LinkTrackManager
     public function getLinkTracksByMessageId(int $messageId, int $lastId = 0, ?int $limit = null): array
     {
         return $this->linkTrackRepository->getByMessageId($messageId, $lastId, $limit);
+    }
+
+    public function countClicksBetween(DateTimeInterface $start, DateTimeInterface $end): int
+    {
+        return $this->linkTrackRepository->countBetween($start, $end);
     }
 }

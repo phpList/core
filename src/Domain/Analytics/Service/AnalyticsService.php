@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Analytics\Service;
 
+use DateInterval;
 use DateTimeImmutable;
 use PhpList\Core\Domain\Analytics\Repository\UserMessageViewRepository;
 use PhpList\Core\Domain\Analytics\Service\Manager\LinkTrackManager;
@@ -414,5 +415,62 @@ class AnalyticsService
             'localParts' => $result,
             'total' => count($result),
         ];
+    }
+
+    public function getCampaignPerformance(): array
+    {
+        $performance = [];
+        $endDate = new DateTimeImmutable('today 23:59:59');
+        $startDate = $endDate->sub(new DateInterval('P29D'))->modify('00:00:00');
+
+        for ($index = 0; $index < 30; $index++) {
+            $dayStart = $startDate->add(new DateInterval('P' . $index . 'D'));
+            $dayEnd = $dayStart->modify('23:59:59');
+
+            $performance[] = [
+                'date' => $dayStart->format('Y-m-d'),
+                'opens' => $this->userMessageViewManager->countViewsBetween($dayStart, $dayEnd),
+                'clicks' => $this->linkTrackManager->countClicksBetween($dayStart, $dayEnd),
+            ];
+        }
+
+        return $performance;
+    }
+
+    /**
+     * Get recent campaigns with their performance rates
+     *
+     * @param int $limit
+     * @return array
+     */
+    public function getRecentCampaigns(int $limit = 5): array
+    {
+        $messages = $this->messageRepository->getFilteredAfterId(0, $limit)->getItems();
+        $recentCampaigns = [];
+        foreach ($messages as $message) {
+            $views = $this->userMessageViewManager->countViewsByMessageId($message->getId());
+            $linkTracks = $this->linkTrackManager->getLinkTracksByMessageId($message->getId());
+
+            $uniqueClickers = [];
+            foreach ($linkTracks as $linkTrack) {
+                $uniqueClickers[$linkTrack->getUserId()] = true;
+            }
+            $uniqueClicks = count($uniqueClickers);
+
+            $sentCount = $message->getMetadata()->getViews() + $message->getMetadata()->getBounceCount();
+
+            $openRate = $sentCount > 0 ? ($views / $sentCount) * 100 : 0;
+            $clickRate = $sentCount > 0 ? ($uniqueClicks / $sentCount) * 100 : 0;
+
+            $recentCampaigns[] = [
+                'name' => $message->getContent()->getSubject(),
+                'status' => $message->getMetadata()->getStatus()?->value,
+                'date' => $message->getMetadata()->getSent()?->format('Y-m-d'),
+                'open_rate' => round($openRate, 2) . '%',
+                'click_rate' => round($clickRate, 2) . '%',
+            ];
+        }
+
+        return $recentCampaigns;
     }
 }
