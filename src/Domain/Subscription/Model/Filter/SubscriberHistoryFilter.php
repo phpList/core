@@ -6,10 +6,13 @@ namespace PhpList\Core\Domain\Subscription\Model\Filter;
 
 use DateTimeImmutable;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Common\Model\Filter\PaginatedFilterTrait;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 
 class SubscriberHistoryFilter implements FilterRequestInterface
 {
+    use PaginatedFilterTrait;
+
     private ?Subscriber $subscriber;
     private ?string $ip;
     private ?DateTimeImmutable $dateFrom;
@@ -20,11 +23,15 @@ class SubscriberHistoryFilter implements FilterRequestInterface
         ?string $ip = null,
         ?DateTimeImmutable $dateFrom = null,
         ?string $summery = null,
+        int $lastId = 0,
+        int $limit = 50,
     ) {
         $this->subscriber = $subscriber;
         $this->ip = $ip;
         $this->dateFrom = $dateFrom;
         $this->summery = $summery;
+        $this->setLastId($lastId);
+        $this->setLimit($limit);
     }
 
     public function getSubscriber(): ?Subscriber

@@ -21,16 +21,11 @@ class EventLogRepository extends AbstractRepository implements PaginatableReposi
      * @return PaginatedResult<EventLog>
      * @throws InvalidArgumentException
      */
-    public function getFilteredAfterId(
-        int $lastId,
-        int $limit,
-        ?FilterRequestInterface $filter = null
-    ): PaginatedResult {
+    public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult
+    {
+        $lastId = $filter->getLastId();
+        $limit = $filter->getLimit();
         $queryBuilder = $this->createQueryBuilder('e');
-
-        if ($filter === null) {
-            return $queryBuilder->getQuery()->getResult();
-        }
 
         if (!$filter instanceof EventLogFilter) {
             throw new InvalidArgumentException('Expected EventLogFilter.');

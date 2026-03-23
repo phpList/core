@@ -8,7 +8,7 @@ use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Model\Filter\PaginatedFilterTrait;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 
-class MessageFilter implements FilterRequestInterface
+class SubscriberListFilter implements FilterRequestInterface
 {
     use PaginatedFilterTrait;
 

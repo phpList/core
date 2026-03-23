@@ -45,11 +45,10 @@ class SubscriberAttributeValueRepository extends AbstractRepository implements P
      * @return PaginatedResult<SubscriberAttributeValue>
      * @throws InvalidArgumentException
      */
-    public function getFilteredAfterId(
-        int $lastId,
-        int $limit,
-        ?FilterRequestInterface $filter = null
-    ): PaginatedResult {
+    public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult
+    {
+        $lastId = $filter->getLastId();
+        $limit = $filter->getLimit();
         if (!$filter instanceof SubscriberAttributeValueFilter) {
             throw new InvalidArgumentException('Expected SubscriberAttributeValueFilter.');
         }

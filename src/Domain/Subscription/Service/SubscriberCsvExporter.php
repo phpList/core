@@ -147,11 +147,9 @@ class SubscriberCsvExporter
                 'batch_size' => $batchSize
             ]);
 
-            $subscribers = $this->subscriberRepository->getFilteredAfterId(
-                lastId: $lastId,
-                limit: $batchSize,
-                filter: $filter
-            )->getItems();
+            $subscribers = $this->subscriberRepository
+                ->getFilteredAfterId($filter->setLastId($lastId)->setLimit($batchSize))
+                ->getItems();
 
             $subscriberCount = count($subscribers);
             $this->logger->debug('Retrieved subscribers for batch', [

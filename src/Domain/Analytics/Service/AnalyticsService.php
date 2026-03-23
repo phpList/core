@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use PhpList\Core\Domain\Analytics\Repository\UserMessageViewRepository;
 use PhpList\Core\Domain\Analytics\Service\Manager\LinkTrackManager;
 use PhpList\Core\Domain\Analytics\Service\Manager\UserMessageViewManager;
+use PhpList\Core\Domain\Messaging\Model\Filter\MessageFilter;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository;
@@ -48,7 +49,9 @@ class AnalyticsService
      */
     public function getCampaignStatistics(int $limit = 50, int $lastId = 0): array
     {
-        $messages = $this->messageRepository->getFilteredAfterId($lastId, $limit)->getItems();
+        $messages = $this->messageRepository
+            ->getFilteredAfterId((new MessageFilter())->setLastId($lastId)->setLimit($limit))
+            ->getItems();
 
         $campaignStats = [];
         foreach ($messages as $message) {
@@ -105,7 +108,8 @@ class AnalyticsService
      */
     public function getViewOpensStatistics(int $limit = 50, int $lastId = 0): array
     {
-        $messagesResult = $this->messageRepository->getFilteredAfterId($lastId, $limit);
+        $messagesResult = $this->messageRepository
+            ->getFilteredAfterId((new MessageFilter())->setLastId($lastId)->setLimit($limit));
 
         $viewStats = [];
         foreach ($messagesResult->getItems() as $message) {
@@ -445,7 +449,9 @@ class AnalyticsService
      */
     public function getRecentCampaigns(int $limit = 5): array
     {
-        $messages = $this->messageRepository->getFilteredAfterId(0, $limit)->getItems();
+        $messages = $this->messageRepository
+            ->getFilteredAfterId((new MessageFilter())->setLastId(0)->setLimit($limit))
+            ->getItems();
         $recentCampaigns = [];
         foreach ($messages as $message) {
             $views = $this->userMessageViewManager->countViewsByMessageId($message->getId());

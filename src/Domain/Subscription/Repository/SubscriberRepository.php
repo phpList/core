@@ -79,11 +79,10 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
      * @SuppressWarnings("CyclomaticComplexity")
      * @SuppressWarnings("NPathComplexity")
      */
-    public function getFilteredAfterId(
-        int $lastId,
-        int $limit,
-        ?FilterRequestInterface $filter = null,
-    ): PaginatedResult {
+    public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult
+    {
+        $lastId = $filter->getLastId();
+        $limit = $filter->getLimit();
         if (!$filter instanceof SubscriberFilter) {
             throw new InvalidArgumentException('Expected SubscriberFilterRequest.');
         }

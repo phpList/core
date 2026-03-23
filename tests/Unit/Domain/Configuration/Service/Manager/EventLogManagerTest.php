@@ -57,12 +57,12 @@ final class EventLogManagerTest extends TestCase
         $this->repository->expects($this->once())
             ->method('getFilteredAfterId')
             ->with(
-                100,
-                25,
                 $this->callback(function (EventLogFilter $filter) {
                     // Use getters to validate
                     return method_exists($filter, 'getPage')
                         && $filter->getPage() === 'settings'
+                        && $filter->getLastId() === 100
+                        && $filter->getLimit() === 25
                         && $filter->getDateFrom() instanceof DateTimeImmutable
                         && $filter->getDateTo() instanceof DateTimeImmutable
                         && $filter->getDateFrom() <= $filter->getDateTo();
@@ -83,11 +83,9 @@ final class EventLogManagerTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('getFilteredAfterId')
-            ->with(
-                0,
-                50,
-                $this->anything()
-            )
+            ->with($this->callback(function (EventLogFilter $filter): bool {
+                return $filter->getLastId() === 0 && $filter->getLimit() === 50;
+            }))
             ->willReturn(new PaginatedResult($expected, 0, 1, 0));
 
         $result = $this->manager->get();

@@ -9,9 +9,5 @@ use PhpList\Core\Domain\Common\Model\PaginatedResult;
 
 interface PaginatableRepositoryInterface
 {
-    public function getFilteredAfterId(
-        int $lastId,
-        int $limit,
-        ?FilterRequestInterface $filter = null
-    ): PaginatedResult;
+    public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult;
 }

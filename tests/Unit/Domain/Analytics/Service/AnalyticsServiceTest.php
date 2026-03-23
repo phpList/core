@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Analytics\Service\AnalyticsService;
 use PhpList\Core\Domain\Analytics\Service\Manager\LinkTrackManager;
 use PhpList\Core\Domain\Analytics\Service\Manager\UserMessageViewManager;
 use PhpList\Core\Domain\Common\Model\PaginatedResult;
+use PhpList\Core\Domain\Messaging\Model\Filter\MessageFilter;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
@@ -87,7 +88,9 @@ class AnalyticsServiceTest extends TestCase
 
         $this->messageRepository->expects(self::once())
             ->method('getFilteredAfterId')
-            ->with($lastId, $limit)
+            ->with($this->callback(function (MessageFilter $filter) use ($lastId, $limit): bool {
+                return $filter->getLastId() === $lastId && $filter->getLimit() === $limit;
+            }))
             ->willReturn($messageResult);
 
         $this->userMessageViewManager->expects(self::once())
@@ -150,7 +153,9 @@ class AnalyticsServiceTest extends TestCase
 
         $this->messageRepository->expects(self::once())
             ->method('getFilteredAfterId')
-            ->with($lastId, $limit)
+            ->with($this->callback(function (MessageFilter $filter) use ($lastId, $limit): bool {
+                return $filter->getLastId() === $lastId && $filter->getLimit() === $limit;
+            }))
             ->willReturn($messageResult);
 
         $this->userMessageViewManager->expects(self::once())

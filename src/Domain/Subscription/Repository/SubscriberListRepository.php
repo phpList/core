@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Repository;
 
+use InvalidArgumentException;
+use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
+use PhpList\Core\Domain\Messaging\Model\Filter\SubscriberListFilter;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
@@ -51,6 +55,25 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
     {
         return $this->createQueryBuilder('l')
             ->where('l.active = true')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult
+    {
+        if (!($filter instanceof SubscriberListFilter)) {
+            throw new InvalidArgumentException('Filter must be an instance of SubscriberListFilter');
+        }
+
+        $queryBuilder = $this->createQueryBuilder('l');
+
+        return $queryBuilder
+            ->where($queryBuilder->expr()->orX('l.owner = :admin', 'l.public = true'))
+            ->setParameter('admin', $filter->getOwner())
+            ->andWhere('l.id > :id')
+            ->setParameter('id', $filter->getLastId())
+            ->setMaxResults($filter->getLimit())
+            ->orderBy('l.id', 'ASC')
             ->getQuery()
             ->getResult();
     }

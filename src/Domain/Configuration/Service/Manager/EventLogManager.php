@@ -43,9 +43,9 @@ class EventLogManager
         ?DateTimeInterface $dateFrom = null,
         ?DateTimeInterface $dateTo = null
     ): array {
-        $filter = new EventLogFilter($page, $dateFrom, $dateTo);
+        $filter = new EventLogFilter($page, $dateFrom, $dateTo, $lastId, $limit);
 
-        return $this->repository->getFilteredAfterId($lastId, $limit, $filter)->getItems();
+        return $this->repository->getFilteredAfterId($filter)->getItems();
     }
 
     public function delete(EventLog $log): void

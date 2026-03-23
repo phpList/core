@@ -32,11 +32,10 @@ class AdminAttributeValueRepository extends AbstractRepository implements Pagina
      * @return PaginatedResult<SubscriberAttributeValue>
      * @throws InvalidArgumentException
      */
-    public function getFilteredAfterId(
-        int $lastId,
-        int $limit,
-        ?FilterRequestInterface $filter = null
-    ): PaginatedResult {
+    public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult
+    {
+        $lastId = $filter->getLastId();
+        $limit = $filter->getLimit();
         if (!$filter instanceof AdminAttributeValueFilter) {
             throw new InvalidArgumentException('Expected AdminAttributeValueFilter.');
         }

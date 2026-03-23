@@ -22,11 +22,10 @@ class SubscriberHistoryRepository extends AbstractRepository implements Paginata
      * @return PaginatedResult<SubscriberHistory>
      * @throws InvalidArgumentException
      */
-    public function getFilteredAfterId(
-        int $lastId,
-        int $limit,
-        ?FilterRequestInterface $filter = null,
-    ): PaginatedResult {
+    public function getFilteredAfterId(FilterRequestInterface $filter,): PaginatedResult
+    {
+        $lastId = $filter->getLastId();
+        $limit = $filter->getLimit();
         $queryBuilder = $this->createQueryBuilder('sh');
 
         if (!$filter instanceof SubscriberHistoryFilter) {

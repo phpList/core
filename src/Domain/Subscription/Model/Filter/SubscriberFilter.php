@@ -6,10 +6,13 @@ namespace PhpList\Core\Domain\Subscription\Model\Filter;
 
 use DateTimeImmutable;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Common\Model\Filter\PaginatedFilterTrait;
 
 /** @SuppressWarnings("ExcessiveParameterList") */
 class SubscriberFilter implements FilterRequestInterface
 {
+    use PaginatedFilterTrait;
+
     private ?int $listId;
     private ?DateTimeImmutable $subscribedDateFrom;
     private ?DateTimeImmutable $subscribedDateTo;
@@ -36,6 +39,8 @@ class SubscriberFilter implements FilterRequestInterface
         array $columns = [],
         ?string $findColumn = null,
         ?string $findValue = null,
+        int $lastId = 0,
+        int $limit = 50,
     ) {
         $this->listId = $listId;
         $this->subscribedDateFrom = $subscribedDateFrom;
@@ -49,6 +54,8 @@ class SubscriberFilter implements FilterRequestInterface
         $this->columns = $columns;
         $this->findColumn = $findColumn;
         $this->findValue = $findValue;
+        $this->setLastId($lastId);
+        $this->setLimit($limit);
     }
 
     public function getListId(): ?int

@@ -49,11 +49,10 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
     }
 
     /** @return PaginatedResult<Message> */
-    public function getFilteredAfterId(
-        int $lastId,
-        int $limit,
-        ?FilterRequestInterface $filter = null
-    ): PaginatedResult {
+    public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult
+    {
+        $lastId = $filter->getLastId();
+        $limit = $filter->getLimit();
         $queryBuilder = $this->createQueryBuilder('m');
 
         if ($filter instanceof MessageFilter && $filter->getOwner() !== null) {

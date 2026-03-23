@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Common\Repository;
 
-use BadMethodCallException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Model\PaginatedResult;
 
@@ -40,20 +39,8 @@ trait CursorPaginationTrait
         );
     }
 
-    /**
-     * Get filtered + paginated messages for a given owner and status.
-     *
-     * @throws BadMethodCallException
-     * */
-    public function getFilteredAfterId(
-        int $lastId,
-        int $limit,
-        ?FilterRequestInterface $filter = null
-    ): PaginatedResult {
-        if ($filter === null) {
-            return $this->getAfterId($lastId, $limit);
-        }
-
-        throw new BadMethodCallException('getFilteredAfterId method not implemented');
+    public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult
+    {
+        return $this->getAfterId($filter->getLastId(), $filter->getLimit());
     }
 }
