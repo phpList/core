@@ -43,7 +43,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     private ?string $rssFeed = null;
 
     #[ORM\Column]
-    private ?string $description;
+    private ?string $description = '';
 
     #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
     protected ?DateTime $createdAt = null;
@@ -61,7 +61,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     private bool $public;
 
     #[ORM\Column]
-    private string $category;
+    private ?string $category = '';
 
     #[ORM\ManyToOne(targetEntity: Administrator::class)]
     #[ORM\JoinColumn(name: 'owner')]
@@ -145,7 +145,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this->subjectPrefix;
     }
 
-    public function setSubjectPrefix(string $subjectPrefix): self
+    public function setSubjectPrefix(?string $subjectPrefix): self
     {
         $this->subjectPrefix = $subjectPrefix;
 
@@ -163,12 +163,12 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this;
     }
 
-    public function getCategory(): string
+    public function getCategory(): ?string
     {
         return $this->category;
     }
 
-    public function setCategory(string $category): self
+    public function setCategory(?string $category): self
     {
         $this->category = $category;
         return $this;

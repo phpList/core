@@ -31,6 +31,22 @@ class SubscriberListManager
         return $subscriberList;
     }
 
+    public function updateSubscriberList(
+        SubscriberList $subscriberList,
+        CreateSubscriberListDto $subscriberListDto,
+        Administrator $authUser
+    ): SubscriberList {
+        return $subscriberList
+            ->setName($subscriberListDto->name)
+            ->setOwner($authUser)
+            ->setDescription($subscriberListDto->description)
+            ->setListPosition($subscriberListDto->listPosition)
+            ->setCategory($subscriberListDto->category)
+            ->setSubjectPrefix($subscriberListDto->subjectPrefix)
+            ->setRssFeed($subscriberListDto->rssFeed)
+            ->setPublic($subscriberListDto->isPublic);
+    }
+
     /**
      * @return SubscriberList[]
      */
