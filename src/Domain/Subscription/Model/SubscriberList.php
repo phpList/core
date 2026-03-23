@@ -43,7 +43,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     private ?string $rssFeed = null;
 
     #[ORM\Column]
-    private string $description = '';
+    private ?string $description;
 
     #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
     protected ?DateTime $createdAt = null;
@@ -134,7 +134,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this->listPosition;
     }
 
-    public function setListPosition(int $listPosition): self
+    public function setListPosition(?int $listPosition): self
     {
         $this->listPosition = $listPosition;
         return $this;
