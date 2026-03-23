@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Model\Filter;
 
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
-use PhpList\Core\Domain\Common\Model\Filter\PaginatedFilterTrait;
+use PhpList\Core\Domain\Common\Model\Filter\PaginatedFilter;
 
-class SubscriberAttributeValueFilter implements FilterRequestInterface
+class SubscriberAttributeValueFilter extends PaginatedFilter implements FilterRequestInterface
 {
-    use PaginatedFilterTrait;
 
     private ?int $subscriberId = null;
 

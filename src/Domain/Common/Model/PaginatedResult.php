@@ -13,6 +13,7 @@ class PaginatedResult
     private array $items;
     private int $total;
     private int $limit;
+    // maybe $lastId not needed
     private int $lastId;
 
     /** @param list<T> $items */

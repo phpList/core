@@ -67,7 +67,14 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
 
         $queryBuilder = $this->createQueryBuilder('l');
 
-        return $queryBuilder
+        $countQb = clone $queryBuilder;
+        $total = (int) $countQb
+            ->select('COUNT(DISTINCT l.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        /** @var list<SubscriberList> $items */
+        $items = $queryBuilder
             ->where($queryBuilder->expr()->orX('l.owner = :admin', 'l.public = true'))
             ->setParameter('admin', $filter->getOwner())
             ->andWhere('l.id > :id')
@@ -76,6 +83,13 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
             ->orderBy('l.id', 'ASC')
             ->getQuery()
             ->getResult();
+
+        return new PaginatedResult(
+            items: $items,
+            total: $total,
+            limit: $filter->getLimit(),
+            lastId: $filter->getLastId(),
+        );
     }
 
     public function getListNames(array $listIds): array

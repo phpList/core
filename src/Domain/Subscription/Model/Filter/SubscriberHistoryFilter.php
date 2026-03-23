@@ -6,13 +6,11 @@ namespace PhpList\Core\Domain\Subscription\Model\Filter;
 
 use DateTimeImmutable;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
-use PhpList\Core\Domain\Common\Model\Filter\PaginatedFilterTrait;
+use PhpList\Core\Domain\Common\Model\Filter\PaginatedFilter;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 
-class SubscriberHistoryFilter implements FilterRequestInterface
+class SubscriberHistoryFilter extends PaginatedFilter implements FilterRequestInterface
 {
-    use PaginatedFilterTrait;
-
     private ?Subscriber $subscriber;
     private ?string $ip;
     private ?DateTimeImmutable $dateFrom;

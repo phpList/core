@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Model\Filter;
 
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
-use PhpList\Core\Domain\Common\Model\Filter\PaginatedFilterTrait;
+use PhpList\Core\Domain\Common\Model\Filter\PaginatedFilter;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 
-class SubscriberListFilter implements FilterRequestInterface
+class SubscriberListFilter extends PaginatedFilter implements FilterRequestInterface
 {
-    use PaginatedFilterTrait;
-
     private ?Administrator $owner = null;
 
     public function getOwner(): ?Administrator

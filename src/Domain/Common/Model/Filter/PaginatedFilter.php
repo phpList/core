@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Common\Model\Filter;
 
-trait PaginatedFilterTrait
+class PaginatedFilter implements FilterRequestInterface
 {
     private int $lastId = 0;
     private int $limit = 50;

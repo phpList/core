@@ -6,12 +6,10 @@ namespace PhpList\Core\Domain\Configuration\Model\Filter;
 
 use DateTimeInterface;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
-use PhpList\Core\Domain\Common\Model\Filter\PaginatedFilterTrait;
+use PhpList\Core\Domain\Common\Model\Filter\PaginatedFilter;
 
-class EventLogFilter implements FilterRequestInterface
+class EventLogFilter extends PaginatedFilter implements FilterRequestInterface
 {
-    use PaginatedFilterTrait;
-
     public function __construct(
         private readonly ?string $page = null,
         private readonly ?DateTimeInterface $dateFrom = null,
