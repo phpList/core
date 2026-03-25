@@ -50,7 +50,12 @@ class SubscriberCsvExporter
         $tempFilePath = tempnam(sys_get_temp_dir(), 'subscribers_export_');
         $this->logger->debug('Created temporary file for export', ['path' => $tempFilePath]);
 
-        $this->generateCsvContent($filter, $batchSize, $tempFilePath, $filter->getColumns());
+        $this->generateCsvContent(
+            filter: $filter,
+            batchSize: $batchSize,
+            filePath: $tempFilePath,
+            columns: $filter->getColumns(),
+        );
 
         $response = new BinaryFileResponse($tempFilePath);
         $response = $this->configureResponse($response);
@@ -80,10 +85,16 @@ class SubscriberCsvExporter
         /** @var SubscriberAttributeDefinition[] $attributeDefinitions */
         $attributeDefinitions = $this->definitionRepository->findAll();
 
-        $headers = $this->getExportHeaders($attributeDefinitions, $columns);
+        $headers = $this->getExportHeaders(attributeDefinitions: $attributeDefinitions, columns: $columns);
         fputcsv($handle, $headers);
 
-        $this->exportSubscribers($handle, $filter, $batchSize, $attributeDefinitions, $headers);
+        $this->exportSubscribers(
+            handle: $handle,
+            filter: $filter,
+            batchSize: $batchSize,
+            attributeDefinitions: $attributeDefinitions,
+            headers: $headers,
+        );
 
         fclose($handle);
     }
@@ -97,12 +108,20 @@ class SubscriberCsvExporter
     private function getExportHeaders(array $attributeDefinitions, array $columns): array
     {
         $headers = [
+            'id',
             'email',
             'confirmed',
             'blacklisted',
+//        'manualConfirm',
+            'bounceCount',
+            'createdAt',
+            'updatedAt',
+            'uniqueId',
             'htmlEmail',
+            'rssFrequency',
             'disabled',
             'extraData',
+            'foreignKey',
         ];
 
         foreach ($attributeDefinitions as $definition) {
@@ -158,7 +177,11 @@ class SubscriberCsvExporter
             ]);
 
             foreach ($subscribers as $subscriber) {
-                $row = $this->getSubscriberRow($subscriber, $attributeDefinitions, $headers);
+                $row = $this->getSubscriberRow(
+                    subscriber: $subscriber,
+                    attributeDefinitions: $attributeDefinitions,
+                    headers: $headers,
+                );
                 fputcsv($handle, $row);
                 $lastId = $subscriber->getId();
             }
@@ -188,15 +211,7 @@ class SubscriberCsvExporter
      */
     private function getSubscriberRow(Subscriber $subscriber, array $attributeDefinitions, array $headers): array
     {
-        $row = [
-            'id' => $subscriber->getId(),
-            'email' => $subscriber->getEmail(),
-            'confirmed' => $subscriber->isConfirmed() ? '1' : '0',
-            'blacklisted' => $subscriber->isBlacklisted() ? '1' : '0',
-            'htmlEmail' => $subscriber->hasHtmlEmail() ? '1' : '0',
-            'disabled' => $subscriber->isDisabled() ? '1' : '0',
-            'extraData' => $subscriber->getExtraData(),
-        ];
+        $row = $this->normalizerSubscriberData($subscriber);
 
         foreach ($attributeDefinitions as $definition) {
             $attributeValue = $this->attributeManager->getSubscriberAttribute(
@@ -233,5 +248,30 @@ class SubscriberCsvExporter
         $response->deleteFileAfterSend();
 
         return $response;
+    }
+
+    /** @SuppressWarnings("CyclomaticComplexity") */
+    private function normalizerSubscriberData(Subscriber $subscriber): array
+    {
+        return [
+            'id' => $subscriber->getId(),
+            'email' => $subscriber->getEmail(),
+            'confirmed' => $subscriber->isConfirmed() ? '1' : '0',
+            'blacklisted' => $subscriber->isBlacklisted() ? '1' : '0',
+            'bounceCount' => $subscriber->getBounceCount(),
+            'createdAt' => $subscriber->getCreatedAt()?->format('Y-m-d H:i:s') ?? '',
+            'updatedAt' => $subscriber->getUpdatedAt()?->format('Y-m-d H:i:s') ?? '',
+            'uniqueId' => $subscriber->getUniqueId(),
+            'htmlEmail' => $subscriber->hasHtmlEmail() ? '1' : '0',
+            'rssFrequency' => $subscriber->getRssFrequency(),
+            'disabled' => $subscriber->isDisabled() ? '1' : '0',
+            'extraData' => $this->normalizeNullable($subscriber->getExtraData()),
+            'foreignKey' => $this->normalizeNullable($subscriber->getForeignKey()),
+        ];
+    }
+
+    private function normalizeNullable(mixed $value): string
+    {
+        return $value ?? '';
     }
 }

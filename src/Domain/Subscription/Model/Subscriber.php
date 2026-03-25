@@ -45,7 +45,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     protected ?DateTime $createdAt = null;
 
     #[ORM\Column(name: 'modified', type: 'datetime', nullable: false)]
-    private DateTime $updatedAt;
+    private ?DateTime $updatedAt = null;
 
     #[ORM\Column(unique: true)]
     private string $email = '';
@@ -134,7 +134,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->createdAt;
     }
 
-    public function getUpdatedAt(): DateTime
+    public function getUpdatedAt(): ?DateTime
     {
         return $this->updatedAt;
     }
