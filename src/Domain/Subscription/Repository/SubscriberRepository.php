@@ -92,14 +92,14 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->leftJoin('subscription.subscriberList', 'list');
 
         if ($filter->getListId() !== null) {
-            $queryBuilder->where('list.id = :listId')
+            $queryBuilder->andWhere('list.id = :listId')
                 ->setParameter('listId', $filter->getListId());
             if ($filter->getSubscribedDateFrom() !== null) {
-                $queryBuilder->where('subscription.createdAt > :subscribedAtFrom')
+                $queryBuilder->andWhere('subscription.createdAt > :subscribedAtFrom')
                     ->setParameter('subscribedAtFrom', $filter->getSubscribedDateFrom());
             }
             if ($filter->getSubscribedDateTo() !== null) {
-                $queryBuilder->where('subscription.createdAt < :subscribedAtTo')
+                $queryBuilder->andWhere('subscription.createdAt < :subscribedAtTo')
                     ->setParameter('subscribedAtTo', $filter->getSubscribedDateTo());
             }
         }

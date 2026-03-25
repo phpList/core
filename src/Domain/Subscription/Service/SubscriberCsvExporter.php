@@ -10,6 +10,7 @@ use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
+use PhpList\Core\Domain\Subscription\Service\Resolver\AttributeValueResolver;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +23,7 @@ class SubscriberCsvExporter
 {
     public function __construct(
         private readonly SubscriberAttributeManager $attributeManager,
+        private readonly AttributeValueResolver $attributeValueResolver,
         private readonly SubscriberRepository $subscriberRepository,
         private readonly SubscriberAttributeDefinitionRepository $definitionRepository,
         private readonly LoggerInterface $logger,
@@ -214,11 +216,12 @@ class SubscriberCsvExporter
         $row = $this->normalizerSubscriberData($subscriber);
 
         foreach ($attributeDefinitions as $definition) {
-            $attributeValue = $this->attributeManager->getSubscriberAttribute(
+            $attrValue = $this->attributeManager->getSubscriberAttribute(
                 subscriberId: $subscriber->getId(),
                 attributeDefinitionId: $definition->getId()
             );
-            $row[$definition->getName()] = $attributeValue ? $attributeValue->getValue() : '';
+
+            $row[$definition->getName()] = $attrValue ? $this->attributeValueResolver->resolve($attrValue) : '';
         }
 
         $row = array_intersect_key($row, array_flip($headers));
