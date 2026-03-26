@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Model\Filter;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Model\Filter\PaginatedFilter;
 
@@ -20,6 +21,7 @@ class SubscriberFilter extends PaginatedFilter implements FilterRequestInterface
     private ?DateTimeImmutable $updatedDateTo;
     private ?bool $isConfirmed;
     private ?bool $isBlacklisted;
+    /** @var list<string> */
     private array $columns;
     private ?string $findColumn;
     private ?string $findValue;
@@ -40,6 +42,11 @@ class SubscriberFilter extends PaginatedFilter implements FilterRequestInterface
         int $lastId = 0,
         int $limit = 50,
     ) {
+        $allowedFindColumns = ['email', 'foreignKey', 'uniqueId'];
+        if ($findColumn !== null && !in_array($findColumn, $allowedFindColumns, true)) {
+            throw new InvalidArgumentException('Invalid search column.');
+        }
+
         $this->listId = $listId;
         $this->subscribedDateFrom = $subscribedDateFrom;
         $this->subscribedDateTo = $subscribedDateTo;
@@ -101,6 +108,7 @@ class SubscriberFilter extends PaginatedFilter implements FilterRequestInterface
         return $this->isBlacklisted;
     }
 
+    /** @return list<string> */
     public function getColumns(): array
     {
         return $this->columns;

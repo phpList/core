@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeValue;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
+use PhpList\Core\Domain\Subscription\Service\Resolver\AttributeValueResolver;
 use PhpList\Core\Domain\Subscription\Service\SubscriberCsvExporter;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -33,6 +34,7 @@ class SubscriberCsvExporterTest extends TestCase
 
         $this->subject = new SubscriberCsvExporter(
             $this->attributeManagerMock,
+            $this->createMock(AttributeValueResolver::class),
             $this->subscriberRepositoryMock,
             $this->attributeDefinitionRepositoryMock,
             $this->createMock(LoggerInterface::class)

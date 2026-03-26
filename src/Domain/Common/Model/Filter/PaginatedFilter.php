@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Common\Model\Filter;
 
+use InvalidArgumentException;
+
 class PaginatedFilter implements FilterRequestInterface
 {
     private int $lastId = 0;
@@ -23,6 +25,10 @@ class PaginatedFilter implements FilterRequestInterface
 
     public function setLimit(int $limit): self
     {
+        if ($limit <= 0) {
+            throw new InvalidArgumentException('Limit must be greater than 0.');
+        }
+
         $this->limit = $limit;
 
         return $this;
