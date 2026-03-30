@@ -67,7 +67,7 @@ class MessageFixture extends Fixture
                 sent: new DateTime($row['sent']),
                 sendStart: new DateTime($row['sendstart']),
             );
-            $metadata->setProcessed((bool) $row['processed']);
+            $metadata->setProcessed((int) $row['processed']);
             $metadata->setViews((int) $row['viewed']);
             $content = new MessageContent(
                 subject: $row['subject'],

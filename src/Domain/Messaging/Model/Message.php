@@ -197,6 +197,8 @@ class Message implements DomainModel, Identity, ModificationDate, OwnableInterfa
 
     public function incrementSentCount(OutputFormat $sentAs): void
     {
+        $this->metadata->incrementProcessed();
+
         match ($sentAs) {
             OutputFormat::Html => $this->format->incrementAsHtml(),
             OutputFormat::Text => $this->format->incrementAsText(),
