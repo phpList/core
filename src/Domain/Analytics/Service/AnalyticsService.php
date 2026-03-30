@@ -56,6 +56,7 @@ class AnalyticsService
         $campaignStats = [];
         foreach ($messages as $message) {
             $views = $this->userMessageViewManager->countViewsByMessageId($message->getId());
+            $uniqueViews = $this->userMessageViewManager->countUniqueViewsByMessageId($message->getId());
             $linkTracks = $this->linkTrackManager->getLinkTracksByMessageId($message->getId());
 
             $totalClicks = 0;
@@ -79,7 +80,7 @@ class AnalyticsService
                 'sent' => $sentCount,
                 'bounces' => $bounces,
                 'forwards' => $forwards,
-                'uniqueViews' => $views,
+                'uniqueViews' => $uniqueViews,
                 'totalClicks' => $totalClicks,
                 'uniqueClicks' => $uniqueClicks,
             ];

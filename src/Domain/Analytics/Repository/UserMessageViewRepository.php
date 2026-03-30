@@ -23,6 +23,16 @@ class UserMessageViewRepository extends AbstractRepository implements Paginatabl
             ->getSingleScalarResult();
     }
 
+    public function uniqueByMessageId(int $messageId): int
+    {
+        return (int) $this->createQueryBuilder('umv')
+            ->select('COUNT(DISTINCT umv.ip)')
+            ->where('umv.messageId = :messageId')
+            ->setParameter('messageId', $messageId)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     /**
      * Counts views between two dates.
      *

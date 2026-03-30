@@ -25,6 +25,11 @@ class UserMessageViewManager
         return $this->userMessageViewRepository->countByMessageId($messageId);
     }
 
+    public function countUniqueViewsByMessageId(int $messageId): int
+    {
+        return $this->userMessageViewRepository->uniqueByMessageId($messageId);
+    }
+
     public function countViewsBetween(DateTimeInterface $start, DateTimeInterface $end): int
     {
         return $this->userMessageViewRepository->countBetween($start, $end);

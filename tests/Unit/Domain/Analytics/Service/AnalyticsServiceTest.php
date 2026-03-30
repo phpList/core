@@ -98,6 +98,11 @@ class AnalyticsServiceTest extends TestCase
             ->with($messageId)
             ->willReturn(10);
 
+        $this->userMessageViewManager->expects(self::once())
+            ->method('countUniqueViewsByMessageId')
+            ->with($messageId)
+            ->willReturn(3);
+
         $this->linkTrackManager->expects(self::once())
             ->method('getLinkTracksByMessageId')
             ->with($messageId)
@@ -128,7 +133,7 @@ class AnalyticsServiceTest extends TestCase
         self::assertSame(15, $campaign['sent']);
         self::assertSame(3, $campaign['bounces']);
         self::assertSame(2, $campaign['forwards']);
-        self::assertSame(10, $campaign['uniqueViews']);
+        self::assertSame(3, $campaign['uniqueViews']);
         self::assertSame(5, $campaign['totalClicks']);
         self::assertSame(2, $campaign['uniqueClicks']);
     }
