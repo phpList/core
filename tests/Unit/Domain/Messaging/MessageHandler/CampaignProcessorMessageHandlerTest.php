@@ -9,6 +9,7 @@ use Exception;
 use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
+use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessageInterface;
 use PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
@@ -120,6 +121,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $metadata = $this->createMock(MessageMetadata::class);
         $campaign->method('getMetadata')->willReturn($metadata);
         $campaign->method('getId')->willReturn(1);
+        $data = new CampaignProcessorMessage(1);
 
         $this->messageRepository->method('findByIdAndStatus')
             ->with(1, MessageStatus::Submitted)
@@ -131,8 +133,8 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             ->willReturn(true);
 
         $this->subscriberProvider->expects($this->once())
-            ->method('getSubscribersForMessage')
-            ->with($campaign)
+            ->method('getSubscribersForMessageOrLists')
+            ->with($data, $campaign)
             ->willReturn([]);
 
         $metadata->expects($this->atLeastOnce())
@@ -144,7 +146,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $this->symfonyMailer->expects($this->never())
             ->method('send');
 
-        ($this->handler)(new CampaignProcessorMessage(1));
+        ($this->handler)($data);
     }
 
     public function testInvokeWithInvalidSubscriberEmail(): void
@@ -153,6 +155,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $metadata = $this->createMock(MessageMetadata::class);
         $campaign->method('getMetadata')->willReturn($metadata);
         $campaign->method('getId')->willReturn(1);
+        $data = new CampaignProcessorMessage(1);
 
         $this->messageRepository->method('findByIdAndStatus')
             ->with(1, MessageStatus::Submitted)
@@ -168,8 +171,8 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $subscriber->method('getId')->willReturn(1);
 
         $this->subscriberProvider->expects($this->once())
-            ->method('getSubscribersForMessage')
-            ->with($campaign)
+            ->method('getSubscribersForMessageOrLists')
+            ->with($data, $campaign)
             ->willReturn([$subscriber]);
 
         $metadata->expects($this->atLeastOnce())
@@ -184,7 +187,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $this->symfonyMailer->expects($this->never())
             ->method('send');
 
-        ($this->handler)(new CampaignProcessorMessage(1));
+        ($this->handler)($data);
     }
 
     public function testInvokeWithValidSubscriberEmail(): void
@@ -199,6 +202,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $metadata = $this->createMock(MessageMetadata::class);
         $campaign->method('getMetadata')->willReturn($metadata);
         $campaign->method('getId')->willReturn(1);
+        $data = new CampaignProcessorMessage(1);
 
         $this->messageRepository->method('findByIdAndStatus')
             ->with(1, MessageStatus::Submitted)
@@ -216,8 +220,8 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $subscriber->method('getId')->willReturn(1);
 
         $this->subscriberProvider->expects($this->once())
-            ->method('getSubscribersForMessage')
-            ->with($campaign)
+            ->method('getSubscribersForMessageOrLists')
+            ->with($data, $campaign)
             ->willReturn([$subscriber]);
 
         $this->messagePreparator->expects($this->once())
@@ -251,7 +255,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
-        ($this->handler)(new CampaignProcessorMessage(1));
+        ($this->handler)($data);
     }
 
     public function testInvokeWithMailerException(): void
@@ -266,6 +270,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $campaign->method('getContent')->willReturn($this->createContentMock());
         $campaign->method('getMetadata')->willReturn($metadata);
         $campaign->method('getId')->willReturn(123);
+        $data = new CampaignProcessorMessage(123);
 
         $this->messageRepository->method('findByIdAndStatus')
             ->with(123, MessageStatus::Submitted)
@@ -283,8 +288,8 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $subscriber->method('getId')->willReturn(1);
 
         $this->subscriberProvider->expects($this->once())
-            ->method('getSubscribersForMessage')
-            ->with($campaign)
+            ->method('getSubscribersForMessageOrLists')
+            ->with($data, $campaign)
             ->willReturn([$subscriber]);
 
         $this->messagePreparator->expects($this->once())
@@ -323,7 +328,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
-        ($this->handler)(new CampaignProcessorMessage(123));
+        ($this->handler)($data);
     }
 
     public function testInvokeWithMultipleSubscribers(): void
@@ -337,6 +342,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $metadata = $this->createMock(MessageMetadata::class);
         $campaign->method('getMetadata')->willReturn($metadata);
         $campaign->method('getId')->willReturn(1);
+        $data = new CampaignProcessorMessage(1);
 
         $this->messageRepository->method('findByIdAndStatus')
             ->with(1, MessageStatus::Submitted)
@@ -362,8 +368,8 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $subscriber3->method('getId')->willReturn(3);
 
         $this->subscriberProvider->expects($this->once())
-            ->method('getSubscribersForMessage')
-            ->with($campaign)
+            ->method('getSubscribersForMessageOrLists')
+            ->with($data, $campaign)
             ->willReturn([$subscriber1, $subscriber2, $subscriber3]);
 
         $this->messagePreparator->expects($this->exactly(2))
@@ -401,7 +407,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $this->entityManager->expects($this->atLeastOnce())
             ->method('flush');
 
-        ($this->handler)(new CampaignProcessorMessage(1));
+        ($this->handler)($data);
     }
 
     /**

@@ -76,13 +76,13 @@ class CampaignProcessorMessageHandler
     ) {
     }
 
-    public function __invoke(CampaignProcessorMessage|SyncCampaignProcessorMessage $message): void
+    public function __invoke(CampaignProcessorMessage|SyncCampaignProcessorMessage $data): void
     {
-        $campaign = $this->messageRepository->findByIdAndStatus($message->getMessageId(), MessageStatus::Submitted);
+        $campaign = $this->messageRepository->findByIdAndStatus($data->getMessageId(), MessageStatus::Submitted);
         if (!$campaign) {
             $this->logger->warning(
                 $this->translator->trans('Campaign not found or not in submitted status'),
-                ['campaign_id' => $message->getMessageId()]
+                ['campaign_id' => $data->getMessageId()]
             );
 
             return;
@@ -115,10 +115,10 @@ class CampaignProcessorMessageHandler
             return;
         }
 
-        $this->handleAdminNotifications($campaign, $loadedMessageData, $message->getMessageId());
+        $this->handleAdminNotifications($campaign, $loadedMessageData, $data->getMessageId());
 
         $this->updateMessageStatus($campaign, MessageStatus::Prepared);
-        $subscribers = $this->subscriberProvider->getSubscribersForMessage($campaign);
+        $subscribers = $this->subscriberProvider->getSubscribersForMessageOrLists($data, $campaign);
 
         $this->updateMessageStatus($campaign, MessageStatus::InProcess);
 

@@ -51,6 +51,19 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
             ->getResult();
     }
 
+    /** @return int[] */
+    public function getListIdsByMessage(Message $message): array
+    {
+        return $this->createQueryBuilder('l')
+            ->select('l.id')
+            ->join('l.listMessages', 'lm')
+            ->join('lm.message', 'm')
+            ->where('m = :message')
+            ->setParameter('message', $message)
+            ->getQuery()
+            ->getSingleColumnResult();
+    }
+
     public function getAllActive(): array
     {
         return $this->createQueryBuilder('l')
