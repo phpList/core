@@ -6,9 +6,6 @@ namespace PhpList\Core\Domain\Identity\Model\Dto;
 
 class AdminAttributeDefinitionDto
 {
-    /**
-     * @SuppressWarnings("BooleanArgumentFlag")
-     */
     public function __construct(
         public readonly string $name,
         public readonly ?string $type = null,

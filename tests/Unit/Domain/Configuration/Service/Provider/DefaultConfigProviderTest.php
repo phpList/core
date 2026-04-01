@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Configuration\Service\Provider;
 
+use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\DefaultConfigProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -26,12 +27,12 @@ final class DefaultConfigProviderTest extends TestCase
 
     public function testHasReturnsTrueForKnownKey(): void
     {
-        $this->assertTrue($this->provider->has('admin_address'));
+        $this->assertTrue($this->provider->has(ConfigOption::AdminAddress));
     }
 
     public function testGetReturnsArrayShapeForKnownKey(): void
     {
-        $item = $this->provider->get('admin_address');
+        $item = $this->provider->get(ConfigOption::AdminAddress);
 
         $this->assertIsArray($item);
         $this->assertArrayHasKey('value', $item);
@@ -45,15 +46,9 @@ final class DefaultConfigProviderTest extends TestCase
         $this->assertStringContainsString('[DOMAIN]', (string) $item['value']);
     }
 
-    public function testGetReturnsProvidedDefaultWhenUnknownKey(): void
-    {
-        $fallback = ['value' => 'X', 'type' => 'text'];
-        $this->assertSame($fallback, $this->provider->get('does_not_exist', $fallback));
-    }
-
     public function testRemoteProcessingSecretIsRandomHexOfExpectedLength(): void
     {
-        $item = $this->provider->get('remote_processing_secret');
+        $item = $this->provider->get(ConfigOption::RemoteProcessingSecret);
         $this->assertIsArray($item);
         $this->assertArrayHasKey('value', $item);
 
@@ -64,7 +59,7 @@ final class DefaultConfigProviderTest extends TestCase
 
     public function testSubscribeUrlDefaultsToHttpAndApiV2Path(): void
     {
-        $item = $this->provider->get('subscribeurl');
+        $item = $this->provider->get(ConfigOption::SubscribeUrl);
         $this->assertIsArray($item);
         $url = (string) $item['value'];
 
@@ -75,7 +70,7 @@ final class DefaultConfigProviderTest extends TestCase
 
     public function testUnsubscribeUrlDefaults(): void
     {
-        $item = $this->provider->get('unsubscribeurl');
+        $item = $this->provider->get(ConfigOption::UnsubscribeUrl);
         $url = (string) $item['value'];
 
         $this->assertStringStartsWith('http://', $url);
@@ -88,7 +83,7 @@ final class DefaultConfigProviderTest extends TestCase
             ->expects($this->atLeastOnce())
             ->method('trans')
             ->willReturnArgument(0);
-        $this->provider->get('admin_address');
+        $this->provider->get(ConfigOption::AdminAddress);
 
         // Subsequent calls should not trigger init again
         $translator = $this->createMock(TranslatorInterface::class);
@@ -100,8 +95,8 @@ final class DefaultConfigProviderTest extends TestCase
         $prop = $reflection->getProperty('translator');
 
         $prop->setValue($this->provider, $translator);
-        $this->provider->get('unsubscribeurl');
-        $this->provider->has('pageheader');
+        $this->provider->get(ConfigOption::UnsubscribeUrl);
+        $this->provider->has(ConfigOption::BlacklistUrl);
     }
 
     public function testKnownKeysHaveReasonableTypes(): void
@@ -110,8 +105,6 @@ final class DefaultConfigProviderTest extends TestCase
             'admin_address'           => 'email',
             'organisation_name'       => 'text',
             'organisation_logo'       => 'image',
-            'date_format'             => 'text',
-            'rc_notification'         => 'boolean',
             'notify_admin_login'      => 'boolean',
             'message_from_address'    => 'email',
             'message_from_name'       => 'text',
@@ -119,7 +112,7 @@ final class DefaultConfigProviderTest extends TestCase
         ];
 
         foreach ($keys as $key => $type) {
-            $item = $this->provider->get($key);
+            $item = $this->provider->get(ConfigOption::from($key));
             $this->assertIsArray($item, 'Item should be an array. Key: ' . $key);
             $this->assertSame($type, $item['type'] ?? null, $key .': should have type ' . $type);
         }

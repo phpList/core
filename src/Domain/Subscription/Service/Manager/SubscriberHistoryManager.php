@@ -37,9 +37,12 @@ class SubscriberHistoryManager
         $this->entityManager = $entityManager;
     }
 
+    /** @return SubscriberHistory[] */
     public function getHistory(int $lastId, int $limit, SubscriberHistoryFilter $filter): array
     {
-        return $this->repository->getFilteredAfterId($lastId, $limit, $filter);
+        $filter->setLastId($lastId)->setLimit($limit);
+
+        return $this->repository->getFilteredAfterId($filter)->getItems();
     }
 
     public function addHistory(Subscriber $subscriber, string $message, ?string $details = null): SubscriberHistory

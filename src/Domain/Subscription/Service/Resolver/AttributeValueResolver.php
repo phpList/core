@@ -21,6 +21,7 @@ class AttributeValueResolver
                 return $provider->getValue($userAttr->getAttributeDefinition(), $userAttr);
             }
         }
+
         return '';
     }
 }

@@ -1,4 +1,9 @@
 parameters:
+  # Flattened parameters for direct DI usage (Symfony does not support dot access into arrays)
+  app.config.message_from_address: 'news@example.com'
+  app.config.default_message_age: 15768000
+
+  # Keep original grouped array for legacy/config-provider usage
   app.config:
     message_from_address: 'news@example.com'
     admin_address: 'admin@example.com'

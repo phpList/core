@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Subscription\Repository;
 
 use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberAttributeValueFilter;
@@ -41,28 +42,46 @@ class SubscriberAttributeValueRepository extends AbstractRepository implements P
     }
 
     /**
-     * @return SubscriberAttributeValue[]
+     * @return PaginatedResult<SubscriberAttributeValue>
      * @throws InvalidArgumentException
      */
-    public function getFilteredAfterId(int $lastId, int $limit, ?FilterRequestInterface $filter = null): array
+    public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult
     {
+        $lastId = $filter->getLastId();
+        $limit = $filter->getLimit();
         if (!$filter instanceof SubscriberAttributeValueFilter) {
             throw new InvalidArgumentException('Expected SubscriberAttributeValueFilter.');
         }
-        $query = $this->createQueryBuilder('sa')
-            ->join('sa.subscriber', 's')
-            ->join('sa.attributeDefinition', 'ad')
-            ->where('ad.id > :lastId')
-            ->setParameter('lastId', $lastId);
+        $queryBuilder = $this->createQueryBuilder('sav')
+            ->join('sav.subscriber', 's')
+            ->join('sav.attributeDefinition', 'ad');
 
         if ($filter->getSubscriberId() !== null) {
-            $query->andWhere('s.id = :subscriberId')
+            $queryBuilder->andWhere('s.id = :subscriberId')
                 ->setParameter('subscriberId', $filter->getSubscriberId());
         }
-        return $query->orderBy('ad.id', 'ASC')
+
+        $countQb = clone $queryBuilder;
+        $total = (int) $countQb
+            ->select('COUNT(DISTINCT ad.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        /** @var list<SubscriberAttributeValue> $items */
+        $items = $queryBuilder
+            ->andWhere('ad.id > :lastId')
+            ->setParameter('lastId', $lastId)
+            ->orderBy('ad.id', 'ASC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+
+        return new PaginatedResult(
+            items: $items,
+            total: $total,
+            limit: $limit,
+            lastId: $lastId,
+        );
     }
 
     /** @return SubscriberAttributeValue[] */
@@ -89,5 +108,20 @@ class SubscriberAttributeValueRepository extends AbstractRepository implements P
             ->getOneOrNullResult();
 
         return $row !== null;
+    }
+
+    public function findOneBySubscriberAndAttributeName(
+        Subscriber $subscriber,
+        string $attributeName
+    ): ?SubscriberAttributeValue {
+        return $this->createQueryBuilder('sa')
+            ->join('sa.subscriber', 's')
+            ->join('sa.attributeDefinition', 'ad')
+            ->where('s = :subscriber')
+            ->andWhere('ad.name = :attributeName')
+            ->setParameter('subscriber', $subscriber)
+            ->setParameter('attributeName', $attributeName)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

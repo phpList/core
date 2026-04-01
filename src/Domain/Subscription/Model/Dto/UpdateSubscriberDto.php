@@ -12,7 +12,6 @@ class UpdateSubscriberDto
         public readonly bool $blacklisted,
         public readonly bool $htmlEmail,
         public readonly bool $disabled,
-        public readonly string $additionalData,
     ) {
     }
 }

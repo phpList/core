@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service;
 
 use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
-use PhpList\Core\Domain\Configuration\Service\UserPersonalizer;
-use PhpList\Core\Domain\Messaging\Model\Message;
-use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -24,7 +22,6 @@ class MessageProcessingPreparator
         private readonly MessageRepository $messageRepository,
         private readonly LinkTrackService $linkTrackService,
         private readonly TranslatorInterface $translator,
-        private readonly UserPersonalizer $userPersonalizer,
     ) {
     }
 
@@ -63,35 +60,32 @@ class MessageProcessingPreparator
      */
     public function processMessageLinks(
         int $campaignId,
-        MessageContent $content,
+        MessagePrecacheDto $cachedMessageDto,
         Subscriber $subscriber
-    ): MessageContent {
+    ): MessagePrecacheDto {
         if (!$this->linkTrackService->isExtractAndSaveLinksApplicable()) {
-            return $content;
+            return $cachedMessageDto;
         }
 
-        $savedLinks = $this->linkTrackService->extractAndSaveLinks($content, $subscriber->getId(), $campaignId);
-
+        $savedLinks = $this->linkTrackService->extractAndSaveLinks(
+            $cachedMessageDto,
+            $subscriber->getId(),
+            $campaignId,
+        );
         if (empty($savedLinks)) {
-            return $content;
+            return $cachedMessageDto;
         }
 
-        $htmlText = $content->getText();
-        $footer = $content->getFooter();
-        // todo: check other configured data that should be used in mail formatting/creation
-        if ($htmlText !== null) {
-            $htmlText = $this->replaceLinks($savedLinks, $htmlText);
-            $htmlText = $this->userPersonalizer->personalize($htmlText, $subscriber->getEmail());
-            $content->setText($htmlText);
+        // todo: check if getTextMessage should replace links as well
+        if ($cachedMessageDto->content) {
+            $cachedMessageDto->content = $this->replaceLinks($savedLinks, $cachedMessageDto->content);
         }
 
-        if ($footer !== null) {
-            $footer = $this->replaceLinks($savedLinks, $footer);
-            $footer = $this->userPersonalizer->personalize($footer, $subscriber->getEmail());
-            $content->setFooter($footer);
+        if ($cachedMessageDto->htmlFooter) {
+            $cachedMessageDto->htmlFooter = $this->replaceLinks($savedLinks, $cachedMessageDto->htmlFooter);
         }
 
-        return $content;
+        return $cachedMessageDto;
     }
 
     private function replaceLinks(array $savedLinks, string $htmlText): string

@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Identity\Model\Dto\CreateAdministratorDto;
 use PhpList\Core\Domain\Identity\Model\PrivilegeFlag;
 use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
-use PhpList\Core\Domain\Identity\Service\AdministratorManager;
+use PhpList\Core\Domain\Identity\Service\Manager\AdministratorManager;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;

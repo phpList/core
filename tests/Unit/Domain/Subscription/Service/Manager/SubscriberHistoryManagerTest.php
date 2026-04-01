@@ -6,6 +6,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Common\ClientIpResolver;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\SystemInfoCollector;
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberHistoryFilter;
 use PhpList\Core\Domain\Subscription\Model\SubscriberHistory;
@@ -36,14 +37,16 @@ class SubscriberHistoryManagerTest extends TestCase
     {
         $lastId = 10;
         $limit = 20;
-        $filter = $this->createMock(SubscriberHistoryFilter::class);
+        $filter = new SubscriberHistoryFilter();
         $expectedResult = [$this->createMock(SubscriberHistory::class)];
 
         $this->subscriberHistoryRepository
             ->expects($this->once())
             ->method('getFilteredAfterId')
-            ->with($lastId, $limit, $filter)
-            ->willReturn($expectedResult);
+            ->with($this->callback(function (SubscriberHistoryFilter $value) use ($filter, $lastId, $limit): bool {
+                return $value === $filter && $value->getLastId() === $lastId && $value->getLimit() === $limit;
+            }))
+            ->willReturn(new PaginatedResult($expectedResult, 1, 1, 1));
 
         $result = $this->subscriptionHistoryService->getHistory($lastId, $limit, $filter);
 
@@ -54,14 +57,16 @@ class SubscriberHistoryManagerTest extends TestCase
     {
         $lastId = 10;
         $limit = 20;
-        $filter = $this->createMock(SubscriberHistoryFilter::class);
+        $filter = new SubscriberHistoryFilter();
         $expectedResult = [];
 
         $this->subscriberHistoryRepository
             ->expects($this->once())
             ->method('getFilteredAfterId')
-            ->with($lastId, $limit, $filter)
-            ->willReturn($expectedResult);
+            ->with($this->callback(function (SubscriberHistoryFilter $value) use ($filter, $lastId, $limit): bool {
+                return $value === $filter && $value->getLastId() === $lastId && $value->getLimit() === $limit;
+            }))
+            ->willReturn(new PaginatedResult([], 0, 0, 0));
 
         $result = $this->subscriptionHistoryService->getHistory($lastId, $limit, $filter);
 

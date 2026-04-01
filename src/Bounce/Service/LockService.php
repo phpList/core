@@ -34,9 +34,6 @@ class LockService
         $this->maxWaitCycles = $maxWaitCycles;
     }
 
-    /**
-     * @SuppressWarnings("BooleanArgumentFlag")
-     */
     public function acquirePageLock(
         string $page,
         bool $force = false,

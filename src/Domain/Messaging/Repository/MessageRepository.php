@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Repository;
 
 use DateTimeImmutable;
+use DateTimeInterface;
+use Doctrine\ORM\AbstractQuery;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Messaging\Model\Filter\MessageFilter;
@@ -26,6 +29,7 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->getResult();
     }
 
+    /** @return Message[] */
     public function getByOwnerId(int $ownerId): array
     {
         return $this->createQueryBuilder('m')
@@ -35,9 +39,20 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->getResult();
     }
 
-    /** @return Message[] */
-    public function getFilteredAfterId(int $lastId, int $limit, ?FilterRequestInterface $filter = null): array
+    public function findById(int $id): ?Message
     {
+        return $this->createQueryBuilder('m')
+            ->where('m.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /** @return PaginatedResult<Message> */
+    public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult
+    {
+        $lastId = $filter->getLastId();
+        $limit = $filter->getLimit();
         $queryBuilder = $this->createQueryBuilder('m');
 
         if ($filter instanceof MessageFilter && $filter->getOwner() !== null) {
@@ -45,12 +60,27 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
                 ->setParameter('ownerId', $filter->getOwner()->getId());
         }
 
-        return $queryBuilder->andWhere('m.id > :lastId')
+        $countQb = clone $queryBuilder;
+        $total = (int) $countQb
+            ->select('COUNT(DISTINCT m.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        /** @var list<Message> $items */
+        $items = $queryBuilder
+            ->andWhere('m.id > :lastId')
             ->setParameter('lastId', $lastId)
             ->orderBy('m.id', 'ASC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+
+        return new PaginatedResult(
+            items: $items,
+            total: $total,
+            limit: $limit,
+            lastId: $lastId,
+        );
     }
 
     /** @return Message[] */
@@ -76,6 +106,7 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->execute();
     }
 
+    /** @return Message[] */
     public function getByStatusAndEmbargo(Message\MessageStatus $status, DateTimeImmutable $embargo): array
     {
         return $this->createQueryBuilder('m')
@@ -87,7 +118,7 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->getResult();
     }
 
-    public function findByIdAndStatus(int $id, Message\MessageStatus $status)
+    public function findByIdAndStatus(int $id, Message\MessageStatus $status): ?Message
     {
         return $this->createQueryBuilder('m')
             ->where('m.id = :id')
@@ -96,5 +127,42 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->setParameter('status', $status->value)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function getNonEmptyFields(int $id): array
+    {
+        $message = $this->createQueryBuilder('m')
+            ->where('m.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY) ?? [];
+
+        foreach ($message as $key => $value) {
+            if ($value === null || $value === '') {
+                unset($message[$key]);
+            }
+        }
+
+        return $message;
+    }
+
+    /**
+     * Counts active campaigns between two dates.
+     * "Active" here means messages that were sent (or in process) during this period.
+     *
+     * @param DateTimeInterface $start
+     * @param DateTimeInterface $end
+     * @return int
+     */
+    public function countActiveBetween(DateTimeInterface $start, DateTimeInterface $end): int
+    {
+        return (int) $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->where('m.metadata.sent >= :start')
+            ->andWhere('m.metadata.sent <= :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

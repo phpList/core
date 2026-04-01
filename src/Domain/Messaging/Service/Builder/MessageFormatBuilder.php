@@ -19,7 +19,6 @@ class MessageFormatBuilder
         return new MessageFormat(
             htmlFormatted: $dto->htmlFormated,
             sendFormat: $dto->sendFormat,
-            formatOptions: $dto->formatOptions
         );
     }
 }

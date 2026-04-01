@@ -23,9 +23,6 @@ class SubscribePageManager
     ) {
     }
 
-    /**
-     * @SuppressWarnings("BooleanArgumentFlag")
-     */
     public function createPage(string $title, bool $active = false, ?Administrator $owner = null): SubscribePage
     {
         $page = new SubscribePage();

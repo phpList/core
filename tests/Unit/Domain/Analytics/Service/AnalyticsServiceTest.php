@@ -6,15 +6,19 @@ namespace PhpList\Core\Tests\Unit\Domain\Analytics\Service;
 
 use DateTime;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
+use PhpList\Core\Domain\Analytics\Repository\UserMessageViewRepository;
 use PhpList\Core\Domain\Analytics\Service\AnalyticsService;
 use PhpList\Core\Domain\Analytics\Service\Manager\LinkTrackManager;
 use PhpList\Core\Domain\Analytics\Service\Manager\UserMessageViewManager;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
+use PhpList\Core\Domain\Messaging\Model\Filter\MessageFilter;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository;
+use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -29,6 +33,8 @@ class AnalyticsServiceTest extends TestCase
     private UserMessageBounceRepository|MockObject $userMessageBounceRepository;
     private UserMessageForwardRepository|MockObject $userMessageForwardRepository;
     private SubscriberRepository|MockObject $subscriberRepository;
+    private UserMessageRepository|MockObject $userMessageRepository;
+    private UserMessageViewRepository|MockObject $userMessageViewRepository;
 
     protected function setUp(): void
     {
@@ -38,6 +44,8 @@ class AnalyticsServiceTest extends TestCase
         $this->userMessageBounceRepository = $this->createMock(UserMessageBounceRepository::class);
         $this->userMessageForwardRepository = $this->createMock(UserMessageForwardRepository::class);
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
+        $this->userMessageRepository = $this->createMock(UserMessageRepository::class);
+        $this->userMessageViewRepository = $this->createMock(UserMessageViewRepository::class);
 
         $this->subject = new AnalyticsService(
             $this->linkTrackManager,
@@ -45,7 +53,9 @@ class AnalyticsServiceTest extends TestCase
             $this->messageRepository,
             $this->userMessageBounceRepository,
             $this->userMessageForwardRepository,
-            $this->subscriberRepository
+            $this->subscriberRepository,
+            $this->userMessageRepository,
+            $this->userMessageViewRepository
         );
     }
 
@@ -66,6 +76,7 @@ class AnalyticsServiceTest extends TestCase
         $message->method('getId')->willReturn($messageId);
         $message->method('getMetadata')->willReturn($messageMetadata);
         $message->method('getContent')->willReturn($messageContent);
+        $messageResult = new PaginatedResult([$message], 1, 1, 1);
 
         $linkTrack1 = new LinkTrack();
         $linkTrack1->setUserId(1);
@@ -77,13 +88,20 @@ class AnalyticsServiceTest extends TestCase
 
         $this->messageRepository->expects(self::once())
             ->method('getFilteredAfterId')
-            ->with($lastId, $limit)
-            ->willReturn([$message]);
+            ->with($this->callback(function (MessageFilter $filter) use ($lastId, $limit): bool {
+                return $filter->getLastId() === $lastId && $filter->getLimit() === $limit;
+            }))
+            ->willReturn($messageResult);
 
         $this->userMessageViewManager->expects(self::once())
             ->method('countViewsByMessageId')
             ->with($messageId)
             ->willReturn(10);
+
+        $this->userMessageViewManager->expects(self::once())
+            ->method('countUniqueViewsByMessageId')
+            ->with($messageId)
+            ->willReturn(3);
 
         $this->linkTrackManager->expects(self::once())
             ->method('getLinkTracksByMessageId')
@@ -115,7 +133,7 @@ class AnalyticsServiceTest extends TestCase
         self::assertSame(15, $campaign['sent']);
         self::assertSame(3, $campaign['bounces']);
         self::assertSame(2, $campaign['forwards']);
-        self::assertSame(10, $campaign['uniqueViews']);
+        self::assertSame(3, $campaign['uniqueViews']);
         self::assertSame(5, $campaign['totalClicks']);
         self::assertSame(2, $campaign['uniqueClicks']);
     }
@@ -136,11 +154,14 @@ class AnalyticsServiceTest extends TestCase
         $message->method('getId')->willReturn($messageId);
         $message->method('getMetadata')->willReturn($messageMetadata);
         $message->method('getContent')->willReturn($messageContent);
+        $messageResult = new PaginatedResult([$message], 1, 1, $messageId);
 
         $this->messageRepository->expects(self::once())
             ->method('getFilteredAfterId')
-            ->with($lastId, $limit)
-            ->willReturn([$message]);
+            ->with($this->callback(function (MessageFilter $filter) use ($lastId, $limit): bool {
+                return $filter->getLastId() === $lastId && $filter->getLimit() === $limit;
+            }))
+            ->willReturn($messageResult);
 
         $this->userMessageViewManager->expects(self::once())
             ->method('countViewsByMessageId')
@@ -324,5 +345,35 @@ class AnalyticsServiceTest extends TestCase
 
         self::assertSame(1, $result['localParts'][1]['count']);
         self::assertSame(20, $result['localParts'][1]['percentage']);
+    }
+
+    public function testGetSummaryStatistics(): void
+    {
+        $this->subscriberRepository->method('count')->willReturn(1000);
+        $this->subscriberRepository->method('countCreatedBetween')->willReturnOnConsecutiveCalls(100, 50);
+
+        $this->messageRepository->method('countActiveBetween')->willReturnOnConsecutiveCalls(5, 4);
+
+        $this->userMessageRepository->method('countSentBetween')->willReturnOnConsecutiveCalls(500, 400);
+        $this->userMessageViewRepository->method('countBetween')->willReturnOnConsecutiveCalls(250, 160);
+        $this->userMessageBounceRepository->method('countBetween')->willReturnOnConsecutiveCalls(10, 8);
+
+        $result = $this->subject->getSummaryStatistics();
+
+        self::assertArrayHasKey('total_subscribers', $result);
+        self::assertSame(1000, $result['total_subscribers']['value']);
+        self::assertEquals(100.0, $result['total_subscribers']['change_vs_last_month']);
+
+        self::assertArrayHasKey('active_campaigns', $result);
+        self::assertSame(5, $result['active_campaigns']['value']);
+        self::assertEquals(25.0, $result['active_campaigns']['change_vs_last_month']);
+
+        self::assertArrayHasKey('open_rate', $result);
+        self::assertEquals(50.0, $result['open_rate']['value']);
+        self::assertEquals(25.0, $result['open_rate']['change_vs_last_month']);
+
+        self::assertArrayHasKey('bounce_rate', $result);
+        self::assertEquals(2.0, $result['bounce_rate']['value']);
+        self::assertEquals(0.0, $result['bounce_rate']['change_vs_last_month']);
     }
 }

@@ -33,7 +33,6 @@ class SendProcessManager
         return $sendProcess;
     }
 
-
     /**
      * @return array{id:int, age:int}|null
      */

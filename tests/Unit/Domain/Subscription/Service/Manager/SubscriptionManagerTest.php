@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
-use PhpList\Core\Domain\Subscription\Exception\SubscriptionCreationException;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 use PhpList\Core\Domain\Subscription\Model\Subscription;
@@ -44,14 +43,14 @@ class SubscriptionManagerTest extends TestCase
     public function testCreateSubscriptionWhenSubscriberExists(): void
     {
         $email = 'test@example.com';
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber($email);
         $list = new SubscriberList();
 
-        $this->subscriberRepository->method('findOneBy')->with(['email' => $email])->willReturn($subscriber);
+        $this->subscriberRepository->method('findOneByEmail')->with($email)->willReturn($subscriber);
         $this->subscriptionRepository->method('findOneBySubscriberListAndSubscriber')->willReturn(null);
         $this->entityManager->expects($this->once())->method('persist');
 
-        $subscriptions = $this->manager->createSubscriptions($list, [$email]);
+        $subscriptions = $this->manager->createSubscriptions($list, [$email], false);
 
         $this->assertCount(1, $subscriptions);
         $this->assertInstanceOf(Subscription::class, $subscriptions[0]);
@@ -60,14 +59,13 @@ class SubscriptionManagerTest extends TestCase
     public function testCreateSubscriptionThrowsWhenSubscriberMissing(): void
     {
         $this->translator->method('trans')->willReturn('Subscriber does not exists.');
-        $this->expectException(SubscriptionCreationException::class);
-        $this->expectExceptionMessage('Subscriber does not exists.');
+        $this->entityManager->expects($this->exactly(2))->method('persist');
 
         $list = new SubscriberList();
 
-        $this->subscriberRepository->method('findOneBy')->willReturn(null);
+        $this->subscriberRepository->method('findOneByEmail')->willReturn(null);
 
-        $this->manager->createSubscriptions($list, ['missing@example.com']);
+        $this->manager->createSubscriptions($list, ['missing@example.com'], false);
     }
 
     public function testDeleteSubscriptionSuccessfully(): void
@@ -106,7 +104,7 @@ class SubscriptionManagerTest extends TestCase
     {
         $subscriberList = $this->createMock(SubscriberList::class);
         $subscriberList->method('getId')->willReturn(1);
-        $subscriber = new Subscriber();
+        $subscriber = new Subscriber('user@example.com');
 
         $this->subscriberRepository
             ->method('getSubscribersBySubscribedListId')

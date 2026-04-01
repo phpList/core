@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Identity\Service;
 
+use PhpList\Core\Domain\Identity\Exception\AdminAttributeCreationException;
 use PhpList\Core\Domain\Identity\Model\AdminAttributeDefinition;
 use PhpList\Core\Domain\Identity\Model\AdminAttributeValue;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Identity\Repository\AdminAttributeValueRepository;
-use PhpList\Core\Domain\Identity\Service\AdminAttributeManager;
-use PhpList\Core\Domain\Identity\Exception\AdminAttributeCreationException;
+use PhpList\Core\Domain\Identity\Service\Manager\AdminAttributeManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 

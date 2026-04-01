@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Identity\Model\Dto\CreateAdministratorDto;
 use PhpList\Core\Domain\Identity\Model\Dto\UpdateAdministratorDto;
-use PhpList\Core\Domain\Identity\Service\AdministratorManager;
+use PhpList\Core\Domain\Identity\Service\Manager\AdministratorManager;
 use PhpList\Core\Security\HashGenerator;
 use PHPUnit\Framework\TestCase;
 

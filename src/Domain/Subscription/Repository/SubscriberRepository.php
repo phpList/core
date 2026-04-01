@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Repository;
 
+use DateTimeInterface;
+use Doctrine\ORM\QueryBuilder;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberFilter;
@@ -71,54 +74,145 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
     }
 
     /**
-     * @return Subscriber[]
+     * @return PaginatedResult<Subscriber>
      * @throws InvalidArgumentException
+     * @SuppressWarnings("CyclomaticComplexity")
+     * @SuppressWarnings("NPathComplexity")
      */
-    public function getFilteredAfterId(int $lastId, int $limit, ?FilterRequestInterface $filter = null): array
+    public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult
     {
         if (!$filter instanceof SubscriberFilter) {
-            throw new InvalidArgumentException('Expected SubscriberFilterRequest.');
+            throw new InvalidArgumentException('Expected SubscriberFilter.');
         }
 
-        $queryBuilder = $this->createQueryBuilder('subscriber')
-            ->innerJoin('subscriber.subscriptions', 'subscription')
-            ->innerJoin('subscription.subscriberList', 'list');
+        $lastId = $filter->getLastId();
+        $limit = $filter->getLimit();
 
+        $applyFilters = function (QueryBuilder $queryBuilder) use ($filter): void {
+            $queryBuilder
+                ->leftJoin('subscriber.subscriptions', 'subscription')
+                ->leftJoin('subscription.subscriberList', 'list');
+
+            $this->applyListIdFilter($filter, $queryBuilder);
+            $this->applyTimeFilter($filter, $queryBuilder);
+
+            if ($filter->getIsConfirmed() !== null) {
+                $queryBuilder
+                    ->andWhere('subscriber.confirmed = :isConfirmed')
+                    ->setParameter('isConfirmed', $filter->getIsConfirmed());
+            }
+
+            if ($filter->getIsBlacklisted() !== null) {
+                $queryBuilder
+                    ->andWhere('subscriber.blacklisted = :isBlacklisted')
+                    ->setParameter('isBlacklisted', $filter->getIsBlacklisted());
+            }
+
+            if ($filter->getFindColumn() && $filter->getFindValue()) {
+                $queryBuilder
+                    ->andWhere(sprintf('subscriber.%s LIKE :search', $filter->getFindColumn()))
+                    ->setParameter('search', '%' . $filter->getFindValue() . '%');
+            }
+        };
+
+        $countQb = $this->createQueryBuilder('subscriber')
+            ->select('COUNT(DISTINCT subscriber.id)');
+
+        $applyFilters($countQb);
+
+        $total = (int) $countQb
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $idsQb = $this->createQueryBuilder('subscriber')
+            ->select('DISTINCT subscriber.id');
+
+        $applyFilters($idsQb);
+
+        $rawIds = $idsQb
+            ->andWhere('subscriber.id > :lastId')
+            ->setParameter('lastId', $lastId)
+            ->orderBy('subscriber.id', 'ASC')
+            ->setMaxResults($limit + 1)
+            ->getQuery()
+            ->getScalarResult();
+
+        $ids = array_map(static fn(array $row): int => (int) $row['id'], $rawIds);
+
+        $hasMore = count($ids) > $limit;
+        if ($hasMore) {
+            array_pop($ids);
+        }
+
+        if ($ids === []) {
+            return new PaginatedResult(
+                items: [],
+                total: $total,
+                limit: $limit,
+                lastId: $lastId,
+            );
+        }
+
+        /** @var list<Subscriber> $items */
+        $items = $this->createQueryBuilder('subscriber')
+            ->select('DISTINCT subscriber, subscription, list')
+            ->leftJoin('subscriber.subscriptions', 'subscription')
+            ->leftJoin('subscription.subscriberList', 'list')
+            ->andWhere('subscriber.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->orderBy('subscriber.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        usort($items, static fn(Subscriber $first, Subscriber $second): int => $first->getId() <=> $second->getId());
+
+        return new PaginatedResult(
+            items: $items,
+            total: $total,
+            limit: $limit,
+            lastId: $lastId,
+        );
+    }
+
+    private function applyListIdFilter(SubscriberFilter $filter, QueryBuilder $queryBuilder): void
+    {
         if ($filter->getListId() !== null) {
-            $queryBuilder->where('list.id = :listId')
+            $queryBuilder
+                ->andWhere('list.id = :listId')
                 ->setParameter('listId', $filter->getListId());
+
             if ($filter->getSubscribedDateFrom() !== null) {
-                $queryBuilder->where('subscription.createdAt > :subscribedAtFrom')
+                $queryBuilder
+                    ->andWhere('subscription.createdAt > :subscribedAtFrom')
                     ->setParameter('subscribedAtFrom', $filter->getSubscribedDateFrom());
             }
+
             if ($filter->getSubscribedDateTo() !== null) {
-                $queryBuilder->where('subscription.createdAt < :subscribedAtTo')
+                $queryBuilder
+                    ->andWhere('subscription.createdAt < :subscribedAtTo')
                     ->setParameter('subscribedAtTo', $filter->getSubscribedDateTo());
             }
         }
+    }
+
+    private function applyTimeFilter(SubscriberFilter $filter, QueryBuilder $queryBuilder): void
+    {
         if ($filter->getCreatedDateFrom() !== null) {
-            $queryBuilder->where('subscriber.createdAt > :createdAtFrom')
+            $queryBuilder->andWhere('subscriber.createdAt > :createdAtFrom')
                 ->setParameter('createdAtFrom', $filter->getCreatedDateFrom());
         }
         if ($filter->getCreatedDateTo() !== null) {
-            $queryBuilder->where('subscriber.createdAt < :createdAtTo')
+            $queryBuilder->andWhere('subscriber.createdAt < :createdAtTo')
                 ->setParameter('createdAtTo', $filter->getCreatedDateTo());
         }
         if ($filter->getUpdatedDateFrom() !== null) {
-            $queryBuilder->where('subscriber.updatedAt > :updatedAtFrom')
+            $queryBuilder->andWhere('subscriber.updatedAt > :updatedAtFrom')
                 ->setParameter('updatedAtFrom', $filter->getUpdatedDateFrom());
         }
         if ($filter->getUpdatedDateTo() !== null) {
-            $queryBuilder->where('subscriber.updatedAt < :updatedAtTo')
+            $queryBuilder->andWhere('subscriber.updatedAt < :updatedAtTo')
                 ->setParameter('updatedAtTo', $filter->getUpdatedDateTo());
         }
-
-        return $queryBuilder->andWhere('subscriber.id > :lastId')
-            ->setParameter('lastId', $lastId)
-            ->orderBy('subscriber.id', 'ASC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
     }
 
     public function findSubscriberWithSubscriptions(int $id): ?Subscriber
@@ -204,5 +298,34 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->setParameter('subscriberId', $subscriber->getId())
             ->getQuery()
             ->execute();
+    }
+
+    public function getDataById(int $subscriberId): array
+    {
+        return $this->createQueryBuilder('s')
+            ->select('s')
+            ->where('s.id = :subscriberId')
+            ->setParameter('subscriberId', $subscriberId)
+            ->getQuery()
+            ->getArrayResult()[0] ?? [];
+    }
+
+    /**
+     * Counts subscribers created between two dates.
+     *
+     * @param DateTimeInterface $start
+     * @param DateTimeInterface $end
+     * @return int
+     */
+    public function countCreatedBetween(DateTimeInterface $start, DateTimeInterface $end): int
+    {
+        return (int) $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
+            ->where('s.createdAt >= :start')
+            ->andWhere('s.createdAt <= :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

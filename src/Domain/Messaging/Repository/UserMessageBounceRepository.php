@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Repository;
 
+use DateTimeInterface;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
@@ -22,6 +23,25 @@ class UserMessageBounceRepository extends AbstractRepository implements Paginata
             ->select('COUNT(umb.id)')
             ->where('umb.messageId = :messageId')
             ->setParameter('messageId', $messageId)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Counts bounces between two dates.
+     *
+     * @param DateTimeInterface $start
+     * @param DateTimeInterface $end
+     * @return int
+     */
+    public function countBetween(DateTimeInterface $start, DateTimeInterface $end): int
+    {
+        return (int) $this->createQueryBuilder('umb')
+            ->select('COUNT(umb.id)')
+            ->where('umb.createdAt >= :start')
+            ->andWhere('umb.createdAt <= :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
             ->getQuery()
             ->getSingleScalarResult();
     }

@@ -37,10 +37,9 @@ class SubscriberFixture extends Fixture
             }
             $row = array_combine($headers, $data);
 
-            $subscriber = new Subscriber();
+            $subscriber = new Subscriber($row['email']);
             $this->setSubjectId($subscriber, (int)$row['id']);
 
-            $subscriber->setEmail($row['email']);
             $subscriber->setConfirmed((bool) $row['confirmed']);
             $subscriber->setBlacklisted((bool) $row['blacklisted']);
             $subscriber->setBounceCount((int) $row['bouncecount']);

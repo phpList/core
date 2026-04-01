@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Analytics\Repository;
 
+use DateTimeInterface;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
@@ -39,5 +40,17 @@ class LinkTrackRepository extends AbstractRepository implements PaginatableRepos
             'userId' => $userId,
             'messageId' => $messageId,
         ]);
+    }
+
+    public function countBetween(DateTimeInterface $start, DateTimeInterface $end): int
+    {
+        return (int) $this->createQueryBuilder('lt')
+            ->select('COUNT(lt.id)')
+            ->where('lt.latestClick >= :start')
+            ->andWhere('lt.latestClick <= :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

@@ -42,7 +42,7 @@ class SubscriptionTest extends TestCase
 
     public function testSetSubscriberSetsSubscriber(): void
     {
-        $model = new Subscriber();
+        $model = new Subscriber('test@example.com');
         $this->subject->setSubscriber($model);
 
         self::assertSame($model, $this->subject->getSubscriber());

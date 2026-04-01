@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Analytics\Service\Manager;
 
+use DateTimeInterface;
 use PhpList\Core\Domain\Analytics\Repository\UserMessageViewRepository;
 
 class UserMessageViewManager
@@ -22,5 +23,15 @@ class UserMessageViewManager
     public function countViewsByMessageId(int $messageId): int
     {
         return $this->userMessageViewRepository->countByMessageId($messageId);
+    }
+
+    public function countUniqueViewsByMessageId(int $messageId): int
+    {
+        return $this->userMessageViewRepository->uniqueByMessageId($messageId);
+    }
+
+    public function countViewsBetween(DateTimeInterface $start, DateTimeInterface $end): int
+    {
+        return $this->userMessageViewRepository->countBetween($start, $end);
     }
 }

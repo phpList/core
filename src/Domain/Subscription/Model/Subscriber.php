@@ -20,6 +20,8 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
  * @author Oliver Klee <oliver@phplist.com>
  * @author Tatevik Grigoryan <tatevik@phplist.com>
  * @SuppressWarnings(TooManyFields)
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings(PHPMD.ExcessivePublicCount)
  */
 #[ORM\Entity(repositoryClass: SubscriberRepository::class)]
 #[ORM\Table(name: 'phplist_user_user')]
@@ -43,7 +45,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     protected ?DateTime $createdAt = null;
 
     #[ORM\Column(name: 'modified', type: 'datetime', nullable: false)]
-    private DateTime $updatedAt;
+    private ?DateTime $updatedAt = null;
 
     #[ORM\Column(unique: true)]
     private string $email = '';
@@ -109,8 +111,12 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     #[ORM\Column(name: 'foreignkey', type: 'string', length: 100, nullable: true)]
     private ?string $foreignKey = null;
 
-    public function __construct()
+    /** @var SubscriberHistory[] */
+    private array $history = [];
+
+    public function __construct(string $email)
     {
+        $this->email = $email;
         $this->subscriptions = new ArrayCollection();
         $this->attributes = new ArrayCollection();
         $this->extraData = '';
@@ -128,7 +134,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->createdAt;
     }
 
-    public function getUpdatedAt(): DateTime
+    public function getUpdatedAt(): ?DateTime
     {
         return $this->updatedAt;
     }
@@ -151,6 +157,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this;
     }
 
+    // todo: check where is this used and if should be replaced by isBlacklisted with grace time
     public function isBlacklisted(): bool
     {
         return $this->blacklisted;
@@ -237,12 +244,12 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this;
     }
 
-    public function getExtraData(): string
+    public function getExtraData(): ?string
     {
         return $this->extraData;
     }
 
-    public function setExtraData(string $extraData): self
+    public function setExtraData(?string $extraData): self
     {
         $this->extraData = $extraData;
 
@@ -374,5 +381,21 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     public function setForeignKey(?string $foreignKey): void
     {
         $this->foreignKey = $foreignKey;
+    }
+
+    /**
+     * @return SubscriberHistory[]
+     */
+    public function getHistory(): array
+    {
+        return $this->history;
+    }
+
+    /**
+     * @param SubscriberHistory[] $history
+     */
+    public function setHistory(array $history): void
+    {
+        $this->history = $history;
     }
 }

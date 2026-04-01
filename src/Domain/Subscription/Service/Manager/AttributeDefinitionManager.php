@@ -113,6 +113,6 @@ class AttributeDefinitionManager
 
     public function getAttributesAfterId(int $afterId, int $limit): array
     {
-        return $this->definitionRepository->getAfterId($afterId, $limit);
+        return $this->definitionRepository->getAfterId($afterId, $limit)->getItems();
     }
 }

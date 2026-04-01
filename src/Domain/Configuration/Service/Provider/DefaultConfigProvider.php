@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Configuration\Service\Provider;
 
+use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 // phpcs:disable Generic.Files.LineLength
@@ -557,30 +558,44 @@ Thank you.'
                 'allowempty'  => 0,
                 'category'    => 'subscription-ui',
             ],
+            'PoweredByImage' => [
+                'value'       => '<p class="poweredby" style="text-align:center"><a href="https://www.phplist.com/poweredby?utm_source=pl&amp;utm_medium=poweredlocalimg&amp;utm_campaign=phpList" title="visit the phpList website"><img src="images/power-phplist.png" title="powered by phpList version , &copy; phpList ltd" alt="powered by phpList , &copy; phpList ltd" border="0"/></a></p>',
+                'description' => 'logo/image indicates that emails are sent by phpList',
+                'type'        => 'textarea',
+                'allowempty'  => false,
+                'category'    => 'general',
+            ],
+            'PoweredByText' => [
+                'value'       => '<div style="clear: both; font-family: arial, verdana, sans-serif; font-size: 8px; font-variant: small-caps; font-weight: normal; padding: 2px; padding-left:10px;padding-top:20px;">powered by <a href="https://www.phplist.com/poweredby?utm_source=download&amp;utm_medium=poweredtxt&amp;utm_campaign=phpList" target="_blank" title="powered by phpList version, &copy; phpList ltd">phpList</a></div>',
+                'description' => 'text indicates that emails are sent by phpList',
+                'type'        => 'textarea',
+                'allowempty'  => false,
+                'category'    => 'general',
+            ],
         ];
     }
 
     /**
      * Get a single default config item by key
      *
-     * @param string $key
+     * @param ConfigOption $key
      * @param mixed|null $default
      * @return mixed
      */
-    public function get(string $key, mixed $default = null): mixed
+    public function get(ConfigOption $key, mixed $default = null): mixed
     {
         $this->init();
 
-        return $this->defaults[$key] ?? $default;
+        return $this->defaults[$key->value] ?? $default;
     }
 
     /**
      * Check if a config key exists
      */
-    public function has(string $key): bool
+    public function has(ConfigOption $key): bool
     {
         $this->init();
 
-        return isset($this->defaults[$key]);
+        return isset($this->defaults[$key->value]);
     }
 }

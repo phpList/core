@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Identity\Service;
 
 use DateTime;
-use PhpList\Core\Domain\Identity\Model\AdminPasswordRequest;
 use PhpList\Core\Domain\Identity\Model\Administrator;
-use PhpList\Core\Domain\Identity\Repository\AdminPasswordRequestRepository;
+use PhpList\Core\Domain\Identity\Model\AdminPasswordRequest;
 use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
-use PhpList\Core\Domain\Identity\Service\PasswordManager;
+use PhpList\Core\Domain\Identity\Repository\AdminPasswordRequestRepository;
+use PhpList\Core\Domain\Identity\Service\Manager\PasswordManager;
 use PhpList\Core\Domain\Messaging\Message\PasswordResetMessage;
 use PhpList\Core\Security\HashGenerator;
-use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\MessageBusInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class PasswordManagerTest extends TestCase

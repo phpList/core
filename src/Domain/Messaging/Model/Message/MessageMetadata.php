@@ -15,8 +15,8 @@ class MessageMetadata implements EmbeddableInterface
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $status = null;
 
-    #[ORM\Column(type: 'boolean', options: ['unsigned' => true, 'default' => false])]
-    private bool $processed = false;
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true, 'default' => 0])]
+    private int $processed;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     private int $viewed = 0;
@@ -41,7 +41,7 @@ class MessageMetadata implements EmbeddableInterface
         ?DateTime $sendStart = null,
     ) {
         $this->status = $status->value ?? null;
-        $this->processed = false;
+        $this->processed = 0;
         $this->viewed = 0;
         $this->bounceCount = $bounceCount;
         $this->entered = $entered ?? new DateTime();
@@ -64,12 +64,19 @@ class MessageMetadata implements EmbeddableInterface
         return $this;
     }
 
-    public function isProcessed(): bool
+    public function getProcessed(): int
     {
         return $this->processed;
     }
 
-    public function setProcessed(bool $processed): self
+    public function incrementProcessed(): self
+    {
+        $this->processed += 1;
+
+        return $this;
+    }
+
+    public function setProcessed(int $processed): self
     {
         $this->processed = $processed;
         return $this;
@@ -78,6 +85,13 @@ class MessageMetadata implements EmbeddableInterface
     public function setViews(int $viewed): self
     {
         $this->viewed = $viewed;
+        return $this;
+    }
+
+    public function incrementViews(): self
+    {
+        $this->viewed += 1;
+
         return $this;
     }
 
@@ -113,6 +127,7 @@ class MessageMetadata implements EmbeddableInterface
         return $this;
     }
 
+    // todo: set sent to the time when it was sent
     public function setSent(?DateTime $sent): self
     {
         $this->sent = $sent;

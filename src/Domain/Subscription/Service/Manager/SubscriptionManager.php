@@ -16,24 +16,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SubscriptionManager
 {
-    private SubscriptionRepository $subscriptionRepository;
-    private SubscriberRepository $subscriberRepository;
-    private SubscriberListRepository $subscriberListRepository;
-    private TranslatorInterface $translator;
-    private EntityManagerInterface $entityManager;
-
     public function __construct(
-        SubscriptionRepository $subscriptionRepository,
-        SubscriberRepository $subscriberRepository,
-        SubscriberListRepository $subscriberListRepository,
-        TranslatorInterface $translator,
-        EntityManagerInterface $entityManager
+        private readonly SubscriptionRepository $subscriptionRepository,
+        private readonly SubscriberRepository $subscriberRepository,
+        private readonly SubscriberListRepository $subscriberListRepository,
+        private readonly TranslatorInterface $translator,
+        private readonly EntityManagerInterface $entityManager
     ) {
-        $this->subscriptionRepository = $subscriptionRepository;
-        $this->subscriberRepository = $subscriberRepository;
-        $this->subscriberListRepository = $subscriberListRepository;
-        $this->translator = $translator;
-        $this->entityManager = $entityManager;
     }
 
     public function addSubscriberToAList(Subscriber $subscriber, int $listId): ?Subscription
@@ -59,24 +48,24 @@ class SubscriptionManager
     }
 
     /** @return Subscription[] */
-    public function createSubscriptions(SubscriberList $subscriberList, array $emails): array
+    public function createSubscriptions(SubscriberList $subscriberList, array $emails, bool $autoConfirm): array
     {
         $subscriptions = [];
         foreach ($emails as $email) {
-            $subscriptions[] = $this->createSubscription($subscriberList, $email);
+            $subscriber = $this->subscriberRepository->findOneByEmail($email);
+            if (!$subscriber) {
+                $subscriber = new Subscriber($email);
+                $subscriber->setConfirmed($autoConfirm);
+                $this->entityManager->persist($subscriber);
+            }
+            $subscriptions[] = $this->createSubscription(subscriberList: $subscriberList, subscriber: $subscriber);
         }
 
         return $subscriptions;
     }
 
-    private function createSubscription(SubscriberList $subscriberList, string $email): Subscription
+    private function createSubscription(SubscriberList $subscriberList, Subscriber $subscriber): Subscription
     {
-        $subscriber = $this->subscriberRepository->findOneBy(['email' => $email]);
-        if (!$subscriber) {
-            $message = $this->translator->trans('Subscriber does not exists.');
-            throw new SubscriptionCreationException($message, 404);
-        }
-
         $existingSubscription = $this->subscriptionRepository
             ->findOneBySubscriberListAndSubscriber($subscriberList, $subscriber);
         if ($existingSubscription) {

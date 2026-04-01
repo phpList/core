@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Model\Filter;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Common\Model\Filter\PaginatedFilter;
 
-class SubscriberFilter implements FilterRequestInterface
+/** @SuppressWarnings("ExcessiveParameterList") */
+class SubscriberFilter extends PaginatedFilter implements FilterRequestInterface
 {
     private ?int $listId;
     private ?DateTimeImmutable $subscribedDateFrom;
@@ -16,7 +19,12 @@ class SubscriberFilter implements FilterRequestInterface
     private ?DateTimeImmutable $createdDateTo;
     private ?DateTimeImmutable $updatedDateFrom;
     private ?DateTimeImmutable $updatedDateTo;
+    private ?bool $isConfirmed;
+    private ?bool $isBlacklisted;
+    /** @var list<string> */
     private array $columns;
+    private ?string $findColumn;
+    private ?string $findValue;
 
     public function __construct(
         ?int $listId = null,
@@ -26,8 +34,19 @@ class SubscriberFilter implements FilterRequestInterface
         ?DateTimeImmutable $createdDateTo = null,
         ?DateTimeImmutable $updatedDateFrom = null,
         ?DateTimeImmutable $updatedDateTo = null,
+        ?bool $isConfirmed = null,
+        ?bool $isBlacklisted = null,
         array $columns = [],
+        ?string $findColumn = null,
+        ?string $findValue = null,
+        int $lastId = 0,
+        int $limit = 50,
     ) {
+        $allowedFindColumns = ['email', 'foreignKey', 'uniqueId'];
+        if ($findColumn !== null && !in_array($findColumn, $allowedFindColumns, true)) {
+            throw new InvalidArgumentException('Invalid search column.');
+        }
+
         $this->listId = $listId;
         $this->subscribedDateFrom = $subscribedDateFrom;
         $this->subscribedDateTo = $subscribedDateTo;
@@ -35,7 +54,13 @@ class SubscriberFilter implements FilterRequestInterface
         $this->createdDateTo = $createdDateTo;
         $this->updatedDateFrom = $updatedDateFrom;
         $this->updatedDateTo = $updatedDateTo;
+        $this->isConfirmed = $isConfirmed;
+        $this->isBlacklisted = $isBlacklisted;
         $this->columns = $columns;
+        $this->findColumn = $findColumn;
+        $this->findValue = $findValue;
+        $this->setLastId($lastId);
+        $this->setLimit($limit);
     }
 
     public function getListId(): ?int
@@ -73,8 +98,29 @@ class SubscriberFilter implements FilterRequestInterface
         return $this->updatedDateTo;
     }
 
+    public function getIsConfirmed(): ?bool
+    {
+        return $this->isConfirmed;
+    }
+
+    public function getIsBlacklisted(): ?bool
+    {
+        return $this->isBlacklisted;
+    }
+
+    /** @return list<string> */
     public function getColumns(): array
     {
         return $this->columns;
+    }
+
+    public function getFindColumn(): ?string
+    {
+        return $this->findColumn;
+    }
+
+    public function getFindValue(): ?string
+    {
+        return $this->findValue;
     }
 }

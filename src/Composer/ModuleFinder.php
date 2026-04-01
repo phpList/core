@@ -35,10 +35,14 @@ class ModuleFinder
     }
 
     /**
-     * Finds the bundles class in all installed modules.
+     * Finds the bundle classes declared by all installed packages (including the root package).
      *
-     * @return string[][] class names of the bundles of all installed phpList modules:
-     * ['module package name' => ['bundle class name 1', 'bundle class name 2']]
+     * We intentionally scan all packages, not only those with a specific type, because the root
+     * package or other dependencies can also declare bundles via the "extra.phplist/core.bundles"
+     * section in their composer.json.
+     *
+     * @return string[][] class names of the bundles grouped by package name:
+     * ['package name' => ['Bundle\Class\Name1', 'Bundle\Class\Name2']]
      *
      * @throws InvalidArgumentException
      */
@@ -47,7 +51,8 @@ class ModuleFinder
         /** @var string[][] $bundleSets */
         $bundleSets = [];
 
-        $modules = $this->packageRepository->findModules();
+        // Look at ALL packages (including the root), as they may declare bundles
+        $modules = $this->packageRepository->findAll();
         foreach ($modules as $module) {
             $extra = $module->getExtra();
             $this->validateBundlesSectionInExtra($extra);
@@ -131,10 +136,14 @@ class ModuleFinder
     }
 
     /**
-     * Finds the routes in all installed modules.
+     * Finds the routes declared by all installed packages (including the root package).
      *
-     * @return array[] class names of the routes of all installed phpList modules:
-     * ['route name' => [route configuration]
+     * We intentionally scan all packages, not only those with a specific type, because the root
+     * package or other dependencies can also declare routes via the "extra.phplist/core.routes"
+     * section in their composer.json.
+     *
+     * @return array[] routes keyed by prefixed route name:
+     * ['vendor/package.route_name' => [route configuration]]
      *
      * @throws InvalidArgumentException
      */
@@ -143,7 +152,8 @@ class ModuleFinder
         /** @var array[] $routes */
         $routes = [];
 
-        $modules = $this->packageRepository->findModules();
+        // Look at ALL packages (including the root), as they may declare routes
+        $modules = $this->packageRepository->findAll();
         foreach ($modules as $module) {
             $extra = $module->getExtra();
             $this->validateRoutesSectionInExtra($extra);

@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Repository;
 
+use InvalidArgumentException;
+use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
+use PhpList\Core\Domain\Messaging\Model\Filter\SubscriberListFilter;
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 
 /**
@@ -46,11 +51,94 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
             ->getResult();
     }
 
+    /** @return int[] */
+    public function getListIdsByMessage(Message $message): array
+    {
+        return $this->createQueryBuilder('l')
+            ->select('l.id')
+            ->join('l.listMessages', 'lm')
+            ->join('lm.message', 'm')
+            ->where('m = :message')
+            ->setParameter('message', $message)
+            ->getQuery()
+            ->getSingleColumnResult();
+    }
+
     public function getAllActive(): array
     {
         return $this->createQueryBuilder('l')
             ->where('l.active = true')
             ->getQuery()
             ->getResult();
+    }
+
+    public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult
+    {
+        if (!($filter instanceof SubscriberListFilter)) {
+            throw new InvalidArgumentException('Filter must be an instance of SubscriberListFilter');
+        }
+
+        $queryBuilder = $this->createQueryBuilder('l');
+
+        $countQb = clone $queryBuilder;
+        $total = (int) $countQb
+            ->select('COUNT(DISTINCT l.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        /** @var list<SubscriberList> $items */
+        $items = $queryBuilder
+            ->where($queryBuilder->expr()->orX('l.owner = :admin', 'l.public = true'))
+            ->setParameter('admin', $filter->getOwner())
+            ->andWhere('l.id > :id')
+            ->setParameter('id', $filter->getLastId())
+            ->setMaxResults($filter->getLimit())
+            ->orderBy('l.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return new PaginatedResult(
+            items: $items,
+            total: $total,
+            limit: $filter->getLimit(),
+            lastId: $filter->getLastId(),
+        );
+    }
+
+    public function getListNames(array $listIds): array
+    {
+        if ($listIds === []) {
+            return [];
+        }
+
+        $lists = $this->createQueryBuilder('l')
+            ->select('l.name')
+            ->where('l.id IN (:ids)')
+            ->setParameter('ids', $listIds)
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_column($lists, 'name');
+    }
+
+    /**
+     * Returns the names of lists the given subscriber is subscribed to.
+     * If $showPrivate is false, only active/public lists are included.
+     */
+    public function getActiveListNamesForSubscriber(Subscriber $subscriber, bool $showPrivate): array
+    {
+        $queryBuilder = $this->createQueryBuilder('l')
+            ->select('l.name')
+            ->innerJoin('l.subscriptions', 's')
+            ->where('IDENTITY(s.subscriber) = :subscriberId')
+            ->setParameter('subscriberId', $subscriber->getId());
+
+        if (!$showPrivate) {
+            $queryBuilder->andWhere('l.active = true');
+        }
+
+        $rows = $queryBuilder->getQuery()->getScalarResult();
+
+        return array_column($rows, 'name');
     }
 }

@@ -6,10 +6,12 @@ namespace PhpList\Core\Domain\Subscription\Repository;
 
 use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberHistoryFilter;
+use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberHistory;
 
 class SubscriberHistoryRepository extends AbstractRepository implements PaginatableRepositoryInterface
@@ -17,11 +19,13 @@ class SubscriberHistoryRepository extends AbstractRepository implements Paginata
     use CursorPaginationTrait;
 
     /**
-     * @return SubscriberHistory[]
+     * @return PaginatedResult<SubscriberHistory>
      * @throws InvalidArgumentException
      */
-    public function getFilteredAfterId(int $lastId, int $limit, ?FilterRequestInterface $filter = null): array
+    public function getFilteredAfterId(FilterRequestInterface $filter,): PaginatedResult
     {
+        $lastId = $filter->getLastId();
+        $limit = $filter->getLimit();
         $queryBuilder = $this->createQueryBuilder('sh');
 
         if (!$filter instanceof SubscriberHistoryFilter) {
@@ -48,6 +52,37 @@ class SubscriberHistoryRepository extends AbstractRepository implements Paginata
                 ->setParameter('summery', $filter->getSummery());
         }
 
-        return $queryBuilder->getQuery()->getResult();
+        $countQb = clone $queryBuilder;
+        $total = (int) $countQb
+            ->select('COUNT(DISTINCT sh.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        /** @var list<SubscriberHistory> $items */
+        $items = $queryBuilder
+            ->andWhere('sh.id > :lastId')
+            ->setParameter('lastId', $lastId)
+            ->orderBy('sh.id', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return new PaginatedResult(
+            items: $items,
+            total: $total,
+            limit: $limit,
+            lastId: $lastId,
+        );
+    }
+
+    /** @return SubscriberHistory[] */
+    public function getBySubscriber(Subscriber $subscriber): array
+    {
+        return $this->createQueryBuilder('sh')
+            ->andWhere('sh.subscriber = :subscriberId')
+            ->setParameter('subscriberId', $subscriber->getId())
+            ->orderBy('sh.id', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 }

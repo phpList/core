@@ -95,8 +95,7 @@ class SubscriberCsvImportManagerTest extends KernelTestCase
 
     public function testImportFromCsvUpdatesExistingSubscribers(): void
     {
-        $subscriber = new Subscriber();
-        $subscriber->setEmail('existing@example.com');
+        $subscriber = new Subscriber('existing@example.com');
         $subscriber->setConfirmed(false);
         $subscriber->setHtmlEmail(false);
         $subscriber->setBlacklisted(true);

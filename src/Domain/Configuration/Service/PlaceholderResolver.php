@@ -4,30 +4,101 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Configuration\Service;
 
+use PhpList\Core\Domain\Configuration\Model\Dto\PlaceholderContext;
+use PhpList\Core\Domain\Configuration\Service\Placeholder\SupportingPlaceholderResolverInterface;
+
 class PlaceholderResolver
 {
-    /** @var array<string, callable():string> */
-    private array $providers = [];
+    /** @var array<string, callable> */
+    private array $resolvers = [];
 
-    public function register(string $token, callable $provider): void
+    /** @var array<int, array{pattern: string, resolver: callable}> */
+    private array $patternResolvers = [];
+
+    /** @var SupportingPlaceholderResolverInterface[] */
+    private array $supportingResolvers = [];
+
+    public function register(string $name, callable $resolver): void
     {
-        // tokens like [UNSUBSCRIBEURL] (case-insensitive)
-        $this->providers[strtoupper($token)] = $provider;
+        $name = $this->normalizePlaceholderKey($name);
+        $this->resolvers[strtoupper($name)] = $resolver;
     }
 
-    public function resolve(?string $input): ?string
+    public function registerPattern(string $pattern, callable $resolver): void
     {
-        if ($input === null || $input === '') {
-            return $input;
+        $this->patternResolvers[] = ['pattern' => $pattern, 'resolver' => $resolver];
+    }
+
+    public function registerSupporting(SupportingPlaceholderResolverInterface $resolver): void
+    {
+        $this->supportingResolvers[] = $resolver;
+    }
+
+    public function resolve(string $value, PlaceholderContext $context): string
+    {
+        if (!str_contains($value, '[')) {
+            return $value;
         }
 
-        // Replace [TOKEN] (case-insensitive)
-        return preg_replace_callback('/\[(\w+)\]/i', function ($map) {
-            $key = strtoupper($map[1]);
-            if (!isset($this->providers[$key])) {
-                return $map[0];
+        foreach ($this->patternResolvers as $resolver) {
+            $value = preg_replace_callback(
+                $resolver['pattern'],
+                fn(array $match) => (string) ($resolver['resolver'])($context, $match),
+                $value
+            );
+        }
+
+        return preg_replace_callback(
+            '/\[([^\]%%]+)(?:%%([^\]]+))?\]/i',
+            fn(array $matches) => $this->resolveSinglePlaceholder($matches, $context),
+            $value
+        );
+    }
+
+    private function normalizePlaceholderKey(string $rawKey): string
+    {
+        $key = trim($rawKey);
+        $key = html_entity_decode($key, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $key = str_ireplace("\xC2\xA0", ' ', $key);
+        $key = str_ireplace('&nbsp;', ' ', $key);
+
+        return preg_replace('/\s+/u', ' ', $key) ?? $key;
+    }
+
+    private function resolveSinglePlaceholder(array $matches, PlaceholderContext $context): string
+    {
+        $rawKey = $matches[1];
+        $default = $matches[2] ?? null;
+
+        $keyNormalized = $this->normalizePlaceholderKey($rawKey);
+        $canon = strtoupper($this->normalizePlaceholderKey($rawKey));
+
+        // 1) Exact resolver (system placeholders)
+        if (isset($this->resolvers[$canon])) {
+            $resolved = (string) ($this->resolvers[$canon])($context);
+
+            if ($default !== null && $resolved === '') {
+                return $default;
             }
-            return (string) ($this->providers[$key])();
-        }, $input);
+            return $resolved;
+        }
+
+        // 2) Supporting resolvers (userdata, attributes, etc.)
+        foreach ($this->supportingResolvers as $resolver) {
+            if (!$resolver->supports($keyNormalized, $context) && !$resolver->supports($canon, $context)) {
+                continue;
+            }
+
+            $resolved = $resolver->resolve($keyNormalized, $context);
+            $resolved = $resolved ?? '';
+
+            if ($default !== null && $resolved === '') {
+                return $default;
+            }
+            return $resolved;
+        }
+
+        // 3) if there is a %%default, use it; otherwise keep placeholder unchanged
+        return $default ?? $matches[0];
     }
 }

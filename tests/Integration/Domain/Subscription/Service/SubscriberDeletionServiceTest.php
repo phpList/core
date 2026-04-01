@@ -10,6 +10,7 @@ use Doctrine\ORM\Tools\SchemaTool;
 use Exception;
 use PhpList\Core\Domain\Analytics\Model\LinkTrackUmlClick;
 use PhpList\Core\Domain\Analytics\Model\UserMessageView;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
@@ -56,7 +57,7 @@ class SubscriberDeletionServiceTest extends KernelTestCase
         $this->entityManager->persist($admin);
 
         $msg = new Message(
-            format: new MessageFormat(true, MessageFormat::FORMAT_TEXT),
+            format: new MessageFormat(true, OutputFormat::Text->value),
             schedule: new MessageSchedule(1, null, 3, null, null),
             metadata: new MessageMetadata(Message\MessageStatus::Sent),
             content: new MessageContent('Owned by Admin 1!'),
@@ -65,8 +66,7 @@ class SubscriberDeletionServiceTest extends KernelTestCase
         );
         $this->entityManager->persist($msg);
 
-        $subscriber = new Subscriber();
-        $subscriber->setEmail('test-delete@example.com');
+        $subscriber = new Subscriber('test-delete@example.com');
         $subscriber->setConfirmed(true);
         $subscriber->setHtmlEmail(true);
         $subscriber->setBlacklisted(false);

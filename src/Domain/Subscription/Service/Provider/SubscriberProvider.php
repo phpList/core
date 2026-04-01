@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Service\Provider;
 
+use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessageInterface;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
@@ -25,16 +26,21 @@ class SubscriberProvider
     /**
      * Get subscribers for a message
      *
-     * @param Message $message The message to get subscribers for
+     * @param CampaignProcessorMessageInterface $data
+     * @param Message $campaign
      * @return Subscriber[] Array of subscribers
      */
-    public function getSubscribersForMessage(Message $message): array
+    public function getSubscribersForMessageOrLists(CampaignProcessorMessageInterface $data, Message $campaign): array
     {
-        $lists = $this->subscriberListRepository->getListsByMessage($message);
+        if (count($data->getListIds()) > 0) {
+            $listIds = $data->getListIds();
+        } else {
+            $listIds = $this->subscriberListRepository->getListIdsByMessage($campaign);
+        }
 
         $subscribers = [];
-        foreach ($lists as $list) {
-            $listSubscribers = $this->subscriberRepository->getSubscribersBySubscribedListId($list->getId());
+        foreach ($listIds as $listId) {
+            $listSubscribers = $this->subscriberRepository->getSubscribersBySubscribedListId($listId);
             foreach ($listSubscribers as $subscriber) {
                 $subscribers[$subscriber->getEmail()] = $subscriber;
             }

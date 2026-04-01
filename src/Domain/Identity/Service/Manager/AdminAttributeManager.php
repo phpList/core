@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Identity\Service;
+namespace PhpList\Core\Domain\Identity\Service\Manager;
 
+use PhpList\Core\Domain\Identity\Exception\AdminAttributeCreationException;
 use PhpList\Core\Domain\Identity\Model\AdminAttributeDefinition;
 use PhpList\Core\Domain\Identity\Model\AdminAttributeValue;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Identity\Repository\AdminAttributeValueRepository;
-use PhpList\Core\Domain\Identity\Exception\AdminAttributeCreationException;
 
 class AdminAttributeManager
 {

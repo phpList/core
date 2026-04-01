@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Provider;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
+use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessageInterface;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
-use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
@@ -41,7 +41,10 @@ class SubscriberProviderTest extends TestCase
             ->expects($this->never())
             ->method('getSubscribersBySubscribedListId');
 
-        $result = $this->subscriberProvider->getSubscribersForMessage($message);
+        $result = $this->subscriberProvider->getSubscribersForMessageOrLists(
+            $this->createMock(CampaignProcessorMessageInterface::class),
+            $message,
+        );
 
         $this->assertIsArray($result);
         $this->assertEmpty($result);
@@ -52,11 +55,9 @@ class SubscriberProviderTest extends TestCase
         $message = $this->createMock(Message::class);
         $message->method('getId')->willReturn(123);
 
-        $subscriberList = $this->createMock(SubscriberList::class);
-        $subscriberList->method('getId')->willReturn(456);
         $this->subscriberListRepository
-            ->method('getListsByMessage')
-            ->willReturn([$subscriberList]);
+            ->method('getListIdsByMessage')
+            ->willReturn([456]);
 
         $this->subscriberRepository
             ->expects($this->once())
@@ -64,8 +65,10 @@ class SubscriberProviderTest extends TestCase
             ->with(456)
             ->willReturn([]);
 
-        $result = $this->subscriberProvider->getSubscribersForMessage($message);
-
+        $result = $this->subscriberProvider->getSubscribersForMessageOrLists(
+            $this->createMock(CampaignProcessorMessageInterface::class),
+            $message,
+        );
         $this->assertIsArray($result);
         $this->assertEmpty($result);
     }
@@ -75,11 +78,9 @@ class SubscriberProviderTest extends TestCase
         $message = $this->createMock(Message::class);
         $message->method('getId')->willReturn(123);
 
-        $subscriberList = $this->createMock(SubscriberList::class);
-        $subscriberList->method('getId')->willReturn(456);
         $this->subscriberListRepository
-            ->method('getListsByMessage')
-            ->willReturn([$subscriberList]);
+            ->method('getListIdsByMessage')
+            ->willReturn([456]);
 
         $subscriber1 = $this->createMock(Subscriber::class);
         $subscriber1->method('getEmail')->willReturn('test1@example.am');
@@ -92,8 +93,10 @@ class SubscriberProviderTest extends TestCase
             ->with(456)
             ->willReturn([$subscriber1, $subscriber2]);
 
-        $result = $this->subscriberProvider->getSubscribersForMessage($message);
-
+        $result = $this->subscriberProvider->getSubscribersForMessageOrLists(
+            new CampaignProcessorMessage(1),
+            $message,
+        );
         $this->assertIsArray($result);
         $this->assertCount(2, $result);
         $this->assertSame($subscriber1, $result[0]);
@@ -105,13 +108,9 @@ class SubscriberProviderTest extends TestCase
         $message = $this->createMock(Message::class);
         $message->method('getId')->willReturn(123);
 
-        $subscriberList1 = $this->createMock(SubscriberList::class);
-        $subscriberList1->method('getId')->willReturn(456);
-        $subscriberList2 = $this->createMock(SubscriberList::class);
-        $subscriberList2->method('getId')->willReturn(789);
         $this->subscriberListRepository
-            ->method('getListsByMessage')
-            ->willReturn([$subscriberList1, $subscriberList2]);
+            ->method('getListIdsByMessage')
+            ->willReturn([456, 789]);
 
         $subscriber1 = $this->createMock(Subscriber::class);
         $subscriber1->method('getEmail')->willReturn('test1@example.am');
@@ -128,8 +127,10 @@ class SubscriberProviderTest extends TestCase
                 [789, [$subscriber2, $subscriber3]],
             ]);
 
-        $result = $this->subscriberProvider->getSubscribersForMessage($message);
-
+        $result = $this->subscriberProvider->getSubscribersForMessageOrLists(
+            $this->createMock(CampaignProcessorMessageInterface::class),
+            $message,
+        );
         $this->assertIsArray($result);
         $this->assertCount(3, $result);
 

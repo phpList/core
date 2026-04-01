@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Configuration\Service\Manager;
 
 use DateTimeImmutable;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Configuration\Model\EventLog;
 use PhpList\Core\Domain\Configuration\Model\Filter\EventLogFilter;
 use PhpList\Core\Domain\Configuration\Repository\EventLogRepository;
@@ -51,28 +52,29 @@ final class EventLogManagerTest extends TestCase
     public function testGetWithFiltersDelegatesToRepository(): void
     {
         $expected = [new EventLog(), new EventLog()];
+        $expectedResult = new PaginatedResult($expected, 1, 1, 1);
 
         $this->repository->expects($this->once())
             ->method('getFilteredAfterId')
             ->with(
-                100,
-                25,
                 $this->callback(function (EventLogFilter $filter) {
                     // Use getters to validate
                     return method_exists($filter, 'getPage')
                         && $filter->getPage() === 'settings'
+                        && $filter->getLastId() === 100
+                        && $filter->getLimit() === 25
                         && $filter->getDateFrom() instanceof DateTimeImmutable
                         && $filter->getDateTo() instanceof DateTimeImmutable
                         && $filter->getDateFrom() <= $filter->getDateTo();
                 })
             )
-            ->willReturn($expected);
+            ->willReturn($expectedResult);
 
         $from = new DateTimeImmutable('-2 days');
         $to = new DateTimeImmutable('now');
         $result = $this->manager->get(lastId: 100, limit: 25, page: 'settings', dateFrom: $from, dateTo: $to);
 
-        $this->assertSame($expected, $result);
+        $this->assertSame($expectedResult->getItems(), $result);
     }
 
     public function testGetWithoutFiltersDefaults(): void
@@ -81,12 +83,10 @@ final class EventLogManagerTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('getFilteredAfterId')
-            ->with(
-                0,
-                50,
-                $this->anything()
-            )
-            ->willReturn($expected);
+            ->with($this->callback(function (EventLogFilter $filter): bool {
+                return $filter->getLastId() === 0 && $filter->getLimit() === 50;
+            }))
+            ->willReturn(new PaginatedResult($expected, 0, 1, 0));
 
         $result = $this->manager->get();
         $this->assertSame($expected, $result);

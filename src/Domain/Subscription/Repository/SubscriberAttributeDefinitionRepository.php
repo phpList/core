@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Repository;
 
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
@@ -47,9 +48,18 @@ class SubscriberAttributeDefinitionRepository extends AbstractRepository impleme
         }
     }
 
-    public function getAfterId(int $lastId, int $limit): array
+    /** @return PaginatedResult<SubscriberAttributeDefinition>*/
+    public function getAfterId(int $lastId, int $limit): PaginatedResult
     {
-        $result = $this->createQueryBuilder('e')
+        $queryBuilder = $this->createQueryBuilder('e');
+
+        $countQb = clone $queryBuilder;
+        $total = (int) $countQb
+            ->select('COUNT(DISTINCT e.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $items = $queryBuilder
             ->andWhere('e.id > :lastId')
             ->setParameter('lastId', $lastId)
             ->orderBy('e.id', 'ASC')
@@ -57,7 +67,12 @@ class SubscriberAttributeDefinitionRepository extends AbstractRepository impleme
             ->getQuery()
             ->getResult();
 
-        return $this->hydrateOptionsForAll($result);
+        return new PaginatedResult(
+            items: $this->hydrateOptionsForAll($items),
+            total: $total,
+            limit: $limit,
+            lastId: $lastId,
+        );
     }
 
     public function findOneByName(string $name): ?SubscriberAttributeDefinition

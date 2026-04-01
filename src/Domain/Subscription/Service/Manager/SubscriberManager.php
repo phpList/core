@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Subscription\Model\Dto\CreateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\UpdateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -18,30 +19,19 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SubscriberManager
 {
-    private SubscriberRepository $subscriberRepository;
-    private EntityManagerInterface $entityManager;
-    private SubscriberDeletionService $subscriberDeletionService;
-    private TranslatorInterface $translator;
-    private SubscriberHistoryManager $subscriberHistoryManager;
-
     public function __construct(
-        SubscriberRepository $subscriberRepository,
-        EntityManagerInterface $entityManager,
-        SubscriberDeletionService $subscriberDeletionService,
-        TranslatorInterface $translator,
-        SubscriberHistoryManager $subscriberHistoryManager,
+        private readonly SubscriberRepository $subscriberRepository,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly SubscriberDeletionService $subscriberDeletionService,
+        private readonly TranslatorInterface $translator,
+        private readonly SubscriberHistoryManager $subscriberHistoryManager,
+        private readonly SubscriberHistoryRepository $subscriberHistoryRepository,
     ) {
-        $this->subscriberRepository = $subscriberRepository;
-        $this->entityManager = $entityManager;
-        $this->subscriberDeletionService = $subscriberDeletionService;
-        $this->translator = $translator;
-        $this->subscriberHistoryManager = $subscriberHistoryManager;
     }
 
     public function createSubscriber(CreateSubscriberDto $subscriberDto): Subscriber
     {
-        $subscriber = new Subscriber();
-        $subscriber->setEmail($subscriberDto->email);
+        $subscriber = new Subscriber($subscriberDto->email);
         $confirmed = (bool)$subscriberDto->requestConfirmation;
         $subscriber->setConfirmed(!$confirmed);
         $subscriber->setBlacklisted(false);
@@ -58,6 +48,19 @@ class SubscriberManager
         return $this->subscriberRepository->find($subscriberId);
     }
 
+    public function getSubscriberDetails(int $subscriberId): ?Subscriber
+    {
+        $subscriber = $this->getSubscriberById($subscriberId);
+        if ($subscriber === null) {
+            return null;
+        }
+
+        $history = $this->subscriberHistoryRepository->getBySubscriber($subscriber);
+        $subscriber->setHistory($history);
+
+        return $subscriber;
+    }
+
     public function updateSubscriber(
         Subscriber $subscriber,
         UpdateSubscriberDto $subscriberDto,
@@ -68,7 +71,6 @@ class SubscriberManager
         $subscriber->setBlacklisted($subscriberDto->blacklisted);
         $subscriber->setHtmlEmail($subscriberDto->htmlEmail);
         $subscriber->setDisabled($subscriberDto->disabled);
-        $subscriber->setExtraData($subscriberDto->additionalData);
 
         $uow = $this->entityManager->getUnitOfWork();
         $meta = $this->entityManager->getClassMetadata(Subscriber::class);
@@ -106,13 +108,12 @@ class SubscriberManager
 
     public function createFromImport(ImportSubscriberDto $subscriberDto): Subscriber
     {
-        $subscriber = new Subscriber();
-        $subscriber->setEmail($subscriberDto->email);
+        $subscriber = new Subscriber($subscriberDto->email);
         $subscriber->setConfirmed($subscriberDto->confirmed);
         $subscriber->setBlacklisted($subscriberDto->blacklisted);
         $subscriber->setHtmlEmail($subscriberDto->htmlEmail);
         $subscriber->setDisabled($subscriberDto->disabled);
-        $subscriber->setExtraData($subscriberDto->extraData ?? '');
+        $subscriber->setExtraData($subscriberDto->extraData);
         if ($subscriberDto->foreignKey !== null) {
             $subscriber->setForeignKey($subscriberDto->foreignKey);
         }

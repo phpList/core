@@ -13,9 +13,30 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 
 class UserMessageRepository extends AbstractRepository
 {
-    public function findOneByUserAndMessage(Subscriber $subscriber, Message $campaign): ?UserMessage
+    public function findByUserAndMessage(Subscriber $subscriber, Message $campaign): ?UserMessage
     {
         return $this->findOneBy(['user' => $subscriber, 'message' => $campaign]);
+    }
+
+    /**
+     * Counts how many user messages have status "sent" between the given dates.
+     *
+     * @param DateTimeInterface $start
+     * @param DateTimeInterface $end
+     * @return int
+     */
+    public function countSentBetween(DateTimeInterface $start, DateTimeInterface $end): int
+    {
+        return (int) $this->createQueryBuilder('um')
+            ->select('COUNT(um.createdAt)')
+            ->where('um.createdAt >= :start')
+            ->andWhere('um.createdAt <= :end')
+            ->andWhere('um.status = :status')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->setParameter('status', UserMessageStatus::Sent->value)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     /**

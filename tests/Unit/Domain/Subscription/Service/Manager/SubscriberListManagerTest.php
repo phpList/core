@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Subscription\Model\Dto\CreateSubscriberListDto;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
@@ -54,7 +55,7 @@ class SubscriberListManagerTest extends TestCase
         $this->subscriberListRepository
             ->expects($this->once())
             ->method('getAfterId')
-            ->willReturn([$list]);
+            ->willReturn(new PaginatedResult([$list], 1, 1, 1));
 
         $result = $this->manager->getPaginated(0, 1);
 

@@ -8,12 +8,22 @@ class LegacyUrlBuilder
 {
     public function withUid(string $baseUrl, string $uid): string
     {
+        return $this->withQueryParam($baseUrl, 'uid', $uid);
+    }
+
+    public function withEmail(string $baseUrl, string $email): string
+    {
+        return $this->withQueryParam($baseUrl, 'email', $email);
+    }
+
+    private function withQueryParam(string $baseUrl, string $paramName, string $paramValue): string
+    {
         $parts = parse_url($baseUrl) ?: [];
         $query = [];
         if (!empty($parts['query'])) {
             parse_str($parts['query'], $query);
         }
-        $query['uid'] = $uid;
+        $query[$paramName] = $paramValue;
 
         $parts['query'] = http_build_query($query);
 

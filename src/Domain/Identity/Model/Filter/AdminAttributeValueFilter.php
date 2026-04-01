@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Identity\Model\Filter;
 
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Common\Model\Filter\PaginatedFilter;
 
-class AdminAttributeValueFilter implements FilterRequestInterface
+class AdminAttributeValueFilter extends PaginatedFilter implements FilterRequestInterface
 {
     private ?int $adminId = null;
 

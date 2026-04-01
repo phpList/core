@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Model\Message;
 
 use Doctrine\ORM\Mapping as ORM;
-use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Interfaces\EmbeddableInterface;
 
 #[ORM\Embeddable]
@@ -17,34 +16,27 @@ class MessageFormat implements EmbeddableInterface
     #[ORM\Column(name: 'sendformat', type: 'string', length: 20, nullable: true)]
     private ?string $sendFormat = null;
 
-    #[ORM\Column(name: 'astext', type: 'boolean')]
-    private bool $asText = false;
+    #[ORM\Column(name: 'astext', type: 'integer')]
+    private int $asText = 0;
 
-    #[ORM\Column(name: 'ashtml', type: 'boolean')]
-    private bool $asHtml = false;
+    #[ORM\Column(name: 'ashtml', type: 'integer')]
+    private int $asHtml = 0;
 
-    #[ORM\Column(name: 'aspdf', type: 'boolean')]
-    private bool $asPdf = false;
+    #[ORM\Column(name: 'aspdf', type: 'integer')]
+    private int $asPdf = 0;
 
-    #[ORM\Column(name: 'astextandhtml', type: 'boolean')]
-    private bool $asTextAndHtml = false;
+    #[ORM\Column(name: 'astextandhtml', type: 'integer')]
+    private int $asTextAndHtml = 0;
 
-    #[ORM\Column(name: 'astextandpdf', type: 'boolean')]
-    private bool $asTextAndPdf = false;
-
-    public const FORMAT_TEXT = 'text';
-    public const FORMAT_HTML = 'html';
-    public const FORMAT_PDF = 'pdf';
+    #[ORM\Column(name: 'astextandpdf', type: 'integer')]
+    private int $asTextAndPdf = 0;
 
     public function __construct(
         bool $htmlFormatted,
         ?string $sendFormat,
-        array $formatOptions = []
     ) {
         $this->htmlFormatted = $htmlFormatted;
         $this->sendFormat = $sendFormat;
-
-        $this->setFormatOptions($formatOptions);
     }
 
     public function isHtmlFormatted(): bool
@@ -69,54 +61,53 @@ class MessageFormat implements EmbeddableInterface
         return $this;
     }
 
-    public function isAsText(): bool
+    public function getAsText(): int
     {
         return $this->asText;
     }
 
-    public function isAsHtml(): bool
+    public function getAsHtml(): int
     {
         return $this->asHtml;
     }
 
-    public function isAsTextAndHtml(): bool
+    public function getAsTextAndHtml(): int
     {
         return $this->asTextAndHtml;
     }
 
-    public function isAsPdf(): bool
+    public function getAsPdf(): int
     {
         return $this->asPdf;
     }
 
-    public function isAsTextAndPdf(): bool
+    public function getAsTextAndPdf(): int
     {
         return $this->asTextAndPdf;
     }
 
-    public function getFormatOptions(): array
+    public function incrementAsText(): void
     {
-        return array_values(array_filter([
-            $this->asText ? self::FORMAT_TEXT : null,
-            $this->asHtml ? self::FORMAT_HTML : null,
-            $this->asPdf ? self::FORMAT_PDF : null,
-        ]));
+        $this->asText++;
     }
 
-    public function setFormatOptions(array $formatOptions): self
+    public function incrementAsHtml(): void
     {
-        foreach ($formatOptions as $option) {
-            match ($option) {
-                self::FORMAT_TEXT => $this->asText = true,
-                self::FORMAT_HTML => $this->asHtml = true,
-                self::FORMAT_PDF => $this->asPdf = true,
-                default => throw new InvalidArgumentException('Invalid format option: ' . $option)
-            };
-        }
+        $this->asHtml++;
+    }
 
-        $this->asTextAndHtml = $this->asText && $this->asHtml;
-        $this->asTextAndPdf = $this->asText && $this->asPdf;
+    public function incrementAsTextAndHtml(): void
+    {
+        $this->asTextAndHtml++;
+    }
 
-        return $this;
+    public function incrementAsPdf(): void
+    {
+        $this->asPdf++;
+    }
+
+    public function incrementAsTextAndPdf(): void
+    {
+        $this->asTextAndPdf++;
     }
 }
