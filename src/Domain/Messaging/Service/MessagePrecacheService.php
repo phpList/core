@@ -71,7 +71,7 @@ class MessagePrecacheService
             return false;
         }
 
-        $messagePrecacheDto->googleTrack = $loadedMessageData['google_track'];
+        $messagePrecacheDto->googleTrack = (bool) $loadedMessageData['google_track'];
 
         $this->applyBasicReplacements($messagePrecacheDto, $loadedMessageData);
         $this->populateAdminAttributes($messagePrecacheDto, $campaign);

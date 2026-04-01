@@ -148,7 +148,7 @@ class MessageDataLoader
     private function populateTargetLists(array &$messageData, Message $message): void
     {
         foreach ($message->getListMessages() as $listMessage) {
-            $messageData['targetlist'][$listMessage->getListId()] = 1;
+            $messageData['targetlist'][$listMessage->getList()->getId()] = 1;
         }
     }
 
