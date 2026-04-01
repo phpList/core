@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Analytics\Service;
 
-use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Core\ParameterProvider;
 use PhpList\Core\Domain\Analytics\Exception\MissingMessageIdException;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
@@ -16,7 +15,6 @@ class LinkTrackService
     public function __construct(
         private readonly LinkTrackRepository $linkTrackRepository,
         private readonly ParameterProvider $paramProvider,
-        private readonly EntityManagerInterface $entityManager
     ) {
     }
 
@@ -57,8 +55,6 @@ class LinkTrackService
         $links = array_unique($links);
 
         $savedLinks = [];
-        $newLinksPersisted = false;
-
         foreach ($links as $url) {
             $existingLinkTrack = $this->linkTrackRepository->findByUrlUserIdAndMessageId($url, $userId, $messageId);
             if ($existingLinkTrack !== null) {
@@ -71,12 +67,7 @@ class LinkTrackService
             $linkTrack->setUrl($url);
 
             $this->linkTrackRepository->persist($linkTrack);
-            $newLinksPersisted = true;
             $savedLinks[] = $linkTrack;
-        }
-
-        if ($newLinksPersisted) {
-            $this->entityManager->flush();
         }
 
         return $savedLinks;

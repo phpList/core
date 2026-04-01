@@ -57,7 +57,9 @@ class MessageMetadata implements EmbeddableInterface
     public function setStatus(MessageStatus $status): self
     {
         if (!$this->getStatus()->canTransitionTo($status)) {
-            throw new InvalidArgumentException('Invalid status transition');
+            throw new InvalidArgumentException(
+                'Invalid status transition: ' . $this->status . ' -> ' . $status->value
+            );
         }
         $this->status = $status->value;
 

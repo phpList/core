@@ -8,18 +8,16 @@ use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessageContext;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessageDtoInterface;
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\MessageBuilder;
 
 class MessageManager
 {
-    private MessageRepository $messageRepository;
-    private MessageBuilder $messageBuilder;
-
-    public function __construct(MessageRepository $messageRepository, MessageBuilder $messageBuilder)
-    {
-        $this->messageRepository = $messageRepository;
-        $this->messageBuilder = $messageBuilder;
+    public function __construct(
+        private readonly MessageRepository $messageRepository,
+        private readonly MessageBuilder $messageBuilder,
+    ) {
     }
 
     public function createMessage(MessageDtoInterface $createMessageDto, Administrator $authUser): Message
@@ -29,6 +27,27 @@ class MessageManager
         $this->messageRepository->persist($message);
 
         return $message;
+    }
+
+    public function copyAsDraftMessage(Message $message, Administrator $authUser): Message
+    {
+        $newMessage = new Message(
+            format: new Message\MessageFormat(
+                htmlFormatted: $message->getFormat()->isHtmlFormatted(),
+                sendFormat: $message->getFormat()->getSendFormat()
+            ),
+            schedule: clone $message->getSchedule(),
+            metadata: new MessageMetadata(status: Message\MessageStatus::Draft),
+            content: clone $message->getContent(),
+            options: clone $message->getOptions(),
+            owner: $authUser,
+            template: $message->getTemplate(),
+        );
+        $newMessage->setUuid(bin2hex(random_bytes(18)));
+
+        $this->messageRepository->persist($newMessage);
+
+        return $newMessage;
     }
 
     public function updateMessage(
