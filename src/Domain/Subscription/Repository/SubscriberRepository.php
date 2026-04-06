@@ -328,4 +328,19 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /** @return Subscriber[] */
+    public function getByEmails(array $emails): array
+    {
+        if (empty($emails)) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('s')
+            ->select('s')
+            ->where('s.email IN (:emails)')
+            ->setParameter('emails', $emails)
+            ->getQuery()
+            ->getArrayResult()[0] ?? [];
+    }
 }

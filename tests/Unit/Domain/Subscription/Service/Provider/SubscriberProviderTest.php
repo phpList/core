@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Provider;
 
-use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
-use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessageInterface;
+use PhpList\Core\Domain\Messaging\Message\CampaignProcessor\CampaignProcessorMessage;
+use PhpList\Core\Domain\Messaging\Message\CampaignProcessor\CampaignProcessorMessageInterface;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
