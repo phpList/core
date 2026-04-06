@@ -70,7 +70,7 @@ class MessageManagerTest extends TestCase
         $messageBuilder = $this->createMock(MessageBuilder::class);
         $manager = new MessageManager($messageRepository, $messageBuilder);
 
-        $format = new MessageFormatDto(true, 'html', ['html']);
+        $format = new MessageFormatDto(true, 'html');
         $schedule = new MessageScheduleDto(
             embargo: '2025-04-17T09:00:00+00:00',
             repeatInterval: 60 * 24,
@@ -124,7 +124,7 @@ class MessageManagerTest extends TestCase
         $messageBuilder = $this->createMock(MessageBuilder::class);
         $manager = new MessageManager($messageRepository, $messageBuilder);
 
-        $format = new MessageFormatDto(false, 'text', ['text']);
+        $format = new MessageFormatDto(false, 'text');
         $schedule = new MessageScheduleDto(
             embargo: '2025-04-17T09:00:00+00:00',
             repeatInterval: 0,

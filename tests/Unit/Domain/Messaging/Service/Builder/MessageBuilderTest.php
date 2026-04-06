@@ -62,7 +62,6 @@ class MessageBuilderTest extends TestCase
             format: new MessageFormatDto(
                 htmlFormated: false,
                 sendFormat: 'text',
-                formatOptions: []
             ),
             metadata: new MessageMetadataDto(
                 status: Message\MessageStatus::Draft

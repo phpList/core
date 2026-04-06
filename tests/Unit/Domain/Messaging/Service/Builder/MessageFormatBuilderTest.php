@@ -20,7 +20,7 @@ class MessageFormatBuilderTest extends TestCase
 
     public function testBuildsMessageFormatSuccessfully(): void
     {
-        $dto = new MessageFormatDto(htmlFormated: true, sendFormat: 'html', formatOptions: ['html', 'text']);
+        $dto = new MessageFormatDto(htmlFormated: true, sendFormat: 'html');
         $messageFormat = $this->builder->build($dto);
 
         $this->assertSame(true, $messageFormat->isHtmlFormatted());
