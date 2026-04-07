@@ -13,7 +13,6 @@ use PhpList\Core\Domain\Messaging\Exception\MessageSizeLimitExceededException;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessor\TestCampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
-use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
 use PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder;
@@ -21,7 +20,6 @@ use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MessageDataLoader;
 use PhpList\Core\Domain\Messaging\Service\MessagePrecacheService;
 use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
-use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use Psr\Log\LoggerInterface;
@@ -43,7 +41,6 @@ class TestCampaignProcessorMessageHandler
 {
     public function __construct(
         private readonly MailerInterface $mailer,
-        private readonly RateLimitedCampaignMailer $rateLimitedCampaignMailer,
         private readonly EntityManagerInterface $entityManager,
         private readonly SubscriberProvider $subscriberProvider,
         private readonly MessageProcessingPreparator $messagePreparator,
@@ -63,7 +60,7 @@ class TestCampaignProcessorMessageHandler
 
     public function __invoke(TestCampaignProcessorMessage $data): void
     {
-        $campaign = $this->messageRepository->findByIdAndStatus($data->getMessageId(), MessageStatus::Submitted);
+        $campaign = $this->messageRepository->findById($data->getMessageId());
         if (!$campaign) {
             $this->logger->warning(
                 $this->translator->trans('Campaign not found or not in submitted status'),
@@ -76,13 +73,13 @@ class TestCampaignProcessorMessageHandler
         $loadedMessageData = ($this->messageDataLoader)($campaign);
 
         $cacheKey = sprintf('messaging.message.base.%d.%d', $campaign->getId(), 0);
-        if (!$this->precacheService->precacheMessage($campaign, $loadedMessageData)) {
+        if (!$this->precacheService->precacheMessage(campaign: $campaign, loadedMessageData: $loadedMessageData)) {
             return;
         }
 
-        $subscribers = $this->subscriberProvider->getSubscribersForMessageOrLists($data, $campaign);
+        $subscribers = $this->subscriberProvider->getSubscribersForMessageOrLists(data: $data, campaign: $campaign);
 
-        $this->processSubscribersForCampaign($campaign, $subscribers, $cacheKey);
+        $this->processSubscribersForCampaign(campaign: $campaign, subscribers: $subscribers, cacheKey: $cacheKey);
     }
 
     private function handleEmailSending(
@@ -113,7 +110,7 @@ class TestCampaignProcessorMessageHandler
             $email = $result[0];
             $this->campaignEmailBuilder->applyCampaignHeaders(email: $email, subscriber: $subscriber);
 
-            $this->rateLimitedCampaignMailer->send($email);
+            $this->mailer->send($email);
             ($this->mailSizeChecker)($campaign, $email, $subscriber->hasHtmlEmail());
         } catch (MessageSizeLimitExceededException $e) {
             // stop after the first message if size is exceeded

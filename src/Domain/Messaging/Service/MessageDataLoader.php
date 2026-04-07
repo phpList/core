@@ -109,6 +109,10 @@ class MessageDataLoader
         if ($messageData['subject'] === '(no title)') {
             $messageData['subject'] = '(no subject)';
         }
+
+        if ($messageData['subject'] === '') {
+            $messageData['subject'] = '(no subject)';
+        }
     }
 
     private function mergeStoredMessageData(array &$messageData, Message $message): void

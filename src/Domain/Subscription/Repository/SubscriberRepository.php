@@ -341,6 +341,6 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->where('s.email IN (:emails)')
             ->setParameter('emails', $emails)
             ->getQuery()
-            ->getArrayResult()[0] ?? [];
+            ->getResult();
     }
 }

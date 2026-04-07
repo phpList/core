@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service;
 
+use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
@@ -68,9 +69,9 @@ class MessageProcessingPreparator
         }
 
         $savedLinks = $this->linkTrackService->extractAndSaveLinks(
-            $cachedMessageDto,
-            $subscriber->getId(),
-            $campaignId,
+            content: $cachedMessageDto,
+            userId: $subscriber->getId(),
+            messageId: $campaignId,
         );
         if (empty($savedLinks)) {
             return $cachedMessageDto;
@@ -78,11 +79,17 @@ class MessageProcessingPreparator
 
         // todo: check if getTextMessage should replace links as well
         if ($cachedMessageDto->content) {
-            $cachedMessageDto->content = $this->replaceLinks($savedLinks, $cachedMessageDto->content);
+            $cachedMessageDto->content = $this->replaceLinks(
+                savedLinks: $savedLinks,
+                htmlText: $cachedMessageDto->content
+            );
         }
 
         if ($cachedMessageDto->htmlFooter) {
-            $cachedMessageDto->htmlFooter = $this->replaceLinks($savedLinks, $cachedMessageDto->htmlFooter);
+            $cachedMessageDto->htmlFooter = $this->replaceLinks(
+                savedLinks: $savedLinks,
+                htmlText: $cachedMessageDto->htmlFooter
+            );
         }
 
         return $cachedMessageDto;
@@ -90,6 +97,7 @@ class MessageProcessingPreparator
 
     private function replaceLinks(array $savedLinks, string $htmlText): string
     {
+        /** @var LinkTrack $linkTrack */
         foreach ($savedLinks as $linkTrack) {
             $originalUrl = $linkTrack->getUrl();
             $trackUrl = self::LINK_TRACK_ENDPOINT . '?id=' . $linkTrack->getId();

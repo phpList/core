@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Analytics\Service;
 
+use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Core\ParameterProvider;
 use PhpList\Core\Domain\Analytics\Exception\MissingMessageIdException;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
@@ -29,7 +30,11 @@ class LinkTrackServiceTest extends TestCase
             ->with('click_track', false)
             ->willReturn(true);
 
-        $this->subject = new LinkTrackService($this->linkTrackRepository, $paramProvider);
+        $this->subject = new LinkTrackService(
+            linkTrackRepository: $this->linkTrackRepository,
+            paramProvider: $paramProvider,
+            entityManager: $this->createMock(EntityManagerInterface::class)
+        );
     }
 
     public function testExtractAndSaveLinksWithNoLinks(): void
@@ -209,7 +214,11 @@ class LinkTrackServiceTest extends TestCase
             ->with('click_track', false)
             ->willReturn(false);
 
-        $subject = new LinkTrackService($this->linkTrackRepository, $paramProvider);
+        $subject = new LinkTrackService(
+            linkTrackRepository: $this->linkTrackRepository,
+            paramProvider: $paramProvider,
+            entityManager: $this->createMock(EntityManagerInterface::class)
+        );
 
         self::assertFalse($subject->isExtractAndSaveLinksApplicable());
     }
