@@ -56,7 +56,6 @@ class MessageBuilderTest extends TestCase
             content: new MessageContentDto(
                 subject: '',
                 text: '',
-                textMessage: '',
                 footer: ''
             ),
             format: new MessageFormatDto(

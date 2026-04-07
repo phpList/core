@@ -79,7 +79,7 @@ class MessageManagerTest extends TestCase
             requeueUntil: '2025-04-20T00:00:00+00:00',
         );
         $metadata = new MessageMetadataDto(Message\MessageStatus::Draft);
-        $content = new MessageContentDto('Subject', 'Full text', 'Short text', 'Footer');
+        $content = new MessageContentDto('Subject', 'Full text', 'Footer');
         $options = new MessageOptionsDto('from@example.com', 'to@example.com', 'reply@example.com', 'all-users');
 
         $request = new CreateMessageDto(
@@ -136,7 +136,6 @@ class MessageManagerTest extends TestCase
         $content = new MessageContentDto(
             'Updated Subject',
             'Updated Full text',
-            'Updated Short text',
             'Updated Footer'
         );
         $options = new MessageOptionsDto(
