@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Configuration\Service\Placeholder;
 
 use PhpList\Core\Domain\Configuration\Model\Dto\PlaceholderContext;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ListsValueResolver implements PlaceholderValueResolverInterface
@@ -13,7 +14,7 @@ final class ListsValueResolver implements PlaceholderValueResolverInterface
     public function __construct(
         private readonly SubscriberListRepository $subscriberListRepository,
         private readonly TranslatorInterface $translator,
-        private readonly bool $showPrivateLists = false,
+        #[Autowire('%app.preference_page_show_private_lists%')] private readonly bool $showPrivateLists = false,
     ) {
     }
 

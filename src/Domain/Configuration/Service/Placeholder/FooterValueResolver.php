@@ -7,12 +7,13 @@ namespace PhpList\Core\Domain\Configuration\Service\Placeholder;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Configuration\Model\Dto\PlaceholderContext;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final class FooterValueResolver implements PlaceholderValueResolverInterface
 {
     public function __construct(
         private readonly ConfigProvider $config,
-        private readonly bool $forwardAlternativeContent,
+        #[Autowire('%messaging.forward_alternative_content%')] private readonly bool $forwardAlternativeContent,
     ) {
     }
 
