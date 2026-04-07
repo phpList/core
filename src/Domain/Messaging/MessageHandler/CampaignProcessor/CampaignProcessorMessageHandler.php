@@ -109,7 +109,11 @@ class CampaignProcessorMessageHandler
 //        $userSelection = $loadedMessageData['userselection'];
 
         $cacheKey = sprintf('messaging.message.base.%d.%d', $campaign->getId(), 0);
-        if (!$this->precacheService->precacheMessage($campaign, $loadedMessageData)) {
+        if (!$this->precacheService->precacheMessage(
+            campaign: $campaign,
+            loadedMessageData: $loadedMessageData,
+            isTest: false
+        )) {
             $this->updateMessageStatus($campaign, MessageStatus::Suspended);
 
             return;
@@ -205,7 +209,6 @@ class CampaignProcessorMessageHandler
             cachedMessageDto: $precachedContent,
             subscriber: $subscriber
         );
-        $this->entityManager->flush();
 
         try {
             $result = $this->campaignEmailBuilder->buildCampaignEmail(

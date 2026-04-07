@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessor;
 
-use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Exception\AttachmentCopyException;
@@ -41,7 +40,6 @@ class TestCampaignProcessorMessageHandler
 {
     public function __construct(
         private readonly MailerInterface $mailer,
-        private readonly EntityManagerInterface $entityManager,
         private readonly SubscriberProvider $subscriberProvider,
         private readonly MessageProcessingPreparator $messagePreparator,
         private readonly LoggerInterface $logger,
@@ -72,8 +70,12 @@ class TestCampaignProcessorMessageHandler
 
         $loadedMessageData = ($this->messageDataLoader)($campaign);
 
-        $cacheKey = sprintf('messaging.message.base.%d.%d', $campaign->getId(), 0);
-        if (!$this->precacheService->precacheMessage(campaign: $campaign, loadedMessageData: $loadedMessageData)) {
+        $cacheKey = sprintf('messaging.message.base.%d.%d.%d', $campaign->getId(), 0, 1);
+        if (!$this->precacheService->precacheMessage(
+            campaign: $campaign,
+            loadedMessageData: $loadedMessageData,
+            isTest: true
+        )) {
             return;
         }
 
@@ -93,7 +95,6 @@ class TestCampaignProcessorMessageHandler
             cachedMessageDto: $precachedContent,
             subscriber: $subscriber
         );
-        $this->entityManager->flush();
 
         try {
             $result = $this->campaignEmailBuilder->buildCampaignEmail(
