@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Manager;
 
+use InvalidArgumentException;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessageContext;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessageDtoInterface;
@@ -61,6 +62,12 @@ class MessageManager
 
     public function updateStatus(Message $message, Message\MessageStatus $status): Message
     {
+        if ($status === Message\MessageStatus::Submitted && !$this->canBeSubmitted($message)) {
+            throw new InvalidArgumentException(
+                'Cannot set status to submitted: add at least one list and fill subject, from field, and message body.'
+            );
+        }
+
         $message->getMetadata()->setStatus($status);
 
         return $message;
@@ -75,5 +82,18 @@ class MessageManager
     public function getMessagesByOwner(Administrator $owner): array
     {
         return $this->messageRepository->getByOwnerId($owner->getId());
+    }
+
+    private function canBeSubmitted(Message $message): bool
+    {
+        return $message->getListMessages()->count() > 0
+            && $this->isFilled($message->getContent()->getSubject())
+            && $this->isFilled($message->getOptions()->getFromField())
+            && $this->isFilled($message->getContent()->getText());
+    }
+
+    private function isFilled(?string $value): bool
+    {
+        return !empty(trim((string) $value));
     }
 }

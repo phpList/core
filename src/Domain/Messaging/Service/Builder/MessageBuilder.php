@@ -42,6 +42,7 @@ class MessageBuilder
             $context->getExisting()->setContent($content);
             $context->getExisting()->setOptions($options);
             $context->getExisting()->setTemplate($template);
+
             return $context->getExisting();
         }
 
