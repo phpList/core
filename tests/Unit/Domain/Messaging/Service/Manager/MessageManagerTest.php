@@ -70,7 +70,7 @@ class MessageManagerTest extends TestCase
         $messageBuilder = $this->createMock(MessageBuilder::class);
         $manager = new MessageManager($messageRepository, $messageBuilder);
 
-        $format = new MessageFormatDto(true, 'html');
+        $format = new MessageFormatDto('html');
         $schedule = new MessageScheduleDto(
             embargo: '2025-04-17T09:00:00+00:00',
             repeatInterval: 60 * 24,
@@ -79,7 +79,7 @@ class MessageManagerTest extends TestCase
             requeueUntil: '2025-04-20T00:00:00+00:00',
         );
         $metadata = new MessageMetadataDto(Message\MessageStatus::Draft);
-        $content = new MessageContentDto('Subject', 'Full text', 'Footer');
+        $content = new MessageContentDto(subject: 'Subject', text: 'Full text', footer: 'Footer');
         $options = new MessageOptionsDto('from@example.com', 'to@example.com', 'reply@example.com', 'all-users');
 
         $request = new CreateMessageDto(
@@ -124,7 +124,7 @@ class MessageManagerTest extends TestCase
         $messageBuilder = $this->createMock(MessageBuilder::class);
         $manager = new MessageManager($messageRepository, $messageBuilder);
 
-        $format = new MessageFormatDto(false, 'text');
+        $format = new MessageFormatDto('text');
         $schedule = new MessageScheduleDto(
             embargo: '2025-04-17T09:00:00+00:00',
             repeatInterval: 0,
@@ -134,15 +134,15 @@ class MessageManagerTest extends TestCase
         );
         $metadata = new MessageMetadataDto(Message\MessageStatus::Draft);
         $content = new MessageContentDto(
-            'Updated Subject',
-            'Updated Full text',
-            'Updated Footer'
+            subject: 'Updated Subject',
+            text: 'Updated Full text',
+            footer: 'Updated Footer'
         );
         $options = new MessageOptionsDto(
-            'newfrom@example.com',
-            'newto@example.com',
-            'newreply@example.com',
-            'active-users'
+            fromField: 'newfrom@example.com',
+            toField:  'newto@example.com',
+            replyTo: 'newreply@example.com',
+            userSelection: 'active-users'
         );
 
         $updateRequest = new UpdateMessageDto(

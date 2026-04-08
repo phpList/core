@@ -27,6 +27,7 @@ use PHPUnit\Framework\TestCase;
 
 class MessageBuilderTest extends TestCase
 {
+    private TemplateRepository&MockObject $templateRepository;
     private MessageFormatBuilder&MockObject $formatBuilder;
     private MessageScheduleBuilder&MockObject $scheduleBuilder;
     private MessageContentBuilder&MockObject $contentBuilder;
@@ -35,14 +36,14 @@ class MessageBuilderTest extends TestCase
 
     protected function setUp(): void
     {
-        $templateRepository = $this->createMock(TemplateRepository::class);
+        $this->templateRepository = $this->createMock(TemplateRepository::class);
         $this->formatBuilder = $this->createMock(MessageFormatBuilder::class);
         $this->scheduleBuilder = $this->createMock(MessageScheduleBuilder::class);
         $this->contentBuilder = $this->createMock(MessageContentBuilder::class);
         $this->optionsBuilder = $this->createMock(MessageOptionsBuilder::class);
 
         $this->builder = new MessageBuilder(
-            templateRepository: $templateRepository,
+            templateRepository: $this->templateRepository,
             messageFormatBuilder: $this->formatBuilder,
             messageScheduleBuilder: $this->scheduleBuilder,
             messageContentBuilder: $this->contentBuilder,
@@ -50,7 +51,7 @@ class MessageBuilderTest extends TestCase
         );
     }
 
-    private function createRequest(): CreateMessageDto
+    private function createRequest(?int $templateId = 0): CreateMessageDto
     {
         return new CreateMessageDto(
             content: new MessageContentDto(
@@ -59,7 +60,6 @@ class MessageBuilderTest extends TestCase
                 footer: ''
             ),
             format: new MessageFormatDto(
-                htmlFormated: false,
                 sendFormat: 'text',
             ),
             metadata: new MessageMetadataDto(
@@ -78,7 +78,7 @@ class MessageBuilderTest extends TestCase
                 requeueInterval: null,
                 requeueUntil: null
             ),
-            templateId: 0
+            templateId: $templateId
         );
     }
 
@@ -86,7 +86,7 @@ class MessageBuilderTest extends TestCase
     {
         $this->formatBuilder->expects($this->once())
             ->method('build')
-            ->with($createMessageDto->format)
+            ->with($createMessageDto)
             ->willReturn($this->createMock(Message\MessageFormat::class));
 
         $this->scheduleBuilder->expects($this->once())
@@ -113,7 +113,14 @@ class MessageBuilderTest extends TestCase
 
         $this->mockBuildCalls($request);
 
-        $this->builder->build(createMessageDto: $request, context: $context);
+        $this->templateRepository->expects($this->once())
+            ->method('find')
+            ->with(0)
+            ->willReturn(null);
+
+        $result = $this->builder->build(createMessageDto: $request, context: $context);
+
+        $this->assertInstanceOf(Message::class, $result);
     }
 
     public function testThrowsExceptionOnInvalidContext(): void
@@ -132,25 +139,37 @@ class MessageBuilderTest extends TestCase
 
         $this->mockBuildCalls($request);
 
+        $this->templateRepository->expects($this->once())
+            ->method('find')
+            ->with(0)
+            ->willReturn(null);
+
         $existingMessage
             ->expects($this->once())
             ->method('setFormat')
             ->with($this->isInstanceOf(Message\MessageFormat::class));
+
         $existingMessage
             ->expects($this->once())
             ->method('setSchedule')
             ->with($this->isInstanceOf(MessageSchedule::class));
+
         $existingMessage
             ->expects($this->once())
             ->method('setContent')
             ->with($this->isInstanceOf(MessageContent::class));
+
         $existingMessage
             ->expects($this->once())
             ->method('setOptions')
             ->with($this->isInstanceOf(Message\MessageOptions::class));
-        $existingMessage->expects($this->once())->method('setTemplate')->with(null);
 
-        $result = $this->builder->build($request, $context);
+        $existingMessage
+            ->expects($this->once())
+            ->method('setTemplate')
+            ->with(null);
+
+        $result = $this->builder->build(createMessageDto: $request, context: $context);
 
         $this->assertSame($existingMessage, $result);
     }
