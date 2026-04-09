@@ -26,6 +26,7 @@ use PhpList\Core\Domain\Messaging\Service\Builder\MessageBuilder;
 use PhpList\Core\Domain\Messaging\Service\Manager\MessageManager;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Validator\Exception\ValidatorException;
 
 class MessageManagerTest extends TestCase
 {
@@ -201,8 +202,8 @@ class MessageManagerTest extends TestCase
             owner: null
         );
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Cannot set status to submitted');
+        $this->expectException(ValidatorException::class);
+        $this->expectExceptionMessage('Cannot submit.');
 
         $manager->updateStatus($message, Message\MessageStatus::Submitted);
     }

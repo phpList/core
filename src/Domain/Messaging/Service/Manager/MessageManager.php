@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Manager;
 
-use InvalidArgumentException;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessageContext;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessageDtoInterface;
@@ -12,6 +11,7 @@ use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\MessageBuilder;
+use Symfony\Component\Validator\Exception\ValidatorException;
 
 class MessageManager
 {
@@ -63,9 +63,26 @@ class MessageManager
     public function updateStatus(Message $message, Message\MessageStatus $status): Message
     {
         if ($status === Message\MessageStatus::Submitted && !$this->canBeSubmitted($message)) {
-            throw new InvalidArgumentException(
-                'Cannot set status to submitted: add at least one list and fill subject, from field, and message body.'
+            throw new ValidatorException(
+                'status: Cannot submit. Add at least one list and fill subject, from field, and message body'
+                . PHP_EOL .
+                'metadata.status: Cannot submit. Add at least one list and fill subject, from field, and message body'
             );
+        }
+
+        if ($status === Message\MessageStatus::Submitted
+            && $message->getFormat()->isInvitation()
+            && !str_contains($message->getContent()->getText(), '[CONFIRMATIONURL]')
+        ) {
+            throw new ValidatorException(
+                'status: Cannot submit invitation. Add [CONFIRMATIONURL] placeholder to the message body'
+                . PHP_EOL .
+                'metadata.status: Cannot submit invitation. Add [CONFIRMATIONURL] placeholder to the message body'
+            );
+        }
+
+        if ($status === Message\MessageStatus::Submitted && $message->getListMessages()->count() === 0) {
+            $status = Message\MessageStatus::Prepared;
         }
 
         $message->getMetadata()->setStatus($status);

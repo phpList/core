@@ -55,6 +55,11 @@ class MessageFormat implements EmbeddableInterface
         return $this->sendFormat;
     }
 
+    public function isInvitation(): bool
+    {
+        return $this->sendFormat === 'invite';
+    }
+
     public function setSendFormat(?string $sendFormat): self
     {
         $this->sendFormat = $sendFormat;
