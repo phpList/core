@@ -98,7 +98,7 @@ class TemplateImage implements DomainModel, Identity
 
     public function setData(?string $data): self
     {
-        $this->data = $data !== null ? fopen('data://text/plain,' . $data, 'r') : null;
+        $this->data = $data !== null ? fopen('data://text/plain,' . rawurlencode($data), 'r') : null;
         return $this;
     }
 

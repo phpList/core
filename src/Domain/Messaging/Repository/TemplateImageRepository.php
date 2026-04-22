@@ -7,6 +7,7 @@ namespace PhpList\Core\Domain\Messaging\Repository;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
+use PhpList\Core\Domain\Messaging\Model\Template;
 use PhpList\Core\Domain\Messaging\Model\TemplateImage;
 
 class TemplateImageRepository extends AbstractRepository implements PaginatableRepositoryInterface
@@ -42,5 +43,16 @@ class TemplateImageRepository extends AbstractRepository implements PaginatableR
             ->setParameter('filenames', [$filename, basename($filename)])
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function poweredByImageExists(Template $template): bool
+    {
+        return $this->createQueryBuilder('ti')
+            ->andWhere('ti.template = :templateId')
+            ->setParameter('templateId', $template->getId())
+            ->andWhere('ti.filename = :filename')
+            ->setParameter('filename', 'powerphplist.png')
+            ->getQuery()
+            ->getOneOrNullResult() !== null;
     }
 }

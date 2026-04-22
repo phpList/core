@@ -118,7 +118,14 @@ class Template implements DomainModel, Identity
 
     public function setText(?string $text): self
     {
-        $this->text = $text !== null ? fopen('data://text/plain,' . $text, 'r') : null;
+        if ($text === null) {
+            $text = '[CONTENT]';
+        }
+        $stream = fopen('data://text/plain,' . $text, 'r');
+        rewind($stream);
+
+        $this->text = $stream;
+
         return $this;
     }
 

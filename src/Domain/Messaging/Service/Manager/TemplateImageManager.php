@@ -28,6 +28,7 @@ class TemplateImageManager
     public function __construct(
         private readonly TemplateImageRepository $templateImageRepository,
         private readonly ConfigProvider $configProvider,
+        private readonly ImageProvider $imageProvider,
     ) {
     }
 
@@ -36,17 +37,75 @@ class TemplateImageManager
     {
         $templateImages = [];
         foreach ($imagePaths as $path) {
+            $this->removeExistingTemplateImage($template, $path);
+            [$imageData, $width, $height, $detectedMimeType] = $this->extractImageData($path);
+
             $image = new TemplateImage();
             $image->setTemplate($template);
             $image->setFilename($path);
-            $image->setMimeType($this->guessMimeType($path));
-            $image->setData(null);
+            $image->setMimeType($detectedMimeType ?? $this->guessMimeType($path));
+            $image->setWidth($width);
+            $image->setHeight($height);
+            $image->setData($imageData);
 
             $this->templateImageRepository->persist($image);
             $templateImages[] = $image;
         }
 
+        $this->ensurePoweredByImageExists($template);
+
         return $templateImages;
+    }
+
+    private function removeExistingTemplateImage(Template $template, string $path): void
+    {
+        $templateId = $template->getId();
+        if ($templateId === null) {
+            return;
+        }
+
+        $existing = $this->templateImageRepository->findByTemplateIdAndFilename($templateId, $path);
+        if ($existing !== null) {
+            $this->templateImageRepository->remove($existing);
+        }
+    }
+
+    /**
+     * @return array{0: ?string, 1: ?int, 2: ?int, 3: ?string}
+     */
+    private function extractImageData(string $path): array
+    {
+        // phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged
+        $contents = @file_get_contents($path);
+        if ($contents === false || $contents === '') {
+            return [null, null, null, null];
+        }
+
+        $size = getimagesizefromstring($contents);
+        if ($size === false || empty($size[0]) || empty($size[1])) {
+            return [null, null, null, null];
+        }
+
+        $mimeType = strtolower((string) $size['mime']);
+
+        return [base64_encode($contents), (int) $size[0], (int) $size[1], $mimeType];
+    }
+
+    private function ensurePoweredByImageExists(Template $template): void
+    {
+        if ($this->templateImageRepository->poweredByImageExists($template)) {
+            return;
+        }
+
+        $image = new TemplateImage();
+        $image->setTemplate($template);
+        $image->setFilename('powerphplist.png');
+        $image->setMimeType('image/png');
+        $image->setWidth(70);
+        $image->setHeight(30);
+        $image->setData($this->imageProvider->getPoweredByImage());
+
+        $this->templateImageRepository->persist($image);
     }
 
     private function guessMimeType(string $filename): string
@@ -57,9 +116,7 @@ class TemplateImageManager
 
     public function extractAllImages(string $html): array
     {
-        $fromRegex = array_keys(
-            $this->extractTemplateImagesFromContent($html)
-        );
+        $fromRegex = array_keys($this->extractTemplateImagesFromContent($html));
 
         $fromDom = $this->extractImagesFromHtml($html);
 
@@ -68,7 +125,10 @@ class TemplateImageManager
 
     private function extractTemplateImagesFromContent(string $content): array
     {
-        $regexp = sprintf('/"([^"]+\.(%s))"/Ui', implode('|', array_keys(self::IMAGE_MIME_TYPES)));
+        $regexp = sprintf(
+            '/"([^"]+\.(%s))"/Ui',
+            implode('|', array_keys(self::IMAGE_MIME_TYPES))
+        );
         preg_match_all($regexp, stripslashes($content), $images);
 
         return array_count_values($images[1]);
@@ -170,9 +230,7 @@ class TemplateImageManager
             return $imageContent;
         }
 
-        $fallbackContent = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABGdBTUEAALGPC/'
-         . 'xhBQAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAAsSAAALEgHS3X78'
-         . 'AAAAB3RJTUUH0gQCEx05cqKA8gAAAApJREFUeJxjYAAAAAIAAUivpHEAAAAASUVORK5CYII=', true);
+        $fallbackContent = base64_decode($this->imageProvider->getFallbackLogo(), true);
 
         return $fallbackContent !== false ? $fallbackContent : null;
     }
