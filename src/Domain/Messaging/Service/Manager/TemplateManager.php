@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Messaging\Model\Dto\CreateTemplateDto;
 use PhpList\Core\Domain\Messaging\Model\Dto\UpdateTemplateDto;
 use PhpList\Core\Domain\Messaging\Model\Template;
 use PhpList\Core\Domain\Messaging\Repository\TemplateRepository;
+use PhpList\Core\Domain\Messaging\Service\Mapper\DefaultTemplateMapper;
 use PhpList\Core\Domain\Messaging\Validator\TemplateImageValidator;
 use PhpList\Core\Domain\Messaging\Validator\TemplateLinkValidator;
 
@@ -18,14 +19,16 @@ class TemplateManager
         private readonly TemplateRepository $templateRepository,
         private readonly TemplateImageManager $templateImageManager,
         private readonly TemplateLinkValidator $templateLinkValidator,
-        private readonly TemplateImageValidator $templateImageValidator
+        private readonly TemplateImageValidator $templateImageValidator,
+        private readonly DefaultTemplateMapper $defaultTemplateMapper,
     ) {
     }
 
     public function create(CreateTemplateDto $createTemplateDto): Template
     {
         $template = (new Template(title: $createTemplateDto->title))
-            ->setText($createTemplateDto->text);
+            ->setText($createTemplateDto->text)
+            ->setListOrder($createTemplateDto->listOrder);
 
         $content = $createTemplateDto->fileContent ?? $createTemplateDto->content;
         if ($content !== null) {
@@ -55,9 +58,9 @@ class TemplateManager
             $template->setTitle($updateTemplateDto->title);
         }
 
-        if ($updateTemplateDto->text !== null) {
-            $template->setText($updateTemplateDto->text);
-        }
+        $template
+            ->setText($updateTemplateDto->text)
+            ->setListOrder($updateTemplateDto->listOrder);
 
         $content = $updateTemplateDto->fileContent ?? $updateTemplateDto->content;
         if ($content !== null) {
@@ -82,5 +85,23 @@ class TemplateManager
     public function delete(Template $template): void
     {
         $this->templateRepository->remove($template);
+    }
+
+    public function listDefaults(): array
+    {
+        return $this->defaultTemplateMapper->list();
+    }
+
+    public function createDefaultTemplate(string $key): Template
+    {
+        $defaultTemplate = $this->defaultTemplateMapper->findByKey($key);
+        $content = $this->defaultTemplateMapper->loadContent($defaultTemplate['file']);
+
+        $dto = new CreateTemplateDto(
+            title: $defaultTemplate['name'],
+            content: $content
+        );
+
+        return $this->create($dto);
     }
 }

@@ -1,0 +1,14 @@
+[
+  {
+    "key": "system",
+    "name": "System",
+    "file": "system.html",
+    "description": "Default system email wrapper"
+  },
+  {
+    "key": "responsive",
+    "name": "Responsive",
+    "file": "responsive.html",
+    "description": "Responsive email layout"
+  }
+]
