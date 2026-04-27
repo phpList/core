@@ -22,12 +22,12 @@ class UserMessage implements DomainModel
 {
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: Subscriber::class)]
-    #[ORM\JoinColumn(name: 'userid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'userid', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Subscriber $user;
 
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: Message::class)]
-    #[ORM\JoinColumn(name: 'messageid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'messageid', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Message $message;
 
     #[ORM\Column(name: 'entered', type: 'datetime')]

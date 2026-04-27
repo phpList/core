@@ -17,12 +17,12 @@ class SubscriberAttributeValue implements DomainModel
 {
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: SubscriberAttributeDefinition::class)]
-    #[ORM\JoinColumn(name: 'attributeid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'attributeid', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private SubscriberAttributeDefinition $attributeDefinition;
 
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: Subscriber::class, inversedBy: 'attributes')]
-    #[ORM\JoinColumn(name: 'userid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'userid', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Subscriber $subscriber;
 
     #[ORM\Column(name: 'value', type: 'text', nullable: true)]

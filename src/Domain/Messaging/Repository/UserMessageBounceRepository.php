@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
+use PhpList\Core\Domain\Subscription\Model\Subscription;
 
 class UserMessageBounceRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
@@ -25,6 +26,51 @@ class UserMessageBounceRepository extends AbstractRepository implements Paginata
             ->setParameter('messageId', $messageId)
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * Returns bounce totals per subscriber for a specific list.
+     * This matches the legacy listbounces data shape.
+     *
+     * @return array<int, array{
+     *   subscriberId: int,
+     *   email: string,
+     *   confirmed: bool,
+     *   blacklisted: bool,
+     *   totalBounces: int
+     * }>
+     */
+    public function getListBounceTotals(int $listId): array
+    {
+        $rows = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select(
+                'subscriber.id AS subscriberId',
+                'subscriber.email AS email',
+                'subscriber.confirmed AS confirmed',
+                'subscriber.blacklisted AS blacklisted',
+                'COUNT(umb.id) AS totalBounces'
+            )
+            ->from(Subscriber::class, 'subscriber')
+            ->innerJoin(Subscription::class, 'subscription', 'ON', 'subscription.subscriber = subscriber')
+            ->innerJoin(UserMessageBounce::class, 'umb', 'ON', 'umb.userId = subscriber.id')
+            ->where('IDENTITY(subscription.subscriberList) = :listId')
+            ->setParameter('listId', $listId)
+            ->groupBy('subscriber.id, subscriber.email, subscriber.confirmed, subscriber.blacklisted')
+            ->orderBy('subscriber.id', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(
+            static fn (array $row): array => [
+                'subscriberId' => (int) $row['subscriberId'],
+                'email' => (string) $row['email'],
+                'confirmed' => (bool) $row['confirmed'],
+                'blacklisted' => (bool) $row['blacklisted'],
+                'totalBounces' => (int) $row['totalBounces'],
+            ],
+            $rows
+        );
     }
 
     /**

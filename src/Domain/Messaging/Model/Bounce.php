@@ -28,7 +28,7 @@ class Bounce implements DomainModel, Identity
     private ?string $header;
 
     #[ORM\Column(type: 'blob', nullable: true)]
-    private ?string $data;
+    private mixed $data = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $status;
@@ -45,7 +45,7 @@ class Bounce implements DomainModel, Identity
     ) {
         $this->date = $date;
         $this->header = $header;
-        $this->data = $data;
+        $this->setData($data);
         $this->status = $status;
         $this->comment = $comment;
     }
@@ -79,12 +79,17 @@ class Bounce implements DomainModel, Identity
 
     public function getData(): ?string
     {
+        if (is_resource($this->data)) {
+            rewind($this->data);
+            return stream_get_contents($this->data);
+        }
+
         return $this->data;
     }
 
     public function setData(?string $data): self
     {
-        $this->data = $data;
+        $this->data = $data !== null ? fopen('data://text/plain,' . rawurlencode($data), 'r') : null;
         return $this;
     }
 
