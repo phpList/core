@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
+use PhpList\Core\Domain\Messaging\Model\BounceStatus;
 use PhpList\Core\Domain\Messaging\Model\Dto\BounceView;
 use PhpList\Core\Domain\Messaging\Model\Filter\BounceFilter;
 use PhpList\Core\Domain\Messaging\Model\Message;
@@ -25,41 +26,6 @@ class BounceRepository extends AbstractRepository implements PaginatableReposito
     public function findByStatus(string $status): array
     {
         return $this->findBy(['status' => $status]);
-    }
-
-    /**
-     * Returns bounce totals grouped by campaign, matching legacy msgbounces listing data.
-     *
-     * @param int|null $ownerId Limit results to campaigns owned by this admin when provided.
-     * @return array<int, array{messageId: int, subject: string, totalBounces: int}>
-     */
-    public function getCampaignBounceTotals(?int $ownerId = null): array
-    {
-        $queryBuilder = $this->getEntityManager()
-            ->createQueryBuilder()
-            ->select('m.id AS messageId', 'm.content.subject AS subject', 'COUNT(umb.bounceId) AS totalBounces')
-            ->from(Message::class, 'm')
-            ->innerJoin(UserMessageBounce::class, 'umb', 'ON', 'umb.messageId = m.id')
-            ->groupBy('m.id, m.content.subject')
-            ->orderBy('m.id', 'ASC');
-
-        if ($ownerId !== null) {
-            $queryBuilder
-                ->andWhere('IDENTITY(m.owner) = :ownerId')
-                ->setParameter('ownerId', $ownerId);
-        }
-
-        /** @var array<int, array{messageId: string|int, subject: string, totalBounces: string|int}> $rows */
-        $rows = $queryBuilder->getQuery()->getArrayResult();
-
-        return array_map(
-            static fn (array $row): array => [
-                'messageId' => (int) $row['messageId'],
-                'subject' => $row['subject'],
-                'totalBounces' => (int) $row['totalBounces'],
-            ],
-            $rows
-        );
     }
 
     /**
@@ -90,9 +56,15 @@ class BounceRepository extends AbstractRepository implements PaginatableReposito
         }
 
         if ($filter->getStatus() !== null) {
-            $queryBuilder
-                ->andWhere('b.status = :status')
-                ->setParameter('status', $filter->getStatus());
+            if ($filter->getStatus() === 'identified-bounces') {
+                $queryBuilder
+                    ->andWhere('b.status != :status')
+                    ->setParameter('status', BounceStatus::UnidentifiedBounce);
+            } else {
+                $queryBuilder
+                    ->andWhere('b.status = :status')
+                    ->setParameter('status', $filter->getStatus());
+            }
         }
 
         if ($filter->getListId() !== null) {
