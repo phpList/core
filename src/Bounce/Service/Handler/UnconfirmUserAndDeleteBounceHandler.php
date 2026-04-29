@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Bounce\Service\Handler;
 
 use PhpList\Core\Bounce\Service\Manager\BounceManager;
+use PhpList\Core\Domain\Messaging\Model\BounceAction;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -30,7 +31,7 @@ class UnconfirmUserAndDeleteBounceHandler implements BounceActionHandlerInterfac
 
     public function supports(string $action): bool
     {
-        return $action === 'unconfirmuseranddeletebounce';
+        return $action === BounceAction::UnconfirmUserAndDeleteBounce->value;
     }
 
     public function handle(array $closureData): void

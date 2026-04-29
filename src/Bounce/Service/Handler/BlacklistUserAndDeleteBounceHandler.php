@@ -6,6 +6,7 @@ namespace PhpList\Core\Bounce\Service\Handler;
 
 use PhpList\Core\Bounce\Service\Manager\BounceManager;
 use PhpList\Core\Bounce\Service\SubscriberBlacklistService;
+use PhpList\Core\Domain\Messaging\Model\BounceAction;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -30,7 +31,7 @@ class BlacklistUserAndDeleteBounceHandler implements BounceActionHandlerInterfac
 
     public function supports(string $action): bool
     {
-        return $action === 'blacklistuseranddeletebounce';
+        return $action === BounceAction::BlacklistUserAndDeleteBounce->value;
     }
 
     public function handle(array $closureData): void
