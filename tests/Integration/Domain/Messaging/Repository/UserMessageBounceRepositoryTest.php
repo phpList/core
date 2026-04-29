@@ -119,18 +119,18 @@ class UserMessageBounceRepositoryTest extends KernelTestCase
         self::assertSame(
             [
                 [
-                    'subscriberId' => $subscriber1->getId(),
+                    'subscriber_id' => $subscriber1->getId(),
                     'email' => 'one@example.com',
                     'confirmed' => true,
                     'blacklisted' => false,
-                    'totalBounces' => 2,
+                    'total_bounces' => 2,
                 ],
                 [
-                    'subscriberId' => $subscriber2->getId(),
+                    'subscriber_id' => $subscriber2->getId(),
                     'email' => 'two@example.com',
                     'confirmed' => false,
                     'blacklisted' => true,
-                    'totalBounces' => 1,
+                    'total_bounces' => 1,
                 ],
             ],
             $rows

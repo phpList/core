@@ -229,9 +229,11 @@ class MessageManagerTest extends TestCase
             owner: null
         );
 
-        $listMessage = new ListMessage();
-        $listMessage->setMessage($message);
-        $listMessage->setList($this->createMock(SubscriberList::class));
+        $listMessage = new ListMessage(
+            message: $message,
+            subscriberList: $this->createMock(SubscriberList::class)
+        );
+
         $message->getListMessages()->add($listMessage);
 
         $updated = $manager->updateStatus($message, Message\MessageStatus::Submitted);

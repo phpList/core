@@ -18,5 +18,6 @@ class BounceView implements DomainModel
         public ?string $messageSubject,
         public ?int $subscriberId,
         public ?string $subscriberEmail,
-    ) {}
+    ) {
+    }
 }

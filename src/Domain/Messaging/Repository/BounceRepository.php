@@ -30,6 +30,7 @@ class BounceRepository extends AbstractRepository implements PaginatableReposito
 
     /**
      * @return PaginatedResult<BounceView>
+     * @throws InvalidArgumentException
      */
     public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult
     {
