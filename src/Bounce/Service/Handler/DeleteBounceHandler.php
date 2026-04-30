@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Bounce\Service\Handler;
 
 use PhpList\Core\Bounce\Service\Manager\BounceManager;
+use PhpList\Core\Domain\Messaging\Model\BounceAction;
 
 class DeleteBounceHandler implements BounceActionHandlerInterface
 {
@@ -17,7 +18,7 @@ class DeleteBounceHandler implements BounceActionHandlerInterface
 
     public function supports(string $action): bool
     {
-        return $action === 'deletebounce';
+        return $action === BounceAction::DeleteBounce->value;
     }
 
     public function handle(array $closureData): void

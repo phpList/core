@@ -60,13 +60,16 @@ class RemotePageFetcher
 
         if (!empty($content)) {
             $content = $this->htmlUrlRewriter->addAbsoluteResources($content, $url);
-            $this->eventLogManager->log(page: 'unknown page', entry:'Fetching '.$url.' success');
+            $this->eventLogManager->log(page: 'unknown page', entry: 'Fetching ' . $url . ' success');
 
             $caches = $this->urlCacheRepository->getByUrl($url);
             foreach ($caches as $cache) {
                 $this->entityManager->remove($cache);
             }
-            $urlCache = (new UrlCache())->setUrl($url)->setContent($content)->setLastModified($lastModified);
+            $urlCache = (new UrlCache())
+                ->setUrl($url)
+                ->setContent($content)
+                ->setLastModified($lastModified);
             $this->urlCacheRepository->persist($urlCache);
 
             $this->cache->set($cacheKey, [

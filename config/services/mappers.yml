@@ -11,3 +11,7 @@ services:
   PhpList\Core\Domain\Subscription\Service\CsvToDtoImporter:
     autowire: true
     autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\Mapper\DefaultTemplateMapper:
+    autowire: true
+    autoconfigure: true

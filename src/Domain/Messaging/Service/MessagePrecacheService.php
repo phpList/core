@@ -37,6 +37,7 @@ class MessagePrecacheService
         private readonly bool $useManualTextPart,
         private readonly string $uploadImageDir,
         private readonly string $publicSchema,
+        private readonly ?int $ttl = 3600,
     ) {
     }
 
@@ -44,11 +45,20 @@ class MessagePrecacheService
      * Retrieve the base (unpersonalized) message content for a campaign from cache,
      * or cache it on first access. Handle [URL:] token fetch and basic placeholder replacements.
      */
-    public function precacheMessage(Message $campaign, array $loadedMessageData, ?bool $forwardContent = false): bool
-    {
-        $cacheKey = sprintf('messaging.message.base.%d.%d', $campaign->getId(), (int) $forwardContent);
+    public function precacheMessage(
+        Message $campaign,
+        array $loadedMessageData,
+        ?bool $forwardContent = false,
+        ?bool $isTest = false,
+    ): bool {
+        $cacheKey = sprintf(
+            'messaging.message.base.%d.%d.%d',
+            $campaign->getId(),
+            (int) $forwardContent,
+            (int) $isTest
+        );
         $cached = $this->cache->get($cacheKey);
-        if ($cached !== null) {
+        if ($cached !== null && $isTest === false) {
             return true;
         }
 
@@ -71,7 +81,7 @@ class MessagePrecacheService
             return false;
         }
 
-        $messagePrecacheDto->googleTrack = $loadedMessageData['google_track'];
+        $messagePrecacheDto->googleTrack = (bool) $loadedMessageData['google_track'];
 
         $this->applyBasicReplacements($messagePrecacheDto, $loadedMessageData);
         $this->populateAdminAttributes($messagePrecacheDto, $campaign);
@@ -93,7 +103,8 @@ class MessagePrecacheService
         $messagePrecacheDto->htmlFooter = $this->templateImageManager
             ->parseLogoPlaceholders($messagePrecacheDto->htmlFooter);
 
-        $this->cache->set($cacheKey, $messagePrecacheDto);
+        $ttl = $isTest ? 5 : $this->ttl;
+        $this->cache->set(key: $cacheKey, value: $messagePrecacheDto, ttl: $ttl);
 
         return true;
     }

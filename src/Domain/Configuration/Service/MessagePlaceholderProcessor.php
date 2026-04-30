@@ -65,10 +65,8 @@ class MessagePlaceholderProcessor
             name: 'ORGANIZATION_NAME',
             resolver: fn(PlaceholderContext $ctx) => $this->config->getValue(ConfigOption::OrganisationName) ?? ''
         );
-
-        foreach ($this->placeholderResolvers as $placeholderResolver) {
-            $resolver->register($placeholderResolver->name(), $placeholderResolver);
-        }
+        
+        $this->registerNestedResolvers($resolver);
 
         foreach ($this->patternResolvers as $patternResolver) {
             $resolver->registerPattern($patternResolver->pattern(), $patternResolver);
@@ -133,6 +131,59 @@ class MessagePlaceholderProcessor
             $resolver->register(
                 name: strtoupper($userAttribute->getAttributeDefinition()->getName()),
                 resolver: fn(PlaceholderContext $ctx) => $this->attributeValueResolver->resolve($userAttribute)
+            );
+        }
+    }
+
+    private function maskFooterPlaceholders(string $value, array &$placeholderMap): string
+    {
+        $placeholderMap = [];
+        $index = 0;
+
+        return preg_replace_callback(
+            '/\[FOOTER(?:%%[^\]]+)?\]/i',
+            function (array $matches) use (&$placeholderMap, &$index): string {
+                $token = sprintf('__PHPLIST_FOOTER_TOKEN_%d__', $index++);
+                $placeholderMap[$token] = $matches[0];
+
+                return $token;
+            },
+            $value
+        ) ?? $value;
+    }
+
+    /** @param array<string, string> $placeholderMap */
+    private function restoreFooterPlaceholders(string $value, array $placeholderMap): string
+    {
+        if ($placeholderMap === []) {
+            return $value;
+        }
+
+        return strtr($value, $placeholderMap);
+    }
+
+    private function registerNestedResolvers(PlaceholderResolver $resolver): void
+    {
+        foreach ($this->placeholderResolvers as $placeholderResolver) {
+            if (strtoupper($placeholderResolver->name()) !== 'FOOTER') {
+                $resolver->register($placeholderResolver->name(), $placeholderResolver);
+                continue;
+            }
+
+            $resolver->register(
+                $placeholderResolver->name(),
+                function (PlaceholderContext $ctx) use ($placeholderResolver, $resolver): string {
+                    $footer = (string) $placeholderResolver($ctx);
+                    if (!str_contains($footer, '[')) {
+                        return $footer;
+                    }
+
+                    $placeholderMap = [];
+                    $maskedFooter = $this->maskFooterPlaceholders($footer, $placeholderMap);
+                    $resolvedFooter = $resolver->resolve($maskedFooter, $ctx);
+
+                    return $this->restoreFooterPlaceholders($resolvedFooter, $placeholderMap);
+                }
             );
         }
     }

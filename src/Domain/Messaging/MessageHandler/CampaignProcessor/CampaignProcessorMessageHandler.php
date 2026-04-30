@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Messaging\MessageHandler;
+namespace PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessor;
 
 use DateTime;
 use DateTimeImmutable;
@@ -13,8 +13,8 @@ use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Exception\AttachmentCopyException;
 use PhpList\Core\Domain\Messaging\Exception\MessageCacheMissingException;
 use PhpList\Core\Domain\Messaging\Exception\MessageSizeLimitExceededException;
-use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage;
-use PhpList\Core\Domain\Messaging\Message\SyncCampaignProcessorMessage;
+use PhpList\Core\Domain\Messaging\Message\CampaignProcessor\CampaignProcessorMessage;
+use PhpList\Core\Domain\Messaging\Message\CampaignProcessor\SyncCampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
@@ -109,7 +109,11 @@ class CampaignProcessorMessageHandler
 //        $userSelection = $loadedMessageData['userselection'];
 
         $cacheKey = sprintf('messaging.message.base.%d.%d', $campaign->getId(), 0);
-        if (!$this->precacheService->precacheMessage($campaign, $loadedMessageData)) {
+        if (!$this->precacheService->precacheMessage(
+            campaign: $campaign,
+            loadedMessageData: $loadedMessageData,
+            isTest: false
+        )) {
             $this->updateMessageStatus($campaign, MessageStatus::Suspended);
 
             return;
@@ -199,7 +203,7 @@ class CampaignProcessorMessageHandler
         UserMessage $userMessage,
         MessagePrecacheDto $precachedContent,
     ): void {
-        // todo: check at which point link tracking should be applied (maybe after constructing ful text?)
+        // todo: check at which point link tracking should be applied (maybe after constructing full text?)
         $processed = $this->messagePreparator->processMessageLinks(
             campaignId: $campaign->getId(),
             cachedMessageDto: $precachedContent,

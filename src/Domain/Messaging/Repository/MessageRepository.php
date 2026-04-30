@@ -60,6 +60,11 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
                 ->setParameter('ownerId', $filter->getOwner()->getId());
         }
 
+        if ($filter instanceof MessageFilter && $filter->getSubject() !== null) {
+            $queryBuilder->andWhere('m.content.subject LIKE :subject')
+                ->setParameter('subject', '%' . $filter->getSubject() . '%');
+        }
+
         $countQb = clone $queryBuilder;
         $total = (int) $countQb
             ->select('COUNT(DISTINCT m.id)')

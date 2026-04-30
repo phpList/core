@@ -37,10 +37,10 @@ class ListMessageManager
      */
     public function associateMessageWithList(Message $message, SubscriberList $subscriberList): ListMessage
     {
-        $listMessage = new ListMessage();
-        $listMessage->setMessage($message);
-        $listMessage->setList($subscriberList);
-
+        $listMessage = new ListMessage(
+            $message,
+            $subscriberList
+        );
         $this->entityManager->persist($listMessage);
 
         return $listMessage;

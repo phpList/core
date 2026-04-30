@@ -9,32 +9,26 @@ use PhpList\Core\Domain\Messaging\Model\Dto\CreateTemplateDto;
 use PhpList\Core\Domain\Messaging\Model\Dto\UpdateTemplateDto;
 use PhpList\Core\Domain\Messaging\Model\Template;
 use PhpList\Core\Domain\Messaging\Repository\TemplateRepository;
+use PhpList\Core\Domain\Messaging\Service\Mapper\DefaultTemplateMapper;
 use PhpList\Core\Domain\Messaging\Validator\TemplateImageValidator;
 use PhpList\Core\Domain\Messaging\Validator\TemplateLinkValidator;
 
 class TemplateManager
 {
-    private TemplateRepository $templateRepository;
-    private TemplateImageManager $templateImageManager;
-    private TemplateLinkValidator $templateLinkValidator;
-    private TemplateImageValidator $templateImageValidator;
-
     public function __construct(
-        TemplateRepository $templateRepository,
-        TemplateImageManager $templateImageManager,
-        TemplateLinkValidator $templateLinkValidator,
-        TemplateImageValidator $templateImageValidator
+        private readonly TemplateRepository $templateRepository,
+        private readonly TemplateImageManager $templateImageManager,
+        private readonly TemplateLinkValidator $templateLinkValidator,
+        private readonly TemplateImageValidator $templateImageValidator,
+        private readonly DefaultTemplateMapper $defaultTemplateMapper,
     ) {
-        $this->templateRepository = $templateRepository;
-        $this->templateImageManager = $templateImageManager;
-        $this->templateLinkValidator = $templateLinkValidator;
-        $this->templateImageValidator = $templateImageValidator;
     }
 
     public function create(CreateTemplateDto $createTemplateDto): Template
     {
-        $template = (new Template($createTemplateDto->title))
-            ->setText($createTemplateDto->text);
+        $template = (new Template(title: $createTemplateDto->title))
+            ->setText($createTemplateDto->text)
+            ->setListOrder($createTemplateDto->listOrder);
 
         $content = $createTemplateDto->fileContent ?? $createTemplateDto->content;
         if ($content !== null) {
@@ -49,11 +43,11 @@ class TemplateManager
         $this->templateLinkValidator->validate($template->getContent() ?? '', $context);
 
         $imageUrls = $this->templateImageManager->extractAllImages($template->getContent() ?? '');
-        $this->templateImageValidator->validate($imageUrls, $context);
+        $this->templateImageValidator->validate(value: $imageUrls, context: $context);
 
         $this->templateRepository->persist($template);
 
-        $this->templateImageManager->createImagesFromImagePaths($imageUrls, $template);
+        $this->templateImageManager->createImagesFromImagePaths(imagePaths: $imageUrls, template: $template);
 
         return $template;
     }
@@ -64,9 +58,9 @@ class TemplateManager
             $template->setTitle($updateTemplateDto->title);
         }
 
-        if ($updateTemplateDto->text !== null) {
-            $template->setText($updateTemplateDto->text);
-        }
+        $template
+            ->setText($updateTemplateDto->text)
+            ->setListOrder($updateTemplateDto->listOrder);
 
         $content = $updateTemplateDto->fileContent ?? $updateTemplateDto->content;
         if ($content !== null) {
@@ -83,10 +77,6 @@ class TemplateManager
         $imageUrls = $this->templateImageManager->extractAllImages($template->getContent() ?? '');
         $this->templateImageValidator->validate($imageUrls, $context);
 
-        foreach ($template->getImages() as $image) {
-            $this->templateImageManager->delete($image);
-        }
-
         $this->templateImageManager->createImagesFromImagePaths($imageUrls, $template);
 
         return $template;
@@ -95,5 +85,23 @@ class TemplateManager
     public function delete(Template $template): void
     {
         $this->templateRepository->remove($template);
+    }
+
+    public function listDefaults(): array
+    {
+        return $this->defaultTemplateMapper->list();
+    }
+
+    public function createDefaultTemplate(string $key): Template
+    {
+        $defaultTemplate = $this->defaultTemplateMapper->findByKey($key);
+        $content = $this->defaultTemplateMapper->loadContent($defaultTemplate['file']);
+
+        $dto = new CreateTemplateDto(
+            title: $defaultTemplate['name'],
+            content: $content
+        );
+
+        return $this->create($dto);
     }
 }

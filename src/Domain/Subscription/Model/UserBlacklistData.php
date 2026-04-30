@@ -16,7 +16,7 @@ class UserBlacklistData implements DomainModel
 {
     #[ORM\Id]
     #[ORM\OneToOne(targetEntity: UserBlacklist::class, inversedBy: 'blacklistData')]
-    #[ORM\JoinColumn(name: 'email', referencedColumnName: 'email', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'email', referencedColumnName: 'email', onDelete: 'CASCADE')]
     private UserBlacklist $blacklist;
 
     #[ORM\Column(name: 'name', type: 'string', length: 25)]

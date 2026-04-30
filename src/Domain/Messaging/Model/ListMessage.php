@@ -27,11 +27,11 @@ class ListMessage implements DomainModel, Identity, ModificationDate
 
     #[ORM\ManyToOne(targetEntity: Message::class, inversedBy: 'listMessages')]
     #[ORM\JoinColumn(name: 'messageid', referencedColumnName: 'id', nullable: false)]
-    private ?Message $message = null;
+    private Message $message;
 
     #[ORM\ManyToOne(targetEntity: SubscriberList::class, inversedBy: 'listMessages')]
     #[ORM\JoinColumn(name: 'listid', referencedColumnName: 'id', nullable: false)]
-    private ?SubscriberList $subscriberList = null;
+    private SubscriberList $subscriberList;
 
     #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
     private ?DateTimeInterface $entered = null;
@@ -39,8 +39,10 @@ class ListMessage implements DomainModel, Identity, ModificationDate
     #[ORM\Column(name: 'modified', type: 'datetime')]
     private ?DateTime $updatedAt = null;
 
-    public function __construct()
+    public function __construct(Message $message, SubscriberList $subscriberList)
     {
+        $this->message = $message;
+        $this->subscriberList = $subscriberList;
         $this->updatedAt = new DateTime();
         $this->entered = new DateTime();
     }
@@ -50,26 +52,14 @@ class ListMessage implements DomainModel, Identity, ModificationDate
         return $this->id;
     }
 
-    public function getMessage(): ?Message
+    public function getMessage(): Message
     {
         return $this->message;
     }
 
-    public function setMessage(?Message $message): self
-    {
-        $this->message = $message;
-        return $this;
-    }
-
-    public function getList(): ?SubscriberList
+    public function getList(): SubscriberList
     {
         return $this->subscriberList;
-    }
-
-    public function setList(?SubscriberList $subscriberList): self
-    {
-        $this->subscriberList = $subscriberList;
-        return $this;
     }
 
     public function getEntered(): ?DateTimeInterface

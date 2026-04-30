@@ -7,11 +7,13 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
 use Doctrine\Common\Collections\ArrayCollection;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
+use PhpList\Core\Domain\Messaging\Model\ListMessage;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\MessageData;
 use PhpList\Core\Domain\Messaging\Repository\MessageDataRepository;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\MessageDataLoader;
+use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -61,6 +63,11 @@ class MessageDataLoaderTest extends TestCase
         $md2 = (new MessageData())->setId($messageId)->setName('criteria_match')->setData('any');
         $md3 = (new MessageData())->setId($messageId)->setName('embargo')->setData('string');
 
+        $listMock = $this->createMock(SubscriberList::class);
+        $listMock->method('getId')->willReturn(42);
+        $listMessageMock = $this->createMock(ListMessage::class);
+        $listMessageMock->method('getList')->willReturn($listMock);
+
         $this->messageDataRepository
             ->method('getForMessage')
             ->with($messageId)
@@ -69,16 +76,7 @@ class MessageDataLoaderTest extends TestCase
         // Use a Message mock instead of an anonymous stub
         $message = $this->createMock(Message::class);
         $message->method('getId')->willReturn($messageId);
-        $message->method('getListMessages')->willReturn(
-            new ArrayCollection([
-                new class {
-                    public function getListId(): int
-                    {
-                        return 42;
-                    }
-                },
-            ])
-        );
+        $message->method('getListMessages')->willReturn(new ArrayCollection([$listMessageMock]));
 
         $loader = new MessageDataLoader(
             configProvider: $this->config,

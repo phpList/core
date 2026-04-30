@@ -9,9 +9,11 @@ use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
+use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
+use PhpList\Core\Domain\Subscription\Model\Subscription;
 
 class UserMessageBounceRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
@@ -25,6 +27,86 @@ class UserMessageBounceRepository extends AbstractRepository implements Paginata
             ->setParameter('messageId', $messageId)
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * Returns bounce totals per subscriber for a specific list.
+     * This matches the legacy list bounces data shape.
+     *
+     * @return array<int, array{
+     *   subscriber_id: int,
+     *   email: string,
+     *   confirmed: bool,
+     *   blacklisted: bool,
+     *   total_bounces: int
+     * }>
+     */
+    public function getListBounceTotals(int $listId): array
+    {
+        $rows = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select(
+                'subscriber.id AS subscriberId',
+                'subscriber.email AS email',
+                'subscriber.confirmed AS confirmed',
+                'subscriber.blacklisted AS blacklisted',
+                'COUNT(umb.id) AS totalBounces'
+            )
+            ->from(Subscriber::class, 'subscriber')
+            ->innerJoin(Subscription::class, 'subscription', 'ON', 'subscription.subscriber = subscriber')
+            ->innerJoin(UserMessageBounce::class, 'umb', 'ON', 'umb.userId = subscriber.id')
+            ->where('IDENTITY(subscription.subscriberList) = :listId')
+            ->setParameter('listId', $listId)
+            ->groupBy('subscriber.id, subscriber.email, subscriber.confirmed, subscriber.blacklisted')
+            ->orderBy('subscriber.id', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(
+            static fn (array $row): array => [
+                'subscriber_id' => (int) $row['subscriberId'],
+                'email' => (string) $row['email'],
+                'confirmed' => (bool) $row['confirmed'],
+                'blacklisted' => (bool) $row['blacklisted'],
+                'total_bounces' => (int) $row['totalBounces'],
+            ],
+            $rows
+        );
+    }
+
+    /**
+     * Returns bounce totals grouped by campaign, matching legacy msgbounces listing data.
+     *
+     * @param int|null $ownerId Limit results to campaigns owned by this admin when provided.
+     * @return array<int, array{message_id: int, subject: string, total_bounces: int}>
+     */
+    public function getCampaignBounceTotals(?int $ownerId = null): array
+    {
+        $queryBuilder = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('m.id AS messageId', 'm.content.subject AS subject', 'COUNT(umb.bounceId) AS totalBounces')
+            ->from(Message::class, 'm')
+            ->innerJoin(UserMessageBounce::class, 'umb', 'ON', 'umb.messageId = m.id')
+            ->groupBy('m.id, m.content.subject')
+            ->orderBy('m.id', 'ASC');
+
+        if ($ownerId !== null) {
+            $queryBuilder
+                ->andWhere('IDENTITY(m.owner) = :ownerId')
+                ->setParameter('ownerId', $ownerId);
+        }
+
+        /** @var array<int, array{messageId: string|int, subject: string, totalBounces: string|int}> $rows */
+        $rows = $queryBuilder->getQuery()->getArrayResult();
+
+        return array_map(
+            static fn (array $row): array => [
+                'message_id' => (int) $row['messageId'],
+                'subject' => $row['subject'],
+                'total_bounces' => (int) $row['totalBounces'],
+            ],
+            $rows
+        );
     }
 
     /**

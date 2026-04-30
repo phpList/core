@@ -22,12 +22,13 @@ enum MessageStatus: string
     public function allowedTransitions(): array
     {
         return match ($this) {
-            self::Draft, self::Suspended => [self::Submitted],
-            self::Submitted => [self::Prepared, self::InProcess],
-            self::Prepared => [self::InProcess],
+            self::Draft => [self::Prepared, self::Submitted],
+            self::Suspended => [self::Submitted, self::Requeued],
+            self::Submitted => [self::Prepared, self::InProcess, self::Suspended],
+            self::Prepared => [self::InProcess, self::Suspended],
             self::InProcess => [self::Sent, self::Suspended, self::Submitted],
             self::Requeued => [self::InProcess, self::Suspended],
-            self::Sent => [],
+            self::Sent => [self::Requeued],
         };
     }
 

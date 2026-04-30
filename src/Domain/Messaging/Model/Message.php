@@ -61,6 +61,9 @@ class Message implements DomainModel, Identity, ModificationDate, OwnableInterfa
     #[ORM\JoinColumn(name: 'template', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Template $template = null;
 
+    /**
+     * @var Collection<int, ListMessage>
+     */
     #[ORM\OneToMany(targetEntity: ListMessage::class, mappedBy: 'message')]
     private Collection $listMessages;
 
@@ -190,6 +193,9 @@ class Message implements DomainModel, Identity, ModificationDate, OwnableInterfa
         return $this;
     }
 
+    /**
+     * @return Collection<int, ListMessage>
+     */
     public function getListMessages(): Collection
     {
         return $this->listMessages;

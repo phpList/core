@@ -64,7 +64,6 @@ class BounceRuleManager
         return $result;
     }
 
-
     /**
      * @param array<string,BounceRegex> $rules
      */

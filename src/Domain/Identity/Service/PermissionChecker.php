@@ -8,6 +8,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\OwnableInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Identity\Model\PrivilegeFlag;
+use PhpList\Core\Domain\Messaging\Model\ListMessage;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
@@ -70,9 +71,7 @@ class PermissionChecker
         }
 
         if ($resource instanceof Message && $relatedClass === SubscriberList::class) {
-            // todo: check which one is correct
-            // return $resource->getListMessages()->map(fn(ListMessage $lm) => $lm->getList())->toArray();
-            return $resource->getListMessages()->map(fn($lm) => $lm->getSubscriberList())->toArray();
+            return $resource->getListMessages()->map(fn(ListMessage $lm) => $lm->getList())->toArray();
         }
 
         return [];

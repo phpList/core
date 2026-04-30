@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Identity\Model\Administrator;
 class MessageFilter extends PaginatedFilter implements FilterRequestInterface
 {
     private ?Administrator $owner = null;
+    private ?string $subject = null;
 
     public function getOwner(): ?Administrator
     {
@@ -20,6 +21,20 @@ class MessageFilter extends PaginatedFilter implements FilterRequestInterface
     public function setOwner(?Administrator $admin): self
     {
         $this->owner = $admin;
+        return $this;
+    }
+
+    public function getSubject(): ?string
+    {
+        return $this->subject;
+    }
+
+    public function setSubject(?string $subject): self
+    {
+        if ($subject !== null) {
+            $subject = trim($subject);
+        }
+        $this->subject = $subject;
         return $this;
     }
 }

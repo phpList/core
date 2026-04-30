@@ -59,12 +59,19 @@ class Template implements DomainModel, Identity
 
     public function getContent(): ?string
     {
-        if (is_resource($this->content)) {
-            rewind($this->content);
-            return stream_get_contents($this->content);
+        if ($this->content === null) {
+            return null;
         }
 
-        return $this->content;
+        if (is_resource($this->content)) {
+            rewind($this->content);
+            $value = stream_get_contents($this->content);
+            rewind($this->content);
+
+            return $value === false ? null : $value;
+        }
+
+        return (string) $this->content;
     }
 
     public function getText(): ?string
@@ -95,14 +102,30 @@ class Template implements DomainModel, Identity
 
     public function setContent(?string $content): self
     {
-        $this->content = $content !== null ? fopen('data://text/plain,' . $content, 'r') : null;
+        if ($content === null) {
+            $this->content = null;
+            return $this;
+        }
+
+        $stream = fopen('php://temp', 'r+');
+        fwrite($stream, $content);
+        rewind($stream);
+
+        $this->content = $stream;
+
         return $this;
     }
 
-
     public function setText(?string $text): self
     {
-        $this->text = $text !== null ? fopen('data://text/plain,' . $text, 'r') : null;
+        if ($text === null) {
+            $text = '[CONTENT]';
+        }
+        $stream = fopen('data://text/plain,' . $text, 'r');
+        rewind($stream);
+
+        $this->text = $stream;
+
         return $this;
     }
 

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Service\Provider;
 
-use PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessageInterface;
+use PhpList\Core\Domain\Messaging\Message\CampaignProcessor\CampaignProcessorMessageInterface;
+use PhpList\Core\Domain\Messaging\Message\CampaignProcessor\TestCampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
@@ -32,6 +33,10 @@ class SubscriberProvider
      */
     public function getSubscribersForMessageOrLists(CampaignProcessorMessageInterface $data, Message $campaign): array
     {
+        if ($data instanceof TestCampaignProcessorMessage) {
+            return $this->subscriberRepository->getByEmails($data->getSubscriberEmails());
+        }
+
         if (count($data->getListIds()) > 0) {
             $listIds = $data->getListIds();
         } else {

@@ -18,24 +18,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class BounceManager
 {
-    private BounceRepository $bounceRepository;
-    private UserMessageBounceRepository $userMessageBounceRepo;
-    private EntityManagerInterface $entityManager;
-    private LoggerInterface $logger;
-    private TranslatorInterface $translator;
-
     public function __construct(
-        BounceRepository $bounceRepository,
-        UserMessageBounceRepository $userMessageBounceRepo,
-        EntityManagerInterface $entityManager,
-        LoggerInterface $logger,
-        TranslatorInterface $translator,
+        private readonly BounceRepository $bounceRepository,
+        private readonly UserMessageBounceRepository $userMessageBounceRepo,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly LoggerInterface $logger,
+        private readonly TranslatorInterface $translator,
     ) {
-        $this->bounceRepository = $bounceRepository;
-        $this->userMessageBounceRepo = $userMessageBounceRepo;
-        $this->entityManager = $entityManager;
-        $this->logger = $logger;
-        $this->translator = $translator;
     }
 
     public function create(
@@ -93,7 +82,10 @@ class BounceManager
         int $subscriberId,
         ?int $messageId = -1
     ): UserMessageBounce {
-        $userMessageBounce = new UserMessageBounce($bounce->getId(), new DateTime($date->format('Y-m-d H:i:s')));
+        $userMessageBounce = new UserMessageBounce(
+            bounceId: $bounce->getId(),
+            createdAt: new DateTime($date->format('Y-m-d H:i:s'))
+        );
         $userMessageBounce->setUserId($subscriberId);
         $userMessageBounce->setMessageId($messageId);
 

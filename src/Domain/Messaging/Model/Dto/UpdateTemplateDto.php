@@ -14,6 +14,7 @@ class UpdateTemplateDto
         public readonly bool $shouldCheckLinks = false,
         public readonly bool $shouldCheckImages = false,
         public readonly bool $shouldCheckExternalImages = false,
+        public readonly int $listOrder = 0,
     ) {
     }
 }

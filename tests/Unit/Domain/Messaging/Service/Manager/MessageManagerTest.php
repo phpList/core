@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Manager;
 
+use DateTime;
+use InvalidArgumentException;
 use PhpList\Core\Domain\Identity\Model\Administrator;
+use PhpList\Core\Domain\Messaging\Model\ListMessage;
 use PhpList\Core\Domain\Messaging\Model\Dto\CreateMessageDto;
 use PhpList\Core\Domain\Messaging\Model\Dto\Message\MessageContentDto;
 use PhpList\Core\Domain\Messaging\Model\Dto\Message\MessageFormatDto;
@@ -13,21 +16,65 @@ use PhpList\Core\Domain\Messaging\Model\Dto\Message\MessageOptionsDto;
 use PhpList\Core\Domain\Messaging\Model\Dto\Message\MessageScheduleDto;
 use PhpList\Core\Domain\Messaging\Model\Dto\UpdateMessageDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageFormat;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageOptions;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageSchedule;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\MessageBuilder;
 use PhpList\Core\Domain\Messaging\Service\Manager\MessageManager;
+use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Validator\Exception\ValidatorException;
 
 class MessageManagerTest extends TestCase
 {
+    public function testCopyAsDraftMessagePersistsClonedDraftMessage(): void
+    {
+        $messageRepository = $this->createMock(MessageRepository::class);
+        $messageBuilder = $this->createMock(MessageBuilder::class);
+        $manager = new MessageManager($messageRepository, $messageBuilder);
+
+        $message = new Message(
+            format: new MessageFormat(true, 'html'),
+            schedule: new MessageSchedule(
+                repeatInterval: 0,
+                repeatUntil: null,
+                requeueInterval: 0,
+                requeueUntil: null,
+                embargo: new DateTime('2025-04-17T09:00:00+00:00')
+            ),
+            metadata: new MessageMetadata(Message\MessageStatus::Submitted),
+            content: new MessageContent('Subject', 'Full text', 'Short text', 'Footer'),
+            options: new MessageOptions('from@example.com', 'to@example.com', 'reply@example.com', 'all-users'),
+            owner: null
+        );
+
+        $messageRepository->expects($this->once())
+            ->method('persist')
+            ->with($this->callback(function (Message $persistedMessage) use ($message): bool {
+                $this->assertNotSame($message, $persistedMessage);
+                $this->assertSame(Message\MessageStatus::Draft, $persistedMessage->getMetadata()->getStatus());
+                $this->assertTrue($persistedMessage->getFormat()->isHtmlFormatted());
+                $this->assertSame('html', $persistedMessage->getFormat()->getSendFormat());
+
+                return true;
+            }));
+
+        $result = $manager->copyAsDraftMessage($message, $this->createMock(Administrator::class));
+
+        $this->assertSame(Message\MessageStatus::Draft, $result->getMetadata()->getStatus());
+        $this->assertNotSame($message, $result);
+    }
+
     public function testCreateMessageReturnsPersistedMessage(): void
     {
         $messageRepository = $this->createMock(MessageRepository::class);
         $messageBuilder = $this->createMock(MessageBuilder::class);
         $manager = new MessageManager($messageRepository, $messageBuilder);
 
-        $format = new MessageFormatDto(true, 'html', ['html']);
+        $format = new MessageFormatDto('html');
         $schedule = new MessageScheduleDto(
             embargo: '2025-04-17T09:00:00+00:00',
             repeatInterval: 60 * 24,
@@ -36,7 +83,7 @@ class MessageManagerTest extends TestCase
             requeueUntil: '2025-04-20T00:00:00+00:00',
         );
         $metadata = new MessageMetadataDto(Message\MessageStatus::Draft);
-        $content = new MessageContentDto('Subject', 'Full text', 'Short text', 'Footer');
+        $content = new MessageContentDto(subject: 'Subject', text: 'Full text', footer: 'Footer');
         $options = new MessageOptionsDto('from@example.com', 'to@example.com', 'reply@example.com', 'all-users');
 
         $request = new CreateMessageDto(
@@ -81,7 +128,7 @@ class MessageManagerTest extends TestCase
         $messageBuilder = $this->createMock(MessageBuilder::class);
         $manager = new MessageManager($messageRepository, $messageBuilder);
 
-        $format = new MessageFormatDto(false, 'text', ['text']);
+        $format = new MessageFormatDto('text');
         $schedule = new MessageScheduleDto(
             embargo: '2025-04-17T09:00:00+00:00',
             repeatInterval: 0,
@@ -91,16 +138,15 @@ class MessageManagerTest extends TestCase
         );
         $metadata = new MessageMetadataDto(Message\MessageStatus::Draft);
         $content = new MessageContentDto(
-            'Updated Subject',
-            'Updated Full text',
-            'Updated Short text',
-            'Updated Footer'
+            subject: 'Updated Subject',
+            text: 'Updated Full text',
+            footer: 'Updated Footer'
         );
         $options = new MessageOptionsDto(
-            'newfrom@example.com',
-            'newto@example.com',
-            'newreply@example.com',
-            'active-users'
+            fromField: 'newfrom@example.com',
+            toField:  'newto@example.com',
+            replyTo: 'newreply@example.com',
+            userSelection: 'active-users'
         );
 
         $updateRequest = new UpdateMessageDto(
@@ -133,5 +179,66 @@ class MessageManagerTest extends TestCase
 
         $this->assertSame('Updated Subject', $message->getContent()->getSubject());
         $this->assertSame(Message\MessageStatus::Draft, $message->getMetadata()->getStatus());
+    }
+
+    public function testUpdateStatusThrowsWhenSubmittedWithoutListMessage(): void
+    {
+        $messageRepository = $this->createMock(MessageRepository::class);
+        $messageBuilder = $this->createMock(MessageBuilder::class);
+        $manager = new MessageManager($messageRepository, $messageBuilder);
+
+        $message = new Message(
+            format: new MessageFormat(true, 'html'),
+            schedule: new MessageSchedule(
+                repeatInterval: 0,
+                repeatUntil: null,
+                requeueInterval: 0,
+                requeueUntil: null,
+                embargo: new DateTime('2025-04-17T09:00:00+00:00')
+            ),
+            metadata: new MessageMetadata(Message\MessageStatus::Draft),
+            content: new MessageContent('Subject', 'Body text', 'Short text', 'Footer'),
+            options: new MessageOptions('from@example.com', 'to@example.com', 'reply@example.com', 'all-users'),
+            owner: null
+        );
+
+        $this->expectException(ValidatorException::class);
+        $this->expectExceptionMessage('Cannot submit.');
+
+        $manager->updateStatus($message, Message\MessageStatus::Submitted);
+    }
+
+    public function testUpdateStatusSetsSubmittedWhenRequiredFieldsAndListArePresent(): void
+    {
+        $messageRepository = $this->createMock(MessageRepository::class);
+        $messageBuilder = $this->createMock(MessageBuilder::class);
+        $manager = new MessageManager($messageRepository, $messageBuilder);
+
+        $message = new Message(
+            format: new MessageFormat(true, 'html'),
+            schedule: new MessageSchedule(
+                repeatInterval: 0,
+                repeatUntil: null,
+                requeueInterval: 0,
+                requeueUntil: null,
+                embargo: new DateTime('2025-04-17T09:00:00+00:00')
+            ),
+            metadata: new MessageMetadata(Message\MessageStatus::Draft),
+            content: new MessageContent('Subject', 'Body text', 'Short text', 'Footer'),
+            options: new MessageOptions('from@example.com', 'to@example.com', 'reply@example.com', 'all-users'),
+            owner: null
+        );
+
+        $listMessage = new ListMessage(
+            message: $message,
+            subscriberList: $this->createMock(SubscriberList::class)
+        );
+
+        $message->getListMessages()->add($listMessage);
+
+        $updated = $manager->updateStatus($message, Message\MessageStatus::Submitted);
+
+        $this->assertSame($message, $updated);
+        $this->assertSame(Message\MessageStatus::Submitted, $message->getMetadata()->getStatus());
     }
 }

@@ -15,12 +15,12 @@ class AdminAttributeValue implements DomainModel
 {
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: AdminAttributeDefinition::class)]
-    #[ORM\JoinColumn(name: 'adminattributeid', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'adminattributeid', referencedColumnName: 'id')]
     private AdminAttributeDefinition $attributeDefinition;
 
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: Administrator::class)]
-    #[ORM\JoinColumn(name: 'adminid', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'adminid', referencedColumnName: 'id')]
     private Administrator $administrator;
 
     #[ORM\Column(name: 'value', type: 'string', length: 255, nullable: true)]

@@ -109,6 +109,10 @@ class MessageDataLoader
         if ($messageData['subject'] === '(no title)') {
             $messageData['subject'] = '(no subject)';
         }
+
+        if ($messageData['subject'] === '') {
+            $messageData['subject'] = '(no subject)';
+        }
     }
 
     private function mergeStoredMessageData(array &$messageData, Message $message): void
@@ -148,7 +152,7 @@ class MessageDataLoader
     private function populateTargetLists(array &$messageData, Message $message): void
     {
         foreach ($message->getListMessages() as $listMessage) {
-            $messageData['targetlist'][$listMessage->getListId()] = 1;
+            $messageData['targetlist'][$listMessage->getList()->getId()] = 1;
         }
     }
 

@@ -190,4 +190,42 @@ final class MessagePlaceholderProcessorTest extends TestCase
 
         $this->assertStringContainsString('A XVAL B ABC C SVAL', $out);
     }
+
+    public function testFooterContentIsResolvedForNestedPlaceholders(): void
+    {
+        $user = $this->makeUser('nest@example.com');
+        $dto = new MessagePrecacheDto();
+
+        $footerResolver = new class implements PlaceholderValueResolverInterface {
+            public function name(): string
+            {
+                return 'FOOTER';
+            }
+
+            public function __invoke(PlaceholderContext $ctx): string
+            {
+                return 'Footer contact [EMAIL]';
+            }
+        };
+
+        $processor = new MessagePlaceholderProcessor(
+            config: $this->config,
+            attributesRepository: $this->attrRepo,
+            attributeValueResolver: $this->attrResolver,
+            placeholderResolvers: [$footerResolver],
+            patternResolvers: [],
+            supportingResolvers: [],
+            alwaysAddUserTrack: false,
+            keepForwardedAttributes: false
+        );
+
+        $out = $processor->process(
+            value: 'Body [FOOTER]',
+            receiver: $user,
+            format: OutputFormat::Text,
+            messagePrecacheDto: $dto,
+        );
+
+        $this->assertStringContainsString('Body Footer contact nest@example.com', $out);
+    }
 }

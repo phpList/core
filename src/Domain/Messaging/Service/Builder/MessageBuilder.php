@@ -27,7 +27,7 @@ class MessageBuilder
             throw new InvalidContextTypeException(get_debug_type($context));
         }
 
-        $format = $this->messageFormatBuilder->build($createMessageDto->getFormat());
+        $format = $this->messageFormatBuilder->build($createMessageDto);
         $schedule = $this->messageScheduleBuilder->build($createMessageDto->getSchedule());
         $content = $this->messageContentBuilder->build($createMessageDto->getContent());
         $options = $this->messageOptionsBuilder->build($createMessageDto->getOptions());
@@ -42,6 +42,7 @@ class MessageBuilder
             $context->getExisting()->setContent($content);
             $context->getExisting()->setOptions($options);
             $context->getExisting()->setTemplate($template);
+
             return $context->getExisting();
         }
 

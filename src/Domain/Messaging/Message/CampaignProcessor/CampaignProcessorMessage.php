@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Messaging\Message;
+namespace PhpList\Core\Domain\Messaging\Message\CampaignProcessor;
 
-class SyncCampaignProcessorMessage implements CampaignProcessorMessageInterface
+class CampaignProcessorMessage implements CampaignProcessorMessageInterface
 {
     private int $messageId;
     private array $listIds;

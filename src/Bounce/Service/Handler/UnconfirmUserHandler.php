@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Bounce\Service\Handler;
 
+use PhpList\Core\Domain\Messaging\Model\BounceAction;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -26,7 +27,7 @@ class UnconfirmUserHandler implements BounceActionHandlerInterface
 
     public function supports(string $action): bool
     {
-        return $action === 'unconfirmuser';
+        return $action === BounceAction::UnconfirmUser->value;
     }
 
     public function handle(array $closureData): void

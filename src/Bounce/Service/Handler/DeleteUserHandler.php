@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Bounce\Service\Handler;
 
+use PhpList\Core\Domain\Messaging\Model\BounceAction;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use Psr\Log\LoggerInterface;
 
@@ -20,7 +21,7 @@ class DeleteUserHandler implements BounceActionHandlerInterface
 
     public function supports(string $action): bool
     {
-        return $action === 'deleteuser';
+        return $action === BounceAction::DeleteUser->value;
     }
 
     public function handle(array $closureData): void

@@ -7,12 +7,13 @@ namespace PhpList\Core\Domain\Configuration\Service\Placeholder;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Configuration\Model\Dto\PlaceholderContext;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final class SignatureValueResolver implements PlaceholderValueResolverInterface
 {
     public function __construct(
         private readonly ConfigProvider $config,
-        private readonly bool $emailTextCredits = false,
+        #[Autowire('%messaging.email_text_credits%')] private readonly bool $emailTextCredits = false,
     ) {
     }
 
