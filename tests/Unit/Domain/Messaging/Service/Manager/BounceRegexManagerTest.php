@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Model\BounceRegex;
 use PhpList\Core\Domain\Messaging\Model\BounceRegexBounce;
@@ -35,6 +36,8 @@ class BounceRegexManagerTest extends TestCase
     {
         $pattern = 'user unknown';
         $expectedHash = md5($pattern);
+        $admin = $this->createMock(Administrator::class);
+        $admin->method('getId')->willReturn(5);
 
         $this->regexRepository->expects($this->once())
             ->method('findOneByRegexHash')
@@ -45,11 +48,11 @@ class BounceRegexManagerTest extends TestCase
             ->method('persist')
             ->with($this->isInstanceOf(BounceRegex::class));
 
-        $regex = $this->manager->createOrUpdateFromPattern(
+        $regex = $this->manager->create(
             regex: $pattern,
+            admin: $admin,
             action: 'delete',
             listOrder: 5,
-            adminId: 1,
             comment: 'test',
             status: 'active'
         );
@@ -59,7 +62,6 @@ class BounceRegexManagerTest extends TestCase
         $this->assertSame($expectedHash, $regex->getRegexHash());
         $this->assertSame('delete', $regex->getAction());
         $this->assertSame(5, $regex->getListOrder());
-        $this->assertSame(1, $regex->getAdminId());
         $this->assertSame('test', $regex->getComment());
         $this->assertSame('active', $regex->getStatus());
     }
@@ -74,7 +76,7 @@ class BounceRegexManagerTest extends TestCase
             regexHash: $hash,
             action: 'keep',
             listOrder: 0,
-            adminId: null,
+            adminId: 2,
             comment: null,
             status: 'inactive',
             count: 3
@@ -85,11 +87,11 @@ class BounceRegexManagerTest extends TestCase
             ->with($hash)
             ->willReturn($existing);
 
-        $updated = $this->manager->createOrUpdateFromPattern(
+        $updated = $this->manager->update(
+            bounceRegex: $existing,
             regex: $pattern,
             action: 'delete',
             listOrder: 10,
-            adminId: 2,
             comment: 'upd',
             status: 'active'
         );

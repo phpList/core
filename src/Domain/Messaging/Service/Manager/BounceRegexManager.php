@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
+use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Model\BounceRegex;
 use PhpList\Core\Domain\Messaging\Model\BounceRegexBounce;
 use PhpList\Core\Domain\Messaging\Repository\BounceRegexRepository;
+use Symfony\Component\Validator\Exception\ValidatorException;
 
 class BounceRegexManager
 {
@@ -25,28 +27,20 @@ class BounceRegexManager
 
     /**
      * Creates or updates (if exists) a BounceRegex from a raw regex pattern.
+     * @throws ValidatorException
      */
-    public function createOrUpdateFromPattern(
+    public function create(
         string $regex,
+        Administrator $admin,
         ?string $action = null,
         ?int $listOrder = 0,
-        ?int $adminId = null,
         ?string $comment = null,
         ?string $status = null
     ): BounceRegex {
         $regexHash = md5($regex);
-
         $existing = $this->bounceRegexRepository->findOneByRegexHash($regexHash);
-
         if ($existing !== null) {
-            $existing->setRegex($regex)
-                ->setAction($action ?? $existing->getAction())
-                ->setListOrder($listOrder ?? $existing->getListOrder())
-                ->setAdminId($adminId ?? $existing->getAdminId())
-                ->setComment($comment ?? $existing->getComment())
-                ->setStatus($status ?? $existing->getStatus());
-
-            return $existing;
+            throw new ValidatorException('Bounce Regex already exists.');
         }
 
         $bounceRegex = new BounceRegex(
@@ -54,13 +48,37 @@ class BounceRegexManager
             regexHash: $regexHash,
             action: $action,
             listOrder: $listOrder,
-            adminId: $adminId,
+            adminId: $admin->getId(),
             comment: $comment,
             status: $status,
             count: 0
         );
 
         $this->bounceRegexRepository->persist($bounceRegex);
+
+        return $bounceRegex;
+    }
+
+    public function update(
+        BounceRegex $bounceRegex,
+        string $regex,
+        ?string $action = null,
+        ?int $listOrder = 0,
+        ?string $comment = null,
+        ?string $status = null
+    ): BounceRegex {
+        $regexHash = md5($regex);
+        $existing = $this->bounceRegexRepository->findOneByRegexHash($regexHash);
+        if ($existing !== null && $existing->getId() !== $bounceRegex->getId()) {
+            throw new ValidatorException('Bounce Regex already exists.');
+        }
+
+        $bounceRegex->setRegex($regex)
+            ->setAction($action ?? $existing->getAction())
+            ->setListOrder($listOrder ?? $existing->getListOrder())
+            ->setRegexHash($regexHash)
+            ->setComment($comment ?? $existing->getComment())
+            ->setStatus($status ?? $existing->getStatus());
 
         return $bounceRegex;
     }

@@ -222,3 +222,9 @@ command to extract translation strings
 ```bash
 php bin/console translation:extract --force en --format=xlf
 ```
+
+```bash
+vendor/bin/phpstan analyse -c phpstan.neon;
+vendor/bin/phpmd src/ text config/PHPMD/rules.xml;
+vendor/bin/phpcs --standard=config/PhpCodeSniffer/ --ignore=*/Migrations/* bin/ src/ tests/ public/;
+```
