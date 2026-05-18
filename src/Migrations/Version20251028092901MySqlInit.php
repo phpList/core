@@ -28,6 +28,19 @@ final class Version20251028092901MySqlInit extends AbstractMigration
                 get_class($platform)
             )
         );
+
+        $schemaManager = $this->connection->createSchemaManager();
+        $tables = $schemaManager->listTableNames();
+        $hasUserStats = array_filter(
+            $tables,
+            static fn (string $table): bool =>
+            str_ends_with($table, 'userstats')
+        );
+        $this->skipIf(
+            !empty($hasUserStats),
+            'phpList schema already exists.'
+        );
+
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql(file_get_contents(__DIR__.'/initial_schema.sql'));
     }
