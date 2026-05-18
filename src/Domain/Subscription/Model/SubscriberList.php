@@ -63,7 +63,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     #[ORM\Column]
     private ?string $category = '';
 
-    #[ORM\ManyToOne(targetEntity: Administrator::class)]
+    #[ORM\ManyToOne(targetEntity: Administrator::class, inversedBy: 'ownedLists')]
     #[ORM\JoinColumn(name: 'owner')]
     private ?Administrator $owner = null;
 
