@@ -58,6 +58,14 @@ jobs:
         run: composer validate --no-check-all --no-check-lock --strict;
       - name: Linting all php files
         run: find src/ tests/ public/ -name ''*.php'' -print0 | xargs -0 -n 1 -P 4 php -l; php -l bin/*;
+      - name: Validate Doctrine schema
+        run: |
+          export PHPLIST_DATABASE_NAME=${{ env.DB_DATABASE }}
+          export PHPLIST_DATABASE_USER=${{ env.DB_USERNAME }}
+          export PHPLIST_DATABASE_PASSWORD=${{ env.DB_PASSWORD }}
+          export PHPLIST_DATABASE_PORT=${{ job.services.mysql.ports['3306'] }}
+          export PHPLIST_DATABASE_HOST=127.0.0.1
+          php bin/console doctrine:schema:validate --skip-sync
       - name: Run units tests with phpunit
         run: vendor/bin/phpunit tests/Unit/ --testdox
       - name: Run integration tests with phpunit

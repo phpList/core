@@ -14,7 +14,7 @@ use PhpList\Core\Domain\Identity\Repository\AdminAttributeValueRepository;
 class AdminAttributeValue implements DomainModel
 {
     #[ORM\Id]
-    #[ORM\ManyToOne(targetEntity: AdminAttributeDefinition::class)]
+    #[ORM\ManyToOne(targetEntity: AdminAttributeDefinition::class, inversedBy: 'attributeValues')]
     #[ORM\JoinColumn(name: 'adminattributeid', referencedColumnName: 'id')]
     private AdminAttributeDefinition $attributeDefinition;
 
