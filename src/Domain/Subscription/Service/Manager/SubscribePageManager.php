@@ -10,8 +10,6 @@ use PhpList\Core\Domain\Subscription\Model\SubscribePage;
 use PhpList\Core\Domain\Subscription\Model\SubscribePageData;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberPageDataRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberPageRepository;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SubscribePageManager
 {
@@ -19,7 +17,6 @@ class SubscribePageManager
         private readonly SubscriberPageRepository $pageRepository,
         private readonly SubscriberPageDataRepository $pageDataRepository,
         private readonly EntityManagerInterface $entityManager,
-        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -31,17 +28,6 @@ class SubscribePageManager
             ->setOwner($owner);
 
         $this->pageRepository->persist($page);
-
-        return $page;
-    }
-
-    public function getPage(int $id): SubscribePage
-    {
-        /** @var SubscribePage|null $page */
-        $page = $this->pageRepository->find($id);
-        if (!$page) {
-            throw new NotFoundHttpException($this->translator->trans('Subscribe page not found'));
-        }
 
         return $page;
     }

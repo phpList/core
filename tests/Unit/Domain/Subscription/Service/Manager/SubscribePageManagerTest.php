@@ -13,8 +13,6 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberPageRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscribePageManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Translation\Translator;
 
 class SubscribePageManagerTest extends TestCase
 {
@@ -33,7 +31,6 @@ class SubscribePageManagerTest extends TestCase
             pageRepository: $this->pageRepository,
             pageDataRepository: $this->pageDataRepository,
             entityManager: $this->entityManager,
-            translator: new Translator('en'),
         );
     }
 
@@ -51,34 +48,6 @@ class SubscribePageManagerTest extends TestCase
         $this->assertSame('My Page', $page->getTitle());
         $this->assertTrue($page->isActive());
         $this->assertSame($owner, $page->getOwner());
-    }
-
-    public function testGetPageReturnsPage(): void
-    {
-        $page = new SubscribePage();
-        $this->pageRepository
-            ->expects($this->once())
-            ->method('find')
-            ->with(123)
-            ->willReturn($page);
-
-        $result = $this->manager->getPage(123);
-
-        $this->assertSame($page, $result);
-    }
-
-    public function testGetPageThrowsWhenNotFound(): void
-    {
-        $this->pageRepository
-            ->expects($this->once())
-            ->method('find')
-            ->with(999)
-            ->willReturn(null);
-
-        $this->expectException(NotFoundHttpException::class);
-        $this->expectExceptionMessage('Subscribe page not found');
-
-        $this->manager->getPage(999);
     }
 
     public function testUpdatePageUpdatesProvidedFieldsAndFlushes(): void
