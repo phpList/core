@@ -32,6 +32,34 @@ class SubscribePageManager
         return $page;
     }
 
+    public function syncPageData(array $data, SubscribePage $page): void
+    {
+        $existingPageData = [];
+        foreach ($this->getPageData($page) as $pageData) {
+            $existingPageData[$pageData->getName()] = $pageData;
+        }
+
+        foreach ($data as $pageDataKey => $value) {
+            if (isset($existingPageData[$pageDataKey])) {
+                $pageData = $existingPageData[$pageDataKey];
+                $pageData->setData($value);
+                unset($existingPageData[$pageDataKey]);
+                continue;
+            }
+
+            $pageData = (new SubscribePageData())
+                ->setId($page->getId())
+                ->setName($pageDataKey)
+                ->setData($value);
+
+            $this->pageDataRepository->persist($pageData);
+        }
+
+        foreach ($existingPageData as $pageData) {
+            $this->entityManager->remove($pageData);
+        }
+    }
+
     public function updatePage(
         SubscribePage $page,
         ?string $title = null,

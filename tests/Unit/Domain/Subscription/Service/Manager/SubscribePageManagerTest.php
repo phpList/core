@@ -194,4 +194,195 @@ class SubscribePageManagerTest extends TestCase
         $this->assertSame('greeting', $result->getName());
         $this->assertSame('hello', $result->getData());
     }
+
+    public function testSyncPageDataWithEmptyExistingDataCreatesNewEntries(): void
+    {
+        $page = $this->getMockBuilder(SubscribePage::class)
+            ->onlyMethods(['getId'])
+            ->getMock();
+        $page->method('getId')->willReturn(42);
+
+        $this->pageDataRepository
+            ->expects($this->once())
+            ->method('getByPage')
+            ->with($page)
+            ->willReturn([]);
+
+        $this->pageDataRepository
+            ->expects($this->exactly(2))
+            ->method('persist')
+            ->with($this->isInstanceOf(SubscribePageData::class));
+
+        $this->entityManager
+            ->expects($this->never())
+            ->method('remove');
+
+        $data = [
+            'field1' => 'value1',
+            'field2' => 'value2',
+        ];
+
+        $this->manager->syncPageData($data, $page);
+    }
+
+    public function testSyncPageDataUpdatesExistingEntries(): void
+    {
+        $page = new SubscribePage();
+        $pageData1 = new SubscribePageData();
+        $pageData1->setName('field1')->setData('old_value1');
+        $pageData2 = new SubscribePageData();
+        $pageData2->setName('field2')->setData('old_value2');
+
+        $this->pageDataRepository
+            ->expects($this->once())
+            ->method('getByPage')
+            ->with($page)
+            ->willReturn([$pageData1, $pageData2]);
+
+        $this->pageDataRepository
+            ->expects($this->never())
+            ->method('persist');
+
+        $this->entityManager
+            ->expects($this->never())
+            ->method('remove');
+
+        $data = [
+            'field1' => 'new_value1',
+            'field2' => 'new_value2',
+        ];
+
+        $this->manager->syncPageData($data, $page);
+
+        $this->assertSame('new_value1', $pageData1->getData());
+        $this->assertSame('new_value2', $pageData2->getData());
+    }
+
+    public function testSyncPageDataRemovesExistingEntriesNotInNewData(): void
+    {
+        $page = new SubscribePage();
+        $pageData1 = new SubscribePageData();
+        $pageData1->setName('field1')->setData('value1');
+        $pageData2 = new SubscribePageData();
+        $pageData2->setName('field2')->setData('value2');
+
+        $this->pageDataRepository
+            ->expects($this->once())
+            ->method('getByPage')
+            ->with($page)
+            ->willReturn([$pageData1, $pageData2]);
+
+        $this->pageDataRepository
+            ->expects($this->never())
+            ->method('persist');
+
+        $this->entityManager
+            ->expects($this->exactly(1))
+            ->method('remove')
+            ->with($pageData2);
+
+        $data = [
+            'field1' => 'value1',
+        ];
+
+        $this->manager->syncPageData($data, $page);
+    }
+
+    public function testSyncPageDataWithMixedOperationsCreateUpdateDelete(): void
+    {
+        $page = $this->getMockBuilder(SubscribePage::class)
+            ->onlyMethods(['getId'])
+            ->getMock();
+        $page->method('getId')->willReturn(10);
+
+        $existingData1 = new SubscribePageData();
+        $existingData1->setName('keep_and_update')->setData('old_value');
+        $existingData2 = new SubscribePageData();
+        $existingData2->setName('to_delete')->setData('delete_me');
+
+        $this->pageDataRepository
+            ->expects($this->once())
+            ->method('getByPage')
+            ->with($page)
+            ->willReturn([$existingData1, $existingData2]);
+
+        $this->pageDataRepository
+            ->expects($this->once())
+            ->method('persist')
+            ->with($this->isInstanceOf(SubscribePageData::class));
+
+        $this->entityManager
+            ->expects($this->once())
+            ->method('remove')
+            ->with($existingData2);
+
+        $data = [
+            'keep_and_update' => 'updated_value',
+            'new_field' => 'new_value',
+        ];
+
+        $this->manager->syncPageData($data, $page);
+
+        $this->assertSame('updated_value', $existingData1->getData());
+    }
+
+    public function testSyncPageDataWithEmptyDataRemovesAllExistingEntries(): void
+    {
+        $page = new SubscribePage();
+        $pageData1 = new SubscribePageData();
+        $pageData1->setName('field1')->setData('value1');
+        $pageData2 = new SubscribePageData();
+        $pageData2->setName('field2')->setData('value2');
+
+        $this->pageDataRepository
+            ->expects($this->once())
+            ->method('getByPage')
+            ->with($page)
+            ->willReturn([$pageData1, $pageData2]);
+
+        $this->pageDataRepository
+            ->expects($this->never())
+            ->method('persist');
+
+        $this->entityManager
+            ->expects($this->exactly(2))
+            ->method('remove')
+            ->withConsecutive([$pageData1], [$pageData2]);
+
+        $data = [];
+
+        $this->manager->syncPageData($data, $page);
+    }
+
+    public function testSyncPageDataPreservesExistingDataObjectsWhenKeepingEntries(): void
+    {
+        $page = new SubscribePage();
+        $originalPageData = new SubscribePageData();
+        $originalPageData->setId(99)->setName('color')->setData('red');
+
+        $this->pageDataRepository
+            ->expects($this->once())
+            ->method('getByPage')
+            ->with($page)
+            ->willReturn([$originalPageData]);
+
+        $this->pageDataRepository
+            ->expects($this->never())
+            ->method('persist');
+
+        $this->entityManager
+            ->expects($this->never())
+            ->method('remove');
+
+        $data = [
+            'color' => 'blue',
+        ];
+
+        $this->manager->syncPageData($data, $page);
+
+        // Should have updated the same object, not created a new one
+        $this->assertSame(99, $originalPageData->getId());
+        $this->assertSame('color', $originalPageData->getName());
+        $this->assertSame('blue', $originalPageData->getData());
+    }
 }
