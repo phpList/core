@@ -20,6 +20,11 @@ class SubscribePageManager
     ) {
     }
 
+    public function findPage(int $id): ?SubscribePage
+    {
+        return $this->pageRepository->findPageWithData($id);
+    }
+
     public function createPage(string $title, bool $active = false, ?Administrator $owner = null): SubscribePage
     {
         $page = new SubscribePage();
@@ -92,7 +97,7 @@ class SubscribePageManager
     /** @return SubscribePageData[] */
     public function getPageData(SubscribePage $page): array
     {
-        return $this->pageDataRepository->getByPage($page,);
+        return $this->pageDataRepository->getByPage($page);
     }
 
     public function setPageData(SubscribePage $page, string $name, ?string $value): SubscribePageData
