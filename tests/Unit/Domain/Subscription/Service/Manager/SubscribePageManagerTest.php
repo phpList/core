@@ -34,6 +34,19 @@ class SubscribePageManagerTest extends TestCase
         );
     }
 
+    public function testFindPageReturnsPageFromRepository(): void
+    {
+        $page = new SubscribePage();
+
+        $this->pageRepository
+            ->expects($this->once())
+            ->method('findPageWithData')
+            ->with(123)
+            ->willReturn($page);
+
+        $this->assertSame($page, $this->manager->findPage(123));
+    }
+
     public function testCreatePageCreatesAndSaves(): void
     {
         $owner = new Administrator();
@@ -114,85 +127,6 @@ class SubscribePageManagerTest extends TestCase
             ->with($page);
 
         $this->manager->deletePage($page);
-    }
-
-    public function testGetPageDataReturnsStringWhenFound(): void
-    {
-        $page = new SubscribePage();
-        $data = $this->createMock(SubscribePageData::class);
-        $data->expects($this->once())->method('getData')->willReturn('value');
-
-        $this->pageDataRepository
-            ->expects($this->once())
-            ->method('getByPage')
-            ->with($page)
-            ->willReturn([$data]);
-
-        $result = $this->manager->getPageData($page);
-        $this->assertIsArray($result);
-        $this->assertSame('value', $result[0]->getData());
-    }
-
-    public function testGetPageDataReturnsNullWhenNotFound(): void
-    {
-        $page = new SubscribePage();
-
-        $this->pageDataRepository
-            ->expects($this->once())
-            ->method('getByPage')
-            ->with($page)
-            ->willReturn([]);
-
-        $result = $this->manager->getPageData($page);
-        $this->assertEmpty($result);
-    }
-
-    public function testSetPageDataUpdatesExistingDataAndFlushes(): void
-    {
-        $page = new SubscribePage();
-        $existing = new SubscribePageData();
-        $existing->setId(5)->setName('color')->setData('red');
-
-        $this->pageDataRepository
-            ->expects($this->once())
-            ->method('findByPageAndName')
-            ->with($page, 'color')
-            ->willReturn($existing);
-
-        $this->entityManager
-            ->expects($this->never())
-            ->method('persist');
-
-        $result = $this->manager->setPageData($page, 'color', 'blue');
-
-        $this->assertSame($existing, $result);
-        $this->assertSame('blue', $result->getData());
-    }
-
-    public function testSetPageDataCreatesNewWhenMissingAndPersistsAndFlushes(): void
-    {
-        $page = $this->getMockBuilder(SubscribePage::class)
-            ->onlyMethods(['getId'])
-            ->getMock();
-        $page->method('getId')->willReturn(123);
-
-        $this->pageDataRepository
-            ->expects($this->once())
-            ->method('findByPageAndName')
-            ->with($page, 'greeting')
-            ->willReturn(null);
-
-        $this->entityManager
-            ->expects($this->once())
-            ->method('persist')
-            ->with($this->isInstanceOf(SubscribePageData::class));
-
-        $result = $this->manager->setPageData($page, 'greeting', 'hello');
-
-        $this->assertInstanceOf(SubscribePageData::class, $result);
-        $this->assertSame(123, $result->getId());
-        $this->assertSame('greeting', $result->getName());
-        $this->assertSame('hello', $result->getData());
     }
 
     public function testSyncPageDataWithEmptyExistingDataCreatesNewEntries(): void

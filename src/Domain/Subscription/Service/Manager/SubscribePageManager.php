@@ -95,25 +95,8 @@ class SubscribePageManager
     }
 
     /** @return SubscribePageData[] */
-    public function getPageData(SubscribePage $page): array
+    private function getPageData(SubscribePage $page): array
     {
         return $this->pageDataRepository->getByPage($page);
-    }
-
-    public function setPageData(SubscribePage $page, string $name, ?string $value): SubscribePageData
-    {
-        /** @var SubscribePageData|null $data */
-        $data = $this->pageDataRepository->findByPageAndName($page, $name);
-
-        if (!$data) {
-            $data = (new SubscribePageData())
-                ->setId((int)$page->getId())
-                ->setName($name);
-            $this->entityManager->persist($data);
-        }
-
-        $data->setData($value);
-
-        return $data;
     }
 }
