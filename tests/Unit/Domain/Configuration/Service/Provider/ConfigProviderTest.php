@@ -51,29 +51,6 @@ final class ConfigProviderTest extends TestCase
         $this->markTestSkipped('No non-boolean ConfigOption cases available to test.');
     }
 
-    /**
-     * Utility: pick a namespaced case "parent:child" where parent exists as its own case.
-     */
-    private function pickNamespacedCasePair(): array
-    {
-        $byValue = [];
-        foreach (ConfigOption::cases() as $c) {
-            $byValue[$c->value] = $c;
-        }
-
-        foreach (ConfigOption::cases() as $c) {
-            if (!str_contains($c->value, ':')) {
-                continue;
-            }
-            [$parent] = explode(':', $c->value, 2);
-            if (isset($byValue[$parent])) {
-                return [$c, $byValue[$parent]];
-            }
-        }
-
-        $this->markTestSkipped('No namespaced ConfigOption (parent:child) pair found.');
-    }
-
     public function testIsEnabledRejectsNonBooleanKeys(): void
     {
         $nonBoolean = $this->pickNonBooleanCase();
@@ -248,32 +225,27 @@ final class ConfigProviderTest extends TestCase
         $this->assertSame('FULL', $this->provider->getValueWithNamespace($key));
     }
 
-    public function testGetValueWithNamespaceFallsBackToParentWhenFullEmpty(): void
+    public function testGetValueWithNamespaceSupportsStringNamespacedKey(): void
     {
-        [$child, $parent] = $this->pickNamespacedCasePair();
-
-        // Simulate: child is empty (null or ''), parent has value "PARENTVAL"
         $this->cache
             ->method('get')
             ->willReturnMap([
-                ['cfg:' . $child->value, null],
-                ['cfg:' . $parent->value, 'PARENTVAL'],
+                ['cfg:subscribemessage:1', null],
+                ['cfg:subscribemessage', 'PARENT'],
             ]);
 
-        // child -> repo null; parent -> not consulted because cache returns value
         $this->repo
             ->method('findValueByItem')
             ->willReturnMap([
-                [$child->value, null],
+                ['subscribemessage:1', null],
+                ['subscribemessage', 'PARENT'],
             ]);
 
-        // child miss is cached as null, parent value is not rewritten here (already cached)
         $this->cache
             ->expects($this->atLeastOnce())
-            ->method('set');
+            ->method('set')
+            ->withAnyParameters();
 
-        $this->defaults->method('has')->willReturn(false);
-
-        $this->assertSame('PARENTVAL', $this->provider->getValueWithNamespace($child));
+        $this->assertSame('PARENT', $this->provider->getValueWithNamespace('subscribemessage:1'));
     }
 }

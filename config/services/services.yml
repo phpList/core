@@ -43,6 +43,14 @@ services:
     autoconfigure: true
     public: true
 
+  PhpList\Core\Domain\Subscription\Service\SubscribePageConfigMigrationService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscribePageManager:
+    autowire: true
+    autoconfigure: true
+
   PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator:
     autowire: true
     autoconfigure: true

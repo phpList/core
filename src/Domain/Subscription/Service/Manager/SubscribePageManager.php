@@ -10,19 +10,36 @@ use PhpList\Core\Domain\Subscription\Model\SubscribePage;
 use PhpList\Core\Domain\Subscription\Model\SubscribePageData;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberPageDataRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberPageRepository;
+use PhpList\Core\Domain\Subscription\Service\SubscribePageConfigMigrationService;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class SubscribePageManager
 {
     public function __construct(
         private readonly SubscriberPageRepository $pageRepository,
         private readonly SubscriberPageDataRepository $pageDataRepository,
+        private readonly SubscribePageConfigMigrationService $configMigrationService,
         private readonly EntityManagerInterface $entityManager,
+        #[Autowire('%parallel_use_with_phplist3%')]
+        private readonly bool $parallelUseWithPhpList3,
     ) {
     }
 
     public function findPage(int $id): ?SubscribePage
     {
-        return $this->pageRepository->findPageWithData($id);
+        $page = $this->pageRepository->findPageWithData($id);
+        if ($page === null) {
+            return null;
+        }
+
+        if ($this->parallelUseWithPhpList3) {
+            $changed = $this->configMigrationService->copyToPageData($page);
+            if ($changed) {
+                $page = $this->pageRepository->findPageWithData($id) ?? $page;
+            }
+        }
+
+        return $page;
     }
 
     public function createPage(string $title, bool $active = false, ?Administrator $owner = null): SubscribePage
@@ -62,6 +79,10 @@ class SubscribePageManager
 
         foreach ($existingPageData as $pageData) {
             $this->entityManager->remove($pageData);
+        }
+
+        if ($this->parallelUseWithPhpList3) {
+            $this->configMigrationService->copyToConfig(page: $page, data: $data);
         }
     }
 
