@@ -333,26 +333,34 @@ class CampaignProcessorMessageHandlerTest extends TestCase
     public function testInvokeWithMultipleSubscribers(): void
     {
         $campaign = $this->createCampaignMock();
+
         $precached = new MessagePrecacheDto();
         $precached->subject = 'Test Subject';
         $precached->content = '<p>Test HTML message</p>';
         $precached->textContent = 'Test text message';
         $precached->footer = 'Test footer message';
+
         $metadata = $this->createMock(MessageMetadata::class);
+
         $campaign->method('getMetadata')->willReturn($metadata);
         $campaign->method('getId')->willReturn(1);
+
         $data = new CampaignProcessorMessage(1);
 
-        $this->messageRepository->method('findByIdAndStatus')
+        $this->messageRepository
+            ->method('findByIdAndStatus')
             ->with(1, MessageStatus::Submitted)
             ->willReturn($campaign);
 
-        $this->precacheService->expects($this->once())
+        $this->precacheService
+            ->expects($this->once())
             ->method('precacheMessage')
             ->with($campaign, $this->anything())
             ->willReturn(true);
 
-        $this->cache->method('get')->willReturn($precached);
+        $this->cache
+            ->method('get')
+            ->willReturn($precached);
 
         $subscriber1 = $this->createMock(Subscriber::class);
         $subscriber1->method('getEmail')->willReturn('test1@example.com');
@@ -366,47 +374,94 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $subscriber3->method('getEmail')->willReturn('invalid-email');
         $subscriber3->method('getId')->willReturn(3);
 
-        $this->subscriberProvider->expects($this->once())
+        $this->subscriberProvider
+            ->expects($this->once())
             ->method('getSubscribersForMessageOrLists')
             ->with($data, $campaign)
-            ->willReturn([$subscriber1, $subscriber2, $subscriber3]);
+            ->willReturn([
+                $subscriber1,
+                $subscriber2,
+                $subscriber3,
+            ]);
 
-        $this->messagePreparator->expects($this->exactly(2))
+        $processMessageLinksCalls = [];
+
+        $this->messagePreparator
+            ->expects($this->exactly(2))
             ->method('processMessageLinks')
-            ->withConsecutive(
-                [1, $precached, $subscriber1],
-                [1, $precached, $subscriber2]
-            )
-            ->willReturnOnConsecutiveCalls($precached, $precached);
+            ->willReturnCallback(
+                function (
+                    int $campaignId,
+                    MessagePrecacheDto $dto,
+                    Subscriber $subscriber
+                ) use (
+                    &$processMessageLinksCalls,
+                    $precached
+                ): MessagePrecacheDto {
+                    $processMessageLinksCalls[] = [
+                        $campaignId,
+                        $dto,
+                        $subscriber,
+                    ];
 
-        // Configure builder to return emails for first two subscribers
-        $campaignEmailBuilder = (new ReflectionClass($this->handler))
-            ->getProperty('campaignEmailBuilder');
-        /** @var EmailBuilder|MockObject $campaignBuilderMock */
-        $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
-        $campaignBuilderMock->expects($this->exactly(2))
-            ->method('buildCampaignEmail')
-            ->willReturnOnConsecutiveCalls(
-                [
-                    (new Email())->to('test1@example.com')->subject('Test Subject')->text('x'),
-                    OutputFormat::Text
-                ],
-                [
-                    (new Email())->to('test2@example.com')->subject('Test Subject')->text('x'),
-                    OutputFormat::Text
-                ],
+                    return $precached;
+                }
             );
 
-        $this->mailer->expects($this->exactly(2))
+        $campaignEmailBuilder = (new ReflectionClass($this->handler))
+            ->getProperty('campaignEmailBuilder');
+
+        /** @var EmailBuilder|MockObject $campaignBuilderMock */
+        $campaignBuilderMock = $campaignEmailBuilder->getValue($this->handler);
+
+        $buildCampaignEmailCalls = [];
+
+        $campaignBuilderMock
+            ->expects($this->exactly(2))
+            ->method('buildCampaignEmail')
+            ->willReturnCallback(
+                function () use (&$buildCampaignEmailCalls): array {
+                    $buildCampaignEmailCalls[] = func_get_args();
+
+                    static $emails = [
+                        'test1@example.com',
+                        'test2@example.com',
+                    ];
+
+                    $email = array_shift($emails);
+
+                    return [
+                        (new Email())
+                            ->to($email)
+                            ->subject('Test Subject')
+                            ->text('x'),
+                        OutputFormat::Text,
+                    ];
+                }
+            );
+
+        $this->mailer
+            ->expects($this->exactly(2))
             ->method('send');
 
         $metadata->expects($this->atLeastOnce())
             ->method('setStatus');
 
-        $this->entityManager->expects($this->atLeastOnce())
+        $this->entityManager
+            ->expects($this->atLeastOnce())
             ->method('flush');
 
         ($this->handler)($data);
+
+        $this->assertSame(
+            [
+                [1, $precached, $subscriber1],
+                [1, $precached, $subscriber2],
+            ],
+            $processMessageLinksCalls,
+        );
+
+        $this->assertCount(2, $buildCampaignEmailCalls);
     }
 
     /**

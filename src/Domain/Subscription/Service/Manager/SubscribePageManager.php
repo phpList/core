@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
+use LogicException;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Subscription\Model\SubscribePage;
 use PhpList\Core\Domain\Subscription\Model\SubscribePageData;
@@ -56,6 +57,9 @@ class SubscribePageManager
 
     public function syncPageData(array $data, SubscribePage $page): void
     {
+        if ($page->getId() === null) {
+            throw new LogicException('Page must be persisted before syncing data');
+        }
         $existingPageData = [];
         foreach ($this->getPageData($page) as $pageData) {
             $existingPageData[$pageData->getName()] = $pageData;

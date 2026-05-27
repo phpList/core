@@ -137,7 +137,6 @@ class SystemMailConstructorTest extends TestCase
 
     public function testTemplateWithoutSignatureAppendsPoweredByTextAndBeforeBodyEndWhenHtml(): void
     {
-        // Configure template usage with poweredByPhplist=true (use text snippet instead of image)
         $this->configProvider->method('getValue')->willReturnMap([
             [ConfigOption::PoweredByText, '<i>PB</i>'],
             [ConfigOption::SystemMessageTemplate, '11'],
@@ -146,18 +145,32 @@ class SystemMailConstructorTest extends TestCase
         $template = new Template('sys-template');
         $template->setContent('<html><body>[CONTENT]</body></html>');
         $template->setText('[CONTENT]');
-        $this->templateRepository->method('findOneById')->with(11)->willReturn($template);
 
-        $this->templateImageManager->method('parseLogoPlaceholders')->willReturnCallback(static fn ($h) => $h);
+        $this->templateRepository
+            ->method('findOneById')
+            ->with(11)
+            ->willReturn($template);
 
-        // Html2Text is called twice: once for the HTML message -> text, and once for powered-by text
-        $this->html2Text->expects($this->exactly(2))
+        $this->templateImageManager
+            ->method('parseLogoPlaceholders')
+            ->willReturnCallback(static fn ($html) => $html);
+
+        $html2TextCalls = [];
+
+        $this->html2Text
+            ->expects($this->exactly(2))
             ->method('__invoke')
-            ->withConsecutive(
-                ['Hello <b>World</b>'],
-                ['<i>PB</i>']
-            )
-            ->willReturnOnConsecutiveCalls('Hello World', 'PB');
+            ->willReturnCallback(
+                function (string $html) use (&$html2TextCalls): ?string {
+                    $html2TextCalls[] = $html;
+
+                    return match ($html) {
+                        'Hello <b>World</b>' => 'Hello World',
+                        '<i>PB</i>' => 'PB',
+                        default => null,
+                    };
+                }
+            );
 
         $constructor = new SystemMailContentBuilder(
             html2Text: $this->html2Text,
@@ -166,17 +179,34 @@ class SystemMailConstructorTest extends TestCase
             templateImageManager: $this->templateImageManager,
             poweredByPhplist: true,
         );
+
         $dto = new MessagePrecacheDto();
         $dto->subject = 'Sub';
         $dto->content = 'Hello <b>World</b>';
 
         [$html, $text] = $constructor($dto);
 
-        // HTML path: since poweredByPhplist=true, raw PoweredByText should be inserted before </body>
-        $this->assertStringContainsString('Hello <b>World</b>', $html);
-        $this->assertMatchesRegularExpression('~<i>PB</i></body>\s*</html>$~', $html);
+        $this->assertSame(
+            [
+                'Hello <b>World</b>',
+                '<i>PB</i>',
+            ],
+            $html2TextCalls,
+        );
 
-        // TEXT path: PoweredByText (converted) appended with two newlines since no [SIGNATURE]
-        $this->assertSame("Hello World\n\nPB", $text);
+        $this->assertStringContainsString(
+            'Hello <b>World</b>',
+            $html
+        );
+
+        $this->assertMatchesRegularExpression(
+            '~<i>PB</i></body>\s*</html>$~',
+            $html
+        );
+
+        $this->assertSame(
+            "Hello World\n\nPB",
+            $text
+        );
     }
 }

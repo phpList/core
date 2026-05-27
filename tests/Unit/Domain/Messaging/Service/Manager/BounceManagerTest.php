@@ -190,15 +190,25 @@ class BounceManagerTest extends TestCase
 
     public function testAnnounceDeletionModeLogsCorrectMessage(): void
     {
+        $infoCalls = [];
+
         $this->logger->expects($this->exactly(2))
             ->method('info')
-            ->withConsecutive([
-                'Running in test mode, not deleting messages from mailbox'
-            ], [
-                'Processed messages will be deleted from the mailbox'
-            ]);
+            ->willReturnCallback(
+                function (string $message) use (&$infoCalls): void {
+                    $infoCalls[] = $message;
+                }
+            );
 
         $this->manager->announceDeletionMode(true);
         $this->manager->announceDeletionMode(false);
+
+        $this->assertSame(
+            [
+                'Running in test mode, not deleting messages from mailbox',
+                'Processed messages will be deleted from the mailbox',
+            ],
+            $infoCalls,
+        );
     }
 }

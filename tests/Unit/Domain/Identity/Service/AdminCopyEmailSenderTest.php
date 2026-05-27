@@ -108,44 +108,61 @@ class AdminCopyEmailSenderTest extends TestCase
     public function testFallsBackToAdminAddressesWhenNoOwnersOrFlagFalse(): void
     {
         $configProvider = $this->createMock(ConfigProvider::class);
+
         $configProvider->method('isEnabled')
             ->with(ConfigOption::SendAdminCopies)
             ->willReturn(true);
 
+        $getValueCalls = [];
+
         $configProvider->expects(self::exactly(2))
             ->method('getValue')
-            ->withConsecutive([ConfigOption::AdminAddress], [ConfigOption::AdminAddresses])
-            ->willReturnOnConsecutiveCalls(
-                'single@example.com',
-                ' admin1@example.com, , admin2@example.com ,admin1@example.com '
+            ->willReturnCallback(
+                function (ConfigOption $key) use (&$getValueCalls): string {
+                    $getValueCalls[] = $key;
+
+                    return match ($key) {
+                        ConfigOption::AdminAddress => 'single@example.com',
+                        ConfigOption::AdminAddresses =>
+                        ' admin1@example.com, , admin2@example.com ,admin1@example.com ',
+                        default => '',
+                    };
+                }
             );
 
-        $expectedRecipients = ['admin1@example.com', 'admin2@example.com', 'single@example.com'];
+        $expectedRecipients = [
+            'admin1@example.com',
+            'admin2@example.com',
+            'single@example.com',
+        ];
 
         $systemEmailBuilder = $this->createMock(SystemEmailBuilder::class);
-        $systemEmailBuilder->expects(self::exactly(count($expectedRecipients)))
+
+        $buildCalls = [];
+
+        $systemEmailBuilder
+            ->expects(self::exactly(count($expectedRecipients)))
             ->method('buildSystemEmail')
-            ->with(self::callback(function (MessagePrecacheDto $data): bool {
-                return str_starts_with($data->subject, 'phpList ');
-            }))
-            ->willReturn(new Email());
+            ->willReturnCallback(
+                function (MessagePrecacheDto $data) use (&$buildCalls): Email {
+                    $buildCalls[] = $data;
+
+                    return new Email();
+                }
+            );
 
         $mailer = $this->createMock(MailerInterface::class);
+
+        $sendCalls = [];
+
         $bounce = 'bounce@domain.test';
-        $i = 0;
+
         $mailer->expects(self::exactly(count($expectedRecipients)))
             ->method('send')
-            ->with(
-                self::isInstanceOf(Email::class),
-                self::callback(function (Envelope $envelope) use ($expectedRecipients, &$i, $bounce): bool {
-                    $sender = $envelope->getSender();
-                    $recipient = $envelope->getRecipients()[0] ?? null;
-                    $expected = $expectedRecipients[$i++] ?? null;
-                    return $sender !== null
-                        && $sender->getAddress() === $bounce
-                        && $recipient !== null
-                        && $recipient->getAddress() === $expected;
-                })
+            ->willReturnCallback(
+                function (Email $email, Envelope $envelope) use (&$sendCalls): void {
+                    $sendCalls[] = [$email, $envelope];
+                }
             );
 
         $sender = new AdminCopyEmailSender(
@@ -153,14 +170,46 @@ class AdminCopyEmailSenderTest extends TestCase
             systemEmailBuilder: $systemEmailBuilder,
             mailer: $mailer,
             logger: $this->createMock(LoggerInterface::class),
-            // ensure fallback path regardless of list owners
             sendListAdminCopy: false,
             bounceEmail: $bounce,
         );
 
-        // Even if lists have owners, flag=false should ignore them and use AdminAddress(es)
         $listWithOwner = $this->createListWithOwner('ignored@example.com');
+
         $sender->__invoke('System Update', 'Body', [$listWithOwner]);
+
+        $this->assertSame(
+            [
+                ConfigOption::AdminAddress,
+                ConfigOption::AdminAddresses,
+            ],
+            $getValueCalls,
+        );
+
+        $this->assertCount(count($expectedRecipients), $buildCalls);
+
+        foreach ($buildCalls as $call) {
+            $this->assertInstanceOf(MessagePrecacheDto::class, $call);
+            $this->assertStringStartsWith('phpList ', $call->subject);
+        }
+
+        $this->assertCount(count($expectedRecipients), $sendCalls);
+
+        foreach ($sendCalls as $index => [$email, $envelope]) {
+            $this->assertInstanceOf(Email::class, $email);
+
+            $senderAddress = $envelope->getSender();
+            $recipient = $envelope->getRecipients()[0] ?? null;
+
+            $this->assertNotNull($senderAddress);
+            $this->assertSame($bounce, $senderAddress->getAddress());
+
+            $this->assertNotNull($recipient);
+            $this->assertSame(
+                $expectedRecipients[$index],
+                $recipient->getAddress()
+            );
+        }
     }
 
     private function createListWithOwner(string $email): SubscriberList

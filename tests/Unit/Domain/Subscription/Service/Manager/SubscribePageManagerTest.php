@@ -22,6 +22,7 @@ class SubscribePageManagerTest extends TestCase
     private SubscribePageConfigMigrationService|MockObject $configMigrationService;
     private EntityManagerInterface|MockObject $entityManager;
     private SubscribePageManager $manager;
+    private SubscribePage|MockObject $page;
 
     protected function setUp(): void
     {
@@ -29,6 +30,8 @@ class SubscribePageManagerTest extends TestCase
         $this->pageDataRepository = $this->createMock(SubscriberPageDataRepository::class);
         $this->configMigrationService = $this->createMock(SubscribePageConfigMigrationService::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->page = $this->createMock(SubscribePage::class);
+        $this->page->method('getId')->willReturn(1);
 
         $this->manager = $this->createManager(true);
     }
@@ -68,11 +71,24 @@ class SubscribePageManagerTest extends TestCase
         $page = new SubscribePage();
         $refetchedPage = new SubscribePage();
 
+        $findPageCalls = [];
+
         $this->pageRepository
             ->expects($this->exactly(2))
             ->method('findPageWithData')
-            ->withConsecutive([123], [123])
-            ->willReturnOnConsecutiveCalls($page, $refetchedPage);
+            ->willReturnCallback(
+                function (int $id) use (
+                    &$findPageCalls,
+                    $page,
+                    $refetchedPage
+                ): SubscribePage {
+                    $findPageCalls[] = $id;
+
+                    return count($findPageCalls) === 1
+                        ? $page
+                        : $refetchedPage;
+                }
+            );
 
         $this->configMigrationService
             ->expects($this->once())
@@ -80,7 +96,11 @@ class SubscribePageManagerTest extends TestCase
             ->with($page)
             ->willReturn(true);
 
-        $this->assertSame($refetchedPage, $this->manager->findPage(123));
+        $result = $this->manager->findPage(123);
+
+        $this->assertSame([123, 123], $findPageCalls);
+
+        $this->assertSame($refetchedPage, $result);
     }
 
     public function testFindPageReturnsNullWhenMissing(): void
@@ -101,19 +121,18 @@ class SubscribePageManagerTest extends TestCase
     public function testFindPageSkipsConfigMigrationWhenFeatureIsDisabled(): void
     {
         $manager = $this->createManager(false);
-        $page = new SubscribePage();
 
         $this->pageRepository
             ->expects($this->once())
             ->method('findPageWithData')
             ->with(123)
-            ->willReturn($page);
+            ->willReturn($this->page);
 
         $this->configMigrationService
             ->expects($this->never())
             ->method('copyToPageData');
 
-        $this->assertSame($page, $manager->findPage(123));
+        $this->assertSame($this->page, $manager->findPage(123));
     }
 
     public function testCreatePageCreatesAndSaves(): void
@@ -200,15 +219,10 @@ class SubscribePageManagerTest extends TestCase
 
     public function testSyncPageDataWithEmptyExistingDataCreatesNewEntries(): void
     {
-        $page = $this->getMockBuilder(SubscribePage::class)
-            ->onlyMethods(['getId'])
-            ->getMock();
-        $page->method('getId')->willReturn(42);
-
         $this->pageDataRepository
             ->expects($this->once())
             ->method('getByPage')
-            ->with($page)
+            ->with($this->page)
             ->willReturn([]);
 
         $this->pageDataRepository
@@ -225,56 +239,47 @@ class SubscribePageManagerTest extends TestCase
             'field2' => 'value2',
         ];
 
-        $this->manager->syncPageData($data, $page);
+        $this->manager->syncPageData($data, $this->page);
     }
 
     public function testSyncPageDataCallsCopyToConfigWhenFeatureIsEnabled(): void
     {
-        $page = $this->getMockBuilder(SubscribePage::class)
-            ->onlyMethods(['getId'])
-            ->getMock();
-        $page->method('getId')->willReturn(15);
         $data = ['subscribemessage' => 'updated'];
 
         $this->pageDataRepository
             ->expects($this->once())
             ->method('getByPage')
-            ->with($page)
+            ->with($this->page)
             ->willReturn([]);
 
         $this->configMigrationService
             ->expects($this->once())
             ->method('copyToConfig')
-            ->with(page: $page, data: $data);
+            ->with(page: $this->page, data: $data);
 
-        $this->manager->syncPageData($data, $page);
+        $this->manager->syncPageData($data, $this->page);
     }
 
     public function testSyncPageDataSkipsCopyToConfigWhenFeatureIsDisabled(): void
     {
         $manager = $this->createManager(false);
-        $page = $this->getMockBuilder(SubscribePage::class)
-            ->onlyMethods(['getId'])
-            ->getMock();
-        $page->method('getId')->willReturn(16);
         $data = ['subscribemessage' => 'updated'];
 
         $this->pageDataRepository
             ->expects($this->once())
             ->method('getByPage')
-            ->with($page)
+            ->with($this->page)
             ->willReturn([]);
 
         $this->configMigrationService
             ->expects($this->never())
             ->method('copyToConfig');
 
-        $manager->syncPageData($data, $page);
+        $manager->syncPageData($data, $this->page);
     }
 
     public function testSyncPageDataUpdatesExistingEntries(): void
     {
-        $page = new SubscribePage();
         $pageData1 = new SubscribePageData();
         $pageData1->setName('field1')->setData('old_value1');
         $pageData2 = new SubscribePageData();
@@ -283,7 +288,7 @@ class SubscribePageManagerTest extends TestCase
         $this->pageDataRepository
             ->expects($this->once())
             ->method('getByPage')
-            ->with($page)
+            ->with($this->page)
             ->willReturn([$pageData1, $pageData2]);
 
         $this->pageDataRepository
@@ -299,7 +304,7 @@ class SubscribePageManagerTest extends TestCase
             'field2' => 'new_value2',
         ];
 
-        $this->manager->syncPageData($data, $page);
+        $this->manager->syncPageData($data, $this->page);
 
         $this->assertSame('new_value1', $pageData1->getData());
         $this->assertSame('new_value2', $pageData2->getData());
@@ -307,7 +312,6 @@ class SubscribePageManagerTest extends TestCase
 
     public function testSyncPageDataRemovesExistingEntriesNotInNewData(): void
     {
-        $page = new SubscribePage();
         $pageData1 = new SubscribePageData();
         $pageData1->setName('field1')->setData('value1');
         $pageData2 = new SubscribePageData();
@@ -316,7 +320,7 @@ class SubscribePageManagerTest extends TestCase
         $this->pageDataRepository
             ->expects($this->once())
             ->method('getByPage')
-            ->with($page)
+            ->with($this->page)
             ->willReturn([$pageData1, $pageData2]);
 
         $this->pageDataRepository
@@ -332,16 +336,11 @@ class SubscribePageManagerTest extends TestCase
             'field1' => 'value1',
         ];
 
-        $this->manager->syncPageData($data, $page);
+        $this->manager->syncPageData($data, $this->page);
     }
 
     public function testSyncPageDataWithMixedOperationsCreateUpdateDelete(): void
     {
-        $page = $this->getMockBuilder(SubscribePage::class)
-            ->onlyMethods(['getId'])
-            ->getMock();
-        $page->method('getId')->willReturn(10);
-
         $existingData1 = new SubscribePageData();
         $existingData1->setName('keep_and_update')->setData('old_value');
         $existingData2 = new SubscribePageData();
@@ -350,7 +349,7 @@ class SubscribePageManagerTest extends TestCase
         $this->pageDataRepository
             ->expects($this->once())
             ->method('getByPage')
-            ->with($page)
+            ->with($this->page)
             ->willReturn([$existingData1, $existingData2]);
 
         $this->pageDataRepository
@@ -368,16 +367,19 @@ class SubscribePageManagerTest extends TestCase
             'new_field' => 'new_value',
         ];
 
-        $this->manager->syncPageData($data, $page);
+        $this->manager->syncPageData($data, $this->page);
 
         $this->assertSame('updated_value', $existingData1->getData());
     }
 
     public function testSyncPageDataWithEmptyDataRemovesAllExistingEntries(): void
     {
-        $page = new SubscribePage();
+        $page = $this->createMock(SubscribePage::class);
+        $page->method('getId')->willReturn(11);
+
         $pageData1 = new SubscribePageData();
         $pageData1->setName('field1')->setData('value1');
+
         $pageData2 = new SubscribePageData();
         $pageData2->setName('field2')->setData('value2');
 
@@ -391,26 +393,36 @@ class SubscribePageManagerTest extends TestCase
             ->expects($this->never())
             ->method('persist');
 
+        $removedEntries = [];
+
         $this->entityManager
             ->expects($this->exactly(2))
             ->method('remove')
-            ->withConsecutive([$pageData1], [$pageData2]);
+            ->willReturnCallback(
+                function (SubscribePageData $pageData) use (&$removedEntries): void {
+                    $removedEntries[] = $pageData;
+                }
+            );
 
         $data = [];
 
         $this->manager->syncPageData($data, $page);
+
+        $this->assertSame(
+            [$pageData1, $pageData2],
+            $removedEntries,
+        );
     }
 
     public function testSyncPageDataPreservesExistingDataObjectsWhenKeepingEntries(): void
     {
-        $page = new SubscribePage();
         $originalPageData = new SubscribePageData();
         $originalPageData->setId(99)->setName('color')->setData('red');
 
         $this->pageDataRepository
             ->expects($this->once())
             ->method('getByPage')
-            ->with($page)
+            ->with($this->page)
             ->willReturn([$originalPageData]);
 
         $this->pageDataRepository
@@ -425,7 +437,7 @@ class SubscribePageManagerTest extends TestCase
             'color' => 'blue',
         ];
 
-        $this->manager->syncPageData($data, $page);
+        $this->manager->syncPageData($data, $this->page);
 
         // Should have updated the same object, not created a new one
         $this->assertSame(99, $originalPageData->getId());

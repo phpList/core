@@ -39,6 +39,7 @@ final class AdminNotifierTest extends TestCase
         $lists = [new SubscriberList()];
 
         $expectedSubject = 'Message Forwarded';
+
         $expectedMessage = sprintf(
             '%s tried forwarding message %d to %s but failed',
             $subscriber->getEmail(),
@@ -46,27 +47,30 @@ final class AdminNotifierTest extends TestCase
             $friendEmail
         );
 
-        // Translator expectations: first for subject, then for message with placeholders
+        $translatorCalls = [];
+
         $this->translator
             ->expects(self::exactly(2))
             ->method('trans')
-            ->withConsecutive(
-                [$this->equalTo('Message Forwarded')],
-                [
-                    $this->equalTo('%subscriber% tried forwarding message %campaignId% to %email% but failed'),
-                    $this->callback(function (array $params) use ($subscriber, $friendEmail): bool {
-                        return ($params['%subscriber%'] ?? null) === $subscriber->getEmail()
-                            && ($params['%campaignId%'] ?? null) === 42
-                            && ($params['%email%'] ?? null) === $friendEmail;
-                    })
-                ]
-            )
-            ->willReturnOnConsecutiveCalls(
-                $expectedSubject,
-                $expectedMessage
+            ->willReturnCallback(
+                function (
+                    string $message,
+                    array $params = []
+                ) use (
+                    &$translatorCalls,
+                    $expectedSubject,
+                    $expectedMessage
+                ): string {
+                    $translatorCalls[] = [$message, $params];
+
+                    return match ($message) {
+                        'Message Forwarded' => $expectedSubject,
+                        '%subscriber% tried forwarding message %campaignId% to %email% but failed' => $expectedMessage,
+                        default => 'Unknown status encountered.',
+                    };
+                }
             );
 
-        // Admin copy sender should be invoked with translated subject and message and same lists
         $this->adminCopyEmailSender
             ->expects(self::once())
             ->method('__invoke')
@@ -76,7 +80,6 @@ final class AdminNotifierTest extends TestCase
                 $this->identicalTo($lists)
             );
 
-        // EventLogManager should log only on failure
         $this->eventLogManager
             ->expects(self::once())
             ->method('log')
@@ -97,8 +100,25 @@ final class AdminNotifierTest extends TestCase
             friendEmail: $friendEmail,
             lists: $lists
         );
-    }
 
+        $this->assertSame(
+            [
+                [
+                    'Message Forwarded',
+                    [],
+                ],
+                [
+                    '%subscriber% tried forwarding message %campaignId% to %email% but failed',
+                    [
+                        '%subscriber%' => $subscriber->getEmail(),
+                        '%campaignId%' => 42,
+                        '%email%' => $friendEmail,
+                    ],
+                ],
+            ],
+            $translatorCalls,
+        );
+    }
     public function testNotifyForwardSucceededSendsAdminCopyWithoutLogging(): void
     {
         $campaign = $this->createMock(Message::class);
@@ -110,6 +130,7 @@ final class AdminNotifierTest extends TestCase
         $lists = [new SubscriberList(), new SubscriberList()];
 
         $expectedSubject = 'Message Forwarded';
+
         $expectedMessage = sprintf(
             '%s has forwarded message %d to %s',
             $subscriber->getEmail(),
@@ -117,23 +138,28 @@ final class AdminNotifierTest extends TestCase
             $friendEmail
         );
 
+        $translatorCalls = [];
+
         $this->translator
             ->expects(self::exactly(2))
             ->method('trans')
-            ->withConsecutive(
-                [$this->equalTo('Message Forwarded')],
-                [
-                    $this->equalTo('%subscriber% has forwarded message %campaignId% to %email%'),
-                    $this->callback(function (array $params) use ($subscriber, $friendEmail): bool {
-                        return ($params['%subscriber%'] ?? null) === $subscriber->getEmail()
-                            && ($params['%campaignId%'] ?? null) === 777
-                            && ($params['%email%'] ?? null) === $friendEmail;
-                    })
-                ]
-            )
-            ->willReturnOnConsecutiveCalls(
-                $expectedSubject,
-                $expectedMessage
+            ->willReturnCallback(
+                function (
+                    string $message,
+                    array $params = []
+                ) use (
+                    &$translatorCalls,
+                    $expectedSubject,
+                    $expectedMessage
+                ): string {
+                    $translatorCalls[] = [$message, $params];
+
+                    return match ($message) {
+                        'Message Forwarded' => $expectedSubject,
+                        '%subscriber% has forwarded message %campaignId% to %email%' => $expectedMessage,
+                        default => 'Unknown status encountered.',
+                    };
+                }
             );
 
         $this->adminCopyEmailSender
@@ -160,6 +186,24 @@ final class AdminNotifierTest extends TestCase
             forwardingSubscriber: $subscriber,
             friendEmail: $friendEmail,
             lists: $lists
+        );
+
+        $this->assertSame(
+            [
+                [
+                    'Message Forwarded',
+                    [],
+                ],
+                [
+                    '%subscriber% has forwarded message %campaignId% to %email%',
+                    [
+                        '%subscriber%' => $subscriber->getEmail(),
+                        '%campaignId%' => 777,
+                        '%email%' => $friendEmail,
+                    ],
+                ],
+            ],
+            $translatorCalls,
         );
     }
 }

@@ -63,14 +63,21 @@ class SubscriberCsvImporterTest extends TestCase
         $csvContent .= "another@example.com,0,0,1,1,\"More data\",Jane\n";
 
         $tempFile = tempnam(sys_get_temp_dir(), 'csv_test');
+
         file_put_contents($tempFile, $csvContent);
 
         $uploadedFile = $this->createMock(UploadedFile::class);
-        $uploadedFile->method('getRealPath')->willReturn($tempFile);
+
+        $uploadedFile->method('getRealPath')
+            ->willReturn($tempFile);
 
         $attributeDefinition = $this->createMock(SubscriberAttributeDefinition::class);
-        $attributeDefinition->method('getName')->willReturn('first_name');
-        $attributeDefinition->method('getId')->willReturn(1);
+
+        $attributeDefinition->method('getName')
+            ->willReturn('first_name');
+
+        $attributeDefinition->method('getId')
+            ->willReturn(1);
 
         $this->attributeDefinitionRepositoryMock
             ->method('findOneByName')
@@ -94,6 +101,7 @@ class SubscriberCsvImporterTest extends TestCase
             htmlEmail: true,
             disabled: false,
         );
+
         $importDto1->extraData = 'Some extra data';
         $importDto1->extraAttributes = ['first_name' => 'John'];
 
@@ -104,6 +112,7 @@ class SubscriberCsvImporterTest extends TestCase
             htmlEmail: false,
             disabled: true
         );
+
         $importDto2->extraData = 'More data';
         $importDto2->extraAttributes = ['first_name' => 'Jane'];
 
@@ -112,24 +121,54 @@ class SubscriberCsvImporterTest extends TestCase
             ->with($tempFile)
             ->willReturn([
                 'valid' => [$importDto1, $importDto2],
-                'errors' => []
+                'errors' => [],
             ]);
+
+        $createdSubscribers = [];
 
         $this->subscriberManagerMock
             ->expects($this->exactly(2))
             ->method('createFromImport')
-            ->willReturnOnConsecutiveCalls($subscriber1, $subscriber2);
+            ->willReturnCallback(
+                function () use (
+                    &$createdSubscribers,
+                    $subscriber1,
+                    $subscriber2
+                ): Subscriber {
+                    $subscriber = count($createdSubscribers) === 0
+                        ? $subscriber1
+                        : $subscriber2;
+
+                    $createdSubscribers[] = $subscriber;
+
+                    return $subscriber;
+                }
+            );
+
+        $processedSubscribers = [];
 
         $this->attributeManagerMock
             ->expects($this->exactly(2))
             ->method('processAttributes')
-            ->withConsecutive(
-                [$subscriber1],
-                [$subscriber2]
+            ->willReturnCallback(
+                function (Subscriber $subscriber) use (&$processedSubscribers): void {
+                    $processedSubscribers[] = $subscriber;
+                }
             );
 
         $options = new SubscriberImportOptions();
+
         $result = $this->subject->importFromCsv($uploadedFile, $options);
+
+        $this->assertSame(
+            [$subscriber1, $subscriber2],
+            $createdSubscribers,
+        );
+
+        $this->assertSame(
+            [$subscriber1, $subscriber2],
+            $processedSubscribers,
+        );
 
         $this->assertSame(2, $result['created']);
         $this->assertSame(0, $result['updated']);

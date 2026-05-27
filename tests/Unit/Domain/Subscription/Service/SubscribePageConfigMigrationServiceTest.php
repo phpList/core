@@ -188,24 +188,28 @@ class SubscribePageConfigMigrationServiceTest extends TestCase
         $page = $this->getMockBuilder(SubscribePage::class)
             ->onlyMethods(['getId'])
             ->getMock();
+
         $page->method('getId')->willReturn(7);
+
+        $findOneByCalls = [];
 
         $this->configRepository
             ->expects($this->exactly(2))
             ->method('findOneBy')
-            ->withConsecutive(
-                [['key' => 'subscribemessage:7']],
-                [['key' => 'confirmationsubject:7']],
-            )
-            ->willReturnOnConsecutiveCalls(null, null);
+            ->willReturnCallback(function (array $criteria) use (&$findOneByCalls) {
+                $findOneByCalls[] = $criteria;
+
+                return null;
+            });
+
+        $persistedConfigs = [];
 
         $this->configRepository
             ->expects($this->exactly(2))
             ->method('persist')
-            ->with($this->callback(static function (Config $config): bool {
-                return in_array($config->getKey(), ['subscribemessage:7', 'confirmationsubject:7'], true)
-                    && in_array($config->getValue(), ['msg', 'subject'], true);
-            }));
+            ->willReturnCallback(function (Config $config) use (&$persistedConfigs): void {
+                $persistedConfigs[$config->getKey()] = $config->getValue();
+            });
 
         $this->service->copyToConfig(
             $page,
@@ -213,6 +217,22 @@ class SubscribePageConfigMigrationServiceTest extends TestCase
                 'subscribemessage' => 'msg',
                 'confirmationsubject' => 'subject',
             ],
+        );
+
+        $this->assertSame(
+            [
+                ['key' => 'subscribemessage:7'],
+                ['key' => 'confirmationsubject:7'],
+            ],
+            $findOneByCalls,
+        );
+
+        $this->assertSame(
+            [
+                'subscribemessage:7' => 'msg',
+                'confirmationsubject:7' => 'subject',
+            ],
+            $persistedConfigs,
         );
     }
 

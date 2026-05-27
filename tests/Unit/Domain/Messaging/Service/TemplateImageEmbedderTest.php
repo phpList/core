@@ -100,29 +100,57 @@ class TemplateImageEmbedderTest extends TestCase
         ]);
 
         $html = '<p><img src="https://cdn.other.org/pic.jpg"> and '
-              . '<img src="https://example.com/local.jpg"></p>';
+            . '<img src="https://example.com/local.jpg"></p>';
 
-        $this->externalImageService->expects($this->exactly(2))
+        $cacheCalls = [];
+
+        $this->externalImageService
+            ->expects($this->exactly(2))
             ->method('cache')
-            ->withConsecutive(
-                ['https://cdn.other.org/pic.jpg', 111],
-                ['https://example.com/local.jpg', 111]
-            )
-            ->willReturnOnConsecutiveCalls(true, false);
+            ->willReturnCallback(
+                function (string $url, int $messageId) use (&$cacheCalls): ?bool {
+                    $cacheCalls[] = [$url, $messageId];
+
+                    return match ($url) {
+                        'https://cdn.other.org/pic.jpg' => true,
+                        'https://example.com/local.jpg' => false,
+                        default => null,
+                    };
+                }
+            );
 
         $jpegBase64 = base64_encode('JPEGDATA');
-        $this->externalImageService->expects($this->once())
+
+        $this->externalImageService
+            ->expects($this->once())
             ->method('getFromCache')
             ->with('https://cdn.other.org/pic.jpg', 111)
             ->willReturn($jpegBase64);
 
         $embedder = $this->createEmbedder(embedExternal: true);
+
         $out = $embedder($html, 111);
 
+        $this->assertSame(
+            [
+                ['https://cdn.other.org/pic.jpg', 111],
+                ['https://example.com/local.jpg', 111],
+            ],
+            $cacheCalls,
+        );
+
         $this->assertStringContainsString('cid:', $out);
-        $this->assertStringContainsString('https://example.com/local.jpg', $out, 'Same-host URL should remain');
+
+        $this->assertStringContainsString(
+            'https://example.com/local.jpg',
+            $out,
+            'Same-host URL should remain'
+        );
+
         $this->assertCount(1, $embedder->attachment);
+
         $att = $embedder->attachment[0];
+
         $this->assertSame('base64', $att[3]);
         $this->assertSame('image/jpeg', $att[4]);
     }

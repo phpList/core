@@ -18,37 +18,69 @@ class SessionManagerTest extends TestCase
     public function testCreateSessionWithInvalidCredentialsThrowsExceptionAndLogs(): void
     {
         $adminRepo = $this->createMock(AdministratorRepository::class);
+
         $adminRepo->expects(self::once())
             ->method('findOneByLoginCredentials')
             ->with('admin', 'wrong')
             ->willReturn(null);
 
         $tokenRepo = $this->createMock(AdministratorTokenRepository::class);
-        $tokenRepo->expects(self::never())->method('save');
+
+        $tokenRepo->expects(self::never())
+            ->method('save');
 
         $eventLogManager = $this->createMock(EventLogManager::class);
+
         $eventLogManager->expects(self::once())
             ->method('log')
             ->with('login', $this->stringContains('admin'));
 
+        $translatorCalls = [];
+
         $translator = $this->createMock(TranslatorInterface::class);
+
         $translator->expects(self::exactly(2))
             ->method('trans')
-            ->withConsecutive(
-                ["Failed admin login attempt for '%login%'", ['login' => 'admin']],
-                ['Not authorized', []]
-            )
-            ->willReturnOnConsecutiveCalls(
-                "Failed admin login attempt for 'admin'",
-                'Not authorized'
+            ->willReturnCallback(
+                function (string $message, array $parameters = []) use (&$translatorCalls): string {
+                    $translatorCalls[] = [$message, $parameters];
+
+                    return match ($message) {
+                        "Failed admin login attempt for '%login%'" =>
+                        "Failed admin login attempt for 'admin'",
+                        'Not authorized' => 'Not authorized',
+                        default => 'Unknown status encountered.',
+                    };
+                }
             );
 
-        $manager = new SessionManager($tokenRepo, $adminRepo, $eventLogManager, $translator);
+        $manager = new SessionManager(
+            $tokenRepo,
+            $adminRepo,
+            $eventLogManager,
+            $translator
+        );
 
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Not authorized');
 
-        $manager->createSession('admin', 'wrong');
+        try {
+            $manager->createSession('admin', 'wrong');
+        } finally {
+            $this->assertSame(
+                [
+                    [
+                        "Failed admin login attempt for '%login%'",
+                        ['login' => 'admin'],
+                    ],
+                    [
+                        'Not authorized',
+                        [],
+                    ],
+                ],
+                $translatorCalls,
+            );
+        }
     }
 
     public function testDeleteSessionCallsRemove(): void
