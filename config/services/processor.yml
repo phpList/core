@@ -19,3 +19,5 @@ services:
   PhpList\Core\Bounce\Service\Processor\UnidentifiedBounceReprocessor: ~
 
   PhpList\Core\Bounce\Service\Processor\BounceDataProcessor: ~
+
+  PhpList\Core\Domain\Subscription\Service\SubscribePagePlaceholderProcessor: ~

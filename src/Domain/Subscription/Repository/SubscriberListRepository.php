@@ -64,10 +64,13 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
             ->getSingleColumnResult();
     }
 
-    public function getAllActive(): array
+    /** @return SubscriberList[] */
+    public function getPublicByIds(array $ids): array
     {
         return $this->createQueryBuilder('l')
-            ->where('l.active = true')
+            ->where('l.public = true')
+            ->andWhere('l.id IN (:ids)')
+            ->setParameter('ids', $ids)
             ->getQuery()
             ->getResult();
     }

@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Subscription\Model\SubscribePageData;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberPageDataRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberPageRepository;
 use PhpList\Core\Domain\Subscription\Service\SubscribePageConfigMigrationService;
+use PhpList\Core\Domain\Subscription\Service\SubscribePagePlaceholderProcessor;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class SubscribePageManager
@@ -21,6 +22,7 @@ class SubscribePageManager
         private readonly SubscriberPageDataRepository $pageDataRepository,
         private readonly SubscribePageConfigMigrationService $configMigrationService,
         private readonly EntityManagerInterface $entityManager,
+        private readonly SubscribePagePlaceholderProcessor $placeholderProcessor,
         #[Autowire('%parallel_use_with_phplist3%')]
         private readonly bool $parallelUseWithPhpList3,
     ) {
@@ -56,6 +58,8 @@ class SubscribePageManager
                 $page = $this->pageRepository->findPageWithData($id) ?? $page;
             }
         }
+
+        $this->placeholderProcessor->process($page);
 
         return $page;
     }

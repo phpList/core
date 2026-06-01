@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberPageDataRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberPageRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscribePageManager;
 use PhpList\Core\Domain\Subscription\Service\SubscribePageConfigMigrationService;
+use PhpList\Core\Domain\Subscription\Service\SubscribePagePlaceholderProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -43,6 +44,7 @@ class SubscribePageManagerTest extends TestCase
             pageDataRepository: $this->pageDataRepository,
             configMigrationService: $this->configMigrationService,
             entityManager: $this->entityManager,
+            placeholderProcessor: $this->createMock(SubscribePagePlaceholderProcessor::class),
             parallelUseWithPhpList3: $parallelUseWithPhpList3,
         );
     }
