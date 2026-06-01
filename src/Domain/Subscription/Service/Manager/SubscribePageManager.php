@@ -43,6 +43,23 @@ class SubscribePageManager
         return $page;
     }
 
+    public function findPublicPage(int $id): ?SubscribePage
+    {
+        $page = $this->pageRepository->findPageWithData($id);
+        if ($page === null) {
+            return null;
+        }
+
+        if ($this->parallelUseWithPhpList3) {
+            $changed = $this->configMigrationService->copyToPageData($page);
+            if ($changed) {
+                $page = $this->pageRepository->findPageWithData($id) ?? $page;
+            }
+        }
+
+        return $page;
+    }
+
     public function createPage(string $title, bool $active = false, ?Administrator $owner = null): SubscribePage
     {
         $page = new SubscribePage();

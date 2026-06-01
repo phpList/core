@@ -51,6 +51,8 @@ parameters:
     env(SUBSCRIPTION_CONFIRMATION_URL): 'http://api.phplist.local/api/v2/subscription/confirm/'
     app.password_reset_url: '%%env(PASSWORD_RESET_URL)%%'
     env(PASSWORD_RESET_URL): 'https://example.com/reset/'
+    app.show_unsubscribe_link: '%%env(SHOW_UNSUBSCRIBELINK)%%'
+    env(SHOW_UNSUBSCRIBELINK): '1'
 
     # bounce email settings
     imap_bounce.email: '%%env(BOUNCE_EMAIL)%%'
