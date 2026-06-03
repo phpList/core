@@ -22,6 +22,7 @@ class SubscribePageManagerTest extends TestCase
     private SubscriberPageDataRepository|MockObject $pageDataRepository;
     private SubscribePageConfigMigrationService|MockObject $configMigrationService;
     private EntityManagerInterface|MockObject $entityManager;
+    private SubscribePagePlaceholderProcessor|MockObject $placeholderProcessor;
     private SubscribePageManager $manager;
     private SubscribePage|MockObject $page;
 
@@ -31,20 +32,23 @@ class SubscribePageManagerTest extends TestCase
         $this->pageDataRepository = $this->createMock(SubscriberPageDataRepository::class);
         $this->configMigrationService = $this->createMock(SubscribePageConfigMigrationService::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->placeholderProcessor = $this->createMock(SubscribePagePlaceholderProcessor::class);
         $this->page = $this->createMock(SubscribePage::class);
         $this->page->method('getId')->willReturn(1);
 
         $this->manager = $this->createManager(true);
     }
 
-    private function createManager(bool $parallelUseWithPhpList3): SubscribePageManager
-    {
+    private function createManager(
+        bool $parallelUseWithPhpList3,
+        ?SubscribePagePlaceholderProcessor $placeholderProcessor = null
+    ): SubscribePageManager {
         return new SubscribePageManager(
             pageRepository: $this->pageRepository,
             pageDataRepository: $this->pageDataRepository,
             configMigrationService: $this->configMigrationService,
             entityManager: $this->entityManager,
-            placeholderProcessor: $this->createMock(SubscribePagePlaceholderProcessor::class),
+            placeholderProcessor: $placeholderProcessor ?? $this->placeholderProcessor,
             parallelUseWithPhpList3: $parallelUseWithPhpList3,
         );
     }
@@ -135,6 +139,100 @@ class SubscribePageManagerTest extends TestCase
             ->method('copyToPageData');
 
         $this->assertSame($this->page, $manager->findPage(123));
+    }
+
+    public function testFindPublicPageReturnsNullWhenMissing(): void
+    {
+        $this->pageRepository
+            ->expects($this->once())
+            ->method('findPageWithData')
+            ->with(123)
+            ->willReturn(null);
+
+        $this->configMigrationService
+            ->expects($this->never())
+            ->method('copyToPageData');
+
+        $this->placeholderProcessor
+            ->expects($this->never())
+            ->method('process');
+
+        $this->assertNull($this->manager->findPublicPage(123));
+    }
+
+    public function testFindPublicPageProcessesResolvedPage(): void
+    {
+        $page = new SubscribePage();
+
+        $this->pageRepository
+            ->expects($this->once())
+            ->method('findPageWithData')
+            ->with(123)
+            ->willReturn($page);
+
+        $this->configMigrationService
+            ->expects($this->once())
+            ->method('copyToPageData')
+            ->with($page)
+            ->willReturn(false);
+
+        $this->placeholderProcessor
+            ->expects($this->once())
+            ->method('process')
+            ->with($page);
+
+        $this->assertSame($page, $this->manager->findPublicPage(123));
+    }
+
+    public function testFindPublicPageProcessesRefetchedPageWhenMigrationChangesData(): void
+    {
+        $page = new SubscribePage();
+        $refetchedPage = new SubscribePage();
+
+        $this->pageRepository
+            ->expects($this->exactly(2))
+            ->method('findPageWithData')
+            ->with(123)
+            ->willReturnOnConsecutiveCalls($page, $refetchedPage);
+
+        $this->configMigrationService
+            ->expects($this->once())
+            ->method('copyToPageData')
+            ->with($page)
+            ->willReturn(true);
+
+        $this->placeholderProcessor
+            ->expects($this->once())
+            ->method('process')
+            ->with($refetchedPage);
+
+        $this->assertSame($refetchedPage, $this->manager->findPublicPage(123));
+    }
+
+    public function testFindPublicPageSkipsMigrationWhenFeatureIsDisabled(): void
+    {
+        $placeholderProcessor = $this->createMock(SubscribePagePlaceholderProcessor::class);
+        $manager = $this->createManager(
+            parallelUseWithPhpList3: false,
+            placeholderProcessor: $placeholderProcessor,
+        );
+
+        $this->pageRepository
+            ->expects($this->once())
+            ->method('findPageWithData')
+            ->with(123)
+            ->willReturn($this->page);
+
+        $this->configMigrationService
+            ->expects($this->never())
+            ->method('copyToPageData');
+
+        $placeholderProcessor
+            ->expects($this->once())
+            ->method('process')
+            ->with($this->page);
+
+        $this->assertSame($this->page, $manager->findPublicPage(123));
     }
 
     public function testCreatePageCreatesAndSaves(): void
@@ -445,5 +543,45 @@ class SubscribePageManagerTest extends TestCase
         $this->assertSame(99, $originalPageData->getId());
         $this->assertSame('color', $originalPageData->getName());
         $this->assertSame('blue', $originalPageData->getData());
+    }
+
+    public function testExtractLegacyOverridesReturnsParsedOverridesForAttributeKeysOnly(): void
+    {
+        $pageData = [
+            'attribute10' => '10###blue###5###1',
+            'attribute33' => '33###green###11###0',
+            'attribute11' => '11######5###1',
+            'attributex' => 'x###ignore###1###1',
+            'title' => 'ignored',
+        ];
+
+        $result = $this->manager->extractLegacyOverrides($pageData);
+
+        $this->assertSame(
+            [
+                10 => ['default' => 'blue', 'order' => '5', 'required' => true],
+                33 => ['default' => 'green', 'order' => '11', 'required' => false],
+                11 => ['default' => '', 'order' => '5', 'required' => true],
+            ],
+            $result,
+        );
+    }
+
+    public function testExtractLegacyOverridesHandlesMissingSegments(): void
+    {
+        $pageData = [
+            'attribute5' => '5###value',
+            'attribute6' => '6###value###3',
+            'attribute7' => '7###value###4###1',
+        ];
+
+        $result = $this->manager->extractLegacyOverrides($pageData);
+
+        $this->assertSame(['default' => 'value'], $result[5]);
+        $this->assertSame(['default' => 'value'], $result[6]);
+        $this->assertSame(
+            ['default' => 'value', 'order' => '4', 'required' => true],
+            $result[7],
+        );
     }
 }

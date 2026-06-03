@@ -14,7 +14,6 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler]
 class DynamicTableMessageHandler
 {
-
     public function __construct(private readonly AbstractSchemaManager $schemaManager)
     {
     }

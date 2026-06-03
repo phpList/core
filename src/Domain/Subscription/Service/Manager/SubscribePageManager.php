@@ -145,4 +145,33 @@ class SubscribePageManager
     {
         return $this->pageDataRepository->getByPage($page);
     }
+
+    /**
+     * @param array<string,string|null> $pageData
+     * @return array<int,array{use?:bool,required?:bool}>
+     */
+    public function extractLegacyOverrides(array $pageData): array
+    {
+        $result = [];
+        foreach ($pageData as $key => $value) {
+            if (!preg_match('/^attribute(\d{1,})$/', $key, $matches)) {
+                continue;
+            }
+
+            $id = (int) $matches[1];
+            $parts = explode('###', (string) $value);
+            // phpList 3 structure: id###default###order###required
+            if (isset($parts[1])) {
+                $result[$id]['default'] = $parts[1];
+            }
+            if (isset($parts[3])) {
+                $result[$id]['order'] = $parts[2];
+            }
+            if (isset($parts[3])) {
+                $result[$id]['required'] = $parts[3] === '1';
+            }
+        }
+
+        return $result;
+    }
 }
