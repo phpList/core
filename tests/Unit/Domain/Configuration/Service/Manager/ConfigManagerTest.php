@@ -6,6 +6,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Configuration\Service\Manager;
 
 use PhpList\Core\Domain\Configuration\Exception\ConfigNotEditableException;
 use PhpList\Core\Domain\Configuration\Model\Config;
+use PhpList\Core\Domain\Configuration\Model\Dto\CreateConfigDto;
 use PhpList\Core\Domain\Configuration\Repository\ConfigRepository;
 use PhpList\Core\Domain\Configuration\Service\Manager\ConfigManager;
 use PHPUnit\Framework\TestCase;
@@ -15,18 +16,18 @@ class ConfigManagerTest extends TestCase
     public function testGetByItemReturnsConfigFromRepository(): void
     {
         $configRepository = $this->createMock(ConfigRepository::class);
-        $manager = new ConfigManager($configRepository);
+        $manager = new ConfigManager($configRepository, true);
 
         $config = new Config();
         $config->setKey('test_item');
         $config->setValue('test_value');
 
         $configRepository->expects($this->once())
-            ->method('findOneBy')
-            ->with(['item' => 'test_item'])
+            ->method('findByKey')
+            ->with('test_item')
             ->willReturn($config);
 
-        $result = $manager->getByItem('test_item');
+        $result = $manager->findByKey('test_item');
 
         $this->assertSame($config, $result);
         $this->assertSame('test_item', $result->getKey());
@@ -36,7 +37,7 @@ class ConfigManagerTest extends TestCase
     public function testGetAllReturnsAllConfigsFromRepository(): void
     {
         $configRepository = $this->createMock(ConfigRepository::class);
-        $manager = new ConfigManager($configRepository);
+        $manager = new ConfigManager($configRepository, true);
 
         $config1 = new Config();
         $config1->setKey('item1');
@@ -52,7 +53,7 @@ class ConfigManagerTest extends TestCase
             ->method('findAll')
             ->willReturn($configs);
 
-        $result = $manager->getAll();
+        $result = $manager->getAllEditable();
 
         $this->assertSame($configs, $result);
         $this->assertCount(2, $result);
@@ -65,7 +66,7 @@ class ConfigManagerTest extends TestCase
     public function testCreateSavesNewConfigToRepository(): void
     {
         $configRepository = $this->createMock(ConfigRepository::class);
-        $manager = new ConfigManager($configRepository);
+        $manager = new ConfigManager($configRepository, true);
 
         $configRepository->expects($this->once())
             ->method('persist')
@@ -76,19 +77,19 @@ class ConfigManagerTest extends TestCase
                     $config->getType() === 'test_type';
             }));
 
-        $manager->create('test_key', 'test_value', true, 'test_type');
+        $manager->create(new CreateConfigDto('test_key', 'test_value', true, 'test_type'));
     }
     public function testGetByItemReturnsNullWhenItemDoesNotExist(): void
     {
         $configRepository = $this->createMock(ConfigRepository::class);
-        $manager = new ConfigManager($configRepository);
+        $manager = new ConfigManager($configRepository, true);
 
         $configRepository->expects($this->once())
-            ->method('findOneBy')
-            ->with(['item' => 'non_existent_item'])
+            ->method('findByKey')
+            ->with('non_existent_item')
             ->willReturn(null);
 
-        $result = $manager->getByItem('non_existent_item');
+        $result = $manager->findByKey('non_existent_item');
 
         $this->assertNull($result);
     }
@@ -96,7 +97,7 @@ class ConfigManagerTest extends TestCase
     public function testUpdateThrowsExceptionWhenConfigIsNotEditable(): void
     {
         $configRepository = $this->createMock(ConfigRepository::class);
-        $manager = new ConfigManager($configRepository);
+        $manager = new ConfigManager($configRepository, true);
 
         $config = new Config();
         $config->setKey('test_item');
@@ -112,7 +113,7 @@ class ConfigManagerTest extends TestCase
     public function testDeleteRemovesConfigFromRepository(): void
     {
         $configRepository = $this->createMock(ConfigRepository::class);
-        $manager = new ConfigManager($configRepository);
+        $manager = new ConfigManager($configRepository, true);
 
         $config = new Config();
         $config->setKey('test_item');
