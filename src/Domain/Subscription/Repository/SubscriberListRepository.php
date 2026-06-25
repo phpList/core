@@ -144,4 +144,9 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
 
         return array_column($rows, 'name');
     }
+    
+    public function findById(int $id): ?SubscriberList
+    {
+        return $this->find($id);
+    }
 }
