@@ -267,3 +267,14 @@ services:
       $useManualTextPart: '%messaging.use_manual_text_part%'
       $uploadImageDir: '%phplist.upload_images_dir%'
       $publicSchema: '%phplist.public_schema%'
+
+  PhpList\Core\Domain\Common\Upload\UploadService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Common\Upload\Storage\LocalUploadStorage:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Common\Upload\Storage\UploadStorageInterface:
+    alias: PhpList\Core\Domain\Common\Upload\Storage\LocalUploadStorage

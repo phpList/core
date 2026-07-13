@@ -10,3 +10,7 @@ services:
   PhpList\Core\Domain\Subscription\Validator\AttributeTypeValidator:
     autowire: true
     autoconfigure: true
+
+  PhpList\Core\Domain\Common\Upload\UploadValidator:
+    autowire: true
+    autoconfigure: true

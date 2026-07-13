@@ -151,10 +151,13 @@ parameters:
     phplist.keep_forwarded_attributes: '%%env(KEEPFORWARDERATTRIBUTES)%%'
     env(KEEPFORWARDERATTRIBUTES): '0'
 
-    phplist.upload_images_dir: '%%env(PHPLIST_UPLOADIMAGES_DIR)%%'
-    env(PHPLIST_UPLOADIMAGES_DIR): 'images'
-    phplist.editor_images_dir: '%%env(FCKIMAGES_DIR)%%'
-    env(FCKIMAGES_DIR): 'uploadimages'
+    phplist.upload_images_dir: '%%env(UPLOADIMAGES_DIR)%%'
+    env(UPLOADIMAGES_DIR): 'uploadimages'
+    phplist.uploads.allowed_mime_types: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
+    phplist.uploads.allowed_extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']
+    phplist.uploads.max_size: '%%env(PHPLIST_UPLOADS_MAX_SIZE)%%'
+    env(PHPLIST_UPLOADS_MAX_SIZE): '5M'
+
     phplist.public_schema: '%%env(PUBLIC_SCHEMA)%%'
     env(PUBLIC_SCHEMA): 'https'
     phplist.attachment_download_url: '%%env(PHPLIST_ATTACHMENT_DOWNLOAD_URL)%%'
