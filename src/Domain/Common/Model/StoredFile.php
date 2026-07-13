@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Common\Upload\Storage;
+namespace PhpList\Core\Domain\Common\Model;
 
 class StoredFile
 {

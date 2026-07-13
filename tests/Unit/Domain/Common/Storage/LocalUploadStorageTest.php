@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Domain\Common\Upload\Storage;
+namespace PhpList\Core\Tests\Unit\Domain\Common\Storage;
 
-use PhpList\Core\Domain\Common\Upload\Exception\StorageException;
-use PhpList\Core\Domain\Common\Upload\Storage\LocalUploadStorage;
+use PhpList\Core\Domain\Common\Exception\StorageException;
+use PhpList\Core\Domain\Common\Storage\LocalUploadStorage;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;

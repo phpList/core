@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Domain\Common\Upload;
+namespace PhpList\Core\Tests\Unit\Domain\Common\Service;
 
-use PhpList\Core\Domain\Common\Upload\Exception\StorageException;
-use PhpList\Core\Domain\Common\Upload\Storage\StoredFile;
-use PhpList\Core\Domain\Common\Upload\Storage\UploadStorageInterface;
-use PhpList\Core\Domain\Common\Upload\UploadResult;
-use PhpList\Core\Domain\Common\Upload\UploadService;
-use PhpList\Core\Domain\Common\Upload\UploadValidator;
+use PhpList\Core\Domain\Common\Exception\StorageException;
+use PhpList\Core\Domain\Common\Model\StoredFile;
+use PhpList\Core\Domain\Common\Model\UploadResult;
+use PhpList\Core\Domain\Common\Service\UploadService;
+use PhpList\Core\Domain\Common\Storage\UploadStorageInterface;
+use PhpList\Core\Domain\Common\Validator\UploadValidator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;

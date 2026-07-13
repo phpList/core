@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Common\Upload;
+namespace PhpList\Core\Domain\Common\Service;
 
-use PhpList\Core\Domain\Common\Upload\Exception\InvalidUploadException;
-use PhpList\Core\Domain\Common\Upload\Exception\StorageException;
-use PhpList\Core\Domain\Common\Upload\Storage\UploadStorageInterface;
+use PhpList\Core\Domain\Common\Exception\InvalidUploadException;
+use PhpList\Core\Domain\Common\Exception\StorageException;
+use PhpList\Core\Domain\Common\Model\UploadResult;
+use PhpList\Core\Domain\Common\Storage\UploadStorageInterface;
+use PhpList\Core\Domain\Common\Validator\UploadValidator;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RequestStack;

@@ -11,6 +11,6 @@ services:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Common\Upload\UploadValidator:
+  PhpList\Core\Domain\Common\Validator\UploadValidator:
     autowire: true
     autoconfigure: true

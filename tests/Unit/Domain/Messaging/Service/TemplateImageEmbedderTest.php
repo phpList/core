@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
 
-use PhpList\Core\Domain\Common\ExternalImageService;
+use PhpList\Core\Domain\Common\Service\ExternalImageService;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Manager\ConfigManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Domain\Common\Upload;
+namespace PhpList\Core\Tests\Unit\Domain\Common\Validator;
 
-use PhpList\Core\Domain\Common\Upload\Exception\InvalidUploadException;
-use PhpList\Core\Domain\Common\Upload\Exception\MissingUploadException;
-use PhpList\Core\Domain\Common\Upload\Exception\UnsupportedExtensionException;
-use PhpList\Core\Domain\Common\Upload\Exception\UnsupportedMimeTypeException;
-use PhpList\Core\Domain\Common\Upload\Exception\UploadTooLargeException;
-use PhpList\Core\Domain\Common\Upload\UploadValidator;
+use PhpList\Core\Domain\Common\Exception\InvalidUploadException;
+use PhpList\Core\Domain\Common\Exception\MissingUploadException;
+use PhpList\Core\Domain\Common\Exception\UnsupportedExtensionException;
+use PhpList\Core\Domain\Common\Exception\UnsupportedMimeTypeException;
+use PhpList\Core\Domain\Common\Exception\UploadTooLargeException;
+use PhpList\Core\Domain\Common\Validator\UploadValidator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 

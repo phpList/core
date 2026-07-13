@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Common\Upload\Exception;
+namespace PhpList\Core\Domain\Common\Exception;
 
 class InvalidUploadException extends UploadException
 {

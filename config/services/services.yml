@@ -112,7 +112,7 @@ services:
     autoconfigure: true
 
   # External image caching/downloading helper used by TemplateImageEmbedder
-  PhpList\Core\Domain\Common\ExternalImageService:
+  PhpList\Core\Domain\Common\Service\ExternalImageService:
     autowire: true
     autoconfigure: true
     arguments:
@@ -268,13 +268,13 @@ services:
       $uploadImageDir: '%phplist.upload_images_dir%'
       $publicSchema: '%phplist.public_schema%'
 
-  PhpList\Core\Domain\Common\Upload\UploadService:
+  PhpList\Core\Domain\Common\Upload\Service\UploadService:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Domain\Common\Upload\Storage\LocalUploadStorage:
+  PhpList\Core\Domain\Common\Storage\UploadStorageInterface:
+    alias: PhpList\Core\Domain\Common\Storage\LocalUploadStorage
+
+  PhpList\Core\Domain\Common\Storage\LocalUploadStorage:
     autowire: true
     autoconfigure: true
-
-  PhpList\Core\Domain\Common\Upload\Storage\UploadStorageInterface:
-    alias: PhpList\Core\Domain\Common\Upload\Storage\LocalUploadStorage
