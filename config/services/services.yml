@@ -268,7 +268,11 @@ services:
       $uploadImageDir: '%phplist.upload_images_dir%'
       $publicSchema: '%phplist.public_schema%'
 
-  PhpList\Core\Domain\Common\Upload\Service\UploadService:
+  PhpList\Core\Domain\Common\Service\UploadService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Common\Service\DirectoryListingService:
     autowire: true
     autoconfigure: true
 
