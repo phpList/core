@@ -11,7 +11,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class UploadDirectoryValidator
 {
     public function __construct(
-        #[Autowire('%kernel.project_dir%/public')]
+        #[Autowire('%kernel.application_dir%/public')]
         private readonly string $publicPath,
     ) {
     }

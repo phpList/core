@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class LocalUploadStorage implements UploadStorageInterface
 {
     public function __construct(
-        #[Autowire('%kernel.project_dir%')]
+        #[Autowire('%kernel.application_dir%')]
         private readonly string $projectDir,
         #[Autowire('%phplist.upload_images_dir%')]
         private readonly string $uploadDirectory,
