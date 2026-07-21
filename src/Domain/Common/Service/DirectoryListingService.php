@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Common\Service;
 
+use PhpList\Core\Domain\Common\Model\Dto\DirectoryEntryDto;
 use RuntimeException;
 
 class DirectoryListingService
 {
     /**
-     * @return array<int, array{
-     *     name: string,
-     *     path: string,
-     *     size: int,
-     *     type: string,
-     *     modified: int
-     * }>
+     * @return array<int, DirectoryEntryDto>
      */
     public function list(string $directory, string $realPath): array
     {
@@ -53,26 +48,17 @@ class DirectoryListingService
     {
         usort(
             $files,
-            static function (array $file1, array $file2): int {
-                if ($file1['type'] !== $file2['type']) {
-                    return $file1['type'] === 'directory' ? -1 : 1;
+            static function (DirectoryEntryDto $file1, DirectoryEntryDto $file2): int {
+                if ($file1->type !== $file2->type) {
+                    return $file1->type === 'directory' ? -1 : 1;
                 }
 
-                return strcmp($file1['name'], $file2['name']);
+                return strcmp($file1->name, $file2->name);
             }
         );
     }
 
-    /**
-     * @return array{
-     *     name:string,
-     *     path:string,
-     *     size:int,
-     *     type:string,
-     *     modified:int
-     * }|null
-     */
-    private function createEntry(string $directory, string $realPath, string $item,): ?array
+    private function createEntry(string $directory, string $realPath, string $item): ?DirectoryEntryDto
     {
         if ($item === '.' || $item === '..') {
             return null;
@@ -86,12 +72,12 @@ class DirectoryListingService
 
         $isDirectory = is_dir($fullPath);
 
-        return [
-            'name' => $item,
-            'path' => trim($directory, '/') . '/' . $item,
-            'size' => $isDirectory ? 0 : (filesize($fullPath) ?: 0),
-            'type' => $isDirectory ? 'directory' : 'file',
-            'modified' => filemtime($fullPath) ?: 0,
-        ];
+        return new DirectoryEntryDto(
+            name: $item,
+            path: trim($directory, '/') . '/' . $item,
+            size: $isDirectory ? 0 : (filesize($fullPath) ?: 0),
+            type: $isDirectory ? 'directory' : 'file',
+            modified: filemtime($fullPath) ?: 0,
+        );
     }
 }
