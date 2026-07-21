@@ -21,7 +21,7 @@ class UploadDirectoryValidator
         $directory = trim($directory);
 
         if ($directory === '') {
-            throw new BadRequestHttpException('Directory name cannot be empty.');
+            $directory = '/';
         }
 
         if (!preg_match('#^[A-Za-z0-9/_-]+$#', $directory)) {

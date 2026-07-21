@@ -88,7 +88,7 @@ class DirectoryListingService
 
         return [
             'name' => $item,
-            'path' => '/' . trim($directory, '/') . '/' . $item,
+            'path' => trim($directory, '/') . '/' . $item,
             'size' => $isDirectory ? 0 : (filesize($fullPath) ?: 0),
             'type' => $isDirectory ? 'directory' : 'file',
             'modified' => filemtime($fullPath) ?: 0,
