@@ -155,29 +155,36 @@ class CampaignMailContentBuilderTest extends TestCase
             ->disableOriginalConstructor()
             ->onlyMethods(['getId', 'getEmail'])
             ->getMock();
+
         $subscriber->method('getId')->willReturn(55);
         $subscriber->method('getEmail')->willReturn('user@example.com');
+
         $this->subscriberRepository
             ->method('findOneByEmail')
             ->willReturn($subscriber);
+
         $this->subscriberRepository
             ->method('getDataById')
             ->with(55)
             ->willReturn(['id' => 55]);
 
-        // Success path replacement
-        $dto = new MessagePrecacheDto();
-        $dto->content = 'Intro [URL:example.com/path] End';
-        $dto->userSpecificUrl = true;
+        $remotePageFetcherCalls = [];
 
         $this->remotePageFetcher
             ->expects($this->exactly(2))
             ->method('__invoke')
-            ->withConsecutive(
-                ['https://example.com/path', ['id' => 55]],
-                ['https://example.com/empty', ['id' => 55]],
-            )
-            ->willReturnOnConsecutiveCalls('<div>REMOTE</div>', '');
+            ->willReturnCallback(
+                function (string $url, array $data) use (&$remotePageFetcherCalls): string {
+                    $remotePageFetcherCalls[] = [$url, $data];
+
+                    return match ($url) {
+                        'https://example.com/path' => '<div>REMOTE</div>',
+                        'https://example.com/empty' => '',
+                        default => '<!--' . $url . '--><div>UNKNOWN</div>'
+                    };
+                }
+            );
+
         $this->placeholderProcessor
             ->method('process')
             ->willReturnCallback(
@@ -187,10 +194,25 @@ class CampaignMailContentBuilderTest extends TestCase
             );
 
         $builder = $this->makeBuilder();
-        [$html] = $builder($dto, $subscriber, 11);
-        $this->assertStringContainsString('<!--https://example.com/path--><div>REMOTE</div>', $html);
 
-        // Failure path (empty content) should log and throw
+        $dto = new MessagePrecacheDto();
+        $dto->content = 'Intro [URL:example.com/path] End';
+        $dto->userSpecificUrl = true;
+
+        [$html] = $builder($dto, $subscriber, 11);
+
+        $this->assertSame(
+            [
+                ['https://example.com/path', ['id' => 55]],
+            ],
+            [$remotePageFetcherCalls[0]],
+        );
+
+        $this->assertStringContainsString(
+            '<!--https://example.com/path--><div>REMOTE</div>',
+            $html
+        );
+
         $dto2 = new MessagePrecacheDto();
         $dto2->content = 'Again [URL:example.com/empty] test';
         $dto2->userSpecificUrl = true;
@@ -200,7 +222,18 @@ class CampaignMailContentBuilderTest extends TestCase
             ->method('log');
 
         $this->expectException(RemotePageFetchException::class);
-        $builder($dto2, $subscriber, 12);
+
+        try {
+            $builder($dto2, $subscriber, 12);
+        } finally {
+            $this->assertSame(
+                [
+                    ['https://example.com/path', ['id' => 55]],
+                    ['https://example.com/empty', ['id' => 55]],
+                ],
+                $remotePageFetcherCalls,
+            );
+        }
     }
 
     public function testTemplatePreventsDefaultStyleInjection(): void

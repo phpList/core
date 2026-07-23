@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service;
 
 use Exception;
-use PhpList\Core\Domain\Common\ExternalImageService;
 use PhpList\Core\Domain\Common\Model\ContentTransferEncoding;
+use PhpList\Core\Domain\Common\Service\ExternalImageService;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Model\Dto\CreateConfigDto;
 use PhpList\Core\Domain\Configuration\Service\Manager\ConfigManager;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\TemplateImage;
@@ -133,10 +134,12 @@ class TemplateImageEmbedder
             if (is_file($candidate['path'])) {
                 if ($candidate['config'] !== null) {
                     $this->configManager->create(
-                        ConfigOption::UploadImageRoot->value,
-                        $candidate['config'],
-                        false,
-                        'string'
+                        configRequestDto: new CreateConfigDto(
+                            key: ConfigOption::UploadImageRoot->value,
+                            value: $candidate['config'],
+                            editable: false,
+                            type: 'string'
+                        )
                     );
                 }
 

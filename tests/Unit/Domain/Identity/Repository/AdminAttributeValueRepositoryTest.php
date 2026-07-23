@@ -54,7 +54,11 @@ class AdminAttributeValueRepositoryTest extends TestCase
         $administrator = $this->createMock(Administrator::class);
         $administrator->method('getId')->willReturn($adminId);
 
-        $expectedResult = new AdminAttributeValue($attributeDefinition, $administrator, 'value');
+        $expectedResult = new AdminAttributeValue(
+            $attributeDefinition,
+            $administrator,
+            'value'
+        );
 
         $this->entityManager->expects($this->once())
             ->method('createQueryBuilder')
@@ -70,13 +74,17 @@ class AdminAttributeValueRepositoryTest extends TestCase
             ->with(AdminAttributeValue::class, 'aav')
             ->willReturn($this->queryBuilder);
 
+        $joinCalls = [];
+
         $this->queryBuilder->expects($this->exactly(2))
             ->method('join')
-            ->withConsecutive(
-                ['aav.administrator', 'admin'],
-                ['aav.attributeDefinition', 'attr']
-            )
-            ->willReturn($this->queryBuilder);
+            ->willReturnCallback(
+                function (string $join, string $alias) use (&$joinCalls) {
+                    $joinCalls[] = [$join, $alias];
+
+                    return $this->queryBuilder;
+                }
+            );
 
         $this->queryBuilder->expects($this->once())
             ->method('where')
@@ -88,13 +96,17 @@ class AdminAttributeValueRepositoryTest extends TestCase
             ->with('attr.id = :attributeId')
             ->willReturn($this->queryBuilder);
 
+        $setParameterCalls = [];
+
         $this->queryBuilder->expects($this->exactly(2))
             ->method('setParameter')
-            ->withConsecutive(
-                ['adminId', $adminId],
-                ['attributeId', $attributeId]
-            )
-            ->willReturn($this->queryBuilder);
+            ->willReturnCallback(
+                function (string $key, mixed $value) use (&$setParameterCalls) {
+                    $setParameterCalls[] = [$key, $value];
+
+                    return $this->queryBuilder;
+                }
+            );
 
         $this->queryBuilder->expects($this->once())
             ->method('getQuery')
@@ -104,7 +116,26 @@ class AdminAttributeValueRepositoryTest extends TestCase
             ->method('getOneOrNullResult')
             ->willReturn($expectedResult);
 
-        $result = $this->subject->findOneByAdminIdAndAttributeId($adminId, $attributeId);
+        $result = $this->subject->findOneByAdminIdAndAttributeId(
+            $adminId,
+            $attributeId
+        );
+
+        $this->assertSame(
+            [
+                ['aav.administrator', 'admin'],
+                ['aav.attributeDefinition', 'attr'],
+            ],
+            $joinCalls,
+        );
+
+        $this->assertSame(
+            [
+                ['adminId', $adminId],
+                ['attributeId', $attributeId],
+            ],
+            $setParameterCalls,
+        );
 
         $this->assertSame($expectedResult, $result);
     }

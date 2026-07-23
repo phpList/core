@@ -33,6 +33,7 @@ class SubscriberAttributeDefinitionRepository extends AbstractRepository impleme
         foreach ($defs as $def) {
             $this->hydrateOptions($def);
         }
+
         return $defs;
     }
 
@@ -81,7 +82,15 @@ class SubscriberAttributeDefinitionRepository extends AbstractRepository impleme
         if ($def instanceof SubscriberAttributeDefinition) {
             $this->hydrateOptions($def);
         }
+
         return $def;
+    }
+
+    public function getByIds(array $ids): array
+    {
+        $defs = $this->findBy(['id' => $ids]);
+
+        return $this->hydrateOptionsForAll($defs);
     }
 
     public function existsByTableName(string $tableName): bool

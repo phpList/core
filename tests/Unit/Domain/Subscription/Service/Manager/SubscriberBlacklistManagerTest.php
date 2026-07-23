@@ -98,15 +98,21 @@ class SubscriberBlacklistManagerTest extends TestCase
             ->with('new@blacklist.com')
             ->willReturn(false);
 
+        $persistedEntities = [];
+
         $this->entityManager
             ->expects($this->exactly(2))
             ->method('persist')
-            ->withConsecutive(
-                [$this->isInstanceOf(UserBlacklist::class)],
-                [$this->isInstanceOf(UserBlacklistData::class)]
-            );
+            ->willReturnCallback(function (object $entity) use (&$persistedEntities): void {
+                $persistedEntities[] = $entity;
+            });
 
         $this->manager->addEmailToBlacklist('new@blacklist.com', 'test reason');
+
+        $this->assertCount(2, $persistedEntities);
+
+        $this->assertInstanceOf(UserBlacklist::class, $persistedEntities[0]);
+        $this->assertInstanceOf(UserBlacklistData::class, $persistedEntities[1]);
     }
 
     public function testAddEmailToBlacklistAddsEntryWithoutReason(): void
@@ -129,6 +135,7 @@ class SubscriberBlacklistManagerTest extends TestCase
     {
         $blacklist = $this->createMock(UserBlacklist::class);
         $blacklistData = $this->createMock(UserBlacklistData::class);
+
         $subscriber = $this->getMockBuilder(Subscriber::class)
             ->setConstructorArgs(['test@example.com'])
             ->onlyMethods(['setBlacklisted'])
@@ -152,14 +159,27 @@ class SubscriberBlacklistManagerTest extends TestCase
             ->with('remove@me.com')
             ->willReturn($subscriber);
 
+        $removedEntities = [];
+
         $this->entityManager
             ->expects($this->exactly(2))
             ->method('remove')
-            ->withConsecutive([$blacklist], [$blacklistData]);
+            ->willReturnCallback(
+                function (object $entity) use (&$removedEntities): void {
+                    $removedEntities[] = $entity;
+                }
+            );
 
-        $subscriber->expects($this->once())->method('setBlacklisted')->with(false);
+        $subscriber->expects($this->once())
+            ->method('setBlacklisted')
+            ->with(false);
 
         $this->manager->removeEmailFromBlacklist('remove@me.com');
+
+        $this->assertSame(
+            [$blacklist, $blacklistData],
+            $removedEntities,
+        );
     }
 
     public function testGetBlacklistReasonReturnsReasonOrNull(): void

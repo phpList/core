@@ -203,18 +203,53 @@ class PasswordManagerTest extends TestCase
     public function testCleanupExpiredTokensRemovesExpiredTokens(): void
     {
         $administrator = new Administrator();
-        $expiredRequest1 = new AdminPasswordRequest(new DateTime('-1 day'), $administrator, 'token1');
-        $expiredRequest2 = new AdminPasswordRequest(new DateTime('-2 days'), $administrator, 'token2');
-        $validRequest = new AdminPasswordRequest(new DateTime('+1 day'), $administrator, 'token3');
 
-        $this->passwordRequestRepository->expects($this->once())
+        $expiredRequest1 = new AdminPasswordRequest(
+            new DateTime('-1 day'),
+            $administrator,
+            'token1'
+        );
+
+        $expiredRequest2 = new AdminPasswordRequest(
+            new DateTime('-2 days'),
+            $administrator,
+            'token2'
+        );
+
+        $validRequest = new AdminPasswordRequest(
+            new DateTime('+1 day'),
+            $administrator,
+            'token3'
+        );
+
+        $this->passwordRequestRepository
+            ->expects($this->once())
             ->method('findAll')
-            ->willReturn([$expiredRequest1, $expiredRequest2, $validRequest]);
+            ->willReturn([
+                $expiredRequest1,
+                $expiredRequest2,
+                $validRequest,
+            ]);
 
-        $this->passwordRequestRepository->expects($this->exactly(2))
+        $removedRequests = [];
+
+        $this->passwordRequestRepository
+            ->expects($this->exactly(2))
             ->method('remove')
-            ->withConsecutive([$expiredRequest1], [$expiredRequest2]);
+            ->willReturnCallback(
+                function (AdminPasswordRequest $request) use (&$removedRequests): void {
+                    $removedRequests[] = $request;
+                }
+            );
 
         $this->subject->cleanupExpiredTokens();
+
+        $this->assertSame(
+            [
+                $expiredRequest1,
+                $expiredRequest2,
+            ],
+            $removedRequests,
+        );
     }
 }

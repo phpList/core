@@ -5,22 +5,63 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
+use LogicException;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Subscription\Model\SubscribePage;
 use PhpList\Core\Domain\Subscription\Model\SubscribePageData;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberPageDataRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberPageRepository;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use PhpList\Core\Domain\Subscription\Service\SubscribePageConfigMigrationService;
+use PhpList\Core\Domain\Subscription\Service\SubscribePagePlaceholderProcessor;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class SubscribePageManager
 {
     public function __construct(
         private readonly SubscriberPageRepository $pageRepository,
         private readonly SubscriberPageDataRepository $pageDataRepository,
+        private readonly SubscribePageConfigMigrationService $configMigrationService,
         private readonly EntityManagerInterface $entityManager,
-        private readonly TranslatorInterface $translator,
+        private readonly SubscribePagePlaceholderProcessor $placeholderProcessor,
+        #[Autowire('%parallel_use_with_phplist3%')]
+        private readonly bool $parallelUseWithPhpList3,
     ) {
+    }
+
+    public function findPage(int $id): ?SubscribePage
+    {
+        $page = $this->pageRepository->findPageWithData($id);
+        if ($page === null) {
+            return null;
+        }
+
+        if ($this->parallelUseWithPhpList3) {
+            $changed = $this->configMigrationService->copyToPageData($page);
+            if ($changed) {
+                $page = $this->pageRepository->findPageWithData($id) ?? $page;
+            }
+        }
+
+        return $page;
+    }
+
+    public function findPublicPage(int $id): ?SubscribePage
+    {
+        $page = $this->pageRepository->findPageWithData($id);
+        if ($page === null) {
+            return null;
+        }
+
+        if ($this->parallelUseWithPhpList3) {
+            $changed = $this->configMigrationService->copyToPageData($page);
+            if ($changed) {
+                $page = $this->pageRepository->findPageWithData($id) ?? $page;
+            }
+        }
+
+        $this->placeholderProcessor->process($page);
+
+        return $page;
     }
 
     public function createPage(string $title, bool $active = false, ?Administrator $owner = null): SubscribePage
@@ -35,15 +76,39 @@ class SubscribePageManager
         return $page;
     }
 
-    public function getPage(int $id): SubscribePage
+    public function syncPageData(array $data, SubscribePage $page): void
     {
-        /** @var SubscribePage|null $page */
-        $page = $this->pageRepository->find($id);
-        if (!$page) {
-            throw new NotFoundHttpException($this->translator->trans('Subscribe page not found'));
+        if ($page->getId() === null) {
+            throw new LogicException('Page must be persisted before syncing data');
+        }
+        $existingPageData = [];
+        foreach ($this->getPageData($page) as $pageData) {
+            $existingPageData[$pageData->getName()] = $pageData;
         }
 
-        return $page;
+        foreach ($data as $pageDataKey => $value) {
+            if (isset($existingPageData[$pageDataKey])) {
+                $pageData = $existingPageData[$pageDataKey];
+                $pageData->setData($value);
+                unset($existingPageData[$pageDataKey]);
+                continue;
+            }
+
+            $pageData = (new SubscribePageData())
+                ->setId($page->getId())
+                ->setName($pageDataKey)
+                ->setData($value);
+
+            $this->pageDataRepository->persist($pageData);
+        }
+
+        foreach ($existingPageData as $pageData) {
+            $this->entityManager->remove($pageData);
+        }
+
+        if ($this->parallelUseWithPhpList3) {
+            $this->configMigrationService->copyToConfig(page: $page, data: $data);
+        }
     }
 
     public function updatePage(
@@ -76,25 +141,37 @@ class SubscribePageManager
     }
 
     /** @return SubscribePageData[] */
-    public function getPageData(SubscribePage $page): array
+    private function getPageData(SubscribePage $page): array
     {
-        return $this->pageDataRepository->getByPage($page,);
+        return $this->pageDataRepository->getByPage($page);
     }
 
-    public function setPageData(SubscribePage $page, string $name, ?string $value): SubscribePageData
+    /**
+     * @param array<string,string|null> $pageData
+     * @return array<int,array{use?:bool,required?:bool}>
+     */
+    public function extractLegacyOverrides(array $pageData): array
     {
-        /** @var SubscribePageData|null $data */
-        $data = $this->pageDataRepository->findByPageAndName($page, $name);
+        $result = [];
+        foreach ($pageData as $key => $value) {
+            if (!preg_match('/^attribute(\d{1,})$/', $key, $matches)) {
+                continue;
+            }
 
-        if (!$data) {
-            $data = (new SubscribePageData())
-                ->setId((int)$page->getId())
-                ->setName($name);
-            $this->entityManager->persist($data);
+            $id = (int) $matches[1];
+            $parts = explode('###', (string) $value);
+            // phpList 3 structure: id###default###order###required
+            if (isset($parts[1])) {
+                $result[$id]['default'] = $parts[1];
+            }
+            if (isset($parts[3])) {
+                $result[$id]['order'] = $parts[2];
+            }
+            if (isset($parts[3])) {
+                $result[$id]['required'] = $parts[3] === '1';
+            }
         }
 
-        $data->setData($value);
-
-        return $data;
+        return $result;
     }
 }

@@ -64,10 +64,13 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
             ->getSingleColumnResult();
     }
 
-    public function getAllActive(): array
+    /** @return SubscriberList[] */
+    public function getPublicByIds(array $ids): array
     {
         return $this->createQueryBuilder('l')
-            ->where('l.active = true')
+            ->where('l.public = true')
+            ->andWhere('l.id IN (:ids)')
+            ->setParameter('ids', $ids)
             ->getQuery()
             ->getResult();
     }
@@ -140,5 +143,10 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
         $rows = $queryBuilder->getQuery()->getScalarResult();
 
         return array_column($rows, 'name');
+    }
+    
+    public function findById(int $id): ?SubscriberList
+    {
+        return $this->find($id);
     }
 }

@@ -30,6 +30,9 @@ class SubscribePage implements DomainModel, Identity, OwnableInterface
     #[ORM\JoinColumn(name: 'owner', referencedColumnName: 'id', nullable: true)]
     private ?Administrator $owner = null;
 
+    /** @var SubscribePageData[] */
+    private array $data = [];
+
     public function getId(): ?int
     {
         return $this->id;
@@ -50,6 +53,12 @@ class SubscribePage implements DomainModel, Identity, OwnableInterface
         return $this->owner;
     }
 
+    /** @return SubscribePageData[] */
+    public function getData(): array
+    {
+        return $this->data;
+    }
+
     public function setTitle(string $title): self
     {
         $this->title = $title;
@@ -65,6 +74,13 @@ class SubscribePage implements DomainModel, Identity, OwnableInterface
     public function setOwner(?Administrator $owner): self
     {
         $this->owner = $owner;
+        return $this;
+    }
+
+    /** @param SubscribePageData[] $data */
+    public function setData(array $data): self
+    {
+        $this->data = $data;
         return $this;
     }
 }

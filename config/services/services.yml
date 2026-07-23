@@ -43,6 +43,14 @@ services:
     autoconfigure: true
     public: true
 
+  PhpList\Core\Domain\Subscription\Service\SubscribePageConfigMigrationService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\Manager\SubscribePageManager:
+    autowire: true
+    autoconfigure: true
+
   PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator:
     autowire: true
     autoconfigure: true
@@ -104,7 +112,7 @@ services:
     autoconfigure: true
 
   # External image caching/downloading helper used by TemplateImageEmbedder
-  PhpList\Core\Domain\Common\ExternalImageService:
+  PhpList\Core\Domain\Common\Service\ExternalImageService:
     autowire: true
     autoconfigure: true
     arguments:
@@ -259,3 +267,18 @@ services:
       $useManualTextPart: '%messaging.use_manual_text_part%'
       $uploadImageDir: '%phplist.upload_images_dir%'
       $publicSchema: '%phplist.public_schema%'
+
+  PhpList\Core\Domain\Common\Service\UploadService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Common\Service\DirectoryListingService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Common\Storage\UploadStorageInterface:
+    alias: PhpList\Core\Domain\Common\Storage\LocalUploadStorage
+
+  PhpList\Core\Domain\Common\Storage\LocalUploadStorage:
+    autowire: true
+    autoconfigure: true

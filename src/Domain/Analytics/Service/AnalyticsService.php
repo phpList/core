@@ -153,14 +153,9 @@ class AnalyticsService
 
         $domains = [];
         foreach ($subscribers as $subscriber) {
-            $email = $subscriber->getEmail();
-            $domain = substr(strrchr($email, '@'), 1) ?: '';
-
-            if (!empty($domain)) {
-                if (!isset($domains[$domain])) {
-                    $domains[$domain] = 0;
-                }
-                $domains[$domain]++;
+            $domain = $this->extractDomain($subscriber->getEmail());
+            if ($domain !== '') {
+                $domains[$domain] = ($domains[$domain] ?? 0) + 1;
             }
         }
 
@@ -287,12 +282,10 @@ class AnalyticsService
     public function getDomainConfirmationStatistics(int $limit = 50): array
     {
         $domains = [];
-
         $subscribers = $this->subscriberRepository->findAll();
 
         foreach ($subscribers as $subscriber) {
-            $email = $subscriber->getEmail();
-            $domain = substr(strrchr($email, '@'), 1) ?: '';
+            $domain = $this->extractDomain($subscriber->getEmail());
 
             if (!empty($domain)) {
                 if (!isset($domains[$domain])) {
@@ -356,6 +349,19 @@ class AnalyticsService
             'domains' => $result,
             'total' => count($result),
         ];
+    }
+
+    private function extractDomain(string $email): ?string
+    {
+        $atPoint = strrchr($email, '@');
+
+        if ($atPoint === false) {
+            return null;
+        }
+
+        $domain = substr($atPoint, 1);
+
+        return $domain !== '' ? $domain : null;
     }
 
     private function formatStat(int $count, int $total): int|float

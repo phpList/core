@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Repository\ConfigRepository;
 use Psr\SimpleCache\CacheInterface;
+use ValueError;
 
 class ConfigProvider
 {
@@ -71,16 +72,32 @@ class ConfigProvider
         return $this->defaultConfigs->has($key) ? (string) $this->defaultConfigs->get($key)['value'] : null;
     }
 
-    public function getValueWithNamespace(ConfigOption $key): ?string
+    public function getValueWithNamespace(ConfigOption|string $key): ?string
     {
-        $full = $this->getValue($key);
+        if ($key instanceof ConfigOption) {
+            $full = $this->getValue($key);
+            $keyValue = $key->value;
+        } else {
+            $keyValue = $key;
+            $cacheKey = 'cfg:' . $keyValue;
+            $full = $this->cache->get($cacheKey);
+            if ($full === null) {
+                $full = $this->configRepository->findValueByItem($keyValue);
+                $this->cache->set($cacheKey, $full, $this->ttlSeconds);
+            }
+        }
+
         if ($full !== null && $full !== '') {
             return $full;
         }
 
-        if (str_contains($key->value, ':')) {
-            [$parent] = explode(':', $key->value, 2);
-            $parentKey = ConfigOption::from($parent);
+        if (str_contains($keyValue, ':')) {
+            [$parent] = explode(':', $keyValue, 2);
+            try {
+                $parentKey = ConfigOption::from($parent);
+            } catch (ValueError) {
+                return null;
+            }
 
             return $this->getValue($parentKey);
         }
