@@ -7,6 +7,7 @@ namespace PhpList\Core\Core;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use RuntimeException;
+use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\ErrorHandler\ErrorHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -147,8 +148,25 @@ class Bootstrap
     {
         $this->isConfigured = true;
 
-        return $this->configureDebugging()
+        return $this->loadEnvironmentVariables()
+            ->configureDebugging()
             ->configureApplicationKernel();
+    }
+
+    /**
+     * Loads environment variables from the application's ".env" files (if present) using Symfony Dotenv,
+     * following the standard ".env" -> ".env.local" -> ".env.$environment" -> ".env.$environment.local" cascade.
+     *
+     * @return Bootstrap fluent interface
+     */
+    private function loadEnvironmentVariables(): Bootstrap
+    {
+        $applicationRoot = $this->applicationStructure->getApplicationRoot();
+        if (file_exists($applicationRoot . '/.env') || file_exists($applicationRoot . '/.env.dist')) {
+            (new Dotenv())->loadEnv($applicationRoot . '/.env', 'APP_ENV', $this->environment);
+        }
+
+        return $this;
     }
 
     /**

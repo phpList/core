@@ -63,7 +63,7 @@ this code.
 The phpList application is configured so that the built-in PHP web server can
 run in development and testing mode, while Apache can run in production mode.
 
-Please first set the database credentials in `config/parameters.yml`.
+Please first set the database credentials in `.env` (created from `.env.dist` on `composer install`/`composer update`).
 
 ### Development
 
