@@ -33,12 +33,13 @@ parameters:
     env(APP_POWERED_BY_PHPLIST): '0'
     app.preference_page_show_private_lists: '%%env(PREFERENCEPAGE_SHOW_PRIVATE_LISTS)%%'
     env(PREFERENCEPAGE_SHOW_PRIVATE_LISTS): '0'
-    app.rest_api_base_url: '%%env(REST_API_BASE_URL)%%'
-    env(REST_API_BASE_URL): 'http://api.phplist.local/api/v2'
-    api_base_url: '%%env(API_BASE_URL)%%'
+
+    app.rest_api_base_url: '%%env(API_BASE_URL)%%/api/v2'
+    app.api_base_url: '%%env(API_BASE_URL)%%'
     env(API_BASE_URL): 'http://api.phplist.local/'
     app.frontend_base_url: '%%env(FRONT_END_BASE_URL)%%'
     env(FRONT_END_BASE_URL): 'http://frontend.phplist.local'
+
     parallel_use_with_phplist3: '%%env(parallel_use_with_phplist3)%%'
     env(parallel_use_with_phplist3): '0'
 
