@@ -24,7 +24,7 @@ parameters:
     app.api_base_url: '%env(API_BASE_URL)%'
     app.frontend_base_url: '%env(FRONT_END_BASE_URL)%'
 
-    parallel_use_with_phplist3: '%env(parallel_use_with_phplist3)%'
+    parallel_use_with_phplist3: '%env(PARALLER_USE_WITH_PHPLIST3)%'
 
     # Email configuration
     app.mailer_from: '%env(MAILER_FROM)%'

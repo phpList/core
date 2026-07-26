@@ -301,10 +301,6 @@ class ScriptHandler
     public static function createParametersConfiguration(): void
     {
         $configurationFilePath = self::getApplicationRoot() . self::PARAMETERS_CONFIGURATION_FILE;
-        if (file_exists($configurationFilePath)) {
-            return;
-        }
-
         $templateFilePath = __DIR__ . '/../..' . static::PARAMETERS_CONFIGURATION_FILE;
         $configuration = file_get_contents($templateFilePath);
 
