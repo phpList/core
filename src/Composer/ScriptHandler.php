@@ -36,17 +36,7 @@ class ScriptHandler
     /**
      * @var string
      */
-    const PARAMETERS_CONFIGURATION_FILE = '/config/parameters.yml';
-
-    /**
-     * @var string
-     */
     const GENERAL_CONFIGURATION_FILE = '/config/config_modules.yml';
-
-    /**
-     * @var string
-     */
-    const PARAMETERS_TEMPLATE_FILE = '/config/parameters.yml.dist';
 
     /**
      * @var string
@@ -57,6 +47,11 @@ class ScriptHandler
      * @var string
      */
     const DOTENV_TEMPLATE_FILE = '/.env.dist';
+
+    /**
+     * @var string
+     */
+    const PARAMETERS_CONFIGURATION_FILE = '/config/parameters.yml';
 
     /**
      * @return string absolute application root directory without the trailing slash
@@ -275,6 +270,30 @@ class ScriptHandler
     }
 
     /**
+     * Creates the .env file (the environment variables consumed by the parameters configuration)
+     * by copying it from .env.dist, generating a fresh app secret in the process.
+     *
+     * @return void
+     */
+    public static function createDotenvConfiguration(): void
+    {
+        $appDotenvFilePath = self::getApplicationRoot() . self::DOTENV_FILE;
+        $templateFilePath = __DIR__ . '/../..' . static::DOTENV_TEMPLATE_FILE;
+
+        if (file_exists($appDotenvFilePath)) {
+            return;
+        }
+
+        $template = file_get_contents($templateFilePath);
+
+        $secret = bin2hex(random_bytes(20));
+        $configuration = sprintf($template, $secret);
+
+        self::createAndWriteFile($appDotenvFilePath, $configuration);
+    }
+
+
+    /**
      * Creates config/parameters.yml (the parameters configuration file).
      *
      * @return void
@@ -286,32 +305,10 @@ class ScriptHandler
             return;
         }
 
-        $templateFilePath = __DIR__ . '/../..' . static::PARAMETERS_TEMPLATE_FILE;
+        $templateFilePath = __DIR__ . '/../..' . static::PARAMETERS_CONFIGURATION_FILE;
         $configuration = file_get_contents($templateFilePath);
 
         self::createAndWriteFile($configurationFilePath, $configuration);
-    }
-
-    /**
-     * Creates the .env file (the environment variables consumed by the parameters configuration)
-     * by copying it from .env.dist, generating a fresh app secret in the process.
-     *
-     * @return void
-     */
-    public static function createDotenvConfiguration(): void
-    {
-        $dotenvFilePath = self::getApplicationRoot() . self::DOTENV_FILE;
-        if (file_exists($dotenvFilePath)) {
-            return;
-        }
-
-        $templateFilePath = __DIR__ . '/../..' . static::DOTENV_TEMPLATE_FILE;
-        $template = file_get_contents($templateFilePath);
-
-        $secret = bin2hex(random_bytes(20));
-        $configuration = sprintf($template, $secret);
-
-        self::createAndWriteFile($dotenvFilePath, $configuration);
     }
 
     /**
