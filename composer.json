@@ -87,7 +87,8 @@
         "ext-fileinfo": "*",
         "setasign/fpdf": "^1.8",
         "phpdocumentor/reflection-docblock": "^5.2",
-        "guzzlehttp/guzzle": "^7.4.5"
+        "guzzlehttp/guzzle": "^7.4.5",
+        "symfony/dotenv": "^6.4"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
@@ -127,7 +128,7 @@
             "PhpList\\Core\\Composer\\ScriptHandler::createGeneralConfiguration",
             "PhpList\\Core\\Composer\\ScriptHandler::createBundleConfiguration",
             "PhpList\\Core\\Composer\\ScriptHandler::createRoutesConfiguration",
-            "PhpList\\Core\\Composer\\ScriptHandler::createParametersConfiguration",
+            "PhpList\\Core\\Composer\\ScriptHandler::createDotenvConfiguration",
             "php bin/console cache:clear",
             "php bin/console cache:warmup"
         ],

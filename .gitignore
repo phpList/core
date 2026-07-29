@@ -7,7 +7,9 @@
 /composer.lock
 /config/bundles.yml
 /config/config_modules.yml
-/config/parameters.yml
+/.env
+/.env.local
+/.env.*.local
 /config/routing_modules.yml
 /nbproject
 /var/
