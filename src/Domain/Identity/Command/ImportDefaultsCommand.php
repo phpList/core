@@ -15,6 +15,7 @@ use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 #[AsCommand(
     name: 'phplist:defaults:import',
@@ -22,13 +23,15 @@ use Symfony\Component\Console\Question\Question;
 )]
 class ImportDefaultsCommand extends Command
 {
-    private const DEFAULT_LOGIN = 'admin';
+    private const DEFAULT_LOGIN = 'test1';
     private const DEFAULT_EMAIL = 'admin@example.com';
 
     public function __construct(
         private readonly AdministratorRepository $administratorRepository,
         private readonly AdministratorManager $administratorManager,
         private readonly EntityManagerInterface $entityManager,
+        #[Autowire('%app.default_admin_password%')]
+        private readonly string $defaultAdminPassword = ''
     ) {
         parent::__construct();
     }
@@ -37,15 +40,13 @@ class ImportDefaultsCommand extends Command
     {
         $login = self::DEFAULT_LOGIN;
         $email = self::DEFAULT_EMAIL;
-        $envPassword = getenv('PHPLIST_ADMIN_PASSWORD');
-        $envPassword = is_string($envPassword) && trim($envPassword) !== '' ? $envPassword : null;
+        $password = $this->defaultAdminPassword !== '' ? $this->defaultAdminPassword : null;
 
         $allPrivileges = $this->allPrivilegesGranted();
 
         $existing = $this->administratorRepository->findOneBy(['loginName' => $login]);
         if ($existing === null) {
             // If creating the default admin, require a password. Prefer env var, else prompt for input.
-            $password = $envPassword;
             if ($password === null) {
                 /** @var QuestionHelper $helper */
                 $helper = $this->getHelper('question');
