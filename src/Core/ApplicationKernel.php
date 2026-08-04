@@ -128,6 +128,11 @@ class ApplicationKernel extends Kernel
         if (file_exists($twigConfigFile)) {
             $loader->load($twigConfigFile);
         }
+
+        $messengerConfigFile = $this->getApplicationDir() . '/config/packages/messenger.yaml';
+        if (file_exists($messengerConfigFile)) {
+            $loader->load($messengerConfigFile);
+        }
     }
 
     /**
