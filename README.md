@@ -228,3 +228,8 @@ vendor/bin/phpstan analyse -c phpstan.neon;
 vendor/bin/phpmd src/ text config/PHPMD/rules.xml;
 vendor/bin/phpcs --standard=config/PhpCodeSniffer/ --ignore=*/Migrations/* bin/ src/ tests/ public/;
 ```
+
+
+```bash
+php bin/console messenger:consume async_email 
+```
