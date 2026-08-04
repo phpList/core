@@ -116,7 +116,7 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
     {
         return $this->createQueryBuilder('m')
             ->where('m.metadata.status = :status')
-            ->andWhere('m.schedule.embargo IS NULL OR m.embargo <= :embargo')
+            ->andWhere('m.schedule.embargo IS NULL OR m.schedule.embargo <= :embargo')
             ->setParameter('status', $status->value)
             ->setParameter('embargo', $embargo)
             ->getQuery()
