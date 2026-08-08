@@ -6,10 +6,9 @@ namespace PhpList\Core\Migrations;
 
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
-use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 
-final class Version20251028092902MySqlUpdate extends AbstractMigration
+final class Version20251028092902MySqlUpdate extends AbstractPrefixedMigration
 {
     public function getDescription(): string
     {

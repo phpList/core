@@ -6,7 +6,6 @@ namespace PhpList\Core\Migrations;
 
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
-use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 
 /**
@@ -16,7 +15,7 @@ use Doctrine\DBAL\Schema\Schema;
 *
 * Ex: phplist_linktrack_forward phplist_linktrack_forward_urlindex (but there are more)
 */
-final class Version20260204094237 extends AbstractMigration
+final class Version20260204094237 extends AbstractPrefixedMigration
 {
     public function getDescription(): string
     {
