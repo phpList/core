@@ -25,7 +25,7 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
  * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 #[ORM\Entity(repositoryClass: SubscriberListRepository::class)]
-#[ORM\Table(name: 'phplist_list')]
+#[ORM\Table(name: 'list')]
 #[ORM\Index(name: 'phplist_list_nameidx', columns: ['name'])]
 #[ORM\Index(name: 'phplist_list_listorderidx', columns: ['listorder'])]
 #[ORM\HasLifecycleCallbacks]

@@ -12,7 +12,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 
 #[ORM\Entity(repositoryClass: LinkTrackRepository::class)]
-#[ORM\Table(name: 'phplist_linktrack')]
+#[ORM\Table(name: 'linktrack')]
 #[ORM\UniqueConstraint(name: 'phplist_linktrack_miduidurlindex', columns: ['messageid', 'userid', 'url'])]
 #[ORM\Index(name: 'phplist_linktrack_midindex', columns: ['messageid'])]
 #[ORM\Index(name: 'phplist_linktrack_miduidindex', columns: ['messageid', 'userid'])]

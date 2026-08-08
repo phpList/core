@@ -22,7 +22,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
  * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 #[ORM\Entity(repositoryClass: SubscriptionRepository::class)]
-#[ORM\Table(name: 'phplist_listuser')]
+#[ORM\Table(name: 'listuser')]
 #[ORM\Index(name: 'phplist_listuser_userenteredidx', columns: ['userid', 'entered'])]
 #[ORM\Index(name: 'phplist_listuser_userlistenteredidx', columns: ['userid', 'entered', 'listid'])]
 #[ORM\Index(name: 'phplist_listuser_useridx', columns: ['userid'])]

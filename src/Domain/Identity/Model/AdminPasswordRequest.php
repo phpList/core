@@ -11,7 +11,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Identity\Repository\AdminPasswordRequestRepository;
 
 #[ORM\Entity(repositoryClass: AdminPasswordRequestRepository::class)]
-#[ORM\Table(name: 'phplist_admin_password_request')]
+#[ORM\Table(name: 'admin_password_request')]
 class AdminPasswordRequest implements DomainModel, Identity
 {
     #[ORM\Id]

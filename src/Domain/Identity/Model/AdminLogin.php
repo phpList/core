@@ -12,7 +12,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Identity\Repository\AdminLoginRepository;
 
 #[ORM\Entity(repositoryClass: AdminLoginRepository::class)]
-#[ORM\Table(name: 'phplist_admin_login')]
+#[ORM\Table(name: 'admin_login')]
 #[ORM\HasLifecycleCallbacks]
 class AdminLogin implements DomainModel, Identity
 {

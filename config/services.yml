@@ -51,6 +51,10 @@ services:
     tags:
       - { name: 'doctrine.dbal.schema_filter', connection: 'default' }
 
+  PhpList\Core\Core\Doctrine\TablePrefixListener:
+    arguments:
+      $tablePrefix: '%database_prefix%'
+
   HTMLPurifier_Config:
     class: HTMLPurifier_Config
     factory: [ 'HTMLPurifier_Config', 'createDefault' ]

@@ -10,7 +10,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 
 #[ORM\Entity(repositoryClass: LinkTrackForwardRepository::class)]
-#[ORM\Table(name: 'phplist_linktrack_forward')]
+#[ORM\Table(name: 'linktrack_forward')]
 #[ORM\UniqueConstraint(name: 'phplist_linktrack_forward_urlunique', columns: ['urlhash'])]
 #[ORM\Index(name: 'phplist_linktrack_forward_urlindex', columns: ['url'])]
 #[ORM\Index(name: 'phplist_linktrack_forward_uuididx', columns: ['uuid'])]

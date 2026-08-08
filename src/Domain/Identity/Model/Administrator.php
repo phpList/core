@@ -25,7 +25,7 @@ use PhpList\Core\Domain\Subscription\Model\SubscriberList;
  * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 #[ORM\Entity(repositoryClass: AdministratorRepository::class)]
-#[ORM\Table(name: 'phplist_admin')]
+#[ORM\Table(name: 'admin')]
 #[ORM\UniqueConstraint(name: 'phplist_admin_loginnameidx', columns: ['loginname'])]
 #[ORM\HasLifecycleCallbacks]
 class Administrator implements DomainModel, Identity, CreationDate, ModificationDate

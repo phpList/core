@@ -19,7 +19,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
  * @author Tateik Grigoryan <tatevik@phplist.com>
  */
 #[ORM\Entity(repositoryClass: AdministratorTokenRepository::class)]
-#[ORM\Table(name: 'phplist_admintoken')]
+#[ORM\Table(name: 'admintoken')]
 #[ORM\HasLifecycleCallbacks]
 class AdministratorToken implements DomainModel, Identity, CreationDate
 {

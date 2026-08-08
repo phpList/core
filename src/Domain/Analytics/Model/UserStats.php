@@ -10,7 +10,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 
 #[ORM\Entity(repositoryClass: UserStatsRepository::class)]
-#[ORM\Table(name: 'phplist_userstats')]
+#[ORM\Table(name: 'userstats')]
 #[ORM\UniqueConstraint(name: 'phplist_userstats_entry', columns: ['unixdate', 'item', 'listid'])]
 #[ORM\Index(name: 'phplist_userstats_dateindex', columns: ['unixdate'])]
 #[ORM\Index(name: 'phplist_userstats_itemindex', columns: ['item'])]

@@ -14,7 +14,7 @@ use PhpList\Core\Domain\Messaging\Repository\ListMessageRepository;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 
 #[ORM\Entity(repositoryClass: ListMessageRepository::class)]
-#[ORM\Table(name: 'phplist_listmessage')]
+#[ORM\Table(name: 'listmessage')]
 #[ORM\UniqueConstraint(name: 'phplist_listmessage_messageid', columns: ['messageid', 'listid'])]
 #[ORM\Index(name: 'phplist_listmessage_listmessageidx', columns: ['listid', 'messageid'])]
 #[ORM\HasLifecycleCallbacks]

@@ -12,7 +12,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Identity\Repository\AdminAttributeDefinitionRepository;
 
 #[ORM\Entity(repositoryClass: AdminAttributeDefinitionRepository::class)]
-#[ORM\Table(name: 'phplist_adminattribute')]
+#[ORM\Table(name: 'adminattribute')]
 #[ORM\HasLifecycleCallbacks]
 class AdminAttributeDefinition implements DomainModel, Identity
 {

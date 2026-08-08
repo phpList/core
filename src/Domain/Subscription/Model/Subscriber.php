@@ -24,7 +24,7 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
  * @SuppressWarnings(PHPMD.ExcessivePublicCount)
  */
 #[ORM\Entity(repositoryClass: SubscriberRepository::class)]
-#[ORM\Table(name: 'phplist_user_user')]
+#[ORM\Table(name: 'user_user')]
 #[ORM\Index(name: 'phplist_user_user_idxuniqid', columns: ['uniqid'])]
 #[ORM\Index(name: 'phplist_user_user_enteredindex', columns: ['entered'])]
 #[ORM\Index(name: 'phplist_user_user_confidx', columns: ['confirmed'])]

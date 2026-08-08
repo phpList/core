@@ -12,7 +12,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\ModificationDate;
 use PhpList\Core\Domain\Messaging\Repository\SendProcessRepository;
 
 #[ORM\Entity(repositoryClass: SendProcessRepository::class)]
-#[ORM\Table(name: 'phplist_sendprocess')]
+#[ORM\Table(name: 'sendprocess')]
 #[ORM\HasLifecycleCallbacks]
 class SendProcess implements DomainModel, Identity, ModificationDate
 {
