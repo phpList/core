@@ -157,13 +157,36 @@ class Bootstrap
      * Loads environment variables from the application's ".env" files (if present) using Symfony Dotenv,
      * following the standard ".env" -> ".env.local" -> ".env.$environment" -> ".env.$environment.local" cascade.
      *
+     * ".env.dist" is a template only and must never be used to source real configuration: Symfony Dotenv
+     * would otherwise silently load it (with its literal placeholder values) whenever ".env" is missing.
+     *
      * @return Bootstrap fluent interface
+     *
+     * @throws RuntimeException if ".env" does not exist, or PHPLIST_SECRET was not resolved to a real value
+     * @SuppressWarnings("PHPMD.Superglobals")
      */
     private function loadEnvironmentVariables(): Bootstrap
     {
         $applicationRoot = $this->applicationStructure->getApplicationRoot();
-        if (file_exists($applicationRoot . '/.env') || file_exists($applicationRoot . '/.env.dist')) {
-            (new Dotenv())->loadEnv($applicationRoot . '/.env', 'APP_ENV', $this->environment);
+        $dotenvPath = $applicationRoot . '/.env';
+        if (!file_exists($dotenvPath)) {
+            throw new RuntimeException(
+                'No ".env" file was found at "' . $dotenvPath . '". Run "composer install"/"composer update" ' .
+                'to generate it from ".env.dist" (which is a template only and must not be used directly), ' .
+                'or create ".env" manually with a real PHPLIST_SECRET.',
+                1754766600
+            );
+        }
+
+        (new Dotenv())->loadEnv($dotenvPath, 'APP_ENV', $this->environment);
+
+        $secret = $_SERVER['PHPLIST_SECRET'] ?? $_ENV['PHPLIST_SECRET'] ?? '';
+        if ($secret === '' || $secret === '%s') {
+            throw new RuntimeException(
+                'PHPLIST_SECRET in ".env" is missing or still set to the ".env.dist" template placeholder. ' .
+                'Set it to a real, unique, freshly generated secret before starting the application.',
+                1754766601
+            );
         }
 
         return $this;

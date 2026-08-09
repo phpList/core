@@ -23,7 +23,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 )]
 class ImportDefaultsCommand extends Command
 {
-    private const DEFAULT_LOGIN = 'test1';
+    private const DEFAULT_LOGIN = 'admin';
     private const DEFAULT_EMAIL = 'admin@example.com';
 
     public function __construct(
