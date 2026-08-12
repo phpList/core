@@ -64,10 +64,10 @@ You can test the email functionality using the built-in command:
 
 ```bash
 # Queue an email for asynchronous sending
-bin/console app:send-test-email recipient@example.com
+bin/console phplist:test-email recipient@example.com
 
 # Send an email synchronously (immediately)
-bin/console app:send-test-email recipient@example.com --sync
+bin/console phplist:test-email recipient@example.com --sync
 ```
 
 ## Processing the Email Queue
@@ -87,9 +87,6 @@ You can monitor the queue status using the following commands:
 ```bash
 # View the number of messages in the queue
 bin/console messenger:stats
-
-# View failed messages
-bin/console messenger:failed:show
 ```
 
 ## Troubleshooting
@@ -97,6 +94,6 @@ bin/console messenger:failed:show
 If emails are not being sent:
 
 1. Make sure the messenger worker is running
-2. Check for failed messages using `bin/console messenger:failed:show`
+2. Check the queue with `bin/console messenger:stats` (see [Monitoring](#monitoring))
 3. Verify your mailer configuration in `config/parameters.yml`
 4. Try sending an email synchronously to test the mailer configuration
