@@ -87,13 +87,22 @@ You can monitor the queue status using the following commands:
 ```bash
 # View the number of messages in the queue
 bin/console messenger:stats
+
+# View failed messages
+bin/console messenger:failed:show
+
+# Retry a failed message
+bin/console messenger:failed:retry <id>
 ```
+
+Failed messages are routed to the `failed` transport (a separate queue in the
+same Doctrine table), configured in `config/packages/messenger.yaml`.
 
 ## Troubleshooting
 
 If emails are not being sent:
 
 1. Make sure the messenger worker is running
-2. Check the queue with `bin/console messenger:stats` (see [Monitoring](#monitoring))
+2. Check for failed messages using `bin/console messenger:failed:show`
 3. Verify your mailer configuration in `config/parameters.yml`
 4. Try sending an email synchronously to test the mailer configuration
