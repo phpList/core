@@ -45,15 +45,27 @@ class AdministratorRepository extends AbstractRepository implements PaginatableR
      */
     public function findOneByLoginCredentials(string $loginName, string $plainTextPassword): ?Administrator
     {
-        $passwordHash = $this->hashGenerator->createPasswordHash($plainTextPassword);
-
-        return $this->findOneBy(
+        /** @var Administrator|null $administrator */
+        $administrator = $this->findOneBy(
             [
                 'loginName' => $loginName,
-                'passwordHash' => $passwordHash,
                 'superUser' => true,
             ]
         );
+
+        $passwordHash = $administrator?->getPasswordHash();
+        if ($administrator === null || $passwordHash === null
+            || !$this->hashGenerator->verifyPassword($plainTextPassword, $passwordHash)
+        ) {
+            return null;
+        }
+
+        if ($this->hashGenerator->isLegacyHash($passwordHash)) {
+            $administrator->setPasswordHash($this->hashGenerator->createPasswordHash($plainTextPassword));
+            $this->save($administrator);
+        }
+
+        return $administrator;
     }
 
     /** @return Administrator[] */

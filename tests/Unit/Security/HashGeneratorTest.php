@@ -21,27 +21,64 @@ class HashGeneratorTest extends TestCase
         $this->subject = new HashGenerator();
     }
 
-    public function testCreatePasswordHashCreates64CharacterHash(): void
+    public function testCreatePasswordHashCreatesPasswordHashCompatibleHash(): void
     {
         $hash = $this->subject->createPasswordHash('Portal');
-        self::assertMatchesRegularExpression('/^[a-z0-9]{64}$/', $hash);
+
+        self::assertNotFalse(password_get_info($hash)['algo']);
     }
 
-    public function testCreatePasswordHashCalledTwoTimesWithSamePasswordCreatesSameHash(): void
+    public function testCreatePasswordHashCalledTwoTimesWithSamePasswordCreatesDifferentHashes(): void
     {
         $password = 'Aperture Science';
 
         $hash1 = $this->subject->createPasswordHash($password);
         $hash2 = $this->subject->createPasswordHash($password);
 
-        self::assertSame($hash1, $hash2);
+        self::assertNotSame($hash1, $hash2);
     }
 
-    public function testCreatePasswordHashCalledTwoTimesWithDifferentPasswordsCreatesDifferentHashes(): void
+    public function testVerifyPasswordForMatchingPasswordAndHashReturnsTrue(): void
     {
-        $hash1 = $this->subject->createPasswordHash('Mel');
-        $hash2 = $this->subject->createPasswordHash('Cave Johnson');
+        $password = 'Cave Johnson';
+        $hash = $this->subject->createPasswordHash($password);
 
-        self::assertNotSame($hash1, $hash2);
+        self::assertTrue($this->subject->verifyPassword($password, $hash));
+    }
+
+    public function testVerifyPasswordForNonMatchingPasswordAndHashReturnsFalse(): void
+    {
+        $hash = $this->subject->createPasswordHash('Mel');
+
+        self::assertFalse($this->subject->verifyPassword('Cave Johnson', $hash));
+    }
+
+    public function testVerifyPasswordForMatchingPasswordAndLegacyHashReturnsTrue(): void
+    {
+        $password = 'Bazinga!';
+        $legacyHash = hash(HashGenerator::LEGACY_PASSWORD_HASH_ALGORITHM, $password);
+
+        self::assertTrue($this->subject->verifyPassword($password, $legacyHash));
+    }
+
+    public function testVerifyPasswordForNonMatchingPasswordAndLegacyHashReturnsFalse(): void
+    {
+        $legacyHash = hash(HashGenerator::LEGACY_PASSWORD_HASH_ALGORITHM, 'Bazinga!');
+
+        self::assertFalse($this->subject->verifyPassword('wrong-password', $legacyHash));
+    }
+
+    public function testIsLegacyHashForSha256HashReturnsTrue(): void
+    {
+        $legacyHash = hash(HashGenerator::LEGACY_PASSWORD_HASH_ALGORITHM, 'Bazinga!');
+
+        self::assertTrue($this->subject->isLegacyHash($legacyHash));
+    }
+
+    public function testIsLegacyHashForPasswordHashHashReturnsFalse(): void
+    {
+        $hash = $this->subject->createPasswordHash('Bazinga!');
+
+        self::assertFalse($this->subject->isLegacyHash($hash));
     }
 }
