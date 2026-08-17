@@ -18,6 +18,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 #[ORM\Index(name: 'phplist_linktrack_miduidindex', columns: ['messageid', 'userid'])]
 #[ORM\Index(name: 'phplist_linktrack_uidindex', columns: ['userid'])]
 #[ORM\Index(name: 'phplist_linktrack_urlindex', columns: ['url'])]
+#[ORM\Index(name: 'phplist_linktrack_latestclickindex', columns: ['latestclick'])]
 class LinkTrack implements DomainModel, Identity
 {
     #[ORM\Id]

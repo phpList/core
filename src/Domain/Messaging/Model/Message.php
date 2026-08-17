@@ -24,6 +24,7 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\Table(name: 'message')]
 #[ORM\Index(name: 'phplist_message_uuididx', columns: ['uuid'])]
+#[ORM\Index(name: 'phplist_message_sentidx', columns: ['sent'])]
 #[ORM\HasLifecycleCallbacks]
 class Message implements DomainModel, Identity, ModificationDate, OwnableInterface
 {

@@ -430,18 +430,21 @@ class AnalyticsService
 
     public function getCampaignPerformance(): array
     {
-        $performance = [];
         $endDate = new DateTimeImmutable('today 23:59:59');
         $startDate = $endDate->sub(new DateInterval('P29D'))->modify('00:00:00');
 
+        $opensByDay = $this->userMessageViewManager->countViewsGroupedByDay($startDate, $endDate);
+        $clicksByDay = $this->linkTrackManager->countClicksGroupedByDay($startDate, $endDate);
+
+        $performance = [];
         for ($index = 0; $index < 30; $index++) {
-            $dayStart = $startDate->add(new DateInterval('P' . $index . 'D'));
-            $dayEnd = $dayStart->modify('23:59:59');
+            $day = $startDate->add(new DateInterval('P' . $index . 'D'));
+            $dateKey = $day->format('Y-m-d');
 
             $performance[] = [
-                'date' => $dayStart->format('Y-m-d'),
-                'opens' => $this->userMessageViewManager->countViewsBetween($dayStart, $dayEnd),
-                'clicks' => $this->linkTrackManager->countClicksBetween($dayStart, $dayEnd),
+                'date' => $dateKey,
+                'opens' => $opensByDay[$dateKey] ?? 0,
+                'clicks' => $clicksByDay[$dateKey] ?? 0,
             ];
         }
 
@@ -459,16 +462,16 @@ class AnalyticsService
         $messages = $this->messageRepository
             ->getFilteredAfterId((new MessageFilter())->setLastId(0)->setLimit($limit))
             ->getItems();
+
+        $messageIds = array_map(static fn ($message) => $message->getId(), $messages);
+        $viewCounts = $this->userMessageViewManager->countViewsByMessageIds($messageIds);
+        $uniqueClickCounts = $this->linkTrackManager->countUniqueClickersByMessageIds($messageIds);
+
         $recentCampaigns = [];
         foreach ($messages as $message) {
-            $views = $this->userMessageViewManager->countViewsByMessageId($message->getId());
-            $linkTracks = $this->linkTrackManager->getLinkTracksByMessageId($message->getId());
-
-            $uniqueClickers = [];
-            foreach ($linkTracks as $linkTrack) {
-                $uniqueClickers[$linkTrack->getUserId()] = true;
-            }
-            $uniqueClicks = count($uniqueClickers);
+            $id = $message->getId();
+            $views = $viewCounts[$id] ?? 0;
+            $uniqueClicks = $uniqueClickCounts[$id] ?? 0;
 
             $sentCount = $message->getMetadata()->getViews() + $message->getMetadata()->getBounceCount();
 

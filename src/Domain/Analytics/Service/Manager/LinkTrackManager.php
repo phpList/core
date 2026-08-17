@@ -34,4 +34,14 @@ class LinkTrackManager
     {
         return $this->linkTrackRepository->countBetween($start, $end);
     }
+
+    public function countClicksGroupedByDay(DateTimeInterface $start, DateTimeInterface $end): array
+    {
+        return $this->linkTrackRepository->countGroupedByDay($start, $end);
+    }
+
+    public function countUniqueClickersByMessageIds(array $messageIds): array
+    {
+        return $this->linkTrackRepository->countUniqueClickersByMessageIds($messageIds);
+    }
 }
