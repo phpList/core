@@ -23,6 +23,7 @@ final class Version20251028092902MySqlUpdate extends AbstractPrefixedMigration
             get_class($platform)
         ));
 
+        $this->addSql('UPDATE phplist_admin SET created = COALESCE(created, modified, NOW()) WHERE created IS NULL');
         $this->addSql('ALTER TABLE phplist_admin CHANGE created created DATETIME NOT NULL, CHANGE modified modified DATETIME NOT NULL, CHANGE superuser superuser TINYINT(1) NOT NULL, CHANGE disabled disabled TINYINT(1) NOT NULL, CHANGE privileges privileges LONGTEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_admin RENAME INDEX loginnameidx TO phplist_admin_loginnameidx');
         $this->addSql('ALTER TABLE phplist_admin_attribute ADD CONSTRAINT FK_58E07690D3B10C48 FOREIGN KEY (adminattributeid) REFERENCES phplist_adminattribute (id)');
