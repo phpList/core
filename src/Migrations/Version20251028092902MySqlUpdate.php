@@ -23,6 +23,27 @@ final class Version20251028092902MySqlUpdate extends AbstractPrefixedMigration
             get_class($platform)
         ));
 
+        // legacy phpList installs created these tables as MyISAM, which cannot be referenced by
+        // the InnoDB foreign keys added below (MySQL error 1824: Failed to open the referenced table)
+        $this->addSql('ALTER TABLE phplist_admin ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_admin_attribute ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_adminattribute ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_admintoken ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_list ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_listmessage ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_listuser ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_message ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_subscribepage ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_template ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_templateimage ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_user_attribute ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_user_blacklist ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_user_blacklist_data ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_user_user ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_user_user_attribute ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_user_user_history ENGINE=InnoDB');
+        $this->addSql('ALTER TABLE phplist_usermessage ENGINE=InnoDB');
+
         $this->addSql('UPDATE phplist_admin SET created = COALESCE(created, modified, NOW()) WHERE created IS NULL');
         $this->addSql('ALTER TABLE phplist_admin CHANGE created created DATETIME NOT NULL, CHANGE modified modified DATETIME NOT NULL, CHANGE superuser superuser TINYINT(1) NOT NULL, CHANGE disabled disabled TINYINT(1) NOT NULL, CHANGE privileges privileges LONGTEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_admin RENAME INDEX loginnameidx TO phplist_admin_loginnameidx');
