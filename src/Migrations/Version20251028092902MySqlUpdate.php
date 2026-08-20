@@ -23,41 +23,25 @@ final class Version20251028092902MySqlUpdate extends AbstractPrefixedMigration
             get_class($platform)
         ));
 
-        // legacy phpList installs created these tables as MyISAM, which cannot be referenced by
-        // the InnoDB foreign keys added below (MySQL error 1824: Failed to open the referenced table)
-        $this->addSql('ALTER TABLE phplist_admin ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_admin_attribute ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_adminattribute ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_admintoken ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_list ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_listmessage ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_listuser ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_message ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_subscribepage ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_template ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_templateimage ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_user_attribute ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_user_blacklist ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_user_blacklist_data ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_user_user ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_user_user_attribute ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_user_user_history ENGINE=InnoDB');
-        $this->addSql('ALTER TABLE phplist_usermessage ENGINE=InnoDB');
-
         $this->addSql('UPDATE phplist_admin SET created = COALESCE(created, modified, NOW()) WHERE created IS NULL');
         $this->addSql('ALTER TABLE phplist_admin CHANGE created created DATETIME NOT NULL, CHANGE modified modified DATETIME NOT NULL, CHANGE superuser superuser TINYINT(1) NOT NULL, CHANGE disabled disabled TINYINT(1) NOT NULL, CHANGE privileges privileges LONGTEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_admin RENAME INDEX loginnameidx TO phplist_admin_loginnameidx');
+        $this->addSql('DELETE t FROM phplist_admin_attribute t LEFT JOIN phplist_adminattribute p ON t.adminattributeid = p.id WHERE p.id IS NULL');
+        $this->addSql('DELETE t FROM phplist_admin_attribute t LEFT JOIN phplist_admin p ON t.adminid = p.id WHERE p.id IS NULL');
         $this->addSql('ALTER TABLE phplist_admin_attribute ADD CONSTRAINT FK_58E07690D3B10C48 FOREIGN KEY (adminattributeid) REFERENCES phplist_adminattribute (id)');
         $this->addSql('ALTER TABLE phplist_admin_attribute ADD CONSTRAINT FK_58E07690B8ED4D93 FOREIGN KEY (adminid) REFERENCES phplist_admin (id)');
         $this->addSql('CREATE INDEX IDX_58E07690D3B10C48 ON phplist_admin_attribute (adminattributeid)');
         $this->addSql('CREATE INDEX IDX_58E07690B8ED4D93 ON phplist_admin_attribute (adminid)');
         $this->addSql('ALTER TABLE phplist_admin_login CHANGE active active TINYINT(1) NOT NULL');
+        $this->addSql('DELETE t FROM phplist_admin_login t LEFT JOIN phplist_admin p ON t.adminid = p.id WHERE p.id IS NULL');
         $this->addSql('ALTER TABLE phplist_admin_login ADD CONSTRAINT FK_5FCE0842B8ED4D93 FOREIGN KEY (adminid) REFERENCES phplist_admin (id)');
         $this->addSql('CREATE INDEX IDX_5FCE0842B8ED4D93 ON phplist_admin_login (adminid)');
         $this->addSql('ALTER TABLE phplist_admin_password_request CHANGE id_key id_key INT UNSIGNED AUTO_INCREMENT NOT NULL');
+        $this->addSql('UPDATE phplist_admin_password_request t LEFT JOIN phplist_admin p ON t.admin = p.id SET t.admin = NULL WHERE t.admin IS NOT NULL AND p.id IS NULL');
         $this->addSql('ALTER TABLE phplist_admin_password_request ADD CONSTRAINT FK_DC146F3B880E0D76 FOREIGN KEY (`admin`) REFERENCES phplist_admin (id)');
         $this->addSql('CREATE INDEX IDX_DC146F3B880E0D76 ON phplist_admin_password_request (`admin`)');
         $this->addSql('ALTER TABLE phplist_admintoken CHANGE adminid adminid INT DEFAULT NULL, CHANGE value value VARCHAR(255) NOT NULL');
+        $this->addSql('UPDATE phplist_admintoken t LEFT JOIN phplist_admin p ON t.adminid = p.id SET t.adminid = NULL WHERE t.adminid IS NOT NULL AND p.id IS NULL');
         $this->addSql('ALTER TABLE phplist_admintoken ADD CONSTRAINT FK_CB15D477B8ED4D93 FOREIGN KEY (adminid) REFERENCES phplist_admin (id) ON DELETE CASCADE');
         $this->addSql('CREATE INDEX IDX_CB15D477B8ED4D93 ON phplist_admintoken (adminid)');
         $this->addSql('ALTER TABLE phplist_attachment CHANGE description description LONGTEXT DEFAULT NULL');
@@ -93,11 +77,14 @@ final class Version20251028092902MySqlUpdate extends AbstractPrefixedMigration
         $this->addSql('ALTER TABLE phplist_linktrack_userclick RENAME INDEX midindex TO phplist_linktrack_userclick_midindex');
         $this->addSql('ALTER TABLE phplist_linktrack_userclick RENAME INDEX uidindex TO phplist_linktrack_userclick_uidindex');
         $this->addSql('ALTER TABLE phplist_list CHANGE description description VARCHAR(255) NOT NULL, CHANGE modified modified DATETIME NOT NULL, CHANGE active active TINYINT(1) NOT NULL, CHANGE category category VARCHAR(255) NOT NULL');
+        $this->addSql('UPDATE phplist_list t LEFT JOIN phplist_admin p ON t.owner = p.id SET t.owner = NULL WHERE t.owner IS NOT NULL AND p.id IS NULL');
         $this->addSql('ALTER TABLE phplist_list ADD CONSTRAINT FK_A4CE8621CF60E67C FOREIGN KEY (owner) REFERENCES phplist_admin (id)');
         $this->addSql('CREATE INDEX IDX_A4CE8621CF60E67C ON phplist_list (owner)');
         $this->addSql('ALTER TABLE phplist_list RENAME INDEX nameidx TO phplist_list_nameidx');
         $this->addSql('ALTER TABLE phplist_list RENAME INDEX listorderidx TO phplist_list_listorderidx');
         $this->addSql('ALTER TABLE phplist_listmessage CHANGE modified modified DATETIME NOT NULL');
+        $this->addSql('DELETE t FROM phplist_listmessage t LEFT JOIN phplist_message p ON t.messageid = p.id WHERE p.id IS NULL');
+        $this->addSql('DELETE t FROM phplist_listmessage t LEFT JOIN phplist_list p ON t.listid = p.id WHERE p.id IS NULL');
         $this->addSql('ALTER TABLE phplist_listmessage ADD CONSTRAINT FK_83B22D7A31478478 FOREIGN KEY (messageid) REFERENCES phplist_message (id)');
         $this->addSql('ALTER TABLE phplist_listmessage ADD CONSTRAINT FK_83B22D7A8E44C1EF FOREIGN KEY (listid) REFERENCES phplist_list (id)');
         $this->addSql('CREATE INDEX IDX_83B22D7A31478478 ON phplist_listmessage (messageid)');
@@ -106,6 +93,8 @@ final class Version20251028092902MySqlUpdate extends AbstractPrefixedMigration
         $this->addSql('ALTER TABLE phplist_listmessage RENAME INDEX messageid TO phplist_listmessage_messageid');
         $this->addSql('DROP INDEX userlistenteredidx ON phplist_listuser');
         $this->addSql('ALTER TABLE phplist_listuser CHANGE modified modified DATETIME NOT NULL');
+        $this->addSql('DELETE t FROM phplist_listuser t LEFT JOIN phplist_user_user p ON t.userid = p.id WHERE p.id IS NULL');
+        $this->addSql('DELETE t FROM phplist_listuser t LEFT JOIN phplist_list p ON t.listid = p.id WHERE p.id IS NULL');
         $this->addSql('ALTER TABLE phplist_listuser ADD CONSTRAINT FK_F467E411F132696E FOREIGN KEY (userid) REFERENCES phplist_user_user (id)');
         $this->addSql('ALTER TABLE phplist_listuser ADD CONSTRAINT FK_F467E4118E44C1EF FOREIGN KEY (listid) REFERENCES phplist_list (id) ON DELETE CASCADE');
         $this->addSql('CREATE INDEX phplist_listuser_userlistenteredidx ON phplist_listuser (userid, entered, listid)');
@@ -113,6 +102,8 @@ final class Version20251028092902MySqlUpdate extends AbstractPrefixedMigration
         $this->addSql('ALTER TABLE phplist_listuser RENAME INDEX useridx TO phplist_listuser_useridx');
         $this->addSql('ALTER TABLE phplist_listuser RENAME INDEX listidx TO phplist_listuser_listidx');
         $this->addSql('ALTER TABLE phplist_message CHANGE footer footer LONGTEXT DEFAULT NULL, CHANGE modified modified DATETIME NOT NULL, CHANGE userselection userselection LONGTEXT DEFAULT NULL, CHANGE htmlformatted htmlformatted TINYINT(1) NOT NULL, CHANGE astext astext TINYINT(1) NOT NULL, CHANGE ashtml ashtml TINYINT(1) NOT NULL, CHANGE astextandhtml astextandhtml TINYINT(1) NOT NULL, CHANGE aspdf aspdf TINYINT(1) NOT NULL, CHANGE astextandpdf astextandpdf TINYINT(1) NOT NULL, CHANGE viewed viewed INT DEFAULT 0 NOT NULL, CHANGE bouncecount bouncecount INT DEFAULT 0 NOT NULL');
+        $this->addSql('UPDATE phplist_message t LEFT JOIN phplist_admin p ON t.owner = p.id SET t.owner = NULL WHERE t.owner IS NOT NULL AND p.id IS NULL');
+        $this->addSql('UPDATE phplist_message t LEFT JOIN phplist_template p ON t.template = p.id SET t.template = NULL WHERE t.template IS NOT NULL AND p.id IS NULL');
         $this->addSql('ALTER TABLE phplist_message ADD CONSTRAINT FK_C5D81FCDCF60E67C FOREIGN KEY (owner) REFERENCES phplist_admin (id)');
         $this->addSql('ALTER TABLE phplist_message ADD CONSTRAINT FK_C5D81FCD97601F83 FOREIGN KEY (template) REFERENCES phplist_template (id) ON DELETE SET NULL');
         $this->addSql('CREATE INDEX IDX_C5D81FCDCF60E67C ON phplist_message (owner)');
@@ -123,11 +114,13 @@ final class Version20251028092902MySqlUpdate extends AbstractPrefixedMigration
         $this->addSql('ALTER TABLE phplist_messagedata CHANGE data data LONGTEXT CHARACTER SET utf8mb4 DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_sendprocess CHANGE modified modified DATETIME NOT NULL');
         $this->addSql('ALTER TABLE phplist_subscribepage CHANGE active active TINYINT(1) DEFAULT 0 NOT NULL');
+        $this->addSql('UPDATE phplist_subscribepage t LEFT JOIN phplist_admin p ON t.owner = p.id SET t.owner = NULL WHERE t.owner IS NOT NULL AND p.id IS NULL');
         $this->addSql('ALTER TABLE phplist_subscribepage ADD CONSTRAINT FK_5BAC7737CF60E67C FOREIGN KEY (owner) REFERENCES phplist_admin (id)');
         $this->addSql('CREATE INDEX IDX_5BAC7737CF60E67C ON phplist_subscribepage (owner)');
         $this->addSql('ALTER TABLE phplist_subscribepage_data CHANGE data data LONGTEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE phplist_template RENAME INDEX title TO phplist_template_title');
         $this->addSql('ALTER TABLE phplist_templateimage CHANGE template template INT NOT NULL');
+        $this->addSql('DELETE t FROM phplist_templateimage t LEFT JOIN phplist_template p ON t.template = p.id WHERE p.id IS NULL');
         $this->addSql('ALTER TABLE phplist_templateimage ADD CONSTRAINT FK_30A85BA97601F83 FOREIGN KEY (template) REFERENCES phplist_template (id)');
         $this->addSql('ALTER TABLE phplist_templateimage RENAME INDEX templateidx TO phplist_templateimage_templateidx');
         $this->addSql('ALTER TABLE phplist_urlcache RENAME INDEX urlindex TO phplist_urlcache_urlindex');
@@ -138,6 +131,7 @@ final class Version20251028092902MySqlUpdate extends AbstractPrefixedMigration
         $this->addSql('ALTER TABLE phplist_user_blacklist RENAME INDEX emailidx TO phplist_user_blacklist_emailidx');
         $this->addSql('DROP INDEX email ON phplist_user_blacklist_data');
         $this->addSql('ALTER TABLE phplist_user_blacklist_data CHANGE email email VARCHAR(255) NOT NULL, CHANGE data data LONGTEXT DEFAULT NULL, ADD PRIMARY KEY (email)');
+        $this->addSql('DELETE t FROM phplist_user_blacklist_data t LEFT JOIN phplist_user_blacklist p ON t.email = p.email WHERE p.email IS NULL');
         $this->addSql('ALTER TABLE phplist_user_blacklist_data ADD CONSTRAINT FK_6D67150CE7927C74 FOREIGN KEY (email) REFERENCES phplist_user_blacklist (email) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE phplist_user_blacklist_data RENAME INDEX emailidx TO phplist_user_blacklist_data_emailidx');
         $this->addSql('ALTER TABLE phplist_user_blacklist_data RENAME INDEX emailnameidx TO phplist_user_blacklist_data_emailnameidx');
@@ -161,15 +155,20 @@ final class Version20251028092902MySqlUpdate extends AbstractPrefixedMigration
         $this->addSql('ALTER TABLE phplist_user_user RENAME INDEX foreignkey TO phplist_user_user_foreignkey');
         $this->addSql('ALTER TABLE phplist_user_user RENAME INDEX email TO phplist_user_user_email');
         $this->addSql('ALTER TABLE phplist_user_user_attribute CHANGE value value LONGTEXT DEFAULT NULL');
+        $this->addSql('DELETE t FROM phplist_user_user_attribute t LEFT JOIN phplist_user_attribute p ON t.attributeid = p.id WHERE p.id IS NULL');
+        $this->addSql('DELETE t FROM phplist_user_user_attribute t LEFT JOIN phplist_user_user p ON t.userid = p.id WHERE p.id IS NULL');
         $this->addSql('ALTER TABLE phplist_user_user_attribute ADD CONSTRAINT FK_E24E310878C45AB5 FOREIGN KEY (attributeid) REFERENCES phplist_user_attribute (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE phplist_user_user_attribute ADD CONSTRAINT FK_E24E3108F132696E FOREIGN KEY (userid) REFERENCES phplist_user_user (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE phplist_user_user_attribute RENAME INDEX attindex TO phplist_user_user_attribute_attindex');
         $this->addSql('ALTER TABLE phplist_user_user_attribute RENAME INDEX attuserid TO phplist_user_user_attribute_attuserid');
         $this->addSql('ALTER TABLE phplist_user_user_attribute RENAME INDEX userindex TO phplist_user_user_attribute_userindex');
         $this->addSql('ALTER TABLE phplist_user_user_history CHANGE detail detail LONGTEXT DEFAULT NULL, CHANGE systeminfo systeminfo LONGTEXT DEFAULT NULL');
+        $this->addSql('DELETE t FROM phplist_user_user_history t LEFT JOIN phplist_user_user p ON t.userid = p.id WHERE p.id IS NULL');
         $this->addSql('ALTER TABLE phplist_user_user_history ADD CONSTRAINT FK_6DBB605CF132696E FOREIGN KEY (userid) REFERENCES phplist_user_user (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE phplist_user_user_history RENAME INDEX dateidx TO phplist_user_user_history_dateidx');
         $this->addSql('ALTER TABLE phplist_user_user_history RENAME INDEX userididx TO phplist_user_user_history_userididx');
+        $this->addSql('DELETE t FROM phplist_usermessage t LEFT JOIN phplist_user_user p ON t.userid = p.id WHERE p.id IS NULL');
+        $this->addSql('DELETE t FROM phplist_usermessage t LEFT JOIN phplist_message p ON t.messageid = p.id WHERE p.id IS NULL');
         $this->addSql('ALTER TABLE phplist_usermessage ADD CONSTRAINT FK_7F30F469F132696E FOREIGN KEY (userid) REFERENCES phplist_user_user (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE phplist_usermessage ADD CONSTRAINT FK_7F30F46931478478 FOREIGN KEY (messageid) REFERENCES phplist_message (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE phplist_usermessage RENAME INDEX enteredindex TO phplist_usermessage_enteredindex');
