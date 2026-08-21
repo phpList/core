@@ -14,7 +14,6 @@ parameters:
     database_user: '%env(PHPLIST_DATABASE_USER)%'
     database_password: '%env(PHPLIST_DATABASE_PASSWORD)%'
     database_prefix: '%env(DATABASE_PREFIX)%'
-    app.default_admin_password: '%env(PHPLIST_DEFAULT_ADMIN_PASSWORD)%'
     list_table_prefix: '%env(LIST_TABLE_PREFIX)%'
     app.dev_version: '%env(APP_DEV_VERSION)%'
     app.dev_email: '%env(APP_DEV_EMAIL)%'
