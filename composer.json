@@ -78,7 +78,6 @@
         "symfony/lock": "^6.4",
         "webklex/php-imap": "^6.2",
         "ext-imap": "*",
-        "tatevikgr/rss-feed": "dev-main",
         "ext-pdo": "*",
         "ezyang/htmlpurifier": "^4.19",
         "ext-libxml": "*",
@@ -108,8 +107,9 @@
         "psr/simple-cache": "^1.0 || ^2.0 || ^3.0"
     },
     "suggest": {
-        "phplist/web-frontend": "5.0.x-dev",
-        "phplist/rest-api": "5.0.x-dev"
+        "phplist/web-frontend": "dev-main",
+        "phplist/rest-api": "dev-main",
+        "tatevikgr/rss-feed": "dev-main"
     },
     "autoload": {
         "psr-4": {
