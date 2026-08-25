@@ -21,7 +21,6 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
-use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -188,38 +187,13 @@ class AnalyticsServiceTest extends TestCase
 
     public function testGetTopDomains(): void
     {
-        $subscriber1 = $this->createMock(Subscriber::class);
-        $subscriber1->method('getEmail')->willReturn('user1@example.com');
-
-        $subscriber2 = $this->createMock(Subscriber::class);
-        $subscriber2->method('getEmail')->willReturn('user2@example.com');
-
-        $subscriber3 = $this->createMock(Subscriber::class);
-        $subscriber3->method('getEmail')->willReturn('user3@example.com');
-
-        $subscriber4 = $this->createMock(Subscriber::class);
-        $subscriber4->method('getEmail')->willReturn('user4@example.com');
-
-        $subscriber5 = $this->createMock(Subscriber::class);
-        $subscriber5->method('getEmail')->willReturn('user5@example.com');
-
-        $subscriber6 = $this->createMock(Subscriber::class);
-        $subscriber6->method('getEmail')->willReturn('user6@example.com');
-
-        $subscriber7 = $this->createMock(Subscriber::class);
-        $subscriber7->method('getEmail')->willReturn('user1@test.com');
-
-        $subscriber8 = $this->createMock(Subscriber::class);
-        $subscriber8->method('getEmail')->willReturn('user2@test.com');
-
-        $subscriber9 = $this->createMock(Subscriber::class);
-        $subscriber9->method('getEmail')->willReturn('user3@another.com');
-
         $this->subscriberRepository->expects(self::once())
-            ->method('findAll')
+            ->method('getTopDomains')
+            ->with(50, 1)
             ->willReturn([
-                $subscriber1, $subscriber2, $subscriber3, $subscriber4, $subscriber5,
-                $subscriber6, $subscriber7, $subscriber8, $subscriber9
+                ['domain' => 'example.com', 'subscribers' => 6],
+                ['domain' => 'test.com', 'subscribers' => 2],
+                ['domain' => 'another.com', 'subscribers' => 1],
             ]);
 
         $result = $this->subject->getTopDomains(50, 1);
@@ -241,46 +215,12 @@ class AnalyticsServiceTest extends TestCase
 
     public function testGetDomainConfirmationStatistics(): void
     {
-        $subscriber1 = $this->createMock(Subscriber::class);
-        $subscriber1->method('getEmail')->willReturn('user1@example.com');
-        $subscriber1->method('isConfirmed')->willReturn(true);
-        $subscriber1->method('isBlacklisted')->willReturn(false);
-
-        $subscriber2 = $this->createMock(Subscriber::class);
-        $subscriber2->method('getEmail')->willReturn('user2@example.com');
-        $subscriber2->method('isConfirmed')->willReturn(true);
-        $subscriber2->method('isBlacklisted')->willReturn(false);
-
-        $subscriber3 = $this->createMock(Subscriber::class);
-        $subscriber3->method('getEmail')->willReturn('user3@example.com');
-        $subscriber3->method('isConfirmed')->willReturn(false);
-        $subscriber3->method('isBlacklisted')->willReturn(false);
-
-        $subscriber4 = $this->createMock(Subscriber::class);
-        $subscriber4->method('getEmail')->willReturn('user4@example.com');
-        $subscriber4->method('isConfirmed')->willReturn(false);
-        $subscriber4->method('isBlacklisted')->willReturn(false);
-
-        $subscriber5 = $this->createMock(Subscriber::class);
-        $subscriber5->method('getEmail')->willReturn('user5@example.com');
-        $subscriber5->method('isConfirmed')->willReturn(false);
-        $subscriber5->method('isBlacklisted')->willReturn(true);
-
-        $subscriber6 = $this->createMock(Subscriber::class);
-        $subscriber6->method('getEmail')->willReturn('user1@test.com');
-        $subscriber6->method('isConfirmed')->willReturn(true);
-        $subscriber6->method('isBlacklisted')->willReturn(false);
-
-        $subscriber7 = $this->createMock(Subscriber::class);
-        $subscriber7->method('getEmail')->willReturn('user2@test.com');
-        $subscriber7->method('isConfirmed')->willReturn(false);
-        $subscriber7->method('isBlacklisted')->willReturn(false);
-
         $this->subscriberRepository->expects(self::once())
-            ->method('findAll')
+            ->method('getDomainConfirmationStatistics')
+            ->with(50)
             ->willReturn([
-                $subscriber1, $subscriber2, $subscriber3, $subscriber4,
-                $subscriber5, $subscriber6, $subscriber7
+                ['domain' => 'example.com', 'total' => 5, 'confirmed' => 2, 'unconfirmed' => 2, 'blacklisted' => 1],
+                ['domain' => 'test.com', 'total' => 2, 'confirmed' => 1, 'unconfirmed' => 1, 'blacklisted' => 0],
             ]);
 
         $result = $this->subject->getDomainConfirmationStatistics();
@@ -313,26 +253,19 @@ class AnalyticsServiceTest extends TestCase
 
     public function testGetTopLocalParts(): void
     {
-        $subscriber1 = $this->createMock(Subscriber::class);
-        $subscriber1->method('getEmail')->willReturn('user1@example.com');
-
-        $subscriber2 = $this->createMock(Subscriber::class);
-        $subscriber2->method('getEmail')->willReturn('user2@example.com');
-
-        $subscriber3 = $this->createMock(Subscriber::class);
-        $subscriber3->method('getEmail')->willReturn('user1@test.com');
-
-        $subscriber4 = $this->createMock(Subscriber::class);
-        $subscriber4->method('getEmail')->willReturn('admin@example.com');
-
-        $subscriber5 = $this->createMock(Subscriber::class);
-        $subscriber5->method('getEmail')->willReturn('info@example.com');
+        $this->subscriberRepository->expects(self::once())
+            ->method('getTopLocalParts')
+            ->with(25)
+            ->willReturn([
+                ['localPart' => 'user1', 'count' => 2],
+                ['localPart' => 'user2', 'count' => 1],
+                ['localPart' => 'admin', 'count' => 1],
+                ['localPart' => 'info', 'count' => 1],
+            ]);
 
         $this->subscriberRepository->expects(self::once())
-            ->method('findAll')
-            ->willReturn([
-                $subscriber1, $subscriber2, $subscriber3, $subscriber4, $subscriber5
-            ]);
+            ->method('countWithValidEmail')
+            ->willReturn(5);
 
         $result = $this->subject->getTopLocalParts();
 
