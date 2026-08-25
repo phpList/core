@@ -15,7 +15,7 @@ use Webklex\PHPIMAP\Client;
 use Webklex\PHPIMAP\Folder;
 
 /**
- * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings("PHPMD.ExcessiveClassComplexity")
  */
 class WebklexBounceProcessingService implements BounceProcessingServiceInterface
 {

@@ -85,7 +85,5 @@ class AdministratorManagerTest extends TestCase
 
         $manager = new AdministratorManager($entityManager, $hashGenerator);
         $manager->deleteAdministrator($admin);
-
-        $this->assertTrue(true);
     }
 }

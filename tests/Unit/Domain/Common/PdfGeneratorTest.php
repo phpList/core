@@ -16,7 +16,6 @@ class PdfGeneratorTest extends TestCase
 
         $pdfBytes = $generator->createPdfBytes($text);
 
-        $this->assertIsString($pdfBytes);
         $this->assertNotSame('', $pdfBytes);
 
         // Must start with a valid PDF header

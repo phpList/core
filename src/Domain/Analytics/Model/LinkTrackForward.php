@@ -33,7 +33,7 @@ class LinkTrackForward implements DomainModel, Identity
     private ?string $uuid = '';
 
     #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => 0])]
-    private bool $personalise = false;
+    private ?bool $personalise = false;
 
     public function getId(): ?int
     {
@@ -73,12 +73,12 @@ class LinkTrackForward implements DomainModel, Identity
         return $this;
     }
 
-    public function isPersonalise(): bool
+    public function isPersonalise(): ?bool
     {
         return $this->personalise;
     }
 
-    public function setPersonalise(bool $personalise): self
+    public function setPersonalise(?bool $personalise): self
     {
         $this->personalise = $personalise;
         return $this;

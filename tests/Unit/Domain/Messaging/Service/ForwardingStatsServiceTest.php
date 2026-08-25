@@ -40,8 +40,6 @@ class ForwardingStatsServiceTest extends TestCase
 
         $service->incrementFriendsCount($subscriber);
         $service->updateFriendsCount($subscriber);
-        // reached without interactions
-        self::assertTrue(true);
     }
 
     public function testIncrementThenUpdatePersistsAndResets(): void
@@ -63,16 +61,16 @@ class ForwardingStatsServiceTest extends TestCase
 
         $this->valueRepo->expects(self::once())
             ->method('findOneBySubscriberAndAttributeName')
-            ->with(subscriber: self::identicalTo($subscriber), attributeName: 'FriendsForwarded')
+            ->with(self::identicalTo($subscriber), 'FriendsForwarded')
             ->willReturn($existing);
 
         // After two increments (3 -> 4 -> 5), update should persist '5'
         $this->attrManager->expects(self::once())
             ->method('createOrUpdateByName')
             ->with(
-                subscriber: self::identicalTo($subscriber),
-                attributeName: 'FriendsForwarded',
-                value: '5'
+                self::identicalTo($subscriber),
+                'FriendsForwarded',
+                '5'
             );
 
         $service->incrementFriendsCount($subscriber);
@@ -82,7 +80,6 @@ class ForwardingStatsServiceTest extends TestCase
         // Second update attempt should be a no-op due to cache reset
         $this->attrManager->expects(self::never())->method('createOrUpdateByName');
         $service->updateFriendsCount($subscriber);
-        self::assertTrue(true);
     }
 
     public function testCacheIsolationBySubscriber(): void
@@ -99,7 +96,7 @@ class ForwardingStatsServiceTest extends TestCase
         // Initial load for A returns 0
         $this->valueRepo->expects(self::once())
             ->method('findOneBySubscriberAndAttributeName')
-            ->with(subscriber: self::identicalTo($subscriberA), attributeName: 'FriendsForwarded')
+            ->with(self::identicalTo($subscriberA), 'FriendsForwarded')
             ->willReturn(null);
         // cache for A becomes 1
         $service->incrementFriendsCount($subscriberA);
@@ -108,9 +105,9 @@ class ForwardingStatsServiceTest extends TestCase
         $this->attrManager->expects(self::once())
             ->method('createOrUpdateByName')
             ->with(
-                subscriber: self::identicalTo($subscriberA),
-                attributeName: 'FriendsForwarded',
-                value: '1'
+                self::identicalTo($subscriberA),
+                'FriendsForwarded',
+                '1'
             );
         // Calling update for B must be a no-op (cache belongs to A)
         $service->updateFriendsCount($subscriberB);

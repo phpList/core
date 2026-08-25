@@ -34,7 +34,7 @@ class SubscriberBlacklistService
     }
 
     /**
-     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings("PHPMD.Superglobals")
      */
     public function blacklist(Subscriber $subscriber, string $reason): void
     {

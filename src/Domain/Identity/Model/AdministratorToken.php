@@ -35,14 +35,14 @@ class AdministratorToken implements DomainModel, Identity, CreationDate
 
     #[ORM\Column(name: 'expires', type: 'datetime')]
     #[SerializedName('expiry_date')]
-    private ?DateTime $expiry = null;
+    private DateTime $expiry;
 
     #[ORM\Column(name: 'value')]
     #[SerializedName('key')]
     private string $key = '';
 
     #[ORM\ManyToOne(targetEntity: Administrator::class)]
-    #[ORM\JoinColumn(name: 'adminid', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'adminid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private Administrator $administrator;
 
     public function __construct(Administrator $administrator)

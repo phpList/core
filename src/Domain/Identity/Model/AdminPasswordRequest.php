@@ -24,7 +24,7 @@ class AdminPasswordRequest implements DomainModel, Identity
 
     #[ORM\ManyToOne(targetEntity: Administrator::class)]
     #[ORM\JoinColumn(name: 'admin', referencedColumnName: 'id', nullable: true)]
-    private Administrator $administrator;
+    private ?Administrator $administrator;
 
     #[ORM\Column(name: 'key_value', type: 'string', length: 32)]
     private string $keyValue;
@@ -46,7 +46,7 @@ class AdminPasswordRequest implements DomainModel, Identity
         return $this->date;
     }
 
-    public function getAdmin(): Administrator
+    public function getAdmin(): ?Administrator
     {
         return $this->administrator;
     }

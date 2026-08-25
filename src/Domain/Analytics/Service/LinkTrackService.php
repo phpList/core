@@ -48,7 +48,7 @@ class LinkTrackService
             throw new MissingMessageIdException();
         }
 
-        $links = $this->extractLinksFromHtml($content->content ?? '');
+        $links = $this->extractLinksFromHtml($content->content);
 
         if ($content->htmlFooter) {
             $links = array_merge($links, $this->extractLinksFromHtml($content->htmlFooter));

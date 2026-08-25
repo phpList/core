@@ -36,10 +36,8 @@ class EnvironmentTest extends TestCase
      */
     public function testValidateEnvironmentForValidEnvironmentPasses(string $environment): void
     {
+        $this->expectNotToPerformAssertions();
         Environment::validateEnvironment($environment);
-
-        // Adding an assertion to confirm the method executes without throwing an exception.
-        self::assertTrue(true);
     }
 
     public function testValidateEnvironmentForInvalidEnvironmentThrowsException(): void

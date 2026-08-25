@@ -96,7 +96,6 @@ class PasswordManagerTest extends TestCase
 
         $token = $this->subject->generatePasswordResetToken($email);
 
-        $this->assertIsString($token);
         $this->assertNotEmpty($token);
     }
 

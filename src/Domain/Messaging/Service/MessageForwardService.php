@@ -74,7 +74,11 @@ class MessageForwardService
                     friendEmail: $friendEmail,
                     forwardDto: $messageForwardDto,
                 );
-            } catch (EmailBlacklistedException | MessageCacheMissingException | InvalidRecipientOrSubjectException $e) {
+            } catch (MessageCacheMissingException
+                | EmailBlacklistedException
+                | InvalidRecipientOrSubjectException $e
+            ) {
+                // todo: check if need to catch MessageCacheMissingException
                 $forwardingRecipientResult = $this->handleFailure(
                     campaign: $campaign,
                     forwardingSubscriber: $forwardingSubscriber,

@@ -46,7 +46,6 @@ class SubscriberProviderTest extends TestCase
             $message,
         );
 
-        $this->assertIsArray($result);
         $this->assertEmpty($result);
     }
 
@@ -69,7 +68,6 @@ class SubscriberProviderTest extends TestCase
             $this->createMock(CampaignProcessorMessageInterface::class),
             $message,
         );
-        $this->assertIsArray($result);
         $this->assertEmpty($result);
     }
 
@@ -97,7 +95,6 @@ class SubscriberProviderTest extends TestCase
             new CampaignProcessorMessage(1),
             $message,
         );
-        $this->assertIsArray($result);
         $this->assertCount(2, $result);
         $this->assertSame($subscriber1, $result[0]);
         $this->assertSame($subscriber2, $result[1]);
@@ -131,7 +128,6 @@ class SubscriberProviderTest extends TestCase
             $this->createMock(CampaignProcessorMessageInterface::class),
             $message,
         );
-        $this->assertIsArray($result);
         $this->assertCount(3, $result);
 
         $this->assertContains($subscriber1, $result);

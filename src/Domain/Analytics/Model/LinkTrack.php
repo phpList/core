@@ -42,10 +42,10 @@ class LinkTrack implements DomainModel, Identity
     private ?DateTimeInterface $firstClick = null;
 
     #[ORM\Column(name: 'latestclick', type: 'datetime')]
-    private ?DateTimeInterface $latestClick = null;
+    private DateTimeInterface $latestClick;
 
     #[ORM\Column(type: 'integer', nullable: true, options: ['default' => 0])]
-    private int $clicked = 0;
+    private ?int $clicked = 0;
 
     public function __construct()
     {
@@ -112,23 +112,23 @@ class LinkTrack implements DomainModel, Identity
         return $this;
     }
 
-    public function getLatestClick(): ?DateTimeInterface
+    public function getLatestClick(): DateTimeInterface
     {
         return $this->latestClick;
     }
 
-    public function setLatestClick(?DateTimeInterface $latestClick): self
+    public function setLatestClick(DateTimeInterface $latestClick): self
     {
         $this->latestClick = $latestClick;
         return $this;
     }
 
-    public function getClicked(): int
+    public function getClicked(): ?int
     {
         return $this->clicked;
     }
 
-    public function setClicked(int $clicked): self
+    public function setClicked(?int $clicked): self
     {
         $this->clicked = $clicked;
         return $this;

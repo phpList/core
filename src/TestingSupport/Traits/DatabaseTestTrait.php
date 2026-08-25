@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\TestingSupport\Traits;
 
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\ToolsException;
@@ -84,7 +84,7 @@ trait DatabaseTestTrait
         $schemaTool = new SchemaTool($this->entityManager);
         $metadata = $this->entityManager->getMetadataFactory()->getAllMetadata();
 
-        if ($this->entityManager->getConnection()->getDatabasePlatform() instanceof SqlitePlatform) {
+        if ($this->entityManager->getConnection()->getDatabasePlatform() instanceof SQLitePlatform) {
             $this->runForSqlite($metadata, $schemaTool);
         } else {
             $this->runForMySql($metadata, $schemaTool);

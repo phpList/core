@@ -19,7 +19,7 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
  *
  * @author Oliver Klee <oliver@phplist.com>
  * @author Tatevik Grigoryan <tatevik@phplist.com>
- * @SuppressWarnings(PHPMD.TooManyPublicMethods)
+ * @SuppressWarnings("PHPMD.TooManyPublicMethods")
  */
 class SubscriberRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {

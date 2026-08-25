@@ -26,7 +26,7 @@ class AdministratorTokenRepositoryTest extends WebTestCase
     use DatabaseTestTrait;
     use SimilarDatesAssertionTrait;
 
-    private ?AdministratorTokenRepository $repository;
+    private AdministratorTokenRepository $repository;
 
     protected function setUp(): void
     {

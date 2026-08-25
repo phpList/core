@@ -71,6 +71,5 @@ class SubscriberHistoryManagerTest extends TestCase
         $result = $this->subscriptionHistoryService->getHistory($lastId, $limit, $filter);
 
         $this->assertSame($expectedResult, $result);
-        $this->assertEmpty($result);
     }
 }

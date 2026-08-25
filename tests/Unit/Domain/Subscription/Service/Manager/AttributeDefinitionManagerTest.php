@@ -189,7 +189,5 @@ class AttributeDefinitionManagerTest extends TestCase
         $repository->expects($this->once())->method('remove')->with($attribute);
 
         $manager->delete($attribute);
-
-        $this->assertTrue(true);
     }
 }

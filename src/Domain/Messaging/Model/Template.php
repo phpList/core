@@ -33,6 +33,9 @@ class Template implements DomainModel, Identity
     #[ORM\Column(name: 'listorder', type: 'integer', nullable: true)]
     private ?int $listOrder = null;
 
+    /**
+     * @var Collection<int, TemplateImage>
+     */
     #[ORM\OneToMany(
         targetEntity: TemplateImage::class,
         mappedBy: 'template',

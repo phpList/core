@@ -106,8 +106,6 @@ class DynamicTableMessageHandlerTest extends TestCase
 
         $handler = new DynamicTableMessageHandler($this->schemaManager);
         $handler($message);
-        // reached without creating a table
-        $this->assertTrue(true);
     }
 
     public function testInvokeThrowsForInvalidTableName(): void
@@ -127,7 +125,6 @@ class DynamicTableMessageHandlerTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid list table name: ' . $invalidName);
         $handler($message);
-        $this->assertTrue(true);
     }
 
     public function testInvokeSwallowsTableExistsRace(): void
@@ -153,6 +150,5 @@ class DynamicTableMessageHandlerTest extends TestCase
 
         // Should not throw despite the TableExistsException
         $handler($message);
-        $this->assertTrue(true);
     }
 }

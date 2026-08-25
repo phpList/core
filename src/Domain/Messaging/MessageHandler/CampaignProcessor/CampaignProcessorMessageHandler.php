@@ -46,8 +46,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
 /**
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
+ * @SuppressWarnings("PHPMD.ExcessiveParameterList")
  */
 #[AsMessageHandler]
 class CampaignProcessorMessageHandler

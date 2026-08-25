@@ -19,9 +19,9 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
  * campaigns for those subscriber lists.
  * @author Oliver Klee <oliver@phplist.com>
  * @author Tatevik Grigoryan <tatevik@phplist.com>
- * @SuppressWarnings(TooManyFields)
- * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
- * @SuppressWarnings(PHPMD.ExcessivePublicCount)
+ * @SuppressWarnings("TooManyFields")
+ * @SuppressWarnings("PHPMD.ExcessiveClassComplexity")
+ * @SuppressWarnings("PHPMD.ExcessivePublicCount")
  */
 #[ORM\Entity(repositoryClass: SubscriberRepository::class)]
 #[ORM\Table(name: 'user_user')]
@@ -45,7 +45,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     protected ?DateTime $createdAt = null;
 
     #[ORM\Column(name: 'modified', type: 'datetime', nullable: false)]
-    private ?DateTime $updatedAt = null;
+    private DateTime $updatedAt;
 
     #[ORM\Column(unique: true)]
     private string $email = '';
@@ -59,7 +59,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     #[ORM\Column(name: 'bouncecount', type: 'integer')]
     private int $bounceCount = 0;
 
-    #[ORM\Column(name: 'uniqid', type: 'string', length: 255, nullable: true)]
+    #[ORM\Column(name: 'uniqid', type: 'string', length: 255)]
     private string $uniqueId = '';
 
     #[ORM\Column(name: 'htmlemail', type: 'boolean')]
@@ -71,6 +71,9 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     #[ORM\Column(name: 'extradata', type: 'text', nullable: true)]
     private ?string $extraData = null;
 
+    /**
+     * @var Collection<int, Subscription>
+     */
     #[ORM\OneToMany(
         targetEntity: Subscription::class,
         mappedBy: 'subscriber',
@@ -134,7 +137,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this->createdAt;
     }
 
-    public function getUpdatedAt(): ?DateTime
+    public function getUpdatedAt(): DateTime
     {
         return $this->updatedAt;
     }
@@ -257,7 +260,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     }
 
     /**
-     * @return Collection<Subscription>
+     * @return Collection<int, Subscription>
      */
     public function getSubscriptions(): Collection
     {
@@ -269,15 +272,6 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         if (!$this->subscriptions->contains($subscription)) {
             $this->subscriptions->add($subscription);
             $subscription->setSubscriber($this);
-        }
-
-        return $this;
-    }
-
-    public function removeSubscription(Subscription $subscription): self
-    {
-        if ($this->subscriptions->removeElement($subscription)) {
-            $subscription->setSubscriber(null);
         }
 
         return $this;

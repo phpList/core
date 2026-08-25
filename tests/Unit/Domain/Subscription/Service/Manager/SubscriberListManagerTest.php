@@ -59,7 +59,6 @@ class SubscriberListManagerTest extends TestCase
 
         $result = $this->manager->getPaginated(0, 1);
 
-        $this->assertIsArray($result);
         $this->assertCount(1, $result);
         $this->assertSame($list, $result[0]);
     }

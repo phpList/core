@@ -56,11 +56,6 @@ class SubscriberTest extends TestCase
         self::assertSimilarDates(new \DateTime(), $this->subscriber->getCreatedAt());
     }
 
-    public function testGetUpdatedAtInitiallyReturnsNotNull(): void
-    {
-        self::assertNotNull($this->subscriber->getUpdatedAt());
-    }
-
     public function testUpdateModificationDateSetsModificationDateToNow(): void
     {
         $this->subscriber->updateUpdatedAt();

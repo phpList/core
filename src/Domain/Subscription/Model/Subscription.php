@@ -35,7 +35,7 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
     protected ?DateTime $createdAt = null;
 
     #[ORM\Column(name: 'modified', type: 'datetime')]
-    private ?DateTime $updatedAt = null;
+    private DateTime $updatedAt;
 
     #[ORM\Id]
     #[ORM\ManyToOne(
@@ -44,7 +44,7 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
     )]
     #[ORM\JoinColumn(name: 'userid')]
     #[SerializedName('subscriber')]
-    private ?Subscriber $subscriber = null;
+    private Subscriber $subscriber;
 
     #[ORM\Id]
     #[ORM\ManyToOne(
@@ -54,30 +54,31 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
     #[ORM\JoinColumn(name: 'listid', onDelete: 'CASCADE')]
     #[Ignore]
     #[Groups(['SubscriberListMembers'])]
-    private ?SubscriberList $subscriberList = null;
+    private SubscriberList $subscriberList;
 
     public function __construct()
     {
         $this->createdAt = new DateTime();
+        $this->updatedAt = new DateTime();
     }
 
-    public function getSubscriber(): Subscriber|Proxy|null
+    public function getSubscriber(): Subscriber|Proxy
     {
         return $this->subscriber;
     }
 
-    public function setSubscriber(?Subscriber $subscriber): self
+    public function setSubscriber(Subscriber $subscriber): self
     {
         $this->subscriber = $subscriber;
         return $this;
     }
 
-    public function getSubscriberList(): ?SubscriberList
+    public function getSubscriberList(): SubscriberList|Proxy
     {
         return $this->subscriberList;
     }
 
-    public function setSubscriberList(?SubscriberList $subscriberList): self
+    public function setSubscriberList(SubscriberList $subscriberList): self
     {
         $this->subscriberList = $subscriberList;
         return $this;
@@ -88,7 +89,7 @@ class Subscription implements DomainModel, CreationDate, ModificationDate
         return $this->createdAt;
     }
 
-    public function getUpdatedAt(): ?DateTime
+    public function getUpdatedAt(): DateTime
     {
         return $this->updatedAt;
     }

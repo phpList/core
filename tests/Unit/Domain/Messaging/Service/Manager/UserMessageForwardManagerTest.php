@@ -44,8 +44,7 @@ class UserMessageForwardManagerTest extends TestCase
                     return $fwd->getUserId() === 42
                         && $fwd->getMessageId() === 7
                         && $fwd->getForward() === $expectedFriendEmail
-                        && $fwd->getStatus() === $this->expectedStatus
-                        && $fwd->getCreatedAt() !== null;
+                        && $fwd->getStatus() === $this->expectedStatus;
                 })
             );
 

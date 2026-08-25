@@ -37,7 +37,7 @@ class ListMessage implements DomainModel, Identity, ModificationDate
     private ?DateTimeInterface $entered = null;
 
     #[ORM\Column(name: 'modified', type: 'datetime')]
-    private ?DateTime $updatedAt = null;
+    private DateTime $updatedAt;
 
     public function __construct(Message $message, SubscriberList $subscriberList)
     {
@@ -67,7 +67,7 @@ class ListMessage implements DomainModel, Identity, ModificationDate
         return $this->entered;
     }
 
-    public function getUpdatedAt(): ?DateTime
+    public function getUpdatedAt(): DateTime
     {
         return $this->updatedAt;
     }

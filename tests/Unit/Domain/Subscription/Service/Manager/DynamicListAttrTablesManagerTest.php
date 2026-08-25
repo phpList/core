@@ -78,6 +78,5 @@ class DynamicListAttrTablesManagerTest extends TestCase
         $manager = $this->makeManager();
         $manager->createOptionsTableIfNotExists('sizes');
         $manager->createOptionsTableIfNotExists('sizes');
-        $this->assertTrue(true);
     }
 }

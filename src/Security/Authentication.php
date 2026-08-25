@@ -51,11 +51,7 @@ class Authentication
             return null;
         }
 
-        /** @var Administrator|null $administrator */
         $administrator = $token->getAdministrator();
-        if ($administrator === null) {
-            return null;
-        }
 
         try {
             // This checks for cases where a superuser created a session key and then got their super user

@@ -39,6 +39,9 @@ class AdminAttributeDefinition implements DomainModel, Identity
     #[ORM\Column(name:'tablename', type: 'string', length: 255, nullable: true)]
     private ?string $tableName;
 
+    /**
+     * @var Collection<int, AdminAttributeValue>
+     */
     #[ORM\OneToMany(
         targetEntity: AdminAttributeValue::class,
         mappedBy: 'attributeDefinition',
