@@ -33,7 +33,7 @@ services:
     arguments:
       - PhpList\Core\Domain\Identity\Model\Administrator
       - Doctrine\ORM\Mapping\ClassMetadata\ClassMetadata
-      - PhpList\Core\Security\HashGenerator
+      - PhpList\Core\Domain\Identity\Service\HashGenerator
   PhpList\Core\Domain\Identity\Repository\AdminAttributeValueRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:

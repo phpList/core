@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Security;
+namespace PhpList\Core\Tests\Unit\Domain\Identity\Service;
 
 use PhpList\Core\Domain\Identity\Repository\AdministratorTokenRepository;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Identity\Model\AdministratorToken;
-use PhpList\Core\Security\Authentication;
+use PhpList\Core\Domain\Identity\Service\Authentication;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;

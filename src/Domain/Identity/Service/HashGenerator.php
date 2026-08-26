@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Security;
+namespace PhpList\Core\Domain\Identity\Service;
 
 /**
  * This class provides functions for working with secure hashes.

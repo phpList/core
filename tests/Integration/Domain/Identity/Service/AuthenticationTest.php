@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Integration\Security;
+namespace PhpList\Core\Tests\Integration\Domain\Identity\Service;
 
 use Doctrine\ORM\Tools\SchemaTool;
 use PhpList\Core\Domain\Identity\Model\Administrator;
-use PhpList\Core\Security\Authentication;
+use PhpList\Core\Domain\Identity\Service\Authentication;
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
 use PhpList\Core\Tests\Integration\Domain\Identity\Fixtures\AdministratorFixture;
 use PhpList\Core\Tests\Integration\Domain\Identity\Fixtures\AdministratorTokenWithAdministratorFixture;

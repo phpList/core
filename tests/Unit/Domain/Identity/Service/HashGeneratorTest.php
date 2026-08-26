@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Tests\Unit\Security;
+namespace PhpList\Core\Tests\Unit\Domain\Identity\Service;
 
-use PhpList\Core\Security\HashGenerator;
+use PhpList\Core\Domain\Identity\Service\HashGenerator;
 use PHPUnit\Framework\TestCase;
 
 /**

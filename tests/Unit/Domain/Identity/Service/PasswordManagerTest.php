@@ -11,7 +11,7 @@ use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
 use PhpList\Core\Domain\Identity\Repository\AdminPasswordRequestRepository;
 use PhpList\Core\Domain\Identity\Service\Manager\PasswordManager;
 use PhpList\Core\Domain\Messaging\Message\PasswordResetMessage;
-use PhpList\Core\Security\HashGenerator;
+use PhpList\Core\Domain\Identity\Service\HashGenerator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;

@@ -10,10 +10,10 @@ services:
   PhpList\Core\Core\ApplicationStructure:
     public: true
 
-  PhpList\Core\Security\Authentication:
+  PhpList\Core\Domain\Identity\Service\Authentication:
     public: true
 
-  PhpList\Core\Security\HashGenerator:
+  PhpList\Core\Domain\Identity\Service\HashGenerator:
     public: true
 
   PhpList\Core\Routing\ExtraLoader:

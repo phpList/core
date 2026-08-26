@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Security;
+namespace PhpList\Core\Domain\Identity\Service;
 
 use Doctrine\ORM\EntityNotFoundException;
 use PhpList\Core\Domain\Identity\Repository\AdministratorTokenRepository;
