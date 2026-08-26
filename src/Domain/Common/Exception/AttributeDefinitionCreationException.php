@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Subscription\Exception;
+namespace PhpList\Core\Domain\Common\Exception;
 
 use RuntimeException;
 
