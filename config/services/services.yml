@@ -138,7 +138,7 @@ services:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Bounce\Service\ConsecutiveBounceHandler:
+  PhpList\Core\Domain\Messaging\Service\ConsecutiveBounceHandler:
     autowire: true
     autoconfigure: true
     arguments:
@@ -147,7 +147,7 @@ services:
 
   Webklex\PHPIMAP\ClientManager: ~
 
-  PhpList\Core\Bounce\Service\WebklexImapClientFactory:
+  PhpList\Core\Domain\Messaging\Service\WebklexImapClientFactory:
     autowire: true
     autoconfigure: true
     arguments:
@@ -164,34 +164,34 @@ services:
       $username: '%imap_bounce.email%'
       $password: '%imap_bounce.password%'
 
-  PhpList\Core\Bounce\Service\NativeBounceProcessingService:
+  PhpList\Core\Domain\Messaging\Service\NativeBounceProcessingService:
     autowire: true
     autoconfigure: true
     arguments:
       $purgeProcessed: '%imap_bounce.purge%'
       $purgeUnprocessed: '%imap_bounce.purge_unprocessed%'
 
-  PhpList\Core\Bounce\Service\WebklexBounceProcessingService:
+  PhpList\Core\Domain\Messaging\Service\WebklexBounceProcessingService:
     autowire: true
     autoconfigure: true
     arguments:
       $purgeProcessed: '%imap_bounce.purge%'
       $purgeUnprocessed: '%imap_bounce.purge_unprocessed%'
 
-  PhpList\Core\Bounce\Service\LockService:
+  PhpList\Core\Domain\Messaging\Service\LockService:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Bounce\Service\SubscriberBlacklistService:
+  PhpList\Core\Domain\Messaging\Service\SubscriberBlacklistService:
     autowire: true
     autoconfigure: true
 
-  PhpList\Core\Bounce\Service\MessageParser:
+  PhpList\Core\Domain\Messaging\Service\MessageParser:
     autowire: true
     autoconfigure: true
 
   _instanceof:
-    PhpList\Core\Bounce\Service\Handler\BounceActionHandlerInterface:
+    PhpList\Core\Domain\Messaging\Service\Handler\BounceActionHandlerInterface:
       tags:
         - { name: 'phplist.bounce_action_handler' }
 
