@@ -42,8 +42,8 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     #[ORM\Column(name: 'rssfeed', type: 'string', length: 255, nullable: true)]
     private ?string $rssFeed = null;
 
-    #[ORM\Column]
-    private string $description = '';
+    #[ORM\Column(nullable: true)]
+    private ?string $description = null;
 
     #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
     protected ?DateTime $createdAt = null;
@@ -60,8 +60,8 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     #[ORM\Column(name: 'active', type: 'boolean')]
     private bool $public;
 
-    #[ORM\Column]
-    private string $category = '';
+    #[ORM\Column(nullable: true)]
+    private ?string $category = null;
 
     #[ORM\ManyToOne(targetEntity: Administrator::class, inversedBy: 'ownedLists')]
     #[ORM\JoinColumn(name: 'owner')]
@@ -93,7 +93,6 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         $this->updatedAt = new DateTime();
         $this->listPosition = 0;
         $this->subjectPrefix = '';
-        $this->category = '';
         $this->public = false;
     }
 
@@ -124,14 +123,14 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this;
     }
 
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
     public function setDescription(?string $description): self
     {
-        $this->description = $description ?? '';
+        $this->description = $description;
 
         return $this;
     }
@@ -170,14 +169,14 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this;
     }
 
-    public function getCategory(): string
+    public function getCategory(): ?string
     {
         return $this->category;
     }
 
     public function setCategory(?string $category): self
     {
-        $this->category = $category ?? '';
+        $this->category = $category;
         return $this;
     }
 

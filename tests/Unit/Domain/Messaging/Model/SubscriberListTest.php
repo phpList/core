@@ -77,9 +77,9 @@ class SubscriberListTest extends TestCase
         self::assertSame($value, $this->subscriberList->getName());
     }
 
-    public function testGetDescriptionInitiallyReturnsEmptyString(): void
+    public function testGetDescriptionInitiallyReturnsNull(): void
     {
-        self::assertSame('', $this->subscriberList->getDescription());
+        self::assertSame(null, $this->subscriberList->getDescription());
     }
 
     public function testSetDescriptionSetsDescription(): void
@@ -128,9 +128,9 @@ class SubscriberListTest extends TestCase
         self::assertTrue($this->subscriberList->isPublic());
     }
 
-    public function testGetCategoryInitiallyReturnsEmptyString(): void
+    public function testGetCategoryInitiallyReturnsNull(): void
     {
-        self::assertSame('', $this->subscriberList->getCategory());
+        self::assertSame(null, $this->subscriberList->getCategory());
     }
 
     public function testSetCategorySetsCategory(): void
