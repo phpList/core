@@ -33,7 +33,6 @@ final class Version20260827065637 extends AbstractPrefixedMigration
         $this->addSql('DROP INDEX loginname ON phplist_admin');
         $this->addSql('DROP INDEX phplist_admin_loginnameidx ON phplist_admin');
         $this->addSql('DELETE FROM phplist_admin WHERE loginname IS NULL');
-        $this->addSql('UPDATE phplist_admin SET email = COALESCE(email, \'\')');
         $this->addSql('ALTER TABLE phplist_admin CHANGE loginname loginname VARCHAR(66) NOT NULL, CHANGE email email VARCHAR(255) NOT NULL, CHANGE modifiedby modifiedby VARCHAR(66) DEFAULT NULL');
         $this->addSql('CREATE UNIQUE INDEX phplist_admin_loginnameidx ON phplist_admin (loginname)');
         $this->addSql('DELETE FROM phplist_adminattribute WHERE name IS NULL');
