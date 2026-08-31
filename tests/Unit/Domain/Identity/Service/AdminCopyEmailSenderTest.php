@@ -78,8 +78,7 @@ class AdminCopyEmailSenderTest extends TestCase
                     $recipient = $envelope->getRecipients()[0] ?? null;
                     $expectedRecipient = $emails[$invocationIndex++] ?? null;
 
-                    return $sender !== null
-                        && $sender->getAddress() === $bounce
+                    return $sender->getAddress() === $bounce
                         && $recipient !== null
                         && $recipient->getAddress() === $expectedRecipient;
                 })
@@ -201,7 +200,6 @@ class AdminCopyEmailSenderTest extends TestCase
             $senderAddress = $envelope->getSender();
             $recipient = $envelope->getRecipients()[0] ?? null;
 
-            $this->assertNotNull($senderAddress);
             $this->assertSame($bounce, $senderAddress->getAddress());
 
             $this->assertNotNull($recipient);

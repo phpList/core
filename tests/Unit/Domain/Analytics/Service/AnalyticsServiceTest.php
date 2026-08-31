@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Analytics\Service;
 
+use DateInterval;
 use DateTime;
+use DateTimeImmutable;
 use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Repository\UserMessageViewRepository;
 use PhpList\Core\Domain\Analytics\Service\AnalyticsService;
@@ -19,7 +21,6 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
-use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -186,38 +187,13 @@ class AnalyticsServiceTest extends TestCase
 
     public function testGetTopDomains(): void
     {
-        $subscriber1 = $this->createMock(Subscriber::class);
-        $subscriber1->method('getEmail')->willReturn('user1@example.com');
-
-        $subscriber2 = $this->createMock(Subscriber::class);
-        $subscriber2->method('getEmail')->willReturn('user2@example.com');
-
-        $subscriber3 = $this->createMock(Subscriber::class);
-        $subscriber3->method('getEmail')->willReturn('user3@example.com');
-
-        $subscriber4 = $this->createMock(Subscriber::class);
-        $subscriber4->method('getEmail')->willReturn('user4@example.com');
-
-        $subscriber5 = $this->createMock(Subscriber::class);
-        $subscriber5->method('getEmail')->willReturn('user5@example.com');
-
-        $subscriber6 = $this->createMock(Subscriber::class);
-        $subscriber6->method('getEmail')->willReturn('user6@example.com');
-
-        $subscriber7 = $this->createMock(Subscriber::class);
-        $subscriber7->method('getEmail')->willReturn('user1@test.com');
-
-        $subscriber8 = $this->createMock(Subscriber::class);
-        $subscriber8->method('getEmail')->willReturn('user2@test.com');
-
-        $subscriber9 = $this->createMock(Subscriber::class);
-        $subscriber9->method('getEmail')->willReturn('user3@another.com');
-
         $this->subscriberRepository->expects(self::once())
-            ->method('findAll')
+            ->method('getTopDomains')
+            ->with(50, 1)
             ->willReturn([
-                $subscriber1, $subscriber2, $subscriber3, $subscriber4, $subscriber5,
-                $subscriber6, $subscriber7, $subscriber8, $subscriber9
+                ['domain' => 'example.com', 'subscribers' => 6],
+                ['domain' => 'test.com', 'subscribers' => 2],
+                ['domain' => 'another.com', 'subscribers' => 1],
             ]);
 
         $result = $this->subject->getTopDomains(50, 1);
@@ -239,46 +215,12 @@ class AnalyticsServiceTest extends TestCase
 
     public function testGetDomainConfirmationStatistics(): void
     {
-        $subscriber1 = $this->createMock(Subscriber::class);
-        $subscriber1->method('getEmail')->willReturn('user1@example.com');
-        $subscriber1->method('isConfirmed')->willReturn(true);
-        $subscriber1->method('isBlacklisted')->willReturn(false);
-
-        $subscriber2 = $this->createMock(Subscriber::class);
-        $subscriber2->method('getEmail')->willReturn('user2@example.com');
-        $subscriber2->method('isConfirmed')->willReturn(true);
-        $subscriber2->method('isBlacklisted')->willReturn(false);
-
-        $subscriber3 = $this->createMock(Subscriber::class);
-        $subscriber3->method('getEmail')->willReturn('user3@example.com');
-        $subscriber3->method('isConfirmed')->willReturn(false);
-        $subscriber3->method('isBlacklisted')->willReturn(false);
-
-        $subscriber4 = $this->createMock(Subscriber::class);
-        $subscriber4->method('getEmail')->willReturn('user4@example.com');
-        $subscriber4->method('isConfirmed')->willReturn(false);
-        $subscriber4->method('isBlacklisted')->willReturn(false);
-
-        $subscriber5 = $this->createMock(Subscriber::class);
-        $subscriber5->method('getEmail')->willReturn('user5@example.com');
-        $subscriber5->method('isConfirmed')->willReturn(false);
-        $subscriber5->method('isBlacklisted')->willReturn(true);
-
-        $subscriber6 = $this->createMock(Subscriber::class);
-        $subscriber6->method('getEmail')->willReturn('user1@test.com');
-        $subscriber6->method('isConfirmed')->willReturn(true);
-        $subscriber6->method('isBlacklisted')->willReturn(false);
-
-        $subscriber7 = $this->createMock(Subscriber::class);
-        $subscriber7->method('getEmail')->willReturn('user2@test.com');
-        $subscriber7->method('isConfirmed')->willReturn(false);
-        $subscriber7->method('isBlacklisted')->willReturn(false);
-
         $this->subscriberRepository->expects(self::once())
-            ->method('findAll')
+            ->method('getDomainConfirmationStatistics')
+            ->with(50)
             ->willReturn([
-                $subscriber1, $subscriber2, $subscriber3, $subscriber4,
-                $subscriber5, $subscriber6, $subscriber7
+                ['domain' => 'example.com', 'total' => 5, 'confirmed' => 2, 'unconfirmed' => 2, 'blacklisted' => 1],
+                ['domain' => 'test.com', 'total' => 2, 'confirmed' => 1, 'unconfirmed' => 1, 'blacklisted' => 0],
             ]);
 
         $result = $this->subject->getDomainConfirmationStatistics();
@@ -311,26 +253,19 @@ class AnalyticsServiceTest extends TestCase
 
     public function testGetTopLocalParts(): void
     {
-        $subscriber1 = $this->createMock(Subscriber::class);
-        $subscriber1->method('getEmail')->willReturn('user1@example.com');
-
-        $subscriber2 = $this->createMock(Subscriber::class);
-        $subscriber2->method('getEmail')->willReturn('user2@example.com');
-
-        $subscriber3 = $this->createMock(Subscriber::class);
-        $subscriber3->method('getEmail')->willReturn('user1@test.com');
-
-        $subscriber4 = $this->createMock(Subscriber::class);
-        $subscriber4->method('getEmail')->willReturn('admin@example.com');
-
-        $subscriber5 = $this->createMock(Subscriber::class);
-        $subscriber5->method('getEmail')->willReturn('info@example.com');
+        $this->subscriberRepository->expects(self::once())
+            ->method('getTopLocalParts')
+            ->with(25)
+            ->willReturn([
+                ['localPart' => 'user1', 'count' => 2],
+                ['localPart' => 'user2', 'count' => 1],
+                ['localPart' => 'admin', 'count' => 1],
+                ['localPart' => 'info', 'count' => 1],
+            ]);
 
         $this->subscriberRepository->expects(self::once())
-            ->method('findAll')
-            ->willReturn([
-                $subscriber1, $subscriber2, $subscriber3, $subscriber4, $subscriber5
-            ]);
+            ->method('countWithValidEmail')
+            ->willReturn(5);
 
         $result = $this->subject->getTopLocalParts();
 
@@ -375,5 +310,84 @@ class AnalyticsServiceTest extends TestCase
         self::assertArrayHasKey('bounce_rate', $result);
         self::assertEquals(2.0, $result['bounce_rate']['value']);
         self::assertEquals(0.0, $result['bounce_rate']['change_vs_last_month']);
+    }
+
+    public function testGetCampaignPerformance(): void
+    {
+        $endDate = new DateTimeImmutable('today 23:59:59');
+        $startDate = $endDate->sub(new DateInterval('P29D'))->modify('00:00:00');
+
+        $someDay = $startDate->add(new DateInterval('P5D'))->format('Y-m-d');
+
+        $this->userMessageViewManager->expects(self::once())
+            ->method('countViewsGroupedByDay')
+            ->with($startDate, $endDate)
+            ->willReturn([$someDay => 7]);
+
+        $this->linkTrackManager->expects(self::once())
+            ->method('countClicksGroupedByDay')
+            ->with($startDate, $endDate)
+            ->willReturn([$someDay => 3]);
+
+        $result = $this->subject->getCampaignPerformance();
+
+        self::assertCount(30, $result);
+
+        $matching = array_values(array_filter($result, static fn ($row) => $row['date'] === $someDay));
+        self::assertCount(1, $matching);
+        self::assertSame(7, $matching[0]['opens']);
+        self::assertSame(3, $matching[0]['clicks']);
+
+        $other = array_values(array_filter($result, static fn ($row) => $row['date'] !== $someDay));
+        self::assertSame(0, $other[0]['opens']);
+        self::assertSame(0, $other[0]['clicks']);
+    }
+
+    public function testGetRecentCampaigns(): void
+    {
+        $limit = 5;
+        $messageId = 42;
+
+        $messageMetadata = $this->createMock(MessageMetadata::class);
+        $messageMetadata->method('getViews')->willReturn(80);
+        $messageMetadata->method('getBounceCount')->willReturn(20);
+        $messageMetadata->method('getSent')->willReturn(new DateTime('2023-02-01 10:00:00'));
+        $messageMetadata->method('getStatus')->willReturn(null);
+
+        $messageContent = $this->createMock(MessageContent::class);
+        $messageContent->method('getSubject')->willReturn('Recent Campaign');
+
+        $message = $this->createMock(Message::class);
+        $message->method('getId')->willReturn($messageId);
+        $message->method('getMetadata')->willReturn($messageMetadata);
+        $message->method('getContent')->willReturn($messageContent);
+
+        $messageResult = new PaginatedResult([$message], 1, 1, $messageId);
+
+        $this->messageRepository->expects(self::once())
+            ->method('getFilteredAfterId')
+            ->with($this->callback(function (MessageFilter $filter) use ($limit): bool {
+                return $filter->getLastId() === 0 && $filter->getLimit() === $limit;
+            }))
+            ->willReturn($messageResult);
+
+        $this->userMessageViewManager->expects(self::once())
+            ->method('countViewsByMessageIds')
+            ->with([$messageId])
+            ->willReturn([$messageId => 40]);
+
+        $this->linkTrackManager->expects(self::once())
+            ->method('countUniqueClickersByMessageIds')
+            ->with([$messageId])
+            ->willReturn([$messageId => 10]);
+
+        $result = $this->subject->getRecentCampaigns($limit);
+
+        self::assertCount(1, $result);
+        self::assertSame('Recent Campaign', $result[0]['name']);
+        self::assertNull($result[0]['status']);
+        self::assertSame('2023-02-01', $result[0]['date']);
+        self::assertSame('40%', $result[0]['open_rate']);
+        self::assertSame('10%', $result[0]['click_rate']);
     }
 }

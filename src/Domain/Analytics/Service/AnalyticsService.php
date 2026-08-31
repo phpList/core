@@ -149,36 +149,12 @@ class AnalyticsService
      */
     public function getTopDomains(int $limit = 50, int $minSubscribers = 5): array
     {
-        $subscribers = $this->subscriberRepository->findAll();
+        $rows = $this->subscriberRepository->getTopDomains($limit, $minSubscribers);
 
-        $domains = [];
-        foreach ($subscribers as $subscriber) {
-            $domain = $this->extractDomain($subscriber->getEmail());
-            if ($domain !== '') {
-                $domains[$domain] = ($domains[$domain] ?? 0) + 1;
-            }
-        }
-
-        $filteredDomains = array_filter($domains, function ($count) use ($minSubscribers) {
-            return $count >= $minSubscribers;
-        });
-
-        arsort($filteredDomains);
-
-        $result = [];
-        $count = 0;
-        foreach ($filteredDomains as $domain => $subscriberCount) {
-            if ($count >= $limit) {
-                break;
-            }
-
-            $result[] = [
-                'domain' => $domain,
-                'subscribers' => $subscriberCount,
-            ];
-
-            $count++;
-        }
+        $result = array_map(static fn (array $row): array => [
+            'domain' => $row['domain'],
+            'subscribers' => (int) $row['subscribers'],
+        ], $rows);
 
         return [
             'domains' => $result,
@@ -281,87 +257,39 @@ class AnalyticsService
      */
     public function getDomainConfirmationStatistics(int $limit = 50): array
     {
-        $domains = [];
-        $subscribers = $this->subscriberRepository->findAll();
+        $rows = $this->subscriberRepository->getDomainConfirmationStatistics($limit);
 
-        foreach ($subscribers as $subscriber) {
-            $domain = $this->extractDomain($subscriber->getEmail());
+        $result = array_map(function (array $row): array {
+            $total = (int) $row['total'];
+            $confirmed = (int) $row['confirmed'];
+            $unconfirmed = (int) $row['unconfirmed'];
+            $blacklisted = (int) $row['blacklisted'];
 
-            if (!empty($domain)) {
-                if (!isset($domains[$domain])) {
-                    $domains[$domain] = [
-                        'confirmed' => 0,
-                        'unconfirmed' => 0,
-                        'blacklisted' => 0,
-                        'total' => 0,
-                    ];
-                }
-
-                $domains[$domain]['total']++;
-
-                if ($subscriber->isBlacklisted()) {
-                    $domains[$domain]['blacklisted']++;
-                } elseif ($subscriber->isConfirmed()) {
-                    $domains[$domain]['confirmed']++;
-                } else {
-                    $domains[$domain]['unconfirmed']++;
-                }
-            }
-        }
-
-        uasort($domains, function ($domain1, $domain2) {
-            return $domain2['unconfirmed'] <=> $domain1['unconfirmed'];
-        });
-
-        $result = [];
-        $count = 0;
-        foreach ($domains as $domain => $stats) {
-            if ($count >= $limit) {
-                break;
-            }
-
-            $domainTotal = $stats['total'];
-
-            $result[] = [
-                'domain' => $domain,
+            return [
+                'domain' => $row['domain'],
                 'confirmed' => [
-                    'count' => $stats['confirmed'],
-                    'percentage' => $this->formatStat($stats['confirmed'], $domainTotal)
+                    'count' => $confirmed,
+                    'percentage' => $this->formatStat($confirmed, $total)
                 ],
                 'unconfirmed' => [
-                    'count' => $stats['unconfirmed'],
-                    'percentage' => $this->formatStat($stats['unconfirmed'], $domainTotal)
+                    'count' => $unconfirmed,
+                    'percentage' => $this->formatStat($unconfirmed, $total)
                 ],
                 'blacklisted' => [
-                    'count' => $stats['blacklisted'],
-                    'percentage' => $this->formatStat($stats['blacklisted'], $domainTotal)
+                    'count' => $blacklisted,
+                    'percentage' => $this->formatStat($blacklisted, $total)
                 ],
                 'total' => [
-                    'count' => $stats['total'],
-                    'percentage' => $this->formatStat($stats['total'], $domainTotal)
+                    'count' => $total,
+                    'percentage' => $this->formatStat($total, $total)
                 ],
             ];
-
-            $count++;
-        }
+        }, $rows);
 
         return [
             'domains' => $result,
             'total' => count($result),
         ];
-    }
-
-    private function extractDomain(string $email): ?string
-    {
-        $atPoint = strrchr($email, '@');
-
-        if ($atPoint === false) {
-            return null;
-        }
-
-        $domain = substr($atPoint, 1);
-
-        return $domain !== '' ? $domain : null;
     }
 
     private function formatStat(int $count, int $total): int|float
@@ -384,43 +312,18 @@ class AnalyticsService
      */
     public function getTopLocalParts(int $limit = 25): array
     {
-        $localParts = [];
+        $rows = $this->subscriberRepository->getTopLocalParts($limit);
+        $totalSubscribers = $this->subscriberRepository->countWithValidEmail();
 
-        $subscribers = $this->subscriberRepository->findAll();
+        $result = array_map(function (array $row) use ($totalSubscribers): array {
+            $count = (int) $row['count'];
 
-        foreach ($subscribers as $subscriber) {
-            $email = $subscriber->getEmail();
-            $atPosition = strpos($email, '@');
-
-            if ($atPosition !== false) {
-                $localPart = substr($email, 0, $atPosition);
-
-                if (!isset($localParts[$localPart])) {
-                    $localParts[$localPart] = 0;
-                }
-
-                $localParts[$localPart]++;
-            }
-        }
-
-        arsort($localParts);
-
-        $result = [];
-        $count = 0;
-        $totalSubscribers = array_sum($localParts);
-        foreach ($localParts as $localPart => $subscriberCount) {
-            if ($count >= $limit) {
-                break;
-            }
-
-            $result[] = [
-                'localPart' => $localPart,
-                'count' => $subscriberCount,
-                'percentage' => $this->formatStat($subscriberCount, $totalSubscribers),
+            return [
+                'localPart' => $row['localPart'],
+                'count' => $count,
+                'percentage' => $this->formatStat($count, $totalSubscribers),
             ];
-
-            $count++;
-        }
+        }, $rows);
 
         return [
             'localParts' => $result,
@@ -430,18 +333,21 @@ class AnalyticsService
 
     public function getCampaignPerformance(): array
     {
-        $performance = [];
         $endDate = new DateTimeImmutable('today 23:59:59');
         $startDate = $endDate->sub(new DateInterval('P29D'))->modify('00:00:00');
 
+        $opensByDay = $this->userMessageViewManager->countViewsGroupedByDay($startDate, $endDate);
+        $clicksByDay = $this->linkTrackManager->countClicksGroupedByDay($startDate, $endDate);
+
+        $performance = [];
         for ($index = 0; $index < 30; $index++) {
-            $dayStart = $startDate->add(new DateInterval('P' . $index . 'D'));
-            $dayEnd = $dayStart->modify('23:59:59');
+            $day = $startDate->add(new DateInterval('P' . $index . 'D'));
+            $dateKey = $day->format('Y-m-d');
 
             $performance[] = [
-                'date' => $dayStart->format('Y-m-d'),
-                'opens' => $this->userMessageViewManager->countViewsBetween($dayStart, $dayEnd),
-                'clicks' => $this->linkTrackManager->countClicksBetween($dayStart, $dayEnd),
+                'date' => $dateKey,
+                'opens' => $opensByDay[$dateKey] ?? 0,
+                'clicks' => $clicksByDay[$dateKey] ?? 0,
             ];
         }
 
@@ -459,16 +365,16 @@ class AnalyticsService
         $messages = $this->messageRepository
             ->getFilteredAfterId((new MessageFilter())->setLastId(0)->setLimit($limit))
             ->getItems();
+
+        $messageIds = array_map(static fn ($message) => $message->getId(), $messages);
+        $viewCounts = $this->userMessageViewManager->countViewsByMessageIds($messageIds);
+        $uniqueClickCounts = $this->linkTrackManager->countUniqueClickersByMessageIds($messageIds);
+
         $recentCampaigns = [];
         foreach ($messages as $message) {
-            $views = $this->userMessageViewManager->countViewsByMessageId($message->getId());
-            $linkTracks = $this->linkTrackManager->getLinkTracksByMessageId($message->getId());
-
-            $uniqueClickers = [];
-            foreach ($linkTracks as $linkTrack) {
-                $uniqueClickers[$linkTrack->getUserId()] = true;
-            }
-            $uniqueClicks = count($uniqueClickers);
+            $id = $message->getId();
+            $views = $viewCounts[$id] ?? 0;
+            $uniqueClicks = $uniqueClickCounts[$id] ?? 0;
 
             $sentCount = $message->getMetadata()->getViews() + $message->getMetadata()->getBounceCount();
 

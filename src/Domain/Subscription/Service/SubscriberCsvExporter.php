@@ -263,7 +263,7 @@ class SubscriberCsvExporter
             'blacklisted' => $subscriber->isBlacklisted() ? '1' : '0',
             'bounceCount' => $subscriber->getBounceCount(),
             'createdAt' => $subscriber->getCreatedAt()?->format('Y-m-d H:i:s') ?? '',
-            'updatedAt' => $subscriber->getUpdatedAt()?->format('Y-m-d H:i:s') ?? '',
+            'updatedAt' => $subscriber->getUpdatedAt()->format('Y-m-d H:i:s'),
             'uniqueId' => $subscriber->getUniqueId(),
             'htmlEmail' => $subscriber->hasHtmlEmail() ? '1' : '0',
             'rssFrequency' => $subscriber->getRssFrequency(),

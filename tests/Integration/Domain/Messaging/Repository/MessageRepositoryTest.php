@@ -8,6 +8,7 @@ use DateTime;
 use Doctrine\ORM\Tools\SchemaTool;
 use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Identity\Model\Administrator;
+use PhpList\Core\Domain\Messaging\Model\Filter\MessageFilter;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageFormat;
@@ -130,5 +131,119 @@ class MessageRepositoryTest extends KernelTestCase
         $this->entityManager->persist($message);
 
         self::assertSimilarDates($expectedDate, $message->getUpdatedAt());
+    }
+
+    private function persistMessage(
+        Message\MessageStatus $status,
+        string $subject,
+        ?Administrator $owner = null
+    ): Message {
+        $message = new Message(
+            new MessageFormat(true, OutputFormat::Text->value),
+            new MessageSchedule(1, null, 3, null, null),
+            new MessageMetadata($status),
+            new MessageContent($subject),
+            new MessageOptions(),
+            $owner
+        );
+
+        $this->entityManager->persist($message);
+
+        return $message;
+    }
+
+    public function testGetFilteredAfterIdIncludesOwnerlessMessagesForAnyAdmin(): void
+    {
+        $admin = (new Administrator())->setLoginName('owner-test-admin');
+        $otherAdmin = (new Administrator())->setLoginName('other-admin');
+        $this->entityManager->persist($admin);
+        $this->entityManager->persist($otherAdmin);
+
+        $this->persistMessage(Message\MessageStatus::Sent, 'Legacy unowned campaign');
+        $this->persistMessage(Message\MessageStatus::Sent, 'My own campaign', $admin);
+        $this->persistMessage(Message\MessageStatus::Sent, "Someone else's campaign", $otherAdmin);
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+        $admin = $this->entityManager->getRepository(Administrator::class)->find($admin->getId());
+
+        $filter = (new MessageFilter())->setOwner($admin);
+        $result = $this->messageRepository->getFilteredAfterId($filter);
+
+        $subjects = array_map(
+            static fn (Message $message) => $message->getContent()->getSubject(),
+            $result->getItems()
+        );
+        self::assertContains('Legacy unowned campaign', $subjects);
+        self::assertContains('My own campaign', $subjects);
+        self::assertNotContains("Someone else's campaign", $subjects);
+    }
+
+    public function testGetFilteredAfterIdFiltersBySingleStatus(): void
+    {
+        $this->persistMessage(Message\MessageStatus::Draft, 'Draft one');
+        $this->persistMessage(Message\MessageStatus::Sent, 'Sent one');
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $filter = (new MessageFilter())->setStatus('draft');
+        $result = $this->messageRepository->getFilteredAfterId($filter);
+
+        self::assertCount(1, $result->getItems());
+        self::assertSame('Draft one', $result->getItems()[0]->getContent()->getSubject());
+        self::assertSame(1, $result->getTotal());
+    }
+
+    public function testGetFilteredAfterIdFiltersByMultipleCommaSeparatedStatuses(): void
+    {
+        $this->persistMessage(Message\MessageStatus::Draft, 'Draft one');
+        $this->persistMessage(Message\MessageStatus::Submitted, 'Submitted one');
+        $this->persistMessage(Message\MessageStatus::Sent, 'Sent one');
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $filter = (new MessageFilter())->setStatus('draft,submitted');
+        $result = $this->messageRepository->getFilteredAfterId($filter);
+
+        self::assertCount(2, $result->getItems());
+        self::assertSame(2, $result->getTotal());
+    }
+
+    public function testGetFilteredAfterIdDefaultsToAscendingOrder(): void
+    {
+        $first = $this->persistMessage(Message\MessageStatus::Sent, 'First');
+        $second = $this->persistMessage(Message\MessageStatus::Sent, 'Second');
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $result = $this->messageRepository->getFilteredAfterId(new MessageFilter());
+
+        self::assertSame($first->getId(), $result->getItems()[0]->getId());
+        self::assertSame($second->getId(), $result->getItems()[1]->getId());
+    }
+
+    public function testGetFilteredAfterIdSortsDescendingAndCursorsBackward(): void
+    {
+        $first = $this->persistMessage(Message\MessageStatus::Sent, 'First');
+        $second = $this->persistMessage(Message\MessageStatus::Sent, 'Second');
+        $third = $this->persistMessage(Message\MessageStatus::Sent, 'Third');
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $filter = (new MessageFilter())->setSortOrder('desc')->setLimit(2);
+        $firstPage = $this->messageRepository->getFilteredAfterId($filter);
+
+        self::assertCount(2, $firstPage->getItems());
+        self::assertSame($third->getId(), $firstPage->getItems()[0]->getId());
+        self::assertSame($second->getId(), $firstPage->getItems()[1]->getId());
+        self::assertSame(3, $firstPage->getTotal());
+
+        $secondPageFilter = (new MessageFilter())
+            ->setSortOrder('desc')
+            ->setLimit(2)
+            ->setLastId($firstPage->getItems()[1]->getId());
+        $secondPage = $this->messageRepository->getFilteredAfterId($secondPageFilter);
+
+        self::assertCount(1, $secondPage->getItems());
+        self::assertSame($first->getId(), $secondPage->getItems()[0]->getId());
     }
 }

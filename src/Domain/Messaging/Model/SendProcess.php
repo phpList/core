@@ -12,7 +12,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\ModificationDate;
 use PhpList\Core\Domain\Messaging\Repository\SendProcessRepository;
 
 #[ORM\Entity(repositoryClass: SendProcessRepository::class)]
-#[ORM\Table(name: 'phplist_sendprocess')]
+#[ORM\Table(name: 'sendprocess')]
 #[ORM\HasLifecycleCallbacks]
 class SendProcess implements DomainModel, Identity, ModificationDate
 {
@@ -22,7 +22,7 @@ class SendProcess implements DomainModel, Identity, ModificationDate
     private ?int $id = null;
 
     #[ORM\Column(name: 'modified', type: 'datetime')]
-    private ?DateTime $updatedAt = null;
+    private DateTime $updatedAt;
 
     #[ORM\Column(name: 'started', type: 'datetime', nullable: true)]
     private ?DateTime $started = null;
@@ -36,12 +36,17 @@ class SendProcess implements DomainModel, Identity, ModificationDate
     #[ORM\Column(name: 'page', type: 'string', length: 100, nullable: true)]
     private ?string $page = null;
 
+    public function __construct()
+    {
+        $this->updatedAt = new DateTime();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUpdatedAt(): ?DateTime
+    public function getUpdatedAt(): DateTime
     {
         return $this->updatedAt;
     }

@@ -9,7 +9,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Configuration\Repository\ConfigRepository;
 
 #[ORM\Entity(repositoryClass: ConfigRepository::class)]
-#[ORM\Table(name: 'phplist_config')]
+#[ORM\Table(name: 'config')]
 class Config implements DomainModel
 {
     #[ORM\Id]

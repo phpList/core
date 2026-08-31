@@ -14,7 +14,7 @@ use Symfony\Component\Mime\Email;
 
 class MailSizeChecker
 {
-    private ?int $maxMailSize;
+    private int $maxMailSize;
 
     public function __construct(
         private readonly EventLogManager $eventLogManager,

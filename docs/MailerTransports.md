@@ -80,7 +80,7 @@ Notes:
 After setting up your preferred mailer transport, you can test it using the built-in test command:
 
 ```bash
-bin/console app:send-test-email recipient@example.com
+bin/console phplist:test-email recipient@example.com
 ```
 
 ## Switching Between Transports
@@ -91,7 +91,7 @@ You can easily switch between different mailer transports by changing the `MAILE
 2. Set the environment variable in your server configuration
 3. Set the environment variable before running a command:
    ```bash
-   MAILER_DSN=sendgrid://API_KEY@default bin/console app:send-test-email recipient@example.com
+   MAILER_DSN=sendgrid://API_KEY@default bin/console phplist:test-email recipient@example.com
    ```
 
 ## Additional Configuration

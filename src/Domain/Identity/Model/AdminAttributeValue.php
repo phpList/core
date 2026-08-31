@@ -9,7 +9,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Identity\Repository\AdminAttributeValueRepository;
 
 #[ORM\Entity(repositoryClass: AdminAttributeValueRepository::class)]
-#[ORM\Table(name: 'phplist_admin_attribute')]
+#[ORM\Table(name: 'admin_attribute')]
 #[ORM\HasLifecycleCallbacks]
 class AdminAttributeValue implements DomainModel
 {

@@ -1,8 +1,7 @@
 # This file is the Symfony Messenger configuration for asynchronous processing
 framework:
     messenger:
-        # Uncomment this (and the failed transport below) to send failed messages to this transport for later handling.
-        # failure_transport: failed
+        failure_transport: failed
 
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
@@ -20,7 +19,7 @@ framework:
                     multiplier: 2
                     max_delay: 0
 
-            # failed: 'doctrine://default?queue_name=failed'
+            failed: 'doctrine://default?queue_name=failed'
 
         routing:
             # Route your messages to the transports
@@ -28,7 +27,7 @@ framework:
             'PhpList\Core\Domain\Messaging\Message\SubscriberConfirmationMessage': async_email
             'PhpList\Core\Domain\Messaging\Message\SubscriptionConfirmationMessage': async_email
             'PhpList\Core\Domain\Messaging\Message\PasswordResetMessage': async_email
-            'PhpList\Core\Domain\Messaging\Message\CampaignProcessorMessage': async_email
-            'PhpList\Core\Domain\Messaging\Message\SyncCampaignProcessorMessage': sync
+            'PhpList\Core\Domain\Messaging\Message\CampaignProcessor\CampaignProcessorMessage': async_email
+            'PhpList\Core\Domain\Messaging\Message\CampaignProcessor\SyncCampaignProcessorMessage': sync
             'PhpList\Core\Domain\Subscription\Message\DynamicTableMessage': sync
 

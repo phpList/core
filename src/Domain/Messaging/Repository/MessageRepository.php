@@ -48,7 +48,12 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->getOneOrNullResult();
     }
 
-    /** @return PaginatedResult<Message> */
+    /**
+     * @return PaginatedResult<Message>
+     * @SuppressWarnings("CyclomaticComplexity")
+     * @SuppressWarnings("NPathComplexity")
+     *
+     */
     public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult
     {
         $lastId = $filter->getLastId();
@@ -56,7 +61,9 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
         $queryBuilder = $this->createQueryBuilder('m');
 
         if ($filter instanceof MessageFilter && $filter->getOwner() !== null) {
-            $queryBuilder->andWhere('IDENTITY(m.owner) = :ownerId')
+            // Legacy/imported messages have no owner recorded - treat them as shared rather
+            // than invisible, instead of excluding them outright via a strict owner match.
+            $queryBuilder->andWhere('(m.owner IS NULL OR IDENTITY(m.owner) = :ownerId)')
                 ->setParameter('ownerId', $filter->getOwner()->getId());
         }
 
@@ -65,17 +72,34 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
                 ->setParameter('subject', '%' . $filter->getSubject() . '%');
         }
 
+        if ($filter instanceof MessageFilter && $filter->getStatus() !== null) {
+            $statuses = array_values(array_filter(array_map('trim', explode(',', $filter->getStatus()))));
+            if (count($statuses) === 1) {
+                $queryBuilder->andWhere('m.metadata.status = :status')
+                    ->setParameter('status', $statuses[0]);
+            } elseif (count($statuses) > 1) {
+                $queryBuilder->andWhere('m.metadata.status IN (:statuses)')
+                    ->setParameter('statuses', $statuses);
+            }
+        }
+
         $countQb = clone $queryBuilder;
         $total = (int) $countQb
             ->select('COUNT(DISTINCT m.id)')
             ->getQuery()
             ->getSingleScalarResult();
 
+        $sortOrder = $filter instanceof MessageFilter ? $filter->getSortOrder() : 'asc';
+        $comparison = $sortOrder === 'desc' ? '<' : '>';
+
+        if ($lastId > 0) {
+            $queryBuilder->andWhere(sprintf('m.id %s :lastId', $comparison))
+                ->setParameter('lastId', $lastId);
+        }
+
         /** @var list<Message> $items */
         $items = $queryBuilder
-            ->andWhere('m.id > :lastId')
-            ->setParameter('lastId', $lastId)
-            ->orderBy('m.id', 'ASC')
+            ->orderBy('m.id', strtoupper($sortOrder))
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
@@ -116,7 +140,7 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
     {
         return $this->createQueryBuilder('m')
             ->where('m.metadata.status = :status')
-            ->andWhere('m.schedule.embargo IS NULL OR m.embargo <= :embargo')
+            ->andWhere('m.schedule.embargo IS NULL OR m.schedule.embargo <= :embargo')
             ->setParameter('status', $status->value)
             ->setParameter('embargo', $embargo)
             ->getQuery()

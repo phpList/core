@@ -9,7 +9,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Messaging\Repository\MessageDataRepository;
 
 #[ORM\Entity(repositoryClass: MessageDataRepository::class)]
-#[ORM\Table(name: 'phplist_messagedata')]
+#[ORM\Table(name: 'messagedata')]
 class MessageData implements DomainModel
 {
     #[ORM\Id]

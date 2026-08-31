@@ -11,7 +11,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryRepository;
 
 #[ORM\Entity(repositoryClass: SubscriberHistoryRepository::class)]
-#[ORM\Table(name: 'phplist_user_user_history')]
+#[ORM\Table(name: 'user_user_history')]
 #[ORM\Index(name: 'phplist_user_user_history_dateidx', columns: ['date'])]
 #[ORM\Index(name: 'phplist_user_user_history_userididx', columns: ['userid'])]
 class SubscriberHistory implements DomainModel, Identity

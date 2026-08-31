@@ -71,7 +71,7 @@ final class ConfigProviderTest extends TestCase
         $this->repo
             ->expects($this->once())
             ->method('findOneBy')
-            ->with(['item' => $key->value])
+            ->with(['key' => $key->value])
             ->willReturn($configEntity);
 
         // Defaults should not be consulted if repo has value
@@ -90,7 +90,7 @@ final class ConfigProviderTest extends TestCase
         $this->repo
             ->expects($this->once())
             ->method('findOneBy')
-            ->with(['item' => $key->value])
+            ->with(['key' => $key->value])
             ->willReturn(null);
 
         $this->defaults

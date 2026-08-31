@@ -10,7 +10,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 
 #[ORM\Entity(repositoryClass: UserStatsRepository::class)]
-#[ORM\Table(name: 'phplist_userstats')]
+#[ORM\Table(name: 'userstats')]
 #[ORM\UniqueConstraint(name: 'phplist_userstats_entry', columns: ['unixdate', 'item', 'listid'])]
 #[ORM\Index(name: 'phplist_userstats_dateindex', columns: ['unixdate'])]
 #[ORM\Index(name: 'phplist_userstats_itemindex', columns: ['item'])]
@@ -30,7 +30,7 @@ class UserStats implements DomainModel, Identity
     private ?string $item = null;
 
     #[ORM\Column(name: 'listid', type: 'integer', nullable: true, options: ['default' => 0])]
-    private int $listId = 0;
+    private ?int $listId = 0;
 
     #[ORM\Column(name: 'value', type: 'integer', nullable: true, options: ['default' => 0])]
     private ?int $value = null;
@@ -50,7 +50,7 @@ class UserStats implements DomainModel, Identity
         return $this->item;
     }
 
-    public function getListId(): int
+    public function getListId(): ?int
     {
         return $this->listId;
     }
@@ -72,7 +72,7 @@ class UserStats implements DomainModel, Identity
         return $this;
     }
 
-    public function setListId(int $listId): self
+    public function setListId(?int $listId): self
     {
         $this->listId = $listId;
         return $this;

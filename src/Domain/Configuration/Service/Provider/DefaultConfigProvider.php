@@ -20,7 +20,7 @@ class DefaultConfigProvider
     {
     }
 
-    /** @SuppressWarnings(PHPMD.ExcessiveMethodLength) */
+    /** @SuppressWarnings("PHPMD.ExcessiveMethodLength") */
     private function init(): void
     {
         if (!empty($this->defaults)) {

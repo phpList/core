@@ -27,31 +27,16 @@ use Throwable;
 )]
 class ProcessQueueCommand extends Command
 {
-    private MessageRepository $messageRepository;
-    private LockFactory $lockFactory;
-    private MessageProcessingPreparator $messagePreparator;
-    private MessageBusInterface $messageBus;
-    private ConfigProvider $configProvider;
-    private TranslatorInterface $translator;
-    private EntityManagerInterface $entityManager;
-
     public function __construct(
-        MessageRepository $messageRepository,
-        LockFactory $lockFactory,
-        MessageProcessingPreparator $messagePreparator,
-        MessageBusInterface $messageBus,
-        ConfigProvider $configProvider,
-        TranslatorInterface $translator,
-        EntityManagerInterface $entityManager,
+        private readonly MessageRepository $messageRepository,
+        private readonly LockFactory $lockFactory,
+        private readonly MessageProcessingPreparator $messagePreparator,
+        private readonly MessageBusInterface $messageBus,
+        private readonly ConfigProvider $configProvider,
+        private readonly TranslatorInterface $translator,
+        private readonly EntityManagerInterface $entityManager,
     ) {
         parent::__construct();
-        $this->messageRepository = $messageRepository;
-        $this->lockFactory = $lockFactory;
-        $this->messagePreparator = $messagePreparator;
-        $this->messageBus = $messageBus;
-        $this->configProvider = $configProvider;
-        $this->translator = $translator;
-        $this->entityManager = $entityManager;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

@@ -52,18 +52,19 @@ this code.
 
 ## Documentation
 
-* [Class Docs](docs/phpdoc/)
 * [Class structure overview](docs/ClassStructure.md)
-* [Graphic domain model](docs/DomainModel/DomainModel.svg) and [description of the domain entities](docs/DomainModel/Entities.md)
-* [Mailer Transports](docs/mailer-transports.md) - How to use different email providers (Gmail, Amazon SES, Mailchimp, SendGrid)
-* [Asynchronous Email Sending](docs/AsyncEmailSending.md) - How to use asynchronous email sending with Symfony Messenger
+* [Domain model diagram](docs/DomainModel/DomainModel.svg) and [description of the domain entities](docs/DomainModel/Entities.md)
+* [Mailer transports](docs/MailerTransports.md) - configuring Gmail, Amazon SES, Mailchimp, and SendGrid
+* [Asynchronous email sending](docs/AsyncEmailSending.md) - queuing email delivery with Symfony Messenger
+* [Graylog integration](docs/Graylog.md) - centralized log management
+* [Generating class API docs](PHPDOC.md) - regenerating the phpDocumentor output
 
 ## Running the web server
 
 The phpList application is configured so that the built-in PHP web server can
 run in development and testing mode, while Apache can run in production mode.
 
-Please first set the database credentials in `config/parameters.yml`.
+Please first set the database credentials in `.env` (created from `.env.dist` on `composer install`/`composer update`).
 
 ### Development
 
@@ -78,12 +79,6 @@ The server will then listen on `http://127.0.0.1:8000` (or, if port 8000 is
 already in use, on the next free port after 8000).
 
 You can stop the server with CTRL + C.
-
-#### Development and Documentation
-
-We use `phpDocumentor` to automatically generate documentation for classes. To make this process efficient and easier, you are required to properly "document" your  `classes`,`properties`, `methods` ... by annotating them with [docblocks](https://docs.phpdoc.org/latest/guide/guides/docblocks.html).
-
-More about generating docs in [PHPDOC.md](PHPDOC.md)
 
 ### Testing
 
@@ -200,31 +195,14 @@ To access the phpList data from a third-party application (i.e., not from a
 phpList module), please use the
 [REST API](https://github.com/phpList/rest-api).
 
-## Email Configuration
+## Translations
 
-phpList supports multiple email transport providers through Symfony Mailer. The following transports are included:
-
-* Gmail
-* Amazon SES
-* Mailchimp Transactional (Mandrill)
-* SendGrid
-
-For detailed configuration instructions, see the [Mailer Transports documentation](docs/mailer-transports.md).
-
-## Copyright
-
-phpList is copyright (C) 2000-2025 [phpList Ltd](https://www.phplist.com/).
-
-
-### Translations
-command to extract translation strings
+To extract translation strings from the source into an XLIFF catalog:
 
 ```bash
 php bin/console translation:extract --force en --format=xlf
 ```
 
-```bash
-vendor/bin/phpstan analyse -c phpstan.neon;
-vendor/bin/phpmd src/ text config/PHPMD/rules.xml;
-vendor/bin/phpcs --standard=config/PhpCodeSniffer/ --ignore=*/Migrations/* bin/ src/ tests/ public/;
-```
+## Copyright
+
+phpList is copyright (C) 2000-2025 [phpList Ltd](https://www.phplist.com/).
