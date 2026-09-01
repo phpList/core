@@ -57,6 +57,7 @@ this code.
 * [Mailer transports](docs/MailerTransports.md) - configuring Gmail, Amazon SES, Mailchimp, and SendGrid
 * [Asynchronous email sending](docs/AsyncEmailSending.md) - queuing email delivery with Symfony Messenger
 * [Graylog integration](docs/Graylog.md) - centralized log management
+* [Elasticsearch-backed search for big tables](docs/ElasticsearchSearch.md) - dual-write to the database and Elasticsearch, reading from Elasticsearch only
 * [Generating class API docs](PHPDOC.md) - regenerating the phpDocumentor output
 
 ## Running the web server
