@@ -1,0 +1,47 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  _instanceof:
+    PhpList\Core\Domain\Search\Model\Interfaces\SearchIndexDefinitionInterface:
+      tags: ['phplist.search_index_definition']
+    PhpList\Core\Domain\Search\Model\Interfaces\SearchReindexProviderInterface:
+      tags: ['phplist.search_reindex_provider']
+
+  Elastic\Elasticsearch\Client:
+    factory: ['PhpList\Core\Domain\Search\Client\ElasticsearchClientFactory', 'create']
+    arguments:
+      $hosts: '%elasticsearch.hosts%'
+      $username: '%elasticsearch.username%'
+      $password: '%elasticsearch.password%'
+      $connectTimeout: '%elasticsearch.connect_timeout%'
+      $requestTimeout: '%elasticsearch.request_timeout%'
+
+  PhpList\Core\Domain\Search\Client\ElasticsearchClientInterface:
+    alias: PhpList\Core\Domain\Search\Client\ElasticsearchClientAdapter
+
+  PhpList\Core\Domain\Search\Client\ElasticsearchClientAdapter: ~
+
+  PhpList\Core\Domain\Search\Service\ElasticsearchIndexerInterface:
+    alias: PhpList\Core\Domain\Search\Service\ElasticsearchIndexer
+
+  PhpList\Core\Domain\Search\Service\ElasticsearchIndexer:
+    arguments:
+      $indexPrefix: '%elasticsearch.index_prefix%'
+
+  PhpList\Core\Domain\Search\Registry\SearchIndexDefinitionRegistry:
+    arguments:
+      $definitions: !tagged_iterator 'phplist.search_index_definition'
+
+  PhpList\Core\Domain\Search\Registry\SearchReindexProviderRegistry:
+    arguments:
+      $providers: !tagged_iterator 'phplist.search_reindex_provider'
+
+#  PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryElasticsearchReader:
+#    arguments:
+#      $indexPrefix: '%elasticsearch.index_prefix%'
+
+#  PhpList\Core\Domain\Subscription\Service\Search\:
+#    resource: '../../src/Domain/Subscription/Service/Search'
