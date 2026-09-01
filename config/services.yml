@@ -55,6 +55,8 @@ services:
     arguments:
       $tablePrefix: '%database_prefix%'
 
+  PhpList\Core\Core\Doctrine\SearchIndexDoctrineListener: ~
+
   HTMLPurifier_Config:
     class: HTMLPurifier_Config
     factory: [ 'HTMLPurifier_Config', 'createDefault' ]

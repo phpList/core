@@ -21,6 +21,22 @@ framework:
 
             failed: 'doctrine://default?queue_name=failed'
 
+            # Dedicated queue (same Doctrine connection/table, distinct queue_name) for Elasticsearch
+            # dual-write. auto_setup is deliberately disabled: the messenger_messages table is already
+            # created by the async_email transport, and no DDL must ever run while a Doctrine ORM
+            # transaction is open (see SearchIndexDoctrineListener, which dispatches from postFlush).
+            # On a fresh install that enables search before ever sending email, run
+            # `bin/console messenger:setup-transports` once.
+            async_search:
+                dsn: 'doctrine://default?queue_name=search_index'
+                options:
+                    auto_setup: false
+                retry_strategy:
+                    max_retries: 5
+                    delay: 1000
+                    multiplier: 2
+                    max_delay: 30000
+
         routing:
             # Route your messages to the transports
             'PhpList\Core\Domain\Messaging\Message\AsyncEmailMessage': async_email
@@ -30,4 +46,5 @@ framework:
             'PhpList\Core\Domain\Messaging\Message\CampaignProcessor\CampaignProcessorMessage': async_email
             'PhpList\Core\Domain\Messaging\Message\CampaignProcessor\SyncCampaignProcessorMessage': sync
             'PhpList\Core\Domain\Subscription\Message\DynamicTableMessage': sync
+            'PhpList\Core\Domain\Search\Message\IndexDocumentMessage': async_search
 
