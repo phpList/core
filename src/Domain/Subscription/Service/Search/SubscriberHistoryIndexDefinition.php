@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Service\Search;
 
 use PhpList\Core\Domain\Search\Model\Interfaces\SearchIndexDefinitionInterface;
+use PhpList\Core\Domain\Subscription\Model\SubscriberHistory;
 
 class SubscriberHistoryIndexDefinition implements SearchIndexDefinitionInterface
 {
     public function getIndexAlias(): string
     {
-        return 'subscriber_history';
+        return SubscriberHistory::SEARCH_INDEX_NAME;
     }
 
     public function getMapping(): array

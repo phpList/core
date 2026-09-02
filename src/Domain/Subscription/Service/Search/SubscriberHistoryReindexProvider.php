@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Service\Search;
 
 use PhpList\Core\Domain\Search\Model\Interfaces\SearchReindexProviderInterface;
+use PhpList\Core\Domain\Subscription\Model\SubscriberHistory;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryRepository;
 
 class SubscriberHistoryReindexProvider implements SearchReindexProviderInterface
@@ -15,7 +16,7 @@ class SubscriberHistoryReindexProvider implements SearchReindexProviderInterface
 
     public function getAlias(): string
     {
-        return 'subscriber_history';
+        return SubscriberHistory::SEARCH_INDEX_NAME;
     }
 
     public function countAll(): int

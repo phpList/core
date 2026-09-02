@@ -23,7 +23,7 @@ class SubscriberHistory implements
     SearchIndexableInterface,
     SubscriberHistoryRecordInterface
 {
-    private const SEARCH_INDEX_NAME = 'subscriber_history';
+    public const SEARCH_INDEX_NAME = 'subscriber_history';
 
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]

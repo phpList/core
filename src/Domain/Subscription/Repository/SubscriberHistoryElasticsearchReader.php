@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberHistoryFilter;
 use PhpList\Core\Domain\Subscription\Model\Interfaces\SubscriberHistoryRecordInterface;
 use PhpList\Core\Domain\Subscription\Model\ReadModel\SubscriberHistoryReadModel;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
+use PhpList\Core\Domain\Subscription\Model\SubscriberHistory;
 use PhpList\Core\Domain\Subscription\Repository\Interfaces\SubscriberHistoryReaderInterface;
 
 /**
@@ -22,8 +23,6 @@ use PhpList\Core\Domain\Subscription\Repository\Interfaces\SubscriberHistoryRead
  */
 class SubscriberHistoryElasticsearchReader implements SubscriberHistoryReaderInterface
 {
-    private const INDEX_ALIAS = 'subscriber_history';
-
     public function __construct(
         private readonly ElasticsearchClientInterface $client,
         private readonly string $indexPrefix,
@@ -113,6 +112,6 @@ class SubscriberHistoryElasticsearchReader implements SubscriberHistoryReaderInt
 
     private function resolvePhysicalIndexName(): string
     {
-        return $this->indexPrefix . self::INDEX_ALIAS;
+        return $this->indexPrefix . SubscriberHistory::SEARCH_INDEX_NAME;
     }
 }
