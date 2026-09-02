@@ -67,12 +67,13 @@ class SubscriberHistoryElasticsearchReader implements SubscriberHistoryReaderInt
         );
 
         $hits = $response['hits']['hits'] ?? [];
+        $lastHit = $hits !== [] ? $hits[array_key_last($hits)] : null;
 
         return new PaginatedResult(
             items: array_map($this->hydrate(...), $hits),
             total: (int) ($response['hits']['total']['value'] ?? 0),
             limit: $filter->getLimit(),
-            lastId: $filter->getLastId(),
+            lastId: $lastHit !== null ? (int) $lastHit['_source']['idSort'] : $filter->getLastId(),
         );
     }
 

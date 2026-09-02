@@ -44,6 +44,7 @@ class SubscriberHistoryElasticsearchReaderTest extends TestCase
                     'hits' => [
                         ['_source' => [
                             'id' => 7,
+                            'idSort' => 7,
                             'subscriberId' => 3,
                             'ip' => '127.0.0.1',
                             'date' => '2026-01-01T00:00:00+00:00',
@@ -62,6 +63,66 @@ class SubscriberHistoryElasticsearchReaderTest extends TestCase
         $this->assertSame(7, $result->getItems()[0]->getId());
         $this->assertSame(3, $result->getItems()[0]->getSubscriberId());
         $this->assertSame('Updated', $result->getItems()[0]->getSummary());
+    }
+
+    public function testGetFilteredAfterIdPaginatesAcrossTwoPagesWithoutRepeatingResults(): void
+    {
+        $firstFilter = new SubscriberHistoryFilter(lastId: 0, limit: 1);
+
+        $this->client
+            ->expects($this->exactly(2))
+            ->method('search')
+            ->willReturnOnConsecutiveCalls(
+                [
+                    'hits' => [
+                        'total' => ['value' => 2],
+                        'hits' => [
+                            ['_source' => [
+                                'id' => 5,
+                                'idSort' => 5,
+                                'subscriberId' => 1,
+                                'ip' => '127.0.0.1',
+                                'date' => '2026-01-01T00:00:00+00:00',
+                                'summary' => 'First',
+                                'detail' => 'Detail',
+                                'systemInfo' => 'Info',
+                            ]],
+                        ],
+                    ],
+                ],
+                [
+                    'hits' => [
+                        'total' => ['value' => 2],
+                        'hits' => [
+                            ['_source' => [
+                                'id' => 8,
+                                'idSort' => 8,
+                                'subscriberId' => 2,
+                                'ip' => '127.0.0.1',
+                                'date' => '2026-01-02T00:00:00+00:00',
+                                'summary' => 'Second',
+                                'detail' => 'Detail',
+                                'systemInfo' => 'Info',
+                            ]],
+                        ],
+                    ],
+                ],
+            );
+
+        $firstPage = $this->reader->getFilteredAfterId($firstFilter);
+
+        $this->assertSame(5, $firstPage->getLastId());
+        $this->assertSame(5, $firstPage->getItems()[0]->getId());
+
+        $secondFilter = new SubscriberHistoryFilter(lastId: $firstPage->getLastId(), limit: 1);
+        $secondPage = $this->reader->getFilteredAfterId($secondFilter);
+
+        $this->assertSame(8, $secondPage->getLastId());
+        $this->assertSame(8, $secondPage->getItems()[0]->getId());
+        $this->assertNotSame(
+            $firstPage->getItems()[0]->getId(),
+            $secondPage->getItems()[0]->getId(),
+        );
     }
 
     public function testGetFilteredAfterIdRejectsWrongFilterType(): void
