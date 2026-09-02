@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Common\Model\Interfaces\ModificationDate;
+use PhpList\Core\Domain\Subscription\Model\Interfaces\SubscriberHistoryRecordInterface;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 
 /**
@@ -114,7 +115,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     #[ORM\Column(name: 'foreignkey', type: 'string', length: 100, nullable: true)]
     private ?string $foreignKey = null;
 
-    /** @var SubscriberHistory[] */
+    /** @var SubscriberHistoryRecordInterface[] */
     private array $history = [];
 
     public function __construct(string $email)
@@ -378,7 +379,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     }
 
     /**
-     * @return SubscriberHistory[]
+     * @return SubscriberHistoryRecordInterface[]
      */
     public function getHistory(): array
     {
@@ -386,7 +387,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     }
 
     /**
-     * @param SubscriberHistory[] $history
+     * @param SubscriberHistoryRecordInterface[] $history
      */
     public function setHistory(array $history): void
     {

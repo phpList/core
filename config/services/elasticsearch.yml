@@ -39,9 +39,9 @@ services:
     arguments:
       $providers: !tagged_iterator 'phplist.search_reindex_provider'
 
-#  PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryElasticsearchReader:
-#    arguments:
-#      $indexPrefix: '%elasticsearch.index_prefix%'
+  PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryElasticsearchReader:
+    arguments:
+      $indexPrefix: '%elasticsearch.index_prefix%'
 
-#  PhpList\Core\Domain\Subscription\Service\Search\:
-#    resource: '../../src/Domain/Subscription/Service/Search'
+  PhpList\Core\Domain\Subscription\Service\Search\:
+    resource: '../../src/Domain/Subscription/Service/Search'

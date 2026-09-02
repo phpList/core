@@ -13,8 +13,11 @@ use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterf
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberHistoryFilter;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberHistory;
+use PhpList\Core\Domain\Subscription\Repository\Interfaces\SubscriberHistoryReaderInterface;
 
-class SubscriberHistoryRepository extends AbstractRepository implements PaginatableRepositoryInterface
+class SubscriberHistoryRepository extends AbstractRepository implements
+    PaginatableRepositoryInterface,
+    SubscriberHistoryReaderInterface
 {
     use CursorPaginationTrait;
 

@@ -10,7 +10,7 @@ use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\SystemInfoCollector;
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberHistoryFilter;
 use PhpList\Core\Domain\Subscription\Model\SubscriberHistory;
-use PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryRepository;
+use PhpList\Core\Domain\Subscription\Repository\Interfaces\SubscriberHistoryReaderInterface;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -18,14 +18,14 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SubscriberHistoryManagerTest extends TestCase
 {
-    private SubscriberHistoryRepository|MockObject $subscriberHistoryRepository;
+    private SubscriberHistoryReaderInterface|MockObject $subscriberHistoryRepository;
     private SubscriberHistoryManager $subscriptionHistoryService;
 
     protected function setUp(): void
     {
-        $this->subscriberHistoryRepository = $this->createMock(SubscriberHistoryRepository::class);
+        $this->subscriberHistoryRepository = $this->createMock(SubscriberHistoryReaderInterface::class);
         $this->subscriptionHistoryService = new SubscriberHistoryManager(
-            repository: $this->subscriberHistoryRepository,
+            reader: $this->subscriberHistoryRepository,
             clientIpResolver: $this->createMock(ClientIpResolver::class),
             systemInfoCollector: $this->createMock(SystemInfoCollector::class),
             translator: $this->createMock(TranslatorInterface::class),
