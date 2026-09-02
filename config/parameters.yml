@@ -56,7 +56,7 @@ parameters:
     elasticsearch.hosts: '%env(csv:ELASTICSEARCH_HOSTS)%'
     elasticsearch.username: '%env(ELASTICSEARCH_USERNAME)%'
     elasticsearch.password: '%env(ELASTICSEARCH_PASSWORD)%'
-    elasticsearch.index_prefix: '%env(ELASTICSEARCH_INDEX_PREFIX)%'
+    elasticsearch.index_prefix: '%env(DATABASE_PREFIX)%'
     elasticsearch.connect_timeout: '%env(int:ELASTICSEARCH_CONNECT_TIMEOUT)%'
     elasticsearch.request_timeout: '%env(int:ELASTICSEARCH_REQUEST_TIMEOUT)%'
 
