@@ -27,8 +27,9 @@ framework:
             # transaction is open (see SearchIndexDoctrineListener, which dispatches from postFlush).
             # On a fresh install that enables search before ever sending email, run
             # `bin/console messenger:setup-transports` once.
+            # Configurable so tests can swap in 'sync://' (see .env.test) and index synchronously.
             async_search:
-                dsn: 'doctrine://default?queue_name=search_index'
+                dsn: '%env(SEARCH_TRANSPORT_DSN)%'
                 options:
                     auto_setup: false
                 retry_strategy:

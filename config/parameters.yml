@@ -50,6 +50,7 @@ parameters:
 
     # Messenger configuration for asynchronous processing
     app.messenger_transport_dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+    app.search_transport_dsn: '%env(SEARCH_TRANSPORT_DSN)%'
 
     # Elasticsearch configuration
     elasticsearch.hosts: '%env(csv:ELASTICSEARCH_HOSTS)%'

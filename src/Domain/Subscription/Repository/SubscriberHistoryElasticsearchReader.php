@@ -57,8 +57,8 @@ class SubscriberHistoryElasticsearchReader implements SubscriberHistoryReaderInt
         $mustFilters[] = ['range' => ['idSort' => ['gt' => $filter->getLastId()]]];
 
         $response = $this->client->search(
-            indexname: $this->resolvePhysicalIndexName(),
-            query: [
+            $this->resolvePhysicalIndexName(),
+            [
                 'query' => ['bool' => ['filter' => $mustFilters]],
                 'sort' => [['idSort' => 'asc']],
                 'size' => $filter->getLimit(),
@@ -80,8 +80,8 @@ class SubscriberHistoryElasticsearchReader implements SubscriberHistoryReaderInt
     public function getBySubscriber(Subscriber $subscriber): array
     {
         $response = $this->client->search(
-            indexname: $this->resolvePhysicalIndexName(),
-            query: [
+            $this->resolvePhysicalIndexName(),
+            [
                 'query' => ['term' => ['subscriberId' => $subscriber->getId()]],
                 'sort' => [['idSort' => 'desc']],
                 'size' => 10000,

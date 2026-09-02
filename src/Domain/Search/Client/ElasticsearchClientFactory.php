@@ -23,7 +23,7 @@ class ElasticsearchClientFactory
         }
 
         $builder->setHttpClientOptions([
-            'connect_timeout' => $connectTimeout,
+            'max_connect_duration' => $connectTimeout,
             'timeout' => $requestTimeout,
         ]);
 
