@@ -14,7 +14,7 @@ framework:
                     check_delayed_interval: 60000
                 retry_strategy:
                     max_retries: 3
-                    # milliseconds delay
+                    # millisecond delay
                     delay: 1000
                     multiplier: 2
                     max_delay: 0

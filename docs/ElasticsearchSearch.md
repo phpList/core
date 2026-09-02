@@ -12,7 +12,10 @@ Elasticsearch:
 - **Writes** stay exactly as they are today (Doctrine `persist()`/`remove()`). A generic Doctrine
   event listener (`PhpList\Core\Core\Doctrine\SearchIndexDoctrineListener`) detects any entity that
   implements `SearchIndexableInterface` and asynchronously dispatches an indexing/deletion message via
-  Symfony Messenger, once the surrounding transaction has actually committed.
+  Symfony Messenger from Doctrine's `postFlush` event, i.e. after the ORM flush - not necessarily after
+  a real commit. Callers that wrap `flush()` in their own explicit transaction (e.g.
+  `SubscriberCsvImporter`) cause `postFlush` to fire before that outer transaction actually commits; see
+  "Consistency model" below for why this is still safe.
 - **Reads** for those entities go through a dedicated reader interface (e.g.
   `SubscriberHistoryReaderInterface`) that is aliased in DI to an Elasticsearch-backed implementation
   instead of the Doctrine repository.
@@ -26,10 +29,17 @@ interfaces (see "Adding a new searchable entity" below) - no changes to the dual
   processing its queued message, a read from Elasticsearch will not yet reflect that row.
 - Reads **hard-fail** if Elasticsearch is unreachable - there is no fallback to the database. Any
   Elasticsearch error is raised as `PhpList\Core\Domain\Search\Exception\SearchBackendUnavailableException`.
-- If a process crashes between the database transaction committing and the message being dispatched
-  (a narrow window - see `SearchIndexDoctrineListener`'s docblock for why the dispatch happens in
-  `postFlush`, not `postPersist`/`postUpdate`/`postRemove`), that one row is missed until the next
-  `phplist:search:reindex` run. Nothing is ever indexed for a row that was rolled back.
+- Dispatch happens from `postFlush`, not `postPersist`/`postUpdate`/`postRemove` (those fire while the
+  flush is still in progress), so a row that ends up rolled back is never indexed. For a plain
+  `flush()` call with no surrounding transaction, `postFlush`'s own commit is the real commit, so
+  dispatch does happen after the row is durably committed. When a caller instead wraps `flush()` in
+  its own explicit transaction (e.g. `SubscriberCsvImporter`), `postFlush` fires before that outer
+  transaction commits - but the `async_search` transport is a Doctrine queue on the same connection, so
+  the queued message insert shares that same outer transaction: the row and its message still commit
+  or roll back together. The remaining crash window is narrower than "commit vs. dispatch" - it's
+  strictly between the outer transaction's real commit and the `async_search` worker consuming the
+  message; if a process dies in that window, that one row is missed until the next
+  `phplist:search:reindex` run.
 
 Consumers of `phplist/core` that build UI on top of these read paths should plan for both of the above
 (e.g. a brief "just added" staleness window, and handling a 5xx-equivalent from a search-unavailable
@@ -39,7 +49,7 @@ condition) rather than assuming synchronous consistency with the database.
 
 Set in `.env` (see `.env.dist`):
 
-```
+```dotenv
 ELASTICSEARCH_HOSTS=http://127.0.0.1:9200
 ELASTICSEARCH_USERNAME=
 ELASTICSEARCH_PASSWORD=
