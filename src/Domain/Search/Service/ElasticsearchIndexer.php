@@ -15,14 +15,14 @@ class ElasticsearchIndexer implements ElasticsearchIndexerInterface
     ) {
     }
 
-    public function index(string $indexAlias, string $documentId, array $document): void
+    public function index(string $indexAlias, string $documentId, array $document, int $revision): void
     {
-        $this->client->index($this->resolvePhysicalIndexName($indexAlias), $documentId, $document);
+        $this->client->index($this->resolvePhysicalIndexName($indexAlias), $documentId, $document, $revision);
     }
 
-    public function delete(string $indexAlias, string $documentId): void
+    public function delete(string $indexAlias, string $documentId, int $revision): void
     {
-        $this->client->delete($this->resolvePhysicalIndexName($indexAlias), $documentId);
+        $this->client->delete($this->resolvePhysicalIndexName($indexAlias), $documentId, $revision);
     }
 
     public function createOrUpdateIndex(SearchIndexDefinitionInterface $definition): void

@@ -90,6 +90,7 @@ class ReindexSearchCommand extends Command
                     $entity->getSearchIndexName(),
                     $entity->getSearchDocumentId(),
                     $entity->toSearchDocument(),
+                    (int) (microtime(true) * 1_000_000),
                 );
                 $lastId = (int) $entity->getSearchDocumentId();
                 $countInBatch++;

@@ -62,12 +62,38 @@ class SearchIndexDoctrineListenerTest extends TestCase
                 return $message->getIndexName() === 'subscriber_history'
                     && $message->getDocumentId() === '1'
                     && $message->getDocument() === ['id' => 1]
-                    && $message->getOperation() === SearchOperation::Index;
+                    && $message->getOperation() === SearchOperation::Index
+                    && $message->getRevision() > 0;
             }))
             ->willReturn(new Envelope(new stdClass()));
 
         $this->listener->postPersist(new PostPersistEventArgs($entity, $this->objectManager));
         $this->listener->postFlush(new PostFlushEventArgs($this->objectManager));
+    }
+
+    public function testRevisionsAreMonotonicallyIncreasingAcrossFlushes(): void
+    {
+        $entity = $this->createIndexable('subscriber_history', '1', ['id' => 1]);
+        $revisions = [];
+
+        $this->messageBus
+            ->expects($this->exactly(2))
+            ->method('dispatch')
+            ->with($this->callback(function (IndexDocumentMessage $message) use (&$revisions): bool {
+                $revisions[] = $message->getRevision();
+
+                return true;
+            }))
+            ->willReturn(new Envelope(new stdClass()));
+
+        $this->listener->postPersist(new PostPersistEventArgs($entity, $this->objectManager));
+        $this->listener->postFlush(new PostFlushEventArgs($this->objectManager));
+
+        $this->listener->postUpdate(new PostUpdateEventArgs($entity, $this->objectManager));
+        $this->listener->postFlush(new PostFlushEventArgs($this->objectManager));
+
+        $this->assertCount(2, $revisions);
+        $this->assertGreaterThanOrEqual($revisions[0], $revisions[1]);
     }
 
     public function testPostRemoveBuffersDeleteOperationWithEmptyDocument(): void

@@ -15,16 +15,19 @@ use PhpList\Core\Domain\Search\Exception\SearchBackendUnavailableException;
 interface ElasticsearchClientInterface
 {
     /**
+     * Returns quietly (idempotent) if $revision is older than the revision currently stored for this
+     * document - a delayed retry of a stale write must never resurrect/overwrite newer state.
      * @param array<string, mixed> $document
      * @throws SearchBackendUnavailableException
      */
-    public function index(string $indexName, string $documentId, array $document): void;
+    public function index(string $indexName, string $documentId, array $document, int $revision): void;
 
     /**
-     * Returns quietly (idempotent) if the document does not exist.
+     * Returns quietly (idempotent) if the document does not exist, or if $revision is older than the
+     * revision currently stored for this document.
      * @throws SearchBackendUnavailableException
      */
-    public function delete(string $indexName, string $documentId): void;
+    public function delete(string $indexName, string $documentId, int $revision): void;
 
     /** @throws SearchBackendUnavailableException */
     public function indexExists(string $indexName): bool;

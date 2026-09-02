@@ -12,32 +12,43 @@ use Throwable;
 class ElasticsearchClientAdapter implements ElasticsearchClientInterface
 {
     private const HTTP_NOT_FOUND = 404;
+    private const HTTP_CONFLICT = 409;
 
     public function __construct(private readonly Client $client)
     {
     }
 
-    public function index(string $indexName, string $documentId, array $document): void
+    public function index(string $indexName, string $documentId, array $document, int $revision): void
     {
-        $this->call(function () use ($indexName, $documentId, $document): void {
-            $this->client->index([
-                'index' => $indexName,
-                'id' => $documentId,
-                'body' => $document,
-            ]);
+        $this->call(function () use ($indexName, $documentId, $document, $revision): void {
+            try {
+                $this->client->index([
+                    'index' => $indexName,
+                    'id' => $documentId,
+                    'body' => $document,
+                    'version' => $revision,
+                    'version_type' => 'external_gte',
+                ]);
+            } catch (ClientResponseException $exception) {
+                if ($exception->getCode() !== self::HTTP_CONFLICT) {
+                    throw $exception;
+                }
+            }
         });
     }
 
-    public function delete(string $indexName, string $documentId): void
+    public function delete(string $indexName, string $documentId, int $revision): void
     {
-        $this->call(function () use ($indexName, $documentId): void {
+        $this->call(function () use ($indexName, $documentId, $revision): void {
             try {
                 $this->client->delete([
                     'index' => $indexName,
                     'id' => $documentId,
+                    'version' => $revision,
+                    'version_type' => 'external_gte',
                 ]);
             } catch (ClientResponseException $exception) {
-                if ($exception->getCode() !== self::HTTP_NOT_FOUND) {
+                if (!in_array($exception->getCode(), [self::HTTP_NOT_FOUND, self::HTTP_CONFLICT], true)) {
                     throw $exception;
                 }
             }

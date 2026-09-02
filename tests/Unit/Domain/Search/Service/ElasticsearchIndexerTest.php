@@ -26,9 +26,9 @@ class ElasticsearchIndexerTest extends TestCase
         $this->client
             ->expects($this->once())
             ->method('index')
-            ->with('phplist_subscriber_history', '42', ['id' => 42]);
+            ->with('phplist_subscriber_history', '42', ['id' => 42], 100);
 
-        $this->indexer->index('subscriber_history', '42', ['id' => 42]);
+        $this->indexer->index('subscriber_history', '42', ['id' => 42], 100);
     }
 
     public function testDeleteAppliesIndexPrefix(): void
@@ -36,9 +36,9 @@ class ElasticsearchIndexerTest extends TestCase
         $this->client
             ->expects($this->once())
             ->method('delete')
-            ->with('phplist_subscriber_history', '42');
+            ->with('phplist_subscriber_history', '42', 100);
 
-        $this->indexer->delete('subscriber_history', '42');
+        $this->indexer->delete('subscriber_history', '42', 100);
     }
 
     public function testCreateOrUpdateIndexCreatesWhenAbsent(): void

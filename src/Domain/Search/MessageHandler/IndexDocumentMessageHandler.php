@@ -23,10 +23,12 @@ class IndexDocumentMessageHandler
                 $message->getIndexName(),
                 $message->getDocumentId(),
                 $message->getDocument(),
+                $message->getRevision(),
             ),
             SearchOperation::Delete => $this->indexer->delete(
                 $message->getIndexName(),
                 $message->getDocumentId(),
+                $message->getRevision(),
             ),
         };
     }

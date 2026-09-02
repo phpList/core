@@ -19,6 +19,7 @@ class IndexDocumentMessage
         private readonly string $documentId,
         private readonly array $document,
         private readonly SearchOperation $operation,
+        private readonly int $revision,
     ) {
     }
 
@@ -41,5 +42,10 @@ class IndexDocumentMessage
     public function getOperation(): SearchOperation
     {
         return $this->operation;
+    }
+
+    public function getRevision(): int
+    {
+        return $this->revision;
     }
 }

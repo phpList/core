@@ -25,12 +25,12 @@ class IndexDocumentMessageHandlerTest extends TestCase
     public function testInvokeIndexesOnIndexOperation(): void
     {
         $document = ['id' => 1, 'summary' => 'hello'];
-        $message = new IndexDocumentMessage('subscriber_history', '1', $document, SearchOperation::Index);
+        $message = new IndexDocumentMessage('subscriber_history', '1', $document, SearchOperation::Index, 100);
 
         $this->indexer
             ->expects($this->once())
             ->method('index')
-            ->with('subscriber_history', '1', $document);
+            ->with('subscriber_history', '1', $document, 100);
         $this->indexer->expects($this->never())->method('delete');
 
         ($this->handler)($message);
@@ -38,12 +38,12 @@ class IndexDocumentMessageHandlerTest extends TestCase
 
     public function testInvokeDeletesOnDeleteOperation(): void
     {
-        $message = new IndexDocumentMessage('subscriber_history', '1', [], SearchOperation::Delete);
+        $message = new IndexDocumentMessage('subscriber_history', '1', [], SearchOperation::Delete, 100);
 
         $this->indexer
             ->expects($this->once())
             ->method('delete')
-            ->with('subscriber_history', '1');
+            ->with('subscriber_history', '1', 100);
         $this->indexer->expects($this->never())->method('index');
 
         ($this->handler)($message);

@@ -82,6 +82,18 @@ class SearchIndexDoctrineListener
             $entity->getSearchDocumentId(),
             $document,
             $operation,
+            $this->nextRevision(),
         );
+    }
+
+    /**
+     * Wall-clock microseconds, not a per-process counter: a delayed Messenger retry carries the
+     * revision assigned when it was originally queued, and must stay comparable against revisions
+     * assigned by other PHP processes/workers for the same document so the indexer (via Elasticsearch
+     * external versioning) can tell a stale retry apart from a newer write.
+     */
+    private function nextRevision(): int
+    {
+        return (int) (microtime(true) * 1_000_000);
     }
 }
