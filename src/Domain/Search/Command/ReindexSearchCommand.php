@@ -51,6 +51,16 @@ class ReindexSearchCommand extends Command
         $batchSize = (int) $input->getOption('batch-size');
         $lastId = (int) $input->getOption('last-id');
 
+        if ($batchSize < 1) {
+            $io->error('The --batch-size option must be greater than zero.');
+            return Command::FAILURE;
+        }
+
+        if ($alias === null && $lastId !== 0) {
+            $io->error('The --last-id option requires an index alias.');
+            return Command::FAILURE;
+        }
+
         $providers = $alias !== null
             ? array_filter([$this->registry->find($alias)])
             : $this->registry->getAll();

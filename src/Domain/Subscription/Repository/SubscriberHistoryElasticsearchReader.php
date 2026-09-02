@@ -85,6 +85,7 @@ class SubscriberHistoryElasticsearchReader implements SubscriberHistoryReaderInt
             [
                 'query' => ['term' => ['subscriberId' => $subscriber->getId()]],
                 'sort' => [['idSort' => 'desc']],
+                // 10000 is enough, I think, but if we ever need more, we can implement pagination here too.
                 'size' => 10000,
             ],
         );
