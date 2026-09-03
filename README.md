@@ -204,6 +204,7 @@ To extract translation strings from the source into an XLIFF catalog:
 php bin/console translation:extract --force en --format=xlf
 php bin/console messenger:setup-transports
 php bin/console messenger:consume async --limit=1
+php bin/console phplist:search:init-indices
 ```
 
 ## Copyright
