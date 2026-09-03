@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\ReadModel\UserMessageBounceReadModel;
 use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
+use PhpList\Core\Domain\Messaging\Repository\Interfaces\UserMessageBounceReportReaderInterface;
 use PhpList\Core\Domain\Search\Client\ElasticsearchClientInterface;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\Subscription;
@@ -26,8 +27,11 @@ use PhpList\Core\Domain\Subscription\Model\Subscription;
  *
  * Only makes sense when bounce reads are Elasticsearch-backed - UserMessageBounceRepository already
  * has the plain single-query SQL join versions of all four methods for when they aren't.
+ * getListBounceTotals/getCampaignBounceTotals are also declared on UserMessageBounceReportReaderInterface,
+ * which is what external consumers (e.g. phplist/rest-api) should depend on instead of this concrete
+ * class - see config/services/repositories.yml for the DI alias.
  */
-class UserMessageBounceElasticsearchHybridReader
+class UserMessageBounceElasticsearchHybridReader implements UserMessageBounceReportReaderInterface
 {
     // todo: move db queries into repositories and inject them here, rather than using the entity manager directly
     public function __construct(

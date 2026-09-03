@@ -127,6 +127,12 @@ services:
   # alias to UserMessageBounceRepository to read from the database instead.
   PhpList\Core\Domain\Messaging\Repository\Interfaces\UserMessageBounceReaderInterface:
     alias: PhpList\Core\Domain\Messaging\Repository\UserMessageBounceElasticsearchReader
+
+  # Same swap point for the reporting queries (getListBounceTotals/getCampaignBounceTotals) that join
+  # bounce data against Subscriber/Message - swap this alias to UserMessageBounceRepository to read
+  # from the database instead.
+  PhpList\Core\Domain\Messaging\Repository\Interfaces\UserMessageBounceReportReaderInterface:
+    alias: PhpList\Core\Domain\Messaging\Repository\UserMessageBounceElasticsearchHybridReader
   PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:

@@ -17,12 +17,14 @@ use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
 use PhpList\Core\Domain\Messaging\Repository\Interfaces\UserMessageBounceReaderInterface;
+use PhpList\Core\Domain\Messaging\Repository\Interfaces\UserMessageBounceReportReaderInterface;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\Subscription;
 
 class UserMessageBounceRepository extends AbstractRepository implements
     PaginatableRepositoryInterface,
-    UserMessageBounceReaderInterface
+    UserMessageBounceReaderInterface,
+    UserMessageBounceReportReaderInterface
 {
     use CursorPaginationTrait;
 
