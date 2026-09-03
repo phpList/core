@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Repository;
 
+use DateTime;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Messaging\Model\Filter\UserMessageBounceFilter;
@@ -144,5 +145,72 @@ class UserMessageBounceElasticsearchReaderTest extends TestCase
         $result = $this->reader->getByUserId(9);
 
         $this->assertSame([], $result);
+    }
+
+    public function testGetCountByMessageIdQueriesTotalHitsForMessage(): void
+    {
+        $this->client
+            ->expects($this->once())
+            ->method('search')
+            ->with(
+                'phplist_user_message_bounce',
+                $this->callback(function (array $query): bool {
+                    return $query['query'] === ['term' => ['messageId' => 42]]
+                        && $query['size'] === 0;
+                }),
+            )
+            ->willReturn(['hits' => ['total' => ['value' => 7]]]);
+
+        $this->assertSame(7, $this->reader->getCountByMessageId(42));
+    }
+
+    public function testCountBetweenQueriesTimeRange(): void
+    {
+        $start = new DateTime('2026-01-01 00:00:00');
+        $end = new DateTime('2026-01-31 23:59:59');
+
+        $this->client
+            ->expects($this->once())
+            ->method('search')
+            ->with(
+                'phplist_user_message_bounce',
+                $this->callback(function (array $query) use ($start, $end): bool {
+                    return $query['query'] === ['range' => ['time' => [
+                        'gte' => $start->format(DATE_ATOM),
+                        'lte' => $end->format(DATE_ATOM),
+                    ]]];
+                }),
+            )
+            ->willReturn(['hits' => ['total' => ['value' => 3]]]);
+
+        $this->assertSame(3, $this->reader->countBetween($start, $end));
+    }
+
+    public function testExistsByMessageIdAndUserIdReturnsTrueWhenHitsExist(): void
+    {
+        $this->client
+            ->expects($this->once())
+            ->method('search')
+            ->with(
+                'phplist_user_message_bounce',
+                $this->callback(function (array $query): bool {
+                    return $query['query']['bool']['filter'] === [
+                        ['term' => ['messageId' => 5]],
+                        ['term' => ['userId' => 9]],
+                    ];
+                }),
+            )
+            ->willReturn(['hits' => ['total' => ['value' => 1]]]);
+
+        $this->assertTrue($this->reader->existsByMessageIdAndUserId(5, 9));
+    }
+
+    public function testExistsByMessageIdAndUserIdReturnsFalseWhenNoHits(): void
+    {
+        $this->client
+            ->method('search')
+            ->willReturn(['hits' => ['total' => ['value' => 0]]]);
+
+        $this->assertFalse($this->reader->existsByMessageIdAndUserId(5, 9));
     }
 }

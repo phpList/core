@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Repository\Interfaces;
 
+use DateTimeInterface;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Messaging\Model\Interfaces\UserMessageBounceRecordInterface;
@@ -20,4 +21,10 @@ interface UserMessageBounceReaderInterface
 
     /** @return UserMessageBounceRecordInterface[] */
     public function getByUserId(int $userId): array;
+
+    public function getCountByMessageId(int $messageId): int;
+
+    public function countBetween(DateTimeInterface $start, DateTimeInterface $end): int;
+
+    public function existsByMessageIdAndUserId(int $messageId, int $subscriberId): bool;
 }

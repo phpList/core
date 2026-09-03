@@ -17,8 +17,8 @@ use PhpList\Core\Domain\Messaging\Model\Filter\MessageFilter;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
+use PhpList\Core\Domain\Messaging\Repository\Interfaces\UserMessageBounceReaderInterface;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
-use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -31,7 +31,7 @@ class AnalyticsServiceTest extends TestCase
     private LinkTrackManager|MockObject $linkTrackManager;
     private UserMessageViewManager|MockObject $userMessageViewManager;
     private MessageRepository|MockObject $messageRepository;
-    private UserMessageBounceRepository|MockObject $userMessageBounceRepository;
+    private UserMessageBounceReaderInterface|MockObject $userMessageBounceReader;
     private UserMessageForwardRepository|MockObject $userMessageForwardRepository;
     private SubscriberRepository|MockObject $subscriberRepository;
     private UserMessageRepository|MockObject $userMessageRepository;
@@ -42,7 +42,7 @@ class AnalyticsServiceTest extends TestCase
         $this->linkTrackManager = $this->createMock(LinkTrackManager::class);
         $this->userMessageViewManager = $this->createMock(UserMessageViewManager::class);
         $this->messageRepository = $this->createMock(MessageRepository::class);
-        $this->userMessageBounceRepository = $this->createMock(UserMessageBounceRepository::class);
+        $this->userMessageBounceReader = $this->createMock(UserMessageBounceReaderInterface::class);
         $this->userMessageForwardRepository = $this->createMock(UserMessageForwardRepository::class);
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
         $this->userMessageRepository = $this->createMock(UserMessageRepository::class);
@@ -52,7 +52,7 @@ class AnalyticsServiceTest extends TestCase
             $this->linkTrackManager,
             $this->userMessageViewManager,
             $this->messageRepository,
-            $this->userMessageBounceRepository,
+            $this->userMessageBounceReader,
             $this->userMessageForwardRepository,
             $this->subscriberRepository,
             $this->userMessageRepository,
@@ -109,7 +109,7 @@ class AnalyticsServiceTest extends TestCase
             ->with($messageId)
             ->willReturn([$linkTrack1, $linkTrack2]);
 
-        $this->userMessageBounceRepository->expects(self::once())
+        $this->userMessageBounceReader->expects(self::once())
             ->method('getCountByMessageId')
             ->with($messageId)
             ->willReturn(3);
@@ -291,7 +291,7 @@ class AnalyticsServiceTest extends TestCase
 
         $this->userMessageRepository->method('countSentBetween')->willReturnOnConsecutiveCalls(500, 400);
         $this->userMessageViewRepository->method('countBetween')->willReturnOnConsecutiveCalls(250, 160);
-        $this->userMessageBounceRepository->method('countBetween')->willReturnOnConsecutiveCalls(10, 8);
+        $this->userMessageBounceReader->method('countBetween')->willReturnOnConsecutiveCalls(10, 8);
 
         $result = $this->subject->getSummaryStatistics();
 

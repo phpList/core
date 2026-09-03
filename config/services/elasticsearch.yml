@@ -50,5 +50,9 @@ services:
     arguments:
       $indexPrefix: '%elasticsearch.index_prefix%'
 
+  PhpList\Core\Domain\Messaging\Repository\UserMessageBounceElasticsearchHybridReader:
+    arguments:
+      $indexPrefix: '%elasticsearch.index_prefix%'
+
   PhpList\Core\Domain\Messaging\Service\Search\:
     resource: '../../src/Domain/Messaging/Service/Search'

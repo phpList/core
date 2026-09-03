@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Repository;
 
 use DateTime;
+use DateTimeInterface;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Model\PaginatedResult;
@@ -91,6 +92,54 @@ class UserMessageBounceElasticsearchReader implements UserMessageBounceReaderInt
         $hits = $response['hits']['hits'] ?? [];
 
         return array_map($this->hydrate(...), $hits);
+    }
+
+    public function getCountByMessageId(int $messageId): int
+    {
+        $response = $this->client->search(
+            $this->resolvePhysicalIndexName(),
+            [
+                'query' => ['term' => ['messageId' => $messageId]],
+                'size' => 0,
+                'track_total_hits' => true,
+            ],
+        );
+
+        return (int) ($response['hits']['total']['value'] ?? 0);
+    }
+
+    public function countBetween(DateTimeInterface $start, DateTimeInterface $end): int
+    {
+        $response = $this->client->search(
+            $this->resolvePhysicalIndexName(),
+            [
+                'query' => ['range' => ['time' => [
+                    'gte' => $start->format(DateTimeInterface::ATOM),
+                    'lte' => $end->format(DateTimeInterface::ATOM),
+                ]]],
+                'size' => 0,
+                'track_total_hits' => true,
+            ],
+        );
+
+        return (int) ($response['hits']['total']['value'] ?? 0);
+    }
+
+    public function existsByMessageIdAndUserId(int $messageId, int $subscriberId): bool
+    {
+        $response = $this->client->search(
+            $this->resolvePhysicalIndexName(),
+            [
+                'query' => ['bool' => ['filter' => [
+                    ['term' => ['messageId' => $messageId]],
+                    ['term' => ['userId' => $subscriberId]],
+                ]]],
+                'size' => 0,
+                'track_total_hits' => true,
+            ],
+        );
+
+        return ((int) ($response['hits']['total']['value'] ?? 0)) > 0;
     }
 
     /** @param array{_source: array<string, mixed>} $hit */
