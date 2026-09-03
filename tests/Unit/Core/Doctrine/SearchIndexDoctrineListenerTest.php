@@ -9,6 +9,7 @@ use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PostPersistEventArgs;
 use Doctrine\ORM\Event\PostRemoveEventArgs;
 use Doctrine\ORM\Event\PostUpdateEventArgs;
+use Doctrine\ORM\Event\PreRemoveEventArgs;
 use PhpList\Core\Core\Doctrine\SearchIndexDoctrineListener;
 use PhpList\Core\Domain\Search\Message\IndexDocumentMessage;
 use PhpList\Core\Domain\Search\Model\Interfaces\SearchIndexableInterface;
@@ -154,5 +155,19 @@ class SearchIndexDoctrineListenerTest extends TestCase
 
         // A second postFlush with nothing new queued must not re-dispatch the same message.
         $this->listener->postFlush(new PostFlushEventArgs($this->objectManager));
+    }
+
+    public function testDisabledListenerNeverQueuesOrDispatchesAnything(): void
+    {
+        $listener = new SearchIndexDoctrineListener($this->messageBus, enabled: false);
+        $entity = $this->createIndexable('subscriber_history', '1', ['id' => 1]);
+
+        $this->messageBus->expects($this->never())->method('dispatch');
+
+        $listener->postPersist(new PostPersistEventArgs($entity, $this->objectManager));
+        $listener->postUpdate(new PostUpdateEventArgs($entity, $this->objectManager));
+        $listener->preRemove(new PreRemoveEventArgs($entity, $this->objectManager));
+        $listener->postRemove(new PostRemoveEventArgs($entity, $this->objectManager));
+        $listener->postFlush(new PostFlushEventArgs($this->objectManager));
     }
 }

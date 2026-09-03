@@ -63,6 +63,23 @@ applied to every logical index alias (e.g. alias `subscriber_history` becomes in
 `phplist_subscriber_history` with the default prefix), the same convention as `DATABASE_PREFIX` for
 MySQL tables.
 
+### Making Elasticsearch optional
+
+Set `ELASTICSEARCH_ENABLED=false` to run without an Elasticsearch cluster at all - no code changes,
+no cluster required, and it's safe even if `ELASTICSEARCH_HOSTS` is unreachable or unset:
+
+- **Writes**: `SearchIndexDoctrineListener` becomes a no-op - nothing is ever queued to the
+  `async_search` transport, so no `IndexDocumentMessage` accumulates unconsumed.
+- **Reads**: every reader interface (`SubscriberHistoryReaderInterface`,
+  `UserMessageBounceReaderInterface`, `UserMessageBounceReportReaderInterface`) is aliased to a small
+  `*ConfigurableReader` that picks the Doctrine repository instead of the Elasticsearch reader - see
+  `SubscriberHistoryConfigurableReader`/`UserMessageBounceConfigurableReader`/
+  `UserMessageBounceReportConfigurableReader`.
+
+The `elasticsearch/elasticsearch` PHP client package is still a hard Composer dependency of
+`phplist/core` either way - disabling the feature at runtime doesn't remove the need to have that
+package installed, only the need to have a reachable cluster.
+
 ## Queueing
 
 Indexing/deletion messages are routed to a dedicated `async_search` Messenger transport
@@ -108,8 +125,10 @@ again after adding a new searchable entity or changing a mapping.
    `phplist:search:reindex`.
 4. If reads should also move to Elasticsearch, introduce a reader interface for that entity (mirroring
    `SubscriberHistoryReaderInterface`) and an Elasticsearch-backed implementation (mirroring
-   `SubscriberHistoryElasticsearchReader`), then alias the interface to it in DI instead of the
-   Doctrine repository.
+   `SubscriberHistoryElasticsearchReader`). To keep Elasticsearch optional for the new entity too, also
+   add a `*ConfigurableReader` (mirroring `SubscriberHistoryConfigurableReader`) that picks between the
+   Doctrine repository and the Elasticsearch reader based on `elasticsearch.enabled`, and alias the
+   interface to that instead of aliasing directly to either backend.
 
 ## Troubleshooting
 

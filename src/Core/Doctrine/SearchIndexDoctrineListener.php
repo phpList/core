@@ -30,6 +30,11 @@ use Symfony\Component\Messenger\MessageBusInterface;
  * preRemove captures getSearchIndexName()/getSearchDocumentId() before the delete happens: for
  * entities with a Doctrine-generated id, UnitOfWork::executeDeletions() nulls the identifier before
  * postRemove fires, so reading it there would queue a delete with an empty document id.
+ *
+ * $enabled (elasticsearch.enabled, ELASTICSEARCH_ENABLED) is the write-side half of making
+ * Elasticsearch fully optional: when false, every event method below is a no-op, so nothing is ever
+ * queued to the async_search transport - see docs/ElasticsearchSearch.md. The read-side half is each
+ * entity's *ConfigurableReader falling back to its Doctrine repository.
  */
 #[AsDoctrineListener(event: Events::postPersist)]
 #[AsDoctrineListener(event: Events::postUpdate)]
@@ -44,12 +49,18 @@ class SearchIndexDoctrineListener
     /** @var array<int, array{0: string, 1: string}> keyed by spl_object_id() */
     private array $removalKeys = [];
 
-    public function __construct(private readonly MessageBusInterface $messageBus)
-    {
+    public function __construct(
+        private readonly MessageBusInterface $messageBus,
+        private readonly bool $enabled = true,
+    ) {
     }
 
     public function postPersist(PostPersistEventArgs $args): void
     {
+        if (!$this->enabled) {
+            return;
+        }
+
         $entity = $args->getObject();
         if (!$entity instanceof SearchIndexableInterface) {
             return;
@@ -60,6 +71,10 @@ class SearchIndexDoctrineListener
 
     public function postUpdate(PostUpdateEventArgs $args): void
     {
+        if (!$this->enabled) {
+            return;
+        }
+
         $entity = $args->getObject();
         if (!$entity instanceof SearchIndexableInterface) {
             return;
@@ -70,6 +85,10 @@ class SearchIndexDoctrineListener
 
     public function preRemove(PreRemoveEventArgs $args): void
     {
+        if (!$this->enabled) {
+            return;
+        }
+
         $entity = $args->getObject();
         if (!$entity instanceof SearchIndexableInterface) {
             return;
@@ -80,6 +99,10 @@ class SearchIndexDoctrineListener
 
     public function postRemove(PostRemoveEventArgs $args): void
     {
+        if (!$this->enabled) {
+            return;
+        }
+
         $entity = $args->getObject();
         if (!$entity instanceof SearchIndexableInterface) {
             return;

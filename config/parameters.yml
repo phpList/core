@@ -53,6 +53,7 @@ parameters:
     app.search_transport_dsn: '%env(SEARCH_TRANSPORT_DSN)%'
 
     # Elasticsearch configuration
+    elasticsearch.enabled: '%env(bool:ELASTICSEARCH_ENABLED)%'
     elasticsearch.hosts: '%env(csv:ELASTICSEARCH_HOSTS)%'
     elasticsearch.username: '%env(ELASTICSEARCH_USERNAME)%'
     elasticsearch.password: '%env(ELASTICSEARCH_PASSWORD)%'

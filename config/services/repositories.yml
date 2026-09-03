@@ -84,10 +84,15 @@ services:
     arguments:
       - PhpList\Core\Domain\Subscription\Model\SubscriberHistory
 
-  # Reads for SubscriberHistoryManager/SubscriberManager come only from Elasticsearch - swap this
-  # alias to SubscriberHistoryRepository to read from the database instead.
+  # Reads for SubscriberHistoryManager/SubscriberManager go through this configurable reader, which
+  # picks Elasticsearch or the database based on elasticsearch.enabled (ELASTICSEARCH_ENABLED) - see
+  # SubscriberHistoryConfigurableReader and docs/ElasticsearchSearch.md.
+  PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryConfigurableReader:
+    autowire: true
+    arguments:
+      $elasticsearchEnabled: '%elasticsearch.enabled%'
   PhpList\Core\Domain\Subscription\Repository\Interfaces\SubscriberHistoryReaderInterface:
-    alias: PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryElasticsearchReader
+    alias: PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryConfigurableReader
   PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
@@ -123,16 +128,24 @@ services:
     arguments:
       - PhpList\Core\Domain\Messaging\Model\UserMessageBounce
 
-  # Reads for UserMessageBounceReaderInterface consumers come only from Elasticsearch - swap this
-  # alias to UserMessageBounceRepository to read from the database instead.
+  # Reads for UserMessageBounceReaderInterface consumers go through this configurable reader, which
+  # picks Elasticsearch or the database based on elasticsearch.enabled (ELASTICSEARCH_ENABLED) - see
+  # UserMessageBounceConfigurableReader and docs/ElasticsearchSearch.md.
+  PhpList\Core\Domain\Messaging\Repository\UserMessageBounceConfigurableReader:
+    autowire: true
+    arguments:
+      $elasticsearchEnabled: '%elasticsearch.enabled%'
   PhpList\Core\Domain\Messaging\Repository\Interfaces\UserMessageBounceReaderInterface:
-    alias: PhpList\Core\Domain\Messaging\Repository\UserMessageBounceElasticsearchReader
+    alias: PhpList\Core\Domain\Messaging\Repository\UserMessageBounceConfigurableReader
 
-  # Same swap point for the reporting queries (getListBounceTotals/getCampaignBounceTotals) that join
-  # bounce data against Subscriber/Message - swap this alias to UserMessageBounceRepository to read
-  # from the database instead.
+  # Same configurable swap for the reporting queries (getListBounceTotals/getCampaignBounceTotals)
+  # that join bounce data against Subscriber/Message.
+  PhpList\Core\Domain\Messaging\Repository\UserMessageBounceReportConfigurableReader:
+    autowire: true
+    arguments:
+      $elasticsearchEnabled: '%elasticsearch.enabled%'
   PhpList\Core\Domain\Messaging\Repository\Interfaces\UserMessageBounceReportReaderInterface:
-    alias: PhpList\Core\Domain\Messaging\Repository\UserMessageBounceElasticsearchHybridReader
+    alias: PhpList\Core\Domain\Messaging\Repository\UserMessageBounceReportConfigurableReader
   PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
