@@ -263,7 +263,7 @@ class UserMessageBounceRepository extends AbstractRepository implements
             ->andWhere('um.status = :status')
             ->setParameter('userId', $subscriber->getId())
             ->setParameter('status', 'sent')
-            ->orderBy('um.entered', 'DESC')
+            ->orderBy('um.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
     }
