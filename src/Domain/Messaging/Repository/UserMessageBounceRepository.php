@@ -81,7 +81,7 @@ class UserMessageBounceRepository extends AbstractRepository implements
             items: $items,
             total: $total,
             limit: $limit,
-            lastId: $lastId,
+            lastId: $items !== [] ? $items[array_key_last($items)]->getId() : $lastId,
         );
     }
 
