@@ -1,7 +1,8 @@
 # Elasticsearch-backed Search for Big Tables
 
-This document explains the generic Elasticsearch dual-write/read infrastructure and its first
-consumer, `SubscriberHistory` (table `phplist_user_user_history`).
+This document explains the generic Elasticsearch dual-write/read infrastructure and its consumers:
+`SubscriberHistory` (table `phplist_user_user_history`) and `UserMessageBounce`
+(table `phplist_user_message_bounce`).
 
 ## Overview
 

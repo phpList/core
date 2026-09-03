@@ -122,6 +122,11 @@ services:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Messaging\Model\UserMessageBounce
+
+  # Reads for UserMessageBounceReaderInterface consumers come only from Elasticsearch - swap this
+  # alias to UserMessageBounceRepository to read from the database instead.
+  PhpList\Core\Domain\Messaging\Repository\Interfaces\UserMessageBounceReaderInterface:
+    alias: PhpList\Core\Domain\Messaging\Repository\UserMessageBounceElasticsearchReader
   PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:

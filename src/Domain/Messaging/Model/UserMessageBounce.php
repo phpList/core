@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Model;
 
 use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
+use PhpList\Core\Domain\Messaging\Model\Interfaces\UserMessageBounceRecordInterface;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
+use PhpList\Core\Domain\Search\Model\Interfaces\SearchIndexableInterface;
 
 #[ORM\Entity(repositoryClass: UserMessageBounceRepository::class)]
 #[ORM\Table(name: 'user_message_bounce')]
@@ -17,8 +20,14 @@ use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
 #[ORM\Index(name: 'phplist_user_message_bounce_umbindex', columns: ['user', 'message', 'bounce'])]
 #[ORM\Index(name: 'phplist_user_message_bounce_useridx', columns: ['user'])]
 // todo: #[ORM\Index(name: 'phplist_user_message_bounce_timeidx', columns: ['time'])]
-class UserMessageBounce implements DomainModel, Identity
+class UserMessageBounce implements
+    DomainModel,
+    Identity,
+    SearchIndexableInterface,
+    UserMessageBounceRecordInterface
 {
+    public const SEARCH_INDEX_NAME = 'user_message_bounce';
+
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
@@ -83,5 +92,27 @@ class UserMessageBounce implements DomainModel, Identity
     {
         $this->bounceId = $bounceId;
         return $this;
+    }
+
+    public function getSearchIndexName(): string
+    {
+        return self::SEARCH_INDEX_NAME;
+    }
+
+    public function getSearchDocumentId(): string
+    {
+        return (string) $this->id;
+    }
+
+    public function toSearchDocument(): array
+    {
+        return [
+            'id' => $this->id,
+            'idSort' => $this->id,
+            'userId' => $this->userId,
+            'messageId' => $this->messageId,
+            'bounceId' => $this->bounceId,
+            'time' => $this->createdAt->format(DateTimeInterface::ATOM),
+        ];
     }
 }

@@ -45,3 +45,10 @@ services:
 
   PhpList\Core\Domain\Subscription\Service\Search\:
     resource: '../../src/Domain/Subscription/Service/Search'
+
+  PhpList\Core\Domain\Messaging\Repository\UserMessageBounceElasticsearchReader:
+    arguments:
+      $indexPrefix: '%elasticsearch.index_prefix%'
+
+  PhpList\Core\Domain\Messaging\Service\Search\:
+    resource: '../../src/Domain/Messaging/Service/Search'
