@@ -9,6 +9,7 @@ use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PostPersistEventArgs;
 use Doctrine\ORM\Event\PostRemoveEventArgs;
 use Doctrine\ORM\Event\PostUpdateEventArgs;
+use Doctrine\ORM\Event\PreRemoveEventArgs;
 use Doctrine\ORM\Events;
 use PhpList\Core\Domain\Search\Message\IndexDocumentMessage;
 use PhpList\Core\Domain\Search\Model\Interfaces\SearchIndexableInterface;
@@ -25,9 +26,14 @@ use Symfony\Component\Messenger\MessageBusInterface;
  * postFlush, once the transaction has actually committed. This trades perfect atomicity (a crash
  * between commit and dispatch loses one message - repaired by `phplist:search:reindex`) for the far
  * more important guarantee of never indexing/deleting a row that was rolled back.
+ *
+ * preRemove captures getSearchIndexName()/getSearchDocumentId() before the delete happens: for
+ * entities with a Doctrine-generated id, UnitOfWork::executeDeletions() nulls the identifier before
+ * postRemove fires, so reading it there would queue a delete with an empty document id.
  */
 #[AsDoctrineListener(event: Events::postPersist)]
 #[AsDoctrineListener(event: Events::postUpdate)]
+#[AsDoctrineListener(event: Events::preRemove)]
 #[AsDoctrineListener(event: Events::postRemove)]
 #[AsDoctrineListener(event: Events::postFlush)]
 class SearchIndexDoctrineListener
@@ -35,23 +41,56 @@ class SearchIndexDoctrineListener
     /** @var array<string, IndexDocumentMessage> */
     private array $pending = [];
 
+    /** @var array<int, array{0: string, 1: string}> keyed by spl_object_id() */
+    private array $removalKeys = [];
+
     public function __construct(private readonly MessageBusInterface $messageBus)
     {
     }
 
     public function postPersist(PostPersistEventArgs $args): void
     {
-        $this->queue($args->getObject(), SearchOperation::Index);
+        $entity = $args->getObject();
+        if (!$entity instanceof SearchIndexableInterface) {
+            return;
+        }
+
+        $this->queue($entity, SearchOperation::Index, $entity->getSearchIndexName(), $entity->getSearchDocumentId());
     }
 
     public function postUpdate(PostUpdateEventArgs $args): void
     {
-        $this->queue($args->getObject(), SearchOperation::Index);
+        $entity = $args->getObject();
+        if (!$entity instanceof SearchIndexableInterface) {
+            return;
+        }
+
+        $this->queue($entity, SearchOperation::Index, $entity->getSearchIndexName(), $entity->getSearchDocumentId());
+    }
+
+    public function preRemove(PreRemoveEventArgs $args): void
+    {
+        $entity = $args->getObject();
+        if (!$entity instanceof SearchIndexableInterface) {
+            return;
+        }
+
+        $this->removalKeys[spl_object_id($entity)] = [$entity->getSearchIndexName(), $entity->getSearchDocumentId()];
     }
 
     public function postRemove(PostRemoveEventArgs $args): void
     {
-        $this->queue($args->getObject(), SearchOperation::Delete);
+        $entity = $args->getObject();
+        if (!$entity instanceof SearchIndexableInterface) {
+            return;
+        }
+
+        $objectId = spl_object_id($entity);
+        [$indexName, $documentId] = $this->removalKeys[$objectId]
+            ?? [$entity->getSearchIndexName(), $entity->getSearchDocumentId()];
+        unset($this->removalKeys[$objectId]);
+
+        $this->queue($entity, SearchOperation::Delete, $indexName, $documentId);
     }
 
     public function postFlush(PostFlushEventArgs $args): void
@@ -68,18 +107,18 @@ class SearchIndexDoctrineListener
         }
     }
 
-    private function queue(object $entity, SearchOperation $operation): void
-    {
-        if (!$entity instanceof SearchIndexableInterface) {
-            return;
-        }
-
-        $key = $entity->getSearchIndexName() . '|' . $entity->getSearchDocumentId();
+    private function queue(
+        SearchIndexableInterface $entity,
+        SearchOperation $operation,
+        string $indexName,
+        string $documentId,
+    ): void {
+        $key = $indexName . '|' . $documentId;
         $document = $operation === SearchOperation::Index ? $entity->toSearchDocument() : [];
 
         $this->pending[$key] = new IndexDocumentMessage(
-            $entity->getSearchIndexName(),
-            $entity->getSearchDocumentId(),
+            $indexName,
+            $documentId,
             $document,
             $operation,
             $this->nextRevision(),

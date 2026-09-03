@@ -20,6 +20,8 @@ use PhpList\Core\Domain\Search\Client\ElasticsearchClientInterface;
  * ES-backed counterpart of UserMessageBounceRepository. Read-only - dual-write is handled entirely
  * by SearchIndexDoctrineListener, not by this class. Any Elasticsearch failure surfaces as
  * SearchBackendUnavailableException (via ElasticsearchClientInterface) with no fallback to the database.
+ *
+ * Queries that also need to join against MySQL-only data live in UserMessageBounceElasticsearchHybridReader
  */
 class UserMessageBounceElasticsearchReader implements UserMessageBounceReaderInterface
 {
