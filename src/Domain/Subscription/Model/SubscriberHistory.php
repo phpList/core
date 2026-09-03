@@ -24,6 +24,7 @@ class SubscriberHistory implements
     SubscriberHistoryRecordInterface
 {
     public const SEARCH_INDEX_NAME = 'subscriber_history';
+    public const MAX_RESULTS_BY_USER = 1000;
 
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]

@@ -86,8 +86,7 @@ class UserMessageBounceElasticsearchReader implements UserMessageBounceReaderInt
             [
                 'query' => ['term' => ['userId' => $userId]],
                 'sort' => [['idSort' => 'desc']],
-                // 10000 is enough, I think, but if we ever need more, we can implement pagination here too.
-                'size' => 10000,
+                'size' => UserMessageBounce::MAX_RESULTS_BY_USER,
             ],
         );
 

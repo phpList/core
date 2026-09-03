@@ -85,6 +85,7 @@ class SubscriberHistoryRepository extends AbstractRepository implements
             ->andWhere('sh.subscriber = :subscriberId')
             ->setParameter('subscriberId', $subscriber->getId())
             ->orderBy('sh.id', 'DESC')
+            ->setMaxResults(SubscriberHistory::MAX_RESULTS_BY_USER)
             ->getQuery()
             ->getResult();
     }

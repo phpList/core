@@ -92,6 +92,7 @@ class UserMessageBounceRepository extends AbstractRepository implements
             ->andWhere('umb.userId = :userId')
             ->setParameter('userId', $userId)
             ->orderBy('umb.id', 'DESC')
+            ->setMaxResults(UserMessageBounce::MAX_RESULTS_BY_USER)
             ->getQuery()
             ->getResult();
     }

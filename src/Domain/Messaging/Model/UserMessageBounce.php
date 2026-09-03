@@ -27,6 +27,8 @@ class UserMessageBounce implements
     UserMessageBounceRecordInterface
 {
     public const SEARCH_INDEX_NAME = 'user_message_bounce';
+    // 1000 is enough, I think, but if we ever need more, we can implement pagination.
+    public const MAX_RESULTS_BY_USER = 1000;
 
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
