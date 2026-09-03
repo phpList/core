@@ -55,6 +55,10 @@ services:
     arguments:
       $tablePrefix: '%database_prefix%'
 
+  PhpList\Core\Core\Doctrine\SearchIndexDoctrineListener:
+    arguments:
+      $enabled: '%elasticsearch.enabled%'
+
   HTMLPurifier_Config:
     class: HTMLPurifier_Config
     factory: [ 'HTMLPurifier_Config', 'createDefault' ]

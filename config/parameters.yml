@@ -50,6 +50,16 @@ parameters:
 
     # Messenger configuration for asynchronous processing
     app.messenger_transport_dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+    app.search_transport_dsn: '%env(SEARCH_TRANSPORT_DSN)%'
+
+    # Elasticsearch configuration
+    elasticsearch.enabled: '%env(bool:ELASTICSEARCH_ENABLED)%'
+    elasticsearch.hosts: '%env(csv:ELASTICSEARCH_HOSTS)%'
+    elasticsearch.username: '%env(ELASTICSEARCH_USERNAME)%'
+    elasticsearch.password: '%env(ELASTICSEARCH_PASSWORD)%'
+    elasticsearch.index_prefix: '%env(DATABASE_PREFIX)%'
+    elasticsearch.connect_timeout: '%env(int:ELASTICSEARCH_CONNECT_TIMEOUT)%'
+    elasticsearch.request_timeout: '%env(int:ELASTICSEARCH_REQUEST_TIMEOUT)%'
 
     # A secret key that's used to generate certain security-related tokens
     secret: '%env(PHPLIST_SECRET)%'

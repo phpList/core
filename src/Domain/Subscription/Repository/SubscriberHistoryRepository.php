@@ -13,8 +13,11 @@ use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterf
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberHistoryFilter;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberHistory;
+use PhpList\Core\Domain\Subscription\Repository\Interfaces\SubscriberHistoryReaderInterface;
 
-class SubscriberHistoryRepository extends AbstractRepository implements PaginatableRepositoryInterface
+class SubscriberHistoryRepository extends AbstractRepository implements
+    PaginatableRepositoryInterface,
+    SubscriberHistoryReaderInterface
 {
     use CursorPaginationTrait;
 
@@ -82,6 +85,7 @@ class SubscriberHistoryRepository extends AbstractRepository implements Paginata
             ->andWhere('sh.subscriber = :subscriberId')
             ->setParameter('subscriberId', $subscriber->getId())
             ->orderBy('sh.id', 'DESC')
+            ->setMaxResults(SubscriberHistory::MAX_RESULTS_BY_USER)
             ->getQuery()
             ->getResult();
     }

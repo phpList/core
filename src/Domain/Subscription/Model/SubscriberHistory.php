@@ -5,17 +5,27 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Subscription\Model;
 
 use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
+use PhpList\Core\Domain\Search\Model\Interfaces\SearchIndexableInterface;
+use PhpList\Core\Domain\Subscription\Model\Interfaces\SubscriberHistoryRecordInterface;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryRepository;
 
 #[ORM\Entity(repositoryClass: SubscriberHistoryRepository::class)]
 #[ORM\Table(name: 'user_user_history')]
 #[ORM\Index(name: 'phplist_user_user_history_dateidx', columns: ['date'])]
 #[ORM\Index(name: 'phplist_user_user_history_userididx', columns: ['userid'])]
-class SubscriberHistory implements DomainModel, Identity
+class SubscriberHistory implements
+    DomainModel,
+    Identity,
+    SearchIndexableInterface,
+    SubscriberHistoryRecordInterface
 {
+    public const SEARCH_INDEX_NAME = 'subscriber_history';
+    public const MAX_RESULTS_BY_USER = 1000;
+
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
@@ -54,6 +64,11 @@ class SubscriberHistory implements DomainModel, Identity
     public function getSubscriber(): Subscriber
     {
         return $this->subscriber;
+    }
+
+    public function getSubscriberId(): ?int
+    {
+        return $this->subscriber->getId();
     }
 
     public function getIp(): ?string
@@ -109,5 +124,29 @@ class SubscriberHistory implements DomainModel, Identity
     {
         $this->systemInfo = $systemInfo;
         return $this;
+    }
+
+    public function getSearchIndexName(): string
+    {
+        return self::SEARCH_INDEX_NAME;
+    }
+
+    public function getSearchDocumentId(): string
+    {
+        return (string) $this->id;
+    }
+
+    public function toSearchDocument(): array
+    {
+        return [
+            'id' => $this->id,
+            'idSort' => $this->id,
+            'subscriberId' => $this->getSubscriberId(),
+            'ip' => $this->ip,
+            'date' => $this->createdAt?->format(DateTimeInterface::ATOM),
+            'summary' => $this->summary,
+            'detail' => $this->detail,
+            'systemInfo' => $this->systemInfo,
+        ];
     }
 }

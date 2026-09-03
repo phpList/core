@@ -57,6 +57,7 @@ this code.
 * [Mailer transports](docs/MailerTransports.md) - configuring Gmail, Amazon SES, Mailchimp, and SendGrid
 * [Asynchronous email sending](docs/AsyncEmailSending.md) - queuing email delivery with Symfony Messenger
 * [Graylog integration](docs/Graylog.md) - centralized log management
+* [Elasticsearch-backed search for big tables](docs/ElasticsearchSearch.md) - dual-write to the database and Elasticsearch, reading from Elasticsearch only
 * [Generating class API docs](PHPDOC.md) - regenerating the phpDocumentor output
 
 ## Running the web server
@@ -201,6 +202,9 @@ To extract translation strings from the source into an XLIFF catalog:
 
 ```bash
 php bin/console translation:extract --force en --format=xlf
+php bin/console messenger:setup-transports
+php bin/console messenger:consume async --limit=1
+php bin/console phplist:search:init-indices
 ```
 
 ## Copyright
