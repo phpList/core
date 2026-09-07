@@ -105,10 +105,28 @@ bin/console phplist:search:init-indices [--index=<alias>]
 
 # Backfill Elasticsearch from the database. Safe to re-run (indexing is an upsert by id).
 bin/console phplist:search:reindex [<alias>] [--batch-size=500] [--last-id=0]
+
+# Delete DB rows older than a configured retention period, once confirmed to exist in
+# Elasticsearch. Skips (and warns about, without deleting) any row not yet found in ES.
+bin/console phplist:search:purge [<alias>] [--batch-size=500] [--dry-run]
 ```
 
 Run `phplist:search:init-indices` once per environment before the first `phplist:search:reindex`, and
 again after adding a new searchable entity or changing a mapping.
+
+### Purging old rows (`phplist:search:purge`)
+
+Only entities with an opted-in purge provider and a non-empty retention period are eligible. Today
+that's `SubscriberHistory`, controlled by `ELASTICSEARCH_PURGE_SUBSCRIBER_HISTORY_RETENTION` (an
+ISO-8601 duration, e.g. `P1M`; empty/unset disables purging for it). Adding another entity means
+implementing `SearchPurgeProviderInterface` (mirroring `SubscriberHistoryPurgeProvider`) and adding its
+own retention parameter - it's auto-tagged and picked up the same way reindex providers are.
+
+**Before scheduling this command in production**, make sure Elasticsearch snapshots/backups are
+configured. Once a row is purged from MySQL, `phplist:search:reindex` can no longer recover it if the
+ES index is ever lost - the verify-before-delete step only protects against rows that *haven't* made it
+into ES yet, not against losing the ES index itself afterwards. This command is not currently wired
+into any cron/Supervisor schedule; that should happen only after the snapshot policy is in place.
 
 ## Adding a new searchable entity
 

@@ -9,6 +9,8 @@ services:
       tags: ['phplist.search_index_definition']
     PhpList\Core\Domain\Search\Model\Interfaces\SearchReindexProviderInterface:
       tags: ['phplist.search_reindex_provider']
+    PhpList\Core\Domain\Search\Model\Interfaces\SearchPurgeProviderInterface:
+      tags: ['phplist.search_purge_provider']
 
   Elastic\Elasticsearch\Client:
     factory: ['PhpList\Core\Domain\Search\Client\ElasticsearchClientFactory', 'create']
@@ -39,12 +41,21 @@ services:
     arguments:
       $providers: !tagged_iterator 'phplist.search_reindex_provider'
 
+  PhpList\Core\Domain\Search\Registry\SearchPurgeProviderRegistry:
+    arguments:
+      $providers: !tagged_iterator 'phplist.search_purge_provider'
+
   PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryElasticsearchReader:
     arguments:
       $indexPrefix: '%elasticsearch.index_prefix%'
 
   PhpList\Core\Domain\Subscription\Service\Search\:
     resource: '../../src/Domain/Subscription/Service/Search'
+
+  PhpList\Core\Domain\Subscription\Service\Search\SubscriberHistoryPurgeProvider:
+    arguments:
+      $indexPrefix: '%elasticsearch.index_prefix%'
+      $retentionPeriod: '%elasticsearch.purge.subscriber_history_retention%'
 
   PhpList\Core\Domain\Messaging\Repository\UserMessageBounceElasticsearchReader:
     arguments:

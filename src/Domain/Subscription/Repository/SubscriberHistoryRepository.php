@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Repository;
 
+use DateTimeInterface;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Model\PaginatedResult;
@@ -88,5 +89,44 @@ class SubscriberHistoryRepository extends AbstractRepository implements
             ->setMaxResults(SubscriberHistory::MAX_RESULTS_BY_USER)
             ->getQuery()
             ->getResult();
+    }
+
+    public function countOlderThan(DateTimeInterface $cutoff): int
+    {
+        return (int) $this->createQueryBuilder('sh')
+            ->select('COUNT(sh.id)')
+            ->andWhere('sh.createdAt < :cutoff')
+            ->setParameter('cutoff', $cutoff)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /** @return iterable<SubscriberHistory> */
+    public function fetchBatchOlderThan(DateTimeInterface $cutoff, int $lastId, int $batchSize): iterable
+    {
+        return $this->createQueryBuilder('sh')
+            ->andWhere('sh.id > :lastId')
+            ->andWhere('sh.createdAt < :cutoff')
+            ->setParameter('lastId', $lastId)
+            ->setParameter('cutoff', $cutoff)
+            ->orderBy('sh.id', 'ASC')
+            ->setMaxResults($batchSize)
+            ->getQuery()
+            ->toIterable();
+    }
+
+    /** @param int[] $ids */
+    public function deleteByIds(array $ids): int
+    {
+        if ($ids === []) {
+            return 0;
+        }
+
+        return $this->createQueryBuilder('sh')
+            ->delete()
+            ->andWhere('sh.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->execute();
     }
 }
