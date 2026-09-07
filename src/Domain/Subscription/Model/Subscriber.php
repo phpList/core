@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\CreationDate;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Common\Model\Interfaces\ModificationDate;
+use PhpList\Core\Domain\Subscription\Model\Interfaces\SubscriberHistoryRecordInterface;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 
 /**
@@ -93,6 +94,18 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     )]
     private Collection $attributes;
 
+    /**
+     * Doctrine-only bookkeeping, not part of the public API (see getHistory()/setHistory() for that).
+     * SubscriberHistory's FK has only a DB-level ON DELETE CASCADE - without this mapped association,
+     * removing a Subscriber straight through the EntityManager would let the database silently drop its
+     * SubscriberHistory rows without Doctrine ever loading/removing them individually, so
+     * SearchIndexDoctrineListener would never fire for those rows and their Elasticsearch documents
+     * would be orphaned. This cascade makes Doctrine remove them itself instead.
+     * @var Collection<int, SubscriberHistory>
+     */
+    #[ORM\OneToMany(targetEntity: SubscriberHistory::class, mappedBy: 'subscriber', cascade: ['remove'])]
+    private Collection $historyRecords;
+
     #[ORM\Column(name: 'optedin', type: 'boolean')]
     private bool $optedIn = false;
 
@@ -114,7 +127,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     #[ORM\Column(name: 'foreignkey', type: 'string', length: 100, nullable: true)]
     private ?string $foreignKey = null;
 
-    /** @var SubscriberHistory[] */
+    /** @var SubscriberHistoryRecordInterface[] */
     private array $history = [];
 
     public function __construct(string $email)
@@ -122,6 +135,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         $this->email = $email;
         $this->subscriptions = new ArrayCollection();
         $this->attributes = new ArrayCollection();
+        $this->historyRecords = new ArrayCollection();
         $this->extraData = '';
         $this->createdAt = new DateTime();
         $this->updatedAt = new DateTime();
@@ -378,7 +392,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     }
 
     /**
-     * @return SubscriberHistory[]
+     * @return SubscriberHistoryRecordInterface[]
      */
     public function getHistory(): array
     {
@@ -386,7 +400,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     }
 
     /**
-     * @param SubscriberHistory[] $history
+     * @param SubscriberHistoryRecordInterface[] $history
      */
     public function setHistory(array $history): void
     {

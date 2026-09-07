@@ -10,8 +10,8 @@ use PhpList\Core\Domain\Analytics\Repository\UserMessageViewRepository;
 use PhpList\Core\Domain\Analytics\Service\Manager\LinkTrackManager;
 use PhpList\Core\Domain\Analytics\Service\Manager\UserMessageViewManager;
 use PhpList\Core\Domain\Messaging\Model\Filter\MessageFilter;
+use PhpList\Core\Domain\Messaging\Repository\Interfaces\UserMessageBounceReaderInterface;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
-use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
@@ -22,7 +22,7 @@ class AnalyticsService
         private readonly LinkTrackManager $linkTrackManager,
         private readonly UserMessageViewManager $userMessageViewManager,
         private readonly MessageRepository $messageRepository,
-        private readonly UserMessageBounceRepository $messageBounceRepository,
+        private readonly UserMessageBounceReaderInterface $messageBounceReader,
         private readonly UserMessageForwardRepository $messageForwardRepository,
         private readonly SubscriberRepository $subscriberRepository,
         private readonly UserMessageRepository $userMessageRepository,
@@ -68,7 +68,7 @@ class AnalyticsService
             }
 
             $uniqueClicks = count($uniqueClickers);
-            $bounces = $this->messageBounceRepository->getCountByMessageId($message->getId());
+            $bounces = $this->messageBounceReader->getCountByMessageId($message->getId());
             $forwards = $this->messageForwardRepository->getCountByMessageId($message->getId());
             $sentDate = $message->getMetadata()->getSent();
             $sentCount = $message->getMetadata()->getBounceCount() + $views;
@@ -178,11 +178,11 @@ class AnalyticsService
 
         $sentTotal = $this->userMessageRepository->countSentBetween($thisMonthStart, $now);
         $openTotal = $this->userMessageViewRepository->countBetween($thisMonthStart, $now);
-        $bounceTotal = $this->messageBounceRepository->countBetween($thisMonthStart, $now);
+        $bounceTotal = $this->messageBounceReader->countBetween($thisMonthStart, $now);
 
         $sentTotalLastMonth = $this->userMessageRepository->countSentBetween($lastMonthStart, $lastMonthEnd);
         $openTotalLastMonth = $this->userMessageViewRepository->countBetween($lastMonthStart, $lastMonthEnd);
-        $bounceTotalLastMonth = $this->messageBounceRepository->countBetween($lastMonthStart, $lastMonthEnd);
+        $bounceTotalLastMonth = $this->messageBounceReader->countBetween($lastMonthStart, $lastMonthEnd);
 
         $openRate = $this->calculateRate($openTotal, $sentTotal);
         $openRateLastMonth = $this->calculateRate($openTotalLastMonth, $sentTotalLastMonth);

@@ -89,6 +89,8 @@ class BounceManager
         $userMessageBounce->setUserId($subscriberId);
         $userMessageBounce->setMessageId($messageId);
 
+        $this->userMessageBounceRepo->persist($userMessageBounce);
+
         return $userMessageBounce;
     }
 

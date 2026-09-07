@@ -64,6 +64,54 @@ reviews:
         - Ensure domain-layer code invoked by the job (outside the DynamicListAttr exception) remains free of persistence calls.
         - Batch flush operations where practical.
 
+    - path: "src/Domain/Search/**"
+      instructions: &elasticsearch_consistency |
+        You are reviewing code for the MySQL/Elasticsearch dual-write system (write-through DB +
+        Elasticsearch via `SearchIndexDoctrineListener`, with `*ConfigurableReader`/`*HybridReader`
+        classes able to read from either backend, and a retention/purge command that deletes DB rows
+        once confirmed in Elasticsearch). Flag anything that can let the two stores drift apart:
+
+        - ❌ Bulk/raw deletes or updates on a `SearchIndexableInterface` entity's table that bypass
+          Doctrine's entity lifecycle - DQL `->delete()`/`->update()` queries, or DBAL
+          `executeStatement()`/raw SQL - never trigger `SearchIndexDoctrineListener::preRemove/postRemove`
+          (those only fire for `EntityManager::remove()`/`persist()` + `flush()`). Any such bulk
+          operation silently skips the Elasticsearch side. This is legitimate ONLY when it is an
+          explicit, reviewed "delete from MySQL but deliberately keep the Elasticsearch document"
+          retention/purge path (and even then, it must verify the row exists in Elasticsearch via a
+          real ES query *before* deleting - never delete on the assumption that dual-write "should
+          have" succeeded).
+        - ❌ A `SearchIndexableInterface` entity with a foreign key that has a DB-level
+          `onDelete: 'CASCADE'` (`#[ORM\JoinColumn(..., onDelete: 'CASCADE')]`) but no matching
+          Doctrine-level `cascade: ['remove']` on the owning/parent side's association. Without the
+          Doctrine-level cascade, deleting the parent lets the database silently drop child rows that
+          Doctrine never loads/removes individually, so the listener never fires for them and their
+          Elasticsearch documents are orphaned.
+        - ❌ Calls to `ElasticsearchClientInterface::index()`/`delete()`, or construction of
+          `IndexDocumentMessage`, using a hardcoded, reused, or non-monotonic revision instead of the
+          established wall-clock-microseconds pattern (see `SearchIndexDoctrineListener::nextRevision()`).
+          External versioning is what stops a delayed/retried write or delete from clobbering newer
+          state - a wrong revision can let a stale message win.
+        - ❌ New/changed `*ConfigurableReader` implementations that don't correctly gate on
+          `elasticsearch.enabled` and fall back to the Doctrine repository, or that silently mix data
+          from both backends for the same logical query/response without that being the explicit intent.
+        - ⚠️ Any consumer that needs a *complete*/unbounded history or aggregate (not a bounded recent
+          window) reading directly from the Doctrine repository for an entity that has a retention/purge
+          policy configured elsewhere - it will silently see only the retained window once older rows
+          are purged. Point out that it should read through the ES-backed reader/interface instead.
+        - ⚠️ Missing or incomplete tests around the above: a repository method that deletes/updates rows
+          for a `SearchIndexableInterface` entity should have a test proving it does (or intentionally
+          does not) go through the dual-write path, and any new cascade relationship should have a test
+          that actually removes the parent and asserts the child is gone too.
+
+    - path: "src/**/*Elasticsearch*.php"
+      instructions: *elasticsearch_consistency
+
+    - path: "src/**/Service/Search/**"
+      instructions: *elasticsearch_consistency
+
+    - path: "src/Core/Doctrine/SearchIndexDoctrineListener.php"
+      instructions: *elasticsearch_consistency
+
   auto_review:
     enabled: true
     base_branches:

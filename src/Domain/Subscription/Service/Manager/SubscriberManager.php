@@ -11,7 +11,7 @@ use PhpList\Core\Domain\Subscription\Model\Dto\CreateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\UpdateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
-use PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryRepository;
+use PhpList\Core\Domain\Subscription\Repository\Interfaces\SubscriberHistoryReaderInterface;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\SubscriberDeletionService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -25,7 +25,7 @@ class SubscriberManager
         private readonly SubscriberDeletionService $subscriberDeletionService,
         private readonly TranslatorInterface $translator,
         private readonly SubscriberHistoryManager $subscriberHistoryManager,
-        private readonly SubscriberHistoryRepository $subscriberHistoryRepository,
+        private readonly SubscriberHistoryReaderInterface $subscriberHistoryReader,
     ) {
     }
 
@@ -55,7 +55,7 @@ class SubscriberManager
             return null;
         }
 
-        $history = $this->subscriberHistoryRepository->getBySubscriber($subscriber);
+        $history = $this->subscriberHistoryReader->getBySubscriber($subscriber);
         $subscriber->setHistory($history);
 
         return $subscriber;
