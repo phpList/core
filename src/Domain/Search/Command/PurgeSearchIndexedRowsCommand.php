@@ -111,32 +111,59 @@ class PurgeSearchIndexedRowsCommand extends Command
                 break;
             }
 
-            $docIds = array_map(
-                static fn (SearchIndexableInterface $entity): string => $entity->getSearchDocumentId(),
-                $batch,
-            );
-            $confirmedIds = $this->confirmedInElasticsearch($provider->getSearchIndexName(), $docIds);
-
-            $confirmedEntityIds = [];
-            foreach ($batch as $entity) {
-                $docId = $entity->getSearchDocumentId();
-                if (in_array($docId, $confirmedIds, true)) {
-                    $confirmedEntityIds[] = (int) $docId;
-                } else {
-                    $skipped[] = (int) $docId;
-                }
-            }
-
-            if (!$dryRun && $confirmedEntityIds !== []) {
-                $deleted += $provider->deleteByIds($confirmedEntityIds);
-            } else {
-                $deleted += count($confirmedEntityIds);
-            }
-
+            $result = $this->purgeBatch($provider, $batch, $dryRun);
+            $deleted += $result['deleted'];
+            array_push($skipped, ...$result['skipped']);
             $scanned += $countInBatch;
-            $lastId = (int) $docIds[array_key_last($docIds)];
+            $lastId = $result['lastId'];
         } while ($countInBatch >= $batchSize);
 
+        $this->reportResults($provider, $scanned, $deleted, $skipped, $dryRun, $io);
+    }
+
+    /**
+     * @param SearchIndexableInterface[] $batch
+     * @return array{deleted: int, skipped: int[], lastId: int}
+     */
+    private function purgeBatch(SearchPurgeProviderInterface $provider, array $batch, bool $dryRun): array
+    {
+        $docIds = array_map(
+            static fn (SearchIndexableInterface $entity): string => $entity->getSearchDocumentId(),
+            $batch,
+        );
+        $confirmedIds = $this->confirmedInElasticsearch($provider->getSearchIndexName(), $docIds);
+
+        $confirmedEntityIds = [];
+        $skipped = [];
+        foreach ($docIds as $docId) {
+            if (in_array($docId, $confirmedIds, true)) {
+                $confirmedEntityIds[] = (int) $docId;
+            } else {
+                $skipped[] = (int) $docId;
+            }
+        }
+
+        $deleted = count($confirmedEntityIds);
+        if (!$dryRun && $confirmedEntityIds !== []) {
+            $deleted = $provider->deleteByIds($confirmedEntityIds);
+        }
+
+        return [
+            'deleted' => $deleted,
+            'skipped' => $skipped,
+            'lastId' => (int) $docIds[array_key_last($docIds)],
+        ];
+    }
+
+    /** @param int[] $skipped */
+    private function reportResults(
+        SearchPurgeProviderInterface $provider,
+        int $scanned,
+        int $deleted,
+        array $skipped,
+        bool $dryRun,
+        SymfonyStyle $io,
+    ): void {
         if ($skipped !== []) {
             $io->warning(sprintf(
                 '%s: %d row(s) older than cutoff were not found in Elasticsearch and were left in place: %s',

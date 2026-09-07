@@ -31,7 +31,7 @@ class SubscriberHistory implements
     #[ORM\GeneratedValue]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Subscriber::class)]
+    #[ORM\ManyToOne(targetEntity: Subscriber::class, inversedBy: 'historyRecords')]
     #[ORM\JoinColumn(name: 'userid', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private Subscriber $subscriber;
 

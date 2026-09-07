@@ -94,6 +94,18 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
     )]
     private Collection $attributes;
 
+    /**
+     * Doctrine-only bookkeeping, not part of the public API (see getHistory()/setHistory() for that).
+     * SubscriberHistory's FK has only a DB-level ON DELETE CASCADE - without this mapped association,
+     * removing a Subscriber straight through the EntityManager would let the database silently drop its
+     * SubscriberHistory rows without Doctrine ever loading/removing them individually, so
+     * SearchIndexDoctrineListener would never fire for those rows and their Elasticsearch documents
+     * would be orphaned. This cascade makes Doctrine remove them itself instead.
+     * @var Collection<int, SubscriberHistory>
+     */
+    #[ORM\OneToMany(targetEntity: SubscriberHistory::class, mappedBy: 'subscriber', cascade: ['remove'])]
+    private Collection $historyRecords;
+
     #[ORM\Column(name: 'optedin', type: 'boolean')]
     private bool $optedIn = false;
 
@@ -123,6 +135,7 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         $this->email = $email;
         $this->subscriptions = new ArrayCollection();
         $this->attributes = new ArrayCollection();
+        $this->historyRecords = new ArrayCollection();
         $this->extraData = '';
         $this->createdAt = new DateTime();
         $this->updatedAt = new DateTime();
