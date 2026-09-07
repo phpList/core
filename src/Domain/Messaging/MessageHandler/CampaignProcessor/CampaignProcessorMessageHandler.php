@@ -73,6 +73,7 @@ class CampaignProcessorMessageHandler
         private readonly MailSizeChecker $mailSizeChecker,
         private readonly ConfigProvider $configProvider,
         #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
+        #[Autowire('%messaging.use_list_exclude%')] private readonly bool $useListExclude = false,
     ) {
     }
 
@@ -122,30 +123,15 @@ class CampaignProcessorMessageHandler
         $this->handleAdminNotifications($campaign, $loadedMessageData, $data->getMessageId());
 
         // Campaign was already atomically claimed into Prepared status above.
-        $subscribers = $this->subscriberProvider->getSubscribersForMessageOrLists($data, $campaign);
+        $excludeListIds = $this->getExcludeListIds($loadedMessageData);
+        $this->markExcludedSubscribers($campaign, $excludeListIds);
+        $subscribers = $this->subscriberProvider->getSubscribersForMessageOrLists(
+            $data,
+            $campaign,
+            $excludeListIds
+        );
 
         $this->updateMessageStatus($campaign, MessageStatus::InProcess);
-
-//        if (USE_LIST_EXCLUDE) {
-//            if (VERBOSE) {
-//                processQueueOutput(s('looking for users who can be excluded from this mailing'));
-//            }
-//            if (count($msgdata['excludelist'])) {
-//                $query
-//                    = ' select userid'
-//                    .' from '.$GLOBALS['tables']['listuser']
-//                    .' where listid in ('.implode(',', $msgdata['excludelist']).')';
-//                if (VERBOSE) {
-//                    processQueueOutput('Exclude query '.$query);
-//                }
-//                $req = Sql_Query($query);
-//                while ($row = Sql_Fetch_Row($req)) {
-//                    $um = Sql_Query(sprintf('replace into %s (entered,userid,messageid,status)
-//                           values(now(),%d,%d,"excluded")',
-//                        $tables['usermessage'], $row[0], $messageid));
-//                }
-//            }
-//        }
 
         $stoppedEarly = $this->processSubscribersForCampaign($campaign, $subscribers, $cacheKey);
 
@@ -155,6 +141,52 @@ class CampaignProcessorMessageHandler
         }
 
         $this->updateMessageStatus($campaign, MessageStatus::Sent);
+    }
+
+    /**
+     * Exclude-list IDs are stored via MessageData as an array keyed by list ID  e.g. [3 => 1, 7 => 1].
+     *
+     * @return int[]
+     */
+    private function getExcludeListIds(array $loadedMessageData): array
+    {
+        if (!$this->useListExclude) {
+            return [];
+        }
+
+        $excludeList = $loadedMessageData['excludelist'] ?? [];
+        if (!is_array($excludeList) || $excludeList === []) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(
+            static fn (mixed $key): ?int => is_numeric($key) ? (int) $key : null,
+            array_keys($excludeList)
+        ), static fn (?int $id): bool => $id !== null));
+    }
+
+    /**
+     * pre-marking of exclude-list members as "excluded" in usermessage before the main send loop runs,
+     * so there's a persisted audit trail for why a subscriber wasn't sent to. Skips
+     * subscribers who already have a nontodo UserMessage for this campaign, so a later run
+     * can't clobber an already-recorded Sent/NotSent/etc. status from an earlier partial run.
+     */
+    private function markExcludedSubscribers(Message $campaign, array $excludeListIds): void
+    {
+        if ($excludeListIds === []) {
+            return;
+        }
+
+        foreach ($this->subscriberProvider->getExcludedSubscribers($excludeListIds) as $subscriber) {
+            $existing = $this->userMessageRepository->findByUserAndMessage($subscriber, $campaign);
+            if ($existing && $existing->getStatus() !== UserMessageStatus::Todo) {
+                continue;
+            }
+
+            $userMessage = $existing ?? new UserMessage($subscriber, $campaign);
+            $userMessage->setStatus(UserMessageStatus::Excluded);
+            $this->userMessageRepository->save($userMessage);
+        }
     }
 
     private function unconfirmSubscriber(Subscriber $subscriber): void

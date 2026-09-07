@@ -29,10 +29,15 @@ class SubscriberProvider
      *
      * @param CampaignProcessorMessageInterface $data
      * @param Message $campaign
+     * @param int[] $excludeListIds List IDs whose members should be suppressed from the send,
+     *                              regardless of their confirmed/disabled status.
      * @return Subscriber[] Array of subscribers
      */
-    public function getSubscribersForMessageOrLists(CampaignProcessorMessageInterface $data, Message $campaign): array
-    {
+    public function getSubscribersForMessageOrLists(
+        CampaignProcessorMessageInterface $data,
+        Message $campaign,
+        array $excludeListIds = [],
+    ): array {
         if ($data instanceof TestCampaignProcessorMessage) {
             return $this->subscriberRepository->getByEmails($data->getSubscriberEmails());
         }
@@ -45,12 +50,32 @@ class SubscriberProvider
 
         $subscribers = [];
         foreach ($listIds as $listId) {
-            $listSubscribers = $this->subscriberRepository->getSubscribersBySubscribedListId($listId);
+            $listSubscribers = $this->subscriberRepository->getSendableSubscribersBySubscribedListId($listId);
             foreach ($listSubscribers as $subscriber) {
                 $subscribers[$subscriber->getEmail()] = $subscriber;
             }
         }
 
+        foreach ($this->getExcludedSubscribers($excludeListIds) as $excluded) {
+            unset($subscribers[$excluded->getEmail()]);
+        }
+
         return array_values($subscribers);
+    }
+
+    /**
+     * Resolves the subscribers on the given exclude-lists, regardless of confirmed/disabled
+     * status - membership alone is enough to suppress Sand.
+     *
+     * @param int[] $excludeListIds
+     * @return Subscriber[]
+     */
+    public function getExcludedSubscribers(array $excludeListIds): array
+    {
+        if ($excludeListIds === []) {
+            return [];
+        }
+
+        return $this->subscriberRepository->getSubscribersBySubscribedListIds($excludeListIds);
     }
 }

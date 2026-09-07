@@ -79,6 +79,7 @@ parameters:
     messaging.max_mail_size: '%env(MAX_MAILSIZE)%'
     messaging.default_message_age: '%env(DEFAULT_MESSAGEAGE)%'
     messaging.use_manual_text_part: '%env(USE_MANUAL_TEXT_PART)%'
+    messaging.use_list_exclude: '%env(bool:USE_LIST_EXCLUDE)%'
     messaging.blacklist_grace_time: '%env(MESSAGING_BLACKLIST_GRACE_TIME)%'
     messaging.google_sender_id: '%env(GOOGLE_SENDERID)%'
     messaging.use_amazon_ses: '%env(USE_AMAZONSES)%'

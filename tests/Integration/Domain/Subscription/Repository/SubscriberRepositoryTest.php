@@ -8,6 +8,7 @@ use DateTime;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\Tools\SchemaTool;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
+use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 use PhpList\Core\Domain\Subscription\Model\Subscription;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriptionRepository;
@@ -238,5 +239,66 @@ class SubscriberRepositoryTest extends KernelTestCase
 
         $numberOfModelsAfterRemove = count($this->subscriberRepository->findAll());
         self::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);
+    }
+
+    private function subscribe(Subscriber $subscriber, SubscriberList $list): void
+    {
+        $subscription = (new Subscription())
+            ->setSubscriber($subscriber)
+            ->setSubscriberList($list);
+        $this->entityManager->persist($subscription);
+    }
+
+    public function testGetSendableSubscribersBySubscribedListIdExcludesUnconfirmedAndDisabled(): void
+    {
+        $list = (new SubscriberList())->setName('list');
+        $this->entityManager->persist($list);
+
+        $confirmed = (new Subscriber('confirmed@example.com'))->setConfirmed(true);
+        $unconfirmed = (new Subscriber('unconfirmed@example.com'))->setConfirmed(false);
+        $disabled = (new Subscriber('disabled@example.com'))->setConfirmed(true)->setDisabled(true);
+        foreach ([$confirmed, $unconfirmed, $disabled] as $subscriber) {
+            $this->entityManager->persist($subscriber);
+            $this->subscribe($subscriber, $list);
+        }
+        $this->entityManager->flush();
+
+        $result = $this->subscriberRepository->getSendableSubscribersBySubscribedListId($list->getId());
+
+        self::assertTrue(in_array($confirmed, $result, true));
+        self::assertFalse(in_array($unconfirmed, $result, true));
+        self::assertFalse(in_array($disabled, $result, true));
+    }
+
+    public function testGetSubscribersBySubscribedListIdsReturnsMembersOfAnyGivenList(): void
+    {
+        $listA = (new SubscriberList())->setName('a');
+        $listB = (new SubscriberList())->setName('b');
+        $listC = (new SubscriberList())->setName('c');
+        $this->entityManager->persist($listA);
+        $this->entityManager->persist($listB);
+        $this->entityManager->persist($listC);
+
+        $inA = new Subscriber('in-a@example.com');
+        $inB = new Subscriber('in-b@example.com');
+        $inC = new Subscriber('in-c@example.com');
+        $this->entityManager->persist($inA);
+        $this->entityManager->persist($inB);
+        $this->entityManager->persist($inC);
+        $this->subscribe($inA, $listA);
+        $this->subscribe($inB, $listB);
+        $this->subscribe($inC, $listC);
+        $this->entityManager->flush();
+
+        $result = $this->subscriberRepository->getSubscribersBySubscribedListIds([$listA->getId(), $listB->getId()]);
+
+        self::assertTrue(in_array($inA, $result, true));
+        self::assertTrue(in_array($inB, $result, true));
+        self::assertFalse(in_array($inC, $result, true));
+    }
+
+    public function testGetSubscribersBySubscribedListIdsReturnsEmptyArrayForEmptyInput(): void
+    {
+        self::assertSame([], $this->subscriberRepository->getSubscribersBySubscribedListIds([]));
     }
 }

@@ -169,7 +169,7 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
         $table = $connection->quoteIdentifier($this->getClassMetadata()->getTableName());
 
         $affected = $connection->executeStatement(
-            "UPDATE $table SET status = :to WHERE id = :id AND status = :from",
+            sprintf('UPDATE %s SET status = :to WHERE id = :id AND status = :from', $table),
             [
                 'to' => Message\MessageStatus::Prepared->value,
                 'id' => $id,

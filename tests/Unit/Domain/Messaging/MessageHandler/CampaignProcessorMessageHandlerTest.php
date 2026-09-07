@@ -14,6 +14,8 @@ use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
+use PhpList\Core\Domain\Messaging\Model\Message\UserMessageStatus;
+use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
@@ -51,6 +53,9 @@ class CampaignProcessorMessageHandlerTest extends TestCase
     private MessagePrecacheService|MockObject $precacheService;
     private CacheInterface|MockObject $cache;
     private MailerInterface|MockObject $symfonyMailer;
+    private UserMessageRepository|MockObject $userMessageRepository;
+    private MaxProcessTimeLimiter|MockObject $timeLimiter;
+    private RequeueHandler|MockObject $requeueHandler;
 
     protected function setUp(): void
     {
@@ -71,7 +76,16 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $timeLimiter->method('start');
         $timeLimiter->method('shouldStop')->willReturn(false);
 
-        $this->handler = new CampaignProcessorMessageHandler(
+        $this->userMessageRepository = $userMessageRepository;
+        $this->timeLimiter = $timeLimiter;
+        $this->requeueHandler = $requeueHandler;
+
+        $this->handler = $this->createHandler();
+    }
+
+    private function createHandler(bool $useListExclude = false): CampaignProcessorMessageHandler
+    {
+        return new CampaignProcessorMessageHandler(
             mailer: $this->symfonyMailer,
             rateLimitedCampaignMailer: $this->mailer,
             entityManager: $this->entityManager,
@@ -79,9 +93,9 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             messagePreparator: $this->messagePreparator,
             logger: $this->logger,
             cache: $this->cache,
-            userMessageRepository: $userMessageRepository,
-            timeLimiter: $timeLimiter,
-            requeueHandler: $requeueHandler,
+            userMessageRepository: $this->userMessageRepository,
+            timeLimiter: $this->timeLimiter,
+            requeueHandler: $this->requeueHandler,
             translator: $this->translator,
             subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class),
             messageRepository: $this->messageRepository,
@@ -92,6 +106,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             mailSizeChecker: $this->createMock(MailSizeChecker::class),
             configProvider: $this->createMock(ConfigProvider::class),
             bounceEmail: 'bounce@email.com',
+            useListExclude: $useListExclude,
         );
     }
 
@@ -145,6 +160,192 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             ->method('send');
 
         ($this->handler)($data);
+    }
+
+    public function testInvokePassesExcludeListIdsFromMessageDataToSubscriberProviderWhenEnabled(): void
+    {
+        $handler = $this->createHandler(useListExclude: true);
+
+        $campaign = $this->createCampaignMock();
+        $metadata = $this->createMock(MessageMetadata::class);
+        $campaign->method('getMetadata')->willReturn($metadata);
+        $campaign->method('getId')->willReturn(1);
+        $data = new CampaignProcessorMessage(1);
+
+        $this->messageRepository->method('tryClaimForProcessing')
+            ->with(1)
+            ->willReturn($campaign);
+
+        $messageDataLoaderProperty = (new ReflectionClass($handler))->getProperty('messageDataLoader');
+        /** @var MessageDataLoader|MockObject $messageDataLoaderMock */
+        $messageDataLoaderMock = $messageDataLoaderProperty->getValue($handler);
+        $messageDataLoaderMock->method('__invoke')->willReturn([
+            'excludelist' => [55 => 1, 66 => 1],
+        ]);
+
+        $this->precacheService->expects($this->once())
+            ->method('precacheMessage')
+            ->with($campaign, $this->anything())
+            ->willReturn(true);
+
+        $this->subscriberProvider->expects($this->once())
+            ->method('getSubscribersForMessageOrLists')
+            ->with($data, $campaign, [55, 66])
+            ->willReturn([]);
+
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
+
+        $handler($data);
+    }
+
+    public function testInvokeIgnoresExcludeListWhenUseListExcludeDisabled(): void
+    {
+        $handler = $this->createHandler(useListExclude: false);
+
+        $campaign = $this->createCampaignMock();
+        $metadata = $this->createMock(MessageMetadata::class);
+        $campaign->method('getMetadata')->willReturn($metadata);
+        $campaign->method('getId')->willReturn(1);
+        $data = new CampaignProcessorMessage(1);
+
+        $this->messageRepository->method('tryClaimForProcessing')
+            ->with(1)
+            ->willReturn($campaign);
+
+        $messageDataLoaderProperty = (new ReflectionClass($handler))->getProperty('messageDataLoader');
+        /** @var MessageDataLoader|MockObject $messageDataLoaderMock */
+        $messageDataLoaderMock = $messageDataLoaderProperty->getValue($handler);
+        $messageDataLoaderMock->method('__invoke')->willReturn([
+            'excludelist' => [55 => 1, 66 => 1],
+        ]);
+
+        $this->precacheService->expects($this->once())
+            ->method('precacheMessage')
+            ->with($campaign, $this->anything())
+            ->willReturn(true);
+
+        $this->subscriberProvider->expects($this->once())
+            ->method('getSubscribersForMessageOrLists')
+            ->with($data, $campaign, [])
+            ->willReturn([]);
+
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
+
+        $handler($data);
+    }
+
+    public function testInvokeMarksExcludedSubscribersAsExcludedInUserMessage(): void
+    {
+        $handler = $this->createHandler(useListExclude: true);
+
+        $campaign = $this->createCampaignMock();
+        $metadata = $this->createMock(MessageMetadata::class);
+        $campaign->method('getMetadata')->willReturn($metadata);
+        $campaign->method('getId')->willReturn(1);
+        $data = new CampaignProcessorMessage(1);
+
+        $this->messageRepository->method('tryClaimForProcessing')
+            ->with(1)
+            ->willReturn($campaign);
+
+        $messageDataLoaderProperty = (new ReflectionClass($handler))->getProperty('messageDataLoader');
+        /** @var MessageDataLoader|MockObject $messageDataLoaderMock */
+        $messageDataLoaderMock = $messageDataLoaderProperty->getValue($handler);
+        $messageDataLoaderMock->method('__invoke')->willReturn([
+            'excludelist' => [55 => 1],
+        ]);
+
+        $this->precacheService->expects($this->once())
+            ->method('precacheMessage')
+            ->with($campaign, $this->anything())
+            ->willReturn(true);
+
+        $excludedSubscriber = $this->createMock(Subscriber::class);
+        $excludedSubscriber->method('getEmail')->willReturn('excluded@example.com');
+
+        $this->subscriberProvider->expects($this->once())
+            ->method('getExcludedSubscribers')
+            ->with([55])
+            ->willReturn([$excludedSubscriber]);
+
+        $this->subscriberProvider->expects($this->once())
+            ->method('getSubscribersForMessageOrLists')
+            ->with($data, $campaign, [55])
+            ->willReturn([]);
+
+        $this->userMessageRepository->expects($this->once())
+            ->method('findByUserAndMessage')
+            ->with($excludedSubscriber, $campaign)
+            ->willReturn(null);
+
+        $this->userMessageRepository->expects($this->once())
+            ->method('save')
+            ->with($this->callback(
+                fn (UserMessage $userMessage): bool => $userMessage->getUser() === $excludedSubscriber
+                    && $userMessage->getStatus() === UserMessageStatus::Excluded
+            ));
+
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
+
+        $handler($data);
+    }
+
+    public function testInvokeDoesNotOverwriteExistingNonTodoUserMessageWhenMarkingExcluded(): void
+    {
+        $handler = $this->createHandler(useListExclude: true);
+
+        $campaign = $this->createCampaignMock();
+        $metadata = $this->createMock(MessageMetadata::class);
+        $campaign->method('getMetadata')->willReturn($metadata);
+        $campaign->method('getId')->willReturn(1);
+        $data = new CampaignProcessorMessage(1);
+
+        $this->messageRepository->method('tryClaimForProcessing')
+            ->with(1)
+            ->willReturn($campaign);
+
+        $messageDataLoaderProperty = (new ReflectionClass($handler))->getProperty('messageDataLoader');
+        /** @var MessageDataLoader|MockObject $messageDataLoaderMock */
+        $messageDataLoaderMock = $messageDataLoaderProperty->getValue($handler);
+        $messageDataLoaderMock->method('__invoke')->willReturn([
+            'excludelist' => [55 => 1],
+        ]);
+
+        $this->precacheService->expects($this->once())
+            ->method('precacheMessage')
+            ->with($campaign, $this->anything())
+            ->willReturn(true);
+
+        $excludedSubscriber = $this->createMock(Subscriber::class);
+        $excludedSubscriber->method('getEmail')->willReturn('already-sent@example.com');
+
+        $this->subscriberProvider->expects($this->once())
+            ->method('getExcludedSubscribers')
+            ->with([55])
+            ->willReturn([$excludedSubscriber]);
+
+        $this->subscriberProvider->expects($this->once())
+            ->method('getSubscribersForMessageOrLists')
+            ->willReturn([]);
+
+        $existingUserMessage = $this->createMock(UserMessage::class);
+        $existingUserMessage->method('getStatus')->willReturn(UserMessageStatus::Sent);
+
+        $this->userMessageRepository->expects($this->once())
+            ->method('findByUserAndMessage')
+            ->with($excludedSubscriber, $campaign)
+            ->willReturn($existingUserMessage);
+
+        $this->userMessageRepository->expects($this->never())
+            ->method('save');
+
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
+
+        $handler($data);
     }
 
     public function testInvokeWithInvalidSubscriberEmail(): void
