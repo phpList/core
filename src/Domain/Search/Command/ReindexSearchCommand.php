@@ -94,13 +94,18 @@ class ReindexSearchCommand extends Command
         do {
             $batch = $provider->fetchBatch($lastId, $batchSize);
             $countInBatch = 0;
+            // Captured once per batch, before any of this batch's ES writes, rather than per document
+            // at send time: a batch can take a while to send (progress bar, ES round trips), and a
+            // per-document revision taken at send time could end up newer than a concurrent delete's
+            // revision for a row this batch already read earlier, resurrecting it in Elasticsearch.
+            $revision = (int) (microtime(true) * 1_000_000);
 
             foreach ($batch as $entity) {
                 $this->indexer->index(
                     $entity->getSearchIndexName(),
                     $entity->getSearchDocumentId(),
                     $entity->toSearchDocument(),
-                    (int) (microtime(true) * 1_000_000),
+                    $revision,
                 );
                 $lastId = (int) $entity->getSearchDocumentId();
                 $countInBatch++;

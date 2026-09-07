@@ -67,10 +67,25 @@ class UserMessageBounceElasticsearchReaderTest extends TestCase
     public function testGetFilteredAfterIdPaginatesAcrossTwoPagesWithoutRepeatingResults(): void
     {
         $firstFilter = new UserMessageBounceFilter(lastId: 0, limit: 1);
+        $expectedCursors = [0, 5];
+        $call = 0;
 
         $this->client
             ->expects($this->exactly(2))
             ->method('search')
+            ->with(
+                'phplist_user_message_bounce',
+                $this->callback(function (array $query) use (&$call, $expectedCursors): bool {
+                    $expectedCursor = $expectedCursors[$call];
+                    $call++;
+
+                    return $query['query']['bool']['filter'][0] === [
+                            'range' => [
+                                'idSort' => ['gt' => $expectedCursor]
+                            ]
+                        ];
+                }),
+            )
             ->willReturnOnConsecutiveCalls(
                 [
                     'hits' => [
