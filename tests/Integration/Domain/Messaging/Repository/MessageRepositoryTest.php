@@ -221,6 +221,44 @@ class MessageRepositoryTest extends KernelTestCase
         self::assertSame($second->getId(), $result->getItems()[1]->getId());
     }
 
+    public function testTryClaimForProcessingClaimsSubmittedCampaign(): void
+    {
+        $message = $this->persistMessage(Message\MessageStatus::Submitted, 'Ready to send');
+        $this->entityManager->flush();
+        $id = $message->getId();
+        $this->entityManager->clear();
+
+        $claimed = $this->messageRepository->tryClaimForProcessing($id);
+
+        self::assertNotNull($claimed);
+        self::assertSame($id, $claimed->getId());
+        self::assertSame(Message\MessageStatus::Prepared, $claimed->getMetadata()->getStatus());
+    }
+
+    public function testTryClaimForProcessingReturnsNullWhenNotSubmitted(): void
+    {
+        $message = $this->persistMessage(Message\MessageStatus::Draft, 'Not ready yet');
+        $this->entityManager->flush();
+        $id = $message->getId();
+        $this->entityManager->clear();
+
+        self::assertNull($this->messageRepository->tryClaimForProcessing($id));
+    }
+
+    public function testTryClaimForProcessingCannotClaimTwice(): void
+    {
+        $message = $this->persistMessage(Message\MessageStatus::Submitted, 'Only one winner');
+        $this->entityManager->flush();
+        $id = $message->getId();
+        $this->entityManager->clear();
+
+        $firstClaim = $this->messageRepository->tryClaimForProcessing($id);
+        $secondClaim = $this->messageRepository->tryClaimForProcessing($id);
+
+        self::assertNotNull($firstClaim);
+        self::assertNull($secondClaim);
+    }
+
     public function testGetFilteredAfterIdSortsDescendingAndCursorsBackward(): void
     {
         $first = $this->persistMessage(Message\MessageStatus::Sent, 'First');

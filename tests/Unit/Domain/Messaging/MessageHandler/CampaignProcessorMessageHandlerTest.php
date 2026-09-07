@@ -14,7 +14,6 @@ use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
-use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
@@ -101,8 +100,8 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $message = new CampaignProcessorMessage(999);
 
         $this->messageRepository->expects($this->once())
-            ->method('findByIdAndStatus')
-            ->with(999, MessageStatus::Submitted)
+            ->method('tryClaimForProcessing')
+            ->with(999)
             ->willReturn(null);
 
         $this->translator->method('trans')->willReturnCallback(fn(string $msg) => $msg);
@@ -122,8 +121,8 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $campaign->method('getId')->willReturn(1);
         $data = new CampaignProcessorMessage(1);
 
-        $this->messageRepository->method('findByIdAndStatus')
-            ->with(1, MessageStatus::Submitted)
+        $this->messageRepository->method('tryClaimForProcessing')
+            ->with(1)
             ->willReturn($campaign);
 
         $this->precacheService->expects($this->once())
@@ -156,8 +155,8 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $campaign->method('getId')->willReturn(1);
         $data = new CampaignProcessorMessage(1);
 
-        $this->messageRepository->method('findByIdAndStatus')
-            ->with(1, MessageStatus::Submitted)
+        $this->messageRepository->method('tryClaimForProcessing')
+            ->with(1)
             ->willReturn($campaign);
 
         $this->precacheService->expects($this->once())
@@ -203,8 +202,8 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $campaign->method('getId')->willReturn(1);
         $data = new CampaignProcessorMessage(1);
 
-        $this->messageRepository->method('findByIdAndStatus')
-            ->with(1, MessageStatus::Submitted)
+        $this->messageRepository->method('tryClaimForProcessing')
+            ->with(1)
             ->willReturn($campaign);
 
         $this->precacheService->expects($this->once())
@@ -271,8 +270,8 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $campaign->method('getId')->willReturn(123);
         $data = new CampaignProcessorMessage(123);
 
-        $this->messageRepository->method('findByIdAndStatus')
-            ->with(123, MessageStatus::Submitted)
+        $this->messageRepository->method('tryClaimForProcessing')
+            ->with(123)
             ->willReturn($campaign);
 
         $this->precacheService->expects($this->once())
@@ -348,8 +347,8 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $data = new CampaignProcessorMessage(1);
 
         $this->messageRepository
-            ->method('findByIdAndStatus')
-            ->with(1, MessageStatus::Submitted)
+            ->method('tryClaimForProcessing')
+            ->with(1)
             ->willReturn($campaign);
 
         $this->precacheService

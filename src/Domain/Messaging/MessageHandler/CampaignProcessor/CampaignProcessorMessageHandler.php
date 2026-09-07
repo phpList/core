@@ -78,7 +78,7 @@ class CampaignProcessorMessageHandler
 
     public function __invoke(CampaignProcessorMessage|SyncCampaignProcessorMessage $data): void
     {
-        $campaign = $this->messageRepository->findByIdAndStatus($data->getMessageId(), MessageStatus::Submitted);
+        $campaign = $this->messageRepository->tryClaimForProcessing($data->getMessageId());
         if (!$campaign) {
             $this->logger->warning(
                 $this->translator->trans('Campaign not found or not in submitted status'),
@@ -121,7 +121,7 @@ class CampaignProcessorMessageHandler
 
         $this->handleAdminNotifications($campaign, $loadedMessageData, $data->getMessageId());
 
-        $this->updateMessageStatus($campaign, MessageStatus::Prepared);
+        // Campaign was already atomically claimed into Prepared status above.
         $subscribers = $this->subscriberProvider->getSubscribersForMessageOrLists($data, $campaign);
 
         $this->updateMessageStatus($campaign, MessageStatus::InProcess);
@@ -169,6 +169,9 @@ class CampaignProcessorMessageHandler
     {
         if ($status === MessageStatus::InProcess && $message->getMetadata()->getSendStart() === null) {
             $message->getMetadata()->setSendStart(new DateTime());
+        }
+        if ($status === MessageStatus::Sent) {
+            $message->getMetadata()->setSent(new DateTime());
         }
         $message->getMetadata()->setStatus($status);
         $this->entityManager->flush();
@@ -220,6 +223,9 @@ class CampaignProcessorMessageHandler
                 htmlPref: $subscriber->hasHtmlEmail(),
             );
             if ($result === null) {
+                $status = $subscriber->isBlacklisted() ? UserMessageStatus::Excluded : UserMessageStatus::NotSent;
+                $this->updateUserMessageStatus($userMessage, $status);
+
                 return;
             }
             [$email, $sentAs] = $result;

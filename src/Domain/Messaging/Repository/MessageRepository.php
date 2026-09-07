@@ -158,6 +158,32 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->getOneOrNullResult();
     }
 
+    /**
+     * Atomically claims a campaign for processing by flipping its status from Submitted to
+     * Prepared in a single UPDATE ... WHERE statement, so two concurrent workers can't both
+     * pass a check-then-act race and process the same campaign.
+     */
+    public function tryClaimForProcessing(int $id): ?Message
+    {
+        $connection = $this->getEntityManager()->getConnection();
+        $table = $connection->quoteIdentifier($this->getClassMetadata()->getTableName());
+
+        $affected = $connection->executeStatement(
+            "UPDATE $table SET status = :to WHERE id = :id AND status = :from",
+            [
+                'to' => Message\MessageStatus::Prepared->value,
+                'id' => $id,
+                'from' => Message\MessageStatus::Submitted->value,
+            ]
+        );
+
+        if ($affected === 0) {
+            return null;
+        }
+
+        return $this->find($id);
+    }
+
     public function getNonEmptyFields(int $id): array
     {
         $message = $this->createQueryBuilder('m')
