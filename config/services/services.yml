@@ -73,6 +73,14 @@ services:
       $mailqueueBatchPeriod: '%messaging.mail_queue_period%'
       $mailqueueThrottle: '%messaging.mail_queue_throttle%'
 
+  PhpList\Core\Domain\Messaging\Service\DomainRateLimiter:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $enabled: '%messaging.use_domain_throttle%'
+      $domainBatchSize: '%messaging.domain_batch_size%'
+      $domainBatchPeriod: '%messaging.domain_batch_period%'
+
   PhpList\Core\Domain\Common\SystemInfoCollector:
     autowire: true
     autoconfigure: true

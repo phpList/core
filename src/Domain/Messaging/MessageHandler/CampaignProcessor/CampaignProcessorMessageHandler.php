@@ -25,6 +25,7 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
 use PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder;
+use PhpList\Core\Domain\Messaging\Service\DomainRateLimiter;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
@@ -72,6 +73,7 @@ class CampaignProcessorMessageHandler
         private readonly EmailBuilder $campaignEmailBuilder,
         private readonly MailSizeChecker $mailSizeChecker,
         private readonly ConfigProvider $configProvider,
+        private readonly DomainRateLimiter $domainRateLimiter,
         #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
         #[Autowire('%messaging.use_list_exclude%')] private readonly bool $useListExclude = false,
     ) {

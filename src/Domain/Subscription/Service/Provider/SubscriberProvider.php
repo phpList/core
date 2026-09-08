@@ -65,7 +65,7 @@ class SubscriberProvider
 
     /**
      * Resolves the subscribers on the given exclude-lists, regardless of confirmed/disabled
-     * status - membership alone is enough to suppress Sand.
+     * status - membership alone is enough to suppress a send.
      *
      * @param int[] $excludeListIds
      * @return Subscriber[]
