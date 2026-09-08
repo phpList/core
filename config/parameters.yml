@@ -76,6 +76,7 @@ parameters:
     messaging.mail_queue_period: '%env(MAILQUEUE_BATCH_PERIOD)%'
     messaging.mail_queue_throttle: '%env(MAILQUEUE_THROTTLE)%'
     messaging.max_process_time: '%env(MESSAGING_MAX_PROCESS_TIME)%'
+    messaging.stuck_campaign_threshold: '%env(int:MESSAGING_STUCK_CAMPAIGN_THRESHOLD)%'
     messaging.max_mail_size: '%env(MAX_MAILSIZE)%'
     messaging.default_message_age: '%env(DEFAULT_MESSAGEAGE)%'
     messaging.use_manual_text_part: '%env(USE_MANUAL_TEXT_PART)%'

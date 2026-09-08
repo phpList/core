@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Repository;
 
+use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\ORM\AbstractQuery;
@@ -11,6 +12,7 @@ use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Messaging\Model\Filter\MessageFilter;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
@@ -167,21 +169,74 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
     {
         $connection = $this->getEntityManager()->getConnection();
         $table = $connection->quoteIdentifier($this->getClassMetadata()->getTableName());
+        $now = new DateTime();
 
-        $affected = $connection->executeStatement(
-            sprintf('UPDATE %s SET status = :to WHERE id = :id AND status = :from', $table),
-            [
-                'to' => Message\MessageStatus::Prepared->value,
-                'id' => $id,
-                'from' => Message\MessageStatus::Submitted->value,
-            ]
-        );
+        $sql = sprintf('UPDATE %s SET status = :to, modified = :now WHERE id = :id AND status = :from', $table);
+        $params = [
+            'to' => Message\MessageStatus::Prepared->value,
+            'now' => $now->format('Y-m-d H:i:s'),
+            'id' => $id,
+            'from' => Message\MessageStatus::Submitted->value,
+        ];
+
+        $affected = $connection->executeStatement($sql, $params);
 
         if ($affected === 0) {
             return null;
         }
 
         return $this->find($id);
+    }
+
+    /**
+     * Returns campaigns stuck in Prepared/InProcess whose row hasn't been touched since
+     * $staleBefore, i.e. candidates for tryClaimForProcessing's stale-reclaim path. Callers
+     * are expected to re-dispatch a CampaignProcessorMessage for each, since nothing else
+     * automatically resumes a campaign that isn't in Submitted status.
+     *
+     * @return Message[]
+     */
+    public function getStuckInProcessing(DateTimeImmutable $staleBefore): array
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.metadata.status IN (:statuses)')
+            ->andWhere('m.updatedAt < :staleBefore')
+            ->setParameter('statuses', [
+                Message\MessageStatus::Prepared->value,
+                Message\MessageStatus::InProcess->value,
+            ])
+            ->setParameter('staleBefore', $staleBefore)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Atomically increments a campaign's processed/format-sent counters directly in the
+     * database (bypassing the entity's in-memory incrementSentCount()), so concurrent
+     * updates to the same campaign can't lose an update the way a read-modify-write via
+     * the entity manager could. Also bumps `modified`, since this is the liveness signal
+     * tryClaimForProcessing's stale-reclaim relies on.
+     */
+    public function incrementSentCounts(int $messageId, OutputFormat $sentAs): void
+    {
+        $formatField = match ($sentAs) {
+            OutputFormat::Html => 'm.format.asHtml',
+            OutputFormat::Text => 'm.format.asText',
+            OutputFormat::Pdf => 'm.format.asPdf',
+            OutputFormat::TextAndHtml => 'm.format.asTextAndHtml',
+            OutputFormat::TextAndPdf => 'm.format.asTextAndPdf',
+        };
+
+        $this->createQueryBuilder('m')
+            ->update()
+            ->set('m.metadata.processed', 'm.metadata.processed + 1')
+            ->set($formatField, $formatField . ' + 1')
+            ->set('m.updatedAt', ':now')
+            ->where('m.id = :id')
+            ->setParameter('now', new DateTime())
+            ->setParameter('id', $messageId)
+            ->getQuery()
+            ->execute();
     }
 
     public function getNonEmptyFields(int $id): array
