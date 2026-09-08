@@ -10,6 +10,7 @@ use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessor\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessor\CampaignProcessorMessageHandler;
+use PhpList\Core\Domain\Messaging\Model\Dto\DomainThrottleResult;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
@@ -20,6 +21,7 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
 use PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder;
+use PhpList\Core\Domain\Messaging\Service\DomainRateLimiter;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
@@ -56,6 +58,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
     private UserMessageRepository|MockObject $userMessageRepository;
     private MaxProcessTimeLimiter|MockObject $timeLimiter;
     private RequeueHandler|MockObject $requeueHandler;
+    private DomainRateLimiter|MockObject $domainRateLimiter;
 
     protected function setUp(): void
     {
@@ -79,6 +82,9 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $this->userMessageRepository = $userMessageRepository;
         $this->timeLimiter = $timeLimiter;
         $this->requeueHandler = $requeueHandler;
+        $this->domainRateLimiter = $this->createMock(DomainRateLimiter::class);
+        $this->domainRateLimiter->method('attemptSend')
+            ->willReturn(new DomainThrottleResult(allowed: true, domain: null));
 
         $this->handler = $this->createHandler();
     }
@@ -105,6 +111,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             campaignEmailBuilder: $this->createMock(EmailBuilder::class),
             mailSizeChecker: $this->createMock(MailSizeChecker::class),
             configProvider: $this->createMock(ConfigProvider::class),
+            domainRateLimiter: $this->domainRateLimiter,
             bounceEmail: 'bounce@email.com',
             useListExclude: $useListExclude,
         );
@@ -662,6 +669,49 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         );
 
         $this->assertCount(2, $buildCampaignEmailCalls);
+    }
+
+    public function testInvokeSkipsDomainThrottledSubscriberWithoutCreatingUserMessage(): void
+    {
+        $campaign = $this->createCampaignMock();
+        $metadata = $this->createMock(MessageMetadata::class);
+        $campaign->method('getMetadata')->willReturn($metadata);
+        $campaign->method('getId')->willReturn(1);
+        $data = new CampaignProcessorMessage(1);
+
+        $this->messageRepository->method('tryClaimForProcessing')
+            ->with(1)
+            ->willReturn($campaign);
+
+        $this->precacheService->expects($this->once())
+            ->method('precacheMessage')
+            ->with($campaign, $this->anything())
+            ->willReturn(true);
+
+        $throttledSubscriber = $this->createMock(Subscriber::class);
+        $throttledSubscriber->method('getEmail')->willReturn('throttled@example.com');
+
+        $this->subscriberProvider->expects($this->once())
+            ->method('getSubscribersForMessageOrLists')
+            ->willReturn([$throttledSubscriber]);
+
+        $this->domainRateLimiter = $this->createMock(DomainRateLimiter::class);
+        $this->domainRateLimiter->method('attemptSend')
+            ->willReturn(new DomainThrottleResult(allowed: false, domain: 'example.com', blockedAttempts: 1));
+        $handler = $this->createHandler();
+
+        $this->userMessageRepository->expects($this->never())
+            ->method('save');
+
+        $this->requeueHandler->expects($this->once())
+            ->method('handle')
+            ->with($campaign)
+            ->willReturn(true);
+
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
+
+        $handler($data);
     }
 
     /**

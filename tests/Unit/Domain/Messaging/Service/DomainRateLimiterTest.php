@@ -4,77 +4,136 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service;
 
+use PhpList\Core\Domain\Messaging\Model\Dto\DomainThrottleReservation;
+use PhpList\Core\Domain\Messaging\Repository\DomainThrottleStateRepository;
 use PhpList\Core\Domain\Messaging\Service\DomainRateLimiter;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class DomainRateLimiterTest extends TestCase
 {
+    private DomainThrottleStateRepository|MockObject $repository;
+    private LoggerInterface|MockObject $logger;
+
+    protected function setUp(): void
+    {
+        $this->repository = $this->createMock(DomainThrottleStateRepository::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
+    }
+
+    private function createLimiter(
+        bool $enabled = true,
+        int $domainBatchSize = 1,
+        int $domainBatchPeriod = 120,
+        bool $autoThrottle = false,
+    ): DomainRateLimiter {
+        return new DomainRateLimiter(
+            repository: $this->repository,
+            logger: $this->logger,
+            enabled: $enabled,
+            domainBatchSize: $domainBatchSize,
+            domainBatchPeriod: $domainBatchPeriod,
+            autoThrottle: $autoThrottle,
+        );
+    }
+
     public function testAllowsSendsWhenDisabled(): void
     {
-        $limiter = new DomainRateLimiter(enabled: false, domainBatchSize: 1, domainBatchPeriod: 120);
+        $this->repository->expects($this->never())->method('tryReserveSlot');
 
-        $this->assertTrue($limiter->canSendTo('a@example.com'));
-        $limiter->recordSend('a@example.com');
-        $this->assertTrue($limiter->canSendTo('a@example.com'));
+        $limiter = $this->createLimiter(enabled: false);
+
+        $this->assertTrue($limiter->attemptSend('a@example.com')->allowed);
     }
 
     public function testAllowsSendsWhenBatchSizeOrPeriodIsNotPositive(): void
     {
-        $limiter = new DomainRateLimiter(enabled: true, domainBatchSize: 0, domainBatchPeriod: 120);
-        $this->assertTrue($limiter->canSendTo('a@example.com'));
+        $this->repository->expects($this->never())->method('tryReserveSlot');
 
-        $limiter = new DomainRateLimiter(enabled: true, domainBatchSize: 1, domainBatchPeriod: 0);
-        $this->assertTrue($limiter->canSendTo('a@example.com'));
+        $limiter = $this->createLimiter(domainBatchSize: 0);
+        $this->assertTrue($limiter->attemptSend('a@example.com')->allowed);
+
+        $limiter = $this->createLimiter(domainBatchPeriod: 0);
+        $this->assertTrue($limiter->attemptSend('a@example.com')->allowed);
     }
 
-    public function testBlocksSendsToSameDomainOnceQuotaReached(): void
+    public function testAllowsSendsWhenAddressHasNoAtSign(): void
     {
-        $limiter = new DomainRateLimiter(enabled: true, domainBatchSize: 2, domainBatchPeriod: 120);
+        $this->repository->expects($this->never())->method('tryReserveSlot');
 
-        $this->assertTrue($limiter->canSendTo('first@example.com'));
-        $limiter->recordSend('first@example.com');
+        $limiter = $this->createLimiter();
 
-        $this->assertTrue($limiter->canSendTo('second@example.com'));
-        $limiter->recordSend('second@example.com');
-
-        $this->assertFalse($limiter->canSendTo('third@example.com'));
+        $this->assertTrue($limiter->attemptSend('not-an-email')->allowed);
     }
 
-    public function testTracksEachDomainIndependently(): void
+    public function testDelegatesReservationToRepositoryUsingLowercasedDomain(): void
     {
-        $limiter = new DomainRateLimiter(enabled: true, domainBatchSize: 1, domainBatchPeriod: 120);
+        $this->repository->expects($this->once())
+            ->method('tryReserveSlot')
+            ->with('example.com', $this->isType('int'), 1)
+            ->willReturn(new DomainThrottleReservation(allowed: true));
 
-        $limiter->recordSend('a@example.com');
+        $limiter = $this->createLimiter();
+        $result = $limiter->attemptSend('first@Example.COM');
 
-        $this->assertFalse($limiter->canSendTo('b@example.com'));
-        $this->assertTrue($limiter->canSendTo('c@example.org'));
+        $this->assertTrue($result->allowed);
+        $this->assertSame('example.com', $result->domain);
     }
 
-    public function testResetsQuotaAfterPeriodElapses(): void
+    public function testReturnsBlockedResultWithAttemptsWhenQuotaReached(): void
     {
-        $limiter = new DomainRateLimiter(enabled: true, domainBatchSize: 1, domainBatchPeriod: 0);
+        $this->repository->method('tryReserveSlot')
+            ->willReturn(new DomainThrottleReservation(allowed: false, blockedAttempts: 3));
 
-        $limiter->recordSend('a@example.com');
+        $this->logger->expects($this->once())
+            ->method('info')
+            ->with('Send blocked by domain throttle', $this->anything());
 
-        // domainBatchPeriod = 0 means the window is already elapsed on the very next check
-        $this->assertTrue($limiter->canSendTo('a@example.com'));
+        $limiter = $this->createLimiter();
+        $result = $limiter->attemptSend('third@example.com');
+
+        $this->assertFalse($result->allowed);
+        $this->assertSame(3, $result->blockedAttempts);
+        $this->assertFalse($result->backoffApplied);
     }
 
-    public function testTreatsAddressWithoutAtSignAsUnthrottleable(): void
+    public function testDoesNotBackoffWhenAutoThrottleDisabled(): void
     {
-        $limiter = new DomainRateLimiter(enabled: true, domainBatchSize: 1, domainBatchPeriod: 120);
+        $this->repository->method('tryReserveSlot')
+            ->willReturn(new DomainThrottleReservation(allowed: false, blockedAttempts: 999));
+        $this->repository->expects($this->never())->method('resetBlockedCount');
 
-        $limiter->recordSend('not-an-email');
+        $limiter = $this->createLimiter(autoThrottle: false);
+        $result = $limiter->attemptSend('third@example.com');
 
-        $this->assertTrue($limiter->canSendTo('not-an-email'));
+        $this->assertFalse($result->backoffApplied);
     }
 
-    public function testDomainMatchingIsCaseInsensitive(): void
+    public function testDoesNotBackoffBelowAttemptThreshold(): void
     {
-        $limiter = new DomainRateLimiter(enabled: true, domainBatchSize: 1, domainBatchPeriod: 120);
+        $this->repository->method('tryReserveSlot')
+            ->willReturn(new DomainThrottleReservation(allowed: false, blockedAttempts: 5));
+        $this->repository->expects($this->never())->method('resetBlockedCount');
 
-        $limiter->recordSend('first@Example.com');
+        $limiter = $this->createLimiter(autoThrottle: true);
+        $result = $limiter->attemptSend('third@example.com');
 
-        $this->assertFalse($limiter->canSendTo('second@example.COM'));
+        $this->assertFalse($result->backoffApplied);
+    }
+
+    public function testAppliesBackoffAndResetsBlockedCountOnceThresholdExceeded(): void
+    {
+        $this->repository->method('tryReserveSlot')
+            ->willReturn(new DomainThrottleReservation(allowed: false, blockedAttempts: 26));
+        $this->repository->expects($this->once())->method('resetBlockedCount');
+
+        // Small batch period/size keeps the resulting sleep() short (~1s) so the test stays fast.
+        $limiter = $this->createLimiter(domainBatchSize: 1, domainBatchPeriod: 4, autoThrottle: true);
+        $result = $limiter->attemptSend('third@example.com');
+
+        $this->assertFalse($result->allowed);
+        $this->assertTrue($result->backoffApplied);
+        $this->assertGreaterThanOrEqual(1, $result->backoffSeconds);
     }
 }

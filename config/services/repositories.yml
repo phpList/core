@@ -185,6 +185,10 @@ services:
     arguments:
       - PhpList\Core\Domain\Messaging\Model\Attachment
 
+  PhpList\Core\Domain\Messaging\Repository\DomainThrottleStateRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Messaging\Model\DomainThrottleState
   PhpList\Core\Domain\Messaging\Repository\MessageAttachmentRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:

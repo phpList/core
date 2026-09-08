@@ -4,74 +4,98 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service;
 
+use PhpList\Core\Domain\Messaging\Model\Dto\DomainThrottleResult;
+use PhpList\Core\Domain\Messaging\Repository\DomainThrottleStateRepository;
+use Psr\Log\LoggerInterface;
+
 /**
- * Limits how many sends go to any single recipient domain within a rolling time window. Unlike
- * SendRateLimiter, this never sleeps: it just reports whether a domain is over quota right
- * now, so the caller can defer that one recipient to a later run instead of blocking the
- * whole batch on one busy domain. State is kept in memory only (not seeded from history)
+ * Limits how many sends go to any single recipient domain within a fixed time window.
+ * State is persisted via DomainThrottleStateRepository so the quota is shared across
+ * concurrent queue-processing workers rather than each keeping its own count. Unlike
+ * SendRateLimiter, this never blocks the whole batch: it just reports whether a domain
+ * is over quota right now, so the caller can defer that one recipient to a later run
+ * instead of stalling on one busy domain.
  */
 class DomainRateLimiter
 {
-    /** @var array<string, array{start: float, sent: int}> */
-    private array $buckets = [];
+    /**
+     * Matches phpList3's threshold for triggering auto-throttle backoff: skip a run of
+     * blocked attempts before introducing extra delay, so a handful of early blocks
+     * (normal while a window fills up) don't immediately trigger backoff.
+     */
+    private const AUTO_THROTTLE_ATTEMPT_THRESHOLD = 25;
 
     public function __construct(
+        private readonly DomainThrottleStateRepository $repository,
+        private readonly LoggerInterface $logger,
         private readonly bool $enabled = false,
         private readonly int $domainBatchSize = 1,
         private readonly int $domainBatchPeriod = 120,
+        private readonly bool $autoThrottle = false,
     ) {
     }
 
     /**
-     * Call before attempting to send to $email. Returns false if that recipient's domain
-     * has already hit its quota for the current window and the send should be deferred.
+     * Call before sending to $email. Atomically reserves a send slot for that recipient's
+     * domain when quota allows; when quota is exhausted, records the blocked attempt and,
+     * if DOMAIN_AUTO_THROTTLE is enabled and blocked attempts have piled up, sleeps for a
+     * short backoff before returning.
      */
-    public function canSendTo(string $email): bool
+    public function attemptSend(string $email): DomainThrottleResult
     {
         if (!$this->enabled || $this->domainBatchSize <= 0 || $this->domainBatchPeriod <= 0) {
-            return true;
+            return new DomainThrottleResult(allowed: true, domain: null);
         }
 
         $domain = $this->extractDomain($email);
         if ($domain === null) {
-            return true;
+            return new DomainThrottleResult(allowed: true, domain: null);
         }
 
-        return $this->currentBucket($domain)['sent'] < $this->domainBatchSize;
+        $windowStart = intdiv(time(), $this->domainBatchPeriod) * $this->domainBatchPeriod;
+        $reservation = $this->repository->tryReserveSlot($domain, $windowStart, $this->domainBatchSize);
+
+        if ($reservation->allowed) {
+            return new DomainThrottleResult(allowed: true, domain: $domain);
+        }
+
+        $this->logger->info('Send blocked by domain throttle', [
+            'domain' => $domain,
+            'blocked_attempts' => $reservation->blockedAttempts,
+            'domain_batch_size' => $this->domainBatchSize,
+            'domain_batch_period' => $this->domainBatchPeriod,
+        ]);
+
+        return $this->applyAutoThrottleIfDue($domain, $windowStart, $reservation->blockedAttempts);
     }
 
-    /**
-     * Call once a send to $email has been attempted, to count it against that domain's quota.
-     */
-    public function recordSend(string $email): void
-    {
-        if (!$this->enabled) {
-            return;
+    private function applyAutoThrottleIfDue(
+        string $domain,
+        int $windowStart,
+        int $blockedAttempts
+    ): DomainThrottleResult {
+        if (!$this->autoThrottle || $blockedAttempts <= self::AUTO_THROTTLE_ATTEMPT_THRESHOLD) {
+            return new DomainThrottleResult(allowed: false, domain: $domain, blockedAttempts: $blockedAttempts);
         }
 
-        $domain = $this->extractDomain($email);
-        if ($domain === null) {
-            return;
-        }
+        // Reset the trigger counter so it takes another full run of blocked attempts
+        // before backoff fires again for this domain/window.
+        $this->repository->resetBlockedCount($domain, $windowStart);
+        $delaySeconds = max(1, intdiv($this->domainBatchPeriod, max(1, $this->domainBatchSize * 4)));
 
-        $bucket = $this->currentBucket($domain);
-        $bucket['sent']++;
-        $this->buckets[$domain] = $bucket;
-    }
+        $this->logger->info('Introducing extra delay to reduce domain throttle failures', [
+            'domain' => $domain,
+            'delay_seconds' => $delaySeconds,
+        ]);
+        sleep($delaySeconds);
 
-    /** @return array{start: float, sent: int} */
-    private function currentBucket(string $domain): array
-    {
-        $now = microtime(true);
-        $bucket = $this->buckets[$domain] ?? ['start' => $now, 'sent' => 0];
-
-        if ($now - $bucket['start'] >= $this->domainBatchPeriod) {
-            $bucket = ['start' => $now, 'sent' => 0];
-        }
-
-        $this->buckets[$domain] = $bucket;
-
-        return $bucket;
+        return new DomainThrottleResult(
+            allowed: false,
+            domain: $domain,
+            blockedAttempts: $blockedAttempts,
+            backoffApplied: true,
+            backoffSeconds: $delaySeconds,
+        );
     }
 
     private function extractDomain(string $email): ?string

@@ -370,6 +370,13 @@ class CampaignProcessorMessageHandler
                 continue;
             }
 
+            if (!$this->domainRateLimiter->attemptSend($subscriber->getEmail())->allowed) {
+                // Leave no UserMessage record so this subscriber is picked up again on a
+                // later run, once their domain's throttle window has passed.
+                $stoppedEarly = true;
+                continue;
+            }
+
             $userMessage = $existing ?? new UserMessage($subscriber, $campaign);
             $userMessage->setStatus(UserMessageStatus::Active);
             $this->userMessageRepository->save($userMessage);

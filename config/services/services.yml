@@ -80,6 +80,7 @@ services:
       $enabled: '%messaging.use_domain_throttle%'
       $domainBatchSize: '%messaging.domain_batch_size%'
       $domainBatchPeriod: '%messaging.domain_batch_period%'
+      $autoThrottle: '%messaging.domain_auto_throttle%'
 
   PhpList\Core\Domain\Common\SystemInfoCollector:
     autowire: true
