@@ -78,9 +78,18 @@ class DomainRateLimiter
             return new DomainThrottleResult(allowed: false, domain: $domain, blockedAttempts: $blockedAttempts);
         }
 
-        // Reset the trigger counter so it takes another full run of blocked attempts
-        // before backoff fires again for this domain/window.
-        $this->repository->resetBlockedCount($domain, $windowStart);
+        // Concurrent workers can all observe blockedAttempts over the threshold at once; only
+        // the one that atomically claims the reset applies the backoff delay, so the rest
+        // continue instead of all sleeping for the same trigger.
+        $claimed = $this->repository->resetBlockedCount(
+            $domain,
+            $windowStart,
+            self::AUTO_THROTTLE_ATTEMPT_THRESHOLD
+        );
+        if (!$claimed) {
+            return new DomainThrottleResult(allowed: false, domain: $domain, blockedAttempts: $blockedAttempts);
+        }
+
         $delaySeconds = max(1, intdiv($this->domainBatchPeriod, max(1, $this->domainBatchSize * 4)));
 
         $this->logger->info('Introducing extra delay to reduce domain throttle failures', [

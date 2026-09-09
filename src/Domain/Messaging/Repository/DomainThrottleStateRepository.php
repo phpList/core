@@ -47,15 +47,29 @@ class DomainThrottleStateRepository extends AbstractRepository
         );
     }
 
-    public function resetBlockedCount(string $domain, int $windowStart): void
+    /**
+     * Atomically claims the auto-throttle trigger for the specified domain/window.
+     *
+     * The row's blocked_count is reset to 0 only if it is still greater than $threshold at the moment
+     * the UPDATE executes. The worker whose UPDATE successfully performs that reset receives true and is
+     * considered to have claimed the trigger. Concurrent workers racing to claim the same trigger
+     * will see no rows updated once the count has already been reset and will receive false.
+     */
+    public function resetBlockedCount(string $domain, int $windowStart, int $threshold): bool
     {
         $connection = $this->getEntityManager()->getConnection();
         $table = $connection->quoteIdentifier($this->getClassMetadata()->getTableName());
 
-        $connection->executeStatement(
-            sprintf('UPDATE %s SET blocked_count = 0 WHERE domain = :domain AND window_start = :window', $table),
-            ['domain' => $domain, 'window' => $windowStart]
+        $affected = $connection->executeStatement(
+            sprintf(
+                'UPDATE %s SET blocked_count = 0
+                 WHERE domain = :domain AND window_start = :window AND blocked_count > :threshold',
+                $table
+            ),
+            ['domain' => $domain, 'window' => $windowStart, 'threshold' => $threshold]
         );
+
+        return $affected > 0;
     }
 
     /** @phpstan-impure */

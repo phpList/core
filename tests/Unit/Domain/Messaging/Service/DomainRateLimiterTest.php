@@ -126,7 +126,10 @@ class DomainRateLimiterTest extends TestCase
     {
         $this->repository->method('tryReserveSlot')
             ->willReturn(new DomainThrottleReservation(allowed: false, blockedAttempts: 26));
-        $this->repository->expects($this->once())->method('resetBlockedCount');
+        $this->repository->expects($this->once())
+            ->method('resetBlockedCount')
+            ->with('example.com', $this->isType('int'), 25)
+            ->willReturn(true);
 
         // Small batch period/size keeps the resulting sleep() short (~1s) so the test stays fast.
         $limiter = $this->createLimiter(domainBatchSize: 1, domainBatchPeriod: 4, autoThrottle: true);
@@ -135,5 +138,21 @@ class DomainRateLimiterTest extends TestCase
         $this->assertFalse($result->allowed);
         $this->assertTrue($result->backoffApplied);
         $this->assertGreaterThanOrEqual(1, $result->backoffSeconds);
+    }
+
+    public function testDoesNotBackoffWhenLosingTheResetRaceToAnotherWorker(): void
+    {
+        $this->repository->method('tryReserveSlot')
+            ->willReturn(new DomainThrottleReservation(allowed: false, blockedAttempts: 26));
+        $this->repository->expects($this->once())
+            ->method('resetBlockedCount')
+            ->willReturn(false);
+
+        $limiter = $this->createLimiter(domainBatchSize: 1, domainBatchPeriod: 4, autoThrottle: true);
+        $result = $limiter->attemptSend('third@example.com');
+
+        $this->assertFalse($result->allowed);
+        $this->assertFalse($result->backoffApplied);
+        $this->assertSame(0, $result->backoffSeconds);
     }
 }

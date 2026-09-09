@@ -77,10 +77,26 @@ class DomainThrottleStateRepositoryTest extends KernelTestCase
         $blocked = $this->repository->tryReserveSlot('example.com', 1000, 1);
         $this->assertSame(2, $blocked->blockedAttempts);
 
-        $this->repository->resetBlockedCount('example.com', 1000);
+        $claimed = $this->repository->resetBlockedCount('example.com', 1000, threshold: 1);
+        $this->assertTrue($claimed);
 
         $afterReset = $this->repository->tryReserveSlot('example.com', 1000, 1);
         $this->assertFalse($afterReset->allowed);
         $this->assertSame(1, $afterReset->blockedAttempts);
+    }
+
+    public function testResetBlockedCountDoesNotClaimWhenCountAtOrBelowThreshold(): void
+    {
+        $this->repository->tryReserveSlot('example.com', 1000, 1);
+        $this->repository->tryReserveSlot('example.com', 1000, 1);
+        $blocked = $this->repository->tryReserveSlot('example.com', 1000, 1);
+        $this->assertSame(2, $blocked->blockedAttempts);
+
+        $claimed = $this->repository->resetBlockedCount('example.com', 1000, threshold: 2);
+        $this->assertFalse($claimed);
+
+        $afterAttempt = $this->repository->tryReserveSlot('example.com', 1000, 1);
+        $this->assertFalse($afterAttempt->allowed);
+        $this->assertSame(3, $afterAttempt->blockedAttempts);
     }
 }
