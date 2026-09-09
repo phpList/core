@@ -10,7 +10,7 @@ use PhpList\Core\Domain\Analytics\Repository\LinkTrackUserClickRepository;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 
 #[ORM\Entity(repositoryClass: LinkTrackUserClickRepository::class)]
-#[ORM\Table(name: 'phplist_linktrack_userclick')]
+#[ORM\Table(name: 'linktrack_userclick')]
 #[ORM\Index(name: 'phplist_linktrack_userclick_linkindex', columns: ['linkid'])]
 #[ORM\Index(name: 'phplist_linktrack_userclick_linkuserindex', columns: ['linkid', 'userid'])]
 #[ORM\Index(name: 'phplist_linktrack_userclick_linkusermessageindex', columns: ['linkid', 'userid', 'messageid'])]

@@ -25,7 +25,7 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
  * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 #[ORM\Entity(repositoryClass: SubscriberListRepository::class)]
-#[ORM\Table(name: 'phplist_list')]
+#[ORM\Table(name: 'list')]
 #[ORM\Index(name: 'phplist_list_nameidx', columns: ['name'])]
 #[ORM\Index(name: 'phplist_list_listorderidx', columns: ['listorder'])]
 #[ORM\HasLifecycleCallbacks]
@@ -42,14 +42,14 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     #[ORM\Column(name: 'rssfeed', type: 'string', length: 255, nullable: true)]
     private ?string $rssFeed = null;
 
-    #[ORM\Column]
-    private ?string $description = '';
+    #[ORM\Column(nullable: true)]
+    private ?string $description = null;
 
     #[ORM\Column(name: 'entered', type: 'datetime', nullable: true)]
     protected ?DateTime $createdAt = null;
 
     #[ORM\Column(name: 'modified', type: 'datetime')]
-    private ?DateTime $updatedAt = null;
+    private DateTime $updatedAt;
 
     #[ORM\Column(name: 'listorder', type: 'integer', nullable: true)]
     private ?int $listPosition;
@@ -60,13 +60,16 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     #[ORM\Column(name: 'active', type: 'boolean')]
     private bool $public;
 
-    #[ORM\Column]
-    private ?string $category = '';
+    #[ORM\Column(nullable: true)]
+    private ?string $category = null;
 
     #[ORM\ManyToOne(targetEntity: Administrator::class, inversedBy: 'ownedLists')]
     #[ORM\JoinColumn(name: 'owner')]
     private ?Administrator $owner = null;
 
+    /**
+     * @var Collection<int, Subscription>
+     */
     #[ORM\OneToMany(
         targetEntity: Subscription::class,
         mappedBy: 'subscriberList',
@@ -76,6 +79,9 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
     #[MaxDepth(1)]
     private Collection $subscriptions;
 
+    /**
+     * @var Collection<int, ListMessage>
+     */
     #[ORM\OneToMany(targetEntity: ListMessage::class, mappedBy: 'subscriberList')]
     private Collection $listMessages;
 
@@ -84,9 +90,9 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         $this->subscriptions = new ArrayCollection();
         $this->listMessages = new ArrayCollection();
         $this->createdAt = new DateTime();
+        $this->updatedAt = new DateTime();
         $this->listPosition = 0;
         $this->subjectPrefix = '';
-        $this->category = '';
         $this->public = false;
     }
 
@@ -154,7 +160,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
 
     public function isPublic(): bool
     {
-        return $this->public ?? false;
+        return $this->public;
     }
 
     public function setPublic(bool $public): self
@@ -200,15 +206,6 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this;
     }
 
-    public function removeSubscription(Subscription $subscription): self
-    {
-        if ($this->subscriptions->removeElement($subscription)) {
-            $subscription->setSubscriberList(null);
-        }
-
-        return $this;
-    }
-
     public function getSubscribers(): Collection
     {
         $result = new ArrayCollection();
@@ -224,7 +221,7 @@ class SubscriberList implements DomainModel, Identity, CreationDate, Modificatio
         return $this->createdAt;
     }
 
-    public function getUpdatedAt(): ?DateTime
+    public function getUpdatedAt(): DateTime
     {
         return $this->updatedAt;
     }

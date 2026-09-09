@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageFormat;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
+use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageOptions;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageSchedule;
 use PhpList\Core\Domain\Messaging\Model\Template;
@@ -61,7 +62,7 @@ class MessageFixture extends Fixture
                 embargo: new DateTime($row['embargo']),
             );
             $metadata = new MessageMetadata(
-                status: $row['status'],
+                status: MessageStatus::from($row['status']),
                 bounceCount: (int)$row['bouncecount'],
                 entered: new DateTime($row['entered']),
                 sent: new DateTime($row['sent']),

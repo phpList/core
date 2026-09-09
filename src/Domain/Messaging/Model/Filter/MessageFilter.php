@@ -12,6 +12,8 @@ class MessageFilter extends PaginatedFilter implements FilterRequestInterface
 {
     private ?Administrator $owner = null;
     private ?string $subject = null;
+    private ?string $status = null;
+    private string $sortOrder = 'asc';
 
     public function getOwner(): ?Administrator
     {
@@ -35,6 +37,33 @@ class MessageFilter extends PaginatedFilter implements FilterRequestInterface
             $subject = trim($subject);
         }
         $this->subject = $subject;
+        return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(?string $status): self
+    {
+        if ($status !== null) {
+            $status = trim($status);
+        }
+        $this->status = $status;
+        return $this;
+    }
+
+    public function getSortOrder(): string
+    {
+        return $this->sortOrder;
+    }
+
+    public function setSortOrder(string $sortOrder): self
+    {
+        if (in_array($sortOrder, ['asc', 'desc'], true)) {
+            $this->sortOrder = $sortOrder;
+        }
         return $this;
     }
 }

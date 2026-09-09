@@ -107,11 +107,11 @@ class UploadValidator
         $size = (int) $matches[1];
         $unit = strtolower((string) ($matches[2] ?? ''));
 
-        return match ($unit) {
-            '', 'b' => $size,
-            'k', 'kb' => $size * 1024,
-            'm', 'mb' => $size * 1024 * 1024,
-            'g', 'gb' => $size * 1024 * 1024 * 1024,
+        return match (true) {
+            $unit === '' || $unit === 'b' => $size,
+            str_starts_with($unit, 'k') => $size * 1024,
+            str_starts_with($unit, 'm') => $size * 1024 * 1024,
+            str_starts_with($unit, 'g') => $size * 1024 * 1024 * 1024,
             default => throw new InvalidUploadException(sprintf('Invalid upload size limit "%s".', $value)),
         };
     }

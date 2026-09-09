@@ -33,7 +33,7 @@ class ConfigProvider
         if (!in_array($key, $this->booleanValues, true)) {
             throw new InvalidArgumentException('Invalid boolean value key');
         }
-        $config = $this->configRepository->findOneBy(['item' => $key->value]);
+        $config = $this->configRepository->findOneBy(['key' => $key->value]);
 
         if ($config !== null) {
             return filter_var($config->getValue(), FILTER_VALIDATE_BOOLEAN);

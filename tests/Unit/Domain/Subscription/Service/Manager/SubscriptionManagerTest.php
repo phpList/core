@@ -113,7 +113,6 @@ class SubscriptionManagerTest extends TestCase
 
         $result = $this->manager->getSubscriberListMembers($subscriberList);
 
-        $this->assertIsArray($result);
         $this->assertCount(1, $result);
         $this->assertInstanceOf(Subscriber::class, $result[0]);
     }

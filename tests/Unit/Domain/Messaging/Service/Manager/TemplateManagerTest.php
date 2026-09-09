@@ -153,7 +153,6 @@ class TemplateManagerTest extends TestCase
 
         $defaults = $this->manager->listDefaults();
 
-        $this->assertIsArray($defaults);
         $this->assertCount(2, $defaults);
         $this->assertSame('system', $defaults[0]['key']);
         $this->assertSame('System', $defaults[0]['name']);

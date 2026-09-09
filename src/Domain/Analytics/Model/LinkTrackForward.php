@@ -10,7 +10,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 
 #[ORM\Entity(repositoryClass: LinkTrackForwardRepository::class)]
-#[ORM\Table(name: 'phplist_linktrack_forward')]
+#[ORM\Table(name: 'linktrack_forward')]
 #[ORM\UniqueConstraint(name: 'phplist_linktrack_forward_urlunique', columns: ['urlhash'])]
 #[ORM\Index(name: 'phplist_linktrack_forward_urlindex', columns: ['url'])]
 #[ORM\Index(name: 'phplist_linktrack_forward_uuididx', columns: ['uuid'])]
@@ -33,7 +33,7 @@ class LinkTrackForward implements DomainModel, Identity
     private ?string $uuid = '';
 
     #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => 0])]
-    private bool $personalise = false;
+    private ?bool $personalise = false;
 
     public function getId(): ?int
     {
@@ -73,12 +73,12 @@ class LinkTrackForward implements DomainModel, Identity
         return $this;
     }
 
-    public function isPersonalise(): bool
+    public function isPersonalise(): ?bool
     {
         return $this->personalise;
     }
 
-    public function setPersonalise(bool $personalise): self
+    public function setPersonalise(?bool $personalise): self
     {
         $this->personalise = $personalise;
         return $this;

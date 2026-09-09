@@ -19,7 +19,7 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
  *
  * @author Oliver Klee <oliver@phplist.com>
  * @author Tatevik Grigoryan <tatevik@phplist.com>
- * @SuppressWarnings(PHPMD.TooManyPublicMethods)
+ * @SuppressWarnings("PHPMD.TooManyPublicMethods")
  */
 class SubscriberRepository extends AbstractRepository implements PaginatableRepositoryInterface
 {
@@ -69,6 +69,52 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->innerJoin('subscription.subscriberList', 'list')
             ->where('list.id = :listId')
             ->setParameter('listId', $listId)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Same as getSubscribersBySubscribedListId(), but restricted to subscribers who are
+     * confirmed and not disabled - i.e. eligible to receive a campaign. Blacklisting is
+     * intentionally not filtered here since it's checked live against UserBlacklistRepository
+     * at send time instead of the (potentially stale) Subscriber::$blacklisted flag.
+     *
+     * @return Subscriber[]
+     */
+    public function getSendableSubscribersBySubscribedListId(int $listId): array
+    {
+        return $this->createQueryBuilder('s')
+            ->innerJoin('s.subscriptions', 'subscription')
+            ->innerJoin('subscription.subscriberList', 'list')
+            ->where('list.id = :listId')
+            ->andWhere('s.confirmed = :confirmed')
+            ->andWhere('s.disabled = :disabled')
+            ->setParameter('listId', $listId)
+            ->setParameter('confirmed', true)
+            ->setParameter('disabled', false)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Returns all subscribers on any of the given lists, regardless of confirmed/disabled
+     * status - used to resolve campaign exclude-lists, where membership alone is enough
+     * to suppress a send.
+     *
+     * @param int[] $listIds
+     * @return Subscriber[]
+     */
+    public function getSubscribersBySubscribedListIds(array $listIds): array
+    {
+        if ($listIds === []) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('s')
+            ->innerJoin('s.subscriptions', 'subscription')
+            ->innerJoin('subscription.subscriberList', 'list')
+            ->where('list.id IN (:listIds)')
+            ->setParameter('listIds', $listIds)
             ->getQuery()
             ->getResult();
     }
@@ -342,5 +388,82 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->setParameter('emails', $emails)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Returns the top domains (by subscriber count) among subscribers with a valid email address.
+     * Aggregation happens in SQL so only $limit rows are ever loaded into memory.
+     *
+     * @return array<int, array{domain: string, subscribers: int|string}>
+     */
+    public function getTopDomains(int $limit, int $minSubscribers): array
+    {
+        return $this->createQueryBuilder('s')
+            ->select("SUBSTRING(s.email, LOCATE('@', s.email) + 1, LENGTH(s.email)) AS domain")
+            ->addSelect('COUNT(s.id) AS subscribers')
+            ->where("LOCATE('@', s.email) > 0")
+            ->groupBy('domain')
+            ->having('COUNT(s.id) >= :minSubscribers')
+            ->setParameter('minSubscribers', $minSubscribers)
+            ->orderBy('subscribers', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+    }
+
+    /**
+     * Returns per-domain confirmed/unconfirmed/blacklisted subscriber counts, ordered by unconfirmed count.
+     * Aggregation happens in SQL so only $limit rows are ever loaded into memory.
+     *
+     * @return array<int, array{domain: string, total: int|string, confirmed: int|string,
+     *     unconfirmed: int|string, blacklisted: int|string}>
+     */
+    public function getDomainConfirmationStatistics(int $limit): array
+    {
+        return $this->createQueryBuilder('s')
+            ->select("SUBSTRING(s.email, LOCATE('@', s.email) + 1, LENGTH(s.email)) AS domain")
+            ->addSelect('COUNT(s.id) AS total')
+            ->addSelect('SUM(CASE WHEN s.blacklisted = true THEN 1 ELSE 0 END) AS blacklisted')
+            ->addSelect('SUM(CASE WHEN s.blacklisted = false AND s.confirmed = true THEN 1 ELSE 0 END) AS confirmed')
+            ->addSelect(
+                'SUM(CASE WHEN s.blacklisted = false AND s.confirmed = false THEN 1 ELSE 0 END) AS unconfirmed'
+            )
+            ->where("LOCATE('@', s.email) > 0")
+            ->groupBy('domain')
+            ->orderBy('unconfirmed', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+    }
+
+    /**
+     * Returns the top local-parts (by subscriber count) among subscribers with a valid email address.
+     * Aggregation happens in SQL so only $limit rows are ever loaded into memory.
+     *
+     * @return array<int, array{localPart: string, count: int|string}>
+     */
+    public function getTopLocalParts(int $limit): array
+    {
+        return $this->createQueryBuilder('s')
+            ->select("SUBSTRING(s.email, 1, LOCATE('@', s.email) - 1) AS localPart")
+            ->addSelect('COUNT(s.id) AS count')
+            ->where("LOCATE('@', s.email) > 0")
+            ->groupBy('localPart')
+            ->orderBy('count', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+    }
+
+    /**
+     * Counts subscribers whose email address contains an '@'.
+     */
+    public function countWithValidEmail(): int
+    {
+        return (int) $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
+            ->where("LOCATE('@', s.email) > 0")
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

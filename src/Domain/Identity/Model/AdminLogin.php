@@ -12,7 +12,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Identity\Repository\AdminLoginRepository;
 
 #[ORM\Entity(repositoryClass: AdminLoginRepository::class)]
-#[ORM\Table(name: 'phplist_admin_login')]
+#[ORM\Table(name: 'admin_login')]
 #[ORM\HasLifecycleCallbacks]
 class AdminLogin implements DomainModel, Identity
 {
@@ -25,8 +25,8 @@ class AdminLogin implements DomainModel, Identity
     #[ORM\JoinColumn(name: 'adminid', referencedColumnName: 'id', nullable: false)]
     private Administrator $administrator;
 
-    #[ORM\Column(name: 'moment', type: 'bigint')]
-    private int $moment;
+    #[ORM\Column(type: 'datetime_immutable', nullable: false)]
+    private DateTimeImmutable $moment;
 
     #[ORM\Column(name: 'remote_ip4', type: 'string', length: 32)]
     private string $remoteIp4;
@@ -42,13 +42,12 @@ class AdminLogin implements DomainModel, Identity
 
     public function __construct(
         Administrator $administrator,
-        DateTimeInterface $createdAt,
         string $remoteIp4,
         string $remoteIp6,
         string $sessionId,
     ) {
         $this->administrator = $administrator;
-        $this->moment = $createdAt->getTimestamp();
+        $this->moment = new DateTimeImmutable();
         $this->remoteIp4 = $remoteIp4;
         $this->remoteIp6 = $remoteIp6;
         $this->sessionId = $sessionId;
@@ -77,7 +76,7 @@ class AdminLogin implements DomainModel, Identity
 
     public function getCreatedAt(): DateTimeInterface
     {
-        return (new DateTimeImmutable())->setTimestamp($this->moment);
+        return $this->moment;
     }
 
     public function getRemoteIp4(): string

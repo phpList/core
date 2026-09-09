@@ -21,7 +21,6 @@ class DefaultTemplateMapperTest extends TestCase
     {
         $defaults = $this->mapper->list();
 
-        $this->assertIsArray($defaults);
         $this->assertNotEmpty($defaults);
         $this->assertSame('system', $defaults[0]['key']);
         $this->assertSame('System', $defaults[0]['name']);
@@ -50,7 +49,6 @@ class DefaultTemplateMapperTest extends TestCase
     {
         $content = $this->mapper->loadContent('system.html');
 
-        $this->assertIsString($content);
         $this->assertNotSame('', $content);
         $this->assertStringContainsString('[CONTENT]', $content);
     }

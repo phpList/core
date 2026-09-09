@@ -11,6 +11,16 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class OnlyOrmTablesFilter
 {
+    /**
+     * Namespace prefixes of entities considered "owned" by this project. Entities mapped from
+     * elsewhere (e.g. TatevikGr\RssFeedBundle, which registers its own ORM mapping) are excluded from
+     * the allowlist so that doctrine:migrations:diff doesn't propose schema changes for them - those
+     * bundles ship and run their own migrations.
+     */
+    private const PROJECT_NAMESPACES = [
+        'PhpList\\Core\\',
+    ];
+
     /** @var string[]|null */
     private ?array $allow = null;
     /** @var string[]|null */
@@ -59,6 +69,10 @@ class OnlyOrmTablesFilter
 
         $tables = [];
         foreach ($this->entityManager->getMetadataFactory()->getAllMetadata() as $metadatum) {
+            if (!$this->isProjectOwned($metadatum->getName())) {
+                continue;
+            }
+
             $tableName = $metadatum->getTableName();
             if ($tableName) {
                 $tables[] = strtolower($tableName);
@@ -80,5 +94,16 @@ class OnlyOrmTablesFilter
         $this->allowPrefixes = $prefixes;
 
         return [$this->allow, $this->allowPrefixes];
+    }
+
+    private function isProjectOwned(string $className): bool
+    {
+        foreach (self::PROJECT_NAMESPACES as $namespace) {
+            if (str_starts_with($className, $namespace)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

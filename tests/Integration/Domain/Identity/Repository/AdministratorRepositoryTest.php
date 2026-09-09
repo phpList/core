@@ -42,7 +42,7 @@ class AdministratorRepositoryTest extends KernelTestCase
 
     public function testFindReadsModelFromDatabase(): void
     {
-        /** @var Administrator $actual */
+        /** @var ?Administrator $actual */
         $actual = $this->repository->findOneBy(['email' => 'john@example.com']);
 
         $this->assertNotNull($actual);
@@ -66,7 +66,7 @@ class AdministratorRepositoryTest extends KernelTestCase
     public function testCreationDateOfExistingModelStaysUnchangedOnUpdate(): void
     {
         $id = 1;
-        /** @var Administrator $model */
+        /** @var ?Administrator $model */
         $model = $this->repository->find($id);
         $this->assertNotNull($model);
         $originalCreationDate = $model->getCreatedAt();
@@ -80,7 +80,7 @@ class AdministratorRepositoryTest extends KernelTestCase
     public function testModificationDateOfExistingModelGetsUpdatedOnUpdate(): void
     {
         $id = 1;
-        /** @var Administrator $model */
+        /** @var ?Administrator $model */
         $model = $this->repository->find($id);
         $this->assertNotNull($model);
 

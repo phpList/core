@@ -6,8 +6,8 @@ namespace PhpList\Core\Domain\Subscription\Repository;
 
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\ParameterType;
 use InvalidArgumentException;
-use PDO;
 use PhpList\Core\Domain\Subscription\Model\Dto\DynamicListAttrDto;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -161,12 +161,12 @@ class DynamicListAttrRepository
 
         $sql = 'SELECT 1 FROM ' . $table . ' WHERE LOWER(name) = LOWER(:name)';
         $params = ['name' => $dto->name];
-        $types  = ['name' => PDO::PARAM_STR];
+        $types  = ['name' => ParameterType::STRING];
 
         if ($dto->id !== null) {
             $sql .= ' AND id <> :excludeId';
             $params['excludeId'] = $dto->id;
-            $types['excludeId']  = PDO::PARAM_INT;
+            $types['excludeId']  = ParameterType::INTEGER;
         }
 
         $sql .= ' LIMIT 1';

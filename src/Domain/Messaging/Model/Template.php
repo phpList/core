@@ -12,7 +12,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Messaging\Repository\TemplateRepository;
 
 #[ORM\Entity(repositoryClass: TemplateRepository::class)]
-#[ORM\Table(name: 'phplist_template')]
+#[ORM\Table(name: 'template')]
 #[ORM\UniqueConstraint(name: 'phplist_template_title', columns: ['title'])]
 class Template implements DomainModel, Identity
 {
@@ -33,6 +33,9 @@ class Template implements DomainModel, Identity
     #[ORM\Column(name: 'listorder', type: 'integer', nullable: true)]
     private ?int $listOrder = null;
 
+    /**
+     * @var Collection<int, TemplateImage>
+     */
     #[ORM\OneToMany(
         targetEntity: TemplateImage::class,
         mappedBy: 'template',

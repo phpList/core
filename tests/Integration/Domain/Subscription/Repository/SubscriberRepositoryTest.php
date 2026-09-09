@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Integration\Domain\Subscription\Repository;
 
 use DateTime;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\Tools\SchemaTool;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
+use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 use PhpList\Core\Domain\Subscription\Model\Subscription;
-use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriptionRepository;
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
@@ -32,7 +31,6 @@ class SubscriberRepositoryTest extends KernelTestCase
     use SimilarDatesAssertionTrait;
 
     private ?SubscriberRepository $subscriberRepository = null;
-    private ?SubscriberListRepository $subscriberListRepository = null;
     private ?SubscriptionRepository $subscriptionRepository = null;
 
     protected function setUp(): void
@@ -41,7 +39,6 @@ class SubscriberRepositoryTest extends KernelTestCase
         $this->loadSchema();
 
         $this->subscriberRepository = self::getContainer()->get(SubscriberRepository::class);
-        $this->subscriberListRepository = self::getContainer()->get(SubscriberListRepository::class);
         $this->subscriptionRepository = self::getContainer()->get(SubscriptionRepository::class);
     }
 
@@ -195,17 +192,15 @@ class SubscriberRepositoryTest extends KernelTestCase
         $this->loadFixtures([SubscriberFixture::class, SubscriberListFixture::class, SubscriptionFixture::class]);
 
         $id = 1;
-        /** @var Subscriber $model */
+        /** @var ?Subscriber $model */
         $model = $this->subscriberRepository->findSubscriberWithSubscriptions($id);
-        $subscriberLists = new ArrayCollection();
+        $subscriberListIds = [];
         foreach ($model->getSubscriptions() as $subscription) {
-            $subscriberLists->add($subscription->getSubscriberList());
+            $subscriberListIds[] = $subscription->getSubscriberList()->getId();
         }
 
-        $expectedList = $this->subscriberListRepository->find(2);
-        $unexpectedList = $this->subscriberListRepository->find(1);
-        self::assertTrue($subscriberLists->contains($expectedList));
-        self::assertFalse($subscriberLists->contains($unexpectedList));
+        self::assertContains(2, $subscriberListIds);
+        self::assertNotContains(1, $subscriberListIds);
     }
 
     public function testRemoveAlsoRemovesAssociatedSubscriptions()
@@ -244,5 +239,66 @@ class SubscriberRepositoryTest extends KernelTestCase
 
         $numberOfModelsAfterRemove = count($this->subscriberRepository->findAll());
         self::assertSame(1, $numberOfModelsBeforeRemove - $numberOfModelsAfterRemove);
+    }
+
+    private function subscribe(Subscriber $subscriber, SubscriberList $list): void
+    {
+        $subscription = (new Subscription())
+            ->setSubscriber($subscriber)
+            ->setSubscriberList($list);
+        $this->entityManager->persist($subscription);
+    }
+
+    public function testGetSendableSubscribersBySubscribedListIdExcludesUnconfirmedAndDisabled(): void
+    {
+        $list = (new SubscriberList())->setName('list');
+        $this->entityManager->persist($list);
+
+        $confirmed = (new Subscriber('confirmed@example.com'))->setConfirmed(true);
+        $unconfirmed = (new Subscriber('unconfirmed@example.com'))->setConfirmed(false);
+        $disabled = (new Subscriber('disabled@example.com'))->setConfirmed(true)->setDisabled(true);
+        foreach ([$confirmed, $unconfirmed, $disabled] as $subscriber) {
+            $this->entityManager->persist($subscriber);
+            $this->subscribe($subscriber, $list);
+        }
+        $this->entityManager->flush();
+
+        $result = $this->subscriberRepository->getSendableSubscribersBySubscribedListId($list->getId());
+
+        self::assertTrue(in_array($confirmed, $result, true));
+        self::assertFalse(in_array($unconfirmed, $result, true));
+        self::assertFalse(in_array($disabled, $result, true));
+    }
+
+    public function testGetSubscribersBySubscribedListIdsReturnsMembersOfAnyGivenList(): void
+    {
+        $listA = (new SubscriberList())->setName('a');
+        $listB = (new SubscriberList())->setName('b');
+        $listC = (new SubscriberList())->setName('c');
+        $this->entityManager->persist($listA);
+        $this->entityManager->persist($listB);
+        $this->entityManager->persist($listC);
+
+        $inA = new Subscriber('in-a@example.com');
+        $inB = new Subscriber('in-b@example.com');
+        $inC = new Subscriber('in-c@example.com');
+        $this->entityManager->persist($inA);
+        $this->entityManager->persist($inB);
+        $this->entityManager->persist($inC);
+        $this->subscribe($inA, $listA);
+        $this->subscribe($inB, $listB);
+        $this->subscribe($inC, $listC);
+        $this->entityManager->flush();
+
+        $result = $this->subscriberRepository->getSubscribersBySubscribedListIds([$listA->getId(), $listB->getId()]);
+
+        self::assertTrue(in_array($inA, $result, true));
+        self::assertTrue(in_array($inB, $result, true));
+        self::assertFalse(in_array($inC, $result, true));
+    }
+
+    public function testGetSubscribersBySubscribedListIdsReturnsEmptyArrayForEmptyInput(): void
+    {
+        self::assertSame([], $this->subscriberRepository->getSubscribersBySubscribedListIds([]));
     }
 }

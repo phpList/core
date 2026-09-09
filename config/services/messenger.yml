@@ -11,6 +11,12 @@ services:
         resource: '../../src/Domain/Subscription/MessageHandler'
         tags: [ 'messenger.message_handler' ]
 
+    # Register Search message handlers (e.g., IndexDocumentMessageHandler)
+    PhpList\Core\Domain\Search\MessageHandler\:
+        autowire: true
+        resource: '../../src/Domain/Search/MessageHandler'
+        tags: [ 'messenger.message_handler' ]
+
     PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessor\CampaignProcessorMessageHandler:
         autowire: true
         autoconfigure: true

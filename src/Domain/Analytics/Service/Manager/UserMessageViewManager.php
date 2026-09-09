@@ -34,4 +34,14 @@ class UserMessageViewManager
     {
         return $this->userMessageViewRepository->countBetween($start, $end);
     }
+
+    public function countViewsGroupedByDay(DateTimeInterface $start, DateTimeInterface $end): array
+    {
+        return $this->userMessageViewRepository->countGroupedByDay($start, $end);
+    }
+
+    public function countViewsByMessageIds(array $messageIds): array
+    {
+        return $this->userMessageViewRepository->countByMessageIds($messageIds);
+    }
 }

@@ -11,7 +11,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 
 #[ORM\Entity(repositoryClass: LinkTrackUmlClickRepository::class)]
-#[ORM\Table(name: 'phplist_linktrack_uml_click')]
+#[ORM\Table(name: 'linktrack_uml_click')]
 #[ORM\UniqueConstraint(name: 'phplist_linktrack_uml_click_miduidfwdid', columns: ['messageid', 'userid', 'forwardid'])]
 #[ORM\Index(name: 'phplist_linktrack_uml_click_midindex', columns: ['messageid'])]
 #[ORM\Index(name: 'phplist_linktrack_uml_click_miduidindex', columns: ['messageid', 'userid'])]

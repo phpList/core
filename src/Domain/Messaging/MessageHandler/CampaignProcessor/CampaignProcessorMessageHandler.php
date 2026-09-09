@@ -25,6 +25,7 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
 use PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder;
+use PhpList\Core\Domain\Messaging\Service\DomainRateLimiter;
 use PhpList\Core\Domain\Messaging\Service\Handler\RequeueHandler;
 use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
@@ -46,8 +47,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
 /**
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
+ * @SuppressWarnings("PHPMD.ExcessiveParameterList")
  */
 #[AsMessageHandler]
 class CampaignProcessorMessageHandler
@@ -72,13 +73,20 @@ class CampaignProcessorMessageHandler
         private readonly EmailBuilder $campaignEmailBuilder,
         private readonly MailSizeChecker $mailSizeChecker,
         private readonly ConfigProvider $configProvider,
+        private readonly DomainRateLimiter $domainRateLimiter,
         #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
+        #[Autowire('%messaging.use_list_exclude%')] private readonly bool $useListExclude = false,
+        #[Autowire('%messaging.stuck_campaign_threshold%')] private readonly int $stuckCampaignThresholdSeconds = 0,
     ) {
     }
 
     public function __invoke(CampaignProcessorMessage|SyncCampaignProcessorMessage $data): void
     {
-        $campaign = $this->messageRepository->findByIdAndStatus($data->getMessageId(), MessageStatus::Submitted);
+        // todo: recheck this stuckCampaignThresholdSeconds logic
+        $campaign = $this->messageRepository->tryClaimForProcessing(
+            $data->getMessageId(),
+            $this->stuckCampaignThresholdSeconds
+        );
         if (!$campaign) {
             $this->logger->warning(
                 $this->translator->trans('Campaign not found or not in submitted status'),
@@ -121,31 +129,16 @@ class CampaignProcessorMessageHandler
 
         $this->handleAdminNotifications($campaign, $loadedMessageData, $data->getMessageId());
 
-        $this->updateMessageStatus($campaign, MessageStatus::Prepared);
-        $subscribers = $this->subscriberProvider->getSubscribersForMessageOrLists($data, $campaign);
+        // Campaign was already atomically claimed into Prepared status above.
+        $excludeListIds = $this->getExcludeListIds($loadedMessageData);
+        $this->markExcludedSubscribers($campaign, $data, $excludeListIds);
+        $subscribers = $this->subscriberProvider->getSubscribersForMessageOrLists(
+            $data,
+            $campaign,
+            $excludeListIds
+        );
 
         $this->updateMessageStatus($campaign, MessageStatus::InProcess);
-
-//        if (USE_LIST_EXCLUDE) {
-//            if (VERBOSE) {
-//                processQueueOutput(s('looking for users who can be excluded from this mailing'));
-//            }
-//            if (count($msgdata['excludelist'])) {
-//                $query
-//                    = ' select userid'
-//                    .' from '.$GLOBALS['tables']['listuser']
-//                    .' where listid in ('.implode(',', $msgdata['excludelist']).')';
-//                if (VERBOSE) {
-//                    processQueueOutput('Exclude query '.$query);
-//                }
-//                $req = Sql_Query($query);
-//                while ($row = Sql_Fetch_Row($req)) {
-//                    $um = Sql_Query(sprintf('replace into %s (entered,userid,messageid,status)
-//                           values(now(),%d,%d,"excluded")',
-//                        $tables['usermessage'], $row[0], $messageid));
-//                }
-//            }
-//        }
 
         $stoppedEarly = $this->processSubscribersForCampaign($campaign, $subscribers, $cacheKey);
 
@@ -155,6 +148,72 @@ class CampaignProcessorMessageHandler
         }
 
         $this->updateMessageStatus($campaign, MessageStatus::Sent);
+    }
+
+    /**
+     * Exclude-list IDs are stored via MessageData as an array keyed by list ID  e.g. [3 => 1, 7 => 1].
+     *
+     * @return int[]
+     */
+    private function getExcludeListIds(array $loadedMessageData): array
+    {
+        if (!$this->useListExclude) {
+            return [];
+        }
+
+        $excludeList = $loadedMessageData['excludelist'] ?? [];
+        if (!is_array($excludeList) || $excludeList === []) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(
+            static fn (mixed $key): ?int => is_numeric($key) ? (int) $key : null,
+            array_keys($excludeList)
+        ), static fn (?int $id): bool => $id !== null));
+    }
+
+    /**
+     * pre-marking of exclude-list members as "excluded" in usermessage before the main send loop runs,
+     * so there's a persisted audit trail for why a subscriber wasn't sent to. Skips
+     * subscribers who already have a nontodo UserMessage for this campaign, so a later run
+     * can't clobber an already-recorded Sent/NotSent/etc. status from an earlier partial run.
+     * Only campaign recipients (i.e. subscribers who'd otherwise be sent this campaign) are
+     * marked, since a subscriber on an exclude list who isn't a campaign recipient anyway
+     * shouldn't get an exclusion record.
+     */
+    private function markExcludedSubscribers(
+        Message $campaign,
+        CampaignProcessorMessage|SyncCampaignProcessorMessage $data,
+        array $excludeListIds,
+    ): void {
+        if ($excludeListIds === []) {
+            return;
+        }
+
+        $excludedSubscribers = $this->subscriberProvider->getExcludedSubscribers($excludeListIds);
+        if ($excludedSubscribers === []) {
+            return;
+        }
+
+        $sendableSubscribers = $this->subscriberProvider->getSendableSubscribersForMessageOrLists(
+            $data,
+            $campaign
+        );
+
+        foreach ($excludedSubscribers as $subscriber) {
+            if (!isset($sendableSubscribers[$subscriber->getEmail()])) {
+                continue;
+            }
+
+            $existing = $this->userMessageRepository->findByUserAndMessage($subscriber, $campaign);
+            if ($existing && $existing->getStatus() !== UserMessageStatus::Todo) {
+                continue;
+            }
+
+            $userMessage = $existing ?? new UserMessage($subscriber, $campaign);
+            $userMessage->setStatus(UserMessageStatus::Excluded);
+            $this->userMessageRepository->save($userMessage);
+        }
     }
 
     private function unconfirmSubscriber(Subscriber $subscriber): void
@@ -169,6 +228,9 @@ class CampaignProcessorMessageHandler
     {
         if ($status === MessageStatus::InProcess && $message->getMetadata()->getSendStart() === null) {
             $message->getMetadata()->setSendStart(new DateTime());
+        }
+        if ($status === MessageStatus::Sent) {
+            $message->getMetadata()->setSent(new DateTime());
         }
         $message->getMetadata()->setStatus($status);
         $this->entityManager->flush();
@@ -220,6 +282,9 @@ class CampaignProcessorMessageHandler
                 htmlPref: $subscriber->hasHtmlEmail(),
             );
             if ($result === null) {
+                $status = $subscriber->isBlacklisted() ? UserMessageStatus::Excluded : UserMessageStatus::NotSent;
+                $this->updateUserMessageStatus($userMessage, $status);
+
                 return;
             }
             [$email, $sentAs] = $result;
@@ -228,7 +293,7 @@ class CampaignProcessorMessageHandler
             $this->rateLimitedCampaignMailer->send($email);
             ($this->mailSizeChecker)($campaign, $email, $subscriber->hasHtmlEmail());
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
-            $campaign->incrementSentCount($sentAs);
+            $this->messageRepository->incrementSentCounts($campaign->getId(), $sentAs);
         } catch (MessageSizeLimitExceededException $e) {
             // stop after the first message if size is exceeded
             $this->updateMessageStatus($campaign, MessageStatus::Suspended);
@@ -327,6 +392,13 @@ class CampaignProcessorMessageHandler
 
             $existing = $this->userMessageRepository->findByUserAndMessage($subscriber, $campaign);
             if ($existing && $existing->getStatus() !== UserMessageStatus::Todo) {
+                continue;
+            }
+
+            if (!$this->domainRateLimiter->attemptSend($subscriber->getEmail())->allowed) {
+                // Leave no UserMessage record so this subscriber is picked up again on a
+                // later run, once their domain's throttle window has passed.
+                $stoppedEarly = true;
                 continue;
             }
 

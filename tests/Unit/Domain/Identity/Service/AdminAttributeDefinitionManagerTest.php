@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Identity\Service;
 
 use PhpList\Core\Domain\Common\Model\PaginatedResult;
-use PhpList\Core\Domain\Identity\Exception\AttributeDefinitionCreationException;
+use PhpList\Core\Domain\Common\Exception\AttributeDefinitionCreationException;
 use PhpList\Core\Domain\Identity\Model\AdminAttributeDefinition;
 use PhpList\Core\Domain\Identity\Model\Dto\AdminAttributeDefinitionDto;
 use PhpList\Core\Domain\Identity\Repository\AdminAttributeDefinitionRepository;

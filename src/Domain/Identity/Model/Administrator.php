@@ -25,7 +25,7 @@ use PhpList\Core\Domain\Subscription\Model\SubscriberList;
  * @author Tatevik Grigoryan <tatevik@phplist.com>
  */
 #[ORM\Entity(repositoryClass: AdministratorRepository::class)]
-#[ORM\Table(name: 'phplist_admin')]
+#[ORM\Table(name: 'admin')]
 #[ORM\UniqueConstraint(name: 'phplist_admin_loginnameidx', columns: ['loginname'])]
 #[ORM\HasLifecycleCallbacks]
 class Administrator implements DomainModel, Identity, CreationDate, ModificationDate
@@ -36,7 +36,7 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     private ?int $id = null;
 
     #[ORM\Column(name: 'created', type: 'datetime', nullable: false)]
-    protected ?DateTime $createdAt = null;
+    protected DateTime $createdAt;
 
     #[ORM\Column(name: 'modified', type: 'datetime', nullable: false)]
     private DateTime $updatedAt;
@@ -68,6 +68,9 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
     #[ORM\Column(name: 'privileges', type: 'text', nullable: true)]
     private ?string $privileges = null;
 
+    /**
+     * @var Collection<int, SubscriberList>
+     */
     #[ORM\OneToMany(targetEntity: SubscriberList::class, mappedBy: 'owner')]
     private Collection $ownedLists;
 
@@ -84,7 +87,7 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
         return $this->id;
     }
 
-    public function getCreatedAt(): ?DateTime
+    public function getCreatedAt(): DateTime
     {
         return $this->createdAt;
     }

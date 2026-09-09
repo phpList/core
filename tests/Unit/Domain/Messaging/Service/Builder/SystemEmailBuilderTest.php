@@ -145,7 +145,7 @@ class SystemEmailBuilderTest extends TestCase
 
         $this->templateImageEmbedder->expects($this->once())
             ->method('__invoke')
-            ->with(html: '<p>HTML</p>', messageId: 777)
+            ->with('<p>HTML</p>', 777)
             ->willReturn('<p>HTML</p>');
 
         $builder = $this->makeBuilder(

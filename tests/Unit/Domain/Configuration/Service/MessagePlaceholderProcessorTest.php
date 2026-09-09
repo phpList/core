@@ -163,7 +163,7 @@ final class MessagePlaceholderProcessorTest extends TestCase
             {
                 return strtoupper($key) === 'SUPPORT';
             }
-            public function resolve(string $key, PlaceholderContext $ctx): ?string
+            public function resolve(string $key, PlaceholderContext $ctx): string
             {
                 return 'SVAL';
             }

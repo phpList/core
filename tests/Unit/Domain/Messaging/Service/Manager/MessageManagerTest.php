@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Manager;
 
 use DateTime;
+use DateTimeImmutable;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\ListMessage;
@@ -240,5 +241,22 @@ class MessageManagerTest extends TestCase
 
         $this->assertSame($message, $updated);
         $this->assertSame(Message\MessageStatus::Submitted, $message->getMetadata()->getStatus());
+    }
+
+    public function testGetStuckCampaignsDelegatesToRepository(): void
+    {
+        $messageRepository = $this->createMock(MessageRepository::class);
+        $messageBuilder = $this->createMock(MessageBuilder::class);
+        $manager = new MessageManager($messageRepository, $messageBuilder);
+
+        $staleBefore = new DateTimeImmutable('-30 minutes');
+        $stuckMessage = $this->createMock(Message::class);
+
+        $messageRepository->expects($this->once())
+            ->method('getStuckInProcessing')
+            ->with($staleBefore)
+            ->willReturn([$stuckMessage]);
+
+        $this->assertSame([$stuckMessage], $manager->getStuckCampaigns($staleBefore));
     }
 }

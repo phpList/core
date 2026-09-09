@@ -21,14 +21,11 @@ use Symfony\Component\Mime\Email;
 )]
 class SendTestEmailCommand extends Command
 {
-    private EmailService $emailService;
-    private TranslatorInterface $translator;
-
-    public function __construct(EmailService $emailService, TranslatorInterface $translator)
-    {
+    public function __construct(
+        private readonly EmailService $emailService,
+        private readonly TranslatorInterface $translator
+    ) {
         parent::__construct();
-        $this->emailService = $emailService;
-        $this->translator = $translator;
     }
 
     protected function configure(): void

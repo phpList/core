@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Service\Manager;
 
-use PhpList\Core\Domain\Subscription\Exception\AttributeDefinitionCreationException;
+use PhpList\Core\Domain\Common\Exception\AttributeDefinitionCreationException;
 use PhpList\Core\Domain\Subscription\Model\Dto\AttributeDefinitionDto;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;

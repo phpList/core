@@ -10,7 +10,7 @@ use PhpList\Core\Domain\Identity\Model\AdminPasswordRequest;
 use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
 use PhpList\Core\Domain\Identity\Repository\AdminPasswordRequestRepository;
 use PhpList\Core\Domain\Messaging\Message\PasswordResetMessage;
-use PhpList\Core\Security\HashGenerator;
+use PhpList\Core\Domain\Identity\Service\HashGenerator;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;

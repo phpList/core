@@ -10,10 +10,10 @@ services:
   PhpList\Core\Core\ApplicationStructure:
     public: true
 
-  PhpList\Core\Security\Authentication:
+  PhpList\Core\Domain\Identity\Service\Authentication:
     public: true
 
-  PhpList\Core\Security\HashGenerator:
+  PhpList\Core\Domain\Identity\Service\HashGenerator:
     public: true
 
   PhpList\Core\Routing\ExtraLoader:
@@ -50,6 +50,14 @@ services:
     lazy: true
     tags:
       - { name: 'doctrine.dbal.schema_filter', connection: 'default' }
+
+  PhpList\Core\Core\Doctrine\TablePrefixListener:
+    arguments:
+      $tablePrefix: '%database_prefix%'
+
+  PhpList\Core\Core\Doctrine\SearchIndexDoctrineListener:
+    arguments:
+      $enabled: '%elasticsearch.enabled%'
 
   HTMLPurifier_Config:
     class: HTMLPurifier_Config
