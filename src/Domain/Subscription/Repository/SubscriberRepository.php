@@ -74,6 +74,52 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
     }
 
     /**
+     * Same as getSubscribersBySubscribedListId(), but restricted to subscribers who are
+     * confirmed and not disabled - i.e. eligible to receive a campaign. Blacklisting is
+     * intentionally not filtered here since it's checked live against UserBlacklistRepository
+     * at send time instead of the (potentially stale) Subscriber::$blacklisted flag.
+     *
+     * @return Subscriber[]
+     */
+    public function getSendableSubscribersBySubscribedListId(int $listId): array
+    {
+        return $this->createQueryBuilder('s')
+            ->innerJoin('s.subscriptions', 'subscription')
+            ->innerJoin('subscription.subscriberList', 'list')
+            ->where('list.id = :listId')
+            ->andWhere('s.confirmed = :confirmed')
+            ->andWhere('s.disabled = :disabled')
+            ->setParameter('listId', $listId)
+            ->setParameter('confirmed', true)
+            ->setParameter('disabled', false)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Returns all subscribers on any of the given lists, regardless of confirmed/disabled
+     * status - used to resolve campaign exclude-lists, where membership alone is enough
+     * to suppress a send.
+     *
+     * @param int[] $listIds
+     * @return Subscriber[]
+     */
+    public function getSubscribersBySubscribedListIds(array $listIds): array
+    {
+        if ($listIds === []) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('s')
+            ->innerJoin('s.subscriptions', 'subscription')
+            ->innerJoin('subscription.subscriberList', 'list')
+            ->where('list.id IN (:listIds)')
+            ->setParameter('listIds', $listIds)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @return PaginatedResult<Subscriber>
      * @throws InvalidArgumentException
      * @SuppressWarnings("CyclomaticComplexity")

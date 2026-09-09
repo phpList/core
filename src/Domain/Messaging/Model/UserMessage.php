@@ -66,9 +66,9 @@ class UserMessage implements DomainModel
         return $this->viewed;
     }
 
-    public function getStatus(): ?UserMessageStatus
+    public function getStatus(): UserMessageStatus
     {
-        return UserMessageStatus::from($this->status);
+        return $this->status !== null ? UserMessageStatus::from($this->status) : UserMessageStatus::Todo;
     }
 
     public function setViewed(?DateTime $viewed): self

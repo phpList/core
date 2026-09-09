@@ -35,7 +35,22 @@ reviews:
           - Still prefer keeping this logic well-encapsulated (e.g. in dedicated services/repos),
             not scattered across unrelated domain objects.
 
-        - ⚠️ For non-DynamicListAttr code:
+        - ✅ **Relaxed rule for atomic conditional-UPDATE reservation/claim patterns**:
+          - Some Domain repositories intentionally use `$connection->executeStatement(...)` to run a
+            conditional `UPDATE ... WHERE <guard>` (checking the affected-row count) or a guarded
+            `INSERT` (catching `UniqueConstraintViolationException`) as a portable, lock-free way to
+            atomically claim/reserve a row across concurrent workers - e.g.
+            `MessageRepository::tryClaimForProcessing` and
+            `DomainThrottleStateRepository::tryReserveSlot`/`resetBlockedCount`.
+          - This is not a domain-purity violation: it involves no `flush()`, transaction, or DDL, and
+            avoids vendor-specific upsert/locking syntax so it stays portable across MySQL/PostgreSQL/SQLite.
+          - Do *not* flag `executeStatement()` DML calls that follow this guarded-UPDATE/affected-rows
+            or catch-`UniqueConstraintViolationException`-on-INSERT pattern against the repository's own
+            entity table.
+          - Still flag any DBAL write that is unconditional, unrelated to claim/reservation semantics, or
+            that mutates a different entity's table than the repository owns.
+
+        - ⚠️ For other non-DynamicListAttr code:
           - If code is invoking actual table-creation, DDL execution, or schema synchronization,
             then request moving that to the Infrastructure or Application layer (e.g. MessageHandler).
           - Repositories in Domain should be abstractions without side effects; they should express *intent*,
