@@ -164,20 +164,38 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
      * Atomically claims a campaign for processing by flipping its status from Submitted to
      * Prepared in a single UPDATE ... WHERE statement, so two concurrent workers can't both
      * pass a check-then-act race and process the same campaign.
+     *
+     * When $staleAfterSeconds > 0, the same atomic UPDATE also reclaims a row stuck in
+     * Prepared/InProcess whose `modified` is older than that threshold (crashed/killed worker,
+     * or a handler that threw before requeuing). Staleness is re-checked against the row's
+     * current `modified` at the moment of this UPDATE, not pre-computed by the caller, so a
+     * worker that's merely slow (and keeps bumping `modified` via incrementSentCounts()) can't
+     * be claimed out from under itself by a second, concurrent dispatch.
      */
-    public function tryClaimForProcessing(int $id): ?Message
+    public function tryClaimForProcessing(int $id, int $staleAfterSeconds = 0): ?Message
     {
         $connection = $this->getEntityManager()->getConnection();
         $table = $connection->quoteIdentifier($this->getClassMetadata()->getTableName());
         $now = new DateTime();
 
-        $sql = sprintf('UPDATE %s SET status = :to, modified = :now WHERE id = :id AND status = :from', $table);
         $params = [
             'to' => Message\MessageStatus::Prepared->value,
             'now' => $now->format('Y-m-d H:i:s'),
             'id' => $id,
             'from' => Message\MessageStatus::Submitted->value,
         ];
+
+        $claimCondition = 'status = :from';
+        if ($staleAfterSeconds > 0) {
+            $claimCondition = '(status = :from OR (status IN (:prepared, :inProcess) AND modified < :staleBefore))';
+            $params['prepared'] = Message\MessageStatus::Prepared->value;
+            $params['inProcess'] = Message\MessageStatus::InProcess->value;
+            $params['staleBefore'] = (clone $now)
+                ->modify(sprintf('-%d seconds', $staleAfterSeconds))
+                ->format('Y-m-d H:i:s');
+        }
+
+        $sql = sprintf('UPDATE %s SET status = :to, modified = :now WHERE id = :id AND %s', $table, $claimCondition);
 
         $affected = $connection->executeStatement($sql, $params);
 

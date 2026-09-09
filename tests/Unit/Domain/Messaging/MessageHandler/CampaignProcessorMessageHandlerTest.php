@@ -89,8 +89,10 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $this->handler = $this->createHandler();
     }
 
-    private function createHandler(bool $useListExclude = false): CampaignProcessorMessageHandler
-    {
+    private function createHandler(
+        bool $useListExclude = false,
+        int $stuckCampaignThresholdSeconds = 0,
+    ): CampaignProcessorMessageHandler {
         return new CampaignProcessorMessageHandler(
             mailer: $this->symfonyMailer,
             rateLimitedCampaignMailer: $this->mailer,
@@ -114,6 +116,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             domainRateLimiter: $this->domainRateLimiter,
             bounceEmail: 'bounce@email.com',
             useListExclude: $useListExclude,
+            stuckCampaignThresholdSeconds: $stuckCampaignThresholdSeconds,
         );
     }
 
@@ -123,7 +126,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
 
         $this->messageRepository->expects($this->once())
             ->method('tryClaimForProcessing')
-            ->with(999)
+            ->with(999, 0)
             ->willReturn(null);
 
         $this->translator->method('trans')->willReturnCallback(fn(string $msg) => $msg);
@@ -135,6 +138,22 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         ($this->handler)($message);
     }
 
+    public function testInvokePassesStuckCampaignThresholdToTryClaimForProcessing(): void
+    {
+        $handler = $this->createHandler(stuckCampaignThresholdSeconds: 1800);
+
+        $message = new CampaignProcessorMessage(999);
+
+        $this->messageRepository->expects($this->once())
+            ->method('tryClaimForProcessing')
+            ->with(999, 1800)
+            ->willReturn(null);
+
+        $this->translator->method('trans')->willReturnCallback(fn(string $msg) => $msg);
+
+        $handler($message);
+    }
+
     public function testInvokeWithNoSubscribers(): void
     {
         $campaign = $this->createCampaignMock();
@@ -144,7 +163,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $data = new CampaignProcessorMessage(1);
 
         $this->messageRepository->method('tryClaimForProcessing')
-            ->with(1)
+            ->with(1, 0)
             ->willReturn($campaign);
 
         $this->precacheService->expects($this->once())
@@ -180,7 +199,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $data = new CampaignProcessorMessage(1);
 
         $this->messageRepository->method('tryClaimForProcessing')
-            ->with(1)
+            ->with(1, 0)
             ->willReturn($campaign);
 
         $messageDataLoaderProperty = (new ReflectionClass($handler))->getProperty('messageDataLoader');
@@ -217,7 +236,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $data = new CampaignProcessorMessage(1);
 
         $this->messageRepository->method('tryClaimForProcessing')
-            ->with(1)
+            ->with(1, 0)
             ->willReturn($campaign);
 
         $messageDataLoaderProperty = (new ReflectionClass($handler))->getProperty('messageDataLoader');
@@ -254,7 +273,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $data = new CampaignProcessorMessage(1);
 
         $this->messageRepository->method('tryClaimForProcessing')
-            ->with(1)
+            ->with(1, 0)
             ->willReturn($campaign);
 
         $messageDataLoaderProperty = (new ReflectionClass($handler))->getProperty('messageDataLoader');
@@ -316,7 +335,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $data = new CampaignProcessorMessage(1);
 
         $this->messageRepository->method('tryClaimForProcessing')
-            ->with(1)
+            ->with(1, 0)
             ->willReturn($campaign);
 
         $messageDataLoaderProperty = (new ReflectionClass($handler))->getProperty('messageDataLoader');
@@ -376,7 +395,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $data = new CampaignProcessorMessage(1);
 
         $this->messageRepository->method('tryClaimForProcessing')
-            ->with(1)
+            ->with(1, 0)
             ->willReturn($campaign);
 
         $messageDataLoaderProperty = (new ReflectionClass($handler))->getProperty('messageDataLoader');
@@ -430,7 +449,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $data = new CampaignProcessorMessage(1);
 
         $this->messageRepository->method('tryClaimForProcessing')
-            ->with(1)
+            ->with(1, 0)
             ->willReturn($campaign);
 
         $this->precacheService->expects($this->once())
@@ -477,7 +496,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $data = new CampaignProcessorMessage(1);
 
         $this->messageRepository->method('tryClaimForProcessing')
-            ->with(1)
+            ->with(1, 0)
             ->willReturn($campaign);
 
         $this->precacheService->expects($this->once())
@@ -545,7 +564,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $data = new CampaignProcessorMessage(123);
 
         $this->messageRepository->method('tryClaimForProcessing')
-            ->with(123)
+            ->with(123, 0)
             ->willReturn($campaign);
 
         $this->precacheService->expects($this->once())
@@ -622,7 +641,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
 
         $this->messageRepository
             ->method('tryClaimForProcessing')
-            ->with(1)
+            ->with(1, 0)
             ->willReturn($campaign);
 
         $this->precacheService
@@ -746,7 +765,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
         $data = new CampaignProcessorMessage(1);
 
         $this->messageRepository->method('tryClaimForProcessing')
-            ->with(1)
+            ->with(1, 0)
             ->willReturn($campaign);
 
         $this->precacheService->expects($this->once())

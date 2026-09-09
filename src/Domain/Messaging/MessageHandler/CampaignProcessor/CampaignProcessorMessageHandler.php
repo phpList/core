@@ -76,12 +76,17 @@ class CampaignProcessorMessageHandler
         private readonly DomainRateLimiter $domainRateLimiter,
         #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
         #[Autowire('%messaging.use_list_exclude%')] private readonly bool $useListExclude = false,
+        #[Autowire('%messaging.stuck_campaign_threshold%')] private readonly int $stuckCampaignThresholdSeconds = 0,
     ) {
     }
 
     public function __invoke(CampaignProcessorMessage|SyncCampaignProcessorMessage $data): void
     {
-        $campaign = $this->messageRepository->tryClaimForProcessing($data->getMessageId());
+        // todo: recheck this stuckCampaignThresholdSeconds logic
+        $campaign = $this->messageRepository->tryClaimForProcessing(
+            $data->getMessageId(),
+            $this->stuckCampaignThresholdSeconds
+        );
         if (!$campaign) {
             $this->logger->warning(
                 $this->translator->trans('Campaign not found or not in submitted status'),

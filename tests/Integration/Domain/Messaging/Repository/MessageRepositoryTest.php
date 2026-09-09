@@ -259,6 +259,52 @@ class MessageRepositoryTest extends KernelTestCase
         self::assertNull($secondClaim);
     }
 
+    public function testTryClaimForProcessingReclaimsStalePreparedCampaignWhenThresholdGiven(): void
+    {
+        $message = $this->persistMessage(Message\MessageStatus::Prepared, 'Stuck in prepared');
+        $this->entityManager->flush();
+        $id = $message->getId();
+        $this->backdateModified($id, 3600);
+        $this->entityManager->clear();
+
+        $claimed = $this->messageRepository->tryClaimForProcessing($id, staleAfterSeconds: 1800);
+
+        self::assertNotNull($claimed);
+        self::assertSame(Message\MessageStatus::Prepared, $claimed->getMetadata()->getStatus());
+    }
+
+    public function testTryClaimForProcessingDoesNotReclaimRecentlyTouchedPreparedCampaign(): void
+    {
+        $message = $this->persistMessage(Message\MessageStatus::Prepared, 'Still alive');
+        $this->entityManager->flush();
+        $id = $message->getId();
+        $this->entityManager->clear();
+
+        self::assertNull($this->messageRepository->tryClaimForProcessing($id, staleAfterSeconds: 1800));
+    }
+
+    public function testTryClaimForProcessingIgnoresStalePreparedCampaignWithoutThreshold(): void
+    {
+        $message = $this->persistMessage(Message\MessageStatus::Prepared, 'Stuck but no threshold given');
+        $this->entityManager->flush();
+        $id = $message->getId();
+        $this->backdateModified($id, 3600);
+        $this->entityManager->clear();
+
+        self::assertNull($this->messageRepository->tryClaimForProcessing($id));
+    }
+
+    private function backdateModified(int $id, int $secondsAgo): void
+    {
+        $table = $this->entityManager->getClassMetadata(Message::class)->getTableName();
+        $modified = (new DateTime())->modify(sprintf('-%d seconds', $secondsAgo));
+
+        $this->entityManager->getConnection()->executeStatement(
+            sprintf('UPDATE %s SET modified = :modified WHERE id = :id', $table),
+            ['modified' => $modified->format('Y-m-d H:i:s'), 'id' => $id]
+        );
+    }
+
     public function testGetFilteredAfterIdSortsDescendingAndCursorsBackward(): void
     {
         $first = $this->persistMessage(Message\MessageStatus::Sent, 'First');
