@@ -126,7 +126,7 @@ class CampaignProcessorMessageHandler
 
         // Campaign was already atomically claimed into Prepared status above.
         $excludeListIds = $this->getExcludeListIds($loadedMessageData);
-        $this->markExcludedSubscribers($campaign, $excludeListIds);
+        $this->markExcludedSubscribers($campaign, $data, $excludeListIds);
         $subscribers = $this->subscriberProvider->getSubscribersForMessageOrLists(
             $data,
             $campaign,
@@ -172,14 +172,34 @@ class CampaignProcessorMessageHandler
      * so there's a persisted audit trail for why a subscriber wasn't sent to. Skips
      * subscribers who already have a nontodo UserMessage for this campaign, so a later run
      * can't clobber an already-recorded Sent/NotSent/etc. status from an earlier partial run.
+     * Only campaign recipients (i.e. subscribers who'd otherwise be sent this campaign) are
+     * marked, since a subscriber on an exclude list who isn't a campaign recipient anyway
+     * shouldn't get an exclusion record.
      */
-    private function markExcludedSubscribers(Message $campaign, array $excludeListIds): void
-    {
+    private function markExcludedSubscribers(
+        Message $campaign,
+        CampaignProcessorMessage|SyncCampaignProcessorMessage $data,
+        array $excludeListIds,
+    ): void {
         if ($excludeListIds === []) {
             return;
         }
 
-        foreach ($this->subscriberProvider->getExcludedSubscribers($excludeListIds) as $subscriber) {
+        $excludedSubscribers = $this->subscriberProvider->getExcludedSubscribers($excludeListIds);
+        if ($excludedSubscribers === []) {
+            return;
+        }
+
+        $sendableSubscribers = $this->subscriberProvider->getSendableSubscribersForMessageOrLists(
+            $data,
+            $campaign
+        );
+
+        foreach ($excludedSubscribers as $subscriber) {
+            if (!isset($sendableSubscribers[$subscriber->getEmail()])) {
+                continue;
+            }
+
             $existing = $this->userMessageRepository->findByUserAndMessage($subscriber, $campaign);
             if ($existing && $existing->getStatus() !== UserMessageStatus::Todo) {
                 continue;

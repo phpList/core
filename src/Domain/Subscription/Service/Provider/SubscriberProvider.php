@@ -42,6 +42,45 @@ class SubscriberProvider
             return $this->subscriberRepository->getByEmails($data->getSubscriberEmails());
         }
 
+        $subscribers = $this->getSendableSubscribersByListMembership($data, $campaign);
+
+        foreach ($this->getExcludedSubscribers($excludeListIds) as $excluded) {
+            unset($subscribers[$excluded->getEmail()]);
+        }
+
+        return array_values($subscribers);
+    }
+
+    /**
+     * Resolves the campaign's sendable recipients by list membership (confirmed, not disabled),
+     * before any list-based exclusion is applied. Used to determine which excluded subscribers
+     * are actually campaign recipients, so exclusion records aren't created for non-recipients.
+     *
+     * @return array<string, Subscriber> Subscribers keyed by email
+     */
+    public function getSendableSubscribersForMessageOrLists(
+        CampaignProcessorMessageInterface $data,
+        Message $campaign,
+    ): array {
+        if ($data instanceof TestCampaignProcessorMessage) {
+            $subscribers = [];
+            foreach ($this->subscriberRepository->getByEmails($data->getSubscriberEmails()) as $subscriber) {
+                $subscribers[$subscriber->getEmail()] = $subscriber;
+            }
+
+            return $subscribers;
+        }
+
+        return $this->getSendableSubscribersByListMembership($data, $campaign);
+    }
+
+    /**
+     * @return array<string, Subscriber> Subscribers keyed by email
+     */
+    private function getSendableSubscribersByListMembership(
+        CampaignProcessorMessageInterface $data,
+        Message $campaign,
+    ): array {
         if (count($data->getListIds()) > 0) {
             $listIds = $data->getListIds();
         } else {
@@ -56,11 +95,7 @@ class SubscriberProvider
             }
         }
 
-        foreach ($this->getExcludedSubscribers($excludeListIds) as $excluded) {
-            unset($subscribers[$excluded->getEmail()]);
-        }
-
-        return array_values($subscribers);
+        return $subscribers;
     }
 
     /**

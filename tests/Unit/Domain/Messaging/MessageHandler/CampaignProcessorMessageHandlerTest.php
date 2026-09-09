@@ -278,6 +278,11 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             ->willReturn([$excludedSubscriber]);
 
         $this->subscriberProvider->expects($this->once())
+            ->method('getSendableSubscribersForMessageOrLists')
+            ->with($data, $campaign)
+            ->willReturn(['excluded@example.com' => $excludedSubscriber]);
+
+        $this->subscriberProvider->expects($this->once())
             ->method('getSubscribersForMessageOrLists')
             ->with($data, $campaign, [55])
             ->willReturn([]);
@@ -335,6 +340,11 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             ->willReturn([$excludedSubscriber]);
 
         $this->subscriberProvider->expects($this->once())
+            ->method('getSendableSubscribersForMessageOrLists')
+            ->with($data, $campaign)
+            ->willReturn(['already-sent@example.com' => $excludedSubscriber]);
+
+        $this->subscriberProvider->expects($this->once())
             ->method('getSubscribersForMessageOrLists')
             ->willReturn([]);
 
@@ -345,6 +355,62 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             ->method('findByUserAndMessage')
             ->with($excludedSubscriber, $campaign)
             ->willReturn($existingUserMessage);
+
+        $this->userMessageRepository->expects($this->never())
+            ->method('save');
+
+        $metadata->expects($this->atLeastOnce())
+            ->method('setStatus');
+
+        $handler($data);
+    }
+
+    public function testInvokeDoesNotMarkExcludedSubscriberWhoIsNotACampaignRecipient(): void
+    {
+        $handler = $this->createHandler(useListExclude: true);
+
+        $campaign = $this->createCampaignMock();
+        $metadata = $this->createMock(MessageMetadata::class);
+        $campaign->method('getMetadata')->willReturn($metadata);
+        $campaign->method('getId')->willReturn(1);
+        $data = new CampaignProcessorMessage(1);
+
+        $this->messageRepository->method('tryClaimForProcessing')
+            ->with(1)
+            ->willReturn($campaign);
+
+        $messageDataLoaderProperty = (new ReflectionClass($handler))->getProperty('messageDataLoader');
+        /** @var MessageDataLoader|MockObject $messageDataLoaderMock */
+        $messageDataLoaderMock = $messageDataLoaderProperty->getValue($handler);
+        $messageDataLoaderMock->method('__invoke')->willReturn([
+            'excludelist' => [55 => 1],
+        ]);
+
+        $this->precacheService->expects($this->once())
+            ->method('precacheMessage')
+            ->with($campaign, $this->anything())
+            ->willReturn(true);
+
+        $nonRecipientExcludedSubscriber = $this->createMock(Subscriber::class);
+        $nonRecipientExcludedSubscriber->method('getEmail')->willReturn('not-a-recipient@example.com');
+
+        $this->subscriberProvider->expects($this->once())
+            ->method('getExcludedSubscribers')
+            ->with([55])
+            ->willReturn([$nonRecipientExcludedSubscriber]);
+
+        $this->subscriberProvider->expects($this->once())
+            ->method('getSendableSubscribersForMessageOrLists')
+            ->with($data, $campaign)
+            ->willReturn([]);
+
+        $this->subscriberProvider->expects($this->once())
+            ->method('getSubscribersForMessageOrLists')
+            ->with($data, $campaign, [55])
+            ->willReturn([]);
+
+        $this->userMessageRepository->expects($this->never())
+            ->method('findByUserAndMessage');
 
         $this->userMessageRepository->expects($this->never())
             ->method('save');
