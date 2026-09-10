@@ -130,6 +130,7 @@ class CampaignSendingLoopTest extends TestCase
         $subscriber->method('getEmail')->willReturn('not-an-email');
 
         $this->userMessageRepository->method('findByUserAndMessage')->willReturn(null);
+        $this->cache->method('get')->willReturn(new MessagePrecacheDto());
 
         $this->emailSender->expects($this->once())
             ->method('handleInvalidEmail')
@@ -150,6 +151,9 @@ class CampaignSendingLoopTest extends TestCase
 
         $this->userMessageRepository->method('findByUserAndMessage')->willReturn(null);
         $this->cache->method('get')->willReturn(null);
+
+        $this->userMessageRepository->expects($this->never())->method('save');
+        $this->emailSender->expects($this->never())->method('send');
 
         $this->expectException(MessageCacheMissingException::class);
 

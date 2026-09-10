@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service;
 
 use PhpList\Core\Domain\Messaging\Exception\MessageCacheMissingException;
+use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\UserMessageStatus;
 use PhpList\Core\Domain\Messaging\Model\UserMessage;
@@ -83,6 +84,16 @@ class CampaignSendingLoop
                 continue;
             }
 
+            $messagePrecacheDto = $this->cache->get($cacheKey);
+            if (!$messagePrecacheDto instanceof MessagePrecacheDto) {
+                $this->logger->error('Message precache missing, aborting loop', [
+                    'campaign_id' => $campaign->getId(),
+                    'cache_key' => $cacheKey,
+                    'processed' => $index,
+                ]);
+                throw new MessageCacheMissingException();
+            }
+
             $userMessage = $existing ?? new UserMessage($subscriber, $campaign);
             $userMessage->setStatus(UserMessageStatus::Active);
             $this->userMessageRepository->save($userMessage);
@@ -95,16 +106,6 @@ class CampaignSendingLoop
                 ]);
                 $this->emailSender->handleInvalidEmail($userMessage, $subscriber, $campaign);
                 continue;
-            }
-
-            $messagePrecacheDto = $this->cache->get($cacheKey);
-            if ($messagePrecacheDto === null) {
-                $this->logger->error('Message precache missing, aborting loop', [
-                    'campaign_id' => $campaign->getId(),
-                    'cache_key' => $cacheKey,
-                    'processed' => $index,
-                ]);
-                throw new MessageCacheMissingException();
             }
 
             $sentAttempted++;
