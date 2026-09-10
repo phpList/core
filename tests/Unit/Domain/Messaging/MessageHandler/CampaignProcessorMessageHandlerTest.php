@@ -168,7 +168,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
 
         $this->sendingLoop->expects($this->once())
             ->method('run')
-            ->with($campaign, $subscribers, $this->stringContains((string) $campaign->getId()))
+            ->with($campaign, $subscribers, 'messaging.message.base.' . $campaign->getId() . '.0.0')
             ->willReturn(false);
 
         $this->requeueHandler->expects($this->never())->method('handle');
