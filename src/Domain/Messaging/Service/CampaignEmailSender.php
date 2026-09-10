@@ -108,8 +108,8 @@ class CampaignEmailSender
                 'subscriber_id' => $subscriber->getId(),
                 'campaign_id' => $campaign->getId(),
             ]);
-            $this->logger->warning($this->translator->trans('Failed to send to: %email%', [
-                '%email%' => $subscriber->getEmail(),
+            $this->logger->warning($this->translator->trans('Failed to send to: %subscriber_id%', [
+                '%subscriber_id%' => $subscriber->getId(),
             ]));
         }
     }
@@ -118,8 +118,8 @@ class CampaignEmailSender
     {
         $this->updateUserMessageStatus($userMessage, UserMessageStatus::InvalidEmailAddress);
         $this->unconfirmSubscriber($subscriber);
-        $this->logger->warning($this->translator->trans('Invalid email, marking unconfirmed: %email%', [
-            '%email%' => $subscriber->getEmail(),
+        $this->logger->warning($this->translator->trans('Invalid email, marking unconfirmed: %subscriber_id%', [
+            '%subscriber_id%' => $subscriber->getId(),
         ]));
         $this->subscriberHistoryManager->addHistory(
             subscriber: $subscriber,
