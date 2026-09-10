@@ -7,8 +7,8 @@ monolog:
 #        graylog:
 #            type: gelf
 #            publisher:
-#                hostname: '%graylog_host%'
-#                port: '%graylog_port%'
+#                hostname: '%graylog.host%'
+#                port: '%graylog.port%'
 #            level: error
         # Local file logging as backup
         main:

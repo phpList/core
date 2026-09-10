@@ -16,5 +16,5 @@ services:
     autoconfigure: true
     public: true
     arguments:
-      $dbPrefix: '%database_prefix%'
-      $dynamicListTablePrefix: '%list_table_prefix%'
+      $dbPrefix: '%database.prefix%'
+      $dynamicListTablePrefix: '%database.list_table_prefix%'
