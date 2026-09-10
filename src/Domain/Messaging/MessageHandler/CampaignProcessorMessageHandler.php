@@ -119,6 +119,8 @@ class CampaignProcessorMessageHandler
             $excludeListIds
         );
 
+        $this->logger->info('Subscribers: ' . count($subscribers));
+
         $this->messageStatusUpdater->update($campaign, MessageStatus::InProcess);
 
         $stoppedEarly = $this->sendingLoop->run($campaign, $subscribers, $cacheKey);
