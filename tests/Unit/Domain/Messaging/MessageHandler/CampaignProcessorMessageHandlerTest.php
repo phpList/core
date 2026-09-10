@@ -6,7 +6,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\MessageHandler;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessor\CampaignProcessorMessage;
-use PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessor\CampaignProcessorMessageHandler;
+use PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageMetadata;
 use PhpList\Core\Domain\Messaging\Model\Message\MessageStatus;

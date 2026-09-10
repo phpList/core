@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessor;
+namespace PhpList\Core\Domain\Messaging\MessageHandler;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessor\CampaignProcessorMessage;

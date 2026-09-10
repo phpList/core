@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessor;
+namespace PhpList\Core\Domain\Messaging\MessageHandler;
 
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
@@ -36,7 +36,7 @@ use Throwable;
  * @SuppressWarnings("PHPMD.ExcessiveParameterList")
  */
 #[AsMessageHandler]
-class TestCampaignProcessorMessageHandler
+class CampaignProcessorTestMessageHandler
 {
     public function __construct(
         private readonly MailerInterface $mailer,
