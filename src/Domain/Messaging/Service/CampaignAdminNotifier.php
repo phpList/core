@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service;
 
 use DateTimeImmutable;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\MessageData;
-use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class CampaignAdminNotifier
@@ -18,7 +16,6 @@ class CampaignAdminNotifier
         private readonly SystemNotificationMailer $notificationMailer,
         private readonly EntityManagerInterface $entityManager,
         private readonly TranslatorInterface $translator,
-        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -43,13 +40,6 @@ class CampaignAdminNotifier
         $messageData->setId($messageId);
         $messageData->setData((new DateTimeImmutable())->format('Y-m-d H:i:s'));
 
-        try {
-            $this->entityManager->persist($messageData);
-            $this->entityManager->flush();
-        } catch (UniqueConstraintViolationException $e) {
-            $this->logger->debug('Duplicate message ignored', [
-                'exception' => $e,
-            ]);
-        }
+        $this->entityManager->persist($messageData);
     }
 }

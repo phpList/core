@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\MessageHandler;
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessor\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessor\SyncCampaignProcessorMessage;
@@ -109,6 +110,11 @@ class CampaignProcessorMessageHandler
         }
 
         $this->adminNotifier->notifyStart($campaign, $loadedMessageData, $data->getMessageId());
+        try {
+            $this->entityManager->flush();
+        } catch (UniqueConstraintViolationException $exception) {
+            $this->logger->debug('Duplicate message ignored', ['exception' => $exception]);
+        }
 
         // Campaign was already atomically claimed into Prepared status above.
         $excludeListIds = $this->exclusionService->resolveExcludeListIds($loadedMessageData);

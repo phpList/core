@@ -10,7 +10,6 @@ use PhpList\Core\Domain\Messaging\Service\CampaignAdminNotifier;
 use PhpList\Core\Domain\Messaging\Service\SystemNotificationMailer;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\Translator;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -19,7 +18,6 @@ class CampaignAdminNotifierTest extends TestCase
     private SystemNotificationMailer|MockObject $notificationMailer;
     private EntityManagerInterface|MockObject $entityManager;
     private TranslatorInterface|MockObject $translator;
-    private LoggerInterface|MockObject $logger;
     private CampaignAdminNotifier $notifier;
 
     protected function setUp(): void
@@ -28,13 +26,11 @@ class CampaignAdminNotifierTest extends TestCase
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->translator = $this->createMock(Translator::class);
         $this->translator->method('trans')->willReturnCallback(fn (string $msg) => $msg);
-        $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->notifier = new CampaignAdminNotifier(
             $this->notificationMailer,
             $this->entityManager,
             $this->translator,
-            $this->logger,
         );
     }
 
@@ -53,7 +49,7 @@ class CampaignAdminNotifierTest extends TestCase
             });
 
         $this->entityManager->expects($this->once())->method('persist');
-        $this->entityManager->expects($this->once())->method('flush');
+        $this->entityManager->expects($this->never())->method('flush');
 
         $this->notifier->notifyStart($campaign, [
             'notify_start' => 'admin1@example.com,admin2@example.com',

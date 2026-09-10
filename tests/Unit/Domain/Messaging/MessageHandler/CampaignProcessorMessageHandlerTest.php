@@ -206,7 +206,7 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             ->with($campaign)
             ->willReturn(true);
 
-        $this->entityManager->expects($this->once())->method('flush');
+        $this->entityManager->expects($this->exactly(2))->method('flush');
 
         $this->messageStatusUpdater->expects($this->once())
             ->method('update')

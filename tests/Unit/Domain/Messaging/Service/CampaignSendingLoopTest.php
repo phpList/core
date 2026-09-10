@@ -18,6 +18,7 @@ use PhpList\Core\Domain\Messaging\Service\MaxProcessTimeLimiter;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
 class CampaignSendingLoopTest extends TestCase
@@ -44,6 +45,7 @@ class CampaignSendingLoopTest extends TestCase
             $this->domainRateLimiter,
             $this->cache,
             $this->emailSender,
+            $this->createMock(LoggerInterface::class),
         );
 
         $this->campaign = $this->createMock(Message::class);
