@@ -232,6 +232,10 @@ class MessagePrecacheService
 
     private function populateAdminAttributes(MessagePrecacheDto $messagePrecacheDto, Message $campaign): void
     {
+        if (!$campaign->getOwner()) {
+            return;
+        }
+
         $ownerAttrValues = $this->adminAttreDefRepository->getForAdmin($campaign->getOwner());
         foreach ($ownerAttrValues as $attr) {
             $messagePrecacheDto->adminAttributes['OWNER.' . $attr['name']] = $attr['value'];
