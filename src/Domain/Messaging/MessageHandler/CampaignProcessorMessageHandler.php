@@ -21,6 +21,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Throwable;
 
 /**
  * @SuppressWarnings("PHPMD.ExcessiveParameterList")
@@ -82,11 +83,26 @@ class CampaignProcessorMessageHandler
 //        $userSelection = $loadedMessageData['userselection'];
 
         $cacheKey = sprintf('messaging.message.base.%d.%d', $campaign->getId(), 0);
-        if (!$this->precacheService->precacheMessage(
-            campaign: $campaign,
-            loadedMessageData: $loadedMessageData,
-            isTest: false
-        )) {
+        try {
+            $precached = $this->precacheService->precacheMessage(
+                campaign: $campaign,
+                loadedMessageData: $loadedMessageData,
+                isTest: false
+            );
+        } catch (Throwable $exception) {
+            $this->logger->error(
+                $this->translator->trans(
+                    'Error precaching campaign message: {error}',
+                    ['error' => $exception->getMessage()]
+                ),
+                ['campaign_id' => $campaign->getId(), 'exception' => $exception]
+            );
+            $this->messageStatusUpdater->update($campaign, MessageStatus::Suspended);
+
+            return;
+        }
+
+        if (!$precached) {
             $this->messageStatusUpdater->update($campaign, MessageStatus::Suspended);
 
             return;

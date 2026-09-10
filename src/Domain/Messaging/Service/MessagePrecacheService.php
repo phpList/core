@@ -179,8 +179,8 @@ class MessagePrecacheService
         if ($loadedMessageData['template']) {
             $template = $this->templateRepository->findOneById((int) $loadedMessageData['template']);
             if ($template) {
-                $messagePrecacheDto->template = stripslashes($template->getContent());
-                $messagePrecacheDto->templateText = stripslashes($template->getText());
+                $messagePrecacheDto->template = stripslashes($template->getContent() ?? '');
+                $messagePrecacheDto->templateText = stripslashes($template->getText() ?? '');
                 $messagePrecacheDto->templateId = $template->getId();
             }
         }
