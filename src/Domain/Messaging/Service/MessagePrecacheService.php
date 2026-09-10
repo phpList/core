@@ -177,7 +177,7 @@ class MessagePrecacheService
     private function applyTemplate(MessagePrecacheDto $messagePrecacheDto, $loadedMessageData): void
     {
         if ($loadedMessageData['template']) {
-            $template = $this->templateRepository->findOneById($loadedMessageData['template']);
+            $template = $this->templateRepository->findOneById((int) $loadedMessageData['template']);
             if ($template) {
                 $messagePrecacheDto->template = stripslashes($template->getContent());
                 $messagePrecacheDto->templateText = stripslashes($template->getText());
