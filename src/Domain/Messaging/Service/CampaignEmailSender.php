@@ -85,14 +85,14 @@ class CampaignEmailSender
             $this->messageRepository->incrementSentCounts($campaign->getId(), $sentAs);
         } catch (MessageSizeLimitExceededException $e) {
             // stop after the first message if size is exceeded; the oversized message was never sent
+            $userMessage->setStatus(UserMessageStatus::NotSent);
             $this->messageStatusUpdater->update($campaign, MessageStatus::Suspended);
-            $this->updateUserMessageStatus($userMessage, UserMessageStatus::NotSent);
 
             throw $e;
         } catch (AttachmentCopyException $e) {
             // stop after the first message if size is exceeded
+            $userMessage->setStatus(UserMessageStatus::NotSent);
             $this->messageStatusUpdater->update($campaign, MessageStatus::Suspended);
-            $this->updateUserMessageStatus($userMessage, UserMessageStatus::NotSent);
 
             $this->notificationMailer->send(
                 $campaign->getId(),
