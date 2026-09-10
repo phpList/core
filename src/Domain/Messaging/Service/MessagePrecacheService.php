@@ -51,12 +51,7 @@ class MessagePrecacheService
         ?bool $forwardContent = false,
         ?bool $isTest = false,
     ): bool {
-        $cacheKey = sprintf(
-            'messaging.message.base.%d.%d.%d',
-            $campaign->getId(),
-            (int) $forwardContent,
-            (int) $isTest
-        );
+        $cacheKey = $this->getCacheKey($campaign->getId(), (bool) $forwardContent, (bool) $isTest);
         $cached = $this->cache->get($cacheKey);
         if ($cached !== null && $isTest === false) {
             return true;
@@ -107,6 +102,16 @@ class MessagePrecacheService
         $this->cache->set(key: $cacheKey, value: $messagePrecacheDto, ttl: $ttl);
 
         return true;
+    }
+
+    public function getCacheKey(int $campaignId, bool $forwardContent = false, bool $isTest = false): string
+    {
+        return sprintf(
+            'messaging.message.base.%d.%d.%d',
+            $campaignId,
+            (int) $forwardContent,
+            (int) $isTest
+        );
     }
 
     private function isHtml(string $content): bool
@@ -177,10 +182,10 @@ class MessagePrecacheService
     private function applyTemplate(MessagePrecacheDto $messagePrecacheDto, $loadedMessageData): void
     {
         if ($loadedMessageData['template']) {
-            $template = $this->templateRepository->findOneById($loadedMessageData['template']);
+            $template = $this->templateRepository->findOneById((int) $loadedMessageData['template']);
             if ($template) {
-                $messagePrecacheDto->template = stripslashes($template->getContent());
-                $messagePrecacheDto->templateText = stripslashes($template->getText());
+                $messagePrecacheDto->template = stripslashes($template->getContent() ?? '');
+                $messagePrecacheDto->templateText = stripslashes($template->getText() ?? '');
                 $messagePrecacheDto->templateId = $template->getId();
             }
         }
@@ -232,6 +237,10 @@ class MessagePrecacheService
 
     private function populateAdminAttributes(MessagePrecacheDto $messagePrecacheDto, Message $campaign): void
     {
+        if (!$campaign->getOwner()) {
+            return;
+        }
+
         $ownerAttrValues = $this->adminAttreDefRepository->getForAdmin($campaign->getOwner());
         foreach ($ownerAttrValues as $attr) {
             $messagePrecacheDto->adminAttributes['OWNER.' . $attr['name']] = $attr['value'];

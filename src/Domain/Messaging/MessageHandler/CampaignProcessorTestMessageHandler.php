@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessor;
+namespace PhpList\Core\Domain\Messaging\MessageHandler;
 
 use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
@@ -36,7 +36,7 @@ use Throwable;
  * @SuppressWarnings("PHPMD.ExcessiveParameterList")
  */
 #[AsMessageHandler]
-class TestCampaignProcessorMessageHandler
+class CampaignProcessorTestMessageHandler
 {
     public function __construct(
         private readonly MailerInterface $mailer,
@@ -70,7 +70,7 @@ class TestCampaignProcessorMessageHandler
 
         $loadedMessageData = ($this->messageDataLoader)($campaign);
 
-        $cacheKey = sprintf('messaging.message.base.%d.%d.%d', $campaign->getId(), 0, 1);
+        $cacheKey = $this->precacheService->getCacheKey($campaign->getId(), false, true);
         if (!$this->precacheService->precacheMessage(
             campaign: $campaign,
             loadedMessageData: $loadedMessageData,

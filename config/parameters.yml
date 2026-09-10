@@ -6,25 +6,25 @@
 # The environment variables themselves are defined in the ".env" file (see ".env.dist" for the template)
 # and/or in the actual environment (e.g. Apache host configuration, command line).
 parameters:
-    database_driver: '%env(PHPLIST_DATABASE_DRIVER)%'
-    database_path: '%env(PHPLIST_DATABASE_PATH)%'
-    database_host: '%env(PHPLIST_DATABASE_HOST)%'
-    database_port: '%env(PHPLIST_DATABASE_PORT)%'
-    database_name: '%env(PHPLIST_DATABASE_NAME)%'
-    database_user: '%env(PHPLIST_DATABASE_USER)%'
-    database_password: '%env(PHPLIST_DATABASE_PASSWORD)%'
-    database_prefix: '%env(DATABASE_PREFIX)%'
-    list_table_prefix: '%env(LIST_TABLE_PREFIX)%'
+    database.driver: '%env(PHPLIST_DATABASE_DRIVER)%'
+    database.path: '%env(PHPLIST_DATABASE_PATH)%'
+    database.host: '%env(PHPLIST_DATABASE_HOST)%'
+    database.port: '%env(PHPLIST_DATABASE_PORT)%'
+    database.name: '%env(PHPLIST_DATABASE_NAME)%'
+    database.user: '%env(PHPLIST_DATABASE_USER)%'
+    database.password: '%env(PHPLIST_DATABASE_PASSWORD)%'
+    database.prefix: '%env(DATABASE_PREFIX)%'
+    database.list_table_prefix: '%env(LIST_TABLE_PREFIX)%'
+
     app.dev_version: '%env(APP_DEV_VERSION)%'
     app.dev_email: '%env(APP_DEV_EMAIL)%'
     app.powered_by_phplist: '%env(APP_POWERED_BY_PHPLIST)%'
     app.preference_page_show_private_lists: '%env(PREFERENCEPAGE_SHOW_PRIVATE_LISTS)%'
-
     app.rest_api_base_url: '%env(API_BASE_URL)%/api/v2'
     app.api_base_url: '%env(API_BASE_URL)%'
     app.frontend_base_url: '%env(FRONT_END_BASE_URL)%'
 
-    parallel_use_with_phplist3: '%env(PARALLER_USE_WITH_PHPLIST3)%'
+    app.parallel_use_with_phplist3: '%env(PARALLEL_USE_WITH_PHPLIST3)%'
 
     # Email configuration
     app.mailer_from: '%env(MAILER_FROM)%'
@@ -63,11 +63,11 @@ parameters:
     elasticsearch.purge.subscriber_history_retention: '%env(ELASTICSEARCH_PURGE_SUBSCRIBER_HISTORY_RETENTION)%'
 
     # A secret key that's used to generate certain security-related tokens
-    secret: '%env(PHPLIST_SECRET)%'
+    app.secret: '%env(PHPLIST_SECRET)%'
     phplist.verify_ssl: '%env(VERIFY_SSL)%'
 
-    graylog_host: 'graylog.phplist.local'
-    graylog_port: 12201
+    graylog.host: 'graylog.phplist.local'
+    graylog.port: 12201
 
     app.phplist_isp_conf_path: '%env(APP_PHPLIST_ISP_CONF_PATH)%'
 

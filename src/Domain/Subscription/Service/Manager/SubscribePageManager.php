@@ -23,7 +23,7 @@ class SubscribePageManager
         private readonly SubscribePageConfigMigrationService $configMigrationService,
         private readonly EntityManagerInterface $entityManager,
         private readonly SubscribePagePlaceholderProcessor $placeholderProcessor,
-        #[Autowire('%parallel_use_with_phplist3%')]
+        #[Autowire('%app.parallel_use_with_phplist3%')]
         private readonly bool $parallelUseWithPhpList3,
     ) {
     }

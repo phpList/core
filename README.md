@@ -117,12 +117,14 @@ If your module provides any Symfony bundles, the bundle class names need to be
 listed in the `extra` section of the module's `composer.json` like this:
 
 ```json
-"extra": {
-  "phplist/core": {
-    "bundles": [
-      "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
-      "PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle"
-    ]
+{
+  "extra": {
+    "phplist/core": {
+      "bundles": [
+        "Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle",
+        "PhpList\\Core\\EmptyStartPageBundle\\PhpListEmptyStartPageBundle"
+      ]
+    }
   }
 }
 ```
@@ -137,12 +139,14 @@ Similarly, if your module provides any routes, those also need to be listed in
 the `extra` section of the module's `composer.json` like this:
 
 ```json
-"extra": {
-  "phplist/core": {
-    "routes": {
-      "homepage": {
-        "resource": "@PhpListEmptyStartPageBundle/Controller/",
-        "type": "annotation"
+{
+  "extra": {
+    "phplist/core": {
+      "routes": {
+        "homepage": {
+          "resource": "@PhpListEmptyStartPageBundle/Controller/",
+          "type": "annotation"
+        }
       }
     }
   }
@@ -152,18 +156,20 @@ the `extra` section of the module's `composer.json` like this:
 You can also provide system configuration for your module:
 
 ```json
-"extra": {
-  "phplist/core": {
-    "configuration": {
-      "framework": {
-        "templating": {
-          "engines": [
-            "twig"
-          ]
+{
+  "extra": {
+    "phplist/core": {
+      "configuration": {
+        "framework": {
+          "templating": {
+            "engines": [
+              "twig"
+            ]
+          }
         }
       }
     }
-  }
+  } 
 }
 ```
 
@@ -203,7 +209,7 @@ To extract translation strings from the source into an XLIFF catalog:
 ```bash
 php bin/console translation:extract --force en --format=xlf
 php bin/console messenger:setup-transports
-php bin/console messenger:consume async --limit=1
+php bin/console messenger:consume async_email --limit=1
 php bin/console phplist:search:init-indices
 ```
 

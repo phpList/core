@@ -47,7 +47,7 @@ class ForwardContentServiceTest extends TestCase
         $this->cache
             ->expects(self::once())
             ->method('get')
-            ->with('messaging.message.base.10.1')
+            ->with('messaging.message.base.10.1.0')
             ->willReturn(null);
 
         $this->expectException(MessageCacheMissingException::class);
@@ -85,7 +85,7 @@ class ForwardContentServiceTest extends TestCase
         $this->cache
             ->expects(self::once())
             ->method('get')
-            ->with('messaging.message.base.42.1')
+            ->with('messaging.message.base.42.1.0')
             ->willReturn($cached);
 
         $this->preparator

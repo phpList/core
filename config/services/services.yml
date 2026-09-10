@@ -199,6 +199,30 @@ services:
     autowire: true
     autoconfigure: true
 
+  PhpList\Core\Domain\Messaging\Service\MessageStatusUpdater:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\SystemNotificationMailer:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\CampaignExclusionService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\CampaignAdminNotifier:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\CampaignEmailSender:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Messaging\Service\CampaignSendingLoop:
+    autowire: true
+    autoconfigure: true
+
   _instanceof:
     PhpList\Core\Domain\Messaging\Service\Handler\BounceActionHandlerInterface:
       tags:
