@@ -82,7 +82,7 @@ class CampaignProcessorMessageHandler
 //        }
 //        $userSelection = $loadedMessageData['userselection'];
 
-        $cacheKey = sprintf('messaging.message.base.%d.%d', $campaign->getId(), 0);
+        $cacheKey = $this->precacheService->getCacheKey($campaign->getId());
         try {
             $precached = $this->precacheService->precacheMessage(
                 campaign: $campaign,

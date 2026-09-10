@@ -33,7 +33,7 @@ class ForwardContentService
         string $friendEmail,
         MessageForwardDto $forwardDto
     ): array {
-        $messagePrecacheDto = $this->cache->get(sprintf('messaging.message.base.%d.%d', $campaign->getId(), 1));
+        $messagePrecacheDto = $this->cache->get(sprintf('messaging.message.base.%d.%d.%d', $campaign->getId(), 1, 0));
 
         if ($messagePrecacheDto === null) {
             throw new MessageCacheMissingException();

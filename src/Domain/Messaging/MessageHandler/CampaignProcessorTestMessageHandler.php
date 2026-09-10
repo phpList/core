@@ -70,7 +70,7 @@ class CampaignProcessorTestMessageHandler
 
         $loadedMessageData = ($this->messageDataLoader)($campaign);
 
-        $cacheKey = sprintf('messaging.message.base.%d.%d.%d', $campaign->getId(), 0, 1);
+        $cacheKey = $this->precacheService->getCacheKey($campaign->getId(), false, true);
         if (!$this->precacheService->precacheMessage(
             campaign: $campaign,
             loadedMessageData: $loadedMessageData,

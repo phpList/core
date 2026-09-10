@@ -51,12 +51,7 @@ class MessagePrecacheService
         ?bool $forwardContent = false,
         ?bool $isTest = false,
     ): bool {
-        $cacheKey = sprintf(
-            'messaging.message.base.%d.%d.%d',
-            $campaign->getId(),
-            (int) $forwardContent,
-            (int) $isTest
-        );
+        $cacheKey = $this->getCacheKey($campaign->getId(), (bool) $forwardContent, (bool) $isTest);
         $cached = $this->cache->get($cacheKey);
         if ($cached !== null && $isTest === false) {
             return true;
@@ -107,6 +102,16 @@ class MessagePrecacheService
         $this->cache->set(key: $cacheKey, value: $messagePrecacheDto, ttl: $ttl);
 
         return true;
+    }
+
+    public function getCacheKey(int $campaignId, bool $forwardContent = false, bool $isTest = false): string
+    {
+        return sprintf(
+            'messaging.message.base.%d.%d.%d',
+            $campaignId,
+            (int) $forwardContent,
+            (int) $isTest
+        );
     }
 
     private function isHtml(string $content): bool

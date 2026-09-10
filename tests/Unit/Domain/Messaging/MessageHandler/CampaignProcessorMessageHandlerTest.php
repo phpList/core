@@ -144,6 +144,9 @@ class CampaignProcessorMessageHandlerTest extends TestCase
             ->method('precacheMessage')
             ->with($campaign, $loadedMessageData, false)
             ->willReturn(true);
+        $this->precacheService->method('getCacheKey')
+            ->with($campaign->getId())
+            ->willReturn('messaging.message.base.' . $campaign->getId() . '.0.0');
 
         $this->adminNotifier->expects($this->once())
             ->method('notifyStart')
