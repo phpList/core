@@ -139,13 +139,15 @@ class CampaignEmailSenderTest extends TestCase
         $this->campaignEmailBuilder->method('buildCampaignEmail')->willReturn([$email, OutputFormat::Text]);
 
         $exception = new MessageSizeLimitExceededException(2000000, 1000000);
-        $this->rateLimitedCampaignMailer->method('send')->willThrowException($exception);
+        $this->mailSizeChecker->method('__invoke')->willThrowException($exception);
+
+        $this->rateLimitedCampaignMailer->expects($this->never())->method('send');
 
         $this->messageStatusUpdater->expects($this->once())
             ->method('update')
             ->with($this->campaign, MessageStatus::Suspended);
 
-        $this->userMessage->expects($this->once())->method('setStatus')->with(UserMessageStatus::Sent);
+        $this->userMessage->expects($this->once())->method('setStatus')->with(UserMessageStatus::NotSent);
 
         $this->expectException(MessageSizeLimitExceededException::class);
 

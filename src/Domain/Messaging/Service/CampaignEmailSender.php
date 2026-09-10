@@ -79,14 +79,14 @@ class CampaignEmailSender
             [$email, $sentAs] = $result;
             $this->campaignEmailBuilder->applyCampaignHeaders(email: $email, subscriber: $subscriber);
 
-            $this->rateLimitedCampaignMailer->send($email);
             ($this->mailSizeChecker)($campaign, $email, $subscriber->hasHtmlEmail());
+            $this->rateLimitedCampaignMailer->send($email);
             $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
             $this->messageRepository->incrementSentCounts($campaign->getId(), $sentAs);
         } catch (MessageSizeLimitExceededException $e) {
-            // stop after the first message if size is exceeded
+            // stop after the first message if size is exceeded; the oversized message was never sent
             $this->messageStatusUpdater->update($campaign, MessageStatus::Suspended);
-            $this->updateUserMessageStatus($userMessage, UserMessageStatus::Sent);
+            $this->updateUserMessageStatus($userMessage, UserMessageStatus::NotSent);
 
             throw $e;
         } catch (AttachmentCopyException $e) {

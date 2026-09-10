@@ -111,8 +111,8 @@ class CampaignProcessorTestMessageHandler
             $email = $result[0];
             $this->campaignEmailBuilder->applyCampaignHeaders(email: $email, subscriber: $subscriber);
 
-            $this->mailer->send($email);
             ($this->mailSizeChecker)($campaign, $email, $subscriber->hasHtmlEmail());
+            $this->mailer->send($email);
         } catch (MessageSizeLimitExceededException $e) {
             // stop after the first message if size is exceeded
             $this->logger->error($e->getMessage(), [
