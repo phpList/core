@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\MessageHandler;
 
+use Doctrine\DBAL\Driver\Exception as DriverException;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Message\CampaignProcessor\CampaignProcessorMessage;
 use PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler;
@@ -243,6 +245,32 @@ class CampaignProcessorMessageHandlerTest extends TestCase
                 $expected = $calls === 1 ? MessageStatus::InProcess : MessageStatus::Sent;
                 $this->assertSame($expected, $status);
             });
+
+        ($this->handler)($data);
+    }
+
+    public function testInvokeAbortsWithoutContinuingWhenStartNotifiedMarkerFlushFails(): void
+    {
+        $campaign = $this->createCampaignMock();
+        $data = new CampaignProcessorMessage(1);
+        $loadedMessageData = ['subject' => 'hello'];
+
+        $this->messageRepository->method('tryClaimForProcessing')->willReturn($campaign);
+        $this->messageDataLoader->method('__invoke')->willReturn($loadedMessageData);
+        $this->precacheService->method('precacheMessage')->willReturn(true);
+
+        $this->adminNotifier->expects($this->once())->method('notifyStart');
+
+        $driverException = $this->createMock(DriverException::class);
+        $exception = new UniqueConstraintViolationException($driverException, null);
+        $this->entityManager->method('flush')->willThrowException($exception);
+
+        $this->exclusionService->expects($this->never())->method('resolveExcludeListIds');
+        $this->subscriberProvider->expects($this->never())->method('getSubscribersForMessageOrLists');
+        $this->sendingLoop->expects($this->never())->method('run');
+        $this->messageStatusUpdater->expects($this->never())->method('update');
+
+        $this->expectException(UniqueConstraintViolationException::class);
 
         ($this->handler)($data);
     }
