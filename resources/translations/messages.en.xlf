@@ -826,9 +826,9 @@ Thank you.</target>
         <source>%subscriber% has forwarded message %campaignId% to %email%</source>
         <target>__%subscriber% has forwarded message %campaignId% to %email%</target>
       </trans-unit>
-      <trans-unit id="FPstK2o" resname="Error precaching campaign message: {error}">
-        <source>Error precaching campaign message: {error}</source>
-        <target>__Error precaching campaign message: {error}</target>
+      <trans-unit id="FPstK2o" resname="Error precaching campaign message: %error%">
+        <source>Error precaching campaign message: %error%</source>
+        <target>__Error precaching campaign message: %error%</target>
       </trans-unit>
       <trans-unit id="IqU0fUe" resname="phplist system error">
         <source>phplist system error</source>

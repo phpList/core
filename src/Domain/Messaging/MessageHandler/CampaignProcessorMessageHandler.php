@@ -92,8 +92,8 @@ class CampaignProcessorMessageHandler
         } catch (Throwable $exception) {
             $this->logger->error(
                 $this->translator->trans(
-                    'Error precaching campaign message: {error}',
-                    ['error' => $exception->getMessage()]
+                    'Error precaching campaign message: %error%',
+                    ['%error%' => $exception->getMessage()]
                 ),
                 ['campaign_id' => $campaign->getId(), 'exception' => $exception]
             );
