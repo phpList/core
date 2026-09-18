@@ -15,12 +15,12 @@ doctrine:
         # in-memory SQLite database instead (no MySQL server needed), set in .env.test.local:
         #   PHPLIST_DATABASE_DRIVER=pdo_sqlite
         #   PHPLIST_DATABASE_PATH=:memory:
-        driver: '%database_driver%'
-        path: '%database_path%'
-        host: '%database_host%'
-        port: '%database_port%'
+        driver: '%database.driver%'
+        path: '%database.path%'
+        host: '%database.host%'
+        port: '%database.port%'
         dbname: 'phplist'
-        user: '%database_user%'
-        password: '%database_password%'
+        user: '%database.user%'
+        password: '%database.password%'
         charset: UTF8
 

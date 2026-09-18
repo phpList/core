@@ -53,7 +53,7 @@ services:
 
   PhpList\Core\Core\Doctrine\TablePrefixListener:
     arguments:
-      $tablePrefix: '%database_prefix%'
+      $tablePrefix: '%database.prefix%'
 
   PhpList\Core\Core\Doctrine\SearchIndexDoctrineListener:
     arguments:

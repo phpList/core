@@ -826,6 +826,22 @@ Thank you.</target>
         <source>%subscriber% has forwarded message %campaignId% to %email%</source>
         <target>__%subscriber% has forwarded message %campaignId% to %email%</target>
       </trans-unit>
+      <trans-unit id="FPstK2o" resname="Error precaching campaign message: %error%">
+        <source>Error precaching campaign message: %error%</source>
+        <target>__Error precaching campaign message: %error%</target>
+      </trans-unit>
+      <trans-unit id="IqU0fUe" resname="phplist system error">
+        <source>phplist system error</source>
+        <target>__phplist system error</target>
+      </trans-unit>
+      <trans-unit id="dGEyObO" resname="Failed to send to: %subscriber_id%">
+        <source>Failed to send to: %subscriber_id%</source>
+        <target>__Failed to send to: %subscriber_id%</target>
+      </trans-unit>
+      <trans-unit id="ETHGTu1" resname="Invalid email, marking unconfirmed: %subscriber_id%">
+        <source>Invalid email, marking unconfirmed: %subscriber_id%</source>
+        <target>__Invalid email, marking unconfirmed: %subscriber_id%</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

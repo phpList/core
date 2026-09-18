@@ -17,10 +17,10 @@ services:
         resource: '../../src/Domain/Search/MessageHandler'
         tags: [ 'messenger.message_handler' ]
 
-    PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessor\CampaignProcessorMessageHandler:
+    PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorMessageHandler:
         autowire: true
         autoconfigure: true
 
-    PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessor\TestCampaignProcessorMessageHandler:
+    PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorTestMessageHandler:
         autowire: true
         autoconfigure: true

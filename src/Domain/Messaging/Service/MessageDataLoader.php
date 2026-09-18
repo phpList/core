@@ -94,6 +94,7 @@ class MessageDataLoader
                 value: $this->configProvider->getValue(ConfigOption::AlwaysAddGoogleTracking),
                 filter: FILTER_VALIDATE_BOOL
             ),
+            // todo: check where this is set
             'excludelist' => [],
             'sentastest' => '0',
         ];

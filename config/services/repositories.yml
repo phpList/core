@@ -77,8 +77,8 @@ services:
   PhpList\Core\Domain\Subscription\Repository\DynamicListAttrRepository:
     autowire: true
     arguments:
-      $dbPrefix: '%database_prefix%'
-      $dynamicListTablePrefix: '%list_table_prefix%'
+      $dbPrefix: '%database.prefix%'
+      $dynamicListTablePrefix: '%database.list_table_prefix%'
   PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryRepository:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:

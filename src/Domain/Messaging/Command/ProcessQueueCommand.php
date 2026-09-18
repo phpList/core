@@ -85,6 +85,8 @@ class ProcessQueueCommand extends Command
             $lock->release();
         }
 
+        $output->writeln('Processed ' . count($campaigns) . ' campaigns from the queue.');
+
         return Command::SUCCESS;
     }
 }
