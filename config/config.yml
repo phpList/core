@@ -37,6 +37,7 @@ framework:
         save_path: '%kernel.application_dir%/var/sessions/%kernel.environment%'
         cookie_secure: auto
         cookie_samesite: lax
+        name: phpList4_session
     fragments: ~
     http_method_override: true
     assets: ~
