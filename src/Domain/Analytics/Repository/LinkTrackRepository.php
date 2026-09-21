@@ -106,4 +106,29 @@ class LinkTrackRepository extends AbstractRepository implements PaginatableRepos
         }
         return $result;
     }
+
+    /**
+     * @param int[] $messageIds
+     * @return array<int,int> total-click sums keyed by message id
+     */
+    public function sumClicksByMessageIds(array $messageIds): array
+    {
+        if (empty($messageIds)) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('lt')
+            ->select('lt.messageId AS messageId, SUM(lt.clicked) AS cnt')
+            ->where('lt.messageId IN (:ids)')
+            ->setParameter('ids', $messageIds)
+            ->groupBy('lt.messageId')
+            ->getQuery()
+            ->getResult();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[(int) $row['messageId']] = (int) $row['cnt'];
+        }
+        return $result;
+    }
 }

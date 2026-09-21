@@ -42,6 +42,11 @@ class UserMessageBounceConfigurableReader implements UserMessageBounceReaderInte
         return $this->activeReader()->getCountByMessageId($messageId);
     }
 
+    public function getCountByMessageIds(array $messageIds): array
+    {
+        return $this->activeReader()->getCountByMessageIds($messageIds);
+    }
+
     public function countBetween(DateTimeInterface $start, DateTimeInterface $end): int
     {
         return $this->activeReader()->countBetween($start, $end);

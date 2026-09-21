@@ -108,6 +108,31 @@ class UserMessageBounceRepository extends AbstractRepository implements
     }
 
     /**
+     * @param int[] $messageIds
+     * @return array<int,int> bounce counts keyed by message id
+     */
+    public function getCountByMessageIds(array $messageIds): array
+    {
+        if (empty($messageIds)) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('umb')
+            ->select('umb.messageId AS messageId, COUNT(umb.id) AS cnt')
+            ->where('umb.messageId IN (:ids)')
+            ->setParameter('ids', $messageIds)
+            ->groupBy('umb.messageId')
+            ->getQuery()
+            ->getResult();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[(int) $row['messageId']] = (int) $row['cnt'];
+        }
+        return $result;
+    }
+
+    /**
      * Returns bounce totals per subscriber for a specific list.
      * This matches the legacy list bounces data shape.
      *

@@ -109,6 +109,38 @@ class UserMessageBounceElasticsearchReader implements UserMessageBounceReaderInt
         return (int) ($response['hits']['total']['value'] ?? 0);
     }
 
+    /**
+     * @param int[] $messageIds
+     * @return array<int,int> bounce counts keyed by message id
+     */
+    public function getCountByMessageIds(array $messageIds): array
+    {
+        if (empty($messageIds)) {
+            return [];
+        }
+
+        $response = $this->client->search(
+            $this->resolvePhysicalIndexName(),
+            [
+                'query' => ['terms' => ['messageId' => $messageIds]],
+                'size' => 0,
+                'aggs' => [
+                    'by_message' => [
+                        'terms' => ['field' => 'messageId', 'size' => count($messageIds)],
+                    ],
+                ],
+            ],
+        );
+
+        $buckets = $response['aggregations']['by_message']['buckets'] ?? [];
+
+        $result = [];
+        foreach ($buckets as $bucket) {
+            $result[(int) $bucket['key']] = (int) $bucket['doc_count'];
+        }
+        return $result;
+    }
+
     public function countBetween(DateTimeInterface $start, DateTimeInterface $end): int
     {
         $response = $this->client->search(

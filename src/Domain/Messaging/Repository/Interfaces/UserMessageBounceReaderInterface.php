@@ -24,6 +24,12 @@ interface UserMessageBounceReaderInterface
 
     public function getCountByMessageId(int $messageId): int;
 
+    /**
+     * @param int[] $messageIds
+     * @return array<int,int> bounce counts keyed by message id
+     */
+    public function getCountByMessageIds(array $messageIds): array;
+
     public function countBetween(DateTimeInterface $start, DateTimeInterface $end): int;
 
     public function existsByMessageIdAndUserId(int $messageId, int $subscriberId): bool;

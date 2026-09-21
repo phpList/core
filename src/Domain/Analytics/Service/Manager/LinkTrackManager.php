@@ -44,4 +44,9 @@ class LinkTrackManager
     {
         return $this->linkTrackRepository->countUniqueClickersByMessageIds($messageIds);
     }
+
+    public function sumClicksByMessageIds(array $messageIds): array
+    {
+        return $this->linkTrackRepository->sumClicksByMessageIds($messageIds);
+    }
 }

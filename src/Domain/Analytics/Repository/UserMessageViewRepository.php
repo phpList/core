@@ -104,4 +104,29 @@ class UserMessageViewRepository extends AbstractRepository implements Paginatabl
         }
         return $result;
     }
+
+    /**
+     * @param int[] $messageIds
+     * @return array<int,int> unique-view counts keyed by message id
+     */
+    public function countUniqueByMessageIds(array $messageIds): array
+    {
+        if (empty($messageIds)) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('umv')
+            ->select('umv.messageId AS messageId, COUNT(DISTINCT umv.ip) AS cnt')
+            ->where('umv.messageId IN (:ids)')
+            ->setParameter('ids', $messageIds)
+            ->groupBy('umv.messageId')
+            ->getQuery()
+            ->getResult();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[(int) $row['messageId']] = (int) $row['cnt'];
+        }
+        return $result;
+    }
 }

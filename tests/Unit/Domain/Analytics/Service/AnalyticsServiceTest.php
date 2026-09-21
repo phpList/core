@@ -95,29 +95,34 @@ class AnalyticsServiceTest extends TestCase
             ->willReturn($messageResult);
 
         $this->userMessageViewManager->expects(self::once())
-            ->method('countViewsByMessageId')
-            ->with($messageId)
-            ->willReturn(10);
+            ->method('countViewsByMessageIds')
+            ->with([$messageId])
+            ->willReturn([$messageId => 10]);
 
         $this->userMessageViewManager->expects(self::once())
-            ->method('countUniqueViewsByMessageId')
-            ->with($messageId)
-            ->willReturn(3);
+            ->method('countUniqueViewsByMessageIds')
+            ->with([$messageId])
+            ->willReturn([$messageId => 3]);
 
         $this->linkTrackManager->expects(self::once())
-            ->method('getLinkTracksByMessageId')
-            ->with($messageId)
-            ->willReturn([$linkTrack1, $linkTrack2]);
+            ->method('sumClicksByMessageIds')
+            ->with([$messageId])
+            ->willReturn([$messageId => 5]);
+
+        $this->linkTrackManager->expects(self::once())
+            ->method('countUniqueClickersByMessageIds')
+            ->with([$messageId])
+            ->willReturn([$messageId => 2]);
 
         $this->userMessageBounceReader->expects(self::once())
-            ->method('getCountByMessageId')
-            ->with($messageId)
-            ->willReturn(3);
+            ->method('getCountByMessageIds')
+            ->with([$messageId])
+            ->willReturn([$messageId => 3]);
 
         $this->userMessageForwardRepository->expects(self::once())
-            ->method('getCountByMessageId')
-            ->with($messageId)
-            ->willReturn(2);
+            ->method('getCountByMessageIds')
+            ->with([$messageId])
+            ->willReturn([$messageId => 2]);
 
         $result = $this->subject->getCampaignStatistics($limit, $lastId);
 
@@ -165,9 +170,9 @@ class AnalyticsServiceTest extends TestCase
             ->willReturn($messageResult);
 
         $this->userMessageViewManager->expects(self::once())
-            ->method('countViewsByMessageId')
-            ->with($messageId)
-            ->willReturn(10);
+            ->method('countViewsByMessageIds')
+            ->with([$messageId])
+            ->willReturn([$messageId => 10]);
 
         $result = $this->subject->getViewOpensStatistics($limit, $lastId);
 

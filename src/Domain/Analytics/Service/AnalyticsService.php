@@ -53,36 +53,32 @@ class AnalyticsService
             ->getFilteredAfterId((new MessageFilter())->setLastId($lastId)->setLimit($limit))
             ->getItems();
 
+        $messageIds = array_map(static fn ($message) => $message->getId(), $messages);
+
+        $viewCounts = $this->userMessageViewManager->countViewsByMessageIds($messageIds);
+        $uniqueViewCounts = $this->userMessageViewManager->countUniqueViewsByMessageIds($messageIds);
+        $totalClickCounts = $this->linkTrackManager->sumClicksByMessageIds($messageIds);
+        $uniqueClickCounts = $this->linkTrackManager->countUniqueClickersByMessageIds($messageIds);
+        $bounceCounts = $this->messageBounceReader->getCountByMessageIds($messageIds);
+        $forwardCounts = $this->messageForwardRepository->getCountByMessageIds($messageIds);
+
         $campaignStats = [];
         foreach ($messages as $message) {
-            $views = $this->userMessageViewManager->countViewsByMessageId($message->getId());
-            $uniqueViews = $this->userMessageViewManager->countUniqueViewsByMessageId($message->getId());
-            $linkTracks = $this->linkTrackManager->getLinkTracksByMessageId($message->getId());
-
-            $totalClicks = 0;
-            $uniqueClickers = [];
-
-            foreach ($linkTracks as $linkTrack) {
-                $totalClicks += $linkTrack->getClicked();
-                $uniqueClickers[$linkTrack->getUserId()] = true;
-            }
-
-            $uniqueClicks = count($uniqueClickers);
-            $bounces = $this->messageBounceReader->getCountByMessageId($message->getId());
-            $forwards = $this->messageForwardRepository->getCountByMessageId($message->getId());
+            $id = $message->getId();
+            $views = $viewCounts[$id] ?? 0;
             $sentDate = $message->getMetadata()->getSent();
             $sentCount = $message->getMetadata()->getBounceCount() + $views;
 
             $campaignStats[] = [
-                'campaignId' => $message->getId(),
+                'campaignId' => $id,
                 'subject' => $message->getContent()->getSubject(),
                 'dateSent' => $sentDate?->format('Y-m-d H:i:s'),
                 'sent' => $sentCount,
-                'bounces' => $bounces,
-                'forwards' => $forwards,
-                'uniqueViews' => $uniqueViews,
-                'totalClicks' => $totalClicks,
-                'uniqueClicks' => $uniqueClicks,
+                'bounces' => $bounceCounts[$id] ?? 0,
+                'forwards' => $forwardCounts[$id] ?? 0,
+                'uniqueViews' => $uniqueViewCounts[$id] ?? 0,
+                'totalClicks' => $totalClickCounts[$id] ?? 0,
+                'uniqueClicks' => $uniqueClickCounts[$id] ?? 0,
             ];
         }
 
@@ -112,15 +108,20 @@ class AnalyticsService
         $messagesResult = $this->messageRepository
             ->getFilteredAfterId((new MessageFilter())->setLastId($lastId)->setLimit($limit));
 
+        $messages = $messagesResult->getItems();
+        $messageIds = array_map(static fn ($message) => $message->getId(), $messages);
+        $viewCounts = $this->userMessageViewManager->countViewsByMessageIds($messageIds);
+
         $viewStats = [];
-        foreach ($messagesResult->getItems() as $message) {
-            $views = $this->userMessageViewManager->countViewsByMessageId($message->getId());
+        foreach ($messages as $message) {
+            $id = $message->getId();
+            $views = $viewCounts[$id] ?? 0;
             $sentCount = $message->getMetadata()->getBounceCount() + $views;
 
             $viewRate = $this->formatStat($views, $sentCount);
 
             $viewStats[] = [
-                'campaignId' => $message->getId(),
+                'campaignId' => $id,
                 'subject' => $message->getContent()->getSubject(),
                 'sent' => $sentCount,
                 'uniqueViews' => $views,
@@ -131,7 +132,7 @@ class AnalyticsService
         return [
             'campaigns' => $viewStats,
             'total' => $messagesResult->getTotal(),
-            'hasMore' => count($messagesResult->getItems()) === $limit,
+            'hasMore' => count($messages) === $limit,
             'lastId' => $messagesResult->getLastId(),
         ];
     }

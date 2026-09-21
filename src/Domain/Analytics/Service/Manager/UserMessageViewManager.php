@@ -44,4 +44,9 @@ class UserMessageViewManager
     {
         return $this->userMessageViewRepository->countByMessageIds($messageIds);
     }
+
+    public function countUniqueViewsByMessageIds(array $messageIds): array
+    {
+        return $this->userMessageViewRepository->countUniqueByMessageIds($messageIds);
+    }
 }
