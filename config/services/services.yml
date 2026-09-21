@@ -61,6 +61,11 @@ services:
     autoconfigure: true
     public: true
 
+  PhpList\Core\Domain\Analytics\Service\AnalyticsService:
+    autowire: true
+    autoconfigure: true
+    public: true
+
   PhpList\Core\Domain\Analytics\Service\UserMessageService:
     autowire: true
     autoconfigure: true

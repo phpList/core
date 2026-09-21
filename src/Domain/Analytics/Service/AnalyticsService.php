@@ -15,9 +15,13 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use Psr\SimpleCache\CacheInterface;
 
+/** @SuppressWarnings("ExcessiveParameterList") */
 class AnalyticsService
 {
+    private const SUMMARY_STATISTICS_CACHE_KEY = 'analytics.summary_statistics';
+
     public function __construct(
         private readonly LinkTrackManager $linkTrackManager,
         private readonly UserMessageViewManager $userMessageViewManager,
@@ -26,7 +30,9 @@ class AnalyticsService
         private readonly UserMessageForwardRepository $messageForwardRepository,
         private readonly SubscriberRepository $subscriberRepository,
         private readonly UserMessageRepository $userMessageRepository,
-        private readonly UserMessageViewRepository $userMessageViewRepository
+        private readonly UserMessageViewRepository $userMessageViewRepository,
+        private readonly CacheInterface $cache,
+        private readonly ?int $summaryStatisticsTtlSeconds = 300
     ) {
     }
 
@@ -164,6 +170,19 @@ class AnalyticsService
     }
 
     public function getSummaryStatistics(): array
+    {
+        $cached = $this->cache->get(self::SUMMARY_STATISTICS_CACHE_KEY);
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $result = $this->computeSummaryStatistics();
+        $this->cache->set(self::SUMMARY_STATISTICS_CACHE_KEY, $result, $this->summaryStatisticsTtlSeconds);
+
+        return $result;
+    }
+
+    private function computeSummaryStatistics(): array
     {
         $now = new DateTimeImmutable();
         $thisMonthStart = $now->modify('first day of this month 00:00:00');

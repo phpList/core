@@ -24,6 +24,7 @@ use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\SimpleCache\CacheInterface;
 
 class AnalyticsServiceTest extends TestCase
 {
@@ -36,6 +37,7 @@ class AnalyticsServiceTest extends TestCase
     private SubscriberRepository|MockObject $subscriberRepository;
     private UserMessageRepository|MockObject $userMessageRepository;
     private UserMessageViewRepository|MockObject $userMessageViewRepository;
+    private CacheInterface|MockObject $cache;
 
     protected function setUp(): void
     {
@@ -47,6 +49,7 @@ class AnalyticsServiceTest extends TestCase
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
         $this->userMessageRepository = $this->createMock(UserMessageRepository::class);
         $this->userMessageViewRepository = $this->createMock(UserMessageViewRepository::class);
+        $this->cache = $this->createMock(CacheInterface::class);
 
         $this->subject = new AnalyticsService(
             $this->linkTrackManager,
@@ -56,7 +59,8 @@ class AnalyticsServiceTest extends TestCase
             $this->userMessageForwardRepository,
             $this->subscriberRepository,
             $this->userMessageRepository,
-            $this->userMessageViewRepository
+            $this->userMessageViewRepository,
+            $this->cache
         );
     }
 
@@ -289,6 +293,15 @@ class AnalyticsServiceTest extends TestCase
 
     public function testGetSummaryStatistics(): void
     {
+        $this->cache->expects(self::once())
+            ->method('get')
+            ->with('analytics.summary_statistics')
+            ->willReturn(null);
+
+        $this->cache->expects(self::once())
+            ->method('set')
+            ->with('analytics.summary_statistics', self::isType('array'), 300);
+
         $this->subscriberRepository->method('count')->willReturn(1000);
         $this->subscriberRepository->method('countCreatedBetween')->willReturnOnConsecutiveCalls(100, 50);
 
@@ -315,6 +328,23 @@ class AnalyticsServiceTest extends TestCase
         self::assertArrayHasKey('bounce_rate', $result);
         self::assertEquals(2.0, $result['bounce_rate']['value']);
         self::assertEquals(0.0, $result['bounce_rate']['change_vs_last_month']);
+    }
+
+    public function testGetSummaryStatisticsReturnsCachedValueWithoutRecomputing(): void
+    {
+        $cached = ['total_subscribers' => ['value' => 1000, 'change_vs_last_month' => 0.0]];
+
+        $this->cache->expects(self::once())
+            ->method('get')
+            ->with('analytics.summary_statistics')
+            ->willReturn($cached);
+
+        $this->cache->expects(self::never())->method('set');
+        $this->subscriberRepository->expects(self::never())->method('count');
+
+        $result = $this->subject->getSummaryStatistics();
+
+        self::assertSame($cached, $result);
     }
 
     public function testGetCampaignPerformance(): void
