@@ -7,6 +7,7 @@ namespace PhpList\Core\Tests\Integration\Domain\Subscription\Repository;
 use DateTime;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\Tools\SchemaTool;
+use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberFilter;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 use PhpList\Core\Domain\Subscription\Model\Subscription;
@@ -300,5 +301,51 @@ class SubscriberRepositoryTest extends KernelTestCase
     public function testGetSubscribersBySubscribedListIdsReturnsEmptyArrayForEmptyInput(): void
     {
         self::assertSame([], $this->subscriberRepository->getSubscribersBySubscribedListIds([]));
+    }
+
+    public function testGetFilteredAfterIdWithoutListFilterReturnsAllSubscribersOnce(): void
+    {
+        $list = (new SubscriberList())->setName('list');
+        $this->entityManager->persist($list);
+
+        $withList = new Subscriber('with-list@example.com');
+        $withoutList = new Subscriber('without-list@example.com');
+        $this->entityManager->persist($withList);
+        $this->entityManager->persist($withoutList);
+        $this->subscribe($withList, $list);
+        $this->entityManager->flush();
+
+        $result = $this->subscriberRepository->getFilteredAfterId(new SubscriberFilter());
+
+        self::assertSame(2, $result->getTotal());
+        $emails = array_map(static fn (Subscriber $subscriber): string => $subscriber->getEmail(), $result->getItems());
+        self::assertContains('with-list@example.com', $emails);
+        self::assertContains('without-list@example.com', $emails);
+        self::assertCount(
+            1,
+            array_filter($emails, static fn (string $email): bool => $email === 'with-list@example.com')
+        );
+    }
+
+    public function testGetFilteredAfterIdWithListFilterOnlyReturnsMembersOfThatList(): void
+    {
+        $listA = (new SubscriberList())->setName('a');
+        $listB = (new SubscriberList())->setName('b');
+        $this->entityManager->persist($listA);
+        $this->entityManager->persist($listB);
+
+        $inA = new Subscriber('in-a@example.com');
+        $inB = new Subscriber('in-b@example.com');
+        $this->entityManager->persist($inA);
+        $this->entityManager->persist($inB);
+        $this->subscribe($inA, $listA);
+        $this->subscribe($inB, $listB);
+        $this->entityManager->flush();
+
+        $result = $this->subscriberRepository->getFilteredAfterId(new SubscriberFilter(listId: $listA->getId()));
+
+        self::assertSame(1, $result->getTotal());
+        $emails = array_map(static fn (Subscriber $subscriber): string => $subscriber->getEmail(), $result->getItems());
+        self::assertSame(['in-a@example.com'], $emails);
     }
 }

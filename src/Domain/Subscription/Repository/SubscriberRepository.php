@@ -135,10 +135,6 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
         $limit = $filter->getLimit();
 
         $applyFilters = function (QueryBuilder $queryBuilder) use ($filter): void {
-            $queryBuilder
-                ->leftJoin('subscriber.subscriptions', 'subscription')
-                ->leftJoin('subscription.subscriberList', 'list');
-
             $this->applyListIdFilter($filter, $queryBuilder);
             $this->applyTimeFilter($filter, $queryBuilder);
 
@@ -224,6 +220,8 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
     {
         if ($filter->getListId() !== null) {
             $queryBuilder
+                ->innerJoin('subscriber.subscriptions', 'subscription')
+                ->innerJoin('subscription.subscriberList', 'list')
                 ->andWhere('list.id = :listId')
                 ->setParameter('listId', $filter->getListId());
 
