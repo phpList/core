@@ -21,6 +21,7 @@ use Psr\SimpleCache\CacheInterface;
 class AnalyticsService
 {
     private const SUMMARY_STATISTICS_CACHE_KEY = 'analytics.summary_statistics';
+    private const STATISTICS_TTL_SECONDS = 600;
 
     public function __construct(
         private readonly LinkTrackManager $linkTrackManager,
@@ -32,7 +33,6 @@ class AnalyticsService
         private readonly UserMessageRepository $userMessageRepository,
         private readonly UserMessageViewRepository $userMessageViewRepository,
         private readonly CacheInterface $cache,
-        private readonly ?int $summaryStatisticsTtlSeconds = 300
     ) {
     }
 
@@ -177,7 +177,7 @@ class AnalyticsService
         }
 
         $result = $this->computeSummaryStatistics();
-        $this->cache->set(self::SUMMARY_STATISTICS_CACHE_KEY, $result, $this->summaryStatisticsTtlSeconds);
+        $this->cache->set(self::SUMMARY_STATISTICS_CACHE_KEY, $result, self::STATISTICS_TTL_SECONDS);
 
         return $result;
     }
