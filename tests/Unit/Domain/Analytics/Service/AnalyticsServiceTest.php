@@ -291,6 +291,111 @@ class AnalyticsServiceTest extends TestCase
         self::assertSame(20, $result['localParts'][1]['percentage']);
     }
 
+    public function testGetCampaignStatisticsReturnsCachedValueWithoutRecomputing(): void
+    {
+        $cached = ['campaigns' => [], 'total' => 0, 'hasMore' => false, 'lastId' => 0];
+
+        $this->cache->expects(self::once())
+            ->method('get')
+            ->with('analytics.campaign_statistics.50.0')
+            ->willReturn($cached);
+
+        $this->cache->expects(self::never())->method('set');
+        $this->messageRepository->expects(self::never())->method('getFilteredAfterId');
+
+        self::assertSame($cached, $this->subject->getCampaignStatistics());
+    }
+
+    public function testGetViewOpensStatisticsReturnsCachedValueWithoutRecomputing(): void
+    {
+        $cached = ['campaigns' => [], 'total' => 0, 'hasMore' => false, 'lastId' => 0];
+
+        $this->cache->expects(self::once())
+            ->method('get')
+            ->with('analytics.view_open_statistics.50.0')
+            ->willReturn($cached);
+
+        $this->cache->expects(self::never())->method('set');
+        $this->messageRepository->expects(self::never())->method('getFilteredAfterId');
+
+        self::assertSame($cached, $this->subject->getViewOpensStatistics());
+    }
+
+    public function testGetTopDomainsReturnsCachedValueWithoutRecomputing(): void
+    {
+        $cached = ['domains' => [], 'total' => 0];
+
+        $this->cache->expects(self::once())
+            ->method('get')
+            ->with('analytics.top_domain_statistics.50.5')
+            ->willReturn($cached);
+
+        $this->cache->expects(self::never())->method('set');
+        $this->subscriberRepository->expects(self::never())->method('getTopDomains');
+
+        self::assertSame($cached, $this->subject->getTopDomains());
+    }
+
+    public function testGetDomainConfirmationStatisticsReturnsCachedValueWithoutRecomputing(): void
+    {
+        $cached = ['domains' => [], 'total' => 0];
+
+        $this->cache->expects(self::once())
+            ->method('get')
+            ->with('analytics.domain_confirmation_statistics.50')
+            ->willReturn($cached);
+
+        $this->cache->expects(self::never())->method('set');
+        $this->subscriberRepository->expects(self::never())->method('getDomainConfirmationStatistics');
+
+        self::assertSame($cached, $this->subject->getDomainConfirmationStatistics());
+    }
+
+    public function testGetTopLocalPartsReturnsCachedValueWithoutRecomputing(): void
+    {
+        $cached = ['localParts' => [], 'total' => 0];
+
+        $this->cache->expects(self::once())
+            ->method('get')
+            ->with('analytics.top_local_parts.25')
+            ->willReturn($cached);
+
+        $this->cache->expects(self::never())->method('set');
+        $this->subscriberRepository->expects(self::never())->method('getTopLocalParts');
+
+        self::assertSame($cached, $this->subject->getTopLocalParts());
+    }
+
+    public function testGetCampaignPerformanceReturnsCachedValueWithoutRecomputing(): void
+    {
+        $cached = [['date' => '2023-01-01', 'opens' => 1, 'clicks' => 1]];
+
+        $this->cache->expects(self::once())
+            ->method('get')
+            ->with('analytics.campaign_performance')
+            ->willReturn($cached);
+
+        $this->cache->expects(self::never())->method('set');
+        $this->userMessageViewManager->expects(self::never())->method('countViewsGroupedByDay');
+
+        self::assertSame($cached, $this->subject->getCampaignPerformance());
+    }
+
+    public function testGetRecentCampaignsReturnsCachedValueWithoutRecomputing(): void
+    {
+        $cached = [['name' => 'Cached', 'status' => null, 'date' => null, 'open_rate' => '0%', 'click_rate' => '0%']];
+
+        $this->cache->expects(self::once())
+            ->method('get')
+            ->with('analytics.recent_campaigns.5')
+            ->willReturn($cached);
+
+        $this->cache->expects(self::never())->method('set');
+        $this->messageRepository->expects(self::never())->method('getFilteredAfterId');
+
+        self::assertSame($cached, $this->subject->getRecentCampaigns());
+    }
+
     public function testGetSummaryStatistics(): void
     {
         $this->cache->expects(self::once())
@@ -300,7 +405,7 @@ class AnalyticsServiceTest extends TestCase
 
         $this->cache->expects(self::once())
             ->method('set')
-            ->with('analytics.summary_statistics', self::isType('array'), 300);
+            ->with('analytics.summary_statistics', self::isType('array'), 600);
 
         $this->subscriberRepository->method('count')->willReturn(1000);
         $this->subscriberRepository->method('countCreatedBetween')->willReturnOnConsecutiveCalls(100, 50);

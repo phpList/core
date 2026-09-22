@@ -21,6 +21,13 @@ use Psr\SimpleCache\CacheInterface;
 class AnalyticsService
 {
     private const SUMMARY_STATISTICS_CACHE_KEY = 'analytics.summary_statistics';
+    private const CAMPAIGN_STATISTICS_CACHE_KEY = 'analytics.campaign_statistics';
+    private const VIEW_OPEN_STATISTICS_CACHE_KEY = 'analytics.view_open_statistics';
+    private const TOP_DOMAIN_STATISTICS_CACHE_KEY = 'analytics.top_domain_statistics';
+    private const DOMAIN_CONFIRMATION_STATISTICS_CACHE_KEY = 'analytics.domain_confirmation_statistics';
+    private const TOP_LOCAL_PARTS_CACHE_KEY = 'analytics.top_local_parts';
+    private const CAMPAIGN_PERFORMANCE_CACHE_KEY = 'analytics.campaign_performance';
+    private const RECENT_CAMPAIGNS_CACHE_KEY = 'analytics.recent_campaigns';
     private const STATISTICS_TTL_SECONDS = 600;
 
     public function __construct(
@@ -54,6 +61,13 @@ class AnalyticsService
      * @return array
      */
     public function getCampaignStatistics(int $limit = 50, int $lastId = 0): array
+    {
+        $cacheKey = self::CAMPAIGN_STATISTICS_CACHE_KEY . '.' . $limit . '.' . $lastId;
+
+        return $this->remember($cacheKey, fn () => $this->computeCampaignStatistics($limit, $lastId));
+    }
+
+    private function computeCampaignStatistics(int $limit, int $lastId): array
     {
         $messages = $this->messageRepository
             ->getFilteredAfterId((new MessageFilter())->setLastId($lastId)->setLimit($limit))
@@ -111,6 +125,13 @@ class AnalyticsService
      */
     public function getViewOpensStatistics(int $limit = 50, int $lastId = 0): array
     {
+        $cacheKey = self::VIEW_OPEN_STATISTICS_CACHE_KEY . '.' . $limit . '.' . $lastId;
+
+        return $this->remember($cacheKey, fn () => $this->computeViewOpensStatistics($limit, $lastId));
+    }
+
+    private function computeViewOpensStatistics(int $limit, int $lastId): array
+    {
         $messagesResult = $this->messageRepository
             ->getFilteredAfterId((new MessageFilter())->setLastId($lastId)->setLimit($limit));
 
@@ -156,6 +177,13 @@ class AnalyticsService
      */
     public function getTopDomains(int $limit = 50, int $minSubscribers = 5): array
     {
+        $cacheKey = self::TOP_DOMAIN_STATISTICS_CACHE_KEY . '.' . $limit . '.' . $minSubscribers;
+
+        return $this->remember($cacheKey, fn () => $this->computeTopDomains($limit, $minSubscribers));
+    }
+
+    private function computeTopDomains(int $limit, int $minSubscribers): array
+    {
         $rows = $this->subscriberRepository->getTopDomains($limit, $minSubscribers);
 
         $result = array_map(static fn (array $row): array => [
@@ -171,15 +199,7 @@ class AnalyticsService
 
     public function getSummaryStatistics(): array
     {
-        $cached = $this->cache->get(self::SUMMARY_STATISTICS_CACHE_KEY);
-        if ($cached !== null) {
-            return $cached;
-        }
-
-        $result = $this->computeSummaryStatistics();
-        $this->cache->set(self::SUMMARY_STATISTICS_CACHE_KEY, $result, self::STATISTICS_TTL_SECONDS);
-
-        return $result;
+        return $this->remember(self::SUMMARY_STATISTICS_CACHE_KEY, fn () => $this->computeSummaryStatistics());
     }
 
     private function computeSummaryStatistics(): array
@@ -277,6 +297,13 @@ class AnalyticsService
      */
     public function getDomainConfirmationStatistics(int $limit = 50): array
     {
+        $cacheKey = self::DOMAIN_CONFIRMATION_STATISTICS_CACHE_KEY  . '.' . $limit;
+
+        return $this->remember($cacheKey, fn () => $this->computeDomainConfirmationStatistics($limit));
+    }
+
+    private function computeDomainConfirmationStatistics(int $limit): array
+    {
         $rows = $this->subscriberRepository->getDomainConfirmationStatistics($limit);
 
         $result = array_map(function (array $row): array {
@@ -312,6 +339,19 @@ class AnalyticsService
         ];
     }
 
+    private function remember(string $key, callable $compute): array
+    {
+        $cached = $this->cache->get($key);
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $result = $compute();
+        $this->cache->set($key, $result, self::STATISTICS_TTL_SECONDS);
+
+        return $result;
+    }
+
     private function formatStat(int $count, int $total): int|float
     {
         $percentage = $total > 0 ? ($count / $total) * 100 : 0;
@@ -331,6 +371,13 @@ class AnalyticsService
      * @return array
      */
     public function getTopLocalParts(int $limit = 25): array
+    {
+        $cacheKey = self::TOP_LOCAL_PARTS_CACHE_KEY . '.' . $limit;
+
+        return $this->remember($cacheKey, fn () => $this->computeTopLocalParts($limit));
+    }
+
+    private function computeTopLocalParts(int $limit): array
     {
         $rows = $this->subscriberRepository->getTopLocalParts($limit);
         $totalSubscribers = $this->subscriberRepository->countWithValidEmail();
@@ -352,6 +399,11 @@ class AnalyticsService
     }
 
     public function getCampaignPerformance(): array
+    {
+        return $this->remember(self::CAMPAIGN_PERFORMANCE_CACHE_KEY, fn () => $this->computeCampaignPerformance());
+    }
+
+    private function computeCampaignPerformance(): array
     {
         $endDate = new DateTimeImmutable('today 23:59:59');
         $startDate = $endDate->sub(new DateInterval('P29D'))->modify('00:00:00');
@@ -381,6 +433,13 @@ class AnalyticsService
      * @return array
      */
     public function getRecentCampaigns(int $limit = 5): array
+    {
+        $cacheKey = self::RECENT_CAMPAIGNS_CACHE_KEY . '.' . $limit;
+
+        return $this->remember($cacheKey, fn () => $this->computeRecentCampaigns($limit));
+    }
+
+    private function computeRecentCampaigns(int $limit): array
     {
         $messages = $this->messageRepository
             ->getFilteredAfterId((new MessageFilter())->setLastId(0)->setLimit($limit))
