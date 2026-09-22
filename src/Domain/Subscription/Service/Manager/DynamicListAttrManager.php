@@ -54,10 +54,6 @@ class DynamicListAttrManager
             $unique[] = $opt;
         }
 
-        if ($unique === []) {
-            return $result;
-        }
-
         return $this->dynamicListAttrRepository->transactional(function () use ($listTable, $unique) {
             return $this->dynamicListAttrRepository->insertMany($listTable, $unique);
         });

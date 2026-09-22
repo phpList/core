@@ -6,7 +6,7 @@ namespace PhpList\Core\Domain\Common\Model;
 
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 
-/** @template T of DomainModel */
+/** @template-covariant T of DomainModel */
 class PaginatedResult
 {
     /** @var list<T> */

@@ -121,7 +121,7 @@ class ExternalImageService
 
         if ($cURLHandle !== false) {
             curl_setopt($cURLHandle, CURLOPT_HTTPGET, true);
-            curl_setopt($cURLHandle, CURLOPT_HEADER, 0);
+            curl_setopt($cURLHandle, CURLOPT_HEADER, false);
             curl_setopt($cURLHandle, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($cURLHandle, CURLOPT_TIMEOUT, $this->externalImageTimeout);
             curl_setopt($cURLHandle, CURLOPT_FOLLOWLOCATION, true);

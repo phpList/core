@@ -11,7 +11,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Configuration\Repository\UrlCacheRepository;
 
 #[ORM\Entity(repositoryClass: UrlCacheRepository::class)]
-#[ORM\Table(name: 'phplist_urlcache')]
+#[ORM\Table(name: 'urlcache')]
 #[ORM\Index(name: 'phplist_urlcache_urlindex', columns: ['url'])]
 #[ORM\HasLifecycleCallbacks]
 class UrlCache implements DomainModel, Identity
@@ -33,7 +33,7 @@ class UrlCache implements DomainModel, Identity
     private ?DateTime $added = null;
 
     #[ORM\Column(name: 'content', type: 'blob', nullable: true)]
-    private ?string $content = null;
+    private mixed $content = null;
 
     public function getId(): ?int
     {
@@ -57,6 +57,11 @@ class UrlCache implements DomainModel, Identity
 
     public function getContent(): ?string
     {
+        if (is_resource($this->content)) {
+            $value = stream_get_contents($this->content);
+            return $value === false ? null : $value;
+        }
+
         return $this->content;
     }
 

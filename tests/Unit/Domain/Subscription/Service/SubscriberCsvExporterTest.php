@@ -98,8 +98,8 @@ class SubscriberCsvExporterTest extends TestCase
         $this->assertInstanceOf(Response::class, $response);
         $this->assertSame('text/csv; charset=utf-8', $response->headers->get('Content-Type'));
         $this->assertStringContainsString(
-            needle: 'attachment; filename=subscribers_export_',
-            haystack: $response->headers->get('Content-Disposition')
+            'attachment; filename=subscribers_export_',
+            $response->headers->get('Content-Disposition')
         );
     }
 
@@ -145,8 +145,8 @@ class SubscriberCsvExporterTest extends TestCase
         $this->assertInstanceOf(Response::class, $response);
         $this->assertSame('text/csv; charset=utf-8', $response->headers->get('Content-Type'));
         $this->assertStringContainsString(
-            needle: 'attachment; filename=subscribers_export_',
-            haystack: $response->headers->get('Content-Disposition')
+            'attachment; filename=subscribers_export_',
+            $response->headers->get('Content-Disposition')
         );
     }
 }

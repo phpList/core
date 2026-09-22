@@ -21,20 +21,18 @@ class TemplateLinkValidatorTest extends TestCase
 
     public function testSkipsValidationIfNotString(): void
     {
+        $this->expectNotToPerformAssertions();
         $context = (new ValidationContext())->set('checkLinks', true);
 
         $this->validator->validate(['not', 'a', 'string'], $context);
-
-        $this->assertTrue(true);
     }
 
     public function testSkipsValidationIfCheckLinksIsFalse(): void
     {
+        $this->expectNotToPerformAssertions();
         $context = (new ValidationContext())->set('checkLinks', false);
 
         $this->validator->validate('<a href="invalid">Broken link</a>', $context);
-
-        $this->assertTrue(true);
     }
 
     public function testValidatesInvalidLinks(): void
@@ -51,6 +49,7 @@ class TemplateLinkValidatorTest extends TestCase
 
     public function testAllowsValidLinksAndPlaceholders(): void
     {
+        $this->expectNotToPerformAssertions();
         $context = (new ValidationContext())->set('checkLinks', true);
 
         $html = '<html><body>' .
@@ -61,7 +60,5 @@ class TemplateLinkValidatorTest extends TestCase
             '</body></html>';
 
         $this->validator->validate($html, $context);
-
-        $this->assertTrue(true);
     }
 }

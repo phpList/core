@@ -49,8 +49,6 @@ class DynamicListAttrManagerTest extends TestCase
         // Empty array should be a no-op (no DB calls)
         $this->listAttrRepo->expects($this->never())->method('transactional');
         $manager->insertOptions('colors', []);
-        // if we got here, expectations were met
-        $this->assertTrue(true);
     }
 
     public function testInsertOptionsSkipsDuplicatesAndAssignsOrder(): void

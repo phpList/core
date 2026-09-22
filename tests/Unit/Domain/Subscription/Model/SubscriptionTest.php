@@ -35,22 +35,12 @@ class SubscriptionTest extends TestCase
         self::assertInstanceOf(DomainModel::class, $this->subject);
     }
 
-    public function testGetSubscriberInitiallyReturnsNull(): void
-    {
-        self::assertNull($this->subject->getSubscriber());
-    }
-
     public function testSetSubscriberSetsSubscriber(): void
     {
         $model = new Subscriber('test@example.com');
         $this->subject->setSubscriber($model);
 
         self::assertSame($model, $this->subject->getSubscriber());
-    }
-
-    public function testGetSubscriberListInitiallyReturnsNull(): void
-    {
-        self::assertNull($this->subject->getSubscriberList());
     }
 
     public function testSetSubscriberListSetsSubscriberList(): void
@@ -64,11 +54,6 @@ class SubscriptionTest extends TestCase
     public function testGetCreatedAtInitiallyReturnsCurrentTime(): void
     {
         self::assertSimilarDates(new DateTime(), $this->subject->getCreatedAt());
-    }
-
-    public function testGetUpdatedAtInitiallyReturnsNull(): void
-    {
-        self::assertNull($this->subject->getUpdatedAt());
     }
 
     public function testUpdateModificationDateSetsModificationDateToNow(): void

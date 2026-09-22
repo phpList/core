@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service;
 
 use PhpList\Core\Domain\Configuration\Model\OutputFormat;
+use PhpList\Core\Domain\Messaging\Exception\EmailBlacklistedException;
+use PhpList\Core\Domain\Messaging\Exception\InvalidRecipientOrSubjectException;
 use PhpList\Core\Domain\Messaging\Exception\MessageCacheMissingException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessageForwardDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
@@ -23,7 +25,7 @@ class ForwardContentService
     }
 
     /** @return array{Email, OutputFormat}
-     * @throws MessageCacheMissingException
+     * @throws MessageCacheMissingException | InvalidRecipientOrSubjectException | EmailBlacklistedException
      */
     public function getContents(
         Message $campaign,
@@ -31,7 +33,7 @@ class ForwardContentService
         string $friendEmail,
         MessageForwardDto $forwardDto
     ): array {
-        $messagePrecacheDto = $this->cache->get(sprintf('messaging.message.base.%d.%d', $campaign->getId(), 1));
+        $messagePrecacheDto = $this->cache->get(sprintf('messaging.message.base.%d.%d.%d', $campaign->getId(), 1, 0));
 
         if ($messagePrecacheDto === null) {
             throw new MessageCacheMissingException();

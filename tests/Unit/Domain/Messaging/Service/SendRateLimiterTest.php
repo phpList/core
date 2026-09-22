@@ -64,12 +64,11 @@ class SendRateLimiterTest extends TestCase
 
         // Next afterSend should increase the counter again without exception
         $limiter->afterSend();
-        // Reaching here means no fatal due to internal counter/reset logic
-        $this->assertTrue(true);
     }
 
     public function testThrottleSleepsPerMessagePathIsCallable(): void
     {
+        $this->expectNotToPerformAssertions();
         $this->ispProvider->method('load')->willReturn(new IspRestrictions(null, null, null));
         $limiter = new SendRateLimiter(
             ispRestrictionsProvider: $this->ispProvider,
@@ -89,6 +88,5 @@ class SendRateLimiterTest extends TestCase
         if ($elapsed < 0.3) {
             $this->markTestIncomplete('Environment too fast to detect sleep; logic path executed.');
         }
-        $this->assertTrue(true);
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Model\Dto;
 
-/** @SuppressWarnings(TooManyFields) */
+/** @SuppressWarnings("TooManyFields") */
 class MessagePrecacheDto
 {
     public string $replyToEmail = '';

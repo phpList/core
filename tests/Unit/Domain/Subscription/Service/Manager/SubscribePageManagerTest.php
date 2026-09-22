@@ -355,7 +355,7 @@ class SubscribePageManagerTest extends TestCase
         $this->configMigrationService
             ->expects($this->once())
             ->method('copyToConfig')
-            ->with(page: $this->page, data: $data);
+            ->with($this->page, $data);
 
         $this->manager->syncPageData($data, $this->page);
     }

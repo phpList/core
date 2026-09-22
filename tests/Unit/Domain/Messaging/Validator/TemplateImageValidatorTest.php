@@ -53,8 +53,6 @@ class TemplateImageValidatorTest extends TestCase
             ->willReturn(new Response(200));
 
         $this->validator->validate(['https://example.com/image.jpg'], $context);
-
-        $this->assertTrue(true);
     }
 
     public function testValidatesExistenceWithHttp404(): void

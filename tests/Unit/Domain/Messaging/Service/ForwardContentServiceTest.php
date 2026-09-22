@@ -47,7 +47,7 @@ class ForwardContentServiceTest extends TestCase
         $this->cache
             ->expects(self::once())
             ->method('get')
-            ->with('messaging.message.base.10.1')
+            ->with('messaging.message.base.10.1.0')
             ->willReturn(null);
 
         $this->expectException(MessageCacheMissingException::class);
@@ -85,16 +85,16 @@ class ForwardContentServiceTest extends TestCase
         $this->cache
             ->expects(self::once())
             ->method('get')
-            ->with('messaging.message.base.42.1')
+            ->with('messaging.message.base.42.1.0')
             ->willReturn($cached);
 
         $this->preparator
             ->expects(self::once())
             ->method('processMessageLinks')
             ->with(
-                campaignId: 42,
-                cachedMessageDto: $cached,
-                subscriber: $subscriber
+                42,
+                $cached,
+                $subscriber
             )
             ->willReturn($processed);
 
@@ -103,14 +103,14 @@ class ForwardContentServiceTest extends TestCase
             ->expects(self::once())
             ->method('buildForwardEmail')
             ->with(
-                messageId: 42,
-                friendEmail: 'f@example.com',
-                forwardedBy: $subscriber,
-                data: $processed,
-                htmlPref: true,
-                fromName: 'From Name',
-                fromEmail: 'from@example.com',
-                forwardedPersonalNote: 'note'
+                42,
+                'f@example.com',
+                $subscriber,
+                $processed,
+                true,
+                'From Name',
+                'from@example.com',
+                'note'
             )
             ->willReturn([$expectedEmail, OutputFormat::Text]);
 
@@ -127,7 +127,6 @@ class ForwardContentServiceTest extends TestCase
             )
         );
 
-        self::assertIsArray($result);
         self::assertSame($expectedEmail, $result[0]);
         self::assertSame(OutputFormat::Text, $result[1]);
     }

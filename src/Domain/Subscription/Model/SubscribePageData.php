@@ -9,7 +9,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberPageDataRepository;
 
 #[ORM\Entity(repositoryClass: SubscriberPageDataRepository::class)]
-#[ORM\Table(name: 'phplist_subscribepage_data')]
+#[ORM\Table(name: 'subscribepage_data')]
 class SubscribePageData implements DomainModel
 {
     #[ORM\Id]

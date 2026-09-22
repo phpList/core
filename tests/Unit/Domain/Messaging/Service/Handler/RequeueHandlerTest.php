@@ -51,12 +51,40 @@ class RequeueHandlerTest extends TestCase
         return new Message($format, $schedule, $metadata, $content, $options, owner: null, template: null);
     }
 
-    public function testReturnsFalseWhenIntervalIsZeroOrNegative(): void
+    public function testFallsBackToOneMinuteIntervalWhenNoneConfigured(): void
     {
+        // requeueInterval controls how long to wait before resuming, not whether to resume:
+        // a campaign that stopped early must always be retried (mirrors phplist3's
+        // unconditional "don't mark sent while anything failed/was throttled" guard), so a
+        // missing/zero interval must not disable requeuing entirely.
         $handler = new RequeueHandler($this->logger, new Translator('en'));
         $message = $this->createMessage(0, null, null);
 
-        $this->output->expects($this->never())->method('writeln');
+        $this->output->expects($this->once())->method('writeln');
+        $this->logger->expects($this->once())->method('info');
+
+        $before = new DateTime();
+        $result = $handler->handle($message, $this->output);
+        $after = new DateTime();
+
+        $this->assertTrue($result);
+        $this->assertSame(MessageStatus::Submitted, $message->getMetadata()->getStatus());
+
+        $embargo = $message->getSchedule()->getEmbargo();
+        $this->assertInstanceOf(DateTime::class, $embargo);
+
+        $minExpected = (clone $before)->add(new DateInterval('PT1M'));
+        $maxExpected = (clone $after)->add(new DateInterval('PT1M'));
+        $this->assertGreaterThanOrEqual($minExpected->getTimestamp(), $embargo->getTimestamp());
+        $this->assertLessThanOrEqual($maxExpected->getTimestamp(), $embargo->getTimestamp());
+    }
+
+    public function testStillReturnsFalseWhenNoIntervalConfiguredButRequeueUntilAlreadyPassed(): void
+    {
+        $handler = new RequeueHandler($this->logger, new Translator('en'));
+        $past = (new DateTime())->sub(new DateInterval('PT5M'));
+        $message = $this->createMessage(0, $past, null);
+
         $this->logger->expects($this->never())->method('info');
 
         $result = $handler->handle($message, $this->output);

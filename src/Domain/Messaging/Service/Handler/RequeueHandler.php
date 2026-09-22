@@ -14,6 +14,16 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RequeueHandler
 {
+    /**
+     * Fallback delay (minutes) used when a campaign stops early (time limit, domain throttle,
+     * etc.) but has no explicit requeueInterval configured. requeueInterval/requeueUntil control
+     * *how long* to wait before resuming, not *whether* to resume: a campaign that stopped early
+     * must always be retried, mirroring phplist3's unconditional "don't mark sent while anything
+     * failed/was throttled" guard - it must never be silently marked Sent with recipients still
+     * unprocessed. requeueUntil remains a legitimate opt-out (a real deadline).
+     */
+    private const DEFAULT_REQUEUE_INTERVAL_MINUTES = 1;
+
     public function __construct(
         private readonly LoggerInterface $logger,
         private readonly TranslatorInterface $translator,
@@ -24,11 +34,11 @@ class RequeueHandler
     {
         $schedule = $campaign->getSchedule();
         $interval = $schedule->getRequeueInterval() ?? 0;
+        if ($interval <= 0) {
+            $interval = self::DEFAULT_REQUEUE_INTERVAL_MINUTES;
+        }
         $until = $schedule->getRequeueUntil();
 
-        if ($interval <= 0) {
-            return false;
-        }
         $now = new DateTime();
         if ($until instanceof DateTime && $now > $until) {
             return false;

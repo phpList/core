@@ -9,7 +9,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Messaging\Repository\MessageAttachmentRepository;
 
 #[ORM\Entity(repositoryClass: MessageAttachmentRepository::class)]
-#[ORM\Table(name: 'phplist_message_attachment')]
+#[ORM\Table(name: 'message_attachment')]
 #[ORM\Index(name: 'phplist_message_attachment_messageattidx', columns: ['messageid', 'attachmentid'])]
 #[ORM\Index(name: 'phplist_message_attachment_messageidx', columns: ['messageid'])]
 class MessageAttachment implements Identity

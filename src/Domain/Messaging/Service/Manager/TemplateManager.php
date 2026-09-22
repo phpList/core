@@ -31,9 +31,7 @@ class TemplateManager
             ->setListOrder($createTemplateDto->listOrder);
 
         $content = $createTemplateDto->fileContent ?? $createTemplateDto->content;
-        if ($content !== null) {
-            $template->setContent($content);
-        }
+        $template->setContent($content);
 
         $context = (new ValidationContext())
             ->set('checkLinks', $createTemplateDto->shouldCheckLinks)

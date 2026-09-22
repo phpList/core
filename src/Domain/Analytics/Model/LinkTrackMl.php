@@ -10,7 +10,7 @@ use PhpList\Core\Domain\Analytics\Repository\LinkTrackMlRepository;
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 
 #[ORM\Entity(repositoryClass: LinkTrackMlRepository::class)]
-#[ORM\Table(name: 'phplist_linktrack_ml')]
+#[ORM\Table(name: 'linktrack_ml')]
 #[ORM\Index(name: 'phplist_linktrack_ml_fwdindex', columns: ['forwardid'])]
 #[ORM\Index(name: 'phplist_linktrack_ml_midindex', columns: ['messageid'])]
 class LinkTrackMl implements DomainModel

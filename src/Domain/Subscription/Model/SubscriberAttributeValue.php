@@ -9,7 +9,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
 
 #[ORM\Entity(repositoryClass: SubscriberAttributeValueRepository::class)]
-#[ORM\Table(name: 'phplist_user_user_attribute')]
+#[ORM\Table(name: 'user_user_attribute')]
 #[ORM\Index(name: 'phplist_user_user_attribute_attindex', columns: ['attributeid'])]
 #[ORM\Index(name: 'phplist_user_user_attribute_attuserid', columns: ['userid', 'attributeid'])]
 #[ORM\Index(name: 'phplist_user_user_attribute_userindex', columns: ['userid'])]

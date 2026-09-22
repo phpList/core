@@ -14,7 +14,7 @@ class ConfigManager
 {
     public function __construct(
         private readonly ConfigRepository $configRepository,
-        #[Autowire('%parallel_use_with_phplist3%')]
+        #[Autowire('%app.parallel_use_with_phplist3%')]
         private readonly bool $parallelUseWithPhpList3,
     ) {
     }

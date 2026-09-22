@@ -146,7 +146,5 @@ class SubscriberAttributeManagerTest extends TestCase
             translator: new Translator('en'),
         );
         $manager->delete($attribute);
-
-        self::assertTrue(true);
     }
 }

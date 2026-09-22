@@ -8,6 +8,7 @@ use DateTime;
 use Doctrine\ORM\Tools\SchemaTool;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
+use PhpList\Core\Domain\Messaging\Model\Filter\UserMessageBounceFilter;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -135,5 +136,43 @@ class UserMessageBounceRepositoryTest extends KernelTestCase
             ],
             $rows
         );
+    }
+
+    public function testGetFilteredAfterIdAdvancesCursorAcrossConsecutivePages(): void
+    {
+        $bounce = new Bounce(status: 'new');
+        $this->entityManager->persist($bounce);
+        $this->entityManager->flush();
+
+        $umb1 = (new UserMessageBounce($bounce->getId(), new DateTime()))->setUserId(1)->setMessageId(10);
+        $umb2 = (new UserMessageBounce($bounce->getId(), new DateTime()))->setUserId(2)->setMessageId(11);
+        $this->entityManager->persist($umb1);
+        $this->entityManager->persist($umb2);
+        $this->entityManager->flush();
+
+        $firstPage = $this->repository->getFilteredAfterId(new UserMessageBounceFilter(lastId: 0, limit: 1));
+
+        self::assertCount(1, $firstPage->getItems());
+        self::assertSame($umb1->getId(), $firstPage->getItems()[0]->getId());
+        self::assertSame($umb1->getId(), $firstPage->getLastId());
+
+        $secondPage = $this->repository->getFilteredAfterId(
+            new UserMessageBounceFilter(lastId: $firstPage->getLastId(), limit: 1)
+        );
+
+        self::assertCount(1, $secondPage->getItems());
+        self::assertSame($umb2->getId(), $secondPage->getItems()[0]->getId());
+        self::assertNotSame(
+            $firstPage->getItems()[0]->getId(),
+            $secondPage->getItems()[0]->getId(),
+        );
+    }
+
+    public function testGetFilteredAfterIdKeepsInputLastIdWhenPageIsEmpty(): void
+    {
+        $result = $this->repository->getFilteredAfterId(new UserMessageBounceFilter(lastId: 999, limit: 10));
+
+        self::assertSame([], $result->getItems());
+        self::assertSame(999, $result->getLastId());
     }
 }

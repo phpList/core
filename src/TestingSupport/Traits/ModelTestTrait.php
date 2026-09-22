@@ -33,7 +33,7 @@ trait ModelTestTrait
      * @param string $propertyName
      * @param mixed $value
      *
-     * @return void*
+     * @return void
      */
     private function setSubjectProperty(DomainModel $model, string $propertyName, mixed $value): void
     {
