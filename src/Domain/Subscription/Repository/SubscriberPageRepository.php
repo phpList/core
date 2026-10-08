@@ -53,7 +53,7 @@ class SubscriberPageRepository extends AbstractRepository implements Paginatable
             ->leftJoin(
                 SubscribePageData::class,
                 'd',
-                'ON',
+                'WITH',
                 'd.id = p.id'
             )
             ->andWhere('p.id > :afterId')
@@ -67,6 +67,9 @@ class SubscriberPageRepository extends AbstractRepository implements Paginatable
         foreach ($rows as $row) {
             $page = $row['page'];
             $data = $row['data'] ?? null;
+            if (!$page instanceof SubscribePage) {
+                continue;
+            }
             $grouped[$page->getId()][] = $row;
             if ($data !== null) {
                 $grouped[$data->getId()][] = ['data' => $data];
