@@ -153,14 +153,14 @@ class AdministratorRepositoryTest extends KernelTestCase
         ];
     }
 
-    public function testFindOneByLoginCredentialsIgnoresNonSuperUser()
+    public function testFindOneByLoginCredentialsDoesNotIgnoreNonSuperUser()
     {
         $loginName = 'max.doe';
         $password = 'Bazinga!';
 
         $result = $this->repository->findOneByLoginCredentials($loginName, $password);
 
-        self::assertNull($result);
+        self::assertNotNull($result);
     }
 
     public function testSavePersistsAndFlushesModel(): void

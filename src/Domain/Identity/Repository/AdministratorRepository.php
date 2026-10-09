@@ -49,7 +49,6 @@ class AdministratorRepository extends AbstractRepository implements PaginatableR
         $administrator = $this->findOneBy(
             [
                 'loginName' => $loginName,
-                'superUser' => true,
             ]
         );
 
