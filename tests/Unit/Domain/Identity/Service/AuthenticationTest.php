@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Identity\Service;
 
+use Doctrine\ORM\EntityNotFoundException;
 use PhpList\Core\Domain\Identity\Repository\AdministratorTokenRepository;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Identity\Model\AdministratorToken;
@@ -16,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
  * Testcase.
  *
  * @author Oliver Klee <oliver@phplist.com>
+ * @author Tatevik Grigoryan <tatevikg1@gmail.com>
  */
 class AuthenticationTest extends TestCase
 {
@@ -53,7 +55,17 @@ class AuthenticationTest extends TestCase
         $request = new Request();
         $request->headers->add(['php-auth-pw' => $apiKey]);
 
+        $administrator = $this->createMock(Administrator::class);
+        $administrator
+            ->expects($this->any())
+            ->method('isDisabled')
+            ->willThrowException(EntityNotFoundException::fromClassNameAndIdentifier(Administrator::class, []));
+
         $token = $this->createMock(AdministratorToken::class);
+        $token
+            ->expects($this->any())
+            ->method('getAdministrator')
+            ->willReturn($administrator);
 
         $this->tokenRepository
             ->expects($this->any())

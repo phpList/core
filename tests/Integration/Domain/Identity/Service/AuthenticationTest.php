@@ -76,11 +76,11 @@ class AuthenticationTest extends KernelTestCase
         self::assertNull($result);
     }
 
-    public function testAuthenticateByApiKeyWithValidApiKeyForInexistentAdministratorReturnsNull()
+    public function testAuthenticateByApiKeyWithValidApiKeyForDisabledAdministratorReturnsNull()
     {
         $this->loadFixtures([AdministratorFixture::class, AdministratorTokenWithAdministratorFixture::class]);
 
-        $apiKey = 'cfdf64eecbbf336628b0f3071adba763';
+        $apiKey = 'cfdf64eecbbf336628b0f3071adba766';
         $request = new Request();
         $request->headers->add(['php-auth-pw' => $apiKey]);
 
@@ -89,7 +89,7 @@ class AuthenticationTest extends KernelTestCase
         static::assertNull($result);
     }
 
-    public function testAuthenticateByApiKeyWithValidApiKeyForNonSuperUserAdministratorReturnsNull()
+    public function testAuthenticateByApiKeyWithValidApiKeyForNonSuperUserAdministratorReturnsAdministrator()
     {
         $this->loadFixtures([AdministratorFixture::class, AdministratorTokenWithAdministratorFixture::class]);
 
@@ -99,6 +99,6 @@ class AuthenticationTest extends KernelTestCase
 
         $result = $this->subject->authenticateByApiKey($request);
 
-        self::assertNull($result);
+        self::assertInstanceOf(Administrator::class, $result);
     }
 }

@@ -32,7 +32,7 @@ class PermissionChecker
             return true;
         }
 
-        $required = $this->resolveRequiredPrivilege($resource);
+        $required = $this->resolveRequiredPrivilegeForClass(get_class($resource));
         if ($required !== null && !$actor->getPrivileges()->has($required)) {
             return false;
         }
@@ -52,10 +52,43 @@ class PermissionChecker
         return $notRestricted;
     }
 
-    private function resolveRequiredPrivilege(DomainModel $resource): ?PrivilegeFlag
+    /** @param class-string $resourceClass */
+    public function canCreate(Administrator $actor, string $resourceClass): bool
+    {
+        if ($actor->isSuperUser()) {
+            return true;
+        }
+
+        $required = $this->resolveRequiredPrivilegeForClass($resourceClass);
+
+        return $required === null || $actor->getPrivileges()->has($required);
+    }
+
+    public function canList(Administrator $actor, string $resourceClass): bool
+    {
+        return $this->canCreate($actor, $resourceClass);
+    }
+
+    public function canView(Administrator $actor, DomainModel $resource): bool
+    {
+        return $this->canManage($actor, $resource);
+    }
+
+    public function canEdit(Administrator $actor, DomainModel $resource): bool
+    {
+        return $this->canManage($actor, $resource);
+    }
+
+    public function canDelete(Administrator $actor, DomainModel $resource): bool
+    {
+        return $this->canManage($actor, $resource);
+    }
+
+    /** @param class-string $resourceClass */
+    private function resolveRequiredPrivilegeForClass(string $resourceClass): ?PrivilegeFlag
     {
         foreach (self::REQUIRED_PRIVILEGE_MAP as $class => $flag) {
-            if ($resource instanceof $class) {
+            if (is_a($resourceClass, $class, true)) {
                 return $flag;
             }
         }
