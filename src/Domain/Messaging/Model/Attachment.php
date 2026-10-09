@@ -10,7 +10,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Messaging\Repository\AttachmentRepository;
 
 #[ORM\Entity(repositoryClass: AttachmentRepository::class)]
-#[ORM\Table(name: 'phplist_attachment')]
+#[ORM\Table(name: 'attachment')]
 class Attachment implements DomainModel, Identity
 {
     public const FORWARD = 'forwarded';

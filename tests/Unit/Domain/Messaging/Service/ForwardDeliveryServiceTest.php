@@ -79,10 +79,10 @@ class ForwardDeliveryServiceTest extends TestCase
         $this->forwardManager->expects(self::once())
             ->method('create')
             ->with(
-                subscriber: self::identicalTo($subscriber),
-                campaign: self::identicalTo($campaign),
-                friendEmail: $friendEmail,
-                status: 'sent'
+                self::identicalTo($subscriber),
+                self::identicalTo($campaign),
+                $friendEmail,
+                'sent'
             );
 
         $service->markSent($campaign, $subscriber, $friendEmail);
@@ -103,10 +103,10 @@ class ForwardDeliveryServiceTest extends TestCase
         $this->forwardManager->expects(self::once())
             ->method('create')
             ->with(
-                subscriber: self::identicalTo($subscriber),
-                campaign: self::identicalTo($campaign),
-                friendEmail: $friendEmail,
-                status: 'failed'
+                self::identicalTo($subscriber),
+                self::identicalTo($campaign),
+                $friendEmail,
+                'failed'
             );
 
         $service->markFailed($campaign, $subscriber, $friendEmail);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Repository;
 
+use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\ORM\AbstractQuery;
@@ -11,6 +12,7 @@ use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
+use PhpList\Core\Domain\Configuration\Model\OutputFormat;
 use PhpList\Core\Domain\Messaging\Model\Filter\MessageFilter;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
@@ -48,7 +50,12 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->getOneOrNullResult();
     }
 
-    /** @return PaginatedResult<Message> */
+    /**
+     * @return PaginatedResult<Message>
+     * @SuppressWarnings("CyclomaticComplexity")
+     * @SuppressWarnings("NPathComplexity")
+     *
+     */
     public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult
     {
         $lastId = $filter->getLastId();
@@ -56,7 +63,9 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
         $queryBuilder = $this->createQueryBuilder('m');
 
         if ($filter instanceof MessageFilter && $filter->getOwner() !== null) {
-            $queryBuilder->andWhere('IDENTITY(m.owner) = :ownerId')
+            // Legacy/imported messages have no owner recorded - treat them as shared rather
+            // than invisible, instead of excluding them outright via a strict owner match.
+            $queryBuilder->andWhere('(m.owner IS NULL OR IDENTITY(m.owner) = :ownerId)')
                 ->setParameter('ownerId', $filter->getOwner()->getId());
         }
 
@@ -65,17 +74,34 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
                 ->setParameter('subject', '%' . $filter->getSubject() . '%');
         }
 
+        if ($filter instanceof MessageFilter && $filter->getStatus() !== null) {
+            $statuses = array_values(array_filter(array_map('trim', explode(',', $filter->getStatus()))));
+            if (count($statuses) === 1) {
+                $queryBuilder->andWhere('m.metadata.status = :status')
+                    ->setParameter('status', $statuses[0]);
+            } elseif (count($statuses) > 1) {
+                $queryBuilder->andWhere('m.metadata.status IN (:statuses)')
+                    ->setParameter('statuses', $statuses);
+            }
+        }
+
         $countQb = clone $queryBuilder;
         $total = (int) $countQb
             ->select('COUNT(DISTINCT m.id)')
             ->getQuery()
             ->getSingleScalarResult();
 
+        $sortOrder = $filter instanceof MessageFilter ? $filter->getSortOrder() : 'asc';
+        $comparison = $sortOrder === 'desc' ? '<' : '>';
+
+        if ($lastId > 0) {
+            $queryBuilder->andWhere(sprintf('m.id %s :lastId', $comparison))
+                ->setParameter('lastId', $lastId);
+        }
+
         /** @var list<Message> $items */
         $items = $queryBuilder
-            ->andWhere('m.id > :lastId')
-            ->setParameter('lastId', $lastId)
-            ->orderBy('m.id', 'ASC')
+            ->orderBy('m.id', strtoupper($sortOrder))
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
@@ -116,7 +142,7 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
     {
         return $this->createQueryBuilder('m')
             ->where('m.metadata.status = :status')
-            ->andWhere('m.schedule.embargo IS NULL OR m.embargo <= :embargo')
+            ->andWhere('m.schedule.embargo IS NULL OR m.schedule.embargo <= :embargo')
             ->setParameter('status', $status->value)
             ->setParameter('embargo', $embargo)
             ->getQuery()
@@ -132,6 +158,103 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->setParameter('status', $status->value)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * Atomically claims a campaign for processing by flipping its status from Submitted to
+     * Prepared in a single UPDATE ... WHERE statement, so two concurrent workers can't both
+     * pass a check-then-act race and process the same campaign.
+     *
+     * When $staleAfterSeconds > 0, the same atomic UPDATE also reclaims a row stuck in
+     * Prepared/InProcess whose `modified` is older than that threshold (crashed/killed worker,
+     * or a handler that threw before requeuing). Staleness is re-checked against the row's
+     * current `modified` at the moment of this UPDATE, not pre-computed by the caller, so a
+     * worker that's merely slow (and keeps bumping `modified` via incrementSentCounts()) can't
+     * be claimed out from under itself by a second, concurrent dispatch.
+     */
+    public function tryClaimForProcessing(int $id, int $staleAfterSeconds = 0): ?Message
+    {
+        $connection = $this->getEntityManager()->getConnection();
+        $table = $connection->quoteIdentifier($this->getClassMetadata()->getTableName());
+        $now = new DateTime();
+
+        $params = [
+            'to' => Message\MessageStatus::Prepared->value,
+            'now' => $now->format('Y-m-d H:i:s'),
+            'id' => $id,
+            'from' => Message\MessageStatus::Submitted->value,
+        ];
+
+        $claimCondition = 'status = :from';
+        if ($staleAfterSeconds > 0) {
+            $claimCondition = '(status = :from OR (status IN (:prepared, :inProcess) AND modified < :staleBefore))';
+            $params['prepared'] = Message\MessageStatus::Prepared->value;
+            $params['inProcess'] = Message\MessageStatus::InProcess->value;
+            $params['staleBefore'] = (clone $now)
+                ->modify(sprintf('-%d seconds', $staleAfterSeconds))
+                ->format('Y-m-d H:i:s');
+        }
+
+        $sql = sprintf('UPDATE %s SET status = :to, modified = :now WHERE id = :id AND %s', $table, $claimCondition);
+
+        $affected = $connection->executeStatement($sql, $params);
+
+        if ($affected === 0) {
+            return null;
+        }
+
+        return $this->find($id);
+    }
+
+    /**
+     * Returns campaigns stuck in Prepared/InProcess whose row hasn't been touched since
+     * $staleBefore, i.e. candidates for tryClaimForProcessing's stale-reclaim path. Callers
+     * are expected to re-dispatch a CampaignProcessorMessage for each, since nothing else
+     * automatically resumes a campaign that isn't in Submitted status.
+     *
+     * @return Message[]
+     */
+    public function getStuckInProcessing(DateTimeImmutable $staleBefore): array
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.metadata.status IN (:statuses)')
+            ->andWhere('m.updatedAt < :staleBefore')
+            ->setParameter('statuses', [
+                Message\MessageStatus::Prepared->value,
+                Message\MessageStatus::InProcess->value,
+            ])
+            ->setParameter('staleBefore', $staleBefore)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Atomically increments a campaign's processed/format-sent counters directly in the
+     * database (bypassing the entity's in-memory incrementSentCount()), so concurrent
+     * updates to the same campaign can't lose an update the way a read-modify-write via
+     * the entity manager could. Also bumps `modified`, since this is the liveness signal
+     * tryClaimForProcessing's stale-reclaim relies on.
+     */
+    public function incrementSentCounts(int $messageId, OutputFormat $sentAs): void
+    {
+        $formatField = match ($sentAs) {
+            OutputFormat::Html => 'm.format.asHtml',
+            OutputFormat::Text => 'm.format.asText',
+            OutputFormat::Pdf => 'm.format.asPdf',
+            OutputFormat::TextAndHtml => 'm.format.asTextAndHtml',
+            OutputFormat::TextAndPdf => 'm.format.asTextAndPdf',
+        };
+
+        $this->createQueryBuilder('m')
+            ->update()
+            ->set('m.metadata.processed', 'm.metadata.processed + 1')
+            ->set($formatField, $formatField . ' + 1')
+            ->set('m.updatedAt', ':now')
+            ->where('m.id = :id')
+            ->setParameter('now', new DateTime())
+            ->setParameter('id', $messageId)
+            ->getQuery()
+            ->execute();
     }
 
     public function getNonEmptyFields(int $id): array

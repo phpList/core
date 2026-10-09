@@ -24,7 +24,6 @@ class DynamicListAttrRepositoryTest extends TestCase
         );
 
         $this->assertSame([], $repo->fetchOptionNames('valid_table', []));
-        $this->assertSame([], $repo->fetchOptionNames('valid_table', []));
     }
 
     public function testFetchOptionNamesThrowsOnInvalidTable(): void

@@ -11,10 +11,11 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 
 #[ORM\Entity(repositoryClass: UserMessageViewRepository::class)]
-#[ORM\Table(name: 'phplist_user_message_view')]
+#[ORM\Table(name: 'user_message_view')]
 #[ORM\Index(name: 'phplist_user_message_view_msgidx', columns: ['messageid'])]
 #[ORM\Index(name: 'phplist_user_message_view_useridx', columns: ['userid'])]
 #[ORM\Index(name: 'phplist_user_message_view_usermsgidx', columns: ['userid', 'messageid'])]
+// todo: #[ORM\Index(name: 'phplist_user_message_view_viewedidx', columns: ['viewed'])]
 class UserMessageView implements DomainModel, Identity
 {
     #[ORM\Id]

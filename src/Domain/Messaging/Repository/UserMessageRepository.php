@@ -45,7 +45,7 @@ class UserMessageRepository extends AbstractRepository
     public function countSentSince(DateTimeInterface $since): int
     {
         $queryBuilder = $this->createQueryBuilder('um');
-        $queryBuilder->select('COUNT(um)')
+        $queryBuilder->select('COUNT(um.createdAt)')
             ->where('um.createdAt > :since')
             ->andWhere('um.status = :status')
             ->setParameter('since', $since)

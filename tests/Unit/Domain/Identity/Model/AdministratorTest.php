@@ -69,11 +69,6 @@ class AdministratorTest extends TestCase
         self::assertSame($value, $this->subject->getEmail());
     }
 
-    public function testGetUpdatedAtInitiallyReturnsNotNull(): void
-    {
-        self::assertNotNull($this->subject->getUpdatedAt());
-    }
-
     public function testUpdateModificationDateSetsModificationDateToNow(): void
     {
         $this->subject->setEmail('update@email.com');

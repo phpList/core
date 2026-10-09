@@ -11,7 +11,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Identity\Repository\AdminPasswordRequestRepository;
 
 #[ORM\Entity(repositoryClass: AdminPasswordRequestRepository::class)]
-#[ORM\Table(name: 'phplist_admin_password_request')]
+#[ORM\Table(name: 'admin_password_request')]
 class AdminPasswordRequest implements DomainModel, Identity
 {
     #[ORM\Id]
@@ -24,7 +24,7 @@ class AdminPasswordRequest implements DomainModel, Identity
 
     #[ORM\ManyToOne(targetEntity: Administrator::class)]
     #[ORM\JoinColumn(name: 'admin', referencedColumnName: 'id', nullable: true)]
-    private Administrator $administrator;
+    private ?Administrator $administrator;
 
     #[ORM\Column(name: 'key_value', type: 'string', length: 32)]
     private string $keyValue;
@@ -46,7 +46,7 @@ class AdminPasswordRequest implements DomainModel, Identity
         return $this->date;
     }
 
-    public function getAdmin(): Administrator
+    public function getAdmin(): ?Administrator
     {
         return $this->administrator;
     }

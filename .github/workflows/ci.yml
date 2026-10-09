@@ -19,6 +19,17 @@ jobs:
         ports:
           - 3306/tcp
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: false
+          ES_JAVA_OPTS: -Xms256m -Xmx256m
+        ports:
+          - 9200/tcp
+        options: >-
+          --health-cmd="curl -sf http://localhost:9200/_cluster/health || exit 1"
+          --health-interval=10s --health-timeout=5s --health-retries=5
     strategy:
       fail-fast: false
       matrix:
@@ -68,6 +79,10 @@ jobs:
           php bin/console doctrine:schema:validate --skip-sync
       - name: Run units tests with phpunit
         run: vendor/bin/phpunit tests/Unit/ --testdox
+      - name: Initialize Elasticsearch indices
+        run: |
+          export ELASTICSEARCH_HOSTS=http://127.0.0.1:${{ job.services.elasticsearch.ports['9200'] }}
+          php bin/console phplist:search:init-indices
       - name: Run integration tests with phpunit
         run: |
           export PHPLIST_DATABASE_NAME=${{ env.DB_DATABASE }}
@@ -75,6 +90,7 @@ jobs:
           export PHPLIST_DATABASE_PASSWORD=${{ env.DB_PASSWORD }}
           export PHPLIST_DATABASE_PORT=${{ job.services.mysql.ports['3306'] }}
           export PHPLIST_DATABASE_HOST=127.0.0.1
+          export ELASTICSEARCH_HOSTS=http://127.0.0.1:${{ job.services.elasticsearch.ports['9200'] }}
           vendor/bin/phpunit tests/Integration/
       - name: Running the system tests
         run: vendor/bin/phpunit tests/System/ --testdox;

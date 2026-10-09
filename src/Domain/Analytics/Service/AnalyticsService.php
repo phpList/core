@@ -10,23 +10,36 @@ use PhpList\Core\Domain\Analytics\Repository\UserMessageViewRepository;
 use PhpList\Core\Domain\Analytics\Service\Manager\LinkTrackManager;
 use PhpList\Core\Domain\Analytics\Service\Manager\UserMessageViewManager;
 use PhpList\Core\Domain\Messaging\Model\Filter\MessageFilter;
+use PhpList\Core\Domain\Messaging\Repository\Interfaces\UserMessageBounceReaderInterface;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
-use PhpList\Core\Domain\Messaging\Repository\UserMessageBounceRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageForwardRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use Psr\SimpleCache\CacheInterface;
 
+/** @SuppressWarnings("ExcessiveParameterList") */
 class AnalyticsService
 {
+    private const SUMMARY_STATISTICS_CACHE_KEY = 'analytics.summary_statistics';
+    private const CAMPAIGN_STATISTICS_CACHE_KEY = 'analytics.campaign_statistics';
+    private const VIEW_OPEN_STATISTICS_CACHE_KEY = 'analytics.view_open_statistics';
+    private const TOP_DOMAIN_STATISTICS_CACHE_KEY = 'analytics.top_domain_statistics';
+    private const DOMAIN_CONFIRMATION_STATISTICS_CACHE_KEY = 'analytics.domain_confirmation_statistics';
+    private const TOP_LOCAL_PARTS_CACHE_KEY = 'analytics.top_local_parts';
+    private const CAMPAIGN_PERFORMANCE_CACHE_KEY = 'analytics.campaign_performance';
+    private const RECENT_CAMPAIGNS_CACHE_KEY = 'analytics.recent_campaigns';
+    private const STATISTICS_TTL_SECONDS = 600;
+
     public function __construct(
         private readonly LinkTrackManager $linkTrackManager,
         private readonly UserMessageViewManager $userMessageViewManager,
         private readonly MessageRepository $messageRepository,
-        private readonly UserMessageBounceRepository $messageBounceRepository,
+        private readonly UserMessageBounceReaderInterface $messageBounceReader,
         private readonly UserMessageForwardRepository $messageForwardRepository,
         private readonly SubscriberRepository $subscriberRepository,
         private readonly UserMessageRepository $userMessageRepository,
-        private readonly UserMessageViewRepository $userMessageViewRepository
+        private readonly UserMessageViewRepository $userMessageViewRepository,
+        private readonly CacheInterface $cache,
     ) {
     }
 
@@ -49,40 +62,43 @@ class AnalyticsService
      */
     public function getCampaignStatistics(int $limit = 50, int $lastId = 0): array
     {
+        $cacheKey = self::CAMPAIGN_STATISTICS_CACHE_KEY . '.' . $limit . '.' . $lastId;
+
+        return $this->remember($cacheKey, fn () => $this->computeCampaignStatistics($limit, $lastId));
+    }
+
+    private function computeCampaignStatistics(int $limit, int $lastId): array
+    {
         $messages = $this->messageRepository
             ->getFilteredAfterId((new MessageFilter())->setLastId($lastId)->setLimit($limit))
             ->getItems();
 
+        $messageIds = array_map(static fn ($message) => $message->getId(), $messages);
+
+        $viewCounts = $this->userMessageViewManager->countViewsByMessageIds($messageIds);
+        $uniqueViewCounts = $this->userMessageViewManager->countUniqueViewsByMessageIds($messageIds);
+        $totalClickCounts = $this->linkTrackManager->sumClicksByMessageIds($messageIds);
+        $uniqueClickCounts = $this->linkTrackManager->countUniqueClickersByMessageIds($messageIds);
+        $bounceCounts = $this->messageBounceReader->getCountByMessageIds($messageIds);
+        $forwardCounts = $this->messageForwardRepository->getCountByMessageIds($messageIds);
+
         $campaignStats = [];
         foreach ($messages as $message) {
-            $views = $this->userMessageViewManager->countViewsByMessageId($message->getId());
-            $uniqueViews = $this->userMessageViewManager->countUniqueViewsByMessageId($message->getId());
-            $linkTracks = $this->linkTrackManager->getLinkTracksByMessageId($message->getId());
-
-            $totalClicks = 0;
-            $uniqueClickers = [];
-
-            foreach ($linkTracks as $linkTrack) {
-                $totalClicks += $linkTrack->getClicked();
-                $uniqueClickers[$linkTrack->getUserId()] = true;
-            }
-
-            $uniqueClicks = count($uniqueClickers);
-            $bounces = $this->messageBounceRepository->getCountByMessageId($message->getId());
-            $forwards = $this->messageForwardRepository->getCountByMessageId($message->getId());
+            $id = $message->getId();
+            $views = $viewCounts[$id] ?? 0;
             $sentDate = $message->getMetadata()->getSent();
             $sentCount = $message->getMetadata()->getBounceCount() + $views;
 
             $campaignStats[] = [
-                'campaignId' => $message->getId(),
+                'campaignId' => $id,
                 'subject' => $message->getContent()->getSubject(),
                 'dateSent' => $sentDate?->format('Y-m-d H:i:s'),
                 'sent' => $sentCount,
-                'bounces' => $bounces,
-                'forwards' => $forwards,
-                'uniqueViews' => $uniqueViews,
-                'totalClicks' => $totalClicks,
-                'uniqueClicks' => $uniqueClicks,
+                'bounces' => $bounceCounts[$id] ?? 0,
+                'forwards' => $forwardCounts[$id] ?? 0,
+                'uniqueViews' => $uniqueViewCounts[$id] ?? 0,
+                'totalClicks' => $totalClickCounts[$id] ?? 0,
+                'uniqueClicks' => $uniqueClickCounts[$id] ?? 0,
             ];
         }
 
@@ -109,18 +125,30 @@ class AnalyticsService
      */
     public function getViewOpensStatistics(int $limit = 50, int $lastId = 0): array
     {
+        $cacheKey = self::VIEW_OPEN_STATISTICS_CACHE_KEY . '.' . $limit . '.' . $lastId;
+
+        return $this->remember($cacheKey, fn () => $this->computeViewOpensStatistics($limit, $lastId));
+    }
+
+    private function computeViewOpensStatistics(int $limit, int $lastId): array
+    {
         $messagesResult = $this->messageRepository
             ->getFilteredAfterId((new MessageFilter())->setLastId($lastId)->setLimit($limit));
 
+        $messages = $messagesResult->getItems();
+        $messageIds = array_map(static fn ($message) => $message->getId(), $messages);
+        $viewCounts = $this->userMessageViewManager->countViewsByMessageIds($messageIds);
+
         $viewStats = [];
-        foreach ($messagesResult->getItems() as $message) {
-            $views = $this->userMessageViewManager->countViewsByMessageId($message->getId());
+        foreach ($messages as $message) {
+            $id = $message->getId();
+            $views = $viewCounts[$id] ?? 0;
             $sentCount = $message->getMetadata()->getBounceCount() + $views;
 
             $viewRate = $this->formatStat($views, $sentCount);
 
             $viewStats[] = [
-                'campaignId' => $message->getId(),
+                'campaignId' => $id,
                 'subject' => $message->getContent()->getSubject(),
                 'sent' => $sentCount,
                 'uniqueViews' => $views,
@@ -131,7 +159,7 @@ class AnalyticsService
         return [
             'campaigns' => $viewStats,
             'total' => $messagesResult->getTotal(),
-            'hasMore' => count($messagesResult->getItems()) === $limit,
+            'hasMore' => count($messages) === $limit,
             'lastId' => $messagesResult->getLastId(),
         ];
     }
@@ -149,36 +177,19 @@ class AnalyticsService
      */
     public function getTopDomains(int $limit = 50, int $minSubscribers = 5): array
     {
-        $subscribers = $this->subscriberRepository->findAll();
+        $cacheKey = self::TOP_DOMAIN_STATISTICS_CACHE_KEY . '.' . $limit . '.' . $minSubscribers;
 
-        $domains = [];
-        foreach ($subscribers as $subscriber) {
-            $domain = $this->extractDomain($subscriber->getEmail());
-            if ($domain !== '') {
-                $domains[$domain] = ($domains[$domain] ?? 0) + 1;
-            }
-        }
+        return $this->remember($cacheKey, fn () => $this->computeTopDomains($limit, $minSubscribers));
+    }
 
-        $filteredDomains = array_filter($domains, function ($count) use ($minSubscribers) {
-            return $count >= $minSubscribers;
-        });
+    private function computeTopDomains(int $limit, int $minSubscribers): array
+    {
+        $rows = $this->subscriberRepository->getTopDomains($limit, $minSubscribers);
 
-        arsort($filteredDomains);
-
-        $result = [];
-        $count = 0;
-        foreach ($filteredDomains as $domain => $subscriberCount) {
-            if ($count >= $limit) {
-                break;
-            }
-
-            $result[] = [
-                'domain' => $domain,
-                'subscribers' => $subscriberCount,
-            ];
-
-            $count++;
-        }
+        $result = array_map(static fn (array $row): array => [
+            'domain' => $row['domain'],
+            'subscribers' => (int) $row['subscribers'],
+        ], $rows);
 
         return [
             'domains' => $result,
@@ -187,6 +198,11 @@ class AnalyticsService
     }
 
     public function getSummaryStatistics(): array
+    {
+        return $this->remember(self::SUMMARY_STATISTICS_CACHE_KEY, fn () => $this->computeSummaryStatistics());
+    }
+
+    private function computeSummaryStatistics(): array
     {
         $now = new DateTimeImmutable();
         $thisMonthStart = $now->modify('first day of this month 00:00:00');
@@ -202,11 +218,11 @@ class AnalyticsService
 
         $sentTotal = $this->userMessageRepository->countSentBetween($thisMonthStart, $now);
         $openTotal = $this->userMessageViewRepository->countBetween($thisMonthStart, $now);
-        $bounceTotal = $this->messageBounceRepository->countBetween($thisMonthStart, $now);
+        $bounceTotal = $this->messageBounceReader->countBetween($thisMonthStart, $now);
 
         $sentTotalLastMonth = $this->userMessageRepository->countSentBetween($lastMonthStart, $lastMonthEnd);
         $openTotalLastMonth = $this->userMessageViewRepository->countBetween($lastMonthStart, $lastMonthEnd);
-        $bounceTotalLastMonth = $this->messageBounceRepository->countBetween($lastMonthStart, $lastMonthEnd);
+        $bounceTotalLastMonth = $this->messageBounceReader->countBetween($lastMonthStart, $lastMonthEnd);
 
         $openRate = $this->calculateRate($openTotal, $sentTotal);
         $openRateLastMonth = $this->calculateRate($openTotalLastMonth, $sentTotalLastMonth);
@@ -281,69 +297,41 @@ class AnalyticsService
      */
     public function getDomainConfirmationStatistics(int $limit = 50): array
     {
-        $domains = [];
-        $subscribers = $this->subscriberRepository->findAll();
+        $cacheKey = self::DOMAIN_CONFIRMATION_STATISTICS_CACHE_KEY  . '.' . $limit;
 
-        foreach ($subscribers as $subscriber) {
-            $domain = $this->extractDomain($subscriber->getEmail());
+        return $this->remember($cacheKey, fn () => $this->computeDomainConfirmationStatistics($limit));
+    }
 
-            if (!empty($domain)) {
-                if (!isset($domains[$domain])) {
-                    $domains[$domain] = [
-                        'confirmed' => 0,
-                        'unconfirmed' => 0,
-                        'blacklisted' => 0,
-                        'total' => 0,
-                    ];
-                }
+    private function computeDomainConfirmationStatistics(int $limit): array
+    {
+        $rows = $this->subscriberRepository->getDomainConfirmationStatistics($limit);
 
-                $domains[$domain]['total']++;
+        $result = array_map(function (array $row): array {
+            $total = (int) $row['total'];
+            $confirmed = (int) $row['confirmed'];
+            $unconfirmed = (int) $row['unconfirmed'];
+            $blacklisted = (int) $row['blacklisted'];
 
-                if ($subscriber->isBlacklisted()) {
-                    $domains[$domain]['blacklisted']++;
-                } elseif ($subscriber->isConfirmed()) {
-                    $domains[$domain]['confirmed']++;
-                } else {
-                    $domains[$domain]['unconfirmed']++;
-                }
-            }
-        }
-
-        uasort($domains, function ($domain1, $domain2) {
-            return $domain2['unconfirmed'] <=> $domain1['unconfirmed'];
-        });
-
-        $result = [];
-        $count = 0;
-        foreach ($domains as $domain => $stats) {
-            if ($count >= $limit) {
-                break;
-            }
-
-            $domainTotal = $stats['total'];
-
-            $result[] = [
-                'domain' => $domain,
+            return [
+                'domain' => $row['domain'],
                 'confirmed' => [
-                    'count' => $stats['confirmed'],
-                    'percentage' => $this->formatStat($stats['confirmed'], $domainTotal)
+                    'count' => $confirmed,
+                    'percentage' => $this->formatStat($confirmed, $total)
                 ],
                 'unconfirmed' => [
-                    'count' => $stats['unconfirmed'],
-                    'percentage' => $this->formatStat($stats['unconfirmed'], $domainTotal)
+                    'count' => $unconfirmed,
+                    'percentage' => $this->formatStat($unconfirmed, $total)
                 ],
                 'blacklisted' => [
-                    'count' => $stats['blacklisted'],
-                    'percentage' => $this->formatStat($stats['blacklisted'], $domainTotal)
+                    'count' => $blacklisted,
+                    'percentage' => $this->formatStat($blacklisted, $total)
                 ],
                 'total' => [
-                    'count' => $stats['total'],
-                    'percentage' => $this->formatStat($stats['total'], $domainTotal)
+                    'count' => $total,
+                    'percentage' => $this->formatStat($total, $total)
                 ],
             ];
-
-            $count++;
-        }
+        }, $rows);
 
         return [
             'domains' => $result,
@@ -351,17 +339,17 @@ class AnalyticsService
         ];
     }
 
-    private function extractDomain(string $email): ?string
+    private function remember(string $key, callable $compute): array
     {
-        $atPoint = strrchr($email, '@');
-
-        if ($atPoint === false) {
-            return null;
+        $cached = $this->cache->get($key);
+        if ($cached !== null) {
+            return $cached;
         }
 
-        $domain = substr($atPoint, 1);
+        $result = $compute();
+        $this->cache->set($key, $result, self::STATISTICS_TTL_SECONDS);
 
-        return $domain !== '' ? $domain : null;
+        return $result;
     }
 
     private function formatStat(int $count, int $total): int|float
@@ -384,43 +372,25 @@ class AnalyticsService
      */
     public function getTopLocalParts(int $limit = 25): array
     {
-        $localParts = [];
+        $cacheKey = self::TOP_LOCAL_PARTS_CACHE_KEY . '.' . $limit;
 
-        $subscribers = $this->subscriberRepository->findAll();
+        return $this->remember($cacheKey, fn () => $this->computeTopLocalParts($limit));
+    }
 
-        foreach ($subscribers as $subscriber) {
-            $email = $subscriber->getEmail();
-            $atPosition = strpos($email, '@');
+    private function computeTopLocalParts(int $limit): array
+    {
+        $rows = $this->subscriberRepository->getTopLocalParts($limit);
+        $totalSubscribers = $this->subscriberRepository->countWithValidEmail();
 
-            if ($atPosition !== false) {
-                $localPart = substr($email, 0, $atPosition);
+        $result = array_map(function (array $row) use ($totalSubscribers): array {
+            $count = (int) $row['count'];
 
-                if (!isset($localParts[$localPart])) {
-                    $localParts[$localPart] = 0;
-                }
-
-                $localParts[$localPart]++;
-            }
-        }
-
-        arsort($localParts);
-
-        $result = [];
-        $count = 0;
-        $totalSubscribers = array_sum($localParts);
-        foreach ($localParts as $localPart => $subscriberCount) {
-            if ($count >= $limit) {
-                break;
-            }
-
-            $result[] = [
-                'localPart' => $localPart,
-                'count' => $subscriberCount,
-                'percentage' => $this->formatStat($subscriberCount, $totalSubscribers),
+            return [
+                'localPart' => $row['localPart'],
+                'count' => $count,
+                'percentage' => $this->formatStat($count, $totalSubscribers),
             ];
-
-            $count++;
-        }
+        }, $rows);
 
         return [
             'localParts' => $result,
@@ -430,18 +400,26 @@ class AnalyticsService
 
     public function getCampaignPerformance(): array
     {
-        $performance = [];
+        return $this->remember(self::CAMPAIGN_PERFORMANCE_CACHE_KEY, fn () => $this->computeCampaignPerformance());
+    }
+
+    private function computeCampaignPerformance(): array
+    {
         $endDate = new DateTimeImmutable('today 23:59:59');
         $startDate = $endDate->sub(new DateInterval('P29D'))->modify('00:00:00');
 
+        $opensByDay = $this->userMessageViewManager->countViewsGroupedByDay($startDate, $endDate);
+        $clicksByDay = $this->linkTrackManager->countClicksGroupedByDay($startDate, $endDate);
+
+        $performance = [];
         for ($index = 0; $index < 30; $index++) {
-            $dayStart = $startDate->add(new DateInterval('P' . $index . 'D'));
-            $dayEnd = $dayStart->modify('23:59:59');
+            $day = $startDate->add(new DateInterval('P' . $index . 'D'));
+            $dateKey = $day->format('Y-m-d');
 
             $performance[] = [
-                'date' => $dayStart->format('Y-m-d'),
-                'opens' => $this->userMessageViewManager->countViewsBetween($dayStart, $dayEnd),
-                'clicks' => $this->linkTrackManager->countClicksBetween($dayStart, $dayEnd),
+                'date' => $dateKey,
+                'opens' => $opensByDay[$dateKey] ?? 0,
+                'clicks' => $clicksByDay[$dateKey] ?? 0,
             ];
         }
 
@@ -456,19 +434,26 @@ class AnalyticsService
      */
     public function getRecentCampaigns(int $limit = 5): array
     {
+        $cacheKey = self::RECENT_CAMPAIGNS_CACHE_KEY . '.' . $limit;
+
+        return $this->remember($cacheKey, fn () => $this->computeRecentCampaigns($limit));
+    }
+
+    private function computeRecentCampaigns(int $limit): array
+    {
         $messages = $this->messageRepository
             ->getFilteredAfterId((new MessageFilter())->setLastId(0)->setLimit($limit))
             ->getItems();
+
+        $messageIds = array_map(static fn ($message) => $message->getId(), $messages);
+        $viewCounts = $this->userMessageViewManager->countViewsByMessageIds($messageIds);
+        $uniqueClickCounts = $this->linkTrackManager->countUniqueClickersByMessageIds($messageIds);
+
         $recentCampaigns = [];
         foreach ($messages as $message) {
-            $views = $this->userMessageViewManager->countViewsByMessageId($message->getId());
-            $linkTracks = $this->linkTrackManager->getLinkTracksByMessageId($message->getId());
-
-            $uniqueClickers = [];
-            foreach ($linkTracks as $linkTrack) {
-                $uniqueClickers[$linkTrack->getUserId()] = true;
-            }
-            $uniqueClicks = count($uniqueClickers);
+            $id = $message->getId();
+            $views = $viewCounts[$id] ?? 0;
+            $uniqueClicks = $uniqueClickCounts[$id] ?? 0;
 
             $sentCount = $message->getMetadata()->getViews() + $message->getMetadata()->getBounceCount();
 

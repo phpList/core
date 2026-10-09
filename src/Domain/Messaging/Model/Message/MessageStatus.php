@@ -12,7 +12,6 @@ enum MessageStatus: string
     case InProcess = 'inprocess';
     case Sent = 'sent';
     case Suspended = 'suspended';
-    case Requeued = 'requeued';
 
     /**
      * Allowed transitions for each state
@@ -23,12 +22,10 @@ enum MessageStatus: string
     {
         return match ($this) {
             self::Draft => [self::Prepared, self::Submitted],
-            self::Suspended => [self::Submitted, self::Requeued],
+            self::Suspended, self::Sent => [self::Submitted],
             self::Submitted => [self::Prepared, self::InProcess, self::Suspended],
             self::Prepared => [self::InProcess, self::Suspended],
             self::InProcess => [self::Sent, self::Suspended, self::Submitted],
-            self::Requeued => [self::InProcess, self::Suspended],
-            self::Sent => [self::Requeued],
         };
     }
 

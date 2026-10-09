@@ -1,5 +1,8 @@
 # Domain Entities
 
+Table names below use the default `DATABASE_PREFIX` (`phplist_`, set in `.env`). The
+prefix is applied dynamically at runtime, so it can be changed per installation.
+
 ## Identity Context
 
 ### Administrator
@@ -13,11 +16,23 @@ Administrators are not subscribers. If administrators would like to subscribe
 to subscriber lists, they need to have a separate subscriber account.
 
 ### AdministratorAttribute
-Table name: `phplist_adminattribute` or `phplist_admin_attribute`
+Table name: `phplist_adminattribute`
 
-This is similar to a subscriber attribute: It allows you to have details of
-administrators. These can then be used in campaigns. Basically, you can add
-placeholders for administrator attributes in campaigns.
+This is similar to a subscriber attribute: It defines a field for
+administrators (name and ID only, not the value). These can then be used as
+placeholders in campaigns.
+
+### AdministratorAttributeValue
+Table name: `phplist_admin_attribute`
+
+The value of a particular **AdministratorAttribute** for a particular
+**administrator**.
+
+### AdministratorLogin
+Table name: `phplist_admin_login`
+
+A record of a single login session for an **administrator**: source IP
+address, session ID, and whether the session is still active.
 
 ### AdministratorPasswordRequest
 Table name: `phplist_admin_password_request`
@@ -31,15 +46,14 @@ This table contains the API tokens for **administrators**. Those API tokens are
 used for access to the REST API. In the web frontend, they are also used for
 CSRF protection.
 
-
-## SubscriptionContext
+## Subscription Context
 
 ### Attribute
 Table name: `phplist_user_attribute`
 
 An **attribute** is a field for subscribers. This entity does not
-contain the values for this attribute for each individual subscribe, but
-only the name of the attribute and an ID. 
+contain the values for this attribute for each individual subscriber, but
+only the name of the attribute and an ID.
 
 ### AttributeValue
 Table name: `phplist_user_user_attribute`
@@ -50,7 +64,7 @@ particular **subscriber**.
 ### SubscribePage
 Table name: `phplist_subscribepage`
 
-*subscribePages** allow setting up a selection of subscriber lists, attributes
+**SubscribePages** allow setting up a selection of subscriber lists, attributes
 and language, and some other settings to control the content for the page that
 can be used to subscribe to the system. As a result, you can e.g., have
 different pages per language, which allows you to translate all the content
@@ -97,8 +111,6 @@ multiple subscriber lists, and a campaign can be sent to multiple subscriber
 lists, but this association ensures that a subscriber always only receives
 one copy of a campaign, regardless of other associations.
 
-Should we use a named association for this? What should it be named?
-
 ### SuppressionList
 Table name: `phplist_user_blacklist`
 
@@ -113,9 +125,7 @@ Table name: `phplist_user_blacklist_data`
 
 This is some more additional info on a SuppressionList.
 
-
 ## Messaging Context
-
 
 ### Attachment
 Table name: `phplist_attachment`
@@ -123,10 +133,16 @@ Table name: `phplist_attachment`
 An attachment represents a file attached to exactly one **campaign**.
 
 ### Bounce
-Table name: `phplist_boune`
+Table name: `phplist_bounce`
+
+A recorded bounce message: the original bounce email's header and body, plus
+a classification status and comment.
 
 ### BounceRegEx
 Table name: `phplist_bounceregex`
+
+A regular expression used to classify **bounces** by matching their content,
+with an associated action (e.g. unsubscribe the subscriber).
 
 ### Campaign
 Table name: `phplist_message`
@@ -137,7 +153,9 @@ potentially multiple subscriber lists). The campaign has been created by an
 **subscribers**. It is stored to which subscribers a campaign has been sent.
 
 ### CampaignBounce
-Table name: `phplist_message_bounce`
+Table name: `phplist_user_message_bounce`
+
+Links a **bounce** to the **subscriber** and **campaign** it resulted from.
 
 ### CampaignData
 Table name: `phplist_messagedata`
@@ -147,7 +165,7 @@ Google tracking IDs, special relationships to **subscriber lists**, and alias
 titles.
 
 ### CampaignForward
-Table name: `phplist_message_forward`
+Table name: `phplist_user_message_forward`
 
 This tracks details of **campaigns** which were forwarded by a recipient
 **subscriber** to someone else via an email message.
@@ -169,7 +187,6 @@ content is inserted into, using special tags (AKA placeholders).
 Table name: `phplist_templateimage`
 
 This contains images used in **templates**. The blob contains the image.
-
 
 ## System Context
 
@@ -208,7 +225,6 @@ time they were updated),
 [the MD5 for that](https://phplist.com/files/tlds-alpha-by-domain.txt.md5),
 etc. etc.
 
-
 ## Tracking Context
 
 ### LinkTrackForward
@@ -228,7 +244,6 @@ Table name: `phplist_linktrack_uml_click`
 
 When a **subscriber** clicks on a link in a message, this click will be
 recorded here.
-
 
 ## Unused entities
 

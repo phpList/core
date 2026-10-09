@@ -7,7 +7,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Subscription\Service\Manager;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Subscription\Model\Dto\CreateSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
-use PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryRepository;
+use PhpList\Core\Domain\Subscription\Repository\Interfaces\SubscriberHistoryReaderInterface;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
@@ -33,7 +33,7 @@ class SubscriberManagerTest extends TestCase
             subscriberDeletionService: $subscriberDeletionService,
             translator: new Translator('en'),
             subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class),
-            subscriberHistoryRepository: $this->createMock(SubscriberHistoryRepository::class),
+            subscriberHistoryReader: $this->createMock(SubscriberHistoryReaderInterface::class),
         );
     }
 

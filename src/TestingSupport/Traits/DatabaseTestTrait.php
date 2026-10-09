@@ -96,34 +96,65 @@ trait DatabaseTestTrait
         try {
             $schemaTool->createSchema($metadata);
         } catch (ToolsException $e) {
-            $connection = $this->entityManager->getConnection();
-            $schemaManager = $connection->createSchemaManager();
+            $missing = $this->filterMissingTables($metadata);
 
-            foreach ($metadata as $classMetadata) {
-                $tableName = $classMetadata->getTableName();
-
-                if (!$schemaManager->tablesExist([$tableName])) {
-                    $schemaTool->createSchema([$classMetadata]);
-                }
+            if ($missing !== []) {
+                $schemaTool->createSchema($missing);
             }
         }
     }
 
     private function runForSqlite($metadata, $schemaTool): void
     {
-        $connection = $this->entityManager->getConnection();
-        $schemaManager = $connection->createSchemaManager();
+        $missing = $this->filterMissingTables($metadata);
 
-        foreach ($metadata as $classMetadata) {
-            $tableName = $classMetadata->getTableName();
-
-            if (!$schemaManager->tablesExist([$tableName])) {
-                try {
-                    $schemaTool->createSchema([$classMetadata]);
-                } catch (ToolsException $e) {
-                    echo $e->getMessage();
-                }
+        if ($missing !== []) {
+            try {
+                $schemaTool->createSchema($missing);
+            } catch (ToolsException $e) {
+                echo $e->getMessage();
             }
         }
+    }
+
+    /**
+     * Creating tables one class at a time (rather than in a single createSchema() call for all
+     * of them) would break foreign key ordering: a single-class createSchema() call emits that
+     * class's own ADD CONSTRAINT statements immediately, which fails if a table it references
+     * hasn't been (re)created yet. Passing the whole batch of missing classes to createSchema()
+     * lets Doctrine order all CREATE TABLE statements before any ADD CONSTRAINT statements.
+     */
+    private function filterMissingTables(array $metadata): array
+    {
+        return array_values(array_filter(
+            $metadata,
+            fn ($classMetadata) => !$this->tableExistsIgnoringSchemaFilter($classMetadata->getTableName())
+        ));
+    }
+
+    /**
+     * Doesn't use the DBAL schema manager's tablesExist() here: the 'default' connection has
+     * OnlyOrmTablesFilter registered as a doctrine.dbal.schema_filter, which hides tables mapped
+     * from bundles outside the project namespace (e.g. TatevikGr\RssFeedBundle's phplist_item_data),
+     * so tablesExist() would always report them as missing. Querying the platform's own table
+     * catalog directly bypasses that filter.
+     */
+    private function tableExistsIgnoringSchemaFilter(string $tableName): bool
+    {
+        $connection = $this->entityManager->getConnection();
+
+        if ($connection->getDatabasePlatform() instanceof SqlitePlatform) {
+            $count = $connection->fetchOne(
+                'SELECT COUNT(*) FROM sqlite_master WHERE type = ? AND name = ?',
+                ['table', $tableName]
+            );
+        } else {
+            $count = $connection->fetchOne(
+                'SELECT COUNT(*) FROM information_schema.tables WHERE table_name = ? AND table_schema = DATABASE()',
+                [$tableName]
+            );
+        }
+
+        return (int) $count > 0;
     }
 }

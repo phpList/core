@@ -6,7 +6,7 @@ namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Manager;
 
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
-use PhpList\Core\Bounce\Service\Manager\BounceManager;
+use PhpList\Core\Domain\Messaging\Service\Manager\BounceManager;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
 use PhpList\Core\Domain\Messaging\Repository\BounceRepository;
@@ -130,6 +130,11 @@ class BounceManagerTest extends TestCase
         $bounce->method('getId')->willReturn(77);
 
         $dt = new DateTimeImmutable('2024-05-01 12:34:56');
+
+        $this->userMessageBounceRepository->expects($this->once())
+            ->method('persist')
+            ->with($this->isInstanceOf(UserMessageBounce::class));
+
         $umb = $this->manager->linkUserMessageBounce($bounce, $dt, 123, 456);
 
         $this->assertSame(77, $umb->getBounceId());

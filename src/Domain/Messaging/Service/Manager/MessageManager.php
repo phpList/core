@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Manager;
 
+use DateTimeImmutable;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessageContext;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessageDtoInterface;
@@ -99,6 +100,12 @@ class MessageManager
     public function getMessagesByOwner(Administrator $owner): array
     {
         return $this->messageRepository->getByOwnerId($owner->getId());
+    }
+
+    /** @return Message[] */
+    public function getStuckCampaigns(DateTimeImmutable $staleBefore): array
+    {
+        return $this->messageRepository->getStuckInProcessing($staleBefore);
     }
 
     private function canBeSubmitted(Message $message): bool

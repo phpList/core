@@ -117,7 +117,6 @@ class TemplateImageManagerTest extends TestCase
 
         $result = $this->manager->extractAllImages($html);
 
-        $this->assertIsArray($result);
         $this->assertContains('image1.jpg', $result);
         $this->assertContains('https://example.com/image2.png', $result);
     }

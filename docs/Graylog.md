@@ -1,81 +1,50 @@
 # Graylog Integration
 
-This document explains how to use the Graylog integration in the phpList core application.
+phpList can send logs to [Graylog](https://graylog.org/) over GELF (Graylog Extended
+Log Format) using Monolog's `gelf` handler. The handler ships **disabled by default**
+in both environments.
 
-## Overview
+## Enabling it
 
-Graylog is a log management platform that collects, indexes, and analyzes log messages from various sources. The phpList core application is configured to send logs to Graylog using the GELF (Graylog Extended Log Format) protocol.
-
-## Configuration
-
-The Graylog integration is configured in the following files:
-
-- `config/config_prod.yml` - Production environment configuration
-- `config/config_dev.yml` - Development environment configuration
-
-### Default Configuration
-
-By default, the application is configured to:
-
-- In production: Send logs of level "error" and above to Graylog
-- In development: Send logs of all levels to Graylog
-
-The default configuration points to a placeholder Graylog server at `graylog.example.com:12201`. You need to update this to point to your actual Graylog server.
-
-### Updating the Graylog Server Details
-
-To update the Graylog server details, modify the following sections in the configuration files:
-
-In `config/config_prod.yml`:
+1. In `config/config_prod.yml`, uncomment the `graylog` handler under `monolog.handlers`.
+   It sends `error`-level and above logs, using the `graylog_host` and `graylog_port`
+   parameters from `config/parameters.yml` (defaults: `graylog.phplist.local:12201`).
+2. In `config/config_dev.yml`, uncomment the `graylog` handler to also log in
+   development. It sends every level except the `event` channel.
+3. Update `graylog_host` and `graylog_port` in `config/parameters.yml` to point at
+   your Graylog server.
 
 ```yaml
-graylog:
-    type: gelf
-    publisher:
-        hostname: graylog.example.com # Replace with your Graylog server hostname
-        port: 12201 # Default GELF UDP port
-    level: error # Only send errors and above to Graylog
+# config/parameters.yml
+parameters:
+    graylog_host: 'graylog.example.com'
+    graylog_port: 12201
 ```
 
-In `config/config_dev.yml`:
+## Graylog server setup
 
-```yaml
-graylog:
-    type: gelf
-    publisher:
-        hostname: graylog.example.com # Replace with your Graylog server hostname
-        port: 12201 # Default GELF UDP port
-    level: debug # Send all logs to Graylog in development
-    channels: ['!event']
-```
+Your Graylog server needs a GELF UDP input to receive these logs:
 
-Replace `graylog.example.com` with the hostname or IP address of your Graylog server, and update the port if necessary.
-
-## Graylog Server Setup
-
-To receive logs from the application, your Graylog server needs to be configured with a GELF UDP input:
-
-1. In the Graylog web interface, go to System > Inputs
-2. Select "GELF UDP" from the dropdown and click "Launch new input"
-3. Configure the input with the following settings:
+1. In the Graylog web interface, go to System > Inputs.
+2. Select "GELF UDP" and click "Launch new input".
+3. Configure it with:
    - Title: phpList Core
-   - Bind address: 0.0.0.0 (to listen on all interfaces)
-   - Port: 12201 (or the port you specified in the configuration)
-4. Click "Save"
+   - Bind address: `0.0.0.0` (listen on all interfaces)
+   - Port: `12201` (or whatever you set as `graylog_port`)
+4. Click "Save".
 
-## Testing the Integration
+## Testing the integration
 
-To test if logs are being sent to Graylog:
-
-1. Generate some log messages in the application (e.g., by triggering an error)
-2. Check the Graylog web interface to see if the logs are being received
-3. If logs are not appearing, check the application logs for any errors related to the Graylog connection
+1. Trigger a log message in the application (e.g. an error).
+2. Check the Graylog web interface for the message.
+3. If nothing shows up, see Troubleshooting below.
 
 ## Troubleshooting
 
-If logs are not appearing in Graylog:
+If logs aren't appearing in Graylog:
 
-1. Verify that the Graylog server is running and accessible from the application server
-2. Check that the GELF UDP input is properly configured and running in Graylog
-3. Ensure that there are no firewall rules blocking UDP traffic on port 12201 (or your configured port)
-4. Check the application logs for any errors related to the Graylog connection
+1. Confirm the `graylog` handler is uncommented in the config for the environment
+   you're testing.
+2. Verify the Graylog server is running and reachable from the application server.
+3. Check that the GELF UDP input is running and bound to the port you configured.
+4. Check for firewall rules blocking UDP traffic on that port.

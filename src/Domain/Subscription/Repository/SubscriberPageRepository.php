@@ -53,7 +53,7 @@ class SubscriberPageRepository extends AbstractRepository implements Paginatable
             ->leftJoin(
                 SubscribePageData::class,
                 'd',
-                'ON',
+                'WITH',
                 'd.id = p.id'
             )
             ->andWhere('p.id > :afterId')
@@ -65,12 +65,12 @@ class SubscriberPageRepository extends AbstractRepository implements Paginatable
 
         $grouped = [];
         foreach ($rows as $row) {
-            /** @var SubscribePage $page */
-            $page = $row['page'] ?? null;
+            $page = $row['page'];
             $data = $row['data'] ?? null;
-            if ($page !== null) {
-                $grouped[$page->getId()][] = $row;
+            if (!$page instanceof SubscribePage) {
+                continue;
             }
+            $grouped[$page->getId()][] = $row;
             if ($data !== null) {
                 $grouped[$data->getId()][] = ['data' => $data];
             }
@@ -82,7 +82,7 @@ class SubscriberPageRepository extends AbstractRepository implements Paginatable
         }
 
         return new PaginatedResult(
-            items: array_values($pages),
+            items: $pages,
             total: $total,
             limit: $filter->getLimit(),
             lastId: $filter->getLastId(),

@@ -5,19 +5,97 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Repository;
 
 use DateTimeInterface;
+use InvalidArgumentException;
+use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
+use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\CursorPaginationTrait;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
+use PhpList\Core\Domain\Messaging\Model\Filter\UserMessageBounceFilter;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
+use PhpList\Core\Domain\Messaging\Repository\Interfaces\UserMessageBounceReaderInterface;
+use PhpList\Core\Domain\Messaging\Repository\Interfaces\UserMessageBounceReportReaderInterface;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\Subscription;
 
-class UserMessageBounceRepository extends AbstractRepository implements PaginatableRepositoryInterface
+class UserMessageBounceRepository extends AbstractRepository implements
+    PaginatableRepositoryInterface,
+    UserMessageBounceReaderInterface,
+    UserMessageBounceReportReaderInterface
 {
     use CursorPaginationTrait;
+
+    /**
+     * @return PaginatedResult<UserMessageBounce>
+     * @throws InvalidArgumentException
+     */
+    public function getFilteredAfterId(FilterRequestInterface $filter): PaginatedResult
+    {
+        if (!$filter instanceof UserMessageBounceFilter) {
+            throw new InvalidArgumentException('Expected UserMessageBounceFilter.');
+        }
+
+        $lastId = $filter->getLastId();
+        $limit = $filter->getLimit();
+        $queryBuilder = $this->createQueryBuilder('umb');
+
+        if ($filter->getUserId() !== null) {
+            $queryBuilder->andWhere('umb.userId = :userId')
+                ->setParameter('userId', $filter->getUserId());
+        }
+
+        if ($filter->getMessageId() !== null) {
+            $queryBuilder->andWhere('umb.messageId = :messageId')
+                ->setParameter('messageId', $filter->getMessageId());
+        }
+
+        if ($filter->getBounceId() !== null) {
+            $queryBuilder->andWhere('umb.bounceId = :bounceId')
+                ->setParameter('bounceId', $filter->getBounceId());
+        }
+
+        if ($filter->getDateFrom() !== null) {
+            $queryBuilder->andWhere('umb.createdAt >= :dateFrom')
+                ->setParameter('dateFrom', $filter->getDateFrom());
+        }
+
+        $countQb = clone $queryBuilder;
+        $total = (int) $countQb
+            ->select('COUNT(DISTINCT umb.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        /** @var list<UserMessageBounce> $items */
+        $items = $queryBuilder
+            ->andWhere('umb.id > :lastId')
+            ->setParameter('lastId', $lastId)
+            ->orderBy('umb.id', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return new PaginatedResult(
+            items: $items,
+            total: $total,
+            limit: $limit,
+            lastId: $items !== [] ? $items[array_key_last($items)]->getId() : $lastId,
+        );
+    }
+
+    /** @return UserMessageBounce[] */
+    public function getByUserId(int $userId): array
+    {
+        return $this->createQueryBuilder('umb')
+            ->andWhere('umb.userId = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('umb.id', 'DESC')
+            ->setMaxResults(UserMessageBounce::MAX_RESULTS_BY_USER)
+            ->getQuery()
+            ->getResult();
+    }
 
     public function getCountByMessageId(int $messageId): int
     {
@@ -27,6 +105,31 @@ class UserMessageBounceRepository extends AbstractRepository implements Paginata
             ->setParameter('messageId', $messageId)
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * @param int[] $messageIds
+     * @return array<int,int> bounce counts keyed by message id
+     */
+    public function getCountByMessageIds(array $messageIds): array
+    {
+        if (empty($messageIds)) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('umb')
+            ->select('umb.messageId AS messageId, COUNT(umb.id) AS cnt')
+            ->where('umb.messageId IN (:ids)')
+            ->setParameter('ids', $messageIds)
+            ->groupBy('umb.messageId')
+            ->getQuery()
+            ->getResult();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[(int) $row['messageId']] = (int) $row['cnt'];
+        }
+        return $result;
     }
 
     /**
@@ -188,7 +291,7 @@ class UserMessageBounceRepository extends AbstractRepository implements Paginata
             ->andWhere('um.status = :status')
             ->setParameter('userId', $subscriber->getId())
             ->setParameter('status', 'sent')
-            ->orderBy('um.entered', 'DESC')
+            ->orderBy('um.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
     }

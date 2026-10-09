@@ -39,14 +39,13 @@ class SubscriberProviderTest extends TestCase
 
         $this->subscriberRepository
             ->expects($this->never())
-            ->method('getSubscribersBySubscribedListId');
+            ->method('getSendableSubscribersBySubscribedListId');
 
         $result = $this->subscriberProvider->getSubscribersForMessageOrLists(
             $this->createMock(CampaignProcessorMessageInterface::class),
             $message,
         );
 
-        $this->assertIsArray($result);
         $this->assertEmpty($result);
     }
 
@@ -61,7 +60,7 @@ class SubscriberProviderTest extends TestCase
 
         $this->subscriberRepository
             ->expects($this->once())
-            ->method('getSubscribersBySubscribedListId')
+            ->method('getSendableSubscribersBySubscribedListId')
             ->with(456)
             ->willReturn([]);
 
@@ -69,7 +68,6 @@ class SubscriberProviderTest extends TestCase
             $this->createMock(CampaignProcessorMessageInterface::class),
             $message,
         );
-        $this->assertIsArray($result);
         $this->assertEmpty($result);
     }
 
@@ -89,7 +87,7 @@ class SubscriberProviderTest extends TestCase
 
         $this->subscriberRepository
             ->expects($this->once())
-            ->method('getSubscribersBySubscribedListId')
+            ->method('getSendableSubscribersBySubscribedListId')
             ->with(456)
             ->willReturn([$subscriber1, $subscriber2]);
 
@@ -97,7 +95,6 @@ class SubscriberProviderTest extends TestCase
             new CampaignProcessorMessage(1),
             $message,
         );
-        $this->assertIsArray($result);
         $this->assertCount(2, $result);
         $this->assertSame($subscriber1, $result[0]);
         $this->assertSame($subscriber2, $result[1]);
@@ -121,7 +118,7 @@ class SubscriberProviderTest extends TestCase
 
         $this->subscriberRepository
             ->expects($this->exactly(2))
-            ->method('getSubscribersBySubscribedListId')
+            ->method('getSendableSubscribersBySubscribedListId')
             ->willReturnMap([
                 [456, [$subscriber1, $subscriber2]],
                 [789, [$subscriber2, $subscriber3]],
@@ -131,11 +128,45 @@ class SubscriberProviderTest extends TestCase
             $this->createMock(CampaignProcessorMessageInterface::class),
             $message,
         );
-        $this->assertIsArray($result);
         $this->assertCount(3, $result);
 
         $this->assertContains($subscriber1, $result);
         $this->assertContains($subscriber2, $result);
         $this->assertContains($subscriber3, $result);
+    }
+
+    public function testGetSubscribersForMessageExcludesSubscribersOnExcludeLists(): void
+    {
+        $message = $this->createMock(Message::class);
+        $message->method('getId')->willReturn(123);
+
+        $this->subscriberListRepository
+            ->method('getListIdsByMessage')
+            ->willReturn([456]);
+
+        $subscriber1 = $this->createMock(Subscriber::class);
+        $subscriber1->method('getEmail')->willReturn('keep@example.am');
+        $subscriber2 = $this->createMock(Subscriber::class);
+        $subscriber2->method('getEmail')->willReturn('exclude@example.am');
+
+        $this->subscriberRepository
+            ->method('getSendableSubscribersBySubscribedListId')
+            ->with(456)
+            ->willReturn([$subscriber1, $subscriber2]);
+
+        $this->subscriberRepository
+            ->expects($this->once())
+            ->method('getSubscribersBySubscribedListIds')
+            ->with([789])
+            ->willReturn([$subscriber2]);
+
+        $result = $this->subscriberProvider->getSubscribersForMessageOrLists(
+            $this->createMock(CampaignProcessorMessageInterface::class),
+            $message,
+            [789],
+        );
+
+        $this->assertCount(1, $result);
+        $this->assertSame($subscriber1, $result[0]);
     }
 }

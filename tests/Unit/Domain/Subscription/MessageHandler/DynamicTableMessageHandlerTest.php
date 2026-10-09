@@ -7,6 +7,8 @@ namespace PhpList\Core\Tests\Unit\Domain\Subscription\MessageHandler;
 use Doctrine\DBAL\Exception\TableExistsException;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
+use Doctrine\DBAL\Types\IntegerType;
+use Doctrine\DBAL\Types\StringType;
 use InvalidArgumentException;
 use PhpList\Core\Domain\Subscription\Message\DynamicTableMessage;
 use PhpList\Core\Domain\Subscription\MessageHandler\DynamicTableMessageHandler;
@@ -49,19 +51,19 @@ class DynamicTableMessageHandlerTest extends TestCase
 
                 // id column
                 $idCol = $table->getColumn('id');
-                $this->assertSame('integer', $idCol->getType()->getName());
+                $this->assertInstanceOf(IntegerType::class, $idCol->getType());
                 $this->assertTrue($idCol->getAutoincrement());
                 $this->assertTrue($idCol->getNotnull());
 
                 // name column
                 $nameCol = $table->getColumn('name');
-                $this->assertSame('string', $nameCol->getType()->getName());
+                $this->assertInstanceOf(StringType::class, $nameCol->getType());
                 $this->assertSame(255, $nameCol->getLength());
                 $this->assertFalse($nameCol->getNotnull());
 
                 // listorder column
                 $orderCol = $table->getColumn('listorder');
-                $this->assertSame('integer', $orderCol->getType()->getName());
+                $this->assertInstanceOf(IntegerType::class, $orderCol->getType());
                 $this->assertFalse($orderCol->getNotnull());
                 $this->assertSame(0, $orderCol->getDefault());
 
@@ -104,8 +106,6 @@ class DynamicTableMessageHandlerTest extends TestCase
 
         $handler = new DynamicTableMessageHandler($this->schemaManager);
         $handler($message);
-        // reached without creating a table
-        $this->assertTrue(true);
     }
 
     public function testInvokeThrowsForInvalidTableName(): void
@@ -125,7 +125,6 @@ class DynamicTableMessageHandlerTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid list table name: ' . $invalidName);
         $handler($message);
-        $this->assertTrue(true);
     }
 
     public function testInvokeSwallowsTableExistsRace(): void
@@ -151,6 +150,5 @@ class DynamicTableMessageHandlerTest extends TestCase
 
         // Should not throw despite the TableExistsException
         $handler($message);
-        $this->assertTrue(true);
     }
 }

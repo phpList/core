@@ -17,7 +17,7 @@ class MessageOptionsBuilder
         }
 
         return new MessageOptions(
-            fromField: $dto->fromField ?? '',
+            fromField: $dto->fromField,
             toField: $dto->toField ?? '',
             replyTo: $dto->replyTo ?? '',
             userSelection: $dto->userSelection,

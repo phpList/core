@@ -99,7 +99,7 @@ class BounceRuleManager
         $this->repository->save($rule);
     }
 
-    public function linkRuleToBounce(BounceRegex $rule, Bounce $bounce): BounceregexBounce
+    public function linkRuleToBounce(BounceRegex $rule, Bounce $bounce): BounceRegexBounce
     {
         $relation = new BounceRegexBounce($rule->getId(), $bounce->getId());
         $this->bounceRelationRepository->save($relation);

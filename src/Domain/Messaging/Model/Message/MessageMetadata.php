@@ -131,7 +131,6 @@ class MessageMetadata implements EmbeddableInterface
         return $this;
     }
 
-    // todo: set sent to the time when it was sent
     public function setSent(?DateTime $sent): self
     {
         $this->sent = $sent;
