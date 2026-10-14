@@ -66,7 +66,7 @@ class AdministratorManagerTest extends TestCase
             ->willReturn('new_hash');
 
         $manager = new AdministratorManager($entityManager, $hashGenerator);
-        $manager->updateAdministrator($admin, $dto);
+        $manager->updateAdministrator($admin, $dto, $admin);
 
         $this->assertEquals('new', $admin->getLoginName());
         $this->assertEquals('new@example.com', $admin->getEmail());

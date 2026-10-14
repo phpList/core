@@ -129,9 +129,28 @@ class ApplicationKernel extends Kernel
             $loader->load($twigConfigFile);
         }
 
-        $messengerConfigFile = $this->getApplicationDir() . '/config/packages/messenger.yaml';
-        if (file_exists($messengerConfigFile)) {
-            $loader->load($messengerConfigFile);
+        $this->loadMessengerConfiguration($loader);
+    }
+
+    /**
+     * Loads the core-provided Messenger configuration (the shared transport and routing definitions),
+     * and additionally applies the application's own packages/messenger.yaml if it provides one, so an
+     * application can override or extend the defaults without having to duplicate them.
+     *
+     * @param LoaderInterface $loader
+     *
+     * @return void
+     */
+    private function loadMessengerConfiguration(LoaderInterface $loader): void
+    {
+        $coreMessengerConfigFile = $this->getRootDir() . '/config/packages/messenger.yaml';
+        if (file_exists($coreMessengerConfigFile)) {
+            $loader->load($coreMessengerConfigFile);
+        }
+
+        $appMessengerConfigFile = $this->getApplicationDir() . '/config/packages/messenger.yaml';
+        if ($appMessengerConfigFile !== $coreMessengerConfigFile && file_exists($appMessengerConfigFile)) {
+            $loader->load($appMessengerConfigFile);
         }
     }
 
