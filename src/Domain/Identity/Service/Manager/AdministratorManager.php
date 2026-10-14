@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Identity\Model\Dto\CreateAdministratorDto;
 use PhpList\Core\Domain\Identity\Model\Dto\UpdateAdministratorDto;
-use PhpList\Core\Security\HashGenerator;
+use PhpList\Core\Domain\Identity\Service\HashGenerator;
 
 class AdministratorManager
 {
@@ -36,8 +36,11 @@ class AdministratorManager
         return $administrator;
     }
 
-    public function updateAdministrator(Administrator $administrator, UpdateAdministratorDto $dto): void
-    {
+    public function updateAdministrator(
+        Administrator $administrator,
+        UpdateAdministratorDto $dto,
+        Administrator $updatedBy,
+    ): void {
         if ($dto->loginName !== null) {
             $administrator->setLoginName($dto->loginName);
         }
@@ -52,6 +55,7 @@ class AdministratorManager
             $administrator->setPasswordHash($hashedPassword);
         }
         $administrator->setPrivilegesFromArray($dto->privileges);
+        $administrator->setModifiedBy($updatedBy->getLoginName());
     }
 
     public function deleteAdministrator(Administrator $administrator): void

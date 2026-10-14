@@ -12,7 +12,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 use PhpList\Core\Domain\Configuration\Repository\EventLogRepository;
 
 #[ORM\Entity(repositoryClass: EventLogRepository::class)]
-#[ORM\Table(name: 'phplist_eventlog')]
+#[ORM\Table(name: 'eventlog')]
 #[ORM\Index(name: 'phplist_eventlog_enteredidx', columns: ['entered'])]
 #[ORM\Index(name: 'phplist_eventlog_pageidx', columns: ['page'])]
 #[ORM\HasLifecycleCallbacks]

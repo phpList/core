@@ -12,7 +12,7 @@ use PhpList\Core\Domain\Subscription\Model\Dto\DynamicListAttrDto;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 
 #[ORM\Entity(repositoryClass: SubscriberAttributeDefinitionRepository::class)]
-#[ORM\Table(name: 'phplist_user_attribute')]
+#[ORM\Table(name: 'user_attribute')]
 #[ORM\Index(name: 'phplist_user_attribute_idnameindex', columns: ['id', 'name'])]
 #[ORM\Index(name: 'phplist_user_attribute_nameindex', columns: ['name'])]
 class SubscriberAttributeDefinition implements DomainModel, Identity
