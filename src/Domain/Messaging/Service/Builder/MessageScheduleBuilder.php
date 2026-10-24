@@ -19,10 +19,10 @@ class MessageScheduleBuilder
 
         return new MessageSchedule(
             repeatInterval: $dto->repeatInterval,
-            repeatUntil: new DateTime($dto->repeatUntil),
+            repeatUntil: $dto->repeatUntil ? new DateTime($dto->repeatUntil) : null,
             requeueInterval: $dto->requeueInterval,
-            requeueUntil: new DateTime($dto->requeueUntil),
-            embargo: new DateTime($dto->embargo)
+            requeueUntil: $dto->requeueUntil ? new DateTime($dto->requeueUntil) : null,
+            embargo: $dto->embargo ? new DateTime($dto->embargo) : null
         );
     }
 }

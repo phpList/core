@@ -9,7 +9,7 @@ use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Identity\Model\Dto\CreateAdministratorDto;
 use PhpList\Core\Domain\Identity\Model\Dto\UpdateAdministratorDto;
 use PhpList\Core\Domain\Identity\Service\Manager\AdministratorManager;
-use PhpList\Core\Security\HashGenerator;
+use PhpList\Core\Domain\Identity\Service\HashGenerator;
 use PHPUnit\Framework\TestCase;
 
 class AdministratorManagerTest extends TestCase
@@ -66,7 +66,7 @@ class AdministratorManagerTest extends TestCase
             ->willReturn('new_hash');
 
         $manager = new AdministratorManager($entityManager, $hashGenerator);
-        $manager->updateAdministrator($admin, $dto);
+        $manager->updateAdministrator($admin, $dto, $admin);
 
         $this->assertEquals('new', $admin->getLoginName());
         $this->assertEquals('new@example.com', $admin->getEmail());
@@ -85,7 +85,5 @@ class AdministratorManagerTest extends TestCase
 
         $manager = new AdministratorManager($entityManager, $hashGenerator);
         $manager->deleteAdministrator($admin);
-
-        $this->assertTrue(true);
     }
 }

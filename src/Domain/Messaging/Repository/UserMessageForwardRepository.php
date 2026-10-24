@@ -43,4 +43,29 @@ class UserMessageForwardRepository extends AbstractRepository implements Paginat
     {
         return $this->findOneBy(['forward' => $email, 'messageId' => $messageId]);
     }
+
+    /**
+     * @param int[] $messageIds
+     * @return array<int,int> forward counts keyed by message id
+     */
+    public function getCountByMessageIds(array $messageIds): array
+    {
+        if (empty($messageIds)) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('umf')
+            ->select('umf.messageId AS messageId, COUNT(umf.id) AS cnt')
+            ->where('umf.messageId IN (:ids)')
+            ->setParameter('ids', $messageIds)
+            ->groupBy('umf.messageId')
+            ->getQuery()
+            ->getResult();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[(int) $row['messageId']] = (int) $row['cnt'];
+        }
+        return $result;
+    }
 }

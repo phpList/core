@@ -130,7 +130,7 @@ class ForwardEmailBuilderTest extends TestCase
         $this->templateImageEmbedder
             ->expects(self::once())
             ->method('__invoke')
-            ->with(html: '<p>HTML</p>', messageId: 99)
+            ->with('<p>HTML</p>', 99)
             ->willReturn('<p>HTML</p>');
 
         $this->attachmentAdder

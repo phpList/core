@@ -10,39 +10,40 @@ use PhpList\Core\Domain\Common\SystemInfoCollector;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Subscription\Model\Dto\ChangeSetDto;
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberHistoryFilter;
+use PhpList\Core\Domain\Subscription\Model\Interfaces\SubscriberHistoryRecordInterface;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberHistory;
-use PhpList\Core\Domain\Subscription\Repository\SubscriberHistoryRepository;
+use PhpList\Core\Domain\Subscription\Repository\Interfaces\SubscriberHistoryReaderInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SubscriberHistoryManager
 {
-    private SubscriberHistoryRepository $repository;
+    private SubscriberHistoryReaderInterface $reader;
     private ClientIpResolver $clientIpResolver;
     private SystemInfoCollector $systemInfoCollector;
     private TranslatorInterface $translator;
     private EntityManagerInterface $entityManager;
 
     public function __construct(
-        SubscriberHistoryRepository $repository,
+        SubscriberHistoryReaderInterface $reader,
         ClientIpResolver $clientIpResolver,
         SystemInfoCollector $systemInfoCollector,
         TranslatorInterface $translator,
         EntityManagerInterface $entityManager,
     ) {
-        $this->repository = $repository;
+        $this->reader = $reader;
         $this->clientIpResolver = $clientIpResolver;
         $this->systemInfoCollector = $systemInfoCollector;
         $this->translator = $translator;
         $this->entityManager = $entityManager;
     }
 
-    /** @return SubscriberHistory[] */
+    /** @return SubscriberHistoryRecordInterface[] */
     public function getHistory(int $lastId, int $limit, SubscriberHistoryFilter $filter): array
     {
         $filter->setLastId($lastId)->setLimit($limit);
 
-        return $this->repository->getFilteredAfterId($filter)->getItems();
+        return $this->reader->getFilteredAfterId($filter)->getItems();
     }
 
     public function addHistory(Subscriber $subscriber, string $message, ?string $details = null): SubscriberHistory

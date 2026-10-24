@@ -7,8 +7,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 - Graylog integration for centralized logging (#TBD)
+- `symfony/dotenv` support: configuration values are now read from a `.env` file (generated from `.env.dist` on install/update), in addition to real environment variables (#TBD)
 
 ### Changed
+- `config/parameters.yml.dist` no longer contains inline `env(VAR): default` fallbacks; defaults now live in `.env.dist` (#TBD)
 
 ### Deprecated
 

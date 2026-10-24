@@ -6,12 +6,11 @@ namespace PhpList\Core\Migrations;
 
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\Migrations\AbstractMigration;
 
 /**
  * Manual Migration
  */
-final class Version20251028092901MySqlInit extends AbstractMigration
+final class Version20251028092901MySqlInit extends AbstractPrefixedMigration
 {
     public function getDescription(): string
     {

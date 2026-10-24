@@ -64,10 +64,10 @@ You can test the email functionality using the built-in command:
 
 ```bash
 # Queue an email for asynchronous sending
-bin/console app:send-test-email recipient@example.com
+bin/console phplist:test-email recipient@example.com
 
 # Send an email synchronously (immediately)
-bin/console app:send-test-email recipient@example.com --sync
+bin/console phplist:test-email recipient@example.com --sync
 ```
 
 ## Processing the Email Queue
@@ -90,7 +90,13 @@ bin/console messenger:stats
 
 # View failed messages
 bin/console messenger:failed:show
+
+# Retry a failed message
+bin/console messenger:failed:retry <id>
 ```
+
+Failed messages are routed to the `failed` transport (a separate queue in the
+same Doctrine table), configured in `config/packages/messenger.yaml`.
 
 ## Troubleshooting
 

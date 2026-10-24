@@ -12,7 +12,7 @@ use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberPageRepository;
 
 #[ORM\Entity(repositoryClass: SubscriberPageRepository::class)]
-#[ORM\Table(name: 'phplist_subscribepage')]
+#[ORM\Table(name: 'subscribepage')]
 class SubscribePage implements DomainModel, Identity, OwnableInterface
 {
     #[ORM\Id]

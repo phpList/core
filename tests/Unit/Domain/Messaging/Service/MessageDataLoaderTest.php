@@ -135,4 +135,48 @@ class MessageDataLoaderTest extends TestCase
         $this->assertGreaterThanOrEqual($expectedMin, $fsTimestamp);
         $this->assertLessThanOrEqual($expectedMax, $fsTimestamp);
     }
+
+    /**
+     * @dataProvider fromFieldProvider
+     */
+    public function testParsesFromFieldIntoNameAndEmail(string $fromField, string $name, string $email): void
+    {
+        $this->config->method('getValue')->willReturnMap([
+            [ConfigOption::MessageFromAddress, 'default@example.com'],
+        ]);
+
+        $this->messageRepository
+            ->method('getNonEmptyFields')
+            ->willReturn(['fromfield' => $fromField]);
+        $this->messageDataRepository->method('getForMessage')->willReturn([]);
+
+        $message = $this->createMock(Message::class);
+        $message->method('getId')->willReturn(10);
+        $message->method('getListMessages')->willReturn(new ArrayCollection());
+
+        $loader = new MessageDataLoader(
+            configProvider: $this->config,
+            messageDataRepository: $this->messageDataRepository,
+            messageRepository: $this->messageRepository,
+            logger: $this->createMock(LoggerInterface::class),
+            defaultMessageAge: 3600
+        );
+
+        $result = ($loader)($message);
+
+        $this->assertSame($name, $result['fromname']);
+        $this->assertSame($email, $result['fromemail']);
+    }
+
+    public static function fromFieldProvider(): array
+    {
+        return [
+            'plain email' => ['bryan@imark-pen.com', 'bryan@imark-pen.com', 'bryan@imark-pen.com'],
+            'name and email' => ['Bryan Irby bryan@imark-pen.com', 'Bryan Irby', 'bryan@imark-pen.com'],
+            'name and bracketed email' => ['Bryan Irby <bryan@imark-pen.com>', 'Bryan Irby', 'bryan@imark-pen.com'],
+            'quoted name' => ['"Bryan Irby" <bryan@imark-pen.com>', 'Bryan Irby', 'bryan@imark-pen.com'],
+            'leading space' => [' My Name <my@email.com>', 'My Name', 'my@email.com'],
+            'name only' => ['Bryan Irby', 'Bryan Irby', 'default@example.com'],
+        ];
+    }
 }

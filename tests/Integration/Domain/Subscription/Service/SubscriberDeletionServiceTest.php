@@ -115,7 +115,6 @@ class SubscriberDeletionServiceTest extends KernelTestCase
         try {
             $this->subscriberDeletionService->deleteLeavingBlacklist($subscriber);
             $this->entityManager->flush();
-            $this->assertTrue(true, 'No exception was thrown');
         } catch (Exception $e) {
             $this->fail('Exception was thrown: ' . $e->getMessage());
         }

@@ -39,6 +39,7 @@ class MessageDataLoader
         $this->normaliseScheduleFields($messageData);
         $this->populateTargetLists($messageData, $message);
         $this->ensureSendUrlAndMethod($messageData);
+        // todo: check how should $message->getOptions()->getFromField() be used here
         $this->normaliseFromField($messageData, $defaultFrom);
         $this->cleanupSelections($messageData);
         $this->deriveCampaignTitle($messageData);
@@ -94,6 +95,7 @@ class MessageDataLoader
                 value: $this->configProvider->getValue(ConfigOption::AlwaysAddGoogleTracking),
                 filter: FILTER_VALIDATE_BOOL
             ),
+            // todo: check where this is set
             'excludelist' => [],
             'sentastest' => '0',
         ];

@@ -9,7 +9,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Messaging\Repository\BounceRegexBounceRepository;
 
 #[ORM\Entity(repositoryClass: BounceRegexBounceRepository::class)]
-#[ORM\Table(name: 'phplist_bounceregex_bounce')]
+#[ORM\Table(name: 'bounceregex_bounce')]
 class BounceRegexBounce implements DomainModel
 {
     #[ORM\Id]
