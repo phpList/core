@@ -49,6 +49,12 @@ class FileHelper
             return null;
         }
 
+        if (dirname((string) realpath($tempFile)) !== realpath($directory)) {
+            unlink($tempFile);
+
+            return null;
+        }
+
         $fullPath = $directory . '/' . basename($tempFile);
         if ($ext !== '') {
             $fullPath .= '.' . $ext;
