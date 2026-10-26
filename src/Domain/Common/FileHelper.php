@@ -33,31 +33,37 @@ class FileHelper
         }
     }
 
-    // todo: check - Handle temp-file rename and write failures.
-    // Appending an extension leaves the original temp file orphaned, and fopen/fwrite failures aren’t
-    // checked (so the method can return a path that wasn’t actually written)
     public function writeFileToDirectory(string $directory, string $originalFilename, string $contents): ?string
     {
+        // tempnam() silently falls back to the system temp dir when the directory is unusable
+        if (!is_dir($directory) || !is_writable($directory)) {
+            return null;
+        }
+
         $pathInfo = pathinfo($originalFilename);
         $name = $pathInfo['filename'] === '' ? 'file' : $pathInfo['filename'];
         $ext = $pathInfo['extension'] ?? '';
 
-        $newFile = tempnam($directory, $name);
-        if ($newFile === false) {
+        $tempFile = tempnam($directory, $name);
+        if ($tempFile === false) {
             return null;
         }
 
+        $fullPath = $directory . '/' . basename($tempFile);
         if ($ext !== '') {
-            $newFile .= '.' . $ext;
+            $fullPath .= '.' . $ext;
+            if (!rename($tempFile, $fullPath)) {
+                unlink($tempFile);
+
+                return null;
+            }
         }
-        $relativeName = basename($newFile);
 
-        $fullPath = $directory . '/' . $relativeName;
+        if (file_put_contents($fullPath, $contents) !== strlen($contents)) {
+            unlink($fullPath);
 
-        $fileHandle = fopen($fullPath, 'w');
-
-        fwrite($fileHandle, $contents);
-        fclose($fileHandle);
+            return null;
+        }
 
         return $fullPath;
     }

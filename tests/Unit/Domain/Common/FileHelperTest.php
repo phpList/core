@@ -74,6 +74,23 @@ class FileHelperTest extends TestCase
         $this->assertSame('payload', file_get_contents($writtenPath));
     }
 
+    public function testWriteFileToDirectoryLeavesNoOrphanedTempFile(): void
+    {
+        $helper = new FileHelper();
+
+        $writtenPath = $helper->writeFileToDirectory($this->tmpDir, 'report.txt', 'payload');
+
+        $this->assertSame([$writtenPath], glob($this->tmpDir . '/*'));
+    }
+
+    public function testWriteFileToDirectoryReturnsNullWhenDirectoryIsMissing(): void
+    {
+        $helper = new FileHelper();
+
+        $this->assertNull($helper->writeFileToDirectory($this->tmpDir . '/missing', 'report.txt', 'payload'));
+        $this->assertSame([], glob($this->tmpDir . '/*'));
+    }
+
     public function testWriteFileToDirectoryUsesDefaultNameWhenMissing(): void
     {
         $helper = new FileHelper();
