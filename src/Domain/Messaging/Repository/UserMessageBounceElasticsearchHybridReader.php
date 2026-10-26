@@ -5,17 +5,15 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Repository;
 
 use DateTime;
-use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Domain\Messaging\Model\Bounce;
 use PhpList\Core\Domain\Messaging\Model\Interfaces\UserMessageBounceRecordInterface;
-use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\ReadModel\UserMessageBounceReadModel;
 use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Model\UserMessageBounce;
 use PhpList\Core\Domain\Messaging\Repository\Interfaces\UserMessageBounceReportReaderInterface;
 use PhpList\Core\Domain\Search\Client\ElasticsearchClientInterface;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
-use PhpList\Core\Domain\Subscription\Model\Subscription;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 
 /**
  * Reporting/joining queries that correlate Elasticsearch-backed bounce data with related entities
@@ -33,11 +31,13 @@ use PhpList\Core\Domain\Subscription\Model\Subscription;
  */
 class UserMessageBounceElasticsearchHybridReader implements UserMessageBounceReportReaderInterface
 {
-    // todo: move db queries into repositories and inject them here, rather than using the entity manager directly
     public function __construct(
         private readonly ElasticsearchClientInterface $client,
         private readonly string $indexPrefix,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly SubscriberRepository $subscriberRepository,
+        private readonly MessageRepository $messageRepository,
+        private readonly UserMessageRepository $userMessageRepository,
+        private readonly BounceRepository $bounceRepository,
     ) {
     }
 
@@ -52,21 +52,7 @@ class UserMessageBounceElasticsearchHybridReader implements UserMessageBounceRep
      */
     public function getListBounceTotals(int $listId): array
     {
-        $rows = $this->entityManager->createQueryBuilder()
-            ->select(
-                'subscriber.id AS subscriberId',
-                'subscriber.email AS email',
-                'subscriber.confirmed AS confirmed',
-                'subscriber.blacklisted AS blacklisted'
-            )
-            ->from(Subscriber::class, 'subscriber')
-            ->innerJoin(Subscription::class, 'subscription', 'ON', 'subscription.subscriber = subscriber')
-            ->where('IDENTITY(subscription.subscriberList) = :listId')
-            ->setParameter('listId', $listId)
-            ->groupBy('subscriber.id, subscriber.email, subscriber.confirmed, subscriber.blacklisted')
-            ->orderBy('subscriber.id', 'ASC')
-            ->getQuery()
-            ->getArrayResult();
+        $rows = $this->subscriberRepository->getBounceReportRowsByListId($listId);
 
         if ($rows === []) {
             return [];
@@ -99,19 +85,7 @@ class UserMessageBounceElasticsearchHybridReader implements UserMessageBounceRep
     /** @return array<int, array{message_id: int, subject: string, total_bounces: int}> */
     public function getCampaignBounceTotals(?int $ownerId = null): array
     {
-        $queryBuilder = $this->entityManager->createQueryBuilder()
-            ->select('m.id AS messageId', 'm.content.subject AS subject')
-            ->from(Message::class, 'm')
-            ->orderBy('m.id', 'ASC');
-
-        if ($ownerId !== null) {
-            $queryBuilder
-                ->andWhere('IDENTITY(m.owner) = :ownerId')
-                ->setParameter('ownerId', $ownerId);
-        }
-
-        /** @var array<int, array{messageId: string|int, subject: string}> $rows */
-        $rows = $queryBuilder->getQuery()->getArrayResult();
+        $rows = $this->messageRepository->getSubjectsForBounceReport($ownerId);
 
         if ($rows === []) {
             return [];
@@ -162,7 +136,7 @@ class UserMessageBounceElasticsearchHybridReader implements UserMessageBounceRep
             $records
         )));
 
-        $bouncesById = $this->findBouncesByIdIndexedById($bounceIds);
+        $bouncesById = $this->bounceRepository->findByIdsIndexedById($bounceIds);
 
         $result = [];
         foreach ($records as $record) {
@@ -187,24 +161,14 @@ class UserMessageBounceElasticsearchHybridReader implements UserMessageBounceRep
      */
     public function getUserMessageHistoryWithBounces(Subscriber $subscriber): array
     {
-        /** @var UserMessage[] $userMessages */
-        $userMessages = $this->entityManager->createQueryBuilder()
-            ->select('um')
-            ->from(UserMessage::class, 'um')
-            ->where('um.user = :userId')
-            ->andWhere('um.status = :status')
-            ->setParameter('userId', $subscriber->getId())
-            ->setParameter('status', 'sent')
-            ->orderBy('um.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
+        $userMessages = $this->userMessageRepository->findSentByUserId((int) $subscriber->getId());
 
         if ($userMessages === []) {
             return [];
         }
 
         $docsByMessageId = $this->groupByMessageId($this->fetchDocsByUserId((int) $subscriber->getId()));
-        $bouncesById = $this->findBouncesByIdIndexedById($this->bounceIdsUsedIn($docsByMessageId));
+        $bouncesById = $this->bounceRepository->findByIdsIndexedById($this->bounceIdsUsedIn($docsByMessageId));
 
         $result = [];
         foreach ($userMessages as $userMessage) {
@@ -272,25 +236,6 @@ class UserMessageBounceElasticsearchHybridReader implements UserMessageBounceRep
         }
 
         return array_values(array_unique($bounceIds));
-    }
-
-    /**
-     * @param int[] $bounceIds
-     * @return array<int, Bounce>
-     */
-    private function findBouncesByIdIndexedById(array $bounceIds): array
-    {
-        if ($bounceIds === []) {
-            return [];
-        }
-
-        $bouncesById = [];
-        /** @var Bounce $bounce */
-        foreach ($this->entityManager->getRepository(Bounce::class)->findBy(['id' => $bounceIds]) as $bounce) {
-            $bouncesById[$bounce->getId()] = $bounce;
-        }
-
-        return $bouncesById;
     }
 
     /** @param array{_source: array<string, mixed>} $hit */

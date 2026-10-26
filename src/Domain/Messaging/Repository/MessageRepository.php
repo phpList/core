@@ -275,6 +275,27 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
     }
 
     /**
+     * Campaign ids and subjects for bounce reports, without any bounce counts.
+     *
+     * @param int|null $ownerId Limit results to campaigns owned by this admin when provided.
+     * @return array<int, array{messageId: string|int, subject: string}>
+     */
+    public function getSubjectsForBounceReport(?int $ownerId = null): array
+    {
+        $queryBuilder = $this->createQueryBuilder('m')
+            ->select('m.id AS messageId', 'm.content.subject AS subject')
+            ->orderBy('m.id', 'ASC');
+
+        if ($ownerId !== null) {
+            $queryBuilder
+                ->andWhere('IDENTITY(m.owner) = :ownerId')
+                ->setParameter('ownerId', $ownerId);
+        }
+
+        return $queryBuilder->getQuery()->getArrayResult();
+    }
+
+    /**
      * Counts active campaigns between two dates.
      * "Active" here means messages that were sent (or in process) during this period.
      *

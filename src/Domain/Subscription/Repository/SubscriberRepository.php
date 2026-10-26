@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Common\Repository\AbstractRepository;
 use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterface;
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberFilter;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
+use PhpList\Core\Domain\Subscription\Model\Subscription;
 
 /**
  * Repository for Subscriber models.
@@ -270,6 +271,29 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->setParameter('id', $id)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * Subscribers of a list with the data needed for bounce reports, without any bounce counts.
+     *
+     * @return array<int, array{subscriberId: int, email: string, confirmed: bool, blacklisted: bool}>
+     */
+    public function getBounceReportRowsByListId(int $listId): array
+    {
+        return $this->createQueryBuilder('subscriber')
+            ->select(
+                'subscriber.id AS subscriberId',
+                'subscriber.email AS email',
+                'subscriber.confirmed AS confirmed',
+                'subscriber.blacklisted AS blacklisted'
+            )
+            ->innerJoin(Subscription::class, 'subscription', 'ON', 'subscription.subscriber = subscriber')
+            ->where('IDENTITY(subscription.subscriberList) = :listId')
+            ->setParameter('listId', $listId)
+            ->groupBy('subscriber.id, subscriber.email, subscriber.confirmed, subscriber.blacklisted')
+            ->orderBy('subscriber.id', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
     }
 
     public function isEmailBlacklisted(string $email): bool
