@@ -48,9 +48,7 @@ class LinkTrackTokenService
     /** Returns null for malformed tokens and, when signing is enabled, for missing or wrong signatures. */
     public function parse(string $tid, ?string $signature = null): ?LinkTrackToken
     {
-        if ($this->isSigningEnabled()
-            && ($signature === null || $signature === '' || !hash_equals($this->sign($tid), $signature))
-        ) {
+        if (!$this->hasValidSignature($tid, $signature)) {
             return null;
         }
 
@@ -60,17 +58,35 @@ class LinkTrackTokenService
         }
 
         $parts = explode('|', $decoded);
-        if (count($parts) !== 4 || !LinkTrackToken::isValidType($parts[0])) {
+        if (count($parts) !== 4
+            || !LinkTrackToken::isValidType($parts[0])
+            || !$this->areValidUuids(array_slice($parts, 1))
+        ) {
             return null;
         }
 
-        foreach (array_slice($parts, 1) as $uuid) {
+        return new LinkTrackToken($parts[0], $parts[1], $parts[2], $parts[3]);
+    }
+
+    private function hasValidSignature(string $tid, ?string $signature): bool
+    {
+        if (!$this->isSigningEnabled()) {
+            return true;
+        }
+
+        return $signature !== null && $signature !== '' && hash_equals($this->sign($tid), $signature);
+    }
+
+    /** @param string[] $uuids */
+    private function areValidUuids(array $uuids): bool
+    {
+        foreach ($uuids as $uuid) {
             if (!preg_match('/^[A-Za-z0-9-]{1,64}$/', $uuid)) {
-                return null;
+                return false;
             }
         }
 
-        return new LinkTrackToken($parts[0], $parts[1], $parts[2], $parts[3]);
+        return true;
     }
 
     private function isSigningEnabled(): bool

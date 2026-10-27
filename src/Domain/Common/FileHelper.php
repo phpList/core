@@ -35,18 +35,8 @@ class FileHelper
 
     public function writeFileToDirectory(string $directory, string $originalFilename, string $contents): ?string
     {
-        if (!is_dir($directory) || !is_writable($directory)) {
-            return null;
-        }
-
-        $realDirectory = realpath($directory);
-        if ($realDirectory === false) {
-            return null;
-        }
-
-        // Untrusted writers could swap entries in the directory between checks and writes
-        $perms = fileperms($realDirectory);
-        if ($perms === false || (($perms & 0022) !== 0 && ($perms & 01000) === 0)) {
+        $realDirectory = $this->resolveTrustedDirectory($directory);
+        if ($realDirectory === null) {
             return null;
         }
 
@@ -71,5 +61,25 @@ class FileHelper
         }
 
         return $fullPath;
+    }
+
+    private function resolveTrustedDirectory(string $directory): ?string
+    {
+        if (!is_dir($directory) || !is_writable($directory)) {
+            return null;
+        }
+
+        $realDirectory = realpath($directory);
+        if ($realDirectory === false) {
+            return null;
+        }
+
+        // Untrusted writers could swap entries in the directory between checks and writes
+        $perms = fileperms($realDirectory);
+        if ($perms === false || (($perms & 0022) !== 0 && ($perms & 01000) === 0)) {
+            return null;
+        }
+
+        return $realDirectory;
     }
 }
