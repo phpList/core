@@ -11,10 +11,10 @@ use PhpList\Core\Domain\Messaging\Repository\MessageDataRepository;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use Psr\Log\LoggerInterface;
 
-// todo: check types
 class MessageDataLoader
 {
     private const AS_FORMAT_FIELDS = ['astext', 'ashtml', 'astextandhtml', 'aspdf', 'astextandpdf'];
+    private const LIST_FIELDS = ['targetlist', 'excludelist'];
     private const SCHEDULE_FIELDS = ['embargo', 'repeatuntil', 'requeueuntil'];
     private ?string $messageFromAddress;
 
@@ -39,7 +39,6 @@ class MessageDataLoader
         $this->normaliseScheduleFields($messageData);
         $this->populateTargetLists($messageData, $message);
         $this->ensureSendUrlAndMethod($messageData);
-        // todo: check how should $message->getOptions()->getFromField() be used here
         $this->normaliseFromField($messageData, $defaultFrom);
         $this->cleanupSelections($messageData);
         $this->deriveCampaignTitle($messageData);
@@ -72,12 +71,13 @@ class MessageDataLoader
             'textmessage' => '',
             'rsstemplate' => '',
             'embargo' => $this->getDateArray(),
-            'repeatinterval' => '0',
+            'repeatinterval' => 0,
             'repeatuntil' => $this->getDateArray(),
-            'requeueinterval' => '0',
+            'requeueinterval' => 0,
             'requeueuntil' => $this->getDateArray(),
             'finishsending' => $this->getDateArray($finishSending),
             'fromfield' => '',
+            'tofield' => '',
             'subject' => '',
             'forwardsubject' => '',
             'footer' => $this->configProvider->getValue(ConfigOption::MessageFooter),
@@ -95,9 +95,8 @@ class MessageDataLoader
                 value: $this->configProvider->getValue(ConfigOption::AlwaysAddGoogleTracking),
                 filter: FILTER_VALIDATE_BOOL
             ),
-            // todo: check where this is set
             'excludelist' => [],
-            'sentastest' => '0',
+            'sentastest' => 0,
         ];
     }
 
@@ -121,19 +120,28 @@ class MessageDataLoader
     {
         $storedMessageData = $this->messageDataRepository->getForMessage($message->getId());
         foreach ($storedMessageData as $storedMessageDatum) {
-            if (str_starts_with($storedMessageDatum->getData(), 'SER:')) {
-                $unserialized = unserialize(substr($storedMessageDatum->getData(), 4), ['allowed_classes' => false]);
+            $rawData = $storedMessageDatum->getData();
+            if ($rawData === null && in_array($storedMessageDatum->getName(), self::LIST_FIELDS, true)) {
+                // keep the array defaults, a string here would break populateTargetLists
+                continue;
+            }
+            $rawData ??= '';
+            if (str_starts_with($rawData, 'SER:')) {
+                $unserialized = unserialize(substr($rawData, 4), ['allowed_classes' => false]);
                 if (!is_array($unserialized)) {
                     $this->logger->warning('Invalid serialized data for message ID: ' . $message->getId());
                     continue;
                 }
                 array_walk_recursive($unserialized, function (&$val) {
-                    $val = stripslashes($val);
+                    // stored values can be ints/bools (e.g. ids stored through the API), only strings have slashes
+                    if (is_string($val)) {
+                        $val = stripslashes($val);
+                    }
                 });
 
                 $data = $unserialized;
             } else {
-                $data = stripslashes($storedMessageDatum->getData());
+                $data = stripslashes($rawData);
             }
             if (!in_array($storedMessageDatum->getName(), self::AS_FORMAT_FIELDS)) {
                 //# don't overwrite counters in the message table from the data table

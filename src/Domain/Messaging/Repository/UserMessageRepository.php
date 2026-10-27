@@ -40,6 +40,21 @@ class UserMessageRepository extends AbstractRepository
     }
 
     /**
+     * @return UserMessage[]
+     */
+    public function findSentByUserId(int $userId): array
+    {
+        return $this->createQueryBuilder('um')
+            ->where('um.user = :userId')
+            ->andWhere('um.status = :status')
+            ->setParameter('userId', $userId)
+            ->setParameter('status', UserMessageStatus::Sent->value)
+            ->orderBy('um.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Counts how many user messages have status "sent" since the given time.
      */
     public function countSentSince(DateTimeInterface $since): int

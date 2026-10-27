@@ -33,32 +33,53 @@ class FileHelper
         }
     }
 
-    // todo: check - Handle temp-file rename and write failures.
-    // Appending an extension leaves the original temp file orphaned, and fopen/fwrite failures aren’t
-    // checked (so the method can return a path that wasn’t actually written)
     public function writeFileToDirectory(string $directory, string $originalFilename, string $contents): ?string
     {
+        $realDirectory = $this->resolveTrustedDirectory($directory);
+        if ($realDirectory === null) {
+            return null;
+        }
+
         $pathInfo = pathinfo($originalFilename);
         $name = $pathInfo['filename'] === '' ? 'file' : $pathInfo['filename'];
         $ext = $pathInfo['extension'] ?? '';
 
-        $newFile = tempnam($directory, $name);
-        if ($newFile === false) {
+        // Exclusive create (O_EXCL) never follows a symlink or reuses an existing entry,
+        // so the file is created and written in a single step without rename.
+        $fullPath = $realDirectory . '/' . $name . bin2hex(random_bytes(6)) . ($ext !== '' ? '.' . $ext : '');
+        $handle = fopen($fullPath, 'xb');
+        if ($handle === false) {
             return null;
         }
 
-        if ($ext !== '') {
-            $newFile .= '.' . $ext;
+        $written = fwrite($handle, $contents);
+        fclose($handle);
+        if ($written !== strlen($contents)) {
+            unlink($fullPath);
+
+            return null;
         }
-        $relativeName = basename($newFile);
-
-        $fullPath = $directory . '/' . $relativeName;
-
-        $fileHandle = fopen($fullPath, 'w');
-
-        fwrite($fileHandle, $contents);
-        fclose($fileHandle);
 
         return $fullPath;
+    }
+
+    private function resolveTrustedDirectory(string $directory): ?string
+    {
+        if (!is_dir($directory) || !is_writable($directory)) {
+            return null;
+        }
+
+        $realDirectory = realpath($directory);
+        if ($realDirectory === false) {
+            return null;
+        }
+
+        // Untrusted writers could swap entries in the directory between checks and writes
+        $perms = fileperms($realDirectory);
+        if ($perms === false || (($perms & 0022) !== 0 && ($perms & 01000) === 0)) {
+            return null;
+        }
+
+        return $realDirectory;
     }
 }

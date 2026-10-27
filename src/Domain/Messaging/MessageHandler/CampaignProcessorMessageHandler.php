@@ -48,7 +48,10 @@ class CampaignProcessorMessageHandler
 
     public function __invoke(CampaignProcessorMessage|SyncCampaignProcessorMessage $data): void
     {
-        // todo: recheck this stuckCampaignThresholdSeconds logic
+        // Note: a running campaign only proves it is alive by updating `modified` when it sends. Keep
+        // the threshold larger than the longest expected gap without a send (throttle sleeps, slow
+        // precache, large subscriber queries), otherwise a second dispatch can reclaim a live campaign
+        // and two workers will process it at once. 0 disables reclaiming.
         $campaign = $this->messageRepository->tryClaimForProcessing(
             $data->getMessageId(),
             $this->stuckCampaignThresholdSeconds

@@ -97,4 +97,23 @@ class BounceRepository extends AbstractRepository implements PaginatableReposito
             lastId: $lastId,
         );
     }
+
+    /**
+     * @param int[] $ids
+     * @return array<int, Bounce> indexed by bounce id
+     */
+    public function findByIdsIndexedById(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        $bouncesById = [];
+        /** @var Bounce $bounce */
+        foreach ($this->findBy(['id' => $ids]) as $bounce) {
+            $bouncesById[$bounce->getId()] = $bounce;
+        }
+
+        return $bouncesById;
+    }
 }

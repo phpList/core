@@ -22,7 +22,6 @@ class LocalUploadStorage implements UploadStorageInterface
 
     public function store(UploadedFile $file, string $filename): StoredFile
     {
-        // todo: get upload_dir from configs
         $targetDirectory = $this->projectDir
             . DIRECTORY_SEPARATOR
             . 'public'

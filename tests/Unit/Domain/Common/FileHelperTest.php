@@ -14,7 +14,7 @@ class FileHelperTest extends TestCase
     protected function setUp(): void
     {
         $this->tmpDir = sys_get_temp_dir() . '/phplist-filehelper-' . bin2hex(random_bytes(6));
-        mkdir($this->tmpDir, 0777, true);
+        mkdir($this->tmpDir, 0700, true);
     }
 
     protected function tearDown(): void
@@ -72,6 +72,23 @@ class FileHelperTest extends TestCase
         $this->assertTrue(is_file($writtenPath));
         $this->assertStringEndsWith('.txt', basename($writtenPath));
         $this->assertSame('payload', file_get_contents($writtenPath));
+    }
+
+    public function testWriteFileToDirectoryLeavesNoOrphanedTempFile(): void
+    {
+        $helper = new FileHelper();
+
+        $writtenPath = $helper->writeFileToDirectory($this->tmpDir, 'report.txt', 'payload');
+
+        $this->assertSame([$writtenPath], glob($this->tmpDir . '/*'));
+    }
+
+    public function testWriteFileToDirectoryReturnsNullWhenDirectoryIsMissing(): void
+    {
+        $helper = new FileHelper();
+
+        $this->assertNull($helper->writeFileToDirectory($this->tmpDir . '/missing', 'report.txt', 'payload'));
+        $this->assertSame([], glob($this->tmpDir . '/*'));
     }
 
     public function testWriteFileToDirectoryUsesDefaultNameWhenMissing(): void

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service;
 
-use PhpList\Core\Domain\Analytics\Model\LinkTrack;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
@@ -15,9 +14,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class MessageProcessingPreparator
 {
-    // @todo: create functionality to track
-    public const LINK_TRACK_ENDPOINT = '/api/v2/link-track';
-
     public function __construct(
         private readonly SubscriberRepository $subscriberRepository,
         private readonly MessageRepository $messageRepository,
@@ -57,53 +53,23 @@ class MessageProcessingPreparator
     }
 
     /**
-     * Process message content to extract URLs and replace them with link track URLs
+     * Replaces the links of the cached message content with click-tracking links for this subscriber.
+     * Returns the content unchanged when click tracking is off or the campaign is unknown.
      */
     public function processMessageLinks(
         int $campaignId,
         MessagePrecacheDto $cachedMessageDto,
         Subscriber $subscriber
     ): MessagePrecacheDto {
-        if (!$this->linkTrackService->isExtractAndSaveLinksApplicable()) {
+        if (!$this->linkTrackService->isClickTrackingEnabled()) {
             return $cachedMessageDto;
         }
 
-        $savedLinks = $this->linkTrackService->extractAndSaveLinks(
-            content: $cachedMessageDto,
-            userId: $subscriber->getId(),
-            messageId: $campaignId,
-        );
-        if (empty($savedLinks)) {
+        $campaign = $this->messageRepository->findById($campaignId);
+        if ($campaign === null) {
             return $cachedMessageDto;
         }
 
-        // todo: check if getTextMessage should replace links as well
-        if ($cachedMessageDto->content) {
-            $cachedMessageDto->content = $this->replaceLinks(
-                savedLinks: $savedLinks,
-                htmlText: $cachedMessageDto->content
-            );
-        }
-
-        if ($cachedMessageDto->htmlFooter) {
-            $cachedMessageDto->htmlFooter = $this->replaceLinks(
-                savedLinks: $savedLinks,
-                htmlText: $cachedMessageDto->htmlFooter
-            );
-        }
-
-        return $cachedMessageDto;
-    }
-
-    private function replaceLinks(array $savedLinks, string $htmlText): string
-    {
-        /** @var LinkTrack $linkTrack */
-        foreach ($savedLinks as $linkTrack) {
-            $originalUrl = $linkTrack->getUrl();
-            $trackUrl = self::LINK_TRACK_ENDPOINT . '?id=' . $linkTrack->getId();
-            $htmlText = str_replace('href="' . $originalUrl . '"', 'href="' . $trackUrl . '"', $htmlText);
-        }
-
-        return $htmlText;
+        return $this->linkTrackService->trackLinks($cachedMessageDto, $campaign, $subscriber);
     }
 }
