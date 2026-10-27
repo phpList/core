@@ -14,6 +14,7 @@ use Psr\Log\LoggerInterface;
 class MessageDataLoader
 {
     private const AS_FORMAT_FIELDS = ['astext', 'ashtml', 'astextandhtml', 'aspdf', 'astextandpdf'];
+    private const LIST_FIELDS = ['targetlist', 'excludelist'];
     private const SCHEDULE_FIELDS = ['embargo', 'repeatuntil', 'requeueuntil'];
     private ?string $messageFromAddress;
 
@@ -119,7 +120,12 @@ class MessageDataLoader
     {
         $storedMessageData = $this->messageDataRepository->getForMessage($message->getId());
         foreach ($storedMessageData as $storedMessageDatum) {
-            $rawData = $storedMessageDatum->getData() ?? '';
+            $rawData = $storedMessageDatum->getData();
+            if ($rawData === null && in_array($storedMessageDatum->getName(), self::LIST_FIELDS, true)) {
+                // keep the array defaults, a string here would break populateTargetLists
+                continue;
+            }
+            $rawData ??= '';
             if (str_starts_with($rawData, 'SER:')) {
                 $unserialized = unserialize(substr($rawData, 4), ['allowed_classes' => false]);
                 if (!is_array($unserialized)) {

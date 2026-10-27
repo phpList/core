@@ -200,6 +200,40 @@ class MessageDataLoaderTest extends TestCase
         $this->assertSame('', $result['footer']);
     }
 
+    public function testNullTargetAndExcludeListDataKeepArrayDefaults(): void
+    {
+        $this->config->method('getValue')->willReturnMap([
+            [ConfigOption::MessageFromAddress, 'from@example.com'],
+        ]);
+        $this->messageRepository->method('getNonEmptyFields')->willReturn([]);
+
+        $targetList = (new MessageData())->setId(11)->setName('targetlist')->setData(null);
+        $excludeList = (new MessageData())->setId(11)->setName('excludelist')->setData(null);
+        $this->messageDataRepository->method('getForMessage')->willReturn([$targetList, $excludeList]);
+
+        $listMock = $this->createMock(SubscriberList::class);
+        $listMock->method('getId')->willReturn(42);
+        $listMessageMock = $this->createMock(ListMessage::class);
+        $listMessageMock->method('getList')->willReturn($listMock);
+
+        $message = $this->createMock(Message::class);
+        $message->method('getId')->willReturn(11);
+        $message->method('getListMessages')->willReturn(new ArrayCollection([$listMessageMock]));
+
+        $loader = new MessageDataLoader(
+            configProvider: $this->config,
+            messageDataRepository: $this->messageDataRepository,
+            messageRepository: $this->messageRepository,
+            logger: $this->createMock(LoggerInterface::class),
+            defaultMessageAge: 3600
+        );
+
+        $result = ($loader)($message);
+
+        $this->assertSame([42 => 1], $result['targetlist']);
+        $this->assertSame([], $result['excludelist']);
+    }
+
     public static function fromFieldProvider(): array
     {
         return [
