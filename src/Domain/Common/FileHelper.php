@@ -35,8 +35,18 @@ class FileHelper
 
     public function writeFileToDirectory(string $directory, string $originalFilename, string $contents): ?string
     {
-        // tempnam() silently falls back to the system temp dir when the directory is unusable
         if (!is_dir($directory) || !is_writable($directory)) {
+            return null;
+        }
+
+        $realDirectory = realpath($directory);
+        if ($realDirectory === false) {
+            return null;
+        }
+
+        // Untrusted writers could swap entries in the directory between checks and writes
+        $perms = fileperms($realDirectory);
+        if ($perms === false || (($perms & 0022) !== 0 && ($perms & 01000) === 0)) {
             return null;
         }
 
@@ -44,28 +54,17 @@ class FileHelper
         $name = $pathInfo['filename'] === '' ? 'file' : $pathInfo['filename'];
         $ext = $pathInfo['extension'] ?? '';
 
-        $tempFile = tempnam($directory, $name);
-        if ($tempFile === false) {
+        // Exclusive create (O_EXCL) never follows a symlink or reuses an existing entry,
+        // so the file is created and written in a single step without rename.
+        $fullPath = $realDirectory . '/' . $name . bin2hex(random_bytes(6)) . ($ext !== '' ? '.' . $ext : '');
+        $handle = fopen($fullPath, 'xb');
+        if ($handle === false) {
             return null;
         }
 
-        if (dirname((string) realpath($tempFile)) !== realpath($directory)) {
-            unlink($tempFile);
-
-            return null;
-        }
-
-        $fullPath = $directory . '/' . basename($tempFile);
-        if ($ext !== '') {
-            $fullPath .= '.' . $ext;
-            if (!rename($tempFile, $fullPath)) {
-                unlink($tempFile);
-
-                return null;
-            }
-        }
-
-        if (file_put_contents($fullPath, $contents) !== strlen($contents)) {
+        $written = fwrite($handle, $contents);
+        fclose($handle);
+        if ($written !== strlen($contents)) {
             unlink($fullPath);
 
             return null;

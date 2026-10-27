@@ -14,7 +14,7 @@ class FileHelperTest extends TestCase
     protected function setUp(): void
     {
         $this->tmpDir = sys_get_temp_dir() . '/phplist-filehelper-' . bin2hex(random_bytes(6));
-        mkdir($this->tmpDir, 0777, true);
+        mkdir($this->tmpDir, 0700, true);
     }
 
     protected function tearDown(): void
