@@ -43,8 +43,21 @@ class LinkTrackForwardRepository extends AbstractRepository implements Paginatab
         }
 
         if (empty($forward->getUuid())) {
-            $forward->setUuid(self::generateUuid());
-            $this->getEntityManager()->flush();
+            $metadata = $this->getClassMetadata();
+            $uuidColumn = $metadata->getColumnName('uuid');
+            // only fills an empty uuid, so a worker that got there first is never overwritten
+            $this->getEntityManager()->getConnection()->executeStatement(
+                sprintf(
+                    'UPDATE %s SET %s = :uuid WHERE %s = :id AND (%s IS NULL OR %s = \'\')',
+                    $metadata->getTableName(),
+                    $uuidColumn,
+                    $metadata->getColumnName('id'),
+                    $uuidColumn,
+                    $uuidColumn
+                ),
+                ['uuid' => self::generateUuid(), 'id' => $forward->getId()],
+            );
+            $this->getEntityManager()->refresh($forward);
         }
 
         return $forward;
