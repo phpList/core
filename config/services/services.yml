@@ -61,6 +61,15 @@ services:
     autoconfigure: true
     public: true
 
+  PhpList\Core\Domain\Analytics\Service\LinkTrackTokenService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Analytics\Service\LinkClickService:
+    autowire: true
+    autoconfigure: true
+    public: true
+
   PhpList\Core\Domain\Analytics\Service\AnalyticsService:
     autowire: true
     autoconfigure: true

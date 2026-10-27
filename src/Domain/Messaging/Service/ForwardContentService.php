@@ -19,7 +19,6 @@ class ForwardContentService
 {
     public function __construct(
         private readonly CacheInterface $cache,
-        private readonly MessageProcessingPreparator $messagePreparator,
         private readonly ForwardEmailBuilder $forwardEmailBuilder,
     ) {
     }
@@ -39,18 +38,13 @@ class ForwardContentService
             throw new MessageCacheMissingException();
         }
 
-        // todo: check how should links be handled in case of forwarding
-        $processed = $this->messagePreparator->processMessageLinks(
-            campaignId: $campaign->getId(),
-            cachedMessageDto: $messagePrecacheDto,
-            subscriber: $forwardingSubscriber
-        );
-
+        // links of forwarded messages are not click tracked: the forwarding subscriber would
+        // be credited with the clicks of the friend
         return $this->forwardEmailBuilder->buildForwardEmail(
             messageId: $campaign->getId(),
             friendEmail: $friendEmail,
             forwardedBy: $forwardingSubscriber,
-            data: $processed,
+            data: $messagePrecacheDto,
             htmlPref: $forwardingSubscriber->hasHtmlEmail(),
             fromName: $forwardDto->getFromName(),
             fromEmail: $forwardDto->getFromEmail(),
