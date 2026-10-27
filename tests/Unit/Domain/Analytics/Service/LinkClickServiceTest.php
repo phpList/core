@@ -144,6 +144,28 @@ class LinkClickServiceTest extends TestCase
         self::assertSame('https://example.com/p?a=1&uid=uniq-3', $this->service->trackClick($this->tid(), null, []));
     }
 
+    public function testPersonalisedLinkPutsTheUidBeforeTheFragment(): void
+    {
+        $this->givenKnownLink('https://example.com/p?a=1#top', personalise: true);
+        $this->givenUserMessage(viewed: true);
+
+        self::assertSame(
+            'https://example.com/p?a=1&uid=uniq-3#top',
+            $this->service->trackClick($this->tid(), null, [])
+        );
+    }
+
+    public function testPersonalisedLinkWithOnlyAFragmentStartsTheQueryBeforeIt(): void
+    {
+        $this->givenKnownLink('https://example.com/p#a?b', personalise: true);
+        $this->givenUserMessage(viewed: true);
+
+        self::assertSame(
+            'https://example.com/p?uid=uniq-3#a?b',
+            $this->service->trackClick($this->tid(), null, [])
+        );
+    }
+
     public function testPersonalisedLinkIsRefusedForSubscribersThatNeverGotTheCampaign(): void
     {
         $this->givenKnownLink('https://example.com/p', personalise: true);

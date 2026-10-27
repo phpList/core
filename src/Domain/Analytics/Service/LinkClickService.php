@@ -96,7 +96,11 @@ class LinkClickService
             if ($userMessage === null) {
                 return null;
             }
-            $url .= (str_contains($url, '?') ? '&' : '?') . 'uid=' . $subscriber->getUniqueId();
+            // the uid has to go before any fragment, which is never sent to the server
+            $fragmentPos = strpos($url, '#');
+            $fragment = $fragmentPos === false ? '' : substr($url, $fragmentPos);
+            $base = $fragmentPos === false ? $url : substr($url, 0, $fragmentPos);
+            $url = $base . (str_contains($base, '?') ? '&' : '?') . 'uid=' . $subscriber->getUniqueId() . $fragment;
         }
 
         return preg_match('~^(https?|ftp)://~i', $url) ? $url : null;
