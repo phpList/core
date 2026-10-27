@@ -168,6 +168,38 @@ class MessageDataLoaderTest extends TestCase
         $this->assertSame($email, $result['fromemail']);
     }
 
+    public function testStoredSerializedDataWithNonStringValuesAndNullDataDoNotBreakLoading(): void
+    {
+        $this->config->method('getValue')->willReturnMap([
+            [ConfigOption::MessageFromAddress, 'from@example.com'],
+        ]);
+        $this->messageRepository->method('getNonEmptyFields')->willReturn([]);
+
+        $excludeList = (new MessageData())
+            ->setId(10)
+            ->setName('excludelist')
+            ->setData('SER:' . serialize([3, '4', true]));
+        $nullData = (new MessageData())->setId(10)->setName('footer')->setData(null);
+        $this->messageDataRepository->method('getForMessage')->willReturn([$excludeList, $nullData]);
+
+        $message = $this->createMock(Message::class);
+        $message->method('getId')->willReturn(10);
+        $message->method('getListMessages')->willReturn(new ArrayCollection());
+
+        $loader = new MessageDataLoader(
+            configProvider: $this->config,
+            messageDataRepository: $this->messageDataRepository,
+            messageRepository: $this->messageRepository,
+            logger: $this->createMock(LoggerInterface::class),
+            defaultMessageAge: 3600
+        );
+
+        $result = ($loader)($message);
+
+        $this->assertSame([3, '4', true], $result['excludelist']);
+        $this->assertSame('', $result['footer']);
+    }
+
     public static function fromFieldProvider(): array
     {
         return [

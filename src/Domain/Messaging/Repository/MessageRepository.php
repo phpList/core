@@ -7,7 +7,7 @@ namespace PhpList\Core\Domain\Messaging\Repository;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
-use Doctrine\ORM\AbstractQuery;
+use Doctrine\DBAL\Exception;
 use PhpList\Core\Domain\Common\Model\Filter\FilterRequestInterface;
 use PhpList\Core\Domain\Common\Model\PaginatedResult;
 use PhpList\Core\Domain\Common\Repository\AbstractRepository;
@@ -175,7 +175,11 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
     public function tryClaimForProcessing(int $id, int $staleAfterSeconds = 0): ?Message
     {
         $connection = $this->getEntityManager()->getConnection();
-        $table = $connection->quoteIdentifier($this->getClassMetadata()->getTableName());
+        $metadata = $this->getClassMetadata();
+        $table = $connection->quoteIdentifier($metadata->getTableName());
+        $idColumn = $metadata->getColumnName('id');
+        $statusColumn = $metadata->getColumnName('metadata.status');
+        $modifiedColumn = $metadata->getColumnName('updatedAt');
         $now = new DateTime();
 
         $params = [
@@ -185,9 +189,13 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             'from' => Message\MessageStatus::Submitted->value,
         ];
 
-        $claimCondition = 'status = :from';
+        $claimCondition = sprintf('%s = :from', $statusColumn);
         if ($staleAfterSeconds > 0) {
-            $claimCondition = '(status = :from OR (status IN (:prepared, :inProcess) AND modified < :staleBefore))';
+            $claimCondition = sprintf(
+                '(%1$s = :from OR (%1$s IN (:prepared, :inProcess) AND %2$s < :staleBefore))',
+                $statusColumn,
+                $modifiedColumn
+            );
             $params['prepared'] = Message\MessageStatus::Prepared->value;
             $params['inProcess'] = Message\MessageStatus::InProcess->value;
             $params['staleBefore'] = (clone $now)
@@ -195,7 +203,14 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
                 ->format('Y-m-d H:i:s');
         }
 
-        $sql = sprintf('UPDATE %s SET status = :to, modified = :now WHERE id = :id AND %s', $table, $claimCondition);
+        $sql = sprintf(
+            'UPDATE %s SET %s = :to, %s = :now WHERE %s = :id AND %s',
+            $table,
+            $statusColumn,
+            $modifiedColumn,
+            $idColumn,
+            $claimCondition
+        );
 
         $affected = $connection->executeStatement($sql, $params);
 
@@ -257,21 +272,29 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->execute();
     }
 
+    /**
+     * Non-empty columns of the message row keyed by their database column names (subject, fromfield,
+     * message, status, ...), like the legacy `select * from message`. Entity hydration is not used on
+     * purpose: it would key embedded values as `content.subject` etc.
+     *
+     * @return array<string, mixed>
+     * @throws Exception
+     */
     public function getNonEmptyFields(int $id): array
     {
-        $message = $this->createQueryBuilder('m')
-            ->where('m.id = :id')
-            ->setParameter('id', $id)
-            ->getQuery()
-            ->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY) ?? [];
+        $connection = $this->getEntityManager()->getConnection();
+        $metadata = $this->getClassMetadata();
 
-        foreach ($message as $key => $value) {
-            if ($value === null || $value === '') {
-                unset($message[$key]);
-            }
-        }
+        $message = $connection->fetchAssociative(
+            sprintf(
+                'SELECT * FROM %s WHERE %s = :id',
+                $connection->quoteIdentifier($metadata->getTableName()),
+                $metadata->getColumnName('id')
+            ),
+            ['id' => $id]
+        );
 
-        return $message;
+        return array_filter($message ?: [], static fn (mixed $value): bool => $value !== null && $value !== '');
     }
 
     /**
