@@ -16,8 +16,10 @@ class DefaultConfigProvider
      */
     private array $defaults = [];
 
-    public function __construct(private TranslatorInterface $translator)
-    {
+    public function __construct(
+        private readonly TranslatorInterface $translator,
+        private readonly string $website = '',
+    ) {
     }
 
     /** @SuppressWarnings("PHPMD.ExcessiveMethodLength") */
@@ -31,6 +33,21 @@ class DefaultConfigProvider
         $pageRoot = '/api/v2';
 
         $this->defaults = [
+            'website' => [
+                'value'       => $this->website,
+                'description' => $this->translator->trans('Website address (without http://)'),
+                'infoicon'    => true,
+                'type'        => 'text',
+                'allowempty'  => false,
+                'category'    => 'general',
+            ],
+            'domain' => [
+                'value'       => preg_replace('/^www\./i', '', $this->website),
+                'description' => $this->translator->trans('Domain Name of your server (for email)'),
+                'type'        => 'text',
+                'allowempty'  => false,
+                'category'    => 'general',
+            ],
             'admin_address' => [
                 'value'       => 'webmaster@[DOMAIN]',
                 'description' => $this->translator->trans('Person in charge of this system (one email address)'),

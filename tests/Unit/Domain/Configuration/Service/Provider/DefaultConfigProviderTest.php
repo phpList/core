@@ -25,6 +25,14 @@ final class DefaultConfigProviderTest extends TestCase
         $this->provider = new DefaultConfigProvider($this->translator);
     }
 
+    public function testWebsiteAndDomainDefaultsComeFromConfiguredWebsite(): void
+    {
+        $provider = new DefaultConfigProvider($this->translator, 'www.example.com');
+
+        $this->assertSame('www.example.com', $provider->get(ConfigOption::Website)['value']);
+        $this->assertSame('example.com', $provider->get(ConfigOption::Domain)['value']);
+    }
+
     public function testHasReturnsTrueForKnownKey(): void
     {
         $this->assertTrue($this->provider->has(ConfigOption::AdminAddress));
