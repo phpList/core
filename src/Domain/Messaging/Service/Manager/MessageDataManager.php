@@ -34,33 +34,7 @@ class MessageDataManager
 
         $value = $this->normalizeValueByName($name, $value);
 
-        // todo: remove this once we have a proper way to handle targetlists
-//        if ($name === 'targetlist' && is_array($value)) {
-//            $this->listMessageRepository->removeAllListAssociationsForMessage($campaign);
-//
-//            if (!empty($value['all']) || !empty($value['allactive'])) {
-//                // todo:  should be with $GLOBALS['subselect'] filter for access control
-//                foreach ($this->subscriberListRepository->getAllActive() as $list) {
-//                    $listMessage = (new ListMessage())
-//                        ->setMessage($campaign)
-//                        ->setList($list);
-//                    $this->listMessageRepository->persist($listMessage);
-//                }
-//                // once we used "all" to set all, unset it, to avoid confusion trying to unselect lists
-//                unset($value['all']);
-//            } else {
-//                foreach ($value as $listId => $val) {
-//                    // see #16940 - ignore a list called "unselect" which is there to allow unselecting all
-//                    if ($listId !== 'unselect') {
-//                        $list = $this->subscriberListRepository->find($listId);
-//                        $listMessage = (new ListMessage())
-//                            ->setMessage($campaign)
-//                            ->setList($list);
-//                        $this->listMessageRepository->persist($listMessage);
-//                    }
-//                }
-//            }
-//        }
+        // todo: targetLists (not only here) should be with $GLOBALS['subselect'] filter for access control
 
         if (is_array($value) || is_object($value)) {
             $value = 'SER:' . serialize($value);
