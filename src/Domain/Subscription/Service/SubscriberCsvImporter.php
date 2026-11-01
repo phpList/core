@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 use PhpList\Core\Domain\Subscription\Model\Dto\SubscriberImportOptions;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
@@ -44,6 +45,7 @@ class SubscriberCsvImporter
         private readonly TranslatorInterface $translator,
         private readonly MessageBusInterface $messageBus,
         private readonly SubscriberHistoryManager $subscriberHistoryManager,
+        private readonly UserBlacklistRepository $blacklistRepository,
     ) {
     }
 
@@ -187,12 +189,15 @@ class SubscriberCsvImporter
 
         $this->attributeManager->processAttributes($subscriber, $dto->extraAttributes);
 
-        [$listLines, $addedNewSubscriberToList] = $this->getHistoryListLines($subscriber, $options);
-
-        // todo: use isBlacklisted logic (grace time) not function from Subscriber class
-        if ($subscriber->isBlacklisted()) {
+        // as in phplist3, only the blacklist table decides; a blacklisted flag from the CSV alone does not
+        $isBlacklisted = $this->blacklistRepository->isEmailBlacklisted($subscriber->getEmail());
+        if ($isBlacklisted) {
+            // make sure the flag reflects the blacklist table
+            $subscriber->setBlacklisted(true);
             $stats['blacklisted']++;
         }
+
+        [$listLines, $addedNewSubscriberToList] = $this->getHistoryListLines($subscriber, $options, $isBlacklisted);
 
         $this->subscriberHistoryManager->addHistoryFromImport(
             subscriber: $subscriber,
@@ -273,11 +278,14 @@ class SubscriberCsvImporter
         return null;
     }
 
-    private function getHistoryListLines(Subscriber $subscriber, SubscriberImportOptions $options): array
-    {
+    private function getHistoryListLines(
+        Subscriber $subscriber,
+        SubscriberImportOptions $options,
+        bool $isBlacklisted,
+    ): array {
         $addedNewSubscriberToList = false;
         $listLines = [];
-        if (!$subscriber->isBlacklisted() && count($options->listIds) > 0) {
+        if (!$isBlacklisted && count($options->listIds) > 0) {
             foreach ($options->listIds as $listId) {
                 $created = $this->subscriptionManager->addSubscriberToAList($subscriber, $listId);
                 if ($created) {
