@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use PhpList\Core\Domain\Subscription\Service\Resolver\AttributeValueResolver;
 use Psr\Log\LoggerInterface;
@@ -27,6 +28,7 @@ class SubscriberCsvExporter
         private readonly SubscriberRepository $subscriberRepository,
         private readonly SubscriberAttributeDefinitionRepository $definitionRepository,
         private readonly LoggerInterface $logger,
+        private readonly UserBlacklistRepository $blacklistRepository,
     ) {
     }
 
@@ -253,6 +255,14 @@ class SubscriberCsvExporter
         return $response;
     }
 
+    /**
+     * re-verify the flag against the blacklist table so stale flags are not exported.
+     */
+    private function isBlacklisted(Subscriber $subscriber): bool
+    {
+        return $subscriber->isBlacklisted() || $this->blacklistRepository->isEmailBlacklisted($subscriber->getEmail());
+    }
+
     /** @SuppressWarnings("CyclomaticComplexity") */
     private function normalizerSubscriberData(Subscriber $subscriber): array
     {
@@ -260,7 +270,7 @@ class SubscriberCsvExporter
             'id' => $subscriber->getId(),
             'email' => $subscriber->getEmail(),
             'confirmed' => $subscriber->isConfirmed() ? '1' : '0',
-            'blacklisted' => $subscriber->isBlacklisted() ? '1' : '0',
+            'blacklisted' => $this->isBlacklisted($subscriber) ? '1' : '0',
             'bounceCount' => $subscriber->getBounceCount(),
             'createdAt' => $subscriber->getCreatedAt()?->format('Y-m-d H:i:s') ?? '',
             'updatedAt' => $subscriber->getUpdatedAt()->format('Y-m-d H:i:s'),
