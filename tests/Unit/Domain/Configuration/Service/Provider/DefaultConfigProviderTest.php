@@ -8,7 +8,6 @@ use PhpList\Core\Domain\Configuration\Model\ConfigOption;
 use PhpList\Core\Domain\Configuration\Service\Provider\DefaultConfigProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -87,24 +86,23 @@ final class DefaultConfigProviderTest extends TestCase
 
     public function testTranslatorIsUsedOnlyOnFirstInit(): void
     {
+        $calls = 0;
         $this->translator
-            ->expects($this->atLeastOnce())
             ->method('trans')
-            ->willReturnArgument(0);
+            ->willReturnCallback(function (string $id) use (&$calls): string {
+                $calls++;
+
+                return $id;
+            });
         $this->provider->get(ConfigOption::AdminAddress);
+        $callsAfterInit = $calls;
+        $this->assertGreaterThan(0, $callsAfterInit);
 
         // Subsequent calls should not trigger init again
-        $translator = $this->createMock(TranslatorInterface::class);
-        $translator
-            ->expects($this->never())
-            ->method('trans');
-
-        $reflection = new ReflectionClass($this->provider);
-        $prop = $reflection->getProperty('translator');
-
-        $prop->setValue($this->provider, $translator);
         $this->provider->get(ConfigOption::UnsubscribeUrl);
         $this->provider->has(ConfigOption::BlacklistUrl);
+
+        $this->assertSame($callsAfterInit, $calls);
     }
 
     public function testKnownKeysHaveReasonableTypes(): void
