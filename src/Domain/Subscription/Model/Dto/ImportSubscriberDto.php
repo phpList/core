@@ -21,9 +21,6 @@ class ImportSubscriberDto
     public bool $confirmed;
 
     #[Assert\Type('bool')]
-    public bool $blacklisted;
-
-    #[Assert\Type('bool')]
     public bool $htmlEmail;
 
     #[Assert\Type('bool')]
@@ -39,7 +36,6 @@ class ImportSubscriberDto
     public function __construct(
         string $email,
         bool $confirmed,
-        bool $blacklisted,
         bool $htmlEmail,
         bool $disabled,
         ?string $extraData = null,
@@ -49,7 +45,6 @@ class ImportSubscriberDto
         $this->email = $email;
         $this->confirmed = $confirmed;
         $this->sendConfirmation = !$confirmed;
-        $this->blacklisted = $blacklisted;
         $this->htmlEmail = $htmlEmail;
         $this->disabled = $disabled;
         $this->extraData = $extraData;

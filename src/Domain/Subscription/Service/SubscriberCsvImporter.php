@@ -189,10 +189,10 @@ class SubscriberCsvImporter
 
         $this->attributeManager->processAttributes($subscriber, $dto->extraAttributes);
 
-        // as in phplist3, only the blacklist table decides; a blacklisted flag from the CSV alone does not
+        // as in phplist3, the CSV blacklisted column is ignored; only the blacklist table decides, and the flag is
+        // only ever raised, never cleared, by an import
         $isBlacklisted = $this->blacklistRepository->isEmailBlacklisted($subscriber->getEmail());
         if ($isBlacklisted) {
-            // make sure the flag reflects the blacklist table
             $subscriber->setBlacklisted(true);
             $stats['blacklisted']++;
         }

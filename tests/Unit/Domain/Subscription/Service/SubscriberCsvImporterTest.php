@@ -104,7 +104,6 @@ class SubscriberCsvImporterTest extends TestCase
         $importDto1 = new ImportSubscriberDto(
             email: 'test@example.com',
             confirmed: true,
-            blacklisted: false,
             htmlEmail: true,
             disabled: false,
         );
@@ -115,7 +114,6 @@ class SubscriberCsvImporterTest extends TestCase
         $importDto2 = new ImportSubscriberDto(
             email: 'another@example.com',
             confirmed: false,
-            blacklisted: true,
             htmlEmail: false,
             disabled: true
         );
@@ -211,7 +209,6 @@ class SubscriberCsvImporterTest extends TestCase
         $importDto = new ImportSubscriberDto(
             email: 'existing@example.com',
             confirmed: true,
-            blacklisted: false,
             htmlEmail: true,
             disabled: false,
         );
@@ -281,7 +278,6 @@ class SubscriberCsvImporterTest extends TestCase
         $dto = new ImportSubscriberDto(
             email: 'user@example.com',
             confirmed: true,
-            blacklisted: false,
             htmlEmail: true,
             disabled: false,
             extraData: null,
@@ -346,7 +342,6 @@ class SubscriberCsvImporterTest extends TestCase
         $dto = new ImportSubscriberDto(
             email: 'conflict@example.com',
             confirmed: true,
-            blacklisted: false,
             htmlEmail: true,
             disabled: false,
             extraData: null,
@@ -406,7 +401,6 @@ class SubscriberCsvImporterTest extends TestCase
         $dto = new ImportSubscriberDto(
             email: 'existing@example.com',
             confirmed: true,
-            blacklisted: false,
             htmlEmail: true,
             disabled: false,
             extraData: null,
@@ -466,7 +460,6 @@ class SubscriberCsvImporterTest extends TestCase
         $dto = new ImportSubscriberDto(
             email: 'new@example.com',
             confirmed: false,
-            blacklisted: false,
             htmlEmail: true,
             disabled: false,
             extraData: null,
@@ -520,7 +513,6 @@ class SubscriberCsvImporterTest extends TestCase
         $dto = new ImportSubscriberDto(
             email: 'bl@example.com',
             confirmed: false,
-            blacklisted: false,
             htmlEmail: true,
             disabled: false,
         );
@@ -565,7 +557,6 @@ class SubscriberCsvImporterTest extends TestCase
         $dto = new ImportSubscriberDto(
             email: 'flag@example.com',
             confirmed: true,
-            blacklisted: true,
             htmlEmail: true,
             disabled: false,
         );
@@ -575,6 +566,7 @@ class SubscriberCsvImporterTest extends TestCase
         $created->method('getId')->willReturn(8);
         $created->method('getEmail')->willReturn('flag@example.com');
         $created->method('isBlacklisted')->willReturn(true);
+        $created->expects($this->never())->method('setBlacklisted');
         $this->subscriberManagerMock->method('createFromImport')->willReturn($created);
 
         $this->blacklistRepositoryMock->method('isEmailBlacklisted')->willReturn(false);

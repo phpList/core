@@ -110,7 +110,6 @@ class SubscriberManager
     {
         $subscriber = new Subscriber($subscriberDto->email);
         $subscriber->setConfirmed($subscriberDto->confirmed);
-        $subscriber->setBlacklisted($subscriberDto->blacklisted);
         $subscriber->setHtmlEmail($subscriberDto->htmlEmail);
         $subscriber->setDisabled($subscriberDto->disabled);
         $subscriber->setExtraData($subscriberDto->extraData);
@@ -127,7 +126,6 @@ class SubscriberManager
     {
         $existingSubscriber->setEmail($subscriberDto->email);
         $existingSubscriber->setConfirmed($subscriberDto->confirmed);
-        $existingSubscriber->setBlacklisted($subscriberDto->blacklisted);
         $existingSubscriber->setHtmlEmail($subscriberDto->htmlEmail);
         $existingSubscriber->setDisabled($subscriberDto->disabled);
         $existingSubscriber->setExtraData($subscriberDto->extraData);
