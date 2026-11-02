@@ -45,7 +45,8 @@ final class UserTrackValueResolverTest extends TestCase
             messageId: 99,
         );
 
-        $expected = '<img src="https://api.example/api/v2/t/open.gif?u=UID-XYZ&amp;m=99" width="1" height="1" border="0" alt="" />';
+        $expected = '<img src="https://api.example/api/v2/t/open.gif?u=UID-XYZ&amp;m=99" '
+            . 'width="1" height="1" border="0" alt="" />';
         $this->assertSame($expected, $resolver($ctx));
     }
 }

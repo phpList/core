@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Subscription\Repository;
 
+use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\ORM\QueryBuilder;
 use InvalidArgumentException;
@@ -14,6 +15,7 @@ use PhpList\Core\Domain\Common\Repository\Interfaces\PaginatableRepositoryInterf
 use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberFilter;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\Subscription;
+use PhpList\Core\Domain\Subscription\Model\UserBlacklist;
 
 /**
  * Repository for Subscriber models.
@@ -146,9 +148,7 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             }
 
             if ($filter->getIsBlacklisted() !== null) {
-                $queryBuilder
-                    ->andWhere('subscriber.blacklisted = :isBlacklisted')
-                    ->setParameter('isBlacklisted', $filter->getIsBlacklisted());
+                $this->applyBlacklistedFilter($queryBuilder, $filter->getIsBlacklisted());
             }
 
             if ($filter->getFindColumn() && $filter->getFindValue()) {
@@ -294,6 +294,26 @@ class SubscriberRepository extends AbstractRepository implements PaginatableRepo
             ->orderBy('subscriber.id', 'ASC')
             ->getQuery()
             ->getArrayResult();
+    }
+
+    /**
+     * Matches the live blacklist status (stored flag or an entry in the blacklist table), the same status the CSV
+     * export writes, so a stale stored flag does not make the filter and the exported value disagree.
+     */
+    private function applyBlacklistedFilter(QueryBuilder $queryBuilder, bool $isBlacklisted): void
+    {
+        $inBlacklistTable = sprintf(
+            'EXISTS (SELECT 1 FROM %s ub WHERE ub.email = subscriber.email AND ub.added < :blacklistNow)',
+            UserBlacklist::class
+        );
+
+        $queryBuilder
+            ->andWhere(
+                $isBlacklisted
+                    ? '(subscriber.blacklisted = true OR ' . $inBlacklistTable . ')'
+                    : '(subscriber.blacklisted = false AND NOT ' . $inBlacklistTable . ')'
+            )
+            ->setParameter('blacklistNow', new DateTimeImmutable());
     }
 
     public function isEmailBlacklisted(string $email): bool
