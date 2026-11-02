@@ -29,6 +29,10 @@ class DefaultConfigProvider
             return;
         }
 
+        // the website may contain a port or path, the email domain is the bare host without a leading www.
+        $host = parse_url('//' . $this->website, PHP_URL_HOST);
+        $domain = preg_replace('/^www\./i', '', is_string($host) ? $host : $this->website);
+
         $publicSchema = 'http';
         $pageRoot = '/api/v2';
 
@@ -42,7 +46,7 @@ class DefaultConfigProvider
                 'category'    => 'general',
             ],
             'domain' => [
-                'value'       => preg_replace('/^www\./i', '', $this->website),
+                'value'       => $domain,
                 'description' => $this->translator->trans('Domain Name of your server (for email)'),
                 'type'        => 'text',
                 'allowempty'  => false,
