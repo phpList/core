@@ -24,7 +24,8 @@ class LinkRewriter
             return $html;
         }
 
-        return (string) preg_replace_callback(
+        // null means a PCRE error (e.g. the backtrack limit on a large body): keep the original instead of emptying it
+        return preg_replace_callback(
             self::HTML_ANCHOR_PATTERN,
             function (array $match) use ($rewrite): string {
                 $linkText = strip_tags($match[5]);
@@ -42,7 +43,7 @@ class LinkRewriter
                     . $match[4] . $match[5] . '</a>';
             },
             $html
-        );
+        ) ?? $html;
     }
 
     /**
@@ -56,7 +57,8 @@ class LinkRewriter
             return $text;
         }
 
-        return (string) preg_replace_callback(
+        // null means a PCRE error: keep the original instead of emptying the text
+        return preg_replace_callback(
             self::TEXT_URL_PATTERN,
             function (array $match) use ($rewrite): string {
                 $trailing = str_ends_with($match[0], '.') ? '.' : '';
@@ -66,6 +68,6 @@ class LinkRewriter
                 return $url === null ? $match[0] : $url . $trailing;
             },
             $text
-        );
+        ) ?? $text;
     }
 }
