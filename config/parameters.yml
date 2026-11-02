@@ -23,6 +23,8 @@ parameters:
     app.rest_api_base_url: '%env(API_BASE_URL)%/api/v2'
     app.api_base_url: '%env(API_BASE_URL)%'
     app.frontend_base_url: '%env(FRONT_END_BASE_URL)%'
+    # falls back to empty so existing .env files without APP_WEBSITE keep working (the value may live in the database)
+    env(APP_WEBSITE): ''
     app.website: '%env(APP_WEBSITE)%'
 
     app.parallel_use_with_phplist3: '%env(PARALLEL_USE_WITH_PHPLIST3)%'
