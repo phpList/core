@@ -36,7 +36,6 @@ class CampaignEmailSender
         private readonly EmailBuilder $campaignEmailBuilder,
         private readonly RateLimitedCampaignMailer $rateLimitedCampaignMailer,
         private readonly MailSizeChecker $mailSizeChecker,
-        private readonly MessageProcessingPreparator $messagePreparator,
         private readonly MessageRepository $messageRepository,
         private readonly MessageStatusUpdater $messageStatusUpdater,
         private readonly SystemNotificationMailer $notificationMailer,
@@ -54,17 +53,10 @@ class CampaignEmailSender
         UserMessage $userMessage,
         MessagePrecacheDto $precachedContent,
     ): void {
-        // todo: check at which point link tracking should be applied (maybe after constructing full text?)
-        $processed = $this->messagePreparator->processMessageLinks(
-            campaignId: $campaign->getId(),
-            cachedMessageDto: $precachedContent,
-            subscriber: $subscriber
-        );
-
         try {
             $result = $this->campaignEmailBuilder->buildCampaignEmail(
                 messageId: $campaign->getId(),
-                data: $processed,
+                data: $precachedContent,
                 toEmail: $subscriber->getEmail(),
                 skipBlacklistCheck: false,
                 inBlast: true,

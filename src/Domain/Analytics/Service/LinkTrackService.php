@@ -9,8 +9,7 @@ use PhpList\Core\Domain\Analytics\Model\Dto\LinkTrackToken;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackForwardRepository;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackMlRepository;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository;
-use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
-use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 
 /**
@@ -33,6 +32,7 @@ class LinkTrackService
         private readonly LinkTrackRepository $linkTrackRepository,
         private readonly LinkTrackForwardRepository $linkTrackForwardRepository,
         private readonly LinkTrackMlRepository $linkTrackMlRepository,
+        private readonly MessageRepository $messageRepository,
         private readonly LinkTrackTokenService $tokenService,
         private readonly ParameterProvider $paramProvider,
     ) {
@@ -50,42 +50,42 @@ class LinkTrackService
     }
 
     /**
-     * Returns a copy of the content in which the links of the HTML parts (content, HTML footer) and of the text
-     * parts (text content, text footer) point to the click-tracking endpoint for this subscriber.
+     * Replaces the links of the final HTML and text bodies with click-tracking links for this subscriber. It has to
+     * run once all placeholders are expanded, so that template links and links coming from placeholders (unsubscribe,
+     * preferences, ...) are tracked too, like phplist3 does.
      *
      * Links are left alone when they are not http(s)/ftp, are longer than the forward url column, still contain
      * placeholders (the redirect could not expand them), or are shown as text that itself contains a URL (the
      * rewrite would look like phishing).
+     *
+     * @return array{0: string, 1: string} the tracked HTML and text
      */
-    public function trackLinks(
-        MessagePrecacheDto $content,
-        Message $campaign,
-        Subscriber $subscriber
-    ): MessagePrecacheDto {
+    public function trackLinks(string $html, string $text, int $campaignId, Subscriber $subscriber): array
+    {
+        $campaign = $this->isClickTrackingEnabled() ? $this->messageRepository->findById($campaignId) : null;
+        if ($campaign === null) {
+            return [$html, $text];
+        }
+
         $messageUuid = (string) $campaign->getUuid();
         $subscriberUuid = $subscriber->getUuid();
         if (!$this->isClickTrackingEnabled() || $messageUuid === '' || $subscriberUuid === '') {
-            return $content;
+            return [$html, $text];
         }
 
-        $tracked = clone $content;
         $forwardIds = [];
         $trackUrl = function (string $url, string $type) use ($messageUuid, $subscriberUuid, &$forwardIds): ?string {
             return $this->createTrackingUrl($url, $type, $messageUuid, $subscriberUuid, $forwardIds);
         };
 
-        $tracked->content = $this->rewriteHtml($tracked->content, $trackUrl);
-        $tracked->htmlFooter = $this->rewriteHtml($tracked->htmlFooter, $trackUrl);
-        $tracked->textContent = $this->rewriteText($tracked->textContent, $trackUrl);
-        if ($tracked->textFooter !== null) {
-            $tracked->textFooter = $this->rewriteText($tracked->textFooter, $trackUrl);
-        }
+        $html = $this->rewriteHtml($html, $trackUrl);
+        $text = $this->rewriteText($text, $trackUrl);
 
         foreach (array_keys($forwardIds) as $forwardId) {
-            $this->linkTrackMlRepository->incrementTotal((int) $campaign->getId(), $forwardId);
+            $this->linkTrackMlRepository->incrementTotal($campaignId, $forwardId);
         }
 
-        return $tracked;
+        return [$html, $text];
     }
 
     /** @param callable(string, string): ?string $trackUrl */

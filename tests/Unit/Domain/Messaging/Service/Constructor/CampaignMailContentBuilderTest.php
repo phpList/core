@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\Service\Constructor;
 
+use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
 use PhpList\Core\Domain\Common\Html2Text;
 use PhpList\Core\Domain\Common\RemotePageFetcher;
 use PhpList\Core\Domain\Common\TextParser;
@@ -28,6 +29,7 @@ class CampaignMailContentBuilderTest extends TestCase
     private Html2Text&MockObject $html2Text;
     private TextParser&MockObject $textParser;
     private MessagePlaceholderProcessor&MockObject $placeholderProcessor;
+    private LinkTrackService&MockObject $linkTrackService;
 
     protected function setUp(): void
     {
@@ -47,6 +49,10 @@ class CampaignMailContentBuilderTest extends TestCase
             ->onlyMethods(['__invoke'])
             ->getMock();
         $this->placeholderProcessor = $this->createMock(MessagePlaceholderProcessor::class);
+        $this->linkTrackService = $this->createMock(LinkTrackService::class);
+        $this->linkTrackService->method('trackLinks')->willReturnCallback(
+            static fn (string $html, string $text): array => [$html, $text]
+        );
 
         $this->configProvider
             ->method('getValue')
@@ -67,6 +73,7 @@ class CampaignMailContentBuilderTest extends TestCase
             html2Text: $this->html2Text,
             textParser: $this->textParser,
             placeholderProcessor: $this->placeholderProcessor,
+            linkTrackService: $this->linkTrackService,
         );
     }
 
@@ -275,5 +282,54 @@ class CampaignMailContentBuilderTest extends TestCase
             $text,
             'No text content provided and html2text not used when htmlFormatted and template present'
         );
+    }
+
+    private function makeSubscriber(): Subscriber&MockObject
+    {
+        $subscriber = $this->getMockBuilder(Subscriber::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getId', 'getEmail'])
+            ->getMock();
+        $subscriber->method('getId')->willReturn(5);
+        $subscriber->method('getEmail')->willReturn('user@example.com');
+        $this->placeholderProcessor
+            ->method('process')
+            ->willReturnCallback(static fn (...$args): string => (string) $args[0] . '[expanded]');
+
+        return $subscriber;
+    }
+
+    public function testLinksAreTrackedAfterPlaceholdersAreExpanded(): void
+    {
+        $subscriber = $this->makeSubscriber();
+        $this->linkTrackService = $this->createMock(LinkTrackService::class);
+        $this->linkTrackService->expects($this->once())
+            ->method('trackLinks')
+            ->with('<p>Hi</p>[expanded]', 'Hi[expanded]', 9, $subscriber)
+            ->willReturn(['<p>tracked</p>', 'tracked text']);
+
+        $dto = new MessagePrecacheDto();
+        $dto->content = '<p>Hi</p>';
+        $dto->textContent = 'Hi';
+        $dto->htmlFormatted = true;
+
+        [$html, $text] = ($this->makeBuilder())($dto, $subscriber, 9);
+
+        $this->assertStringContainsString('<p>tracked</p>', $html);
+        $this->assertSame('tracked text', $text);
+    }
+
+    public function testLinksAreNotTrackedInForwardedMessages(): void
+    {
+        $subscriber = $this->makeSubscriber();
+        $this->linkTrackService = $this->createMock(LinkTrackService::class);
+        $this->linkTrackService->expects($this->never())->method('trackLinks');
+
+        $dto = new MessagePrecacheDto();
+        $dto->content = '<p>Hi</p>';
+        $dto->textContent = 'Hi';
+        $dto->htmlFormatted = true;
+
+        ($this->makeBuilder())($dto, $subscriber, 9, $this->createMock(Subscriber::class));
     }
 }

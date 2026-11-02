@@ -11,8 +11,8 @@ use PhpList\Core\Domain\Analytics\Repository\LinkTrackMlRepository;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackTokenService;
-use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
+use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -21,6 +21,7 @@ class LinkTrackServiceTest extends TestCase
 {
     private LinkTrackForwardRepository&MockObject $forwardRepository;
     private LinkTrackMlRepository&MockObject $mlRepository;
+    private MessageRepository&MockObject $messageRepository;
     private LinkTrackTokenService $tokenService;
     private Message&MockObject $campaign;
     private Subscriber $subscriber;
@@ -31,6 +32,7 @@ class LinkTrackServiceTest extends TestCase
     {
         $this->forwardRepository = $this->createMock(LinkTrackForwardRepository::class);
         $this->mlRepository = $this->createMock(LinkTrackMlRepository::class);
+        $this->messageRepository = $this->createMock(MessageRepository::class);
         $this->tokenService = new LinkTrackTokenService(
             new ParameterProvider([]),
             'https://example.com/api/v2',
@@ -40,6 +42,7 @@ class LinkTrackServiceTest extends TestCase
         $this->campaign = $this->createMock(Message::class);
         $this->campaign->method('getId')->willReturn(7);
         $this->campaign->method('getUuid')->willReturn('campaign-uuid');
+        $this->messageRepository->method('findById')->with(7)->willReturn($this->campaign);
 
         $this->subscriber = new Subscriber('alice@example.com');
         $this->subscriber->setUuid('subscriber-uuid');
@@ -70,6 +73,7 @@ class LinkTrackServiceTest extends TestCase
             $this->createMock(LinkTrackRepository::class),
             $this->forwardRepository,
             $this->mlRepository,
+            $this->messageRepository,
             $this->tokenService,
             new ParameterProvider(['click_track' => $clickTrack]),
         );
@@ -94,50 +98,59 @@ class LinkTrackServiceTest extends TestCase
 
     public function testContentIsReturnedUntouchedWhenClickTrackingIsDisabled(): void
     {
-        $content = new MessagePrecacheDto();
-        $content->content = '<a href="https://example.com/">x</a>';
+        $html = '<a href="https://example.com/">x</a>';
 
         $this->forwardRepository->expects(self::never())->method('findOrCreateByUrl');
 
-        $result = $this->createService(false)->trackLinks($content, $this->campaign, $this->subscriber);
+        $result = $this->createService(false)->trackLinks($html, 'https://example.com/', 7, $this->subscriber);
 
-        self::assertSame($content, $result);
+        self::assertSame([$html, 'https://example.com/'], $result);
     }
 
     public function testContentIsReturnedUntouchedWhenCampaignHasNoUuid(): void
     {
         $campaign = $this->createMock(Message::class);
         $campaign->method('getUuid')->willReturn(null);
-        $content = new MessagePrecacheDto();
-        $content->content = '<a href="https://example.com/">x</a>';
+        $repository = $this->createMock(MessageRepository::class);
+        $repository->method('findById')->willReturn($campaign);
+        $service = new LinkTrackService(
+            $this->createMock(LinkTrackRepository::class),
+            $this->forwardRepository,
+            $this->mlRepository,
+            $repository,
+            $this->tokenService,
+            new ParameterProvider(['click_track' => true]),
+        );
+        $html = '<a href="https://example.com/">x</a>';
 
-        self::assertSame($content, $this->createService()->trackLinks($content, $campaign, $this->subscriber));
+        self::assertSame([$html, ''], $service->trackLinks($html, '', 7, $this->subscriber));
     }
 
     public function testHtmlLinksAreReplacedWithTrackingLinks(): void
     {
-        $content = new MessagePrecacheDto();
-        $content->content = '<p><a class="btn" href="https://example.com/a?x=1&amp;y=2" target="_blank">A</a> '
+        $html = '<p><a class="btn" href="https://example.com/a?x=1&amp;y=2" target="_blank">A</a> '
             . "<a href='http://example.org/b'><img src=\"b.png\"></a></p>";
 
-        $result = $this->createService()->trackLinks($content, $this->campaign, $this->subscriber);
+        [$result] = $this->createService()->trackLinks($html, '', 7, $this->subscriber);
 
-        self::assertStringContainsString('<a class="btn" href="https://example.com/api/v2/lt?tid=', $result->content);
-        self::assertStringContainsString(' target="_blank">A</a>', $result->content);
-        self::assertStringContainsString("<a href='https://example.com/api/v2/lt?tid=", $result->content);
-        self::assertStringNotContainsString('example.org', $result->content);
+        self::assertStringContainsString('<a class="btn" href="https://example.com/api/v2/lt?tid=', $result);
+        self::assertStringContainsString(' target="_blank">A</a>', $result);
+        self::assertStringContainsString("<a href='https://example.com/api/v2/lt?tid=", $result);
+        self::assertStringNotContainsString('example.org', $result);
         self::assertArrayHasKey('https://example.com/a?x=1&y=2', $this->createdForwards, 'stored url is decoded');
         self::assertArrayHasKey('http://example.org/b', $this->createdForwards);
     }
 
     public function testTrackingLinkIdentifiesForwardCampaignAndSubscriber(): void
     {
-        $content = new MessagePrecacheDto();
-        $content->content = '<a href="https://example.com/a">A</a>';
+        [$result] = $this->createService()->trackLinks(
+            '<a href="https://example.com/a">A</a>',
+            '',
+            7,
+            $this->subscriber
+        );
 
-        $result = $this->createService()->trackLinks($content, $this->campaign, $this->subscriber);
-
-        preg_match('~tid=([A-Za-z0-9_-]+)~', $result->content, $match);
+        preg_match('~tid=([A-Za-z0-9_-]+)~', $result, $match);
         $token = $this->tokenService->parse($match[1]);
         self::assertNotNull($token);
         self::assertTrue($token->isHtml());
@@ -158,23 +171,23 @@ class LinkTrackServiceTest extends TestCase
             '<a href="https://example.com/api/v2/lt?tid=abc">already tracked</a>',
             '<a name="anchor">no href</a>',
         ]);
-        $content = new MessagePrecacheDto();
-        $content->content = $html;
 
         $this->forwardRepository->expects(self::never())->method('findOrCreateByUrl');
         $this->mlRepository->expects(self::never())->method('incrementTotal');
 
-        $result = $this->createService()->trackLinks($content, $this->campaign, $this->subscriber);
+        [$result] = $this->createService()->trackLinks($html, '', 7, $this->subscriber);
 
-        self::assertSame($html, $result->content);
+        self::assertSame($html, $result);
     }
 
     public function testPersonalUidAndSessionParametersAreStrippedAndMarkTheForwardPersonal(): void
     {
-        $content = new MessagePrecacheDto();
-        $content->content = '<a href="https://example.com/p?a=1&amp;uid=[UID]&amp;PHPSESSID=x#top">P</a>';
-
-        $this->createService()->trackLinks($content, $this->campaign, $this->subscriber);
+        $this->createService()->trackLinks(
+            '<a href="https://example.com/p?a=1&amp;uid=abc123&amp;PHPSESSID=x#top">P</a>',
+            '',
+            7,
+            $this->subscriber
+        );
 
         self::assertSame(
             ['https://example.com/p?a=1#top' => ['url' => 'https://example.com/p?a=1#top', 'personalise' => true]],
@@ -184,42 +197,34 @@ class LinkTrackServiceTest extends TestCase
 
     public function testTextUrlsAreReplacedWithTextTokens(): void
     {
-        $content = new MessagePrecacheDto();
-        $content->textContent = "Read https://example.com/a. Or see http://example.org/b?x=1\nbye";
-        $content->textFooter = 'More: https://example.com/a';
+        $text = "Read https://example.com/a. Or see http://example.org/b?x=1\nbye\nMore: https://example.com/a";
 
-        $result = $this->createService()->trackLinks($content, $this->campaign, $this->subscriber);
+        [, $result] = $this->createService()->trackLinks('', $text, 7, $this->subscriber);
 
         self::assertMatchesRegularExpression(
             '~^Read https://example.com/api/v2/lt\?tid=[A-Za-z0-9_-]+\. Or see https://example.com/api/v2/lt\?tid=~',
-            $result->textContent
+            $result
         );
-        preg_match('~tid=([A-Za-z0-9_-]+)~', $result->textContent, $match);
+        preg_match('~tid=([A-Za-z0-9_-]+)~', $result, $match);
         self::assertSame('T', $this->tokenService->parse($match[1])->type);
-        self::assertSame(
-            [$this->trackedForwardUuids($result->textContent)[0]],
-            $this->trackedForwardUuids((string) $result->textFooter),
-            'the same url gets the same forward'
-        );
-        self::assertSame("\nbye", substr($result->textContent, -4));
+        $uuids = $this->trackedForwardUuids($result);
+        self::assertSame($uuids[0], $uuids[2], 'the same url gets the same forward');
+        self::assertSame("\nbye\n", substr($result, strpos($result, "\n"), 5));
     }
 
-    public function testFootersAreTrackedToo(): void
+    public function testLinksFromExpandedPlaceholdersAreTracked(): void
     {
-        $content = new MessagePrecacheDto();
-        $content->htmlFooter = '<a href="https://example.com/footer">Footer</a>';
+        $html = '<a href="https://example.com/unsubscribe?uid=abc123">Unsubscribe</a>';
 
-        $result = $this->createService()->trackLinks($content, $this->campaign, $this->subscriber);
+        [$result] = $this->createService()->trackLinks($html, '', 7, $this->subscriber);
 
-        self::assertSame(['forward-uuid-1'], $this->trackedForwardUuids($result->htmlFooter));
+        self::assertSame(['forward-uuid-1'], $this->trackedForwardUuids($result));
     }
 
     public function testTotalIsIncrementedOncePerDistinctLinkOfTheEmail(): void
     {
-        $content = new MessagePrecacheDto();
-        $content->content = '<a href="https://example.com/a">1</a><a href="https://example.com/a">2</a>'
+        $html = '<a href="https://example.com/a">1</a><a href="https://example.com/a">2</a>'
             . '<a href="https://example.com/b">3</a>';
-        $content->textContent = 'https://example.com/a';
 
         $incremented = [];
         $this->mlRepository->expects(self::exactly(2))
@@ -228,19 +233,8 @@ class LinkTrackServiceTest extends TestCase
                 $incremented[] = [$messageId, $forwardId];
             });
 
-        $this->createService()->trackLinks($content, $this->campaign, $this->subscriber);
+        $this->createService()->trackLinks($html, 'https://example.com/a', 7, $this->subscriber);
 
         self::assertSame([[7, 1], [7, 2]], $incremented);
-    }
-
-    public function testTheGivenContentIsNotModified(): void
-    {
-        $content = new MessagePrecacheDto();
-        $content->content = '<a href="https://example.com/a">A</a>';
-
-        $result = $this->createService()->trackLinks($content, $this->campaign, $this->subscriber);
-
-        self::assertNotSame($content, $result);
-        self::assertSame('<a href="https://example.com/a">A</a>', $content->content);
     }
 }
