@@ -122,6 +122,22 @@ class AnalyticsTrackingServiceTest extends TestCase
         self::assertSame('https://example.com/p?a=1&b=2&utm_source=new&utm_content=HTML#section', $url);
     }
 
+    public function testOnlyQueryParametersStartingWithThePrefixAreRemoved(): void
+    {
+        $this->assertSame(
+            'https://example.com/utm_page?x_utm_a=1&b=2',
+            $this->service->withParameters(
+                'https://example.com/utm_page?x_utm_a=1&utm_source=old&&b=2&utm_medium=old',
+                [],
+                'utm_'
+            )
+        );
+        $this->assertSame(
+            'https://example.com/utm_page',
+            $this->service->withParameters('https://example.com/utm_page?utm_source=old', [], 'utm_')
+        );
+    }
+
     public function testEmptyParametersAreLeftOut(): void
     {
         self::assertSame(

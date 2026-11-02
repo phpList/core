@@ -103,11 +103,7 @@ class AnalyticsTrackingService
             $url = substr($url, 0, $position);
         }
 
-        if (str_contains($url, $prefix)) {
-            // the expression can leave a trailing ? or & behind
-            $pattern = sprintf('/%s.+?=[^&]+(&|$)/', preg_quote($prefix, '/'));
-            $url = rtrim((string) preg_replace($pattern, '', $url), '?&');
-        }
+        $url = $this->withoutPrefixedParameters($url, $prefix);
 
         $trackingCode = http_build_query(
             array_filter($trackingParameters, static fn ($value): bool => $value !== null && $value !== '')
@@ -117,6 +113,32 @@ class AnalyticsTrackingService
         }
 
         return $url . (str_contains($url, '?') ? '&' : '?') . $trackingCode . $fragment;
+    }
+
+    /**
+     * Takes off the query parameters whose name starts with the prefix, leaving the path and the other parameters
+     * as they are. The url is left untouched when nothing is removed.
+     */
+    private function withoutPrefixedParameters(string $url, string $prefix): string
+    {
+        $queryPosition = strpos($url, '?');
+        if ($prefix === '' || $queryPosition === false) {
+            return $url;
+        }
+
+        $base = substr($url, 0, $queryPosition);
+        $pairs = explode('&', substr($url, $queryPosition + 1));
+        $kept = array_filter(
+            $pairs,
+            static fn (string $pair): bool => !str_starts_with(urldecode(explode('=', $pair, 2)[0]), $prefix)
+        );
+        if (count($kept) === count($pairs)) {
+            return $url;
+        }
+
+        $kept = array_filter($kept, static fn (string $pair): bool => $pair !== '');
+
+        return $kept === [] ? $base : $base . '?' . implode('&', $kept);
     }
 
     private function getQuery(): AnalyticsQueryInterface
