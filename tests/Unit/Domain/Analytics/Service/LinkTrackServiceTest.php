@@ -9,6 +9,8 @@ use PhpList\Core\Domain\Analytics\Model\LinkTrackForward;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackForwardRepository;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackMlRepository;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository;
+use PhpList\Core\Domain\Analytics\Service\AnalyticsTrackingService;
+use PhpList\Core\Domain\Analytics\Service\LinkRewriter;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackTokenService;
 use PhpList\Core\Domain\Messaging\Model\Message;
@@ -22,6 +24,7 @@ class LinkTrackServiceTest extends TestCase
     private LinkTrackForwardRepository&MockObject $forwardRepository;
     private LinkTrackMlRepository&MockObject $mlRepository;
     private MessageRepository&MockObject $messageRepository;
+    private AnalyticsTrackingService&MockObject $analyticsTrackingService;
     private LinkTrackTokenService $tokenService;
     private Message&MockObject $campaign;
     private Subscriber $subscriber;
@@ -33,6 +36,7 @@ class LinkTrackServiceTest extends TestCase
         $this->forwardRepository = $this->createMock(LinkTrackForwardRepository::class);
         $this->mlRepository = $this->createMock(LinkTrackMlRepository::class);
         $this->messageRepository = $this->createMock(MessageRepository::class);
+        $this->analyticsTrackingService = $this->createMock(AnalyticsTrackingService::class);
         $this->tokenService = new LinkTrackTokenService(
             new ParameterProvider([]),
             'https://example.com/api/v2',
@@ -76,6 +80,8 @@ class LinkTrackServiceTest extends TestCase
             $this->messageRepository,
             $this->tokenService,
             new ParameterProvider(['click_track' => $clickTrack]),
+            new LinkRewriter(),
+            $this->analyticsTrackingService,
         );
     }
 
@@ -120,6 +126,8 @@ class LinkTrackServiceTest extends TestCase
             $repository,
             $this->tokenService,
             new ParameterProvider(['click_track' => true]),
+            new LinkRewriter(),
+            $this->analyticsTrackingService,
         );
         $html = '<a href="https://example.com/">x</a>';
 
@@ -236,5 +244,41 @@ class LinkTrackServiceTest extends TestCase
         $this->createService()->trackLinks($html, 'https://example.com/a', 7, $this->subscriber);
 
         self::assertSame([[7, 1], [7, 2]], $incremented);
+    }
+
+    public function testAnalyticsParametersAreAddedStraightToTheLinksWithoutClickTracking(): void
+    {
+        $this->analyticsTrackingService->expects(self::once())
+            ->method('addToBodies')
+            ->with('<a href="https://example.com/">x</a>', 'text', ['utm_source' => 'news'])
+            ->willReturn(['html with utm', 'text with utm']);
+        $this->forwardRepository->expects(self::never())->method('findOrCreateByUrl');
+
+        $result = $this->createService(false)->trackLinks(
+            '<a href="https://example.com/">x</a>',
+            'text',
+            7,
+            $this->subscriber,
+            ['utm_source' => 'news']
+        );
+
+        self::assertSame(['html with utm', 'text with utm'], $result);
+    }
+
+    public function testAnalyticsParametersAreNotAddedByTheSendWhenClickTrackingIsOn(): void
+    {
+        $this->analyticsTrackingService->expects(self::never())->method('addToBodies');
+
+        $this->createService(true)->trackLinks('<a href="https://example.com/">x</a>', '', 7, $this->subscriber, []);
+    }
+
+    public function testForwardedMessagesAreNotClickTracked(): void
+    {
+        $html = '<a href="https://example.com/">x</a>';
+        $this->forwardRepository->expects(self::never())->method('findOrCreateByUrl');
+
+        $result = $this->createService()->trackLinks($html, '', 7, $this->subscriber, null, true);
+
+        self::assertSame([$html, ''], $result);
     }
 }

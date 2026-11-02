@@ -61,6 +61,12 @@ services:
     autoconfigure: true
     public: true
 
+  PhpList\Core\Domain\Analytics\Service\LinkRewriter:
+    autowire: true
+
+  PhpList\Core\Domain\Analytics\Service\AnalyticsTrackingService:
+    autowire: true
+
   PhpList\Core\Domain\Analytics\Service\LinkTrackTokenService:
     autowire: true
     autoconfigure: true

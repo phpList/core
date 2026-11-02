@@ -10,6 +10,7 @@ use PhpList\Core\Domain\Analytics\Model\LinkTrackForward;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackForwardRepository;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackMlRepository;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackUmlClickRepository;
+use PhpList\Core\Domain\Analytics\Service\AnalyticsTrackingService;
 use PhpList\Core\Domain\Analytics\Service\LinkClickService;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackTokenService;
 use PhpList\Core\Domain\Analytics\Service\UserMessageService;
@@ -31,6 +32,7 @@ class LinkClickServiceTest extends TestCase
     private SubscriberRepository&MockObject $subscriberRepository;
     private UserMessageRepository&MockObject $userMessageRepository;
     private UserMessageService&MockObject $userMessageService;
+    private AnalyticsTrackingService&MockObject $analyticsTrackingService;
     private LinkTrackTokenService $tokenService;
     private LinkClickService $service;
     private Message&MockObject $message;
@@ -45,6 +47,8 @@ class LinkClickServiceTest extends TestCase
         $this->subscriberRepository = $this->createMock(SubscriberRepository::class);
         $this->userMessageRepository = $this->createMock(UserMessageRepository::class);
         $this->userMessageService = $this->createMock(UserMessageService::class);
+        $this->analyticsTrackingService = $this->createMock(AnalyticsTrackingService::class);
+        $this->analyticsTrackingService->method('addToClickedUrl')->willReturnArgument(0);
         $this->tokenService = new LinkTrackTokenService(new ParameterProvider([]), 'https://example.com/api/v2', 's');
 
         $this->service = new LinkClickService(
@@ -56,6 +60,7 @@ class LinkClickServiceTest extends TestCase
             $this->subscriberRepository,
             $this->userMessageRepository,
             $this->userMessageService,
+            $this->analyticsTrackingService,
         );
 
         $this->message = $this->createMock(Message::class);
@@ -111,6 +116,31 @@ class LinkClickServiceTest extends TestCase
             'https://example.com/a',
             $this->service->trackClick($this->tid(), null, ['HTTP_USER_AGENT' => 'ua'])
         );
+    }
+
+    public function testAnalyticsParametersAreAddedToTheRedirectUrl(): void
+    {
+        $this->givenKnownLink();
+        $this->givenUserMessage(viewed: true);
+
+        $analytics = $this->createMock(AnalyticsTrackingService::class);
+        $analytics->expects(self::once())
+            ->method('addToClickedUrl')
+            ->with('https://example.com/a', $this->message, true)
+            ->willReturn('https://example.com/a?utm_source=phpList');
+        $service = new LinkClickService(
+            $this->tokenService,
+            $this->forwardRepository,
+            $this->mlRepository,
+            $this->umlClickRepository,
+            $this->messageRepository,
+            $this->subscriberRepository,
+            $this->userMessageRepository,
+            $this->userMessageService,
+            $analytics,
+        );
+
+        self::assertSame('https://example.com/a?utm_source=phpList', $service->trackClick($this->tid(), null, []));
     }
 
     public function testTextClicksAreCountedAsText(): void

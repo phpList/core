@@ -21,8 +21,6 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 class LinkTrackService
 {
     private const MAX_URL_LENGTH = 255;
-    private const HTML_ANCHOR_PATTERN = '/(<a\s(?:[^>]*?[\s"\'])?)href=(["\'])(.*?)\2([^>]*>)(.*?)<\/a>/is';
-    private const TEXT_URL_PATTERN = '#https?://[^\s<>},]+#i';
     private const PLACEHOLDER_PATTERN = '/\[[A-Z][A-Z0-9_]*(?::[^\]]*)?\]/';
 
     /** @var array<string, array{id: int, uuid: string}> forwards by url hash, kept for the worker's lifetime */
@@ -35,6 +33,8 @@ class LinkTrackService
         private readonly MessageRepository $messageRepository,
         private readonly LinkTrackTokenService $tokenService,
         private readonly ParameterProvider $paramProvider,
+        private readonly LinkRewriter $linkRewriter,
+        private readonly AnalyticsTrackingService $analyticsTrackingService,
     ) {
     }
 
@@ -58,18 +58,37 @@ class LinkTrackService
      * placeholders (the redirect could not expand them), or are shown as text that itself contains a URL (the
      * rewrite would look like phishing).
      *
+     * Without click tracking, the analytics parameters (when given) are added straight onto the links instead, like
+     * phplist3 does. With click tracking they are added when the link is followed, see LinkClickService.
+     *
+     * Forwarded messages are not click tracked, as their receivers are not necessarily subscribers.
+     *
+     * @param array<string, mixed>|null $analyticsParameters the campaign's analytics settings, null when it has
+     *     no analytics tracking
      * @return array{0: string, 1: string} the tracked HTML and text
      */
-    public function trackLinks(string $html, string $text, int $campaignId, Subscriber $subscriber): array
-    {
-        $campaign = $this->isClickTrackingEnabled() ? $this->messageRepository->findById($campaignId) : null;
+    public function trackLinks(
+        string $html,
+        string $text,
+        int $campaignId,
+        Subscriber $subscriber,
+        ?array $analyticsParameters = null,
+        bool $forwarded = false,
+    ): array {
+        if (!$this->isClickTrackingEnabled()) {
+            return $analyticsParameters === null
+                ? [$html, $text]
+                : $this->analyticsTrackingService->addToBodies($html, $text, $analyticsParameters);
+        }
+
+        $campaign = $forwarded ? null : $this->messageRepository->findById($campaignId);
         if ($campaign === null) {
             return [$html, $text];
         }
 
         $messageUuid = (string) $campaign->getUuid();
         $subscriberUuid = $subscriber->getUuid();
-        if (!$this->isClickTrackingEnabled() || $messageUuid === '' || $subscriberUuid === '') {
+        if ($messageUuid === '' || $subscriberUuid === '') {
             return [$html, $text];
         }
 
@@ -78,62 +97,20 @@ class LinkTrackService
             return $this->createTrackingUrl($url, $type, $messageUuid, $subscriberUuid, $forwardIds);
         };
 
-        $html = $this->rewriteHtml($html, $trackUrl);
-        $text = $this->rewriteText($text, $trackUrl);
+        $html = $this->linkRewriter->rewriteHtml(
+            $html,
+            fn (string $href): ?string => $trackUrl($href, LinkTrackToken::TYPE_HTML)
+        );
+        $text = $this->linkRewriter->rewriteText(
+            $text,
+            fn (string $url): ?string => $trackUrl($url, LinkTrackToken::TYPE_TEXT)
+        );
 
         foreach (array_keys($forwardIds) as $forwardId) {
             $this->linkTrackMlRepository->incrementTotal($campaignId, $forwardId);
         }
 
         return [$html, $text];
-    }
-
-    /** @param callable(string, string): ?string $trackUrl */
-    private function rewriteHtml(string $html, callable $trackUrl): string
-    {
-        if ($html === '') {
-            return $html;
-        }
-
-        return (string) preg_replace_callback(
-            self::HTML_ANCHOR_PATTERN,
-            function (array $match) use ($trackUrl): string {
-                $linkText = strip_tags($match[5]);
-                if (stripos($linkText, 'http://') !== false || stripos($linkText, 'https://') !== false) {
-                    return $match[0];
-                }
-
-                $href = html_entity_decode(trim($match[3]), ENT_QUOTES | ENT_HTML5);
-                $url = $trackUrl($href, LinkTrackToken::TYPE_HTML);
-                if ($url === null) {
-                    return $match[0];
-                }
-
-                return $match[1] . 'href=' . $match[2] . htmlspecialchars($url, ENT_QUOTES) . $match[2]
-                    . $match[4] . $match[5] . '</a>';
-            },
-            $html
-        );
-    }
-
-    /** @param callable(string, string): ?string $trackUrl */
-    private function rewriteText(string $text, callable $trackUrl): string
-    {
-        if ($text === '') {
-            return $text;
-        }
-
-        return (string) preg_replace_callback(
-            self::TEXT_URL_PATTERN,
-            function (array $match) use ($trackUrl): string {
-                $trailing = str_ends_with($match[0], '.') ? '.' : '';
-                $link = substr($match[0], 0, strlen($match[0]) - strlen($trailing));
-                $url = $trackUrl($link, LinkTrackToken::TYPE_TEXT);
-
-                return $url === null ? $match[0] : $url . $trailing;
-            },
-            $text
-        );
     }
 
     /** @param array<int, true> $forwardIds collects the ids of the forwards used in the email */

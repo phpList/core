@@ -22,6 +22,7 @@ enum ConfigOption: string
     case MessageReplyToAddress = 'message_replyto_address';
     case SystemMessageTemplate = 'systemmessagetemplate';
     case AlwaysAddGoogleTracking = 'always_add_googletracking';
+    case AnalyticTracker = 'analytic_tracker';
     case AdminAddress = 'admin_address';
     case AdminAddresses = 'admin_addresses';
     case DefaultMessageTemplate = 'defaultmessagetemplate';

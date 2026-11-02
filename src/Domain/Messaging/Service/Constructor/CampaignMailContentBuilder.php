@@ -97,7 +97,8 @@ class CampaignMailContentBuilder
             textMessage: $textMessage,
             receiver: $receiver,
             campaignId: $campaignId,
-            forwardedBy: $forwardedBy,
+            messagePrecacheDto: $messagePrecacheDto,
+            forwarded: $forwardedBy !== null,
         );
 
         $htmlMessage = $this->ensureHtmlFormating(content: $htmlMessage, addDefaultStyle: $addDefaultStyle);
@@ -112,8 +113,7 @@ class CampaignMailContentBuilder
     }
 
     /**
-     * As in phplist3, links are tracked once all placeholders are expanded, but not in forwarded messages as the
-     * receivers are not necessarily subscribers.
+     * As in phplist3, links are tracked once all placeholders are expanded.
      *
      * @return array{0: string, 1: string}
      */
@@ -122,13 +122,21 @@ class CampaignMailContentBuilder
         string $textMessage,
         Subscriber $receiver,
         ?int $campaignId,
-        ?Subscriber $forwardedBy,
+        MessagePrecacheDto $messagePrecacheDto,
+        bool $forwarded,
     ): array {
-        if ($campaignId === null || $forwardedBy !== null) {
+        if ($campaignId === null) {
             return [$htmlMessage, $textMessage];
         }
 
-        return $this->linkTrackService->trackLinks($htmlMessage, $textMessage, $campaignId, $receiver);
+        return $this->linkTrackService->trackLinks(
+            html: $htmlMessage,
+            text: $textMessage,
+            campaignId: $campaignId,
+            subscriber: $receiver,
+            analyticsParameters: $messagePrecacheDto->googleTrack ? $messagePrecacheDto->analyticsParameters : null,
+            forwarded: $forwarded,
+        );
     }
 
     private function replaceUserSpecificRemoteContent(

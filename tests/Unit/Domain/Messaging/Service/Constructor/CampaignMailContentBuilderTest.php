@@ -319,11 +319,14 @@ class CampaignMailContentBuilderTest extends TestCase
         $this->assertSame('tracked text', $text);
     }
 
-    public function testLinksAreNotTrackedInForwardedMessages(): void
+    public function testForwardedMessagesAreMarkedAsForwardedForLinkTracking(): void
     {
         $subscriber = $this->makeSubscriber();
         $this->linkTrackService = $this->createMock(LinkTrackService::class);
-        $this->linkTrackService->expects($this->never())->method('trackLinks');
+        $this->linkTrackService->expects($this->once())
+            ->method('trackLinks')
+            ->with('<p>Hi</p>[expanded]', 'Hi[expanded]', 9, $subscriber, null, true)
+            ->willReturn(['<p>Hi</p>', 'Hi']);
 
         $dto = new MessagePrecacheDto();
         $dto->content = '<p>Hi</p>';
@@ -331,5 +334,24 @@ class CampaignMailContentBuilderTest extends TestCase
         $dto->htmlFormatted = true;
 
         ($this->makeBuilder())($dto, $subscriber, 9, $this->createMock(Subscriber::class));
+    }
+
+    public function testAnalyticsParametersAreHandedOverWhenTheCampaignTracksAnalytics(): void
+    {
+        $subscriber = $this->makeSubscriber();
+        $this->linkTrackService = $this->createMock(LinkTrackService::class);
+        $this->linkTrackService->expects($this->once())
+            ->method('trackLinks')
+            ->with('<p>Hi</p>[expanded]', 'Hi[expanded]', 9, $subscriber, ['utm_source' => 'news'], false)
+            ->willReturn(['<p>Hi</p>', 'Hi']);
+
+        $dto = new MessagePrecacheDto();
+        $dto->content = '<p>Hi</p>';
+        $dto->textContent = 'Hi';
+        $dto->htmlFormatted = true;
+        $dto->googleTrack = true;
+        $dto->analyticsParameters = ['utm_source' => 'news'];
+
+        ($this->makeBuilder())($dto, $subscriber, 9);
     }
 }

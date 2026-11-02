@@ -31,6 +31,7 @@ class LinkClickService
         private readonly SubscriberRepository $subscriberRepository,
         private readonly UserMessageRepository $userMessageRepository,
         private readonly UserMessageService $userMessageService,
+        private readonly AnalyticsTrackingService $analyticsTrackingService,
     ) {
     }
 
@@ -81,7 +82,7 @@ class LinkClickService
             $now
         );
 
-        return $url;
+        return $this->analyticsTrackingService->addToClickedUrl($url, $message, $token->isHtml());
     }
 
     private function resolveUrl(LinkTrackForward $forward, Subscriber $subscriber, ?UserMessage $userMessage): ?string
