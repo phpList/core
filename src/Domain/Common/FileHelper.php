@@ -47,7 +47,13 @@ class FileHelper
         // Exclusive create (O_EXCL) never follows a symlink or reuses an existing entry,
         // so the file is created and written in a single step without rename.
         $fullPath = $realDirectory . '/' . $name . bin2hex(random_bytes(6)) . ($ext !== '' ? '.' . $ext : '');
-        $handle = fopen($fullPath, 'xb');
+        // Restrictive umask so the file is private from creation (like tempnam()), whatever the process umask is
+        $previousUmask = umask(0077);
+        try {
+            $handle = fopen($fullPath, 'xb');
+        } finally {
+            umask($previousUmask);
+        }
         if ($handle === false) {
             return null;
         }

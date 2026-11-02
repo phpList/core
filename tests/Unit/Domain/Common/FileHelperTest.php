@@ -65,13 +65,19 @@ class FileHelperTest extends TestCase
     {
         $helper = new FileHelper();
 
-        $writtenPath = $helper->writeFileToDirectory($this->tmpDir, 'report.txt', 'payload');
+        $previousUmask = umask(0022);
+        try {
+            $writtenPath = $helper->writeFileToDirectory($this->tmpDir, 'report.txt', 'payload');
+        } finally {
+            umask($previousUmask);
+        }
 
         $this->assertNotNull($writtenPath);
         $this->assertStringStartsWith($this->tmpDir . '/', $writtenPath);
         $this->assertTrue(is_file($writtenPath));
         $this->assertStringEndsWith('.txt', basename($writtenPath));
         $this->assertSame('payload', file_get_contents($writtenPath));
+        $this->assertSame(0600, fileperms($writtenPath) & 0777);
     }
 
     public function testWriteFileToDirectoryLeavesNoOrphanedTempFile(): void
