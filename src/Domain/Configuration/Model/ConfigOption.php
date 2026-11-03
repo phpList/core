@@ -47,4 +47,5 @@ enum ConfigOption: string
     case AutoCreateAttributes = 'autocreate_attributes';
     case RemoteProcessingSecret = 'remote_processing_secret';
     case NotifyAdminLogin = 'notify_admin_login';
+    case XorMask = 'xormask';
 }

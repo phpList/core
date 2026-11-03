@@ -7,17 +7,51 @@ namespace PhpList\Core\Tests\Unit\Domain\Analytics\Service;
 use PhpList\Core\Core\ParameterProvider;
 use PhpList\Core\Domain\Analytics\Model\Dto\LinkTrackToken;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackTokenService;
+use PhpList\Core\Domain\Configuration\Model\ConfigOption;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PHPUnit\Framework\TestCase;
 
 class LinkTrackTokenServiceTest extends TestCase
 {
-    private function createService(bool $sign = false, string $secret = 'secret'): LinkTrackTokenService
-    {
+    private const XOR_MASK = '0123456789abcdef0123456789abcdef';
+    private const FORWARD_UUID = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
+    private const MESSAGE_UUID = '11111111-2222-4333-a444-555555555555';
+    private const SUBSCRIBER_UUID = '99999999-8888-4777-b666-444444444444';
+
+    private function createService(
+        bool $sign = false,
+        string $secret = 'secret',
+        ?string $xorMask = self::XOR_MASK
+    ): LinkTrackTokenService {
+        $configProvider = $this->createMock(ConfigProvider::class);
+        $configProvider->method('getValue')->with(ConfigOption::XorMask)->willReturn($xorMask);
+
         return new LinkTrackTokenService(
             new ParameterProvider(['click_track_sign_with_hmac' => $sign]),
             'https://example.com/api/v2/',
-            $secret
+            $secret,
+            $configProvider
         );
+    }
+
+    /** What phplist3's sendemaillib.php puts in the link of an HTML email. */
+    private function phplist3HtmlToken(): string
+    {
+        $track = 'H|' . self::FORWARD_UUID . '|' . self::MESSAGE_UUID . '|' . self::SUBSCRIBER_UUID;
+        $masked = base64_encode($track ^ str_repeat(self::XOR_MASK, 20));
+
+        return preg_replace('/=$/', '', preg_replace('/=$/', '', $masked));
+    }
+
+    /** What phplist3's sendemaillib.php puts in the link of a text email. */
+    private function phplist3TextToken(): string
+    {
+        $masked = self::FORWARD_UUID . self::MESSAGE_UUID . self::SUBSCRIBER_UUID;
+        foreach ([14, 36 + 14, 72 + 14] as $position) {
+            $masked[$position] = 'c';
+        }
+
+        return str_replace('=', '', base64_encode(hex2bin(str_replace('-', '', $masked))));
     }
 
     /** @return array<string, string> */
@@ -91,5 +125,50 @@ class LinkTrackTokenServiceTest extends TestCase
         $query = $this->queryOf($this->createService()->createUrl(new LinkTrackToken('H', 'f', 'm', 'u')));
 
         self::assertArrayNotHasKey('hm', $query);
+    }
+
+    public function testParsesTheHtmlTokensOfPhplist3(): void
+    {
+        $token = $this->createService()->parse($this->phplist3HtmlToken());
+
+        self::assertNotNull($token);
+        self::assertTrue($token->isHtml());
+        self::assertSame(self::FORWARD_UUID, $token->forwardUuid);
+        self::assertSame(self::MESSAGE_UUID, $token->messageUuid);
+        self::assertSame(self::SUBSCRIBER_UUID, $token->subscriberUuid);
+    }
+
+    public function testParsesTheHtmlTokensOfPhplist3AfterAQueryStringTurnedPlusIntoSpace(): void
+    {
+        $tid = str_replace('+', ' ', $this->phplist3HtmlToken());
+
+        self::assertNotNull($this->createService()->parse($tid));
+    }
+
+    public function testParsesTheTextTokensOfPhplist3(): void
+    {
+        $token = $this->createService()->parse($this->phplist3TextToken());
+
+        self::assertNotNull($token);
+        self::assertSame('T', $token->type);
+        self::assertSame(self::FORWARD_UUID, $token->forwardUuid);
+        self::assertSame(self::MESSAGE_UUID, $token->messageUuid);
+        self::assertSame(self::SUBSCRIBER_UUID, $token->subscriberUuid);
+    }
+
+    public function testPhplist3HtmlTokensNeedTheSameXorMask(): void
+    {
+        $tid = $this->phplist3HtmlToken();
+
+        self::assertNull($this->createService(xorMask: 'fedcba9876543210fedcba9876543210')->parse($tid));
+        self::assertNull($this->createService(xorMask: null)->parse($tid));
+    }
+
+    public function testPhplist3TokensCannotBeVerifiedWhenSigningIsEnabled(): void
+    {
+        $service = $this->createService(sign: true);
+
+        self::assertNull($service->parse($this->phplist3HtmlToken(), 'whatever'));
+        self::assertNull($service->parse($this->phplist3TextToken(), 'whatever'));
     }
 }
