@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Analytics\Service\AnalyticsTrackingService;
 use PhpList\Core\Domain\Analytics\Service\LinkRewriter;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackTokenService;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -40,7 +41,8 @@ class LinkTrackServiceTest extends TestCase
         $this->tokenService = new LinkTrackTokenService(
             new ParameterProvider([]),
             'https://example.com/api/v2',
-            'secret'
+            'secret',
+            $this->createMock(ConfigProvider::class)
         );
 
         $this->campaign = $this->createMock(Message::class);

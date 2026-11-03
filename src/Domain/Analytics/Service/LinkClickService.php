@@ -10,7 +10,6 @@ use PhpList\Core\Domain\Analytics\Repository\LinkTrackForwardRepository;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackMlRepository;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackUmlClickRepository;
 use PhpList\Core\Domain\Messaging\Model\Message;
-use PhpList\Core\Domain\Messaging\Model\UserMessage;
 use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -59,7 +58,7 @@ class LinkClickService
         }
 
         $userMessage = $this->userMessageRepository->findByUserAndMessage($subscriber, $message);
-        $url = $this->resolveUrl($forward, $subscriber, $userMessage);
+        $url = $this->resolveUrl($forward, $subscriber);
         if ($url === null) {
             return null;
         }
@@ -69,8 +68,9 @@ class LinkClickService
         $forwardId = (int) $forward->getId();
         $this->mlRepository->recordClick($messageId, $forwardId, $token->isHtml(), $now);
 
-        // a click on a link also proves the campaign was opened, but only the first one counts as a view
-        if ($userMessage !== null && !$userMessage->isViewed()) {
+        // a click on a link also proves the campaign was opened, but only the first one counts as a view. Like in
+        // phplist3, a subscriber without a record of receiving the campaign (a test) counts every time.
+        if ($userMessage === null || !$userMessage->isViewed()) {
             $this->userMessageService->trackUserMessageView($subscriber->getUniqueId(), $messageId, $metadata);
         }
 
@@ -85,7 +85,7 @@ class LinkClickService
         return $this->analyticsTrackingService->addToClickedUrl($url, $message, $token->isHtml());
     }
 
-    private function resolveUrl(LinkTrackForward $forward, Subscriber $subscriber, ?UserMessage $userMessage): ?string
+    private function resolveUrl(LinkTrackForward $forward, Subscriber $subscriber): ?string
     {
         $url = $forward->getUrl();
         if ($url === null) {
@@ -93,10 +93,6 @@ class LinkClickService
         }
 
         if ($forward->isPersonalise()) {
-            // personalised links are only valid for subscribers the campaign was actually sent to
-            if ($userMessage === null) {
-                return null;
-            }
             // the uid has to go before any fragment, which is never sent to the server
             $fragmentPos = strpos($url, '#');
             $fragment = $fragmentPos === false ? '' : substr($url, $fragmentPos);

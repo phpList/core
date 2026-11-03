@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Analytics\Repository\LinkTrackUmlClickRepository;
 use PhpList\Core\Domain\Analytics\Service\AnalyticsTrackingService;
 use PhpList\Core\Domain\Analytics\Service\LinkClickService;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackTokenService;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Analytics\Service\UserMessageService;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\UserMessage;
@@ -49,7 +50,12 @@ class LinkClickServiceTest extends TestCase
         $this->userMessageService = $this->createMock(UserMessageService::class);
         $this->analyticsTrackingService = $this->createMock(AnalyticsTrackingService::class);
         $this->analyticsTrackingService->method('addToClickedUrl')->willReturnArgument(0);
-        $this->tokenService = new LinkTrackTokenService(new ParameterProvider([]), 'https://example.com/api/v2', 's');
+        $this->tokenService = new LinkTrackTokenService(
+            new ParameterProvider([]),
+            'https://example.com/api/v2',
+            's',
+            $this->createMock(ConfigProvider::class)
+        );
 
         $this->service = new LinkClickService(
             $this->tokenService,
@@ -196,22 +202,22 @@ class LinkClickServiceTest extends TestCase
         );
     }
 
-    public function testPersonalisedLinkIsRefusedForSubscribersThatNeverGotTheCampaign(): void
+    public function testPersonalisedLinkWorksForSubscribersWithoutRecordOfTheCampaign(): void
     {
         $this->givenKnownLink('https://example.com/p', personalise: true);
         $this->userMessageRepository->method('findByUserAndMessage')->willReturn(null);
 
-        $this->mlRepository->expects(self::never())->method('recordClick');
+        $this->mlRepository->expects(self::once())->method('recordClick');
 
-        self::assertNull($this->service->trackClick($this->tid(), null, []));
+        self::assertSame('https://example.com/p?uid=uniq-3', $this->service->trackClick($this->tid(), null, []));
     }
 
-    public function testNonPersonalisedLinkWorksWithoutUserMessage(): void
+    public function testNonPersonalisedLinkWorksWithoutUserMessageAndCountsEveryClickAsView(): void
     {
         $this->givenKnownLink();
         $this->userMessageRepository->method('findByUserAndMessage')->willReturn(null);
 
-        $this->userMessageService->expects(self::never())->method('trackUserMessageView');
+        $this->userMessageService->expects(self::once())->method('trackUserMessageView');
 
         self::assertSame('https://example.com/a', $this->service->trackClick($this->tid(), null, []));
     }
