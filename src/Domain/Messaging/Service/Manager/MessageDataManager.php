@@ -6,12 +6,31 @@ namespace PhpList\Core\Domain\Messaging\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
 use HTMLPurifier;
+use InvalidArgumentException;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Model\MessageData;
 use PhpList\Core\Domain\Messaging\Repository\MessageDataRepository;
 
 class MessageDataManager
 {
+    /**
+     * The only settings storeMessageData() accepts. Everything else in messagedata is either kept on the message
+     * itself (subject, from field, schedule, ...) or maintained by the system (status, sizes, ETA, statistics,
+     * ...) and must not be overwritten by a caller-supplied value.
+     */
+    public const WRITABLE_SETTINGS = [
+        'google_track',
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'pk_source',
+        'pk_medium',
+        'pk_campaign',
+        'notify_start',
+        'notify_end',
+        'excludelist',
+    ];
+
     public function __construct(
         private readonly MessageDataRepository $messageDataRepository,
         private readonly EntityManagerInterface $entityManager,
@@ -34,33 +53,7 @@ class MessageDataManager
 
         $value = $this->normalizeValueByName($name, $value);
 
-        // todo: remove this once we have a proper way to handle targetlists
-//        if ($name === 'targetlist' && is_array($value)) {
-//            $this->listMessageRepository->removeAllListAssociationsForMessage($campaign);
-//
-//            if (!empty($value['all']) || !empty($value['allactive'])) {
-//                // todo:  should be with $GLOBALS['subselect'] filter for access control
-//                foreach ($this->subscriberListRepository->getAllActive() as $list) {
-//                    $listMessage = (new ListMessage())
-//                        ->setMessage($campaign)
-//                        ->setList($list);
-//                    $this->listMessageRepository->persist($listMessage);
-//                }
-//                // once we used "all" to set all, unset it, to avoid confusion trying to unselect lists
-//                unset($value['all']);
-//            } else {
-//                foreach ($value as $listId => $val) {
-//                    // see #16940 - ignore a list called "unselect" which is there to allow unselecting all
-//                    if ($listId !== 'unselect') {
-//                        $list = $this->subscriberListRepository->find($listId);
-//                        $listMessage = (new ListMessage())
-//                            ->setMessage($campaign)
-//                            ->setList($list);
-//                        $this->listMessageRepository->persist($listMessage);
-//                    }
-//                }
-//            }
-//        }
+        // todo: targetLists (not only here) should be with $GLOBALS['subselect'] filter for access control
 
         if (is_array($value) || is_object($value)) {
             $value = 'SER:' . serialize($value);
@@ -68,6 +61,38 @@ class MessageDataManager
 
         $entity = $this->getOrCreateMessageDataEntity($campaign, $name);
         $entity->setData($value !== null ? (string) $value : null);
+    }
+
+    /**
+     * Stores a set of campaign settings the way phplist3's storemessage.php does for the campaign form.
+     *
+     * Checkboxes that are not submitted when unchecked must be listed in $checkboxes: they are all reset to '0'
+     * first and then set again by $data when they were submitted. Every entry of $data is stored under its own
+     * name, booleans as '1' / '0'.
+     *
+     * Only the names in WRITABLE_SETTINGS are accepted; nothing is stored when any other name is given.
+     * The campaign must already have an id, so a new campaign has to be flushed first.
+     *
+     * @param array<string, mixed> $data setting name => value
+     * @param string[] $checkboxes names of the checkbox settings that are part of this save
+     * @throws InvalidArgumentException when a name is not in WRITABLE_SETTINGS
+     */
+    public function storeMessageData(Message $campaign, array $data, array $checkboxes = []): void
+    {
+        $notWritable = array_diff([...array_keys($data), ...$checkboxes], self::WRITABLE_SETTINGS);
+        if ($notWritable !== []) {
+            throw new InvalidArgumentException(
+                'Message data cannot be set for: ' . implode(', ', array_map('strval', $notWritable))
+            );
+        }
+
+        foreach ($checkboxes as $name) {
+            $this->setMessageData($campaign, $name, '0');
+        }
+
+        foreach ($data as $name => $value) {
+            $this->setMessageData($campaign, (string) $name, is_bool($value) ? ($value ? '1' : '0') : $value);
+        }
     }
 
     private function normalizeValueByName(string $name, mixed $value)

@@ -86,7 +86,7 @@ class SubscriberCsvImportManagerTest extends KernelTestCase
         self::assertInstanceOf(Subscriber::class, $subscriber2);
         self::assertFalse($subscriber2->isConfirmed());
         self::assertFalse($subscriber2->hasHtmlEmail());
-        self::assertTrue($subscriber2->isBlacklisted());
+        self::assertFalse($subscriber2->isBlacklisted());
         self::assertTrue($subscriber2->isDisabled());
         self::assertSame('More data', $subscriber2->getExtraData());
 
@@ -130,7 +130,7 @@ class SubscriberCsvImportManagerTest extends KernelTestCase
         self::assertInstanceOf(Subscriber::class, $updatedSubscriber);
         self::assertTrue($updatedSubscriber->isConfirmed());
         self::assertTrue($updatedSubscriber->hasHtmlEmail());
-        self::assertFalse($updatedSubscriber->isBlacklisted());
+        self::assertTrue($updatedSubscriber->isBlacklisted());
         self::assertFalse($updatedSubscriber->isDisabled());
         self::assertSame('Updated data', $updatedSubscriber->getExtraData());
 

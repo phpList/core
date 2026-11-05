@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\Service\Constructor;
 
+use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
 use PhpList\Core\Domain\Common\Html2Text;
 use PhpList\Core\Domain\Common\RemotePageFetcher;
 use PhpList\Core\Domain\Common\TextParser;
@@ -28,6 +29,7 @@ class CampaignMailContentBuilder
         private readonly Html2Text $html2Text,
         private readonly TextParser $textParser,
         private readonly MessagePlaceholderProcessor $placeholderProcessor,
+        private readonly LinkTrackService $linkTrackService,
         #[Autowire('%phplist.forward_personal_note_size%')] private readonly int $forwardPersonalNoteSize = 0,
     ) {
     }
@@ -90,8 +92,16 @@ class CampaignMailContentBuilder
             forwardedBy: $forwardedBy,
         );
 
+        [$htmlMessage, $textMessage] = $this->trackLinks(
+            htmlMessage: $htmlMessage,
+            textMessage: $textMessage,
+            receiver: $receiver,
+            campaignId: $campaignId,
+            messagePrecacheDto: $messagePrecacheDto,
+            forwarded: $forwardedBy !== null,
+        );
+
         $htmlMessage = $this->ensureHtmlFormating(content: $htmlMessage, addDefaultStyle: $addDefaultStyle);
-        // todo: add link CLICKTRACK to $htmlMessage
 
         [$htmlMessage, $textMessage] = $this->ensureNoteInCaseOfForwarded(
             htmlMessage: $htmlMessage,
@@ -100,6 +110,33 @@ class CampaignMailContentBuilder
         );
 
         return [$htmlMessage, $textMessage];
+    }
+
+    /**
+     * As in phplist3, links are tracked once all placeholders are expanded.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private function trackLinks(
+        string $htmlMessage,
+        string $textMessage,
+        Subscriber $receiver,
+        ?int $campaignId,
+        MessagePrecacheDto $messagePrecacheDto,
+        bool $forwarded,
+    ): array {
+        if ($campaignId === null) {
+            return [$htmlMessage, $textMessage];
+        }
+
+        return $this->linkTrackService->trackLinks(
+            html: $htmlMessage,
+            text: $textMessage,
+            campaignId: $campaignId,
+            subscriber: $receiver,
+            analyticsParameters: $messagePrecacheDto->googleTrack ? $messagePrecacheDto->analyticsParameters : null,
+            forwarded: $forwarded,
+        );
     }
 
     private function replaceUserSpecificRemoteContent(

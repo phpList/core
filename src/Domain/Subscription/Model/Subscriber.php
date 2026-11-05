@@ -174,7 +174,6 @@ class Subscriber implements DomainModel, Identity, CreationDate, ModificationDat
         return $this;
     }
 
-    // todo: check where is this used and if should be replaced by isBlacklisted with grace time
     public function isBlacklisted(): bool
     {
         return $this->blacklisted;

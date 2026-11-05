@@ -11,7 +11,6 @@ use PhpList\Core\Domain\Messaging\Model\Dto\MessageForwardDto;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Service\ForwardContentService;
-use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\Builder\ForwardEmailBuilder;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -22,13 +21,11 @@ use Symfony\Component\Mime\Email;
 class ForwardContentServiceTest extends TestCase
 {
     private CacheInterface&MockObject $cache;
-    private MessageProcessingPreparator&MockObject $preparator;
     private ForwardEmailBuilder&MockObject $builder;
 
     protected function setUp(): void
     {
         $this->cache = $this->createMock(CacheInterface::class);
-        $this->preparator = $this->createMock(MessageProcessingPreparator::class);
         $this->builder = $this->createMock(ForwardEmailBuilder::class);
     }
 
@@ -36,7 +33,6 @@ class ForwardContentServiceTest extends TestCase
     {
         $service = new ForwardContentService(
             cache: $this->cache,
-            messagePreparator: $this->preparator,
             forwardEmailBuilder: $this->builder,
         );
 
@@ -66,11 +62,10 @@ class ForwardContentServiceTest extends TestCase
         );
     }
 
-    public function testProcessesLinksAndDelegatesToBuilder(): void
+    public function testDelegatesCachedContentToBuilderWithoutClickTracking(): void
     {
         $service = new ForwardContentService(
             cache: $this->cache,
-            messagePreparator: $this->preparator,
             forwardEmailBuilder: $this->builder,
         );
 
@@ -80,23 +75,12 @@ class ForwardContentServiceTest extends TestCase
         $subscriber->setHtmlEmail(true);
 
         $cached = new MessagePrecacheDto();
-        $processed = new MessagePrecacheDto();
 
         $this->cache
             ->expects(self::once())
             ->method('get')
             ->with('messaging.message.base.42.1.0')
             ->willReturn($cached);
-
-        $this->preparator
-            ->expects(self::once())
-            ->method('processMessageLinks')
-            ->with(
-                42,
-                $cached,
-                $subscriber
-            )
-            ->willReturn($processed);
 
         $expectedEmail = new Email();
         $this->builder
@@ -106,7 +90,7 @@ class ForwardContentServiceTest extends TestCase
                 42,
                 'f@example.com',
                 $subscriber,
-                $processed,
+                $cached,
                 true,
                 'From Name',
                 'from@example.com',

@@ -58,4 +58,28 @@ class UserBlacklistRepository extends AbstractRepository
             ->getQuery()
             ->getOneOrNullResult() !== null;
     }
+
+    /**
+     * Batch variant of isEmailBlacklisted(): returns the given emails (lowercased) that are blacklisted.
+     *
+     * @param string[] $emails
+     * @return string[]
+     */
+    public function findBlacklistedEmails(array $emails): array
+    {
+        if ($emails === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('ub')
+            ->select('ub.email')
+            ->where('ub.email IN (:emails)')
+            ->andWhere('ub.added < :cutoff')
+            ->setParameter('emails', array_values($emails))
+            ->setParameter('cutoff', new DateTimeImmutable())
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_map(static fn(array $row): string => strtolower($row['email']), $rows);
+    }
 }

@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Subscription\Model\Dto\ImportSubscriberDto;
 class ArrayToDtoMapper
 {
     private const FK_HEADER = 'foreignkey';
+    // 'blacklisted' stays a known header so the column is ignored instead of becoming an attribute
     private const KNOWN_HEADERS = [
         'email', 'confirmed', 'blacklisted', 'html_email', 'disabled', 'extra_data', 'foreignkey',
     ];
@@ -31,7 +32,6 @@ class ArrayToDtoMapper
         return new ImportSubscriberDto(
             email: $email,
             confirmed: filter_var($normalizedRow['confirmed'] ?? false, FILTER_VALIDATE_BOOLEAN),
-            blacklisted: filter_var($normalizedRow['blacklisted'] ?? false, FILTER_VALIDATE_BOOLEAN),
             htmlEmail: filter_var($normalizedRow['html_email'] ?? false, FILTER_VALIDATE_BOOLEAN),
             disabled: filter_var($normalizedRow['disabled'] ?? false, FILTER_VALIDATE_BOOLEAN),
             extraData: $normalizedRow['extra_data'] ?? null,

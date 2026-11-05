@@ -16,6 +16,8 @@ services:
 
   PhpList\Core\Domain\Configuration\Service\Provider\DefaultConfigProvider:
     autowire: true
+    arguments:
+      $website: '%app.website%'
 
   PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider:
     autowire: true

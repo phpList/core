@@ -52,7 +52,7 @@ class RemotePageFetcher
         $cacheUrl = $this->urlCacheRepository->findByUrlAndLastModified($url, $lastModified);
         $content = $cacheUrl?->getContent();
         if ($cacheUrl) {
-            // todo: check what the page should be for this log
+            // no page context here; phplist3 logs 'unknown page' in that case
             $this->eventLogManager->log(page: 'unknown page', entry: $url . ' was cached in database');
         } else {
             $content = $this->fetchUrlDirect($url);

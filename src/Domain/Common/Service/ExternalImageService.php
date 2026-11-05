@@ -91,7 +91,7 @@ class ExternalImageService
             if ($cacheFile === false) {
                 break;
             }
-            // todo: make sure that this is what we need
+            // skip hidden files and the . and .. entries, as phplist3 does
             if (!str_starts_with($cacheFile, '.')) {
                 // phpcs:ignore Generic.PHP.NoSilencedErrors
                 $cfmt = @filemtime($this->externalCacheDir . '/' . $cacheFile);

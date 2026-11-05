@@ -19,7 +19,6 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use PhpList\Core\Domain\Messaging\Service\Builder\EmailBuilder;
 use PhpList\Core\Domain\Messaging\Service\CampaignEmailSender;
 use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
-use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Messaging\Service\MessageStatusUpdater;
 use PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer;
 use PhpList\Core\Domain\Messaging\Service\SystemNotificationMailer;
@@ -37,7 +36,6 @@ class CampaignEmailSenderTest extends TestCase
     private EmailBuilder|MockObject $campaignEmailBuilder;
     private RateLimitedCampaignMailer|MockObject $rateLimitedCampaignMailer;
     private MailSizeChecker|MockObject $mailSizeChecker;
-    private MessageProcessingPreparator|MockObject $messagePreparator;
     private MessageRepository|MockObject $messageRepository;
     private MessageStatusUpdater|MockObject $messageStatusUpdater;
     private SystemNotificationMailer|MockObject $notificationMailer;
@@ -57,7 +55,6 @@ class CampaignEmailSenderTest extends TestCase
         $this->campaignEmailBuilder = $this->createMock(EmailBuilder::class);
         $this->rateLimitedCampaignMailer = $this->createMock(RateLimitedCampaignMailer::class);
         $this->mailSizeChecker = $this->createMock(MailSizeChecker::class);
-        $this->messagePreparator = $this->createMock(MessageProcessingPreparator::class);
         $this->messageRepository = $this->createMock(MessageRepository::class);
         $this->messageStatusUpdater = $this->createMock(MessageStatusUpdater::class);
         $this->notificationMailer = $this->createMock(SystemNotificationMailer::class);
@@ -72,7 +69,6 @@ class CampaignEmailSenderTest extends TestCase
             $this->campaignEmailBuilder,
             $this->rateLimitedCampaignMailer,
             $this->mailSizeChecker,
-            $this->messagePreparator,
             $this->messageRepository,
             $this->messageStatusUpdater,
             $this->notificationMailer,
@@ -92,8 +88,6 @@ class CampaignEmailSenderTest extends TestCase
         $this->subscriber->method('getEmail')->willReturn('test@example.com');
 
         $this->userMessage = $this->createMock(UserMessage::class);
-
-        $this->messagePreparator->method('processMessageLinks')->willReturn($this->precached);
     }
 
     public function testSendMarksSentAndIncrementsCountsOnSuccess(): void
