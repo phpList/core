@@ -93,14 +93,22 @@ trait DatabaseTestTrait
 
     private function runForMySql($metadata, $schemaTool): void
     {
-        try {
-            $schemaTool->createSchema($metadata);
-        } catch (ToolsException $e) {
-            $missing = $this->filterMissingTables($metadata);
+        $missing = $this->filterMissingTables($metadata);
 
-            if ($missing !== []) {
-                $schemaTool->createSchema($missing);
+        if ($missing === []) {
+            return;
+        }
+
+        $connection = $this->entityManager->getConnection();
+        $messengerTableExists = $this->tableExistsIgnoringSchemaFilter('messenger_messages');
+
+        // Symfony's Doctrine messenger schema listener appends CREATE TABLE messenger_messages to every
+        // schema it builds, so skip it when the table is already there (e.g. from a previous run).
+        foreach ($schemaTool->getCreateSchemaSql($missing) as $sql) {
+            if ($messengerTableExists && str_starts_with($sql, 'CREATE TABLE messenger_messages')) {
+                continue;
             }
+            $connection->executeStatement($sql);
         }
     }
 
