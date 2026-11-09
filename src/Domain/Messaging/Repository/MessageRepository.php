@@ -63,9 +63,8 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
         $queryBuilder = $this->createQueryBuilder('m');
 
         if ($filter instanceof MessageFilter && $filter->getOwner() !== null) {
-            // Legacy/imported messages have no owner recorded - treat them as shared rather
-            // than invisible, instead of excluding them outright via a strict owner match.
-            $queryBuilder->andWhere('(m.owner IS NULL OR IDENTITY(m.owner) = :ownerId)')
+            // Same as phplist3: non-superusers only see the campaigns they own.
+            $queryBuilder->andWhere('IDENTITY(m.owner) = :ownerId')
                 ->setParameter('ownerId', $filter->getOwner()->getId());
         }
 

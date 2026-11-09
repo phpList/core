@@ -152,7 +152,7 @@ class MessageRepositoryTest extends KernelTestCase
         return $message;
     }
 
-    public function testGetFilteredAfterIdIncludesOwnerlessMessagesForAnyAdmin(): void
+    public function testGetFilteredAfterIdExcludesOwnerlessAndForeignMessagesForOwnerFilter(): void
     {
         $admin = (new Administrator())->setLoginName('owner-test-admin');
         $otherAdmin = (new Administrator())->setLoginName('other-admin');
@@ -173,7 +173,7 @@ class MessageRepositoryTest extends KernelTestCase
             static fn (Message $message) => $message->getContent()->getSubject(),
             $result->getItems()
         );
-        self::assertContains('Legacy unowned campaign', $subjects);
+        self::assertNotContains('Legacy unowned campaign', $subjects);
         self::assertContains('My own campaign', $subjects);
         self::assertNotContains("Someone else's campaign", $subjects);
     }

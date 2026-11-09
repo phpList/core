@@ -83,6 +83,11 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
 
         $queryBuilder = $this->createQueryBuilder('l');
 
+        // Same as phplist3: when an owner is given (non-superuser), only the lists they own are visible.
+        if ($filter->getOwner() !== null) {
+            $queryBuilder->where('l.owner = :admin')->setParameter('admin', $filter->getOwner());
+        }
+
         $countQb = clone $queryBuilder;
         $total = (int) $countQb
             ->select('COUNT(DISTINCT l.id)')
@@ -91,8 +96,6 @@ class SubscriberListRepository extends AbstractRepository implements Paginatable
 
         /** @var list<SubscriberList> $items */
         $items = $queryBuilder
-            ->where($queryBuilder->expr()->orX('l.owner = :admin', 'l.public = true'))
-            ->setParameter('admin', $filter->getOwner())
             ->andWhere('l.id > :id')
             ->setParameter('id', $filter->getLastId())
             ->setMaxResults($filter->getLimit())
