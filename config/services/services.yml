@@ -264,6 +264,11 @@ services:
     autoconfigure: true
     public: true
 
+  PhpList\Core\Domain\Identity\Service\Notification\:
+    resource: '../../src/Domain/Identity/Service/Notification/*.php'
+    autowire: true
+    autoconfigure: true
+
   PhpList\Core\Domain\Identity\Service\AdminNotifier:
     autowire: true
     autoconfigure: true

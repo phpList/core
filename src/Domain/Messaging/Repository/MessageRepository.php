@@ -136,6 +136,22 @@ class MessageRepository extends AbstractRepository implements PaginatableReposit
             ->execute();
     }
 
+    /** Campaigns that are submitted or in process and whose embargo has passed. */
+    public function countQueued(DateTimeImmutable $now): int
+    {
+        return (int) $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->where('m.metadata.status IN (:statuses)')
+            ->andWhere('m.schedule.embargo IS NULL OR m.schedule.embargo <= :now')
+            ->setParameter('statuses', [
+                Message\MessageStatus::Submitted->value,
+                Message\MessageStatus::InProcess->value,
+            ])
+            ->setParameter('now', $now)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     /** @return Message[] */
     public function getByStatusAndEmbargo(Message\MessageStatus $status, DateTimeImmutable $embargo): array
     {
