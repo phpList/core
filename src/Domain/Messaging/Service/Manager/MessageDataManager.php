@@ -53,8 +53,6 @@ class MessageDataManager
 
         $value = $this->normalizeValueByName($name, $value);
 
-        // todo: targetLists (not only here) should be with $GLOBALS['subselect'] filter for access control
-
         if (is_array($value) || is_object($value)) {
             $value = 'SER:' . serialize($value);
         }
