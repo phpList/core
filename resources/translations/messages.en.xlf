@@ -394,7 +394,7 @@ Please confirm your subscription by clicking the link below:
 %confirmation_link%
 
 If you did not request this subscription, please ignore this email.</source>
-        <target>__Thank you for subscribing!
+        <target>Thank you for subscribing!
 
 Please confirm your subscription by clicking the link below:
 
@@ -404,7 +404,7 @@ If you did not request this subscription, please ignore this email.</target>
       </trans-unit>
       <trans-unit id="4zMurzl" resname="&lt;p&gt;Thank you for subscribing!&lt;/p&gt;&lt;p&gt;Please confirm your subscription by clicking the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;%confirmation_link%&quot;&gt;Confirm Subscription&lt;/a&gt;&lt;/p&gt;&lt;p&gt;If you did not request this subscription, please ignore this email.&lt;/p&gt;">
         <source>&lt;p&gt;Thank you for subscribing!&lt;/p&gt;&lt;p&gt;Please confirm your subscription by clicking the link below:&lt;/p&gt;&lt;p&gt;&lt;a href="%confirmation_link%"&gt;Confirm Subscription&lt;/a&gt;&lt;/p&gt;&lt;p&gt;If you did not request this subscription, please ignore this email.&lt;/p&gt;</source>
-        <target><![CDATA[__<p>Thank you for subscribing!</p><p>Please confirm your subscription by clicking the link below:</p><p><a href="%confirmation_link%">Confirm Subscription</a></p><p>If you did not request this subscription, please ignore this email.</p>]]></target>
+        <target><![CDATA[<p>Thank you for subscribing!</p><p>Please confirm your subscription by clicking the link below:</p><p><a href="%confirmation_link%">Confirm Subscription</a></p><p>If you did not request this subscription, please ignore this email.</p>]]></target>
       </trans-unit>
       <trans-unit id="9j18IPN" resname="Hello,&#10;&#10;A password reset has been requested for your account.&#10;Please use the following token to reset your password:&#10;&#10;%token%&#10;&#10;If you did not request this password reset, please ignore this email.&#10;&#10;Thank you.">
         <source>Hello,
@@ -417,7 +417,7 @@ Please use the following token to reset your password:
 If you did not request this password reset, please ignore this email.
 
 Thank you.</source>
-        <target>__Hello,
+        <target>Hello,
 
 A password reset has been requested for your account.
 Please use the following token to reset your password:
@@ -430,417 +430,417 @@ Thank you.</target>
       </trans-unit>
       <trans-unit id="ltQcyU7" resname="&lt;p&gt;Password Reset Request!&lt;/p&gt;&lt;p&gt;Hello! A password reset has been requested for your account.&lt;/p&gt;&lt;p&gt;Please use the following token to reset your password:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;%confirmation_link%&quot;&gt;Reset Password&lt;/a&gt;&lt;/p&gt;&lt;p&gt;If you did not request this password reset, please ignore this email.&lt;/p&gt;&lt;p&gt;Thank you.&lt;/p&gt;">
         <source>&lt;p&gt;Password Reset Request!&lt;/p&gt;&lt;p&gt;Hello! A password reset has been requested for your account.&lt;/p&gt;&lt;p&gt;Please use the following token to reset your password:&lt;/p&gt;&lt;p&gt;&lt;a href="%confirmation_link%"&gt;Reset Password&lt;/a&gt;&lt;/p&gt;&lt;p&gt;If you did not request this password reset, please ignore this email.&lt;/p&gt;&lt;p&gt;Thank you.&lt;/p&gt;</source>
-        <target><![CDATA[__<p>Password Reset Request!</p><p>Hello! A password reset has been requested for your account.</p><p>Please use the following token to reset your password:</p><p><a href="%confirmation_link%">Reset Password</a></p><p>If you did not request this password reset, please ignore this email.</p><p>Thank you.</p>]]></target>
+        <target><![CDATA[<p>Password Reset Request!</p><p>Hello! A password reset has been requested for your account.</p><p>Please use the following token to reset your password:</p><p><a href="%confirmation_link%">Reset Password</a></p><p>If you did not request this password reset, please ignore this email.</p><p>Thank you.</p>]]></target>
       </trans-unit>
       <trans-unit id="AVKpvQf" resname="Person in charge of this system (one email address)">
         <source>Person in charge of this system (one email address)</source>
-        <target>__Person in charge of this system (one email address)</target>
+        <target>Person in charge of this system (one email address)</target>
       </trans-unit>
       <trans-unit id="tUWhfXF" resname="Name of the organisation">
         <source>Name of the organisation</source>
-        <target>__Name of the organisation</target>
+        <target>Name of the organisation</target>
       </trans-unit>
       <trans-unit id="6.QeoLj" resname="Logo of the organisation">
         <source>Logo of the organisation</source>
-        <target>__Logo of the organisation</target>
+        <target>Logo of the organisation</target>
       </trans-unit>
       <trans-unit id="QxI.XMq" resname="Date format">
         <source>Date format</source>
-        <target>__Date format</target>
+        <target>Date format</target>
       </trans-unit>
       <trans-unit id="C0.a3_W" resname="Show notification for Release Candidates">
         <source>Show notification for Release Candidates</source>
-        <target>__Show notification for Release Candidates</target>
+        <target>Show notification for Release Candidates</target>
       </trans-unit>
       <trans-unit id="1_bRIPu" resname="Secret for remote processing">
         <source>Secret for remote processing</source>
-        <target>__Secret for remote processing</target>
+        <target>Secret for remote processing</target>
       </trans-unit>
       <trans-unit id="P67XsZ0" resname="Notify admin on login from new location">
         <source>Notify admin on login from new location</source>
-        <target>__Notify admin on login from new location</target>
+        <target>Notify admin on login from new location</target>
       </trans-unit>
       <trans-unit id="P7qj02Z" resname="List of email addresses to CC in system messages (separate by commas)">
         <source>List of email addresses to CC in system messages (separate by commas)</source>
-        <target>__List of email addresses to CC in system messages (separate by commas)</target>
+        <target>List of email addresses to CC in system messages (separate by commas)</target>
       </trans-unit>
       <trans-unit id="7sv828R" resname="Default for 'From:' in a campaign">
         <source>Default for 'From:' in a campaign</source>
-        <target>__Default for 'From:' in a campaign</target>
+        <target>Default for 'From:' in a campaign</target>
       </trans-unit>
       <trans-unit id="2lbIsQQ" resname="Default for 'address to alert when sending starts'">
         <source>Default for 'address to alert when sending starts'</source>
-        <target>__Default for 'address to alert when sending starts'</target>
+        <target>Default for 'address to alert when sending starts'</target>
       </trans-unit>
       <trans-unit id="KV_uuuc" resname="Default for 'address to alert when sending finishes'">
         <source>Default for 'address to alert when sending finishes'</source>
-        <target>__Default for 'address to alert when sending finishes'</target>
+        <target>Default for 'address to alert when sending finishes'</target>
       </trans-unit>
       <trans-unit id="tY4YffB" resname="Always add analytics tracking code to campaigns">
         <source>Always add analytics tracking code to campaigns</source>
-        <target>__Always add analytics tracking code to campaigns</target>
+        <target>Always add analytics tracking code to campaigns</target>
       </trans-unit>
       <trans-unit id="G7GrHSZ" resname="Analytics tracking code to add to campaign URLs">
         <source>Analytics tracking code to add to campaign URLs</source>
-        <target>__Analytics tracking code to add to campaign URLs</target>
+        <target>Analytics tracking code to add to campaign URLs</target>
       </trans-unit>
       <trans-unit id="ohHb.wz" resname="Who gets the reports (email address, separate multiple emails with a comma)">
         <source>Who gets the reports (email address, separate multiple emails with a comma)</source>
-        <target>__Who gets the reports (email address, separate multiple emails with a comma)</target>
+        <target>Who gets the reports (email address, separate multiple emails with a comma)</target>
       </trans-unit>
       <trans-unit id="0KnbDqQ" resname="From email address for system messages">
         <source>From email address for system messages</source>
-        <target>__From email address for system messages</target>
+        <target>From email address for system messages</target>
       </trans-unit>
       <trans-unit id="OxyUk2a" resname="Webmaster">
         <source>Webmaster</source>
-        <target>__Webmaster</target>
+        <target>Webmaster</target>
       </trans-unit>
       <trans-unit id="10n84Ut" resname="Name for system messages">
         <source>Name for system messages</source>
-        <target>__Name for system messages</target>
+        <target>Name for system messages</target>
       </trans-unit>
       <trans-unit id="04J19lk" resname="Reply-to email address for system messages">
         <source>Reply-to email address for system messages</source>
-        <target>__Reply-to email address for system messages</target>
+        <target>Reply-to email address for system messages</target>
       </trans-unit>
       <trans-unit id="t7NdAgq" resname="If there is only one visible list, should it be hidden in the page and automatically subscribe users who sign up">
         <source>If there is only one visible list, should it be hidden in the page and automatically subscribe users who sign up</source>
-        <target>__If there is only one visible list, should it be hidden in the page and automatically subscribe users who sign up</target>
+        <target>If there is only one visible list, should it be hidden in the page and automatically subscribe users who sign up</target>
       </trans-unit>
       <trans-unit id="WWHfYh1" resname="Categories for lists. Separate with commas.">
         <source>Categories for lists. Separate with commas.</source>
-        <target>__Categories for lists. Separate with commas.</target>
+        <target>Categories for lists. Separate with commas.</target>
       </trans-unit>
       <trans-unit id="girE3sj" resname="Display list categories on subscribe page">
         <source>Display list categories on subscribe page</source>
-        <target>__Display list categories on subscribe page</target>
+        <target>Display list categories on subscribe page</target>
       </trans-unit>
       <trans-unit id="6WxBbvI" resname="Width of a textline field (numerical)">
         <source>Width of a textline field (numerical)</source>
-        <target>__Width of a textline field (numerical)</target>
+        <target>Width of a textline field (numerical)</target>
       </trans-unit>
       <trans-unit id="2o7PD8Q" resname="Dimensions of a textarea field (rows,columns)">
         <source>Dimensions of a textarea field (rows,columns)</source>
-        <target>__Dimensions of a textarea field (rows,columns)</target>
+        <target>Dimensions of a textarea field (rows,columns)</target>
       </trans-unit>
       <trans-unit id="v2qWs6R" resname="Send notifications about subscribe, update and unsubscribe">
         <source>Send notifications about subscribe, update and unsubscribe</source>
-        <target>__Send notifications about subscribe, update and unsubscribe</target>
+        <target>Send notifications about subscribe, update and unsubscribe</target>
       </trans-unit>
       <trans-unit id="MGbjRwf" resname="The default subscribe page when there are multiple">
         <source>The default subscribe page when there are multiple</source>
-        <target>__The default subscribe page when there are multiple</target>
+        <target>The default subscribe page when there are multiple</target>
       </trans-unit>
       <trans-unit id="SI9.kzi" resname="The default HTML template to use when sending a message">
         <source>The default HTML template to use when sending a message</source>
-        <target>__The default HTML template to use when sending a message</target>
+        <target>The default HTML template to use when sending a message</target>
       </trans-unit>
       <trans-unit id="StdGv8Z" resname="The HTML wrapper template for system messages">
         <source>The HTML wrapper template for system messages</source>
-        <target>__The HTML wrapper template for system messages</target>
+        <target>The HTML wrapper template for system messages</target>
       </trans-unit>
       <trans-unit id="4sSWwQR" resname="URL where subscribers can sign up">
         <source>URL where subscribers can sign up</source>
-        <target>__URL where subscribers can sign up</target>
+        <target>URL where subscribers can sign up</target>
       </trans-unit>
       <trans-unit id="PW8fF3j" resname="URL where subscribers can unsubscribe">
         <source>URL where subscribers can unsubscribe</source>
-        <target>__URL where subscribers can unsubscribe</target>
+        <target>URL where subscribers can unsubscribe</target>
       </trans-unit>
       <trans-unit id="xgoHRRo" resname="URL where unknown users can unsubscribe (do-not-send-list)">
         <source>URL where unknown users can unsubscribe (do-not-send-list)</source>
-        <target>__URL where unknown users can unsubscribe (do-not-send-list)</target>
+        <target>URL where unknown users can unsubscribe (do-not-send-list)</target>
       </trans-unit>
       <trans-unit id="rmwznCV" resname="URL where subscribers have to confirm their subscription">
         <source>URL where subscribers have to confirm their subscription</source>
-        <target>__URL where subscribers have to confirm their subscription</target>
+        <target>URL where subscribers have to confirm their subscription</target>
       </trans-unit>
       <trans-unit id="M5NeAk_" resname="URL where subscribers can update their details">
         <source>URL where subscribers can update their details</source>
-        <target>__URL where subscribers can update their details</target>
+        <target>URL where subscribers can update their details</target>
       </trans-unit>
       <trans-unit id="x6Tt6e2" resname="URL for forwarding messages">
         <source>URL for forwarding messages</source>
-        <target>__URL for forwarding messages</target>
+        <target>URL for forwarding messages</target>
       </trans-unit>
       <trans-unit id="DnOZz2x" resname="URL for downloading vcf card">
         <source>URL for downloading vcf card</source>
-        <target>__URL for downloading vcf card</target>
+        <target>URL for downloading vcf card</target>
       </trans-unit>
       <trans-unit id="95_qZ8M" resname="&lt;h3&gt;Thanks, you have been added to our newsletter&lt;/h3&gt;&lt;p&gt;You will receive an email to confirm your subscription. Please click the link in the email to confirm&lt;/p&gt;">
         <source>&lt;h3&gt;Thanks, you have been added to our newsletter&lt;/h3&gt;&lt;p&gt;You will receive an email to confirm your subscription. Please click the link in the email to confirm&lt;/p&gt;</source>
-        <target><![CDATA[__<h3>Thanks, you have been added to our newsletter</h3><p>You will receive an email to confirm your subscription. Please click the link in the email to confirm</p>]]></target>
+        <target><![CDATA[<h3>Thanks, you have been added to our newsletter</h3><p>You will receive an email to confirm your subscription. Please click the link in the email to confirm</p>]]></target>
       </trans-unit>
       <trans-unit id="Rw9oeMy" resname="Text to display when subscription with an AJAX request was successful">
         <source>Text to display when subscription with an AJAX request was successful</source>
-        <target>__Text to display when subscription with an AJAX request was successful</target>
+        <target>Text to display when subscription with an AJAX request was successful</target>
       </trans-unit>
       <trans-unit id="UIIJrMT" resname="Subject of the message subscribers receive when they sign up">
         <source>Subject of the message subscribers receive when they sign up</source>
-        <target>__Subject of the message subscribers receive when they sign up</target>
+        <target>Subject of the message subscribers receive when they sign up</target>
       </trans-unit>
       <trans-unit id="UzGhn7a" resname="Message subscribers receive when they sign up">
         <source>Message subscribers receive when they sign up</source>
-        <target>__Message subscribers receive when they sign up</target>
+        <target>Message subscribers receive when they sign up</target>
       </trans-unit>
       <trans-unit id="nZvv5Lm" resname="Goodbye from our Newsletter">
         <source>Goodbye from our Newsletter</source>
-        <target>__Goodbye from our Newsletter</target>
+        <target>Goodbye from our Newsletter</target>
       </trans-unit>
       <trans-unit id="q7AEcch" resname="Subject of the message subscribers receive when they unsubscribe">
         <source>Subject of the message subscribers receive when they unsubscribe</source>
-        <target>__Subject of the message subscribers receive when they unsubscribe</target>
+        <target>Subject of the message subscribers receive when they unsubscribe</target>
       </trans-unit>
       <trans-unit id="ajlB1Iq" resname="Message subscribers receive when they unsubscribe">
         <source>Message subscribers receive when they unsubscribe</source>
-        <target>__Message subscribers receive when they unsubscribe</target>
+        <target>Message subscribers receive when they unsubscribe</target>
       </trans-unit>
       <trans-unit id="3FyGGhY" resname="Welcome to our Newsletter">
         <source>Welcome to our Newsletter</source>
-        <target>__Welcome to our Newsletter</target>
+        <target>Welcome to our Newsletter</target>
       </trans-unit>
       <trans-unit id="F4J4jg5" resname="Subject of the message subscribers receive after confirming their email address">
         <source>Subject of the message subscribers receive after confirming their email address</source>
-        <target>__Subject of the message subscribers receive after confirming their email address</target>
+        <target>Subject of the message subscribers receive after confirming their email address</target>
       </trans-unit>
       <trans-unit id="a43aLfW" resname="Message subscribers receive after confirming their email address">
         <source>Message subscribers receive after confirming their email address</source>
-        <target>__Message subscribers receive after confirming their email address</target>
+        <target>Message subscribers receive after confirming their email address</target>
       </trans-unit>
       <trans-unit id="2hEfDJb" resname="[notify] Change of List-Membership details">
         <source>[notify] Change of List-Membership details</source>
-        <target>__[notify] Change of List-Membership details</target>
+        <target>[notify] Change of List-Membership details</target>
       </trans-unit>
       <trans-unit id="aLNvbsx" resname="Subject of the message subscribers receive when they have changed their details">
         <source>Subject of the message subscribers receive when they have changed their details</source>
-        <target>__Subject of the message subscribers receive when they have changed their details</target>
+        <target>Subject of the message subscribers receive when they have changed their details</target>
       </trans-unit>
       <trans-unit id="vm3uu8q" resname="Message subscribers receive when they have changed their details">
         <source>Message subscribers receive when they have changed their details</source>
-        <target>__Message subscribers receive when they have changed their details</target>
+        <target>Message subscribers receive when they have changed their details</target>
       </trans-unit>
       <trans-unit id="1gidLKy" resname="Part of the message that is sent to their new email address when subscribers change their information, and the email address has changed">
         <source>Part of the message that is sent to their new email address when subscribers change their information, and the email address has changed</source>
-        <target>__Part of the message that is sent to their new email address when subscribers change their information, and the email address has changed</target>
+        <target>Part of the message that is sent to their new email address when subscribers change their information, and the email address has changed</target>
       </trans-unit>
       <trans-unit id="vZTqm0n" resname="Part of the message that is sent to their old email address when subscribers change their information, and the email address has changed">
         <source>Part of the message that is sent to their old email address when subscribers change their information, and the email address has changed</source>
-        <target>__Part of the message that is sent to their old email address when subscribers change their information, and the email address has changed</target>
+        <target>Part of the message that is sent to their old email address when subscribers change their information, and the email address has changed</target>
       </trans-unit>
       <trans-unit id="ZPMa03Y" resname="Your personal location">
         <source>Your personal location</source>
-        <target>__Your personal location</target>
+        <target>Your personal location</target>
       </trans-unit>
       <trans-unit id="7pCSl.L" resname="Subject of message when subscribers request their personal location">
         <source>Subject of message when subscribers request their personal location</source>
-        <target>__Subject of message when subscribers request their personal location</target>
+        <target>Subject of message when subscribers request their personal location</target>
       </trans-unit>
       <trans-unit id="sKrk4y." resname="Default footer for sending a campaign">
         <source>Default footer for sending a campaign</source>
-        <target>__Default footer for sending a campaign</target>
+        <target>Default footer for sending a campaign</target>
       </trans-unit>
       <trans-unit id="wzYI.F." resname="Footer used when a message has been forwarded">
         <source>Footer used when a message has been forwarded</source>
-        <target>__Footer used when a message has been forwarded</target>
+        <target>Footer used when a message has been forwarded</target>
       </trans-unit>
       <trans-unit id="Lga9p1l" resname="Message to send when they request their personal location">
         <source>Message to send when they request their personal location</source>
-        <target>__Message to send when they request their personal location</target>
+        <target>Message to send when they request their personal location</target>
       </trans-unit>
       <trans-unit id="oCpuEit" resname="String to always append to remote URL when using send-a-webpage">
         <source>String to always append to remote URL when using send-a-webpage</source>
-        <target>__String to always append to remote URL when using send-a-webpage</target>
+        <target>String to always append to remote URL when using send-a-webpage</target>
       </trans-unit>
       <trans-unit id="rraNHvV" resname="Width for Wordwrap of Text messages">
         <source>Width for Wordwrap of Text messages</source>
-        <target>__Width for Wordwrap of Text messages</target>
+        <target>Width for Wordwrap of Text messages</target>
       </trans-unit>
       <trans-unit id="_nbiJLv" resname="CSS for HTML messages without a template">
         <source>CSS for HTML messages without a template</source>
-        <target>__CSS for HTML messages without a template</target>
+        <target>CSS for HTML messages without a template</target>
       </trans-unit>
       <trans-unit id="oJygLq3" resname="Domains that only accept text emails, one per line">
         <source>Domains that only accept text emails, one per line</source>
-        <target>__Domains that only accept text emails, one per line</target>
+        <target>Domains that only accept text emails, one per line</target>
       </trans-unit>
       <trans-unit id="kPeYYfT" resname="last time TLDs were fetched">
         <source>last time TLDs were fetched</source>
-        <target>__last time TLDs were fetched</target>
+        <target>last time TLDs were fetched</target>
       </trans-unit>
       <trans-unit id="JEEAFld" resname="Top level domains">
         <source>Top level domains</source>
-        <target>__Top level domains</target>
+        <target>Top level domains</target>
       </trans-unit>
       <trans-unit id="jq6OT5J" resname="Header of public pages.">
         <source>Header of public pages.</source>
-        <target>__Header of public pages.</target>
+        <target>Header of public pages.</target>
       </trans-unit>
       <trans-unit id="8eeI8hY" resname="Footer of public pages">
         <source>Footer of public pages</source>
-        <target>__Footer of public pages</target>
+        <target>Footer of public pages</target>
       </trans-unit>
       <trans-unit id="vmzIZ25" resname="Please confirm your subscription">
         <source>Please confirm your subscription</source>
-        <target>__Please confirm your subscription</target>
+        <target>Please confirm your subscription</target>
       </trans-unit>
       <trans-unit id="rT_b2Tm" resname="No user details changed">
         <source>No user details changed</source>
-        <target>__No user details changed</target>
+        <target>No user details changed</target>
       </trans-unit>
       <trans-unit id="qdTR5bi" resname="%field% = %new% *changed* from %old%">
         <source>%field% = %new% *changed* from %old%</source>
-        <target>__%field% = %new% *changed* from %old%</target>
+        <target>%field% = %new% *changed* from %old%</target>
       </trans-unit>
       <trans-unit id="rns1KOG" resname="Subscribed to %list%">
         <source>Subscribed to %list%</source>
-        <target>__Subscribed to %list%</target>
+        <target>Subscribed to %list%</target>
       </trans-unit>
       <trans-unit id="eXllcQa" resname="Subscriber marked unconfirmed for invalid email address">
         <source>Subscriber marked unconfirmed for invalid email address</source>
-        <target>__Subscriber marked unconfirmed for invalid email address</target>
+        <target>Subscriber marked unconfirmed for invalid email address</target>
       </trans-unit>
       <trans-unit id="oY0Gck3" resname="Marked unconfirmed while sending campaign %message_id%">
         <source>Marked unconfirmed while sending campaign %message_id%</source>
-        <target>__Marked unconfirmed while sending campaign %message_id%</target>
+        <target>Marked unconfirmed while sending campaign %message_id%</target>
       </trans-unit>
       <trans-unit id="duYukTn" resname="Update by %admin%">
         <source>Update by %admin%</source>
-        <target>__Update by %admin%</target>
+        <target>Update by %admin%</target>
       </trans-unit>
       <trans-unit id="7oMcCd6" resname="(no data)">
         <source>(no data)</source>
-        <target>__(no data)</target>
+        <target>(no data)</target>
       </trans-unit>
       <trans-unit id="rSZSC.W" resname="%attribute% = %new_value% &#10; changed from %old_value%">
         <source>%attribute% = %new_value% 
  changed from %old_value%</source>
-        <target>__%attribute% = %new_value% 
+        <target>%attribute% = %new_value% 
  changed from %old_value%</target>
       </trans-unit>
       <trans-unit id="jkLAivD" resname="No data changed">
         <source>No data changed</source>
-        <target>__No data changed</target>
+        <target>No data changed</target>
       </trans-unit>
       <trans-unit id="n7nf5lh" resname="Campaign not found or not in submitted status">
         <source>Campaign not found or not in submitted status</source>
-        <target>__Campaign not found or not in submitted status</target>
+        <target>Campaign not found or not in submitted status</target>
       </trans-unit>
       <trans-unit id="TBYUW2m" resname="Conflict: email and foreign key refer to different subscribers.">
         <source>Conflict: email and foreign key refer to different subscribers.</source>
-        <target>__Conflict: email and foreign key refer to different subscribers.</target>
+        <target>Conflict: email and foreign key refer to different subscribers.</target>
       </trans-unit>
       <trans-unit id="HHtgwG9" resname="Invalid email: %email%">
         <source>Invalid email: %email%</source>
-        <target>__Invalid email: %email%</target>
+        <target>Invalid email: %email%</target>
       </trans-unit>
       <trans-unit id="VvdYY4S" resname="Value must be an AttributeTypeEnum or string.">
         <source>Value must be an AttributeTypeEnum or string.</source>
-        <target>__Value must be an AttributeTypeEnum or string.</target>
+        <target>Value must be an AttributeTypeEnum or string.</target>
       </trans-unit>
       <trans-unit id="1cRuI31" resname="Campaign started">
         <source>Campaign started</source>
-        <target>__Campaign started</target>
+        <target>Campaign started</target>
       </trans-unit>
       <trans-unit id="Y4qXXak" resname="phplist has started sending the campaign with subject %s">
         <source>phplist has started sending the campaign with subject %s</source>
-        <target>__phplist has started sending the campaign with subject %s</target>
+        <target>phplist has started sending the campaign with subject %s</target>
       </trans-unit>
       <trans-unit id="jE9yPKp" resname="phplist has started sending the campaign with subject %subject%">
         <source>phplist has started sending the campaign with subject %subject%</source>
-        <target>__phplist has started sending the campaign with subject %subject%</target>
+        <target>phplist has started sending the campaign with subject %subject%</target>
       </trans-unit>
       <trans-unit id="PpLvt2Z" resname="Unsubscribe">
         <source>Unsubscribe</source>
-        <target>__Unsubscribe</target>
+        <target>Unsubscribe</target>
       </trans-unit>
       <trans-unit id="njfOwly" resname="This link">
         <source>This link</source>
-        <target>__This link</target>
+        <target>This link</target>
       </trans-unit>
       <trans-unit id="7r3SSnf" resname="Confirm">
         <source>Confirm</source>
-        <target>__Confirm</target>
+        <target>Confirm</target>
       </trans-unit>
       <trans-unit id="YibbDEd" resname="Update preferences">
         <source>Update preferences</source>
-        <target>__Update preferences</target>
+        <target>Update preferences</target>
       </trans-unit>
       <trans-unit id="BkWF7jw" resname="Sorry, you are not subscribed to any of our newsletters with this email address.">
         <source>Sorry, you are not subscribed to any of our newsletters with this email address.</source>
-        <target>__Sorry, you are not subscribed to any of our newsletters with this email address.</target>
+        <target>Sorry, you are not subscribed to any of our newsletters with this email address.</target>
       </trans-unit>
       <trans-unit id="6LBFI8k" resname="This message contains attachments that can be viewed with a webbrowser">
         <source>This message contains attachments that can be viewed with a webbrowser</source>
-        <target>__This message contains attachments that can be viewed with a webbrowser</target>
+        <target>This message contains attachments that can be viewed with a webbrowser</target>
       </trans-unit>
       <trans-unit id="28lDkjt" resname="Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%">
         <source>Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%</source>
-        <target>__Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%</target>
+        <target>Insufficient memory to add attachment to campaign %campaignId% %totalSize% - %memLimit%</target>
       </trans-unit>
       <trans-unit id="HhEWxtR" resname="Add us to your address book">
         <source>Add us to your address book</source>
-        <target>__Add us to your address book</target>
+        <target>Add us to your address book</target>
       </trans-unit>
       <trans-unit id="TNQR4ZC" resname="phpList system error">
         <source>phpList system error</source>
-        <target>__phpList system error</target>
+        <target>phpList system error</target>
       </trans-unit>
       <trans-unit id="_DfkneV" resname="Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be copied to the repository. Check for permissions.">
         <source>Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be copied to the repository. Check for permissions.</source>
-        <target>__Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be copied to the repository. Check for permissions.</target>
+        <target>Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be copied to the repository. Check for permissions.</target>
       </trans-unit>
       <trans-unit id="VXRuG2l" resname="failed to open attachment (%remoteFile%) to add to campaign %campaignId%">
         <source>failed to open attachment (%remoteFile%) to add to campaign %campaignId%</source>
-        <target>__failed to open attachment (%remoteFile%) to add to campaign %campaignId%</target>
+        <target>failed to open attachment (%remoteFile%) to add to campaign %campaignId%</target>
       </trans-unit>
       <trans-unit id="DmqU7IE" resname="Attachment %remoteFile% does not exist">
         <source>Attachment %remoteFile% does not exist</source>
-        <target>__Attachment %remoteFile% does not exist</target>
+        <target>Attachment %remoteFile% does not exist</target>
       </trans-unit>
       <trans-unit id="021aois" resname="Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be found in the repository.">
         <source>Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be found in the repository.</source>
-        <target>__Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be found in the repository.</target>
+        <target>Error, when trying to send campaign %campaignId% the attachment (%remoteFile%) could not be found in the repository.</target>
       </trans-unit>
       <trans-unit id="FbYZdLJ" resname="Location">
         <source>Location</source>
-        <target>__Location</target>
+        <target>Location</target>
       </trans-unit>
       <trans-unit id="1eHD7_P" resname="Fwd">
         <source>Fwd</source>
-        <target>__Fwd</target>
+        <target>Fwd</target>
       </trans-unit>
       <trans-unit id="xBvzfdD" resname="(test)">
         <source>(test)</source>
-        <target>__(test)</target>
+        <target>(test)</target>
       </trans-unit>
       <trans-unit id="gLiV1kM" resname="Message Forwarded">
         <source>Message Forwarded</source>
-        <target>__Message Forwarded</target>
+        <target>Message Forwarded</target>
       </trans-unit>
       <trans-unit id="XbRAoq3" resname="%subscriber% tried forwarding message %campaignId% to %email% but failed">
         <source>%subscriber% tried forwarding message %campaignId% to %email% but failed</source>
-        <target>__%subscriber% tried forwarding message %campaignId% to %email% but failed</target>
+        <target>%subscriber% tried forwarding message %campaignId% to %email% but failed</target>
       </trans-unit>
       <trans-unit id="u7htSNe" resname="%subscriber% has forwarded message %campaignId% to %email%">
         <source>%subscriber% has forwarded message %campaignId% to %email%</source>
-        <target>__%subscriber% has forwarded message %campaignId% to %email%</target>
+        <target>%subscriber% has forwarded message %campaignId% to %email%</target>
       </trans-unit>
       <trans-unit id="FPstK2o" resname="Error precaching campaign message: %error%">
         <source>Error precaching campaign message: %error%</source>
-        <target>__Error precaching campaign message: %error%</target>
+        <target>Error precaching campaign message: %error%</target>
       </trans-unit>
       <trans-unit id="IqU0fUe" resname="phplist system error">
         <source>phplist system error</source>
-        <target>__phplist system error</target>
+        <target>phplist system error</target>
       </trans-unit>
       <trans-unit id="dGEyObO" resname="Failed to send to: %subscriber_id%">
         <source>Failed to send to: %subscriber_id%</source>
-        <target>__Failed to send to: %subscriber_id%</target>
+        <target>Failed to send to: %subscriber_id%</target>
       </trans-unit>
       <trans-unit id="ETHGTu1" resname="Invalid email, marking unconfirmed: %subscriber_id%">
         <source>Invalid email, marking unconfirmed: %subscriber_id%</source>
-        <target>__Invalid email, marking unconfirmed: %subscriber_id%</target>
+        <target>Invalid email, marking unconfirmed: %subscriber_id%</target>
       </trans-unit>
     </body>
   </file>

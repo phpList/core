@@ -65,11 +65,27 @@ class ConfigProvider
             $this->cache->set($cacheKey, $value, $this->ttlSeconds);
         }
 
-        if ($value !== null) {
+        if ($value === null && $this->defaultConfigs->has($key)) {
+            $value = (string) $this->defaultConfigs->get($key)['value'];
+        }
+
+        return $value === null ? null : $this->replaceBuiltInPlaceholders($value, $key);
+    }
+
+    private function replaceBuiltInPlaceholders(string $value, ConfigOption $key): string
+    {
+        if ($key === ConfigOption::Website || $key === ConfigOption::Domain) {
             return $value;
         }
 
-        return $this->defaultConfigs->has($key) ? (string) $this->defaultConfigs->get($key)['value'] : null;
+        if (stripos($value, '[WEBSITE]') !== false) {
+            $value = str_ireplace('[WEBSITE]', $this->getValue(ConfigOption::Website) ?? '', $value);
+        }
+        if (stripos($value, '[DOMAIN]') !== false) {
+            $value = str_ireplace('[DOMAIN]', $this->getValue(ConfigOption::Domain) ?? '', $value);
+        }
+
+        return $value;
     }
 
     public function getValueWithNamespace(ConfigOption|string $key): ?string
