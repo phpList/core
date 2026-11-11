@@ -19,8 +19,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class PendingMigrationsNotificationProviderTest extends TestCase
 {
-    private function provider(MigrationStatusCalculator|RuntimeException $calculator): PendingMigrationsNotificationProvider
-    {
+    private function provider(
+        MigrationStatusCalculator|RuntimeException $calculator
+    ): PendingMigrationsNotificationProvider {
         $factory = $this->createMock(DependencyFactory::class);
         if ($calculator instanceof RuntimeException) {
             $factory->method('getMigrationStatusCalculator')->willThrowException($calculator);

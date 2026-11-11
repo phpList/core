@@ -11,7 +11,7 @@ use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * phplist3 (index.php): superusers are told how many campaigns are waiting in the queue.
+ * superusers are told how many campaigns are waiting in the queue.
  */
 class QueuedCampaignsNotificationProvider implements AdminNotificationProviderInterface
 {

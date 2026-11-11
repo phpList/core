@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * phplist3 (index.php): warns when the attachment repository is missing or not writable.
+ * warns when the attachment repository is missing or not writable.
  * Only superusers can act on this, so only they get it.
  */
 class AttachmentRepositoryNotificationProvider implements AdminNotificationProviderInterface
