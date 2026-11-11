@@ -58,6 +58,7 @@ class MessageForwardServiceTest extends TestCase
             precacheService: $this->precache,
             adminNotifier: $this->notifier,
             forwardingStatsService: $this->stats,
+            forwardAlternativeContent: true,
         );
     }
 

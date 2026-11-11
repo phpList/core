@@ -26,6 +26,10 @@ services:
     autowire: true
     autoconfigure: true
 
+  PhpList\Core\Domain\Messaging\EventSubscriber\InjectedByHeaderSubscriber:
+    autowire: true
+    autoconfigure: true
+
   PhpList\Core\Domain\Messaging\Service\ForwardContentService:
     autowire: true
     autoconfigure: true

@@ -15,7 +15,6 @@ use PhpList\Core\Domain\Messaging\Exception\InvalidRecipientOrSubjectException;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Service\AttachmentAdder;
 use PhpList\Core\Domain\Messaging\Service\Builder\ForwardEmailBuilder;
-use PhpList\Core\Domain\Messaging\Service\Builder\HttpReceivedStampBuilder;
 use PhpList\Core\Domain\Messaging\Service\Constructor\CampaignMailContentBuilder;
 use PhpList\Core\Domain\Messaging\Service\TemplateImageEmbedder;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
@@ -42,7 +41,6 @@ class ForwardEmailBuilderTest extends TestCase
     private PdfGenerator&MockObject $pdfGenerator;
     private AttachmentAdder&MockObject $attachmentAdder;
     private TranslatorInterface&MockObject $translator;
-    private HttpReceivedStampBuilder&MockObject $httpReceivedStampBuilder;
 
     protected function setUp(): void
     {
@@ -61,7 +59,6 @@ class ForwardEmailBuilderTest extends TestCase
         $this->pdfGenerator = $this->createMock(PdfGenerator::class);
         $this->attachmentAdder = $this->createMock(AttachmentAdder::class);
         $this->translator = $this->createMock(TranslatorInterface::class);
-        $this->httpReceivedStampBuilder = $this->createMock(HttpReceivedStampBuilder::class);
 
         // Defaults for config values used in headers
         $this->configProvider->method('getValue')->willReturnMap([
@@ -97,7 +94,6 @@ class ForwardEmailBuilderTest extends TestCase
             pdfGenerator: $this->pdfGenerator,
             attachmentAdder: $this->attachmentAdder,
             translator: $this->translator,
-            httpReceivedStampBuilder: $this->httpReceivedStampBuilder,
             googleSenderId: $googleSenderId,
             useAmazonSes: $useAmazonSes,
             usePrecedenceHeader: $usePrecedenceHeader,
@@ -139,10 +135,6 @@ class ForwardEmailBuilderTest extends TestCase
             ->with($this->isInstanceOf(Email::class), 99, OutputFormat::Html, true)
             ->willReturn(true);
 
-        $this->httpReceivedStampBuilder
-            ->method('buildStamp')
-            ->willReturn('from host [127.0.0.1] by example.org with HTTP; Wed, 01 Jan 2025 00:00:00 +0000');
-
         $builder = $this->makeBuilder(devVersion: true, devEmail: 'dev@example.com');
         [$email, $sentAs] = $builder->buildForwardEmail(
             messageId: 99,
@@ -163,9 +155,6 @@ class ForwardEmailBuilderTest extends TestCase
         // Reply-To set
         $this->assertSame($fromEmail, $email->getReplyTo()[0]->getAddress());
         $this->assertSame($fromName, $email->getReplyTo()[0]->getName());
-
-        // Received header present
-        $this->assertNotNull($email->getHeaders()->get('Received'));
 
         // Dev mode reroutes recipient
         $this->assertSame('dev@example.com', $email->getTo()[0]->getAddress());

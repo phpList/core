@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Service\Builder\ForwardEmailBuilder;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use Psr\SimpleCache\CacheInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mime\Email;
 
 class ForwardContentService
@@ -20,6 +21,8 @@ class ForwardContentService
     public function __construct(
         private readonly CacheInterface $cache,
         private readonly ForwardEmailBuilder $forwardEmailBuilder,
+        private readonly MessagePrecacheService $precacheService,
+        #[Autowire('%messaging.forward_alternative_content%')] private readonly bool $forwardAlternativeContent = false,
     ) {
     }
 
@@ -32,7 +35,9 @@ class ForwardContentService
         string $friendEmail,
         MessageForwardDto $forwardDto
     ): array {
-        $messagePrecacheDto = $this->cache->get(sprintf('messaging.message.base.%d.%d.%d', $campaign->getId(), 1, 0));
+        $messagePrecacheDto = $this->cache->get(
+            $this->precacheService->getCacheKey($campaign->getId(), $this->forwardAlternativeContent)
+        );
 
         if ($messagePrecacheDto === null) {
             throw new MessageCacheMissingException();

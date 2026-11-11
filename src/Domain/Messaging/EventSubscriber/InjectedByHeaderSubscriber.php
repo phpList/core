@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Domain\Messaging\EventSubscriber;
 
+use PhpList\Core\Domain\Messaging\Service\Builder\HttpReceivedStampBuilder;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Mailer\Event\MessageEvent;
 use Symfony\Component\Mime\Email;
 
+/**
+ * When the email is generated from a web request, add a "Received" line to identify the origin
+ * (same as phplist3's PHPlistMailer::add_timestamp()). Mails sent from the CLI or by async
+ * workers have no request, so they are not stamped.
+ */
 class InjectedByHeaderSubscriber implements EventSubscriberInterface
 {
-    public function __construct(private readonly RequestStack $requestStack)
+    public function __construct(private readonly HttpReceivedStampBuilder $stampBuilder)
     {
     }
 
@@ -22,31 +27,19 @@ class InjectedByHeaderSubscriber implements EventSubscriberInterface
 
     public function onMessage(MessageEvent $event): void
     {
-        $request = $this->requestStack->getCurrentRequest();
-        if (!$request) {
-            return;
-        }
-
-        // todo: add custom header only to messages sent individually not from campaigns
-        // when the email is generated from a webpage (quite possible :-) add a "received line" to identify the origin
         $msg = $event->getMessage();
         if (!$msg instanceof Email) {
             return;
         }
 
-        // Only when triggered by HTTP request context (not CLI workers)
-        if (PHP_SAPI === 'cli') {
+        $stamp = $this->stampBuilder->buildStamp();
+        if ($stamp === null) {
             return;
         }
 
-        $ip = $request->getClientIp() ?? 'unknown';
-        $host = gethostname() ?: 'unknown-host';
-
-        $timestamp = $request->server->get('REQUEST_TIME') ?? time();
-
-        $msg->getHeaders()->addTextHeader(
-            'X-phpList-Injected-By',
-            sprintf('from [%s] by %s with HTTP; %s', $ip, $host, $timestamp)
-        );
+        // phplist3 keeps a single stamp per mail: replace instead of stacking
+        $headers = $msg->getHeaders();
+        $headers->remove('Received');
+        $headers->addTextHeader('Received', preg_replace('/[\r\n]+/', ' ', $stamp));
     }
 }

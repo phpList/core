@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Messaging\Model\Dto\MessageForwardDto;
 use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Service\ForwardContentService;
+use PhpList\Core\Domain\Messaging\Service\MessagePrecacheService;
 use PhpList\Core\Domain\Messaging\Service\Builder\ForwardEmailBuilder;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -22,11 +23,21 @@ class ForwardContentServiceTest extends TestCase
 {
     private CacheInterface&MockObject $cache;
     private ForwardEmailBuilder&MockObject $builder;
+    private MessagePrecacheService&MockObject $precacheService;
 
     protected function setUp(): void
     {
         $this->cache = $this->createMock(CacheInterface::class);
         $this->builder = $this->createMock(ForwardEmailBuilder::class);
+        $this->precacheService = $this->createMock(MessagePrecacheService::class);
+        $this->precacheService->method('getCacheKey')->willReturnCallback(
+            fn (int $id, bool $forward = false, bool $test = false) => sprintf(
+                'messaging.message.base.%d.%d.%d',
+                $id,
+                (int) $forward,
+                (int) $test
+            )
+        );
     }
 
     public function testThrowsWhenCacheMissing(): void
@@ -34,6 +45,8 @@ class ForwardContentServiceTest extends TestCase
         $service = new ForwardContentService(
             cache: $this->cache,
             forwardEmailBuilder: $this->builder,
+            precacheService: $this->precacheService,
+            forwardAlternativeContent: true,
         );
 
         $campaign = $this->createMock(Message::class);
@@ -67,6 +80,8 @@ class ForwardContentServiceTest extends TestCase
         $service = new ForwardContentService(
             cache: $this->cache,
             forwardEmailBuilder: $this->builder,
+            precacheService: $this->precacheService,
+            forwardAlternativeContent: true,
         );
 
         $campaign = $this->createMock(Message::class);
