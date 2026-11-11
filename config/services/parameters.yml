@@ -14,3 +14,5 @@ parameters:
     notify_end_default: 'end@example.com'
     always_add_google_tracking: true
     click_track: true
+    # sign click-tracking links with the application secret, see LinkTrackTokenService
+    click_track_sign_with_hmac: false

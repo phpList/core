@@ -29,12 +29,9 @@ class UserMessageService
             return;
         }
 
+        // like phplist3, a view is counted even without a record of the campaign being sent to the subscriber
         $userMessage = $this->userMessageRepository->findByUserAndMessage($subscriber, $message);
-        if ($userMessage === null) {
-            return;
-        }
-
-        $userMessage->setViewedNow();
+        $userMessage?->setViewedNow();
         $message->getMetadata()->incrementViews();
 
         $data = [];

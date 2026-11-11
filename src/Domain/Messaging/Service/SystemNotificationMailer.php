@@ -40,9 +40,8 @@ class SystemNotificationMailer
             return false;
         }
 
-        // todo: check if from name should be from config
         $envelope = new Envelope(
-            sender: new Address($this->bounceEmail, 'PHPList'),
+            sender: new Address($this->bounceEmail),
             recipients: [new Address($email->getTo()[0]->getAddress())],
         );
         $this->mailer->send(message: $email, envelope: $envelope);

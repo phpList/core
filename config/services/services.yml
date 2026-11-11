@@ -26,6 +26,10 @@ services:
     autowire: true
     autoconfigure: true
 
+  PhpList\Core\Domain\Messaging\EventSubscriber\InjectedByHeaderSubscriber:
+    autowire: true
+    autoconfigure: true
+
   PhpList\Core\Domain\Messaging\Service\ForwardContentService:
     autowire: true
     autoconfigure: true
@@ -57,6 +61,21 @@ services:
     public: true
 
   PhpList\Core\Domain\Analytics\Service\LinkTrackService:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  PhpList\Core\Domain\Analytics\Service\LinkRewriter:
+    autowire: true
+
+  PhpList\Core\Domain\Analytics\Service\AnalyticsTrackingService:
+    autowire: true
+
+  PhpList\Core\Domain\Analytics\Service\LinkTrackTokenService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Analytics\Service\LinkClickService:
     autowire: true
     autoconfigure: true
     public: true
@@ -248,6 +267,11 @@ services:
     autowire: true
     autoconfigure: true
     public: true
+
+  PhpList\Core\Domain\Identity\Service\Notification\:
+    resource: '../../src/Domain/Identity/Service/Notification/*.php'
+    autowire: true
+    autoconfigure: true
 
   PhpList\Core\Domain\Identity\Service\AdminNotifier:
     autowire: true

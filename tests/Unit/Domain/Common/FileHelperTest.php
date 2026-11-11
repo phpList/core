@@ -14,7 +14,7 @@ class FileHelperTest extends TestCase
     protected function setUp(): void
     {
         $this->tmpDir = sys_get_temp_dir() . '/phplist-filehelper-' . bin2hex(random_bytes(6));
-        mkdir($this->tmpDir, 0777, true);
+        mkdir($this->tmpDir, 0700, true);
     }
 
     protected function tearDown(): void
@@ -65,13 +65,36 @@ class FileHelperTest extends TestCase
     {
         $helper = new FileHelper();
 
-        $writtenPath = $helper->writeFileToDirectory($this->tmpDir, 'report.txt', 'payload');
+        $previousUmask = umask(0022);
+        try {
+            $writtenPath = $helper->writeFileToDirectory($this->tmpDir, 'report.txt', 'payload');
+        } finally {
+            umask($previousUmask);
+        }
 
         $this->assertNotNull($writtenPath);
         $this->assertStringStartsWith($this->tmpDir . '/', $writtenPath);
         $this->assertTrue(is_file($writtenPath));
         $this->assertStringEndsWith('.txt', basename($writtenPath));
         $this->assertSame('payload', file_get_contents($writtenPath));
+        $this->assertSame(0600, fileperms($writtenPath) & 0777);
+    }
+
+    public function testWriteFileToDirectoryLeavesNoOrphanedTempFile(): void
+    {
+        $helper = new FileHelper();
+
+        $writtenPath = $helper->writeFileToDirectory($this->tmpDir, 'report.txt', 'payload');
+
+        $this->assertSame([$writtenPath], glob($this->tmpDir . '/*'));
+    }
+
+    public function testWriteFileToDirectoryReturnsNullWhenDirectoryIsMissing(): void
+    {
+        $helper = new FileHelper();
+
+        $this->assertNull($helper->writeFileToDirectory($this->tmpDir . '/missing', 'report.txt', 'payload'));
+        $this->assertSame([], glob($this->tmpDir . '/*'));
     }
 
     public function testWriteFileToDirectoryUsesDefaultNameWhenMissing(): void

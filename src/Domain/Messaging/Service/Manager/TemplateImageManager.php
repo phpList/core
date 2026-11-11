@@ -211,10 +211,14 @@ class TemplateImageManager
             $orgLogoImage
         );
 
+        // resized output is always PNG, so take the mime type from the final content
+        $finalSize = getimagesizefromstring($imageContent);
+        $mimeType = $finalSize !== false ? $finalSize['mime'] : $imgSize['mime'];
+
         // else copy original
         $templateImage = (new TemplateImage())
             ->setFilename('ORGANISATIONLOGO' . $size . '.png')
-            ->setMimetype($imgSize['mime'])
+            ->setMimetype($mimeType)
             ->setData(base64_encode($imageContent))
             ->setWidth($newWidth)
             ->setHeight($newHeight);
@@ -266,7 +270,7 @@ class TemplateImageManager
         //# creates a black image (why would you want that....)
         $resized = imagecreatetruecolor($newWidth, $newHeight);
         imagesavealpha($resized, true);
-        //# white. All the methods to make it transparent didn't work for me @@TODO really make transparent
+        //# white. All the methods to make it transparent didn't work for me
         $transparent = imagecolorallocatealpha($resized, 255, 255, 255, 127);
         imagefill($resized, 0, 0, $transparent);
         [$sizeW, $sizeH] = [$imgSize[0], $imgSize[1]];

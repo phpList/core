@@ -17,6 +17,7 @@ use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriptionManager;
+use PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository;
 use PhpList\Core\Domain\Subscription\Service\SubscriberCsvImporter;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -31,28 +32,34 @@ class SubscriberCsvImporterTest extends TestCase
     private SubscriberRepository&MockObject $subscriberRepositoryMock;
     private CsvToDtoImporter&MockObject $csvImporterMock;
     private SubscriberAttributeDefinitionRepository&MockObject $attributeDefinitionRepositoryMock;
+    private UserBlacklistRepository&MockObject $blacklistRepositoryMock;
+    private SubscriptionManager&MockObject $subscriptionManagerMock;
+    private MessageBusInterface&MockObject $messageBusMock;
     private SubscriberCsvImporter $subject;
 
     protected function setUp(): void
     {
         $this->subscriberManagerMock = $this->createMock(SubscriberManager::class);
         $this->attributeManagerMock = $this->createMock(SubscriberAttributeManager::class);
-        $subscriptionManagerMock = $this->createMock(SubscriptionManager::class);
+        $this->subscriptionManagerMock = $this->createMock(SubscriptionManager::class);
         $this->subscriberRepositoryMock = $this->createMock(SubscriberRepository::class);
         $this->csvImporterMock = $this->createMock(CsvToDtoImporter::class);
         $this->attributeDefinitionRepositoryMock = $this->createMock(SubscriberAttributeDefinitionRepository::class);
+        $this->messageBusMock = $this->createMock(MessageBusInterface::class);
         $entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->blacklistRepositoryMock = $this->createMock(UserBlacklistRepository::class);
 
         $this->subject = new SubscriberCsvImporter(
             subscriberManager: $this->subscriberManagerMock,
             attributeManager: $this->attributeManagerMock,
-            subscriptionManager: $subscriptionManagerMock,
+            subscriptionManager: $this->subscriptionManagerMock,
             subscriberRepository: $this->subscriberRepositoryMock,
             csvToDtoImporter: $this->csvImporterMock,
             entityManager: $entityManager,
             translator: new Translator('en'),
-            messageBus: $this->createMock(MessageBusInterface::class),
+            messageBus: $this->messageBusMock,
             subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class),
+            blacklistRepository: $this->blacklistRepositoryMock,
         );
     }
 
@@ -97,7 +104,6 @@ class SubscriberCsvImporterTest extends TestCase
         $importDto1 = new ImportSubscriberDto(
             email: 'test@example.com',
             confirmed: true,
-            blacklisted: false,
             htmlEmail: true,
             disabled: false,
         );
@@ -108,7 +114,6 @@ class SubscriberCsvImporterTest extends TestCase
         $importDto2 = new ImportSubscriberDto(
             email: 'another@example.com',
             confirmed: false,
-            blacklisted: true,
             htmlEmail: false,
             disabled: true
         );
@@ -204,7 +209,6 @@ class SubscriberCsvImporterTest extends TestCase
         $importDto = new ImportSubscriberDto(
             email: 'existing@example.com',
             confirmed: true,
-            blacklisted: false,
             htmlEmail: true,
             disabled: false,
         );
@@ -274,7 +278,6 @@ class SubscriberCsvImporterTest extends TestCase
         $dto = new ImportSubscriberDto(
             email: 'user@example.com',
             confirmed: true,
-            blacklisted: false,
             htmlEmail: true,
             disabled: false,
             extraData: null,
@@ -339,7 +342,6 @@ class SubscriberCsvImporterTest extends TestCase
         $dto = new ImportSubscriberDto(
             email: 'conflict@example.com',
             confirmed: true,
-            blacklisted: false,
             htmlEmail: true,
             disabled: false,
             extraData: null,
@@ -399,7 +401,6 @@ class SubscriberCsvImporterTest extends TestCase
         $dto = new ImportSubscriberDto(
             email: 'existing@example.com',
             confirmed: true,
-            blacklisted: false,
             htmlEmail: true,
             disabled: false,
             extraData: null,
@@ -459,7 +460,6 @@ class SubscriberCsvImporterTest extends TestCase
         $dto = new ImportSubscriberDto(
             email: 'new@example.com',
             confirmed: false,
-            blacklisted: false,
             htmlEmail: true,
             disabled: false,
             extraData: null,
@@ -496,6 +496,89 @@ class SubscriberCsvImporterTest extends TestCase
         $this->assertSame(0, $result['updated']);
         $this->assertSame(0, $result['skipped']);
         $this->assertEmpty($result['errors']);
+
+        unlink($tempFile);
+    }
+
+    public function testImportCountsSubscriberWhoseEmailIsInBlacklistTable(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'csv_test_blacklist');
+        file_put_contents($tempFile, "email,confirmed,html_email,blacklisted,disabled\nbl@example.com,0,1,0,0\n");
+
+        $uploadedFile = $this->createMock(UploadedFile::class);
+        $uploadedFile->method('getRealPath')->willReturn($tempFile);
+
+        $this->subscriberRepositoryMock->method('findOneByEmail')->willReturn(null);
+
+        $dto = new ImportSubscriberDto(
+            email: 'bl@example.com',
+            confirmed: false,
+            htmlEmail: true,
+            disabled: false,
+        );
+        $this->csvImporterMock->method('parseAndValidate')->willReturn(['valid' => [$dto], 'errors' => []]);
+
+        $created = $this->createMock(Subscriber::class);
+        $created->method('getId')->willReturn(7);
+        $created->method('getEmail')->willReturn('bl@example.com');
+        $created->method('isBlacklisted')->willReturn(false);
+        $created->expects($this->once())->method('setBlacklisted')->with(true);
+        $this->subscriberManagerMock->method('createFromImport')->willReturn($created);
+
+        $this->blacklistRepositoryMock
+            ->expects($this->once())
+            ->method('isEmailBlacklisted')
+            ->with('bl@example.com')
+            ->willReturn(true);
+
+        $this->subscriptionManagerMock->expects($this->never())->method('addSubscriberToAList');
+        $this->messageBusMock->expects($this->never())->method('dispatch');
+
+        $result = $this->subject->importFromCsv(
+            $uploadedFile,
+            new SubscriberImportOptions(updateExisting: false, listIds: [1, 2])
+        );
+
+        $this->assertSame(1, $result['blacklisted']);
+
+        unlink($tempFile);
+    }
+
+    public function testImportIgnoresBlacklistedFlagWhenEmailIsNotInBlacklistTable(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'csv_test_flag_only');
+        file_put_contents($tempFile, "email,confirmed,html_email,blacklisted,disabled\nflag@example.com,1,1,1,0\n");
+
+        $uploadedFile = $this->createMock(UploadedFile::class);
+        $uploadedFile->method('getRealPath')->willReturn($tempFile);
+
+        $this->subscriberRepositoryMock->method('findOneByEmail')->willReturn(null);
+
+        $dto = new ImportSubscriberDto(
+            email: 'flag@example.com',
+            confirmed: true,
+            htmlEmail: true,
+            disabled: false,
+        );
+        $this->csvImporterMock->method('parseAndValidate')->willReturn(['valid' => [$dto], 'errors' => []]);
+
+        $created = $this->createMock(Subscriber::class);
+        $created->method('getId')->willReturn(8);
+        $created->method('getEmail')->willReturn('flag@example.com');
+        $created->method('isBlacklisted')->willReturn(true);
+        $created->expects($this->never())->method('setBlacklisted');
+        $this->subscriberManagerMock->method('createFromImport')->willReturn($created);
+
+        $this->blacklistRepositoryMock->method('isEmailBlacklisted')->willReturn(false);
+
+        $this->subscriptionManagerMock->expects($this->once())->method('addSubscriberToAList');
+
+        $result = $this->subject->importFromCsv(
+            $uploadedFile,
+            new SubscriberImportOptions(updateExisting: false, listIds: [1])
+        );
+
+        $this->assertSame(0, $result['blacklisted']);
 
         unlink($tempFile);
     }

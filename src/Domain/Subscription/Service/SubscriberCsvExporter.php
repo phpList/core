@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Subscription\Repository\UserBlacklistRepository;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use PhpList\Core\Domain\Subscription\Service\Resolver\AttributeValueResolver;
 use Psr\Log\LoggerInterface;
@@ -27,6 +28,7 @@ class SubscriberCsvExporter
         private readonly SubscriberRepository $subscriberRepository,
         private readonly SubscriberAttributeDefinitionRepository $definitionRepository,
         private readonly LoggerInterface $logger,
+        private readonly UserBlacklistRepository $blacklistRepository,
     ) {
     }
 
@@ -178,11 +180,16 @@ class SubscriberCsvExporter
                 'count' => $subscriberCount
             ]);
 
+            $blacklistedEmails = in_array('blacklisted', $headers, true)
+                ? $this->findBlacklistedEmails($subscribers)
+                : [];
+
             foreach ($subscribers as $subscriber) {
                 $row = $this->getSubscriberRow(
                     subscriber: $subscriber,
                     attributeDefinitions: $attributeDefinitions,
                     headers: $headers,
+                    blacklistedEmails: $blacklistedEmails,
                 );
                 fputcsv($handle, $row);
                 $lastId = $subscriber->getId();
@@ -209,11 +216,16 @@ class SubscriberCsvExporter
      *
      * @param Subscriber $subscriber The subscriber
      * @param SubscriberAttributeDefinition[] $attributeDefinitions Attribute definitions
+     * @param string[] $blacklistedEmails Lowercased emails of the batch found in the blacklist table
      * @return array Row data
      */
-    private function getSubscriberRow(Subscriber $subscriber, array $attributeDefinitions, array $headers): array
-    {
-        $row = $this->normalizerSubscriberData($subscriber);
+    private function getSubscriberRow(
+        Subscriber $subscriber,
+        array $attributeDefinitions,
+        array $headers,
+        array $blacklistedEmails,
+    ): array {
+        $row = $this->normalizerSubscriberData($subscriber, $blacklistedEmails);
 
         foreach ($attributeDefinitions as $definition) {
             $attrValue = $this->attributeManager->getSubscriberAttribute(
@@ -253,14 +265,34 @@ class SubscriberCsvExporter
         return $response;
     }
 
+    /**
+     * Re-verifies the flag against the blacklist table with one query per batch, so stale flags are not exported.
+     * Subscribers whose stored flag is already set are not looked up.
+     *
+     * @param Subscriber[] $subscribers
+     * @return string[] lowercased blacklisted emails
+     */
+    private function findBlacklistedEmails(array $subscribers): array
+    {
+        $emails = [];
+        foreach ($subscribers as $subscriber) {
+            if (!$subscriber->isBlacklisted()) {
+                $emails[] = $subscriber->getEmail();
+            }
+        }
+
+        return $this->blacklistRepository->findBlacklistedEmails($emails);
+    }
+
     /** @SuppressWarnings("CyclomaticComplexity") */
-    private function normalizerSubscriberData(Subscriber $subscriber): array
+    private function normalizerSubscriberData(Subscriber $subscriber, array $blacklistedEmails): array
     {
         return [
             'id' => $subscriber->getId(),
             'email' => $subscriber->getEmail(),
             'confirmed' => $subscriber->isConfirmed() ? '1' : '0',
-            'blacklisted' => $subscriber->isBlacklisted() ? '1' : '0',
+            'blacklisted' => $subscriber->isBlacklisted()
+                || in_array(strtolower($subscriber->getEmail()), $blacklistedEmails, true) ? '1' : '0',
             'bounceCount' => $subscriber->getBounceCount(),
             'createdAt' => $subscriber->getCreatedAt()?->format('Y-m-d H:i:s') ?? '',
             'updatedAt' => $subscriber->getUpdatedAt()->format('Y-m-d H:i:s'),

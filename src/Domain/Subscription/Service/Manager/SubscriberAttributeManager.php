@@ -43,7 +43,12 @@ class SubscriberAttributeManager
         SubscriberAttributeDefinition $definition,
         ?string $value = null
     ): SubscriberAttributeValue {
-        // todo: clarify which attributes can be created/updated
+        // todo: phplist3 saves the value as given (empty allowed) and checks required fields at form level;
+        //  here a missing value without a default throws. Check whether that is intended.
+        // todo: phplist3 maps a select attribute's value to its option (adding the option when missing);
+        //  here the value is stored as given without checking it against the options.
+        // Like phplist3's saveUserAttribute(): only attributes that have a definition get a value. Built-in
+        // subscriber fields (email, password, ...) are columns on the subscriber, not attribute values.
         $subscriberAttribute = $this->attributeRepository
             ->findOneBySubscriberAndAttribute($subscriber, $definition);
 

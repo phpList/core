@@ -248,4 +248,22 @@ final class ConfigProviderTest extends TestCase
 
         $this->assertSame('PARENT', $this->provider->getValueWithNamespace('subscribemessage:1'));
     }
+
+    public function testGetValueReplacesWebsiteAndDomainPlaceholders(): void
+    {
+        $this->cache->method('get')->willReturn(null);
+        $this->repo->method('findValueByItem')->willReturnCallback(
+            fn (string $item) => match ($item) {
+                ConfigOption::SubscribeUrl->value => 'https://[WEBSITE]/lists/?p=subscribe&d=[DOMAIN]',
+                ConfigOption::Website->value => 'lists.example.org',
+                ConfigOption::Domain->value => 'example.org',
+                default => null,
+            }
+        );
+
+        self::assertSame(
+            'https://lists.example.org/lists/?p=subscribe&d=example.org',
+            $this->provider->getValue(ConfigOption::SubscribeUrl)
+        );
+    }
 }

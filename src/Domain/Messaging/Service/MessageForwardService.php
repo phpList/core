@@ -14,6 +14,7 @@ use PhpList\Core\Domain\Messaging\Model\Dto\ForwardingResult;
 use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberListRepository;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class MessageForwardService
 {
@@ -26,6 +27,7 @@ class MessageForwardService
         private readonly MessagePrecacheService $precacheService,
         private readonly AdminNotifier $adminNotifier,
         private readonly ForwardingStatsService $forwardingStatsService,
+        #[Autowire('%messaging.forward_alternative_content%')] private readonly bool $forwardAlternativeContent = false,
     ) {
     }
 
@@ -54,7 +56,12 @@ class MessageForwardService
                 continue;
             }
 
-            if (!$this->precacheService->precacheMessage($campaign, $loadedMessageData, true)) {
+            $messagePrecached = $this->precacheService->precacheMessage(
+                $campaign,
+                $loadedMessageData,
+                $this->forwardAlternativeContent
+            );
+            if (!$messagePrecached) {
                 $forwardingRecipientResult = $this->handleFailure(
                     campaign: $campaign,
                     forwardingSubscriber: $forwardingSubscriber,
@@ -78,7 +85,6 @@ class MessageForwardService
                 | EmailBlacklistedException
                 | InvalidRecipientOrSubjectException $e
             ) {
-                // todo: check if need to catch MessageCacheMissingException
                 $forwardingRecipientResult = $this->handleFailure(
                     campaign: $campaign,
                     forwardingSubscriber: $forwardingSubscriber,

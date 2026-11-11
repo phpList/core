@@ -11,6 +11,14 @@ services:
     parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
     arguments:
       - PhpList\Core\Domain\Analytics\Model\LinkTrackUmlClick
+  PhpList\Core\Domain\Analytics\Repository\LinkTrackForwardRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Analytics\Model\LinkTrackForward
+  PhpList\Core\Domain\Analytics\Repository\LinkTrackMlRepository:
+    parent: PhpList\Core\Domain\Common\Repository\AbstractRepository
+    arguments:
+      - PhpList\Core\Domain\Analytics\Model\LinkTrackMl
 
 
   PhpList\Core\Domain\Configuration\Repository\ConfigRepository:

@@ -5,15 +5,12 @@ declare(strict_types=1);
 namespace PhpList\Core\Domain\Messaging\Service\Builder;
 
 use DateTimeImmutable;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 class HttpReceivedStampBuilder
 {
-    public function __construct(
-        private readonly RequestStack $requestStack,
-        #[Autowire('%app.rest_api_base_url%')] private readonly string $restApiBaseUrl,
-    ) {
+    public function __construct(private readonly RequestStack $requestStack)
+    {
     }
 
     public function buildStamp(): ?string
@@ -40,7 +37,7 @@ class HttpReceivedStampBuilder
         $requestTime = $request->server->get('REQUEST_TIME') ?? time();
         $date = (new DateTimeImmutable('@' . $requestTime))->format(\DATE_RFC2822);
 
-        return sprintf('from %s by %s with HTTP; %s', $from, $this->restApiBaseUrl, $date);
+        return sprintf('from %s by %s with HTTP; %s', $from, $request->getHost(), $date);
     }
 
     private function getHostByAddr(string $ipAddress): ?string

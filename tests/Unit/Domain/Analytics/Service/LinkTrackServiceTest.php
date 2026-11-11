@@ -4,257 +4,283 @@ declare(strict_types=1);
 
 namespace PhpList\Core\Tests\Unit\Domain\Analytics\Service;
 
-use Doctrine\ORM\EntityManagerInterface;
 use PhpList\Core\Core\ParameterProvider;
-use PhpList\Core\Domain\Analytics\Exception\MissingMessageIdException;
-use PhpList\Core\Domain\Analytics\Model\LinkTrack;
+use PhpList\Core\Domain\Analytics\Model\LinkTrackForward;
+use PhpList\Core\Domain\Analytics\Repository\LinkTrackForwardRepository;
+use PhpList\Core\Domain\Analytics\Repository\LinkTrackMlRepository;
 use PhpList\Core\Domain\Analytics\Repository\LinkTrackRepository;
+use PhpList\Core\Domain\Analytics\Service\AnalyticsTrackingService;
+use PhpList\Core\Domain\Analytics\Service\LinkRewriter;
 use PhpList\Core\Domain\Analytics\Service\LinkTrackService;
-use PhpList\Core\Domain\Messaging\Model\Dto\MessagePrecacheDto;
+use PhpList\Core\Domain\Analytics\Service\LinkTrackTokenService;
+use PhpList\Core\Domain\Configuration\Service\Provider\ConfigProvider;
 use PhpList\Core\Domain\Messaging\Model\Message;
-use PhpList\Core\Domain\Messaging\Model\Message\MessageContent;
+use PhpList\Core\Domain\Messaging\Repository\MessageRepository;
+use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class LinkTrackServiceTest extends TestCase
 {
-    private LinkTrackService $subject;
-    private LinkTrackRepository|MockObject $linkTrackRepository;
+    private LinkTrackForwardRepository&MockObject $forwardRepository;
+    private LinkTrackMlRepository&MockObject $mlRepository;
+    private MessageRepository&MockObject $messageRepository;
+    private AnalyticsTrackingService&MockObject $analyticsTrackingService;
+    private LinkTrackTokenService $tokenService;
+    private Message&MockObject $campaign;
+    private Subscriber $subscriber;
+    /** @var array<string, array{url: string, personalise: bool}> */
+    private array $createdForwards = [];
 
     protected function setUp(): void
     {
-        $this->linkTrackRepository = $this->createMock(LinkTrackRepository::class);
-        $paramProvider = $this->createMock(ParameterProvider::class);
+        $this->forwardRepository = $this->createMock(LinkTrackForwardRepository::class);
+        $this->mlRepository = $this->createMock(LinkTrackMlRepository::class);
+        $this->messageRepository = $this->createMock(MessageRepository::class);
+        $this->analyticsTrackingService = $this->createMock(AnalyticsTrackingService::class);
+        $this->tokenService = new LinkTrackTokenService(
+            new ParameterProvider([]),
+            'https://example.com/api/v2',
+            'secret',
+            $this->createMock(ConfigProvider::class)
+        );
 
-        $paramProvider->method('get')
-            ->with('click_track', false)
-            ->willReturn(true);
+        $this->campaign = $this->createMock(Message::class);
+        $this->campaign->method('getId')->willReturn(7);
+        $this->campaign->method('getUuid')->willReturn('campaign-uuid');
+        $this->messageRepository->method('findById')->with(7)->willReturn($this->campaign);
 
-        $this->subject = new LinkTrackService(
-            linkTrackRepository: $this->linkTrackRepository,
-            paramProvider: $paramProvider,
-            entityManager: $this->createMock(EntityManagerInterface::class)
+        $this->subscriber = new Subscriber('alice@example.com');
+        $this->subscriber->setUuid('subscriber-uuid');
+
+        $this->forwardRepository->method('findOrCreateByUrl')->willReturnCallback(
+            function (string $url, bool $personalise): LinkTrackForward {
+                $this->createdForwards[$url] = ['url' => $url, 'personalise' => $personalise];
+                $id = array_search($url, array_keys($this->createdForwards), true) + 1;
+
+                return $this->createForward($id, $url);
+            }
         );
     }
 
-    public function testExtractAndSaveLinksWithNoLinks(): void
+    private function createForward(int $id, string $url): LinkTrackForward&MockObject
     {
-        $messageId = 123;
-        $userId = 456;
+        $forward = $this->createMock(LinkTrackForward::class);
+        $forward->method('getId')->willReturn($id);
+        $forward->method('getUuid')->willReturn('forward-uuid-' . $id);
+        $forward->method('getUrl')->willReturn($url);
 
-        $messageContent = new MessagePrecacheDto();
-        $messageContent->subject = 'Test Subject';
-        $messageContent->content = 'No links here';
-
-        $message = $this->createMock(Message::class);
-        $message->method('getId')->willReturn($messageId);
-        $message->method('getContent')->willReturn(new MessageContent('Test Subject', 'No links here'));
-
-        $this->linkTrackRepository->expects(self::never())->method('persist');
-
-        $result = $this->subject->extractAndSaveLinks($messageContent, $userId, $messageId);
-
-        self::assertEmpty($result);
+        return $forward;
     }
 
-    public function testExtractAndSaveLinksWithLinks(): void
+    private function createService(bool $clickTrack = true): LinkTrackService
     {
-        $messageId = 123;
-        $userId = 456;
-        $htmlContent = '<p>Check out <a href="https://example.com">this link</a> and '
-            . '<a href="https://test.com">this one</a>.</p>';
-
-        $messageContent = new MessageContent('Test Subject', $htmlContent);
-        $messagePrecacheDto = new MessagePrecacheDto();
-        $messagePrecacheDto->subject = 'Test Subject';
-        $messagePrecacheDto->content = $htmlContent;
-
-        $message = $this->createMock(Message::class);
-        $message->method('getId')->willReturn($messageId);
-        $message->method('getContent')->willReturn($messageContent);
-
-        $this->linkTrackRepository->expects(self::exactly(2))
-            ->method('persist')
-            ->willReturnCallback(function (LinkTrack $linkTrack) use ($messageId, $userId) {
-                self::assertSame($messageId, $linkTrack->getMessageId());
-                self::assertSame($userId, $linkTrack->getUserId());
-                self::assertContains($linkTrack->getUrl(), ['https://example.com', 'https://test.com']);
-                return null;
-            });
-
-        $result = $this->subject->extractAndSaveLinks($messagePrecacheDto, $userId, $messageId);
-
-        self::assertCount(2, $result);
-        self::assertSame('https://example.com', $result[0]->getUrl());
-        self::assertSame('https://test.com', $result[1]->getUrl());
+        return new LinkTrackService(
+            $this->createMock(LinkTrackRepository::class),
+            $this->forwardRepository,
+            $this->mlRepository,
+            $this->messageRepository,
+            $this->tokenService,
+            new ParameterProvider(['click_track' => $clickTrack]),
+            new LinkRewriter(),
+            $this->analyticsTrackingService,
+        );
     }
 
-    public function testExtractAndSaveLinksWithFooter(): void
+    /** @return string[] the uuids found in all tracking links of the text, in order */
+    private function trackedForwardUuids(string $text): array
     {
-        $messageId = 123;
-        $userId = 456;
-        $htmlContent = '<p>Main content with <a href="https://example.com">a link</a>.</p>';
-        $footerContent = '<p>Footer with <a href="https://footer.com">another link</a>.</p>';
+        preg_match_all('~/lt\?tid=([A-Za-z0-9_-]+)~', $text, $matches);
 
-        $messageContent = new MessageContent('Test Subject', $htmlContent, null, $footerContent);
-        $messagePrecacheDto = new MessagePrecacheDto();
-        $messagePrecacheDto->subject = 'Test Subject';
-        $messagePrecacheDto->content = $htmlContent;
-        $messagePrecacheDto->htmlFooter = $footerContent;
-
-        $message = $this->createMock(Message::class);
-        $message->method('getId')->willReturn($messageId);
-        $message->method('getContent')->willReturn($messageContent);
-
-        $this->linkTrackRepository->expects(self::exactly(2))
-            ->method('persist')
-            ->willReturnCallback(function (LinkTrack $linkTrack) use ($messageId, $userId) {
-                self::assertSame($messageId, $linkTrack->getMessageId());
-                self::assertSame($userId, $linkTrack->getUserId());
-                self::assertContains($linkTrack->getUrl(), ['https://example.com', 'https://footer.com']);
-                return null;
-            });
-
-        $result = $this->subject->extractAndSaveLinks($messagePrecacheDto, $userId, $messageId);
-
-        self::assertCount(2, $result);
-        self::assertSame('https://example.com', $result[0]->getUrl());
-        self::assertSame('https://footer.com', $result[1]->getUrl());
+        return array_map(
+            fn (string $tid): string => $this->tokenService->parse($tid)->forwardUuid,
+            $matches[1]
+        );
     }
 
-    public function testExtractAndSaveLinksWithDuplicateLinks(): void
+    public function testIsClickTrackingEnabledFollowsTheParameter(): void
     {
-        $messageId = 123;
-        $userId = 456;
-        $htmlContent = '<p><a href="https://example.com">Link 1</a> and <a href="https://example.com">Link 2</a>.</p>';
-
-        $messageContent = new MessageContent('Test Subject', $htmlContent);
-        $messagePrecacheDto = new MessagePrecacheDto();
-        $messagePrecacheDto->subject = 'Test Subject';
-        $messagePrecacheDto->content = $htmlContent;
-
-        $message = $this->createMock(Message::class);
-        $message->method('getId')->willReturn($messageId);
-        $message->method('getContent')->willReturn($messageContent);
-
-        $this->linkTrackRepository->expects(self::once())
-            ->method('persist')
-            ->willReturnCallback(function (LinkTrack $linkTrack) use ($messageId, $userId) {
-                self::assertSame($messageId, $linkTrack->getMessageId());
-                self::assertSame($userId, $linkTrack->getUserId());
-                self::assertSame('https://example.com', $linkTrack->getUrl());
-                return null;
-            });
-
-        $result = $this->subject->extractAndSaveLinks($messagePrecacheDto, $userId, $messageId);
-
-        self::assertCount(1, $result);
-        self::assertSame('https://example.com', $result[0]->getUrl());
+        self::assertTrue($this->createService(true)->isClickTrackingEnabled());
+        self::assertFalse($this->createService(false)->isClickTrackingEnabled());
     }
 
-    public function testExtractAndSaveLinksWithNullText(): void
+    public function testContentIsReturnedUntouchedWhenClickTrackingIsDisabled(): void
     {
-        $messageId = 123;
-        $userId = 456;
-        $footerContent = '<p>Footer with <a href="https://footer.com">a link</a>.</p>';
+        $html = '<a href="https://example.com/">x</a>';
 
-        $messageContent = new MessageContent('Test Subject', null, null, $footerContent);
-        $messagePrecacheDto = new MessagePrecacheDto();
-        $messagePrecacheDto->subject = 'Test Subject';
-        $messagePrecacheDto->htmlFooter = $footerContent;
+        $this->forwardRepository->expects(self::never())->method('findOrCreateByUrl');
 
-        $message = $this->createMock(Message::class);
-        $message->method('getId')->willReturn($messageId);
-        $message->method('getContent')->willReturn($messageContent);
+        $result = $this->createService(false)->trackLinks($html, 'https://example.com/', 7, $this->subscriber);
 
-        $this->linkTrackRepository->expects(self::once())
-            ->method('persist')
-            ->willReturnCallback(function (LinkTrack $linkTrack) use ($messageId, $userId) {
-                self::assertSame($messageId, $linkTrack->getMessageId());
-                self::assertSame($userId, $linkTrack->getUserId());
-                self::assertSame('https://footer.com', $linkTrack->getUrl());
-                return null;
-            });
-
-        $result = $this->subject->extractAndSaveLinks($messagePrecacheDto, $userId, $messageId);
-
-        self::assertCount(1, $result);
-        self::assertSame('https://footer.com', $result[0]->getUrl());
+        self::assertSame([$html, 'https://example.com/'], $result);
     }
 
-    public function testExtractAndSaveLinksWithMessageWithoutId(): void
+    public function testContentIsReturnedUntouchedWhenCampaignHasNoUuid(): void
     {
-        $userId = 456;
-        $htmlContent = '<p><a href="https://example.com">Link</a></p>';
+        $campaign = $this->createMock(Message::class);
+        $campaign->method('getUuid')->willReturn(null);
+        $repository = $this->createMock(MessageRepository::class);
+        $repository->method('findById')->willReturn($campaign);
+        $service = new LinkTrackService(
+            $this->createMock(LinkTrackRepository::class),
+            $this->forwardRepository,
+            $this->mlRepository,
+            $repository,
+            $this->tokenService,
+            new ParameterProvider(['click_track' => true]),
+            new LinkRewriter(),
+            $this->analyticsTrackingService,
+        );
+        $html = '<a href="https://example.com/">x</a>';
 
-        $messageContent = new MessageContent('Test Subject', $htmlContent);
-        $messagePrecacheDto = new MessagePrecacheDto();
-        $messagePrecacheDto->subject = 'Test Subject';
-        $messagePrecacheDto->content = $htmlContent;
-
-        $message = $this->createMock(Message::class);
-        $message->method('getId')->willReturn(null);
-        $message->method('getContent')->willReturn($messageContent);
-
-        $this->expectException(MissingMessageIdException::class);
-        $this->expectExceptionMessage('Message must have an ID');
-
-        $this->subject->extractAndSaveLinks($messagePrecacheDto, $userId, $message->getId());
+        self::assertSame([$html, ''], $service->trackLinks($html, '', 7, $this->subscriber));
     }
 
-    public function testIsExtractAndSaveLinksApplicableWhenClickTrackIsTrue(): void
+    public function testHtmlLinksAreReplacedWithTrackingLinks(): void
     {
-        self::assertTrue($this->subject->isExtractAndSaveLinksApplicable());
+        $html = '<p><a class="btn" href="https://example.com/a?x=1&amp;y=2" target="_blank">A</a> '
+            . "<a href='http://example.org/b'><img src=\"b.png\"></a></p>";
+
+        [$result] = $this->createService()->trackLinks($html, '', 7, $this->subscriber);
+
+        self::assertStringContainsString('<a class="btn" href="https://example.com/api/v2/lt?tid=', $result);
+        self::assertStringContainsString(' target="_blank">A</a>', $result);
+        self::assertStringContainsString("<a href='https://example.com/api/v2/lt?tid=", $result);
+        self::assertStringNotContainsString('example.org', $result);
+        self::assertArrayHasKey('https://example.com/a?x=1&y=2', $this->createdForwards, 'stored url is decoded');
+        self::assertArrayHasKey('http://example.org/b', $this->createdForwards);
     }
 
-    public function testIsExtractAndSaveLinksApplicableWhenClickTrackIsFalse(): void
+    public function testTrackingLinkIdentifiesForwardCampaignAndSubscriber(): void
     {
-        $paramProvider = $this->createMock(ParameterProvider::class);
-        $paramProvider->method('get')
-            ->with('click_track', false)
-            ->willReturn(false);
-
-        $subject = new LinkTrackService(
-            linkTrackRepository: $this->linkTrackRepository,
-            paramProvider: $paramProvider,
-            entityManager: $this->createMock(EntityManagerInterface::class)
+        [$result] = $this->createService()->trackLinks(
+            '<a href="https://example.com/a">A</a>',
+            '',
+            7,
+            $this->subscriber
         );
 
-        self::assertFalse($subject->isExtractAndSaveLinksApplicable());
+        preg_match('~tid=([A-Za-z0-9_-]+)~', $result, $match);
+        $token = $this->tokenService->parse($match[1]);
+        self::assertNotNull($token);
+        self::assertTrue($token->isHtml());
+        self::assertSame('forward-uuid-1', $token->forwardUuid);
+        self::assertSame('campaign-uuid', $token->messageUuid);
+        self::assertSame('subscriber-uuid', $token->subscriberUuid);
     }
 
-    public function testExtractAndSaveLinksWithExistingLink(): void
+    public function testLinksThatMustNotBeTrackedAreLeftAlone(): void
     {
-        $messageId = 123;
-        $userId = 456;
-        $url = 'https://example.com';
-        $htmlContent = '<p>Check out <a href="' . $url . '">this link</a>.</p>';
+        $html = implode(' ', [
+            '<a href="mailto:bob@example.com">mail</a>',
+            '<a href="[UNSUBSCRIBEURL]">unsubscribe</a>',
+            '<a href="https://example.com/?e=[EMAIL]">placeholder</a>',
+            '<a href="javascript:alert(1)">script</a>',
+            '<a href="https://example.com/real">https://example.com/other</a>',
+            '<a href="https://example.com/' . str_repeat('a', 300) . '">too long</a>',
+            '<a href="https://example.com/api/v2/lt?tid=abc">already tracked</a>',
+            '<a name="anchor">no href</a>',
+        ]);
 
-        $messageContent = new MessageContent('Test Subject', $htmlContent);
+        $this->forwardRepository->expects(self::never())->method('findOrCreateByUrl');
+        $this->mlRepository->expects(self::never())->method('incrementTotal');
 
-        $message = $this->createMock(Message::class);
-        $message->method('getId')->willReturn($messageId);
-        $message->method('getContent')->willReturn($messageContent);
-        $messagePrecacheDto = new MessagePrecacheDto();
-        $messagePrecacheDto->subject = 'Test Subject';
-        $messagePrecacheDto->content = $htmlContent;
+        [$result] = $this->createService()->trackLinks($html, '', 7, $this->subscriber);
 
-        $existingLinkTrack = new LinkTrack();
-        $existingLinkTrack->setMessageId($messageId);
-        $existingLinkTrack->setUserId($userId);
-        $existingLinkTrack->setUrl($url);
+        self::assertSame($html, $result);
+    }
 
-        $this->linkTrackRepository->expects(self::once())
-            ->method('findByUrlUserIdAndMessageId')
-            ->with($url, $userId, $messageId)
-            ->willReturn($existingLinkTrack);
+    public function testPersonalUidAndSessionParametersAreStrippedAndMarkTheForwardPersonal(): void
+    {
+        $this->createService()->trackLinks(
+            '<a href="https://example.com/p?a=1&amp;uid=abc123&amp;PHPSESSID=x#top">P</a>',
+            '',
+            7,
+            $this->subscriber
+        );
 
-        $this->linkTrackRepository->expects(self::never())
-            ->method('persist');
+        self::assertSame(
+            ['https://example.com/p?a=1#top' => ['url' => 'https://example.com/p?a=1#top', 'personalise' => true]],
+            $this->createdForwards
+        );
+    }
 
-        $result = $this->subject->extractAndSaveLinks($messagePrecacheDto, $userId, $messageId);
+    public function testTextUrlsAreReplacedWithTextTokens(): void
+    {
+        $text = "Read https://example.com/a. Or see http://example.org/b?x=1\nbye\nMore: https://example.com/a";
 
-        self::assertCount(1, $result);
-        self::assertSame($existingLinkTrack, $result[0]);
+        [, $result] = $this->createService()->trackLinks('', $text, 7, $this->subscriber);
+
+        self::assertMatchesRegularExpression(
+            '~^Read https://example.com/api/v2/lt\?tid=[A-Za-z0-9_-]+\. Or see https://example.com/api/v2/lt\?tid=~',
+            $result
+        );
+        preg_match('~tid=([A-Za-z0-9_-]+)~', $result, $match);
+        self::assertSame('T', $this->tokenService->parse($match[1])->type);
+        $uuids = $this->trackedForwardUuids($result);
+        self::assertSame($uuids[0], $uuids[2], 'the same url gets the same forward');
+        self::assertSame("\nbye\n", substr($result, strpos($result, "\n"), 5));
+    }
+
+    public function testLinksFromExpandedPlaceholdersAreTracked(): void
+    {
+        $html = '<a href="https://example.com/unsubscribe?uid=abc123">Unsubscribe</a>';
+
+        [$result] = $this->createService()->trackLinks($html, '', 7, $this->subscriber);
+
+        self::assertSame(['forward-uuid-1'], $this->trackedForwardUuids($result));
+    }
+
+    public function testTotalIsIncrementedOncePerDistinctLinkOfTheEmail(): void
+    {
+        $html = '<a href="https://example.com/a">1</a><a href="https://example.com/a">2</a>'
+            . '<a href="https://example.com/b">3</a>';
+
+        $incremented = [];
+        $this->mlRepository->expects(self::exactly(2))
+            ->method('incrementTotal')
+            ->willReturnCallback(function (int $messageId, int $forwardId) use (&$incremented): void {
+                $incremented[] = [$messageId, $forwardId];
+            });
+
+        $this->createService()->trackLinks($html, 'https://example.com/a', 7, $this->subscriber);
+
+        self::assertSame([[7, 1], [7, 2]], $incremented);
+    }
+
+    public function testAnalyticsParametersAreAddedStraightToTheLinksWithoutClickTracking(): void
+    {
+        $this->analyticsTrackingService->expects(self::once())
+            ->method('addToBodies')
+            ->with('<a href="https://example.com/">x</a>', 'text', ['utm_source' => 'news'])
+            ->willReturn(['html with utm', 'text with utm']);
+        $this->forwardRepository->expects(self::never())->method('findOrCreateByUrl');
+
+        $result = $this->createService(false)->trackLinks(
+            '<a href="https://example.com/">x</a>',
+            'text',
+            7,
+            $this->subscriber,
+            ['utm_source' => 'news']
+        );
+
+        self::assertSame(['html with utm', 'text with utm'], $result);
+    }
+
+    public function testAnalyticsParametersAreNotAddedByTheSendWhenClickTrackingIsOn(): void
+    {
+        $this->analyticsTrackingService->expects(self::never())->method('addToBodies');
+
+        $this->createService(true)->trackLinks('<a href="https://example.com/">x</a>', '', 7, $this->subscriber, []);
+    }
+
+    public function testForwardedMessagesAreNotClickTracked(): void
+    {
+        $html = '<a href="https://example.com/">x</a>';
+        $this->forwardRepository->expects(self::never())->method('findOrCreateByUrl');
+
+        $result = $this->createService()->trackLinks($html, '', 7, $this->subscriber, null, true);
+
+        self::assertSame([$html, ''], $result);
     }
 }

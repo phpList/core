@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Subscription\Model\Filter\SubscriberFilter;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
 use PhpList\Core\Domain\Subscription\Model\Subscription;
+use PhpList\Core\Domain\Subscription\Model\UserBlacklist;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriptionRepository;
 use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
@@ -301,6 +302,32 @@ class SubscriberRepositoryTest extends KernelTestCase
     public function testGetSubscribersBySubscribedListIdsReturnsEmptyArrayForEmptyInput(): void
     {
         self::assertSame([], $this->subscriberRepository->getSubscribersBySubscribedListIds([]));
+    }
+
+    public function testGetFilteredAfterIdBlacklistedFilterUsesLiveBlacklistStatus(): void
+    {
+        $flagged = (new Subscriber('flagged@example.com'))->setBlacklisted(true);
+        $stale = new Subscriber('stale@example.com');
+        $clean = new Subscriber('clean@example.com');
+        foreach ([$flagged, $stale, $clean] as $subscriber) {
+            $this->entityManager->persist($subscriber);
+        }
+        $this->entityManager->persist((new UserBlacklist('stale@example.com'))->setAdded(new DateTime('-1 day')));
+        $this->entityManager->flush();
+
+        $emailsFor = function (bool $isBlacklisted): array {
+            $result = $this->subscriberRepository->getFilteredAfterId(
+                new SubscriberFilter(isBlacklisted: $isBlacklisted)
+            );
+
+            return array_map(
+                static fn (Subscriber $subscriber): string => $subscriber->getEmail(),
+                $result->getItems()
+            );
+        };
+
+        self::assertEqualsCanonicalizing(['flagged@example.com', 'stale@example.com'], $emailsFor(true));
+        self::assertSame(['clean@example.com'], $emailsFor(false));
     }
 
     public function testGetFilteredAfterIdWithoutListFilterReturnsAllSubscribersOnce(): void

@@ -14,7 +14,7 @@ class HttpReceivedStampBuilderTest extends TestCase
     public function testReturnsNullWhenNoRequest(): void
     {
         $stack = new RequestStack();
-        $builder = new HttpReceivedStampBuilder($stack, 'api.example.test');
+        $builder = new HttpReceivedStampBuilder($stack);
 
         self::assertNull($builder->buildStamp());
     }
@@ -26,7 +26,7 @@ class HttpReceivedStampBuilderTest extends TestCase
         // Do not set REMOTE_ADDR to simulate missing client IP
         $stack->push($request);
 
-        $builder = new HttpReceivedStampBuilder($stack, 'api.example.test');
+        $builder = new HttpReceivedStampBuilder($stack);
 
         self::assertNull($builder->buildStamp());
     }
@@ -40,9 +40,10 @@ class HttpReceivedStampBuilderTest extends TestCase
         $request->server->set('REMOTE_HOST', 'client.example.org');
         // Fix the request time for deterministic output (Unix epoch start)
         $request->server->set('REQUEST_TIME', 0);
+        $request->headers->set('Host', 'api.example.test');
         $stack->push($request);
 
-        $builder = new HttpReceivedStampBuilder($stack, 'api.example.test');
+        $builder = new HttpReceivedStampBuilder($stack);
 
         $stamp = $builder->buildStamp();
 
@@ -61,9 +62,10 @@ class HttpReceivedStampBuilderTest extends TestCase
         // Ensure no REMOTE_HOST so builder attempts reverse DNS, which should fail and fallback to IP only
         $request->server->remove('REMOTE_HOST');
         $request->server->set('REQUEST_TIME', 0);
+        $request->headers->set('Host', 'api.example.test');
         $stack->push($request);
 
-        $builder = new HttpReceivedStampBuilder($stack, 'api.example.test');
+        $builder = new HttpReceivedStampBuilder($stack);
 
         $stamp = $builder->buildStamp();
 

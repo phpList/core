@@ -95,6 +95,58 @@ class TemplateImageManagerTest extends TestCase
         $this->assertSame(self::ONE_PIXEL_PNG, $capturedImage->getData());
     }
 
+    public function testCreateCachedLogoImageStoresResizedLogoAsPng(): void
+    {
+        $capturedImage = $this->createCachedLogoImageFromJpeg(width: 100, height: 50, size: 20);
+
+        $this->assertSame('ORGANISATIONLOGO20.png', $capturedImage->getFilename());
+        $this->assertSame('image/png', $capturedImage->getMimeType());
+        $this->assertSame(20, $capturedImage->getWidth());
+        $this->assertSame(10, $capturedImage->getHeight());
+    }
+
+    public function testCreateCachedLogoImageKeepsOriginalMimeTypeWhenNotResized(): void
+    {
+        $capturedImage = $this->createCachedLogoImageFromJpeg(width: 10, height: 10, size: 500);
+
+        $this->assertSame('image/jpeg', $capturedImage->getMimeType());
+    }
+
+    private function createCachedLogoImageFromJpeg(int $width, int $height, int $size): TemplateImage
+    {
+        $canvas = imagecreatetruecolor($width, $height);
+        ob_start();
+        imagejpeg($canvas);
+        $jpeg = (string) ob_get_clean();
+
+        $logoImage = $this->createMock(TemplateImage::class);
+        $logoImage->method('getData')->willReturn(base64_encode($jpeg));
+
+        $this->configProvider->method('getValue')->willReturn('1');
+        $this->templateImageRepository->method('findByFilename')->willReturn(null);
+        $this->templateImageRepository->method('findById')->with(1)->willReturn($logoImage);
+
+        $capturedImage = null;
+        $this->templateImageRepository->expects($this->once())
+            ->method('persist')
+            ->with($this->callback(static function (TemplateImage $image) use (&$capturedImage): bool {
+                $capturedImage = $image;
+                return true;
+            }));
+
+        // resizing closes the buffer that was active when it started, so provide one to keep PHPUnit's intact
+        $obLevel = ob_get_level();
+        ob_start();
+        $this->manager->createCachedLogoImage($size);
+        while (ob_get_level() > $obLevel) {
+            ob_end_clean();
+        }
+
+        $this->assertInstanceOf(TemplateImage::class, $capturedImage);
+
+        return $capturedImage;
+    }
+
     public function testGuessMimeType(): void
     {
         $reflection = new \ReflectionClass($this->manager);
