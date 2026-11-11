@@ -37,7 +37,6 @@ class InjectedByHeaderSubscriber implements EventSubscriberInterface
             return;
         }
 
-        // phplist3 keeps a single stamp per mail: replace instead of stacking
         $headers = $msg->getHeaders();
         $headers->remove('Received');
         $headers->addTextHeader('Received', preg_replace('/[\r\n]+/', ' ', $stamp));

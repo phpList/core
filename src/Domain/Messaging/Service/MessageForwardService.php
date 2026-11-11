@@ -56,7 +56,12 @@ class MessageForwardService
                 continue;
             }
 
-            if (!$this->precacheService->precacheMessage($campaign, $loadedMessageData, $this->forwardAlternativeContent)) {
+            $messagePrecached = $this->precacheService->precacheMessage(
+                $campaign,
+                $loadedMessageData,
+                $this->forwardAlternativeContent
+            );
+            if (!$messagePrecached) {
                 $forwardingRecipientResult = $this->handleFailure(
                     campaign: $campaign,
                     forwardingSubscriber: $forwardingSubscriber,
