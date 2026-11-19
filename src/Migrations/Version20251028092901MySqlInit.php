@@ -40,6 +40,15 @@ final class Version20251028092901MySqlInit extends AbstractPrefixedMigration
             'phpList schema already exists.'
         );
 
+        // TODO: check the migrations against an empty database and fix what breaks
+        // (base-distribution CI "Check the migrations build a schema matching the Doctrine mapping" does this):
+        // - The whole dump is sent as one multi-statement query. PDO only reports an error in the first statement,
+        //   so if a later CREATE TABLE fails (e.g. the table already exists) this migration is still marked as
+        //   executed with a partial schema, and the next migration fails on a missing table instead.
+        //   Run the statements one by one (or use CREATE TABLE IF NOT EXISTS) so failures surface here.
+        // - The "schema already exists" check above uses the schema manager, which OnlyOrmTablesFilter limits to
+        //   ORM tables, so leftover non-ORM tables from the dump (phplist_i18n, phplist_listattr_*) are not seen.
+        // - Version20260827065637 fails on a fresh install, see the TODO there.
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql(file_get_contents(__DIR__.'/initial_schema.sql'));
     }

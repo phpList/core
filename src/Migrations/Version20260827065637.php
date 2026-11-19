@@ -30,6 +30,10 @@ final class Version20260827065637 extends AbstractPrefixedMigration
             get_class($platform)
         ));
 
+        // TODO: fails on a fresh install ("Can't DROP 'loginname'"): initial_schema.sql only creates
+        // `loginnameidx` (renamed to phplist_admin_loginnameidx by Version20251028092902MySqlUpdate), so `loginname`
+        // only exists on databases created by phplist3. Drop it only if present, e.g. like renameOrCreateIndex() in
+        // AbstractPrefixedMigration, and check the other legacy index names this migration drops.
         $this->addSql('DROP INDEX loginname ON phplist_admin');
         $this->addSql('DROP INDEX phplist_admin_loginnameidx ON phplist_admin');
         $this->addSql('DELETE FROM phplist_admin WHERE loginname IS NULL');

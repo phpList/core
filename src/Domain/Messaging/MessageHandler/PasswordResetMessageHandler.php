@@ -28,6 +28,9 @@ class PasswordResetMessageHandler
     {
         $confirmationLink = $this->generateLink($message->getToken());
 
+        // todo: email locale. This runs in a queue worker, where the request locale is not available, so the
+        //  default locale is always used. Resolve the recipient's language (phplist3 uses the subscriber/admin
+        //  language) and pass it as the $locale argument of trans() for the subject and both bodies.
         $subject = $this->translator->trans('Password Reset Request');
 
         $textContent = $this->translator->trans(
