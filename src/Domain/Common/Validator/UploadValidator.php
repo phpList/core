@@ -11,6 +11,7 @@ use PhpList\Core\Domain\Common\Exception\UnsupportedMimeTypeException;
 use PhpList\Core\Domain\Common\Exception\UploadTooLargeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class UploadValidator
 {
@@ -25,6 +26,7 @@ class UploadValidator
         private readonly array $allowedExtensions,
         #[Autowire('%phplist.uploads.max_size%')]
         private readonly string $maxSize,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -42,11 +44,11 @@ class UploadValidator
     private function validateUploadedFile(?UploadedFile $file): UploadedFile
     {
         if ($file === null) {
-            throw new MissingUploadException('No file uploaded.');
+            throw new MissingUploadException($this->translator->trans('No file uploaded.'));
         }
 
         if (!$file->isValid()) {
-            throw new InvalidUploadException('Invalid uploaded file.');
+            throw new InvalidUploadException($this->translator->trans('Invalid uploaded file.'));
         }
 
         return $file;
@@ -57,12 +59,14 @@ class UploadValidator
         $mimeType = strtolower((string) $file->getMimeType());
 
         if ($mimeType === '') {
-            throw new InvalidUploadException('Could not determine uploaded file MIME type.');
+            throw new InvalidUploadException(
+                $this->translator->trans('Could not determine uploaded file MIME type.')
+            );
         }
 
         if ($this->allowedMimeTypes !== [] && !in_array($mimeType, $this->allowedMimeTypes, true)) {
             throw new UnsupportedMimeTypeException(
-                sprintf('Unsupported MIME type "%s".', $mimeType)
+                $this->translator->trans('Unsupported MIME type "%type%".', ['%type%' => $mimeType])
             );
         }
     }
@@ -72,12 +76,12 @@ class UploadValidator
         $extension = strtolower($file->getClientOriginalExtension());
 
         if ($extension === '') {
-            throw new InvalidUploadException('Uploaded file must have an extension.');
+            throw new InvalidUploadException($this->translator->trans('Uploaded file must have an extension.'));
         }
 
         if ($this->allowedExtensions !== [] && !in_array($extension, $this->allowedExtensions, true)) {
             throw new UnsupportedExtensionException(
-                sprintf('Unsupported file extension "%s".', $extension)
+                $this->translator->trans('Unsupported file extension "%extension%".', ['%extension%' => $extension])
             );
         }
     }
@@ -88,7 +92,7 @@ class UploadValidator
 
         if ($file->getSize() > $maxSize) {
             throw new UploadTooLargeException(
-                sprintf('Upload exceeds maximum size of %d bytes.', $maxSize)
+                $this->translator->trans('Upload exceeds maximum size of %size% bytes.', ['%size%' => $maxSize])
             );
         }
     }

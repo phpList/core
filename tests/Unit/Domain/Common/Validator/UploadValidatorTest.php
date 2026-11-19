@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Common\Exception\UploadTooLargeException;
 use PhpList\Core\Domain\Common\Validator\UploadValidator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Translation\Translator;
 
 class UploadValidatorTest extends TestCase
 {
@@ -20,7 +21,8 @@ class UploadValidatorTest extends TestCase
         $validator = new UploadValidator(
             ['image/jpeg', 'image/png', 'image/webp'],
             ['jpg', 'jpeg', 'png', 'webp'],
-            '10M'
+            '10M',
+            new Translator('en')
         );
 
         foreach ([
@@ -36,7 +38,7 @@ class UploadValidatorTest extends TestCase
 
     public function testValidateRejectsMissingFile(): void
     {
-        $validator = new UploadValidator(['image/png'], ['png'], '10M');
+        $validator = new UploadValidator(['image/png'], ['png'], '10M', new Translator('en'));
 
         $this->expectException(MissingUploadException::class);
         $validator->validate(null);
@@ -44,7 +46,7 @@ class UploadValidatorTest extends TestCase
 
     public function testValidateRejectsInvalidUpload(): void
     {
-        $validator = new UploadValidator(['image/png'], ['png'], '10M');
+        $validator = new UploadValidator(['image/png'], ['png'], '10M', new Translator('en'));
         $file = $this->createFileMock('photo.png', 'image/png', 1234, false);
 
         $this->expectException(InvalidUploadException::class);
@@ -53,7 +55,7 @@ class UploadValidatorTest extends TestCase
 
     public function testValidateRejectsUnsupportedMimeType(): void
     {
-        $validator = new UploadValidator(['image/png'], ['png'], '10M');
+        $validator = new UploadValidator(['image/png'], ['png'], '10M', new Translator('en'));
         $file = $this->createFileMock('photo.gif', 'image/gif', 1234, true);
 
         $this->expectException(UnsupportedMimeTypeException::class);
@@ -62,7 +64,7 @@ class UploadValidatorTest extends TestCase
 
     public function testValidateRejectsUnsupportedExtension(): void
     {
-        $validator = new UploadValidator(['image/png'], ['png'], '10M');
+        $validator = new UploadValidator(['image/png'], ['png'], '10M', new Translator('en'));
         $file = $this->createFileMock('photo.gif', 'image/png', 1234, true);
 
         $this->expectException(UnsupportedExtensionException::class);
@@ -71,7 +73,7 @@ class UploadValidatorTest extends TestCase
 
     public function testValidateRejectsOversizedUpload(): void
     {
-        $validator = new UploadValidator(['image/png'], ['png'], '1K');
+        $validator = new UploadValidator(['image/png'], ['png'], '1K', new Translator('en'));
         $file = $this->createFileMock('photo.png', 'image/png', 2048, true);
 
         $this->expectException(UploadTooLargeException::class);
@@ -80,7 +82,7 @@ class UploadValidatorTest extends TestCase
 
     public function testValidateRejectsMissingExtension(): void
     {
-        $validator = new UploadValidator(['image/png'], ['png'], '10M');
+        $validator = new UploadValidator(['image/png'], ['png'], '10M', new Translator('en'));
         $file = $this->createFileMock('photo', 'image/png', 1234, true);
 
         $this->expectException(InvalidUploadException::class);

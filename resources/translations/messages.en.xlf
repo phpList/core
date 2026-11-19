@@ -842,6 +842,174 @@ Thank you.</target>
         <source>Invalid email, marking unconfirmed: %subscriber_id%</source>
         <target>Invalid email, marking unconfirmed: %subscriber_id%</target>
       </trans-unit>
+      <trans-unit id="Evl-b9M" resname="Processing bounces">
+        <source>Processing bounces</source>
+        <target>Processing bounces</target>
+      </trans-unit>
+      <trans-unit id="a_rlA1A" resname="Unsupported protocol: %protocol%">
+        <source>Unsupported protocol: %protocol%</source>
+        <target>Unsupported protocol: %protocol%</target>
+      </trans-unit>
+      <trans-unit id="1_39s09" resname="Error: %message%">
+        <source>Error: %message%</source>
+        <target>Error: %message%</target>
+      </trans-unit>
+      <trans-unit id="evykNpm" resname="Processed %count% campaigns from the queue.">
+        <source>Processed %count% campaigns from the queue.</source>
+        <target>Processed %count% campaigns from the queue.</target>
+      </trans-unit>
+      <trans-unit id="NohOlfm" resname="This is a test email sent from phpList Email Service.">
+        <source>This is a test email sent from phpList Email Service.</source>
+        <target>This is a test email sent from phpList Email Service.</target>
+      </trans-unit>
+      <trans-unit id="vjsYu38" resname="Login must not be empty.">
+        <source>Login must not be empty.</source>
+        <target>Login must not be empty.</target>
+      </trans-unit>
+      <trans-unit id="Jd_F1qI" resname="Email must not be empty.">
+        <source>Email must not be empty.</source>
+        <target>Email must not be empty.</target>
+      </trans-unit>
+      <trans-unit id="gfoZvlK" resname="Password must not be empty.">
+        <source>Password must not be empty.</source>
+        <target>Password must not be empty.</target>
+      </trans-unit>
+      <trans-unit id="k9VtGw4" resname="Bounce Regex already exists.">
+        <source>Bounce Regex already exists.</source>
+        <target>Bounce Regex already exists.</target>
+      </trans-unit>
+      <trans-unit id="WcOF27e" resname="No file uploaded.">
+        <source>No file uploaded.</source>
+        <target>No file uploaded.</target>
+      </trans-unit>
+      <trans-unit id="8joD5Wm" resname="Invalid uploaded file.">
+        <source>Invalid uploaded file.</source>
+        <target>Invalid uploaded file.</target>
+      </trans-unit>
+      <trans-unit id="LzBfNXd" resname="Could not determine uploaded file MIME type.">
+        <source>Could not determine uploaded file MIME type.</source>
+        <target>Could not determine uploaded file MIME type.</target>
+      </trans-unit>
+      <trans-unit id="sUHIoSg" resname="Unsupported MIME type &quot;%type%&quot;.">
+        <source>Unsupported MIME type "%type%".</source>
+        <target>Unsupported MIME type "%type%".</target>
+      </trans-unit>
+      <trans-unit id="BlbMAmR" resname="Uploaded file must have an extension.">
+        <source>Uploaded file must have an extension.</source>
+        <target>Uploaded file must have an extension.</target>
+      </trans-unit>
+      <trans-unit id="Fk9ATfO" resname="Unsupported file extension &quot;%extension%&quot;.">
+        <source>Unsupported file extension "%extension%".</source>
+        <target>Unsupported file extension "%extension%".</target>
+      </trans-unit>
+      <trans-unit id="SSm3aGv" resname="Upload exceeds maximum size of %size% bytes.">
+        <source>Upload exceeds maximum size of %size% bytes.</source>
+        <target>Upload exceeds maximum size of %size% bytes.</target>
+      </trans-unit>
+      <trans-unit id="PTa0hB6" resname="Invalid directory name.">
+        <source>Invalid directory name.</source>
+        <target>Invalid directory name.</target>
+      </trans-unit>
+      <trans-unit id="XS1afH4" resname="Invalid directory.">
+        <source>Invalid directory.</source>
+        <target>Invalid directory.</target>
+      </trans-unit>
+      <trans-unit id="xeUpgMS" resname="Directory &quot;%directory%&quot; not found.">
+        <source>Directory "%directory%" not found.</source>
+        <target>Directory "%directory%" not found.</target>
+      </trans-unit>
+      <trans-unit id="4jE75e2" resname="Could not determine file extension.">
+        <source>Could not determine file extension.</source>
+        <target>Could not determine file extension.</target>
+      </trans-unit>
+      <trans-unit id="Ad012-c" resname="Option name %name% already exists.">
+        <source>Option name %name% already exists.</source>
+        <target>Option name %name% already exists.</target>
+      </trans-unit>
+      <trans-unit id="6qjKrfq" resname="Attachment has no filename.">
+        <source>Attachment has no filename.</source>
+        <target>Attachment has no filename.</target>
+      </trans-unit>
+      <trans-unit id="vO409Pp" resname="Invalid attachment filename: %filename%">
+        <source>Invalid attachment filename: %filename%</source>
+        <target>Invalid attachment filename: %filename%</target>
+      </trans-unit>
+      <trans-unit id="3HLYgkR" resname="Attachment file not available">
+        <source>Attachment file not available</source>
+        <target>Attachment file not available</target>
+      </trans-unit>
+      <trans-unit id="BF5NPx0" resname="Could not create upload directory.">
+        <source>Could not create upload directory.</source>
+        <target>Could not create upload directory.</target>
+      </trans-unit>
+      <trans-unit id="0nCWkLk" resname="Could not store uploaded file.">
+        <source>Could not store uploaded file.</source>
+        <target>Could not store uploaded file.</target>
+      </trans-unit>
+      <trans-unit id="2ydeJ1x" resname="No index definition registered for alias &quot;%alias%&quot;.">
+        <source>No index definition registered for alias "%alias%".</source>
+        <target>No index definition registered for alias "%alias%".</target>
+      </trans-unit>
+      <trans-unit id="ny4UpZx" resname="No index definitions registered.">
+        <source>No index definitions registered.</source>
+        <target>No index definitions registered.</target>
+      </trans-unit>
+      <trans-unit id="U8COv9Y" resname="The --batch-size option must be greater than zero.">
+        <source>The --batch-size option must be greater than zero.</source>
+        <target>The --batch-size option must be greater than zero.</target>
+      </trans-unit>
+      <trans-unit id="ORaAxAG" resname="The --last-id option requires an index alias.">
+        <source>The --last-id option requires an index alias.</source>
+        <target>The --last-id option requires an index alias.</target>
+      </trans-unit>
+      <trans-unit id="OMLqgD3" resname="No reindex provider registered for alias &quot;%alias%&quot;.">
+        <source>No reindex provider registered for alias "%alias%".</source>
+        <target>No reindex provider registered for alias "%alias%".</target>
+      </trans-unit>
+      <trans-unit id="oWwUDTw" resname="No reindex providers registered.">
+        <source>No reindex providers registered.</source>
+        <target>No reindex providers registered.</target>
+      </trans-unit>
+      <trans-unit id="AY75uzh" resname="%count% rows total">
+        <source>%count% rows total</source>
+        <target>%count% rows total</target>
+      </trans-unit>
+      <trans-unit id="FVgIP6N" resname="%alias%: indexed %count% rows.">
+        <source>%alias%: indexed %count% rows.</source>
+        <target>%alias%: indexed %count% rows.</target>
+      </trans-unit>
+      <trans-unit id="jBA7tJY" resname="No purge provider registered for alias &quot;%alias%&quot;.">
+        <source>No purge provider registered for alias "%alias%".</source>
+        <target>No purge provider registered for alias "%alias%".</target>
+      </trans-unit>
+      <trans-unit id="4OhMeZy" resname="No retention period configured for alias &quot;%alias%&quot;.">
+        <source>No retention period configured for alias "%alias%".</source>
+        <target>No retention period configured for alias "%alias%".</target>
+      </trans-unit>
+      <trans-unit id="Ixi9F4e" resname="No purge providers with a configured retention period.">
+        <source>No purge providers with a configured retention period.</source>
+        <target>No purge providers with a configured retention period.</target>
+      </trans-unit>
+      <trans-unit id="U9DqAqL" resname="purging rows older than %cutoff%">
+        <source>purging rows older than %cutoff%</source>
+        <target>purging rows older than %cutoff%</target>
+      </trans-unit>
+      <trans-unit id="az-G6yj" resname="%alias%: %count% row(s) older than cutoff were not found in Elasticsearch and were left in place: %ids%">
+        <source>%alias%: %count% row(s) older than cutoff were not found in Elasticsearch and were left in place: %ids%</source>
+        <target>%alias%: %count% row(s) older than cutoff were not found in Elasticsearch and were left in place: %ids%</target>
+      </trans-unit>
+      <trans-unit id="ppKKZwn" resname="%alias%: scanned %scanned% row(s), would delete %count% row(s)">
+        <source>%alias%: scanned %scanned% row(s), would delete %count% row(s)</source>
+        <target>%alias%: scanned %scanned% row(s), would delete %count% row(s)</target>
+      </trans-unit>
+      <trans-unit id="zHKxjmJ" resname="%alias%: scanned %scanned% row(s), deleted %count% row(s)">
+        <source>%alias%: scanned %scanned% row(s), deleted %count% row(s)</source>
+        <target>%alias%: scanned %scanned% row(s), deleted %count% row(s)</target>
+      </trans-unit>
+      <trans-unit id="ZPfGcoe" resname=", skipped %count% unconfirmed">
+        <source>, skipped %count% unconfirmed</source>
+        <target>, skipped %count% unconfirmed</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

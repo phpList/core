@@ -76,14 +76,16 @@ class ProcessBouncesCommand extends Command
         }
 
         try {
-            $inputOutput->title('Processing bounces');
+            $inputOutput->title($this->translator->trans('Processing bounces'));
             $protocol = (string)$input->getOption('protocol');
 
             $downloadReport = '';
 
             $processor = $this->findProcessorFor($protocol);
             if ($processor === null) {
-                $inputOutput->error('Unsupported protocol: '.$protocol);
+                $inputOutput->error(
+                    $this->translator->trans('Unsupported protocol: %protocol%', ['%protocol%' => $protocol])
+                );
 
                 return Command::FAILURE;
             }
@@ -99,7 +101,7 @@ class ProcessBouncesCommand extends Command
             return Command::SUCCESS;
         } catch (Exception $e) {
             $this->logger->error('Bounce processing failed', ['exception' => $e]);
-            $inputOutput->error('Error: '.$e->getMessage());
+            $inputOutput->error($this->translator->trans('Error: %message%', ['%message%' => $e->getMessage()]));
 
             return Command::FAILURE;
         } finally {

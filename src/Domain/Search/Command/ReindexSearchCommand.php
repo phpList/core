@@ -14,6 +14,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AsCommand(
     name: 'phplist:search:reindex',
@@ -26,6 +27,7 @@ class ReindexSearchCommand extends Command
     public function __construct(
         private readonly SearchReindexProviderRegistry $registry,
         private readonly ElasticsearchIndexerInterface $indexer,
+        private readonly TranslatorInterface $translator,
     ) {
         parent::__construct();
     }
@@ -52,12 +54,12 @@ class ReindexSearchCommand extends Command
         $lastId = (int) $input->getOption('last-id');
 
         if ($batchSize < 1) {
-            $io->error('The --batch-size option must be greater than zero.');
+            $io->error($this->translator->trans('The --batch-size option must be greater than zero.'));
             return Command::FAILURE;
         }
 
         if ($alias === null && $lastId !== 0) {
-            $io->error('The --last-id option requires an index alias.');
+            $io->error($this->translator->trans('The --last-id option requires an index alias.'));
             return Command::FAILURE;
         }
 
@@ -67,8 +69,8 @@ class ReindexSearchCommand extends Command
 
         if ($providers === []) {
             $io->warning($alias !== null
-                ? sprintf('No reindex provider registered for alias "%s".', $alias)
-                : 'No reindex providers registered.');
+                ? $this->translator->trans('No reindex provider registered for alias "%alias%".', ['%alias%' => $alias])
+                : $this->translator->trans('No reindex providers registered.'));
 
             return Command::SUCCESS;
         }
@@ -87,7 +89,11 @@ class ReindexSearchCommand extends Command
         SymfonyStyle $io,
     ): void {
         $total = $provider->countAll();
-        $io->writeln(sprintf('<info>%s</info>: %d rows total', $provider->getAlias(), $total));
+        $io->writeln(sprintf(
+            '<info>%s</info>: %s',
+            $provider->getAlias(),
+            $this->translator->trans('%count% rows total', ['%count%' => $total])
+        ));
         $progressBar = $io->createProgressBar($total);
 
         $indexed = 0;
@@ -117,6 +123,9 @@ class ReindexSearchCommand extends Command
 
         $progressBar->finish();
         $io->newLine(2);
-        $io->success(sprintf('%s: indexed %d rows.', $provider->getAlias(), $indexed));
+        $io->success($this->translator->trans(
+            '%alias%: indexed %count% rows.',
+            ['%alias%' => $provider->getAlias(), '%count%' => $indexed]
+        ));
     }
 }

@@ -78,7 +78,7 @@ class SendTestEmailCommand extends Command
                 ->from(new Address('admin@example.com', 'Admin Team'))
                 ->to($recipient)
                 ->subject('Test Email from phpList')
-                ->text('This is a test email sent from phpList Email Service.')
+                ->text($this->translator->trans('This is a test email sent from phpList Email Service.'))
                 ->html('<h1>Test</h1><p>This is a <strong>test email</strong> sent from phpList Email Service</p>');
 
             if ($syncMode) {

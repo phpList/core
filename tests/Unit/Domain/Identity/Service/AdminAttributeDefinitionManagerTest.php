@@ -157,6 +157,8 @@ class AdminAttributeDefinitionManagerTest extends TestCase
             ->with('existing-attribute')
             ->willReturn($existingAttribute);
 
+        $this->translator->method('trans')->willReturnArgument(0);
+
         $this->expectException(AttributeDefinitionCreationException::class);
         $this->expectExceptionMessage('Another attribute with this name already exists.');
 

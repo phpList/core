@@ -14,6 +14,7 @@ use PhpList\Core\Domain\Messaging\Service\Manager\BounceRegexManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
+use Symfony\Component\Translation\Translator;
 
 class BounceRegexManagerTest extends TestCase
 {
@@ -28,7 +29,8 @@ class BounceRegexManagerTest extends TestCase
 
         $this->manager = new BounceRegexManager(
             bounceRegexRepository: $this->regexRepository,
-            entityManager: $this->entityManager
+            entityManager: $this->entityManager,
+            translator: new Translator('en')
         );
     }
 

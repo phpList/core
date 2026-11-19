@@ -10,6 +10,7 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueReposito
 use PhpList\Core\Domain\Subscription\Service\Manager\DynamicListAttrManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Translator;
 
 class DynamicListAttrManagerTest extends TestCase
 {
@@ -27,7 +28,8 @@ class DynamicListAttrManagerTest extends TestCase
     {
         return new DynamicListAttrManager(
             dynamicListAttrRepository: $this->listAttrRepo,
-            attributeValueRepo: $this->subscriberAttributeValueRepo
+            attributeValueRepo: $this->subscriberAttributeValueRepo,
+            translator: new Translator('en')
         );
     }
 
@@ -37,6 +39,7 @@ class DynamicListAttrManagerTest extends TestCase
             ->setConstructorArgs([
                 $this->listAttrRepo,
                 $this->subscriberAttributeValueRepo,
+                new Translator('en'),
             ])
             ->onlyMethods($methods)
             ->getMock();

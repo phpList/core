@@ -12,6 +12,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AsCommand(
     name: 'phplist:search:init-indices',
@@ -22,6 +23,7 @@ class InitSearchIndicesCommand extends Command
     public function __construct(
         private readonly SearchIndexDefinitionRegistry $registry,
         private readonly ElasticsearchIndexerInterface $indexer,
+        private readonly TranslatorInterface $translator,
     ) {
         parent::__construct();
     }
@@ -47,8 +49,8 @@ class InitSearchIndicesCommand extends Command
 
         if ($definitions === []) {
             $io->warning($alias !== null
-                ? sprintf('No index definition registered for alias "%s".', $alias)
-                : 'No index definitions registered.');
+                ? $this->translator->trans('No index definition registered for alias "%alias%".', ['%alias%' => $alias])
+                : $this->translator->trans('No index definitions registered.'));
 
             return Command::SUCCESS;
         }

@@ -13,6 +13,7 @@ use PhpList\Core\TestingSupport\Traits\DatabaseTestTrait;
 use PHPUnit\Framework\Assert;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Throwable;
+use Symfony\Component\Translation\Translator;
 
 /**
  * Functional test for DynamicListAttrManager and DynamicListAttrRepository working together
@@ -52,7 +53,8 @@ class DynamicListAttrManagerFunctionalTest extends KernelTestCase
         // Create manager with actual constructor signature
         $this->manager = new DynamicListAttrManager(
             dynamicListAttrRepository: $this->dynamicListAttrRepo,
-            attributeValueRepo: $subscriberAttributeValueRepo
+            attributeValueRepo: $subscriberAttributeValueRepo,
+            translator: new Translator('en')
         );
     }
 
