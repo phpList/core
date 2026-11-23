@@ -16,6 +16,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AsCommand(
     name: 'phplist:create:admin',
@@ -27,6 +28,7 @@ class CreateAdminCommand extends Command
         private readonly AdministratorRepository $administratorRepository,
         private readonly AdministratorManager $administratorManager,
         private readonly EntityManagerInterface $entityManager,
+        private readonly TranslatorInterface $translator,
     ) {
         parent::__construct();
     }
@@ -46,7 +48,7 @@ class CreateAdminCommand extends Command
 
         $login = $this->resolveValue($input, $output, $helper, 'login', 'Enter login for admin: ', false);
         if ($login === null) {
-            $output->writeln('<error>Login must not be empty.</error>');
+            $output->writeln('<error>' . $this->translator->trans('Login must not be empty.') . '</error>');
             return Command::FAILURE;
         }
 
@@ -62,7 +64,7 @@ class CreateAdminCommand extends Command
 
         $email = $this->resolveValue($input, $output, $helper, 'email', 'Enter email for admin: ', false);
         if ($email === null) {
-            $output->writeln('<error>Email must not be empty.</error>');
+            $output->writeln('<error>' . $this->translator->trans('Email must not be empty.') . '</error>');
             return Command::FAILURE;
         }
 
@@ -75,7 +77,7 @@ class CreateAdminCommand extends Command
             true
         );
         if ($password === null) {
-            $output->writeln('<error>Password must not be empty.</error>');
+            $output->writeln('<error>' . $this->translator->trans('Password must not be empty.') . '</error>');
             return Command::FAILURE;
         }
 

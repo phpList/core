@@ -15,7 +15,6 @@ enum ConfigOption: string
     case ConfirmationUrl = 'confirmationurl';
     case PreferencesUrl = 'preferencesurl';
     case SubscribeUrl = 'subscribeurl';
-    // todo: check where is this defined
     case Domain = 'domain';
     case Website = 'website';
     case MessageFromAddress = 'message_from_address';
@@ -23,6 +22,7 @@ enum ConfigOption: string
     case MessageReplyToAddress = 'message_replyto_address';
     case SystemMessageTemplate = 'systemmessagetemplate';
     case AlwaysAddGoogleTracking = 'always_add_googletracking';
+    case AnalyticTracker = 'analytic_tracker';
     case AdminAddress = 'admin_address';
     case AdminAddresses = 'admin_addresses';
     case DefaultMessageTemplate = 'defaultmessagetemplate';
@@ -47,4 +47,5 @@ enum ConfigOption: string
     case AutoCreateAttributes = 'autocreate_attributes';
     case RemoteProcessingSecret = 'remote_processing_secret';
     case NotifyAdminLogin = 'notify_admin_login';
+    case XorMask = 'xormask';
 }

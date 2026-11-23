@@ -9,14 +9,17 @@ use PhpList\Core\Domain\Identity\Model\AdminAttributeDefinition;
 use PhpList\Core\Domain\Identity\Model\AdminAttributeValue;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Identity\Repository\AdminAttributeValueRepository;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AdminAttributeManager
 {
     private AdminAttributeValueRepository $attributeRepository;
+    private TranslatorInterface $translator;
 
-    public function __construct(AdminAttributeValueRepository $attributeRepository)
+    public function __construct(AdminAttributeValueRepository $attributeRepository, TranslatorInterface $translator)
     {
         $this->attributeRepository = $attributeRepository;
+        $this->translator = $translator;
     }
 
     public function createOrUpdate(
@@ -35,7 +38,7 @@ class AdminAttributeManager
 
         $value = $value ?? $definition->getDefaultValue();
         if ($value === null) {
-            throw new AdminAttributeCreationException('Value is required', 400);
+            throw new AdminAttributeCreationException($this->translator->trans('Value is required'), 400);
         }
 
         $adminAttribute->setValue($value);

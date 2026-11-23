@@ -152,7 +152,7 @@ class MessageRepositoryTest extends KernelTestCase
         return $message;
     }
 
-    public function testGetFilteredAfterIdIncludesOwnerlessMessagesForAnyAdmin(): void
+    public function testGetFilteredAfterIdExcludesOwnerlessAndForeignMessagesForOwnerFilter(): void
     {
         $admin = (new Administrator())->setLoginName('owner-test-admin');
         $otherAdmin = (new Administrator())->setLoginName('other-admin');
@@ -173,7 +173,7 @@ class MessageRepositoryTest extends KernelTestCase
             static fn (Message $message) => $message->getContent()->getSubject(),
             $result->getItems()
         );
-        self::assertContains('Legacy unowned campaign', $subjects);
+        self::assertNotContains('Legacy unowned campaign', $subjects);
         self::assertContains('My own campaign', $subjects);
         self::assertNotContains("Someone else's campaign", $subjects);
     }
@@ -329,5 +329,26 @@ class MessageRepositoryTest extends KernelTestCase
 
         self::assertCount(1, $secondPage->getItems());
         self::assertSame($first->getId(), $secondPage->getItems()[0]->getId());
+    }
+
+    public function testGetNonEmptyFieldsReturnsLegacyColumnNames(): void
+    {
+        $message = $this->persistMessage(Message\MessageStatus::Submitted, 'Ready to send');
+        $this->entityManager->flush();
+        $id = $message->getId();
+        $this->entityManager->clear();
+
+        $fields = $this->messageRepository->getNonEmptyFields($id);
+
+        self::assertSame('Ready to send', $fields['subject']);
+        self::assertSame('submitted', $fields['status']);
+        self::assertSame('text', $fields['sendformat']);
+        self::assertArrayNotHasKey('content.subject', $fields);
+        self::assertArrayNotHasKey('fromfield', $fields, 'empty columns are dropped');
+    }
+
+    public function testGetNonEmptyFieldsReturnsEmptyArrayForUnknownMessage(): void
+    {
+        self::assertSame([], $this->messageRepository->getNonEmptyFields(999999));
     }
 }

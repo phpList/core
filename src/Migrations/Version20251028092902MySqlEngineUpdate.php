@@ -11,7 +11,7 @@ final class Version20251028092902MySqlEngineUpdate extends AbstractPrefixedMigra
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Convert legacy (MyISAM) phpList tables to InnoDB so foreign keys can be added.';
     }
 
     public function up(Schema $schema): void
@@ -22,39 +22,26 @@ final class Version20251028092902MySqlEngineUpdate extends AbstractPrefixedMigra
             get_class($platform)
         ));
 
-        $engine = $this->connection->fetchOne("
-            SELECT ENGINE
-            FROM information_schema.TABLES
+        // Legacy phpList installs often created their tables as MyISAM (phpList 3 only converts them in its
+        // command line upgrade). MyISAM tables cannot take part in the InnoDB foreign keys added by the next
+        // migration (MySQL error 1824: Failed to open the referenced table), so convert every phpList table
+        // that is not InnoDB yet. The engine can differ per table, so each one is checked.
+        $tableNames = $this->connection->fetchFirstColumn(
+            "SELECT TABLE_NAME FROM information_schema.TABLES
             WHERE TABLE_SCHEMA = DATABASE()
-              AND TABLE_NAME = 'phplist_user_user'
-        ");
+              AND TABLE_TYPE = 'BASE TABLE'
+              AND ENGINE <> 'InnoDB'
+              AND TABLE_NAME LIKE ?",
+            [addcslashes($this->getTablePrefix(), '%_\\') . '%']
+        );
 
-        if ($engine !== 'InnoDB') {
-            // legacy phpList installs created these tables as MyISAM, which cannot be referenced by
-            // the InnoDB foreign keys added below (MySQL error 1824: Failed to open the referenced table)
-            $this->addSql('ALTER TABLE phplist_admin ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_admin_attribute ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_adminattribute ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_admintoken ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_list ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_listmessage ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_listuser ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_message ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_subscribepage ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_template ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_templateimage ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_user_attribute ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_user_blacklist ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_user_blacklist_data ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_user_user ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_user_user_attribute ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_user_user_history ENGINE=InnoDB');
-            $this->addSql('ALTER TABLE phplist_usermessage ENGINE=InnoDB');
+        foreach ($tableNames as $tableName) {
+            $this->addSql(sprintf('ALTER TABLE `%s` ENGINE=InnoDB', $tableName));
         }
     }
 
     public function down(Schema $schema): void
     {
-
+        // converting back to MyISAM would break the foreign keys added afterwards, so nothing is undone
     }
 }

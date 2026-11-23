@@ -43,7 +43,6 @@ class ForwardEmailBuilder extends EmailBuilder
         PdfGenerator $pdfGenerator,
         AttachmentAdder $attachmentAdder,
         TranslatorInterface $translator,
-        private readonly HttpReceivedStampBuilder $httpReceivedStampBuilder,
         string $googleSenderId,
         bool $useAmazonSes,
         bool $usePrecedenceHeader,
@@ -128,18 +127,5 @@ class ForwardEmailBuilder extends EmailBuilder
         );
 
         return [$email, $sentAs];
-    }
-
-    public function applyCampaignHeaders(Email $email, Subscriber $subscriber): Email
-    {
-        $email = parent::applyCampaignHeaders($email, $subscriber);
-
-        $receivedLine = $this->httpReceivedStampBuilder->buildStamp();
-        if ($receivedLine !== null) {
-            $receivedLine = preg_replace('/[\r\n]+/', ' ', $receivedLine);
-            $email->getHeaders()->addTextHeader('Received', $receivedLine);
-        }
-
-        return $email;
     }
 }

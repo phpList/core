@@ -14,6 +14,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Translation\Translator;
 
 class PurgeSearchIndexedRowsCommandTest extends TestCase
 {
@@ -31,7 +32,7 @@ class PurgeSearchIndexedRowsCommandTest extends TestCase
     {
         $this->client = $this->createMock(ElasticsearchClientInterface::class);
         $registry = new SearchPurgeProviderRegistry($providers);
-        $command = new PurgeSearchIndexedRowsCommand($registry, $this->client);
+        $command = new PurgeSearchIndexedRowsCommand($registry, $this->client, new Translator('en'));
 
         $application = new Application();
         $application->add($command);

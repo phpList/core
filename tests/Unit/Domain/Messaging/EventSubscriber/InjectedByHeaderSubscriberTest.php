@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace PhpList\Core\Tests\Unit\Domain\Messaging\EventSubscriber;
 
 use PhpList\Core\Domain\Messaging\EventSubscriber\InjectedByHeaderSubscriber;
+use PhpList\Core\Domain\Messaging\Service\Builder\HttpReceivedStampBuilder;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\Event\MessageEvent;
 use Symfony\Component\Mime\Address;
@@ -16,74 +16,64 @@ use Symfony\Component\Mime\RawMessage;
 
 class InjectedByHeaderSubscriberTest extends TestCase
 {
-    public function testNoHeaderWhenNoCurrentRequest(): void
+    private HttpReceivedStampBuilder&MockObject $stampBuilder;
+
+    protected function setUp(): void
     {
-        $requestStack = new RequestStack();
-        $subscriber = new InjectedByHeaderSubscriber($requestStack);
-
-        $email = (new Email())
-            ->from('from@example.com')
-            ->to('to@example.com')
-            ->subject('Subject')
-            ->text('Body');
-
-        $event = new MessageEvent($email, Envelope::create($email), 'test');
-
-        $subscriber->onMessage($event);
-
-        $this->assertFalse(
-            $email->getHeaders()->has('X-phpList-Injected-By'),
-            'Header must not be added when there is no current Request.'
-        );
+        $this->stampBuilder = $this->createMock(HttpReceivedStampBuilder::class);
     }
 
-    public function testNoHeaderWhenMessageIsNotEmail(): void
+    private function email(): Email
     {
-        $requestStack = new RequestStack();
-        // Push a Request to ensure the early return is due to non-Email message, not missing request
-        $requestStack->push(new Request(server: ['REQUEST_TIME' => time()]));
+        return (new Email())->from('from@example.com')->to('to@example.com')->subject('S')->text('B');
+    }
 
-        $subscriber = new InjectedByHeaderSubscriber($requestStack);
+    public function testNoHeaderWhenNoStamp(): void
+    {
+        $this->stampBuilder->method('buildStamp')->willReturn(null);
+        $email = $this->email();
 
-        $raw = new RawMessage('raw');
-        // Create an arbitrary envelope; it does not need to match the message class
+        (new InjectedByHeaderSubscriber($this->stampBuilder))
+            ->onMessage(new MessageEvent($email, Envelope::create($email), 'test'));
+
+        self::assertFalse($email->getHeaders()->has('Received'));
+    }
+
+    public function testIgnoresNonEmailMessages(): void
+    {
+        $this->stampBuilder->expects(self::never())->method('buildStamp');
         $envelope = new Envelope(new Address('from@example.com'), [new Address('to@example.com')]);
-        $event = new MessageEvent($raw, $envelope, 'test');
 
-        // RawMessage has no headers; the subscriber should return early
-        $subscriber->onMessage($event);
-        // sanity check to use the variable
-        $this->assertSame('raw', $raw->toString());
-        // Nothing to assert on headers (RawMessage has none), but the lack of exceptions is a success
+        (new InjectedByHeaderSubscriber($this->stampBuilder))
+            ->onMessage(new MessageEvent(new RawMessage('raw'), $envelope, 'test'));
+
         $this->addToAssertionCount(1);
     }
 
-    public function testNoHeaderWhenRunningInCliEvenWithRequestAndEmail(): void
+    public function testAddsReceivedHeader(): void
     {
-        // In PHPUnit, PHP_SAPI is typically "cli"; ensure we have a Request to pass other guards
-        $request = new Request(server: [
-            'REQUEST_TIME' => time(),
-            'REMOTE_ADDR' => '127.0.0.1',
-        ]);
-        $requestStack = new RequestStack();
-        $requestStack->push($request);
+        $this->stampBuilder->method('buildStamp')->willReturn('from [1.2.3.4] by host with HTTP; date');
+        $email = $this->email();
 
-        $subscriber = new InjectedByHeaderSubscriber($requestStack);
+        (new InjectedByHeaderSubscriber($this->stampBuilder))
+            ->onMessage(new MessageEvent($email, Envelope::create($email), 'test'));
 
-        $email = (new Email())
-            ->from('from@example.com')
-            ->to('to@example.com')
-            ->subject('Subject')
-            ->text('Body');
-
-        $event = new MessageEvent($email, Envelope::create($email), 'test');
-
-        $subscriber->onMessage($event);
-
-        // Because tests run under CLI SAPI, the header must not be added
-        $this->assertFalse(
-            $email->getHeaders()->has('X-phpList-Injected-By'),
-            'Header must not be added when running under CLI.'
+        self::assertSame(
+            'from [1.2.3.4] by host with HTTP; date',
+            $email->getHeaders()->get('Received')->getBodyAsString()
         );
+    }
+
+    public function testReplacesExistingReceivedHeader(): void
+    {
+        $this->stampBuilder->method('buildStamp')->willReturn('new');
+        $email = $this->email();
+        $email->getHeaders()->addTextHeader('Received', 'old');
+
+        (new InjectedByHeaderSubscriber($this->stampBuilder))
+            ->onMessage(new MessageEvent($email, Envelope::create($email), 'test'));
+
+        self::assertCount(1, iterator_to_array($email->getHeaders()->all('Received')));
+        self::assertSame('new', $email->getHeaders()->get('Received')->getBodyAsString());
     }
 }

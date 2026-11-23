@@ -77,6 +77,7 @@ class MessagePrecacheService
         }
 
         $messagePrecacheDto->googleTrack = (bool) $loadedMessageData['google_track'];
+        $messagePrecacheDto->analyticsParameters = $this->extractAnalyticsParameters($loadedMessageData);
 
         $this->applyBasicReplacements($messagePrecacheDto, $loadedMessageData);
         $this->populateAdminAttributes($messagePrecacheDto, $campaign);
@@ -256,5 +257,21 @@ class MessagePrecacheService
         foreach ($listOwnerAttrValues as $attr) {
             $messagePrecacheDto->adminAttributes['LISTOWNER.' . $attr['name']] = $attr['value'];
         }
+    }
+
+    /**
+     * The analytics settings of the campaign: the Google (utm_*) and Matomo (pk_*) parameters it has set, and its
+     * subject, which is their default campaign name.
+     */
+    private function extractAnalyticsParameters(array $loadedMessageData): array
+    {
+        $parameters = ['subject' => (string) ($loadedMessageData['subject'] ?? '')];
+        foreach ($loadedMessageData as $name => $value) {
+            if (is_string($name) && preg_match('/^(utm|pk)_/', $name) === 1) {
+                $parameters[$name] = $value;
+            }
+        }
+
+        return $parameters;
     }
 }

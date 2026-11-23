@@ -55,6 +55,12 @@ services:
     arguments:
       $tablePrefix: '%database.prefix%'
 
+  PhpList\Core\Core\Doctrine\IndexPrefixLengthListener: ~
+
+  PhpList\Core\Core\Doctrine\SkippedMigrationRecorder:
+    autowire: true
+    autoconfigure: true
+
   PhpList\Core\Core\Doctrine\SearchIndexDoctrineListener:
     arguments:
       $enabled: '%elasticsearch.enabled%'

@@ -31,6 +31,9 @@ class SubscriberConfirmationMessageHandler
     {
         $confirmationLink = $this->generateConfirmationLink($message->getUniqueId());
 
+        // todo: email locale. This runs in a queue worker, where the request locale is not available, so the
+        //  default locale is always used. Resolve the subscriber's language (phplist3 uses the subscriber/list
+        //  language) and pass it as the $locale argument of trans() for the subject and both bodies.
         $subject = $this->translator->trans('Please confirm your subscription');
 
         $textContent = $this->translator->trans(

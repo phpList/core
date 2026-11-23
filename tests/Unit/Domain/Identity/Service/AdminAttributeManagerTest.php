@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Identity\Repository\AdminAttributeValueRepository;
 use PhpList\Core\Domain\Identity\Service\Manager\AdminAttributeManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Translator;
 
 class AdminAttributeManagerTest extends TestCase
 {
@@ -21,7 +22,7 @@ class AdminAttributeManagerTest extends TestCase
     protected function setUp(): void
     {
         $this->repository = $this->createMock(AdminAttributeValueRepository::class);
-        $this->subject = new AdminAttributeManager($this->repository);
+        $this->subject = new AdminAttributeManager($this->repository, new Translator('en'));
     }
 
     public function testCreateOrUpdateCreatesNewAttributeIfNotExists(): void

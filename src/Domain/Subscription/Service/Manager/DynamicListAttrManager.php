@@ -8,12 +8,14 @@ use PhpList\Core\Domain\Subscription\Model\Dto\DynamicListAttrDto;
 use PhpList\Core\Domain\Subscription\Repository\DynamicListAttrRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeValueRepository;
 use RuntimeException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class DynamicListAttrManager
 {
     public function __construct(
         private readonly DynamicListAttrRepository $dynamicListAttrRepository,
         private readonly SubscriberAttributeValueRepository $attributeValueRepo,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -239,7 +241,9 @@ class DynamicListAttrManager
                 if ($cur->name !== $dto->name) {
                     $nameExists = $this->dynamicListAttrRepository->isNameTakenByOtherRecord($listTable, $dto);
                     if ($nameExists) {
-                        throw new RuntimeException('Option name ' . $dto->name . ' already exists.');
+                        throw new RuntimeException(
+                            $this->translator->trans('Option name %name% already exists.', ['%name%' => $dto->name])
+                        );
                     }
                     $updates['name'] = $dto->name;
                 }

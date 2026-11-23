@@ -24,5 +24,7 @@ class MessagePrecacheDto
     public ?int $templateId = null;
     public bool $userSpecificUrl = false;
     public bool $googleTrack = false;
+    /** @var array<string, mixed> the campaign's analytics settings (utm_*, pk_*) */
+    public array $analyticsParameters = [];
     public array $adminAttributes = [];
 }

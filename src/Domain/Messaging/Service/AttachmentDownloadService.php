@@ -13,11 +13,13 @@ use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use Psr\Http\Message\StreamInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mime\MimeTypes;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AttachmentDownloadService
 {
     public function __construct(
         private readonly SubscriberRepository $subscriberRepository,
+        private readonly TranslatorInterface $translator,
         #[Autowire('%phplist.attachment_repository_path%')] private readonly string $attachmentRepositoryPath = '/tmp',
     ) {
     }
@@ -28,7 +30,9 @@ class AttachmentDownloadService
 
         $original = $attachment->getFilename();
         if ($original === null || $original === '') {
-            throw new AttachmentFileNotFoundException('Attachment has no filename.');
+            throw new AttachmentFileNotFoundException(
+                $this->translator->trans('Attachment has no filename.')
+            );
         }
         $filename = basename($original);
         $filePath = $this->validateFilePath($filename, $original);
@@ -66,7 +70,9 @@ class AttachmentDownloadService
     private function validateFilePath(string $filename, ?string $original): string
     {
         if ($filename === '' || $filename !== $original) {
-            throw new AttachmentFileNotFoundException('Invalid attachment filename: ' . $original);
+            throw new AttachmentFileNotFoundException(
+                $this->translator->trans('Invalid attachment filename: %filename%', ['%filename%' => $original])
+            );
         }
 
         $baseDir = realpath($this->attachmentRepositoryPath);
@@ -82,7 +88,9 @@ class AttachmentDownloadService
             !is_file($realPath) ||
             !is_readable($realPath)
         ) {
-            throw new AttachmentFileNotFoundException('Attachment file not available');
+            throw new AttachmentFileNotFoundException(
+                $this->translator->trans('Attachment file not available')
+            );
         }
 
         return $filePath;

@@ -209,11 +209,12 @@ class Administrator implements DomainModel, Identity, CreationDate, Modification
 
     public function owns(OwnableInterface $resource): bool
     {
-        if ($this->getId() === null) {
+        $owner = $resource->getOwner();
+        if ($this->getId() === null || $owner === null) {
             return false;
         }
 
-        return $resource->getOwner()->getId() === $this->getId();
+        return $owner->getId() === $this->getId();
     }
 
     #[ORM\PreUpdate]

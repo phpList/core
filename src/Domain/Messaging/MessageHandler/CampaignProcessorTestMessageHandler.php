@@ -18,7 +18,6 @@ use PhpList\Core\Domain\Messaging\Service\Builder\SystemEmailBuilder;
 use PhpList\Core\Domain\Messaging\Service\MailSizeChecker;
 use PhpList\Core\Domain\Messaging\Service\MessageDataLoader;
 use PhpList\Core\Domain\Messaging\Service\MessagePrecacheService;
-use PhpList\Core\Domain\Messaging\Service\MessageProcessingPreparator;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Service\Provider\SubscriberProvider;
 use Psr\Log\LoggerInterface;
@@ -41,7 +40,6 @@ class CampaignProcessorTestMessageHandler
     public function __construct(
         private readonly MailerInterface $mailer,
         private readonly SubscriberProvider $subscriberProvider,
-        private readonly MessageProcessingPreparator $messagePreparator,
         private readonly LoggerInterface $logger,
         private readonly CacheInterface $cache,
         private readonly TranslatorInterface $translator,
@@ -89,17 +87,10 @@ class CampaignProcessorTestMessageHandler
         Subscriber $subscriber,
         MessagePrecacheDto $precachedContent,
     ): void {
-        // todo: check at which point link tracking should be applied (maybe after constructing full text?)
-        $processed = $this->messagePreparator->processMessageLinks(
-            campaignId: $campaign->getId(),
-            cachedMessageDto: $precachedContent,
-            subscriber: $subscriber
-        );
-
         try {
             $result = $this->campaignEmailBuilder->buildCampaignEmail(
                 messageId: $campaign->getId(),
-                data: $processed,
+                data: $precachedContent,
                 toEmail: $subscriber->getEmail(),
                 skipBlacklistCheck: false,
                 inBlast: true,
@@ -132,7 +123,7 @@ class CampaignProcessorTestMessageHandler
             );
 
             $envelope = new Envelope(
-                sender: new Address($this->bounceEmail, 'PHPList'),
+                sender: new Address($this->bounceEmail),
                 recipients: [new Address($email->getTo()[0]->getAddress())],
             );
             $this->mailer->send(message: $email, envelope: $envelope);

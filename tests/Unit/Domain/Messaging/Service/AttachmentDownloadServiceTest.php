@@ -10,6 +10,7 @@ use PhpList\Core\Domain\Messaging\Service\AttachmentDownloadService;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Translator;
 
 final class AttachmentDownloadServiceTest extends TestCase
 {
@@ -41,7 +42,7 @@ final class AttachmentDownloadServiceTest extends TestCase
     public function testThrowsWhenFilenameIsEmpty(): void
     {
         $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $service = new AttachmentDownloadService($subscriberRepo, $this->tempDir);
+        $service = new AttachmentDownloadService($subscriberRepo, new Translator('en'), $this->tempDir);
 
         $attachment = $this->createMock(Attachment::class);
         $attachment->method('getFilename')->willReturn('');
@@ -53,7 +54,7 @@ final class AttachmentDownloadServiceTest extends TestCase
     public function testThrowsWhenFileDoesNotExist(): void
     {
         $subscriberRepo = $this->createMock(SubscriberRepository::class);
-        $service = new AttachmentDownloadService($subscriberRepo, $this->tempDir);
+        $service = new AttachmentDownloadService($subscriberRepo, new Translator('en'), $this->tempDir);
 
         $attachment = $this->createMock(Attachment::class);
         $attachment->method('getFilename')->willReturn('missing-file.pdf');
@@ -69,7 +70,7 @@ final class AttachmentDownloadServiceTest extends TestCase
             ->method('findOneByEmail')
             ->with('user@example.com')
             ->willReturn(new Subscriber('user@example.com'));
-        $service = new AttachmentDownloadService($subscriberRepo, $this->tempDir);
+        $service = new AttachmentDownloadService($subscriberRepo, new Translator('en'), $this->tempDir);
 
         $filename = 'doc.pdf';
         $content = '%PDF-1.4\n';
@@ -94,7 +95,7 @@ final class AttachmentDownloadServiceTest extends TestCase
             ->method('findOneByEmail')
             ->with('user@example.com')
             ->willReturn(new Subscriber('user@example.com'));
-        $service = new AttachmentDownloadService($subscriberRepo, $this->tempDir);
+        $service = new AttachmentDownloadService($subscriberRepo, new Translator('en'), $this->tempDir);
 
         $filename = 'note.txt';
         $content = "Hello, world!\n";

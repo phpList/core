@@ -12,7 +12,7 @@ use PhpList\Core\Domain\Common\Model\Interfaces\Identity;
 #[ORM\Entity(repositoryClass: LinkTrackForwardRepository::class)]
 #[ORM\Table(name: 'linktrack_forward')]
 #[ORM\UniqueConstraint(name: 'phplist_linktrack_forward_urlunique', columns: ['urlhash'])]
-#[ORM\Index(name: 'phplist_linktrack_forward_urlindex', columns: ['url'])]
+#[ORM\Index(name: 'phplist_linktrack_forward_urlindex', columns: ['url'], options: ['lengths' => [255]])]
 #[ORM\Index(name: 'phplist_linktrack_forward_uuididx', columns: ['uuid'])]
 class LinkTrackForward implements DomainModel, Identity
 {
@@ -21,9 +21,9 @@ class LinkTrackForward implements DomainModel, Identity
     #[ORM\GeneratedValue]
     private ?int $id = null;
 
-    // Defined as string(255) due to MySQL limitation (actual max URL length is 2083):
-    // TEXT can't be indexed without a prefix, which Doctrine doesn't support.
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    // phpList3 stores URLs up to 2083 characters; the index only covers the first 255
+    // (prefix index, see the "lengths" option on the index above).
+    #[ORM\Column(type: 'string', length: 2083, nullable: true)]
     private ?string $url = null;
 
     #[ORM\Column(name: 'urlhash', type: 'string', length: 32, nullable: true)]

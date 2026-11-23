@@ -36,7 +36,7 @@ CREATE TABLE `phplist_admin` (
   `privileges` text,
   PRIMARY KEY (`id`),
   UNIQUE KEY `loginnameidx` (`loginname`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -68,7 +68,7 @@ CREATE TABLE `phplist_admin_login` (
   `sessionid` varchar(50) NOT NULL,
   `active` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=414 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -101,7 +101,7 @@ CREATE TABLE `phplist_adminattribute` (
   `required` tinyint DEFAULT NULL,
   `tablename` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -117,7 +117,7 @@ CREATE TABLE `phplist_admintoken` (
   `entered` int NOT NULL,
   `expires` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3670 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -153,7 +153,7 @@ CREATE TABLE `phplist_bounce` (
   PRIMARY KEY (`id`),
   KEY `dateindex` (`date`),
   KEY `statusidx` (`status`(20))
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -219,7 +219,7 @@ CREATE TABLE `phplist_eventlog` (
   PRIMARY KEY (`id`),
   KEY `enteredidx` (`entered`),
   KEY `pageidx` (`page`)
-) ENGINE=InnoDB AUTO_INCREMENT=343 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -277,7 +277,7 @@ CREATE TABLE `phplist_linktrack_forward` (
   UNIQUE KEY `urlunique` (`urlhash`),
   KEY `urlindex` (`url`(255)),
   KEY `uuididx` (`uuid`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -367,67 +367,7 @@ CREATE TABLE `phplist_list` (
   PRIMARY KEY (`id`),
   KEY `nameidx` (`name`),
   KEY `listorderidx` (`listorder`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `phplist_listattr_becities`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `phplist_listattr_becities` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) DEFAULT NULL,
-  `listorder` int DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`(150))
-) ENGINE=InnoDB AUTO_INCREMENT=2680 DEFAULT CHARSET=utf8mb4;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `phplist_listattr_termsofservice`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `phplist_listattr_termsofservice` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) DEFAULT NULL,
-  `listorder` int DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`(150))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `phplist_listattr_ukcounties`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `phplist_listattr_ukcounties` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) DEFAULT NULL,
-  `listorder` int DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`(150))
-) ENGINE=InnoDB AUTO_INCREMENT=184 DEFAULT CHARSET=utf8mb4;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `phplist_listattr_ukcounties1`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `phplist_listattr_ukcounties1` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) DEFAULT NULL,
-  `listorder` int DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`(150))
-) ENGINE=InnoDB AUTO_INCREMENT=184 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -445,7 +385,7 @@ CREATE TABLE `phplist_listmessage` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `messageid` (`messageid`,`listid`),
   KEY `listmessageidx` (`listid`,`messageid`)
-) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -476,12 +416,12 @@ CREATE TABLE `phplist_listuser` (
 CREATE TABLE `phplist_message` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) DEFAULT '',
-  `subject` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '(no subject)',
+  `subject` varchar(255) CHARACTER SET utf8mb4 NOT NULL DEFAULT '(no subject)',
   `fromfield` varchar(255) NOT NULL DEFAULT '',
   `tofield` varchar(255) NOT NULL DEFAULT '',
   `replyto` varchar(255) NOT NULL DEFAULT '',
-  `message` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-  `textmessage` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `message` longtext CHARACTER SET utf8mb4,
+  `textmessage` longtext CHARACTER SET utf8mb4,
   `footer` text,
   `entered` datetime DEFAULT NULL,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -509,7 +449,7 @@ CREATE TABLE `phplist_message` (
   `owner` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `uuididx` (`uuid`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -537,7 +477,7 @@ CREATE TABLE `phplist_message_attachment` (
 CREATE TABLE `phplist_messagedata` (
   `name` varchar(100) NOT NULL,
   `id` int NOT NULL,
-  `data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `data` longtext CHARACTER SET utf8mb4,
   PRIMARY KEY (`name`,`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -556,7 +496,7 @@ CREATE TABLE `phplist_sendprocess` (
   `ipaddress` varchar(50) DEFAULT NULL,
   `page` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -571,7 +511,7 @@ CREATE TABLE `phplist_subscribepage` (
   `active` tinyint DEFAULT '0',
   `owner` int DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -602,7 +542,7 @@ CREATE TABLE `phplist_template` (
   `listorder` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `title` (`title`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -621,7 +561,7 @@ CREATE TABLE `phplist_templateimage` (
   `height` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `templateidx` (`template`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -638,7 +578,7 @@ CREATE TABLE `phplist_urlcache` (
   `content` longblob,
   PRIMARY KEY (`id`),
   KEY `urlindex` (`url`(255))
-) ENGINE=InnoDB AUTO_INCREMENT=207 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -658,7 +598,7 @@ CREATE TABLE `phplist_user_attribute` (
   PRIMARY KEY (`id`),
   KEY `nameindex` (`name`),
   KEY `idnameindex` (`id`,`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -748,7 +688,7 @@ CREATE TABLE `phplist_user_message_view` (
   KEY `usermsgidx` (`userid`,`messageid`),
   KEY `msgidx` (`messageid`),
   KEY `useridx` (`userid`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -785,7 +725,7 @@ CREATE TABLE `phplist_user_user` (
   KEY `blidx` (`blacklisted`),
   KEY `optidx` (`optedin`),
   KEY `uuididx` (`uuid`)
-) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -822,7 +762,7 @@ CREATE TABLE `phplist_user_user_history` (
   PRIMARY KEY (`id`),
   KEY `userididx` (`userid`),
   KEY `dateidx` (`date`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

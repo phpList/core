@@ -26,10 +26,10 @@ class DomainThrottleState implements DomainModel
     #[ORM\Column(name: 'window_start', type: 'integer')]
     private int $windowStart;
 
-    #[ORM\Column(name: 'sent_count', type: 'integer')]
+    #[ORM\Column(name: 'sent_count', type: 'integer', options: ['default' => 0])]
     private int $sentCount;
 
-    #[ORM\Column(name: 'blocked_count', type: 'integer')]
+    #[ORM\Column(name: 'blocked_count', type: 'integer', options: ['default' => 0])]
     private int $blockedCount;
 
     public function __construct(string $domain, int $windowStart, int $sentCount = 0, int $blockedCount = 0)

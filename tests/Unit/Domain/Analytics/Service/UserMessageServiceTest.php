@@ -79,9 +79,10 @@ class UserMessageServiceTest extends TestCase
         $this->subject->trackUserMessageView('sub-uid', 123, []);
     }
 
-    public function testReturnsEarlyWhenUserMessageNotFound(): void
+    public function testViewIsCountedEvenWhenTheCampaignWasNeverSentToTheSubscriber(): void
     {
         $subscriber = $this->createMock(Subscriber::class);
+        $subscriber->method('getId')->willReturn(5);
         $message = $this->getMockBuilder(Message::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -97,8 +98,8 @@ class UserMessageServiceTest extends TestCase
             ->with($subscriber, $message)
             ->willReturn(null);
 
-        $metadata->expects(self::never())->method('incrementViews');
-        $this->entityManager->expects(self::never())->method('persist');
+        $metadata->expects(self::once())->method('incrementViews');
+        $this->entityManager->expects(self::once())->method('persist');
 
         $this->subject->trackUserMessageView('sub-uid', 321, []);
     }

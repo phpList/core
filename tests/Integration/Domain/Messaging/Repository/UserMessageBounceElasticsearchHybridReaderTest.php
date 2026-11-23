@@ -43,7 +43,14 @@ class UserMessageBounceElasticsearchHybridReaderTest extends KernelTestCase
         $this->loadSchema();
 
         $this->client = $this->createMock(ElasticsearchClientInterface::class);
-        $this->reader = new UserMessageBounceElasticsearchHybridReader($this->client, 'phplist_', $this->entityManager);
+        $this->reader = new UserMessageBounceElasticsearchHybridReader(
+            $this->client,
+            'phplist_',
+            $this->entityManager->getRepository(Subscriber::class),
+            $this->entityManager->getRepository(Message::class),
+            $this->entityManager->getRepository(UserMessage::class),
+            $this->entityManager->getRepository(Bounce::class),
+        );
     }
 
     protected function tearDown(): void

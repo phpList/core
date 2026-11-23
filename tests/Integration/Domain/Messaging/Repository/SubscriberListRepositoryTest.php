@@ -6,6 +6,7 @@ namespace PhpList\Core\Tests\Integration\Domain\Messaging\Repository;
 
 use DateTime;
 use Doctrine\ORM\Tools\SchemaTool;
+use PhpList\Core\Domain\Messaging\Model\Filter\SubscriberListFilter;
 use PhpList\Core\Domain\Identity\Repository\AdministratorRepository;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use PhpList\Core\Domain\Subscription\Model\SubscriberList;
@@ -107,6 +108,23 @@ class SubscriberListRepositoryTest extends KernelTestCase
         $this->subscriberListRepository->save($model);
 
         self::assertSame($model, $this->subscriberListRepository->find($model->getId()));
+    }
+
+    public function testGetFilteredAfterIdReturnsOnlyOwnedListsForOwnerFilter()
+    {
+        $this->loadFixtures([SubscriberListFixture::class, AdministratorFixture::class]);
+
+        $owner = $this->administratorRepository->find(1);
+        $filter = (new SubscriberListFilter())->setOwner($owner)->setLimit(100);
+
+        $result = $this->subscriberListRepository->getFilteredAfterId($filter);
+
+        self::assertNotEmpty($result->getItems());
+        foreach ($result->getItems() as $list) {
+            self::assertInstanceOf(SubscriberList::class, $list);
+            self::assertSame($owner->getId(), $list->getOwner()->getId());
+        }
+        self::assertSame(count($result->getItems()), $result->getTotal());
     }
 
     public function testFindByOwnerFindsSubscriberListWithTheGivenOwner()

@@ -6,6 +6,7 @@ namespace PhpList\Core\Domain\Identity\Service;
 
 use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Common\Model\Interfaces\OwnableInterface;
+use PhpList\Core\Domain\Identity\Model\AccessLevel;
 use PhpList\Core\Domain\Identity\Model\Administrator;
 use PhpList\Core\Domain\Identity\Model\PrivilegeFlag;
 use PhpList\Core\Domain\Messaging\Model\ListMessage;
@@ -26,42 +27,36 @@ class PermissionChecker
         Message::class => SubscriberList::class
     ];
 
-    public function canManage(Administrator $actor, DomainModel $resource): bool
+    /**
+     * @param class-string $resourceClass
+     */
+    public function accessLevel(Administrator $actor, string $resourceClass): AccessLevel
     {
         if ($actor->isSuperUser()) {
-            return true;
+            return AccessLevel::All;
         }
 
-        $required = $this->resolveRequiredPrivilegeForClass(get_class($resource));
+        $required = $this->resolveRequiredPrivilegeForClass($resourceClass);
         if ($required !== null && !$actor->getPrivileges()->has($required)) {
-            return false;
+            return AccessLevel::None;
         }
 
-        if ($resource instanceof OwnableInterface) {
-            return $actor->owns($resource);
-        }
+        return AccessLevel::Owner;
+    }
 
-        $notRestricted = true;
-        foreach (self::OWNERSHIP_MAP as $resourceClass => $relatedClass) {
-            if ($resource instanceof $resourceClass) {
-                $related = $this->resolveRelatedEntity($resource, $relatedClass);
-                $notRestricted = $this->checkRelatedResources($related, $actor);
-            }
-        }
-
-        return $notRestricted;
+    public function canManage(Administrator $actor, DomainModel $resource): bool
+    {
+        return match ($this->accessLevel($actor, get_class($resource))) {
+            AccessLevel::All => true,
+            AccessLevel::None => false,
+            AccessLevel::Owner => $this->ownsResource($actor, $resource),
+        };
     }
 
     /** @param class-string $resourceClass */
     public function canCreate(Administrator $actor, string $resourceClass): bool
     {
-        if ($actor->isSuperUser()) {
-            return true;
-        }
-
-        $required = $this->resolveRequiredPrivilegeForClass($resourceClass);
-
-        return $required === null || $actor->getPrivileges()->has($required);
+        return $this->accessLevel($actor, $resourceClass) !== AccessLevel::None;
     }
 
     public function canList(Administrator $actor, string $resourceClass): bool
@@ -82,6 +77,21 @@ class PermissionChecker
     public function canDelete(Administrator $actor, DomainModel $resource): bool
     {
         return $this->canManage($actor, $resource);
+    }
+
+    private function ownsResource(Administrator $actor, DomainModel $resource): bool
+    {
+        if ($resource instanceof OwnableInterface) {
+            return $actor->owns($resource);
+        }
+
+        foreach (self::OWNERSHIP_MAP as $resourceClass => $relatedClass) {
+            if ($resource instanceof $resourceClass) {
+                return $this->checkRelatedResources($this->resolveRelatedEntity($resource, $relatedClass), $actor);
+            }
+        }
+
+        return true;
     }
 
     /** @param class-string $resourceClass */

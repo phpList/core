@@ -46,7 +46,7 @@ class SendRateLimiter
         $ispMinPeriod = $isp->minBatchPeriod ?? 0;
 
         $cfgThrottle = $this->mailqueueThrottle ?? 0;
-        $ispMinThrottle = (int)($isp->minThrottle ?? 0);
+        $ispMinThrottle = (int)($isp->raw['minthrottle'] ?? 0);
 
         if ($cfgBatch <= 0) {
             $this->batchSize = $ispMax !== null ? max(0, $ispMax) : 0;

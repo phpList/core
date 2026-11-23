@@ -9,7 +9,9 @@ use PhpList\Core\Domain\Common\Model\Interfaces\DomainModel;
 use PhpList\Core\Domain\Messaging\Repository\MessageDataRepository;
 
 #[ORM\Entity(repositoryClass: MessageDataRepository::class)]
-#[ORM\Table(name: 'messagedata')]
+// utf8mb4 for the whole table (campaign data holds emoji etc.): a column-level charset differing from the
+// table charset makes MySQL report the server's default collation for the column, which never matches.
+#[ORM\Table(name: 'messagedata', options: ['charset' => 'utf8mb4', 'collation' => 'utf8mb4_unicode_ci'])]
 class MessageData implements DomainModel
 {
     #[ORM\Id]
@@ -20,7 +22,7 @@ class MessageData implements DomainModel
     #[ORM\Column(name: 'id', type: 'integer')]
     private int $id;
 
-    #[ORM\Column(name: 'data', type: 'text', nullable: true, options: ['charset' => 'utf8mb4'])]
+    #[ORM\Column(name: 'data', type: 'text', nullable: true)]
     private ?string $data = null;
 
     public function getName(): string

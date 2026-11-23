@@ -49,7 +49,10 @@ class AdminAttributeDefinitionManager
     ): AdminAttributeDefinition {
         $existingAttribute = $this->definitionRepository->findOneByName($attributeDefinitionDto->name);
         if ($existingAttribute && $existingAttribute->getId() !== $attributeDefinition->getId()) {
-            throw new AttributeDefinitionCreationException('Another attribute with this name already exists.', 409);
+            throw new AttributeDefinitionCreationException(
+                $this->translator->trans('Another attribute with this name already exists.'),
+                409
+            );
         }
         $this->attributeTypeValidator->validate($attributeDefinitionDto->type);
 

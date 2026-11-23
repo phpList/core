@@ -16,6 +16,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AsCommand(
     name: 'phplist:search:purge',
@@ -28,6 +29,7 @@ class PurgeSearchIndexedRowsCommand extends Command
     public function __construct(
         private readonly SearchPurgeProviderRegistry $registry,
         private readonly ElasticsearchClientInterface $client,
+        private readonly TranslatorInterface $translator,
     ) {
         parent::__construct();
     }
@@ -48,7 +50,7 @@ class PurgeSearchIndexedRowsCommand extends Command
         $dryRun = (bool) $input->getOption('dry-run');
 
         if ($batchSize < 1) {
-            $io->error('The --batch-size option must be greater than zero.');
+            $io->error($this->translator->trans('The --batch-size option must be greater than zero.'));
             return Command::FAILURE;
         }
 
@@ -56,12 +58,18 @@ class PurgeSearchIndexedRowsCommand extends Command
             $provider = $this->registry->find($alias);
 
             if ($provider === null) {
-                $io->error(sprintf('No purge provider registered for alias "%s".', $alias));
+                $io->error($this->translator->trans(
+                    'No purge provider registered for alias "%alias%".',
+                    ['%alias%' => $alias]
+                ));
                 return Command::FAILURE;
             }
 
             if ($provider->getRetentionPeriod() === null) {
-                $io->error(sprintf('No retention period configured for alias "%s".', $alias));
+                $io->error($this->translator->trans(
+                    'No retention period configured for alias "%alias%".',
+                    ['%alias%' => $alias]
+                ));
                 return Command::FAILURE;
             }
 
@@ -74,7 +82,7 @@ class PurgeSearchIndexedRowsCommand extends Command
         }
 
         if ($providers === []) {
-            $io->warning('No purge providers with a configured retention period.');
+            $io->warning($this->translator->trans('No purge providers with a configured retention period.'));
             return Command::SUCCESS;
         }
 
@@ -93,9 +101,12 @@ class PurgeSearchIndexedRowsCommand extends Command
     ): void {
         $cutoff = (new DateTimeImmutable())->sub($provider->getRetentionPeriod());
         $io->writeln(sprintf(
-            '<info>%s</info>: purging rows older than %s',
+            '<info>%s</info>: %s',
             $provider->getAlias(),
-            $cutoff->format(DateTimeImmutable::ATOM),
+            $this->translator->trans(
+                'purging rows older than %cutoff%',
+                ['%cutoff%' => $cutoff->format(DateTimeImmutable::ATOM)]
+            ),
         ));
 
         $lastId = 0;
@@ -165,22 +176,28 @@ class PurgeSearchIndexedRowsCommand extends Command
         SymfonyStyle $io,
     ): void {
         if ($skipped !== []) {
-            $io->warning(sprintf(
-                '%s: %d row(s) older than cutoff were not found in Elasticsearch and were left in place: %s',
-                $provider->getAlias(),
-                count($skipped),
-                implode(', ', array_slice($skipped, 0, 10)) . (count($skipped) > 10 ? ', ...' : ''),
+            $io->warning($this->translator->trans(
+                '%alias%: %count% row(s) older than cutoff were not found in Elasticsearch '
+                    . 'and were left in place: %ids%',
+                [
+                    '%alias%' => $provider->getAlias(),
+                    '%count%' => count($skipped),
+                    '%ids%' => implode(', ', array_slice($skipped, 0, 10)) . (count($skipped) > 10 ? ', ...' : ''),
+                ]
             ));
         }
 
-        $io->success(sprintf(
-            '%s: scanned %d row(s), %s %d row(s)%s.',
-            $provider->getAlias(),
-            $scanned,
-            $dryRun ? 'would delete' : 'deleted',
-            $deleted,
-            $skipped !== [] ? sprintf(', skipped %d unconfirmed', count($skipped)) : '',
-        ));
+        $summary = $this->translator->trans(
+            $dryRun
+                ? '%alias%: scanned %scanned% row(s), would delete %count% row(s)'
+                : '%alias%: scanned %scanned% row(s), deleted %count% row(s)',
+            ['%alias%' => $provider->getAlias(), '%scanned%' => $scanned, '%count%' => $deleted]
+        );
+        if ($skipped !== []) {
+            $summary .= $this->translator->trans(', skipped %count% unconfirmed', ['%count%' => count($skipped)]);
+        }
+
+        $io->success($summary . '.');
     }
 
     /** @param string[] $docIds @return string[] */

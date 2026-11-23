@@ -12,6 +12,7 @@ use PhpList\Core\Domain\Common\Validator\UploadValidator;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class UploadService
 {
@@ -21,6 +22,7 @@ class UploadService
         private readonly RequestStack $requestStack,
         #[Autowire('%phplist.upload_images_dir%')]
         private readonly string $uploadDirectory,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -29,7 +31,7 @@ class UploadService
         $validatedFile = $this->validator->validate($file);
         $extension = strtolower(($validatedFile->guessExtension() ?: $validatedFile->getClientOriginalExtension()));
         if ($extension === '') {
-            throw new InvalidUploadException('Could not determine file extension.');
+            throw new InvalidUploadException($this->translator->trans('Could not determine file extension.'));
         }
 
         $filename = $this->generateFilename($extension);

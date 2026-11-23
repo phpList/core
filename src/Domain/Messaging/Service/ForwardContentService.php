@@ -13,14 +13,16 @@ use PhpList\Core\Domain\Messaging\Model\Message;
 use PhpList\Core\Domain\Messaging\Service\Builder\ForwardEmailBuilder;
 use PhpList\Core\Domain\Subscription\Model\Subscriber;
 use Psr\SimpleCache\CacheInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mime\Email;
 
 class ForwardContentService
 {
     public function __construct(
         private readonly CacheInterface $cache,
-        private readonly MessageProcessingPreparator $messagePreparator,
         private readonly ForwardEmailBuilder $forwardEmailBuilder,
+        private readonly MessagePrecacheService $precacheService,
+        #[Autowire('%messaging.forward_alternative_content%')] private readonly bool $forwardAlternativeContent = false,
     ) {
     }
 
@@ -33,24 +35,21 @@ class ForwardContentService
         string $friendEmail,
         MessageForwardDto $forwardDto
     ): array {
-        $messagePrecacheDto = $this->cache->get(sprintf('messaging.message.base.%d.%d.%d', $campaign->getId(), 1, 0));
+        $messagePrecacheDto = $this->cache->get(
+            $this->precacheService->getCacheKey($campaign->getId(), $this->forwardAlternativeContent)
+        );
 
         if ($messagePrecacheDto === null) {
             throw new MessageCacheMissingException();
         }
 
-        // todo: check how should links be handled in case of forwarding
-        $processed = $this->messagePreparator->processMessageLinks(
-            campaignId: $campaign->getId(),
-            cachedMessageDto: $messagePrecacheDto,
-            subscriber: $forwardingSubscriber
-        );
-
+        // links of forwarded messages are not click tracked: the forwarding subscriber would
+        // be credited with the clicks of the friend
         return $this->forwardEmailBuilder->buildForwardEmail(
             messageId: $campaign->getId(),
             friendEmail: $friendEmail,
             forwardedBy: $forwardingSubscriber,
-            data: $processed,
+            data: $messagePrecacheDto,
             htmlPref: $forwardingSubscriber->hasHtmlEmail(),
             fromName: $forwardDto->getFromName(),
             fromEmail: $forwardDto->getFromEmail(),

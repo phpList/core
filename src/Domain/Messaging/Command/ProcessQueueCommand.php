@@ -85,7 +85,10 @@ class ProcessQueueCommand extends Command
             $lock->release();
         }
 
-        $output->writeln('Processed ' . count($campaigns) . ' campaigns from the queue.');
+        $output->writeln($this->translator->trans(
+            'Processed %count% campaigns from the queue.',
+            ['%count%' => count($campaigns)]
+        ));
 
         return Command::SUCCESS;
     }

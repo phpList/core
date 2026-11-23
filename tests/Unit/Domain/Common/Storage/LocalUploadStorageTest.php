@@ -9,6 +9,7 @@ use PhpList\Core\Domain\Common\Storage\LocalUploadStorage;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Translation\Translator;
 
 class LocalUploadStorageTest extends TestCase
 {
@@ -45,7 +46,7 @@ class LocalUploadStorageTest extends TestCase
 
     public function testStoreCreatesDirectoryAndMovesFile(): void
     {
-        $storage = new LocalUploadStorage($this->projectDir, $this->uploadDirectory);
+        $storage = new LocalUploadStorage($this->projectDir, $this->uploadDirectory, new Translator('en'));
         $tempFile = tempnam(sys_get_temp_dir(), 'upload-storage-');
         file_put_contents($tempFile, base64_decode(
             'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jqN8AAAAASUVORK5CYII='
@@ -67,7 +68,7 @@ class LocalUploadStorageTest extends TestCase
 
     public function testStoreWrapsFileExceptions(): void
     {
-        $storage = new LocalUploadStorage($this->projectDir, $this->uploadDirectory);
+        $storage = new LocalUploadStorage($this->projectDir, $this->uploadDirectory, new Translator('en'));
         $file = $this->createMock(UploadedFile::class);
         $file->method('move')->willThrowException(new FileException('boom'));
         $file->method('getMimeType')->willReturn('image/png');

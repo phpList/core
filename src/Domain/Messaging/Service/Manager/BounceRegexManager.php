@@ -11,18 +11,22 @@ use PhpList\Core\Domain\Messaging\Model\BounceRegex;
 use PhpList\Core\Domain\Messaging\Model\BounceRegexBounce;
 use PhpList\Core\Domain\Messaging\Repository\BounceRegexRepository;
 use Symfony\Component\Validator\Exception\ValidatorException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class BounceRegexManager
 {
     private BounceRegexRepository $bounceRegexRepository;
     private EntityManagerInterface $entityManager;
+    private TranslatorInterface $translator;
 
     public function __construct(
         BounceRegexRepository $bounceRegexRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        TranslatorInterface $translator
     ) {
         $this->bounceRegexRepository = $bounceRegexRepository;
         $this->entityManager = $entityManager;
+        $this->translator = $translator;
     }
 
     /**
@@ -40,7 +44,7 @@ class BounceRegexManager
         $regexHash = md5($regex);
         $existing = $this->bounceRegexRepository->findOneByRegexHash($regexHash);
         if ($existing !== null) {
-            throw new ValidatorException('Bounce Regex already exists.');
+            throw new ValidatorException($this->translator->trans('Bounce Regex already exists.'));
         }
 
         $bounceRegex = new BounceRegex(
@@ -70,7 +74,7 @@ class BounceRegexManager
         $regexHash = md5($regex);
         $existing = $this->bounceRegexRepository->findOneByRegexHash($regexHash);
         if ($existing !== null && $existing->getId() !== $bounceRegex->getId()) {
-            throw new ValidatorException('Bounce Regex already exists.');
+            throw new ValidatorException($this->translator->trans('Bounce Regex already exists.'));
         }
 
         $bounceRegex->setRegex($regex)

@@ -14,6 +14,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Translation\Translator;
 
 class UploadServiceTest extends TestCase
 {
@@ -41,7 +42,7 @@ class UploadServiceTest extends TestCase
                 return new StoredFile($filename, '/tmp/' . $filename, 'image/png', 123, 'png');
             });
 
-        $service = new UploadService($validator, $storage, $requestStack, 'uploadfiles');
+        $service = new UploadService($validator, $storage, $requestStack, 'uploadfiles', new Translator('en'));
 
         $firstResult = $service->upload($file);
         $secondResult = $service->upload($file);
@@ -68,7 +69,7 @@ class UploadServiceTest extends TestCase
         $validator->method('validate')->willReturn($file);
         $storage->method('store')->willThrowException(new StorageException('storage down'));
 
-        $service = new UploadService($validator, $storage, $requestStack, 'uploadfiles');
+        $service = new UploadService($validator, $storage, $requestStack, 'uploadfiles', new Translator('en'));
 
         $this->expectException(StorageException::class);
         $service->upload($file);
