@@ -7,6 +7,8 @@ namespace PhpList\Core\Core\Doctrine;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 use Doctrine\ORM\Events;
+use Doctrine\ORM\Id\SequenceGenerator;
+use Doctrine\ORM\Mapping\ClassMetadata;
 
 #[AsDoctrineListener(event: Events::loadClassMetadata)]
 class TablePrefixListener
@@ -48,5 +50,31 @@ class TablePrefixListener
         $metadata->setPrimaryTable([
             'name' => $this->tablePrefix . $metadata->getTableName(),
         ]);
+
+        $this->prefixSequence($metadata);
+    }
+
+    /**
+     * On platforms that use sequences (PostgreSQL) the ORM derives the default sequence name
+     * ({table}_{column}_seq) from the unprefixed table name and builds the id generator before this
+     * event, so both have to be prefixed here as well, or inserts would use a sequence that doesn't exist.
+     */
+    private function prefixSequence(ClassMetadata $metadata): void
+    {
+        if (!$metadata->isIdGeneratorSequence() || !isset($metadata->sequenceGeneratorDefinition)) {
+            return;
+        }
+
+        $definition = $metadata->sequenceGeneratorDefinition;
+        if (str_starts_with($definition['sequenceName'], $this->tablePrefix)) {
+            return;
+        }
+
+        $definition['sequenceName'] = $this->tablePrefix . $definition['sequenceName'];
+        $metadata->setSequenceGeneratorDefinition($definition);
+        $metadata->setIdGenerator(new SequenceGenerator(
+            $definition['sequenceName'],
+            (int) $definition['allocationSize']
+        ));
     }
 }
