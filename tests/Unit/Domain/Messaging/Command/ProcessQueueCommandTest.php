@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Lock\LockFactory;
-use Symfony\Component\Lock\LockInterface;
+use Symfony\Component\Lock\SharedLockInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Translation\Translator;
@@ -27,7 +27,7 @@ class ProcessQueueCommandTest extends TestCase
     private MessageRepository&MockObject $messageRepository;
     private MessageProcessingPreparator&MockObject $messageProcessingPreparator;
     private MessageBusInterface&MockObject $messageBus;
-    private LockInterface&MockObject $lock;
+    private SharedLockInterface&MockObject $lock;
     private CommandTester $commandTester;
     private Translator&MockObject $translator;
 
@@ -37,7 +37,7 @@ class ProcessQueueCommandTest extends TestCase
         $lockFactory = $this->createMock(LockFactory::class);
         $this->messageProcessingPreparator = $this->createMock(MessageProcessingPreparator::class);
         $this->messageBus = $this->createMock(MessageBusInterface::class);
-        $this->lock = $this->createMock(LockInterface::class);
+        $this->lock = $this->createMock(SharedLockInterface::class);
         $this->translator = $this->createMock(Translator::class);
 
         $lockFactory->method('createLock')
