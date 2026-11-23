@@ -9,12 +9,11 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\Schema;
 
 /**
-* ⚠️ Wizard warning:
-* Doctrine will `helpfully` remove url(255) prefixes and add collations 5.7 can’t read.
-* Review the SQL unless you enjoy debugging key length errors at 2 AM.
-*
-* Ex: phplist_linktrack_forward phplist_linktrack_forward_urlindex (but there are more)
-*/
+ * Generated migration: review before committing.
+ * - It runs on fresh installs and on existing phpList3 databases, whose index names vary:
+ *   use the AbstractPrefixedMigration index helpers instead of plain RENAME/DROP INDEX.
+ * - Remove MySQL-8-only collations (e.g. utf8mb4_0900_ai_ci), MariaDB rejects them.
+ */
 final class <className> extends AbstractPrefixedMigration
 {
     public function getDescription(): string

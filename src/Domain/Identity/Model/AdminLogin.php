@@ -25,8 +25,8 @@ class AdminLogin implements DomainModel, Identity
     #[ORM\JoinColumn(name: 'adminid', referencedColumnName: 'id', nullable: false)]
     private Administrator $administrator;
 
-    #[ORM\Column(type: 'datetime_immutable', nullable: false)]
-    private DateTimeImmutable $moment;
+    #[ORM\Column(type: 'bigint', nullable: false)]
+    private int|string $moment;
 
     #[ORM\Column(name: 'remote_ip4', type: 'string', length: 32)]
     private string $remoteIp4;
@@ -47,7 +47,7 @@ class AdminLogin implements DomainModel, Identity
         string $sessionId,
     ) {
         $this->administrator = $administrator;
-        $this->moment = new DateTimeImmutable();
+        $this->moment = time();
         $this->remoteIp4 = $remoteIp4;
         $this->remoteIp6 = $remoteIp6;
         $this->sessionId = $sessionId;
@@ -76,7 +76,7 @@ class AdminLogin implements DomainModel, Identity
 
     public function getCreatedAt(): DateTimeInterface
     {
-        return $this->moment;
+        return (new DateTimeImmutable())->setTimestamp((int) $this->moment);
     }
 
     public function getRemoteIp4(): string

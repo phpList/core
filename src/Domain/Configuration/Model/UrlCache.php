@@ -12,7 +12,7 @@ use PhpList\Core\Domain\Configuration\Repository\UrlCacheRepository;
 
 #[ORM\Entity(repositoryClass: UrlCacheRepository::class)]
 #[ORM\Table(name: 'urlcache')]
-#[ORM\Index(name: 'phplist_urlcache_urlindex', columns: ['url'])]
+#[ORM\Index(name: 'phplist_urlcache_urlindex', columns: ['url'], options: ['lengths' => [255]])]
 #[ORM\HasLifecycleCallbacks]
 class UrlCache implements DomainModel, Identity
 {
@@ -21,9 +21,9 @@ class UrlCache implements DomainModel, Identity
     #[ORM\GeneratedValue]
     private ?int $id = null;
 
-    // Defined as string(255) due to MySQL limitation (actual max URL length is 2083):
-    // TEXT can't be indexed without a prefix, which Doctrine doesn't support.
-    #[ORM\Column(name: 'url', type: 'string', length: 255)]
+    // phpList3 stores URLs up to 2083 characters; the index only covers the first 255
+    // (prefix index, see the "lengths" option on the index above).
+    #[ORM\Column(name: 'url', type: 'string', length: 2083)]
     private string $url;
 
     #[ORM\Column(name: 'lastmodified', type: 'integer', nullable: true)]
