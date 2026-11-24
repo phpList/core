@@ -266,7 +266,7 @@ class SubscriberCsvImporter
         ImportSubscriberDto $dto,
         bool $addedNewSubscriberToList
     ): ?SubscriptionConfirmationMessage {
-        if ($dto->sendConfirmation && $addedNewSubscriberToList) {
+        if ($options->notify && $dto->sendConfirmation && $addedNewSubscriberToList) {
             return new SubscriptionConfirmationMessage(
                 email: $subscriber->getEmail(),
                 uniqueId: $subscriber->getUniqueId(),

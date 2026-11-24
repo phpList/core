@@ -16,6 +16,10 @@ services:
     resource: '../../src/Domain/Search/Command'
     tags: ['console.command']
 
+  PhpList\Core\Domain\Subscription\Command\:
+    resource: '../../src/Domain/Subscription/Command'
+    tags: ['console.command']
+
   PhpList\Core\Domain\Messaging\Command\ProcessBouncesCommand:
     arguments:
       $protocolProcessors: !tagged_iterator 'phplist.bounce_protocol_processor'

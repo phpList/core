@@ -60,6 +60,10 @@ services:
     autoconfigure: true
     public: true
 
+  PhpList\Core\Domain\Messaging\Service\CliCampaignCreator:
+    autowire: true
+    autoconfigure: true
+
   PhpList\Core\Domain\Analytics\Service\LinkTrackService:
     autowire: true
     autoconfigure: true

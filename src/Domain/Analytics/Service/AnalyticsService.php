@@ -17,7 +17,21 @@ use PhpList\Core\Domain\Messaging\Repository\UserMessageRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use Psr\SimpleCache\CacheInterface;
 
-/** @SuppressWarnings("ExcessiveParameterList") */
+/**
+ * TODO: add the monthly/yearly time-series statistics that phplist3's systemstats page provides and that are
+ *  missing here (legacy: public_html/lists/admin/systemstats.php). Write them with DBAL/DQL date functions that
+ *  work on both MySQL and PostgreSQL (the legacy queries use MySQL-only year()/month()/information_schema):
+ *  - new subscribers per month, and running total of subscribers
+ *  - sent campaigns per month and per year
+ *  - opened messages per month
+ *  - bounces per month
+ *  - blacklist additions per month, and spam complaints per month
+ *    (blacklist reason "blacklisted due to spam complaints")
+ *  - subscribers who clicked per month, and unsubscribe-link clicks per month
+ *  Expose them through the REST API (phplist/rest-api), not a console command.
+ *
+ * @SuppressWarnings("ExcessiveParameterList")
+ */
 class AnalyticsService
 {
     private const SUMMARY_STATISTICS_CACHE_KEY = 'analytics.summary_statistics';
