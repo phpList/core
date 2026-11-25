@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Subscription\Model\SubscriberAttributeDefinition;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberAttributeDefinitionRepository;
 use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
 use PhpList\Core\Domain\Subscription\Service\CsvToDtoImporter;
+use PhpList\Core\Domain\Subscription\Service\EmailTldValidator;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberAttributeManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberHistoryManager;
 use PhpList\Core\Domain\Subscription\Service\Manager\SubscriberManager;
@@ -35,6 +36,7 @@ class SubscriberCsvImporterTest extends TestCase
     private UserBlacklistRepository&MockObject $blacklistRepositoryMock;
     private SubscriptionManager&MockObject $subscriptionManagerMock;
     private MessageBusInterface&MockObject $messageBusMock;
+    private EmailTldValidator&MockObject $emailTldValidatorMock;
     private SubscriberCsvImporter $subject;
 
     protected function setUp(): void
@@ -48,6 +50,8 @@ class SubscriberCsvImporterTest extends TestCase
         $this->messageBusMock = $this->createMock(MessageBusInterface::class);
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $this->blacklistRepositoryMock = $this->createMock(UserBlacklistRepository::class);
+        $this->emailTldValidatorMock = $this->createMock(EmailTldValidator::class);
+        $this->emailTldValidatorMock->method('hasKnownTld')->willReturn(true);
 
         $this->subject = new SubscriberCsvImporter(
             subscriberManager: $this->subscriberManagerMock,
@@ -60,6 +64,7 @@ class SubscriberCsvImporterTest extends TestCase
             messageBus: $this->messageBusMock,
             subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class),
             blacklistRepository: $this->blacklistRepositoryMock,
+            emailTldValidator: $this->emailTldValidatorMock,
         );
     }
 
@@ -581,5 +586,104 @@ class SubscriberCsvImporterTest extends TestCase
         $this->assertSame(0, $result['blacklisted']);
 
         unlink($tempFile);
+    }
+
+    public function testImportSkipsEmailWithUnknownTopLevelDomain(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'csv_test_tld');
+        file_put_contents(
+            $tempFile,
+            "email,confirmed,html_email,blacklisted,disabled\nuser@example.invalidtld,1,1,0,0\n"
+        );
+
+        $uploadedFile = $this->createMock(UploadedFile::class);
+        $uploadedFile->method('getRealPath')->willReturn($tempFile);
+
+        $dto = new ImportSubscriberDto(
+            email: 'user@example.invalidtld',
+            confirmed: true,
+            htmlEmail: true,
+            disabled: false,
+        );
+        $this->csvImporterMock->method('parseAndValidate')->willReturn(['valid' => [$dto], 'errors' => []]);
+
+        $validator = $this->createMock(EmailTldValidator::class);
+        $validator->expects($this->once())->method('hasKnownTld')
+            ->with('user@example.invalidtld')->willReturn(false);
+        $subject = $this->subjectWith($validator);
+
+        $this->subscriberManagerMock->expects($this->never())->method('createFromImport');
+
+        $result = $subject->importFromCsv($uploadedFile, new SubscriberImportOptions(listIds: [1]));
+
+        $this->assertSame(0, $result['created']);
+        $this->assertSame(1, $result['skipped']);
+        $this->assertSame(1, $result['invalid_email']);
+        $this->assertSame(['Invalid email: user@example.invalidtld'], $result['errors']);
+
+        unlink($tempFile);
+    }
+
+    public function testImportKeepsUnknownTopLevelDomainEmailWithInvalidPrefixWhenNotSkipping(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'csv_test_tld_keep');
+        file_put_contents(
+            $tempFile,
+            "email,confirmed,html_email,blacklisted,disabled\nuser@example.invalidtld,1,1,0,0\n"
+        );
+
+        $uploadedFile = $this->createMock(UploadedFile::class);
+        $uploadedFile->method('getRealPath')->willReturn($tempFile);
+
+        $dto = new ImportSubscriberDto(
+            email: 'user@example.invalidtld',
+            confirmed: false,
+            htmlEmail: true,
+            disabled: false,
+        );
+        $this->csvImporterMock->method('parseAndValidate')->willReturn(['valid' => [$dto], 'errors' => []]);
+        $this->subscriberRepositoryMock->method('findOneByEmail')->willReturn(null);
+
+        $validator = $this->createMock(EmailTldValidator::class);
+        $validator->method('hasKnownTld')->willReturn(false);
+        $subject = $this->subjectWith($validator);
+
+        $created = $this->createMock(Subscriber::class);
+        $created->method('getId')->willReturn(9);
+        $created->method('getEmail')->willReturn('invalid_user@example.invalidtld');
+        $this->subscriberManagerMock->expects($this->once())->method('createFromImport')
+            ->with($this->callback(
+                fn (ImportSubscriberDto $d) => $d->email === 'invalid_user@example.invalidtld'
+                    && $d->sendConfirmation === false
+            ))
+            ->willReturn($created);
+        $this->messageBusMock->expects($this->never())->method('dispatch');
+
+        $result = $subject->importFromCsv(
+            $uploadedFile,
+            new SubscriberImportOptions(listIds: [1], skipInvalidEmail: false)
+        );
+
+        $this->assertSame(1, $result['created']);
+        $this->assertSame(0, $result['invalid_email']);
+
+        unlink($tempFile);
+    }
+
+    private function subjectWith(EmailTldValidator $validator): SubscriberCsvImporter
+    {
+        return new SubscriberCsvImporter(
+            subscriberManager: $this->subscriberManagerMock,
+            attributeManager: $this->attributeManagerMock,
+            subscriptionManager: $this->subscriptionManagerMock,
+            subscriberRepository: $this->subscriberRepositoryMock,
+            csvToDtoImporter: $this->csvImporterMock,
+            entityManager: $this->createMock(EntityManagerInterface::class),
+            translator: new Translator('en'),
+            messageBus: $this->messageBusMock,
+            subscriberHistoryManager: $this->createMock(SubscriberHistoryManager::class),
+            blacklistRepository: $this->blacklistRepositoryMock,
+            emailTldValidator: $validator,
+        );
     }
 }

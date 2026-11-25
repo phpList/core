@@ -48,4 +48,6 @@ enum ConfigOption: string
     case RemoteProcessingSecret = 'remote_processing_secret';
     case NotifyAdminLogin = 'notify_admin_login';
     case XorMask = 'xormask';
+    case InternetTlds = 'internet_tlds';
+    case TldLastSync = 'tld_last_sync';
 }

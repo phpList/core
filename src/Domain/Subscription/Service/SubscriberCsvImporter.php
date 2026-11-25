@@ -46,6 +46,7 @@ class SubscriberCsvImporter
         private readonly MessageBusInterface $messageBus,
         private readonly SubscriberHistoryManager $subscriberHistoryManager,
         private readonly UserBlacklistRepository $blacklistRepository,
+        private readonly EmailTldValidator $emailTldValidator,
     ) {
     }
 
@@ -230,7 +231,7 @@ class SubscriberCsvImporter
         SubscriberImportOptions $options,
         array &$stats
     ): bool {
-        if (!filter_var($dto->email, FILTER_VALIDATE_EMAIL)) {
+        if (!filter_var($dto->email, FILTER_VALIDATE_EMAIL) || !$this->emailTldValidator->hasKnownTld($dto->email)) {
             if ($options->skipInvalidEmail) {
                 $stats['skipped']++;
                 $stats['invalid_email']++;

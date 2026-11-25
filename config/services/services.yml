@@ -9,6 +9,14 @@ services:
     autoconfigure: true
     public: true
 
+  PhpList\Core\Domain\Subscription\Service\TldListService:
+    autowire: true
+    autoconfigure: true
+
+  PhpList\Core\Domain\Subscription\Service\EmailTldValidator:
+    autowire: true
+    autoconfigure: true
+
   PhpList\Core\Domain\Subscription\Service\SubscriberCsvImporter:
     autowire: true
     autoconfigure: true
