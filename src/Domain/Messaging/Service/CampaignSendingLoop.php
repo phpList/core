@@ -113,7 +113,6 @@ class CampaignSendingLoop
                 'campaign_id' => $campaign->getId(),
                 'subscriber_id' => $subscriber->getId(),
             ]);
-            // todo: maybe catch exception and return false to stop early?
             $this->emailSender->send($campaign, $subscriber, $userMessage, $messagePrecacheDto);
         }
 

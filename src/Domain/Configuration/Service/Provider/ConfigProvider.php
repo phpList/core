@@ -58,7 +58,7 @@ class ConfigProvider
         if (in_array($key, $this->booleanValues)) {
             throw new InvalidArgumentException('Key is a boolean value, use isEnabled instead');
         }
-        $cacheKey = 'cfg:' . $key->value;
+        $cacheKey = $this->cacheKey($key->value);
         $value = $this->cache->get($cacheKey);
         if ($value === null) {
             $value = $this->configRepository->findValueByItem($key->value);
@@ -88,6 +88,15 @@ class ConfigProvider
         return $value;
     }
 
+    /**
+     * PSR-6/PSR-16 reserve the characters {}()/\@: in cache keys, but config keys may contain them
+     * (e.g. "subscribemessage:1"), so they are replaced.
+     */
+    private function cacheKey(string $configKey): string
+    {
+        return 'cfg.' . preg_replace('/[{}()\/\\\\@:]/', '.', $configKey);
+    }
+
     public function getValueWithNamespace(ConfigOption|string $key): ?string
     {
         if ($key instanceof ConfigOption) {
@@ -95,7 +104,7 @@ class ConfigProvider
             $keyValue = $key->value;
         } else {
             $keyValue = $key;
-            $cacheKey = 'cfg:' . $keyValue;
+            $cacheKey = $this->cacheKey($keyValue);
             $full = $this->cache->get($cacheKey);
             if ($full === null) {
                 $full = $this->configRepository->findValueByItem($keyValue);
