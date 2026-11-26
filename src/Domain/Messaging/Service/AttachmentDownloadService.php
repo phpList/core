@@ -20,7 +20,7 @@ class AttachmentDownloadService
     public function __construct(
         private readonly SubscriberRepository $subscriberRepository,
         private readonly TranslatorInterface $translator,
-        #[Autowire('%phplist.attachment_repository_path%')] private readonly string $attachmentRepositoryPath = '/tmp',
+        #[Autowire('%messaging.attachment.repository_path%')] private readonly string $attachmentRepositoryPath = '/tmp',
     ) {
     }
 

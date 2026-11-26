@@ -17,8 +17,8 @@ class EmailService
     public function __construct(
         private readonly MailerInterface $mailer,
         private readonly MessageBusInterface $messageBus,
-        #[Autowire('%app.mailer_from%')] private readonly string $defaultFromEmail,
-        #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
+        #[Autowire('%mailer.from%')] private readonly string $defaultFromEmail,
+        #[Autowire('%bounce.email%')] private readonly string $bounceEmail,
     ) {
     }
 

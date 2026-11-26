@@ -23,7 +23,7 @@ class AdminCopyEmailSender
         private readonly MailerInterface $mailer,
         private readonly LoggerInterface $logger,
         #[Autowire('%messaging.send_list_admin_copy%')] private readonly bool $sendListAdminCopy,
-        #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
+        #[Autowire('%bounce.email%')] private readonly string $bounceEmail,
         private readonly string $installationName = 'phpList',
     ) {
     }

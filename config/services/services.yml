@@ -174,10 +174,10 @@ services:
     arguments:
       $documentRoot: '%kernel.project_dir%/public'
       # Reuse upload_images_dir for editorImagesDir if a dedicated parameter is absent
-      $editorImagesDir: '%phplist.upload_images_dir%'
+      $editorImagesDir: '%uploads.images_dir%'
       $embedExternalImages: '%messaging.embed_external_images%'
       $embedUploadedImages: '%messaging.embed_uploaded_images%'
-      $uploadImagesDir: '%phplist.upload_images_dir%'
+      $uploadImagesDir: '%uploads.images_dir%'
 
   PhpList\Core\Domain\Messaging\Service\RateLimitedCampaignMailer:
     autowire: true
@@ -187,8 +187,8 @@ services:
     autowire: true
     autoconfigure: true
     arguments:
-      $unsubscribeThreshold: '%imap_bounce.unsubscribe_threshold%'
-      $blacklistThreshold: '%imap_bounce.blacklist_threshold%'
+      $unsubscribeThreshold: '%bounce.unsubscribe_threshold%'
+      $blacklistThreshold: '%bounce.blacklist_threshold%'
 
   Webklex\PHPIMAP\ClientManager: ~
 
@@ -196,32 +196,32 @@ services:
     autowire: true
     autoconfigure: true
     arguments:
-      $mailbox: '%imap_bounce.mailbox%'#  e.g. "{imap.example.com:993/imap/ssl}INBOX" or "/var/mail/user"
-      $host: '%imap_bounce.host%'
-      $port: '%imap_bounce.port%'
-      $encryption: '%imap_bounce.encryption%'
-      $username: '%imap_bounce.email%'
-      $password: '%imap_bounce.password%'
-      $protocol: '%imap_bounce.protocol%'
+      $mailbox: '%bounce.imap.mailbox%'#  e.g. "{imap.example.com:993/imap/ssl}INBOX" or "/var/mail/user"
+      $host: '%bounce.imap.host%'
+      $port: '%bounce.imap.port%'
+      $encryption: '%bounce.imap.encryption%'
+      $username: '%bounce.email%'
+      $password: '%bounce.imap.password%'
+      $protocol: '%bounce.imap.protocol%'
 
   PhpList\Core\Domain\Common\Mail\NativeImapMailReader:
     arguments:
-      $username: '%imap_bounce.email%'
-      $password: '%imap_bounce.password%'
+      $username: '%bounce.email%'
+      $password: '%bounce.imap.password%'
 
   PhpList\Core\Domain\Messaging\Service\NativeBounceProcessingService:
     autowire: true
     autoconfigure: true
     arguments:
-      $purgeProcessed: '%imap_bounce.purge%'
-      $purgeUnprocessed: '%imap_bounce.purge_unprocessed%'
+      $purgeProcessed: '%bounce.purge%'
+      $purgeUnprocessed: '%bounce.purge_unprocessed%'
 
   PhpList\Core\Domain\Messaging\Service\WebklexBounceProcessingService:
     autowire: true
     autoconfigure: true
     arguments:
-      $purgeProcessed: '%imap_bounce.purge%'
-      $purgeUnprocessed: '%imap_bounce.purge_unprocessed%'
+      $purgeProcessed: '%bounce.purge%'
+      $purgeUnprocessed: '%bounce.purge_unprocessed%'
 
   PhpList\Core\Domain\Messaging\Service\LockService:
     autowire: true
@@ -339,8 +339,8 @@ services:
     autoconfigure: true
     arguments:
       $useManualTextPart: '%messaging.use_manual_text_part%'
-      $uploadImageDir: '%phplist.upload_images_dir%'
-      $publicSchema: '%phplist.public_schema%'
+      $uploadImageDir: '%uploads.images_dir%'
+      $publicSchema: '%app.public_schema%'
 
   PhpList\Core\Domain\Common\Service\UploadService:
     autowire: true

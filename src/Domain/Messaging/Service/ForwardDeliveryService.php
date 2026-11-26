@@ -19,7 +19,7 @@ class ForwardDeliveryService
     public function __construct(
         private readonly MailerInterface $mailer,
         private readonly UserMessageForwardManager $messageForwardManager,
-        #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
+        #[Autowire('%bounce.email%')] private readonly string $bounceEmail,
     ) {
     }
 

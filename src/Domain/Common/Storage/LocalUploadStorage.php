@@ -16,7 +16,7 @@ class LocalUploadStorage implements UploadStorageInterface
     public function __construct(
         #[Autowire('%kernel.application_dir%')]
         private readonly string $projectDir,
-        #[Autowire('%phplist.upload_images_dir%')]
+        #[Autowire('%uploads.images_dir%')]
         private readonly string $uploadDirectory,
         private readonly TranslatorInterface $translator,
     ) {

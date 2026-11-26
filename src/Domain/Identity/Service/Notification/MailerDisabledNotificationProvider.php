@@ -18,7 +18,7 @@ class MailerDisabledNotificationProvider implements AdminNotificationProviderInt
 {
     public function __construct(
         private readonly TranslatorInterface $translator,
-        #[Autowire('%app.mailer_dsn%')] private readonly string $mailerDsn,
+        #[Autowire('%mailer.dsn%')] private readonly string $mailerDsn,
     ) {
     }
 

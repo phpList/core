@@ -19,7 +19,7 @@ class ExternalImageService
         private readonly string $tempDir,
         private readonly int $externalImageMaxAge,
         private readonly int $externalImageMaxSize,
-        #[Autowire('%phplist.verify_ssl%')] private readonly bool $verifySsl = true,
+        #[Autowire('%app.verify_ssl%')] private readonly bool $verifySsl = true,
         private readonly ?int $externalImageTimeout = 30,
     ) {
         $this->externalCacheDir = $this->tempDir . '/external_cache';

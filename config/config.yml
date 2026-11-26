@@ -46,4 +46,4 @@ framework:
     php_errors:
         log: true
     mailer:
-        dsn: '%app.mailer_dsn%'
+        dsn: '%mailer.dsn%'

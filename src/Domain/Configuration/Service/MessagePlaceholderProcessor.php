@@ -30,7 +30,7 @@ class MessagePlaceholderProcessor
         /** @var iterable<SupportingPlaceholderResolverInterface> */
         private readonly iterable $supportingResolvers,
         #[Autowire('%messaging.always_add_user_track%')] private readonly bool $alwaysAddUserTrack,
-        #[Autowire('%phplist.keep_forwarded_attributes%')] private readonly bool $keepForwardedAttributes,
+        #[Autowire('%messaging.forward.keep_attributes%')] private readonly bool $keepForwardedAttributes,
     ) {
     }
 

@@ -13,7 +13,7 @@ final class FooterValueResolver implements PlaceholderValueResolverInterface
 {
     public function __construct(
         private readonly ConfigProvider $config,
-        #[Autowire('%messaging.forward_alternative_content%')] private readonly bool $forwardAlternativeContent,
+        #[Autowire('%messaging.forward.alternative_content%')] private readonly bool $forwardAlternativeContent,
     ) {
     }
 

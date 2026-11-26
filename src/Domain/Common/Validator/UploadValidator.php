@@ -20,11 +20,11 @@ class UploadValidator
      * @param string[] $allowedExtensions
      */
     public function __construct(
-        #[Autowire('%phplist.uploads.allowed_mime_types%')]
+        #[Autowire('%uploads.allowed_mime_types%')]
         private readonly array $allowedMimeTypes,
-        #[Autowire('%phplist.uploads.allowed_extensions%')]
+        #[Autowire('%uploads.allowed_extensions%')]
         private readonly array $allowedExtensions,
-        #[Autowire('%phplist.uploads.max_size%')]
+        #[Autowire('%uploads.max_size%')]
         private readonly string $maxSize,
         private readonly TranslatorInterface $translator,
     ) {

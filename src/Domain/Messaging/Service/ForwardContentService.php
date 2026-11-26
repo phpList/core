@@ -22,7 +22,7 @@ class ForwardContentService
         private readonly CacheInterface $cache,
         private readonly ForwardEmailBuilder $forwardEmailBuilder,
         private readonly MessagePrecacheService $precacheService,
-        #[Autowire('%messaging.forward_alternative_content%')] private readonly bool $forwardAlternativeContent = false,
+        #[Autowire('%messaging.forward.alternative_content%')] private readonly bool $forwardAlternativeContent = false,
     ) {
     }
 

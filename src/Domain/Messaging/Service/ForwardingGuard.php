@@ -20,8 +20,8 @@ class ForwardingGuard
         private readonly SubscriberRepository $subscriberRepository,
         private readonly UserMessageRepository $userMessageRepository,
         private readonly UserMessageForwardRepository $forwardRepository,
-        #[Autowire('%phplist.forward_email_count%')] private readonly int $forwardMessageCount,
-        #[Autowire('%phplist.forward_email_period%')] private readonly string $forwardEmailPeriod,
+        #[Autowire('%messaging.forward.email_count%')] private readonly int $forwardMessageCount,
+        #[Autowire('%messaging.forward.email_period%')] private readonly string $forwardEmailPeriod,
     ) {
     }
 
