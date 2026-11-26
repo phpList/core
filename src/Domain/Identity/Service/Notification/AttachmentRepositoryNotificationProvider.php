@@ -17,7 +17,8 @@ class AttachmentRepositoryNotificationProvider implements AdminNotificationProvi
 {
     public function __construct(
         private readonly TranslatorInterface $translator,
-        #[Autowire('%messaging.attachment.repository_path%')] private readonly string $attachmentRepositoryPath = '/tmp',
+        #[Autowire('%messaging.attachment.repository_path%')]
+        private readonly string $attachmentRepositoryPath = '/tmp',
     ) {
     }
 

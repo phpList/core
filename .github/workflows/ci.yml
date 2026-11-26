@@ -46,7 +46,8 @@ jobs:
       - name: Install Symfony CLI
         run: |
           curl -sS https://get.symfony.com/cli/installer | bash
-          mv $HOME/.symfony*/bin/symfony /usr/local/bin/symfony
+          echo "$HOME/.config/symfony-cli/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.config/symfony-cli/bin:$PATH"
           symfony version
       - name: Start mysql service
         run: sudo /etc/init.d/mysql start

@@ -23,8 +23,10 @@ class AttachmentAdder
         private readonly EventLogManager $eventLogManager,
         private readonly OnceCacheGuard $onceCacheGuard,
         private readonly FileHelper $fileHelper,
-        #[Autowire('%messaging.attachment.download_url%')] private readonly string $attachmentDownloadUrl,
-        #[Autowire('%messaging.attachment.repository_path%')] private readonly string $attachmentRepositoryPath = '/tmp',
+        #[Autowire('%messaging.attachment.download_url%')]
+        private readonly string $attachmentDownloadUrl,
+        #[Autowire('%messaging.attachment.repository_path%')]
+        private readonly string $attachmentRepositoryPath = '/tmp',
     ) {
     }
 
