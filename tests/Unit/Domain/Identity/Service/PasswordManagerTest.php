@@ -17,6 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Translation\Translator;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class PasswordManagerTest extends TestCase
@@ -97,6 +98,29 @@ class PasswordManagerTest extends TestCase
         $token = $this->subject->generatePasswordResetToken($email);
 
         $this->assertNotEmpty($token);
+    }
+
+    public function testGeneratePasswordResetTokenCapturesRequestLocale(): void
+    {
+        $subject = new PasswordManager(
+            passwordRequestRepository: $this->passwordRequestRepository,
+            administratorRepository: $this->administratorRepository,
+            hashGenerator: $this->hashGenerator,
+            messageBus: $this->messageBus,
+            translator: new Translator('de')
+        );
+        $this->administratorRepository->method('findOneBy')->willReturn($this->createMock(Administrator::class));
+        $this->passwordRequestRepository->method('findByAdmin')->willReturn([]);
+
+        $this->messageBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(function (PasswordResetMessage $message) {
+                $this->assertSame('de', $message->getLocale());
+                return true;
+            }))
+            ->willReturn(new Envelope(new PasswordResetMessage('a@example.com', 'token')));
+
+        $subject->generatePasswordResetToken('a@example.com');
     }
 
     public function testValidatePasswordResetTokenReturnsNullIfTokenNotFound(): void

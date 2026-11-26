@@ -28,3 +28,5 @@ services:
 
   PhpList\Core\Domain\Configuration\Service\Placeholder\:
     resource: '../../src/Domain/Configuration/Service/Placeholder/*'
+
+  PhpList\Core\Domain\Subscription\Service\Resolver\SubscriberLocaleResolver: ~

@@ -31,4 +31,10 @@ class SubscriberConfirmationMessageTest extends TestCase
 
         $this->assertFalse($message->hasHtmlEmail());
     }
+
+    public function testLocaleDefaultsToNullAndCanBeSet(): void
+    {
+        $this->assertNull((new SubscriberConfirmationMessage('a@example.com', 'abc'))->getLocale());
+        $this->assertSame('de', (new SubscriberConfirmationMessage('a@example.com', 'abc', false, 'de'))->getLocale());
+    }
 }

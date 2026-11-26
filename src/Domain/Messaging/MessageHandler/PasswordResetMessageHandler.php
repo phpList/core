@@ -22,16 +22,15 @@ class PasswordResetMessageHandler
     }
 
     /**
-     * Process a subscriber confirmation message by sending the confirmation email
+     * Process a password reset message by sending the reset email
      */
     public function __invoke(PasswordResetMessage $message): void
     {
         $confirmationLink = $this->generateLink($message->getToken());
 
-        // todo: email locale. This runs in a queue worker, where the request locale is not available, so the
-        //  default locale is always used. Resolve the recipient's language (phplist3 uses the subscriber/admin
-        //  language) and pass it as the $locale argument of trans() for the subject and both bodies.
-        $subject = $this->translator->trans('Password Reset Request');
+        $locale = $message->getLocale();
+
+        $subject = $this->translator->trans('Password Reset Request', [], null, $locale);
 
         $textContent = $this->translator->trans(
             "Hello,\n\n" .
@@ -40,7 +39,9 @@ class PasswordResetMessageHandler
             "%token%\n\n" .
             "If you did not request this password reset, please ignore this email.\n\n" .
             'Thank you.',
-            ['%token%' => $message->getToken()]
+            ['%token%' => $message->getToken()],
+            null,
+            $locale
         );
 
         $htmlContent = $this->translator->trans(
@@ -52,9 +53,10 @@ class PasswordResetMessageHandler
             '<p>Thank you.</p>',
             [
                 '%confirmation_link%' => $confirmationLink,
-            ]
+            ],
+            null,
+            $locale
         );
-
 
         $email = (new Email())
             ->to($message->getEmail())

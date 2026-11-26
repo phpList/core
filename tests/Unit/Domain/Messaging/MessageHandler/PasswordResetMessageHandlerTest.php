@@ -10,6 +10,7 @@ use PhpList\Core\Domain\Messaging\Service\EmailService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Translation\Loader\XliffFileLoader;
 use Symfony\Component\Translation\Translator;
 
 class PasswordResetMessageHandlerTest extends TestCase
@@ -61,6 +62,27 @@ class PasswordResetMessageHandlerTest extends TestCase
             }));
 
         $this->handler->__invoke($message);
+    }
+
+    public function testInvokeUsesLocaleOfMessage(): void
+    {
+        $translator = new Translator('en');
+        $translator->addLoader('xlf', new XliffFileLoader());
+        $translator->addResource('xlf', __DIR__ . '/../../../../../resources/translations/messages.de.xlf', 'de');
+        $handler = new PasswordResetMessageHandler($this->emailService, $translator, $this->passwordResetUrl);
+
+        $this->emailService->expects($this->once())
+            ->method('sendEmail')
+            ->with($this->callback(function (Email $email) {
+                $this->assertSame('Passwort zurücksetzen', $email->getSubject());
+                $this->assertStringContainsString('Hallo,', $email->getTextBody());
+                $this->assertStringContainsString('abc123', $email->getTextBody());
+                $this->assertStringContainsString('Passwort zurücksetzen</a>', $email->getHtmlBody());
+
+                return true;
+            }));
+
+        $handler->__invoke(new PasswordResetMessage('user@example.com', 'abc123', 'de'));
     }
 
     /**
