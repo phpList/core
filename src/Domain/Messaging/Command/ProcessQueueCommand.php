@@ -21,15 +21,6 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
-/**
- * TODO: scheduling. phplist3 documents putting processqueue and processbounces in the system cron, and core has
- *  no schedule definition, so users have to write the crontab themselves. Close this with either:
- *  - a documented crontab example (e.g. in docs/), or
- *  - a Symfony Scheduler schedule (symfony/scheduler is not installed yet) covering the recurring commands:
- *    phplist:process-queue, phplist:bounces:process, phplist:update-tlds (monthly) and the cleanup commands such
- *    as phplist:clean-up-old-session-tokens.
- *  Keep the existing "queue_processor" lock in mind: a schedule must not start overlapping runs.
- */
 #[AsCommand(
     name: 'phplist:process-queue',
     description: 'Processes the email campaign queue.'

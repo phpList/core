@@ -55,6 +55,17 @@ parameters:
     app.messenger_transport_dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
     app.search_transport_dsn: '%env(SEARCH_TRANSPORT_DSN)%'
 
+    # Scheduler intervals (relative strings, empty disables), see docs/Scheduling.md
+    # The env() lines are the defaults for installs whose .env predates these variables.
+    env(PHPLIST_SCHEDULE_QUEUE): '1 minute'
+    env(PHPLIST_SCHEDULE_BOUNCES): '1 day'
+    env(PHPLIST_SCHEDULE_TLDS): '1 month'
+    env(PHPLIST_SCHEDULE_CLEANUP): '1 day'
+    app.schedule.queue_interval: '%env(PHPLIST_SCHEDULE_QUEUE)%'
+    app.schedule.bounce_interval: '%env(PHPLIST_SCHEDULE_BOUNCES)%'
+    app.schedule.tld_interval: '%env(PHPLIST_SCHEDULE_TLDS)%'
+    app.schedule.cleanup_interval: '%env(PHPLIST_SCHEDULE_CLEANUP)%'
+
     # Elasticsearch configuration
     elasticsearch.enabled: '%env(bool:ELASTICSEARCH_ENABLED)%'
     elasticsearch.hosts: '%env(csv:ELASTICSEARCH_HOSTS)%'

@@ -90,7 +90,8 @@
         "guzzlehttp/guzzle": "^7.4.5",
         "symfony/dotenv": "^7.4",
         "symfony/doctrine-messenger": "^7.4",
-        "elasticsearch/elasticsearch": "^8.9"
+        "elasticsearch/elasticsearch": "^8.9",
+        "symfony/scheduler": "^7.4"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",

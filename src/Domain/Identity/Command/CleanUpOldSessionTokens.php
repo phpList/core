@@ -24,7 +24,7 @@ use Throwable;
  *    elsewhere in core
  *  user_message_view rows: legacy only deletes them together with their message or subscriber (lib.php,
  *  inc/userlib.php) and never prunes them by age, so an age based cleanup would be new behaviour, not a port.
- *  Also add the new commands to the scheduling TODO on ProcessQueueCommand.
+ *  Also add the new commands to PhpListSchedule.
  */
 #[AsCommand(
     name: 'phplist:clean-up-old-session-tokens',
