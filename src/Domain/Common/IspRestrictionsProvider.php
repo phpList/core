@@ -12,7 +12,7 @@ class IspRestrictionsProvider
 {
     public function __construct(
         private readonly LoggerInterface $logger,
-        #[Autowire('%app.phplist_isp_conf_path%')]private readonly string $confPath,
+        #[Autowire('%messaging.isp_conf_path%')]private readonly string $confPath,
     ) {
     }
 

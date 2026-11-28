@@ -119,7 +119,7 @@ final class ConfigProviderTest extends TestCase
     public function testGetValueReturnsFromCacheWhenPresent(): void
     {
         $key = $this->pickNonBooleanCase();
-        $cacheKey = 'cfg:' . $key->value;
+        $cacheKey = 'cfg.' . $key->value;
 
         $this->cache
             ->expects($this->once())
@@ -137,7 +137,7 @@ final class ConfigProviderTest extends TestCase
     public function testGetValueLoadsFromRepoAndCachesWhenCacheMiss(): void
     {
         $key = $this->pickNonBooleanCase();
-        $cacheKey = 'cfg:' . $key->value;
+        $cacheKey = 'cfg.' . $key->value;
 
         $this->cache
             ->expects($this->once())
@@ -165,7 +165,7 @@ final class ConfigProviderTest extends TestCase
     public function testGetValueFallsBackToDefaultConfigsWhenNoCacheAndNoRepo(): void
     {
         $key = $this->pickNonBooleanCase();
-        $cacheKey = 'cfg:' . $key->value;
+        $cacheKey = 'cfg.' . $key->value;
 
         $this->cache
             ->expects($this->once())
@@ -202,7 +202,7 @@ final class ConfigProviderTest extends TestCase
     public function testGetValueReturnsNullWhenNoCacheNoRepoNoDefault(): void
     {
         $key = $this->pickNonBooleanCase();
-        $cacheKey = 'cfg:' . $key->value;
+        $cacheKey = 'cfg.' . $key->value;
 
         $this->cache->expects($this->once())->method('get')->with($cacheKey)->willReturn(null);
         $this->repo->expects($this->once())->method('findValueByItem')->with($key->value)->willReturn(null);
@@ -230,8 +230,8 @@ final class ConfigProviderTest extends TestCase
         $this->cache
             ->method('get')
             ->willReturnMap([
-                ['cfg:subscribemessage:1', null],
-                ['cfg:subscribemessage', 'PARENT'],
+                ['cfg.subscribemessage.1', null],
+                ['cfg.subscribemessage', 'PARENT'],
             ]);
 
         $this->repo

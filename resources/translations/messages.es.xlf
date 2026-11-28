@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="es" datatype="plaintext" original="file.ext">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="subscriber_confirmation_0">
+        <source>Please confirm your subscription</source>
+        <target>Por favor, confirme su suscripción</target>
+      </trans-unit>
+      <trans-unit id="subscriber_confirmation_1">
+        <source>Thank you for subscribing!
+
+Please confirm your subscription by clicking the link below:
+
+%confirmation_link%
+
+If you did not request this subscription, please ignore this email.</source>
+        <target>¡Gracias por suscribirse!
+
+Por favor, confirme su suscripción haciendo clic en el siguiente enlace:
+
+%confirmation_link%
+
+Si no solicitó esta suscripción, ignore este correo electrónico.</target>
+      </trans-unit>
+      <trans-unit id="subscriber_confirmation_2">
+        <source>&lt;p&gt;Thank you for subscribing!&lt;/p&gt;&lt;p&gt;Please confirm your subscription by clicking the link below:&lt;/p&gt;&lt;p&gt;&lt;a href="%confirmation_link%"&gt;Confirm Subscription&lt;/a&gt;&lt;/p&gt;&lt;p&gt;If you did not request this subscription, please ignore this email.&lt;/p&gt;</source>
+        <target>&lt;p&gt;¡Gracias por suscribirse!&lt;/p&gt;&lt;p&gt;Por favor, confirme su suscripción haciendo clic en el siguiente enlace:&lt;/p&gt;&lt;p&gt;&lt;a href="%confirmation_link%"&gt;Confirmar suscripción&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Si no solicitó esta suscripción, ignore este correo electrónico.&lt;/p&gt;</target>
+      </trans-unit>
+      <trans-unit id="password_reset_0">
+        <source>Password Reset Request</source>
+        <target>Restablecimiento de contraseña</target>
+      </trans-unit>
+      <trans-unit id="password_reset_1">
+        <source>Hello,
+
+A password reset has been requested for your account.
+Please use the following token to reset your password:
+
+%token%
+
+If you did not request this password reset, please ignore this email.
+
+Thank you.</source>
+        <target>Hola,
+
+Se ha solicitado restablecer la contraseña de su cuenta.
+Utilice el siguiente token para restablecer su contraseña:
+
+%token%
+
+Si no solicitó este restablecimiento, ignore este correo electrónico.
+
+Gracias.</target>
+      </trans-unit>
+      <trans-unit id="password_reset_2">
+        <source>&lt;p&gt;Password Reset Request!&lt;/p&gt;&lt;p&gt;Hello! A password reset has been requested for your account.&lt;/p&gt;&lt;p&gt;Please use the following token to reset your password:&lt;/p&gt;&lt;p&gt;&lt;a href="%confirmation_link%"&gt;Reset Password&lt;/a&gt;&lt;/p&gt;&lt;p&gt;If you did not request this password reset, please ignore this email.&lt;/p&gt;&lt;p&gt;Thank you.&lt;/p&gt;</source>
+        <target>&lt;p&gt;¡Solicitud de restablecimiento de contraseña!&lt;/p&gt;&lt;p&gt;¡Hola! Se ha solicitado restablecer la contraseña de su cuenta.&lt;/p&gt;&lt;p&gt;Utilice el siguiente token para restablecer su contraseña:&lt;/p&gt;&lt;p&gt;&lt;a href="%confirmation_link%"&gt;Restablecer contraseña&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Si no solicitó este restablecimiento, ignore este correo electrónico.&lt;/p&gt;&lt;p&gt;Gracias.&lt;/p&gt;</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -41,17 +41,17 @@ class ProcessQueueCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $lock = $this->lockFactory->createLock('queue_processor');
-        if (!$lock->acquire()) {
-            $output->writeln($this->translator->trans('Queue is already being processed by another instance.'));
-
-            return Command::FAILURE;
-        }
-
         if ($this->configProvider->isEnabled(ConfigOption::MaintenanceMode)) {
             $output->writeln(
                 $this->translator->trans('The system is in maintenance mode, stopping. Try again later.')
             );
+
+            return Command::FAILURE;
+        }
+
+        $lock = $this->lockFactory->createLock('queue_processor');
+        if (!$lock->acquire()) {
+            $output->writeln($this->translator->trans('Queue is already being processed by another instance.'));
 
             return Command::FAILURE;
         }

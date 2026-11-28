@@ -6,6 +6,8 @@ namespace PhpList\Core\Domain\Messaging\MessageHandler;
 
 use PhpList\Core\Domain\Messaging\Message\SubscriberConfirmationMessage;
 use PhpList\Core\Domain\Messaging\Service\EmailService;
+use PhpList\Core\Domain\Subscription\Repository\SubscriberRepository;
+use PhpList\Core\Domain\Subscription\Service\Resolver\SubscriberLocaleResolver;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Mime\Email;
@@ -20,6 +22,8 @@ class SubscriberConfirmationMessageHandler
     public function __construct(
         private readonly EmailService $emailService,
         private readonly TranslatorInterface $translator,
+        private readonly SubscriberRepository $subscriberRepository,
+        private readonly SubscriberLocaleResolver $localeResolver,
         #[Autowire('%app.confirmation_url%')]private readonly string $confirmationUrl
     ) {
     }
@@ -31,10 +35,9 @@ class SubscriberConfirmationMessageHandler
     {
         $confirmationLink = $this->generateConfirmationLink($message->getUniqueId());
 
-        // todo: email locale. This runs in a queue worker, where the request locale is not available, so the
-        //  default locale is always used. Resolve the subscriber's language (phplist3 uses the subscriber/list
-        //  language) and pass it as the $locale argument of trans() for the subject and both bodies.
-        $subject = $this->translator->trans('Please confirm your subscription');
+        $locale = $this->resolveLocale($message);
+
+        $subject = $this->translator->trans('Please confirm your subscription', [], null, $locale);
 
         $textContent = $this->translator->trans(
             "Thank you for subscribing!\n\n" .
@@ -43,7 +46,9 @@ class SubscriberConfirmationMessageHandler
             'If you did not request this subscription, please ignore this email.',
             [
                 '%confirmation_link%' => $confirmationLink
-            ]
+            ],
+            null,
+            $locale
         );
 
         $htmlContent = '';
@@ -55,7 +60,9 @@ class SubscriberConfirmationMessageHandler
                 '<p>If you did not request this subscription, please ignore this email.</p>',
                 [
                     '%confirmation_link%' => $confirmationLink,
-                ]
+                ],
+                null,
+                $locale
             );
         }
 
@@ -69,6 +76,22 @@ class SubscriberConfirmationMessageHandler
         }
 
         $this->emailService->sendEmail($email);
+    }
+
+    /**
+     * phplist3 has no per-subscriber language: it uses the language of the subscribe page the subscriber used.
+     * A locale set explicitly on the message wins, otherwise it is resolved from that page (default locale as
+     * fallback), since the request locale is not available in a queue worker.
+     */
+    private function resolveLocale(SubscriberConfirmationMessage $message): ?string
+    {
+        if ($message->getLocale() !== null) {
+            return $message->getLocale();
+        }
+
+        $subscriber = $this->subscriberRepository->findOneByUniqueId($message->getUniqueId());
+
+        return $subscriber === null ? null : $this->localeResolver->resolve($subscriber);
     }
 
     /**

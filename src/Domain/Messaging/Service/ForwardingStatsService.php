@@ -25,7 +25,7 @@ class ForwardingStatsService
     public function __construct(
         private readonly SubscriberAttributeValueRepository $subscriberAttributeValueRepo,
         private readonly SubscriberAttributeManager $subscriberAttributeManager,
-        #[Autowire('%phplist.forward_friend_count_attribute%')] string $forwardFriendCountAttr,
+        #[Autowire('%messaging.forward.friend_count_attribute%')] string $forwardFriendCountAttr,
     ) {
         $forwardFriendCountAttr = trim($forwardFriendCountAttr);
         $this->forwardFriendCountAttribute = $forwardFriendCountAttr !== '' ? $forwardFriendCountAttr : null;

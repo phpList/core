@@ -18,6 +18,8 @@ framework:
     router:
         resource: '%kernel.project_dir%/config/routing.yml'
         strict_requirements: ~
+    property_info:
+        with_constructor_extractor: true
     form: ~
     csrf_protection: ~
     validation:
@@ -44,4 +46,4 @@ framework:
     php_errors:
         log: true
     mailer:
-        dsn: '%app.mailer_dsn%'
+        dsn: '%mailer.dsn%'

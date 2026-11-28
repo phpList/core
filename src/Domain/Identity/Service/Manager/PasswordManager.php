@@ -13,6 +13,7 @@ use PhpList\Core\Domain\Messaging\Message\PasswordResetMessage;
 use PhpList\Core\Domain\Identity\Service\HashGenerator;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Contracts\Translation\LocaleAwareInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class PasswordManager
@@ -67,7 +68,11 @@ class PasswordManager
 
         $this->passwordRequestRepository->persist($passwordRequest);
 
-        $message = new PasswordResetMessage(email: $email, token: $token);
+        $message = new PasswordResetMessage(
+            email: $email,
+            token: $token,
+            locale: $this->requestLocale(),
+        );
         $this->messageBus->dispatch($message);
 
         return $token;
@@ -133,5 +138,10 @@ class PasswordManager
                 $this->passwordRequestRepository->remove($request);
             }
         }
+    }
+
+    private function requestLocale(): ?string
+    {
+        return $this->translator instanceof LocaleAwareInterface ? $this->translator->getLocale() : null;
     }
 }

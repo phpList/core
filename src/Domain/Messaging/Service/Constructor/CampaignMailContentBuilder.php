@@ -30,7 +30,7 @@ class CampaignMailContentBuilder
         private readonly TextParser $textParser,
         private readonly MessagePlaceholderProcessor $placeholderProcessor,
         private readonly LinkTrackService $linkTrackService,
-        #[Autowire('%phplist.forward_personal_note_size%')] private readonly int $forwardPersonalNoteSize = 0,
+        #[Autowire('%messaging.forward.personal_note_size%')] private readonly int $forwardPersonalNoteSize = 0,
     ) {
     }
 

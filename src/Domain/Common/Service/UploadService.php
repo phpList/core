@@ -20,7 +20,7 @@ class UploadService
         private readonly UploadValidator $validator,
         private readonly UploadStorageInterface $storage,
         private readonly RequestStack $requestStack,
-        #[Autowire('%phplist.upload_images_dir%')]
+        #[Autowire('%uploads.images_dir%')]
         private readonly string $uploadDirectory,
         private readonly TranslatorInterface $translator,
     ) {

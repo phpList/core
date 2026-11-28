@@ -24,3 +24,12 @@ services:
     PhpList\Core\Domain\Messaging\MessageHandler\CampaignProcessorTestMessageHandler:
         autowire: true
         autoconfigure: true
+
+    PhpList\Core\Domain\Common\Schedule\PhpListSchedule:
+        autowire: true
+        autoconfigure: true
+        arguments:
+            $queueInterval: '%app.schedule.queue_interval%'
+            $bounceInterval: '%app.schedule.bounce_interval%'
+            $tldInterval: '%app.schedule.tld_interval%'
+            $cleanupInterval: '%app.schedule.cleanup_interval%'

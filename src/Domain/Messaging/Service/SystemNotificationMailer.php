@@ -20,7 +20,7 @@ class SystemNotificationMailer
     public function __construct(
         private readonly SystemEmailBuilder $systemEmailBuilder,
         private readonly MailerInterface $mailer,
-        #[Autowire('%imap_bounce.email%')] private readonly string $bounceEmail,
+        #[Autowire('%bounce.email%')] private readonly string $bounceEmail,
     ) {
     }
 

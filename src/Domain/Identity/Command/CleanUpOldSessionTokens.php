@@ -12,6 +12,20 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
+/**
+ * TODO: housekeeping. This is the only cleanup command in core; phplist3 does other housekeeping inside web
+ *  pages, and core has no command for it yet. Decide for each whether it is needed, then add commands (or one
+ *  `phplist:housekeeping` command that runs them all, so a single cron entry is enough):
+ *  - eventlog rows older than a retention period (legacy: the "delete entries older than 2 months" action on
+ *    the eventlog page, eventlog.php; EventLogManager can only delete single entries)
+ *  - unidentified bounces older than 2 months (legacy: bounces.php); not checked whether bounce processing
+ *    here already prunes them
+ *  - other expired tokens, if any (e.g. password reset tokens); not checked whether they are cleaned up
+ *    elsewhere in core
+ *  user_message_view rows: legacy only deletes them together with their message or subscriber (lib.php,
+ *  inc/userlib.php) and never prunes them by age, so an age based cleanup would be new behaviour, not a port.
+ *  Also add the new commands to PhpListSchedule.
+ */
 #[AsCommand(
     name: 'phplist:clean-up-old-session-tokens',
     description: 'Removes expired administrator session tokens.'

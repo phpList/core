@@ -27,7 +27,7 @@ class MessageForwardService
         private readonly MessagePrecacheService $precacheService,
         private readonly AdminNotifier $adminNotifier,
         private readonly ForwardingStatsService $forwardingStatsService,
-        #[Autowire('%messaging.forward_alternative_content%')] private readonly bool $forwardAlternativeContent = false,
+        #[Autowire('%messaging.forward.alternative_content%')] private readonly bool $forwardAlternativeContent = false,
     ) {
     }
 
